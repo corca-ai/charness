@@ -1,6 +1,6 @@
 # Achieve Goal: Sustained quality, speed, token, and release round 4
 
-Status: active
+Status: complete
 Created: 2026-06-27
 Activation: `/goal @charness-artifacts/goals/2026-06-27-sustained-quality-speed-token-release-round-4.md`
 
@@ -9,10 +9,13 @@ and release run directly in chat, so this artifact is active for this session.
 
 ## Active Operating Frame
 
-- Current slice: quality slice verified; release and publication remain.
-- Current slice intent: reduce a concrete test-maintenance pressure point and
-  remove one unnecessary script startup cost without weakening proof.
-- Next action: commit the quality slice, then run release planner/publish flow.
+- Current slice: complete; quality slice, release, push, and post-publish
+  verification are recorded.
+- Current slice intent: reduce a concrete test-maintenance pressure point,
+  remove one unnecessary script startup cost without weakening proof, and
+  publish the result through the release helper.
+- Next action: none for this goal; verify installed sessions by restarting or
+  re-resolving stale Charness skill paths if needed.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -49,10 +52,11 @@ Run an approximately three-hour quality improvement round for Charness covering 
   runtime-affecting slice requires earlier publication.
 - Push and release are requested by the user for the final bundle, but remain
   publish-boundary work: run release planning and critique before executing.
-- Timebox: approximately 3 hours from session activation.
-- Activation time: 2026-06-27 session start.
-- Closeout reserve: keep the final 30 minutes for sync, verification, critique,
-  commit, push, release, and artifact completion.
+- Timebox: 3h
+- Activation time: 2026-06-26T18:00:00Z
+- Closeout reserve: 30m
+- Closeout reserve purpose: keep the final reserve for sync, verification,
+  critique, commit, push, release, and artifact completion.
 - Done-early policy: continue_next_improvement while local proof remains cheap
   and release reserve is intact.
 
@@ -92,21 +96,9 @@ Run an approximately three-hour quality improvement round for Charness covering 
 | --- | --- | --- | --- | --- |
 | 1 | Baseline quality and choose cleanup | Avoid guessing about slow or weak surfaces | planner, runtime summary, ergonomics inventory, read-only gate | complete |
 | 2 | Implement selected deterministic improvement | User requested aggressive quality gains, not report-only review | focused tests, changed-surface check, slice log | complete |
-| 3 | Sync, verify, critique, release | Publish boundary requested explicitly | closeout gate, release artifact, clean push/tag | pending |
+| 3 | Sync, verify, critique, release | Publish boundary requested explicitly | closeout gate, release artifact, clean push/tag | complete |
 
 ## Operator Decision Queue
-
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
 
 none — no operator-only decision is currently queued; final release follows the
 user's explicit push/release request and release planner gates.
@@ -141,8 +133,11 @@ Routing: `find-skills` recommended `quality` for the improvement slice and
 `release` for the publication boundary; both routes were followed.
 Gather: n/a — no external URLs or source links were introduced as working
 context for this goal.
-Release: pending — release planner/publish proof runs after the quality slice
-commit, then this line will be updated with the release artifact.
+Release: `charness-artifacts/release/latest.md` records `v0.56.5`, release
+commit `b880b097`, post-publish verification commit `762906d4`, public release
+URL `https://github.com/corca-ai/charness/releases/tag/v0.56.5`, distinct
+channel `https-fetch` confirmation with HTTP 200, passed fresh-checkout probes,
+and refreshed maintainer install state.
 Issue closeout: n/a — this goal did not claim or close tracked GitHub issues.
 
 ## Slice Log
@@ -193,6 +188,36 @@ Issue closeout: n/a — this goal did not claim or close tracked GitHub issues.
     completed successfully.
   - Low-cost checks: `bash -n scripts/run-quality.sh`, `ruff` on changed Python
     files, `check_changed_surfaces.py`, and boundary-bypass ratchet passed.
+- Slice 3 evidence:
+  - Release planner selected patch target `0.56.5` from current version
+    `0.56.4`; the bump is justified by behavior-preserving quality/runtime and
+    advisory inventory fixes.
+  - Release critique:
+    `charness-artifacts/critique/2026-06-27-release-0-56-5-critique.md`;
+    reviewer packet:
+    `charness-artifacts/critique/2026-06-27-release-0-56-5-quality-slice-packet.md`.
+  - Release notes were supplied from `/tmp/charness-v0.56.5-notes.md` with
+    narrow quality/runtime claims and explicit non-claims.
+  - Publish helper executed `./scripts/run-quality.sh --release`, fresh-checkout
+    probes, tag/branch push, GitHub release creation, public visibility check,
+    distinct-channel `https-fetch` verification, and `charness update`.
+  - Published release:
+    `https://github.com/corca-ai/charness/releases/tag/v0.56.5`; release commit
+    `b880b097`; post-publish verification commit `762906d4`.
+  - Real-host supplemental checks after publish: `charness tool doctor nose
+    --json --no-write-locks` reported `doctor_status: ok`,
+    `doctor_disposition: ready`, observed `nose 0.15.0`, and latest upstream
+    metadata `v0.16.0`; `charness tool install nose --dry-run --json`
+    confirmed the upstream `nose-cli-installer.sh` route; `charness tool
+    sync-support nose --json` reported no materialized support skill
+    requirement; `python3
+    skills/public/quality/scripts/inventory_nose_clones.py --repo-root .
+    --json` returned `status: clean` and `family_count: 0`.
+  - Boundary note: the immutable `v0.56.5` tag contains the release helper's
+    pre-publication artifact state, while `origin/main` commit `762906d4`
+    contains the post-publish public verification artifact. This is the helper's
+    current publish sequence and is recorded here as a non-claim about tag-local
+    post-publish proof.
 
 ## Context Sources
 
@@ -237,21 +262,32 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- `nose` is ready for the repo's required quality path but behind latest
+  upstream (`0.15.0` observed, `0.16.0` latest). This is advisory because the
+  declared readiness constraint is `>=0.14.0`; no install/update was performed
+  during closeout.
+
 ## Final Verification
 
-Closeout evidence. Before marking complete, update the release proof from
-pending to the checked-in release artifact and tag/push evidence.
+Closeout evidence.
 
-Retro:
-`charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`
-Host log probe: skipped: host-log-not-exposed: Codex host goal-window token and
-event metrics are not exposed as a stable checked-in source for this run.
-Disposition review:
-`charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`
+Retro: charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md
+Host log probe: skipped: host-log-not-exposed: Codex host goal-window token and event metrics are not exposed as a stable checked-in source for this run.
+Disposition review: charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md
 Quality proof:
 `charness-artifacts/quality/2026-06-27-round-four-quality-speed-token-review.md`
-Release proof: pending: release planner and publish proof run after the quality
-slice commit.
+Release proof:
+`charness-artifacts/release/latest.md`; release URL:
+`https://github.com/corca-ai/charness/releases/tag/v0.56.5`; tag `v0.56.5`;
+release commit `b880b097`; post-publish verification commit `762906d4`;
+distinct-channel verification: `https-fetch`, HTTP 200; install refresh:
+`charness update`, status `refreshed`.
+Supplemental real-host proof: `charness tool doctor nose --json
+--no-write-locks`, `charness tool install nose --dry-run --json`,
+`charness tool sync-support nose --json`, `nose --version`, and `python3
+skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+were run after publish; all returned non-blocking/ready/clean results as
+recorded in `## Slice Log`.
 
 ## User Verification Instructions
 
@@ -259,8 +295,10 @@ slice commit.
 - Inspect
   `charness-artifacts/quality/2026-06-27-round-four-quality-speed-token-review.md`
   for the focused quality evidence and non-claims.
-- After release, verify the pushed tag and release artifact named in the
-  updated `Release proof:` line above.
+- Inspect `charness-artifacts/release/latest.md` and
+  `https://github.com/corca-ai/charness/releases/tag/v0.56.5`.
+- Start a new Codex/Claude session, or re-resolve stale Charness skill paths,
+  so the host loads Charness `0.56.5` after `charness update`.
 
 ## Auto-Retro
 
