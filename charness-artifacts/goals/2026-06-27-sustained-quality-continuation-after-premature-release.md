@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: Release tag-history fake git reuse.
+- Current slice: Release publish sync/quality fixture extraction.
 - Current slice intent: continue reducing test helper prompt/template bulk by
-  reusing the release-publish fake git fixture for real-host/tag-history tests
-  instead of keeping a second inline fake git body.
+  moving the remaining release-publish fake sync and quality command bodies out
+  of `tests/quality_gates/release_publish_fixtures.py`.
 - Next action: commit and push this fixture extraction, then continue discovery
   unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
@@ -71,7 +71,8 @@ accumulate.
 | 7 | Extract Charness CLI Go/specdown/glow fake scripts from test helpers | Prompt-bulk inventory still points at Go installer script literals after slice 6 | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
 | 8 | Extract release publish fake CLI scripts from test fixture helper | Prompt-bulk inventory next surfaced large fake release CLI bodies in `release_publish_fixtures.py` | focused release publish tests, prompt-bulk delta, standing pytest | complete |
 | 9 | Reuse release fake git fixture for tag-history and real-host tests | Prompt-bulk inventory still surfaced a second fake git body in `test_release_publish_real_host_delta.py` | focused tag-history/real-host tests, prompt-bulk delta, standing pytest | complete |
-| 10 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 10 | Extract remaining release publish sync/quality fake scripts | `release_publish_fixtures.py` still carried inline sync and quality scripts after fake CLI extraction | focused release publish tests, prompt-bulk delta, standing pytest | complete |
+| 11 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -310,6 +311,27 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     length gate, attention-state visibility, test repo copy invariants,
     boundary-bypass ratchet, and the standing pytest runner passed; standing
     pytest reported `3676 passed in 21.02s`.
+- Slice 10 evidence:
+  - Moved the remaining fake release sync command and fake quality command from
+    `tests/quality_gates/release_publish_fixtures.py` to
+    `tests/quality_gates/fixtures/release_publish_sync_root_plugin_manifests.py`
+    and `tests/quality_gates/fixtures/release_publish_run_quality.sh`.
+  - Kept `_write_exec` in `release_publish_fixtures.py` because downstream
+    release tests import it for small one-off executable fixtures.
+  - Prompt-bulk inventory after the change reported 37 findings and no longer
+    sampled `release_publish_fixtures.py`.
+  - Length proof: `tests/quality_gates/release_publish_fixtures.py` moved to
+    `154/800` code lines; the new Python sync fixture is `23/800` code lines.
+  - Focused proof: `py_compile`, focused `ruff check`, `bash -n` for the shell
+    fixture, and the release publish focused pytest bundle passed; focused
+    pytest reported `78 passed in 53.31s`.
+  - Changed-surface proof: full repo `ruff check`, Python length gate,
+    attention-state visibility, test repo copy invariants, boundary-bypass
+    ratchet, and the standing pytest runner passed; standing pytest reported
+    `3677 passed in 21.15s`.
+  - Fresh-eye review: no blocking issue found; reviewer flagged only that the
+    two new fixture files must be committed with the helper change. Folded
+    response: stage both new fixture files in the slice commit.
 
 ## Context Sources
 
