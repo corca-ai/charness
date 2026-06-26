@@ -959,6 +959,20 @@ None yet.
   - `python3 scripts/check_doc_links.py --repo-root .` passed.
   - `./scripts/check-markdown.sh` passed.
 
+### Slice 33 — Prepare concise v0.56.3 release notes
+
+- Objective: Prevent commit-log-generated release notes from burying the
+  operator story for a 35-commit quality/speed bundle.
+- Finding: The release critique classified concise operator notes as
+  `Bundle Anyway`: mention faster quality gates, compatible behavior, unchanged
+  update path, no migration, bounded eval jobs, Specdown jobs, fractional
+  timeouts, and support-sync reuse; do not publish an exhaustive slice table.
+- Change: Added `charness-artifacts/release/v0.56.3-notes.md` for the release
+  helper's `--notes-file` path.
+- Verification:
+  - `python3 scripts/check_doc_links.py --repo-root .` passed.
+  - `./scripts/check-markdown.sh` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
