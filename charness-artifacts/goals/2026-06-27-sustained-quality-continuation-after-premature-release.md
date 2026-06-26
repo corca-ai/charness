@@ -9,11 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: setup host-docs template extraction.
-- Current slice intent: move generated AGENTS.md commit-discipline and compact
-  subagent-delegation blocks out of Python and into template assets, then sync
-  the plugin export.
-- Next action: finish changed-surface proof, commit and push slice 13, then
+- Current slice: plugin import smoke template extraction.
+- Current slice intent: move the packaging plugin-import smoke subprocess body
+  out of Python and into a `.txt` template asset, then sync the plugin export.
+- Next action: finish changed-surface proof, commit and push slice 14, then
   continue discovery unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -75,7 +74,8 @@ accumulate.
 | 11 | Extract handoff auto-draft goal template from Python | Prompt-bulk inventory next surfaced `chunked_routing_auto_draft.py`; the content is a template asset rather than Python logic | focused handoff tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 12 | Extract handoff ranker prompt template from Python | Prompt-bulk inventory next surfaced `chunked_routing_lib.py`; the ranker prompt is static prompt content, not Python logic | focused handoff ranker tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 13 | Extract setup host-docs AGENTS fragments from Python | Prompt-bulk inventory next surfaced `setup_host_docs_lib.py`; these Markdown fragments are template assets, not Python logic | focused setup tests, prompt-bulk delta, plugin sync, standing pytest | in_progress |
-| 14 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 14 | Extract plugin import smoke script template from Python | Prompt-bulk inventory next surfaced `validate_packaging_install_surface.py`; the subprocess body is script text, not validator logic | focused packaging tests, prompt-bulk delta, plugin sync, standing pytest | in_progress |
+| 15 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -436,6 +436,32 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
   - Fresh-eye review: blocking closeout risk was the same staging hygiene after
     the `.txt` correction; folded response: stage the `.md` removals and `.txt`
     additions together with `git add -A`, then re-run staged mirror drift.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --produce-mutation-coverage --verification-lock` completed, including
+    coverage-instrumented standing pytest, integration/support/tool update
+    checks, gitignore-scan hygiene, and agent browser runtime guard.
+- Slice 14 evidence:
+  - Prompt-bulk inventory after slice 13 reported 33 findings and surfaced
+    `scripts/validate_packaging_install_surface.py` as the next inline script
+    candidate.
+  - Moved the plugin import-smoke subprocess body to
+    `scripts/templates/plugin_import_smoke.py.txt`; the validator now reads that
+    template asset and passes it to `python3 -c`.
+  - Synced plugin export, adding
+    `plugins/charness/scripts/templates/plugin_import_smoke.py.txt` and updating
+    the plugin mirror of `validate_packaging_install_surface.py`.
+  - Prompt-bulk inventory after the change reported 32 findings; the packaging
+    import-smoke body no longer appears.
+  - Focused proof: `py_compile`, focused `ruff check`, two packaging tests, and
+    `check_plugin_import_smoke.py --repo-root .` passed.
+  - Changed-surface proof: packaging validators, plugin import smoke,
+    markdown/doc/secret checks, focused packaging pytest, and the standing
+    pytest runner passed; standing pytest reported `3681 passed in 20.52s`.
+  - Fresh-eye review: no blocking finding. Reviewer verified staged scope,
+    source/plugin template parity, import-time template paths, the `python3 -c`
+    call contract, and that the template body matched prior behavior except for
+    a harmless leading newline removal.
   - Closeout producer proof:
     `run_slice_closeout.py --skip-sync --allow-unmatched
     --produce-mutation-coverage --verification-lock` completed, including

@@ -167,33 +167,9 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
                 )
 
 
-_IMPORT_SMOKE_SCRIPT = r"""
-import importlib.util, pathlib, sys
-
-plugin_root = pathlib.Path(sys.argv[1])
-sys.path.insert(0, str(plugin_root))
-errors = []
-for py_path in sorted(plugin_root.rglob("*.py")):
-    if "__pycache__" in py_path.parts:
-        continue
-    rel = py_path.relative_to(plugin_root)
-    module_name = "smoke_" + str(rel).replace("/", "_").replace(".", "_").replace("-", "_")
-    try:
-        spec = importlib.util.spec_from_file_location(module_name, py_path)
-        if spec is None or spec.loader is None:
-            continue
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
-    except SystemExit:
-        continue
-    except Exception as exc:
-        errors.append(f"{rel}: {type(exc).__name__}: {exc}")
-if errors:
-    for line in errors:
-        print(line, file=sys.stderr)
-    sys.exit(1)
-"""
+_IMPORT_SMOKE_SCRIPT = (
+    Path(__file__).resolve().parent / "templates" / "plugin_import_smoke.py.txt"
+).read_text(encoding="utf-8")
 
 
 def smoke_exported_plugin_imports(plugin_root: Path) -> None:

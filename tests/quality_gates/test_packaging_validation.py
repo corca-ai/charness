@@ -13,6 +13,7 @@ import pytest
 import scripts.export_plugin as export_plugin_module
 import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
 import scripts.validate_packaging as validate_packaging_module
+import scripts.validate_packaging_install_surface as validate_packaging_install_surface_module
 from tests.repo_copy import clone_seeded_charness_repo
 from tests.script_main import run_loaded_script_main
 
@@ -351,6 +352,13 @@ def test_validate_packaging_install_surface_bootstraps_repo_imports(tmp_path: Pa
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_plugin_import_smoke_script_lives_in_template_asset() -> None:
+    template_path = ROOT / "scripts" / "templates" / "plugin_import_smoke.py.txt"
+    assert template_path.read_text(encoding="utf-8") == (
+        validate_packaging_install_surface_module._IMPORT_SMOKE_SCRIPT
+    )
 
 
 @pytest.mark.release_only
