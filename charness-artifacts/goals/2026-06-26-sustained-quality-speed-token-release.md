@@ -711,6 +711,30 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: When a validator fans out into many repo-owned Python entrypoints, prefer import-safe functional APIs with a legacy subprocess fallback.
 - Metrics: resolver subprocess calls from dogfood matrix generation: base 17 in current registry profile, current 1 fallback in profile.
 
+### Slice 41: Proof artifact durability repair
+
+- Objective: Fix the broad non-release pytest failure caused by a quality
+  artifact citing a gitignored runtime metrics file without a same-line
+  reproduction-source marker.
+- Why this approach: The failure was in the proof record, not production code;
+  moving the marker onto the cited path line satisfies the existing durability
+  contract without weakening the validator.
+- Commits:
+- What changed: Repaired
+  `charness-artifacts/quality/2026-06-26-public-skill-dogfood-resolver-speed-quality-review.md`
+  and added this slice's quality/critique records.
+- Alternatives rejected: Did not relax `check_spec_evidence_durability.py`;
+  the validator caught a real proof-recording mistake.
+- Targeted verification: focused durability pytest passed; full
+  `check_spec_evidence_durability.py --repo-root .` passed across 224 docs; the
+  repaired quality artifact validated.
+- Test duplication pressure: No tests added; this is an artifact contract fix.
+- Critique: charness-artifacts/critique/2026-06-26-proof-artifact-durability.md;
+  low-risk same-agent critique recorded because no runtime code changed.
+- Off-goal findings: none.
+- Metrics: broad non-release pytest exposed the failure after 257.54s; focused
+  durability proof now passes in 4.37s.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

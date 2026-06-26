@@ -19,9 +19,8 @@ published `v0.56.1` state.
 ## Runtime Signals
 
 - runtime source: focused pytest duration output and cProfile samples from this
-  slice plus structured metrics from `.charness/quality/runtime-signals.json`
-  <!-- reproduction-source --> rendered by `render_runtime_summary.py`; profile
-  `local-linux-x86_64-36cpu`.
+  slice plus structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
+  rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
 - runtime hot spots: `run-quality-read-only` 38.1s latest / 65.7s median,
   budget 90.0s; `pytest` 27.1s latest / 25.8s median, budget 140.0s.
 - coverage gate: focused pytest with `--durations=10`, ruff, boundary-bypass
