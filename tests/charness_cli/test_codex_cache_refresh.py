@@ -6,11 +6,12 @@ from pathlib import Path
 import pytest
 
 from .support import CLI, build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
+from .test_managed_install import load_charness_module
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
-pytestmark = pytest.mark.release_only
 
 
+@pytest.mark.release_only
 def test_charness_update_reports_codex_version_drift(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -34,6 +35,7 @@ def test_charness_update_reports_codex_version_drift(
     assert isinstance(host_state["last_update"]["recorded_at"], str)
 
 
+@pytest.mark.release_only
 def test_charness_update_refreshes_codex_cache_via_official_app_server(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -63,6 +65,7 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     assert json.loads(refreshed_manifest.read_text(encoding="utf-8"))["version"] == CURRENT_VERSION
 
 
+@pytest.mark.release_only
 def test_charness_update_emits_session_staleness_when_cache_rotates(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -99,6 +102,7 @@ def test_charness_update_emits_session_staleness_when_cache_rotates(
     assert "Restart" in (staleness.get("message") or "")
 
 
+@pytest.mark.release_only
 def test_charness_update_omits_session_staleness_when_cache_stable(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -119,3 +123,15 @@ def test_charness_update_omits_session_staleness_when_cache_stable(
     assert update_result.returncode == 0, update_result.stderr
     payload = json.loads(update_result.stdout)
     assert payload.get("session_staleness") is None
+
+
+def test_session_staleness_without_cache_diff_returns_none(tmp_path: Path) -> None:
+    module = load_charness_module("charness_codex_cache_refresh_unit_under_test")
+
+    payload = module.session_staleness_payload(
+        {"rotated": [], "removed": [], "added": []},
+        home_root=tmp_path / "home",
+        repo_root=tmp_path / "repo",
+    )
+
+    assert payload is None

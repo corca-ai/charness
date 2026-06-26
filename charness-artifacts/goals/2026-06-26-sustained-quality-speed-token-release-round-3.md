@@ -361,6 +361,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Convert module-level release_only markers to function-level when the same file can host a cheap standing predicate.
 - Metrics: Coverage proxy: release-only sentinel missing file count reduced from 8 to 7.
 
+### Slice 16: Standing sentinel for Codex cache staleness no-op
+
+- Objective: Reduce release-only blind spots around Codex cache refresh/session-staleness behavior without adding another full update flow to standing tests.
+- Why this approach: test_codex_cache_refresh.py had module-level release_only tests, but `session_staleness_payload` has a cheap no-diff branch that can be exercised as a standing predicate.
+- Commits:
+- What changed: Narrowed release_only markers to the four copy-heavy update tests and added a standing unit test proving `session_staleness_payload` returns None when there are no rotated or removed cache entries.
+- Alternatives rejected: Did not move the existing update/refresh tests into standing because they clone managed homes and exercise fake Codex integration.
+- Targeted verification: pytest: standing test passed in 0.34s; full file including release_only tests passed (5 passed) in 24.20s; check_test_repo_copy_invariants.py passed; ruff passed; check_python_lengths headroom remains 688 lines; run_slice_closeout.py passed.
+- Test duplication pressure: Added one focused unit test in the existing cache refresh test file.
+- Critique: Same-agent slice critique: the standing test only covers the no-op staleness predicate; the release-only tests still own cache rotation and update payload behavior.
+- Off-goal findings: A failed attempt to unmark test_managed_home_clone.py correctly hit the copy-heavy invariant; that marker was restored and not committed.
+- Lessons carried forward: Copy-heavy invariant is the right guardrail; use function-level markers plus cheap predicates instead of demoting copy-heavy tests.
+- Metrics: Coverage proxy: release-only sentinel missing file count currently 6 after this slice.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
