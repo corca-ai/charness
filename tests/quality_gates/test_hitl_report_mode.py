@@ -1,9 +1,26 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+from runtime_bootstrap import import_repo_module
 
 from .support import run_script
+
+ROOT = Path(__file__).resolve().parents[2]
+_render_report = import_repo_module(
+    ROOT / "skills" / "public" / "hitl" / "scripts" / "render_report.py",
+    "skills.public.hitl.scripts.render_report",
+)
+
+
+def run_render_report(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["render_report.py", *args])
+    returncode = _render_report.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def _assert_no_repo_absolute_path(payload: object, repo: Path) -> None:
@@ -11,7 +28,9 @@ def _assert_no_repo_absolute_path(payload: object, repo: Path) -> None:
     assert str(repo.resolve()) not in rendered
 
 
-def test_hitl_report_mode_does_not_turn_suggestions_into_default_approval(tmp_path: Path) -> None:
+def test_hitl_report_mode_does_not_turn_suggestions_into_default_approval(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -35,7 +54,7 @@ def test_hitl_report_mode_does_not_turn_suggestions_into_default_approval(tmp_pa
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/hitl/scripts/render_report.py", "--repo-root", str(repo), "--input", str(packet))
+    result = run_render_report(monkeypatch, capsys, "--repo-root", str(repo), "--input", str(packet))
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -53,7 +72,9 @@ def test_hitl_report_mode_does_not_turn_suggestions_into_default_approval(tmp_pa
     _assert_no_repo_absolute_path(decisions, repo)
 
 
-def test_hitl_report_mode_saves_only_touched_decisions_and_explains_tables(tmp_path: Path) -> None:
+def test_hitl_report_mode_saves_only_touched_decisions_and_explains_tables(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -90,8 +111,9 @@ def test_hitl_report_mode_saves_only_touched_decisions_and_explains_tables(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/hitl/scripts/render_report.py",
+    result = run_render_report(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--input",
@@ -119,7 +141,9 @@ def test_hitl_report_mode_saves_only_touched_decisions_and_explains_tables(tmp_p
     _assert_no_repo_absolute_path(decisions, repo)
 
 
-def test_hitl_report_mode_orders_adaptive_queue_by_decision_leverage(tmp_path: Path) -> None:
+def test_hitl_report_mode_orders_adaptive_queue_by_decision_leverage(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -155,7 +179,7 @@ def test_hitl_report_mode_orders_adaptive_queue_by_decision_leverage(tmp_path: P
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/hitl/scripts/render_report.py", "--repo-root", str(repo), "--input", str(packet))
+    result = run_render_report(monkeypatch, capsys, "--repo-root", str(repo), "--input", str(packet))
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -167,7 +191,9 @@ def test_hitl_report_mode_orders_adaptive_queue_by_decision_leverage(tmp_path: P
     assert html.index('data-item-id="b"') < html.index('data-item-id="c"') < html.index('data-item-id="a"')
 
 
-def test_hitl_report_mode_reprioritizes_remaining_items_from_review_effects(tmp_path: Path) -> None:
+def test_hitl_report_mode_reprioritizes_remaining_items_from_review_effects(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -220,8 +246,9 @@ def test_hitl_report_mode_reprioritizes_remaining_items_from_review_effects(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/hitl/scripts/render_report.py",
+    result = run_render_report(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--input",
@@ -243,7 +270,9 @@ def test_hitl_report_mode_reprioritizes_remaining_items_from_review_effects(tmp_
     assert html.index('data-item-id="c"') < html.index('data-item-id="a"')
 
 
-def test_hitl_report_mode_restart_recommendation_stays_display_only(tmp_path: Path) -> None:
+def test_hitl_report_mode_restart_recommendation_stays_display_only(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -290,8 +319,9 @@ def test_hitl_report_mode_restart_recommendation_stays_display_only(tmp_path: Pa
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/hitl/scripts/render_report.py",
+    result = run_render_report(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--input",
@@ -315,7 +345,9 @@ def test_hitl_report_mode_restart_recommendation_stays_display_only(tmp_path: Pa
     assert "Apply the fix, then restart HITL." in html
 
 
-def test_hitl_report_mode_rejects_adaptive_items_without_stable_ids(tmp_path: Path) -> None:
+def test_hitl_report_mode_rejects_adaptive_items_without_stable_ids(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -330,13 +362,13 @@ def test_hitl_report_mode_rejects_adaptive_items_without_stable_ids(tmp_path: Pa
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/hitl/scripts/render_report.py", "--repo-root", str(repo), "--input", str(packet))
+    result = run_render_report(monkeypatch, capsys, "--repo-root", str(repo), "--input", str(packet))
 
     assert result.returncode == 1
     assert "stable explicit `id`" in result.stderr
 
 
-def test_hitl_report_mode_rejects_blank_adaptive_item_ids(tmp_path: Path) -> None:
+def test_hitl_report_mode_rejects_blank_adaptive_item_ids(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -351,13 +383,13 @@ def test_hitl_report_mode_rejects_blank_adaptive_item_ids(tmp_path: Path) -> Non
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/hitl/scripts/render_report.py", "--repo-root", str(repo), "--input", str(packet))
+    result = run_render_report(monkeypatch, capsys, "--repo-root", str(repo), "--input", str(packet))
 
     assert result.returncode == 1
     assert "stable explicit `id`" in result.stderr
 
 
-def test_hitl_report_mode_rejects_stale_review_input_ids(tmp_path: Path) -> None:
+def test_hitl_report_mode_rejects_stale_review_input_ids(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -374,8 +406,9 @@ def test_hitl_report_mode_rejects_stale_review_input_ids(tmp_path: Path) -> None
     )
     review.write_text(json.dumps({"items": [{"id": "old", "decision": "approve"}]}), encoding="utf-8")
 
-    result = run_script(
-        "skills/public/hitl/scripts/render_report.py",
+    result = run_render_report(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--input",
@@ -388,7 +421,9 @@ def test_hitl_report_mode_rejects_stale_review_input_ids(tmp_path: Path) -> None
     assert "unknown item id(s): old" in result.stderr
 
 
-def test_hitl_report_mode_rejects_queue_effects_without_human_judgment(tmp_path: Path) -> None:
+def test_hitl_report_mode_rejects_queue_effects_without_human_judgment(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -410,8 +445,9 @@ def test_hitl_report_mode_rejects_queue_effects_without_human_judgment(tmp_path:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/hitl/scripts/render_report.py",
+    result = run_render_report(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--input",
@@ -424,7 +460,9 @@ def test_hitl_report_mode_rejects_queue_effects_without_human_judgment(tmp_path:
     assert "must include an explicit decision or comment" in result.stderr
 
 
-def test_hitl_report_mode_rejects_duplicate_ids_and_sanitizes_report_html(tmp_path: Path) -> None:
+def test_hitl_report_mode_rejects_duplicate_ids_and_sanitizes_report_html(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     duplicate_packet = repo / "duplicate.json"
@@ -455,8 +493,9 @@ def test_hitl_report_mode_rejects_duplicate_ids_and_sanitizes_report_html(tmp_pa
         "--input",
         str(duplicate_packet),
     )
-    unsafe = run_script(
-        "skills/public/hitl/scripts/render_report.py",
+    unsafe = run_render_report(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--input",

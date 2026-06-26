@@ -163,6 +163,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Before converting boundary tests, prove retained CLI smoke exists for each entrypoint; direct main() calls should use pytest-scoped monkeypatch/capsys only.
 - Metrics: Runtime profile local-linux-x86_64-36cpu; run-quality latest 38.1s / median 65.7s before this slice.
 
+### Slice 2: HITL report subprocess fanout
+
+- Objective: Reduce repeated render_report.py subprocess calls while retaining real CLI proof.
+- Why this approach: The report-mode test file launched render_report.py for ordinary report behavior 14 times; most assertions can use the import-safe main() seam.
+- Commits:
+- What changed: Converted report behavior tests to run_render_report(monkeypatch, capsys, ...); kept stdout indent and argparse required-argument tests as real subprocess smokes.
+- Alternatives rejected: Did not remove the last four run_script calls because they prove delivery-boundary stdout formatting, argparse behavior, and handled-error process exit behavior.
+- Targeted verification: ruff passed; focused pytest: 12 passed in 2.64s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 14 to 4.
+- Test duplication pressure: No tests added; existing tests switched execution layer. File-level boundary count unchanged by design because retained CLI smokes remain in the same file.
+- Critique: charness-artifacts/critique/2026-06-26-hitl-report-runtime.md; fresh-eye reviewer 019f0163-21e9-7c40-9fff-21702c8405cf found one Medium handled-error CLI proof issue, fixed before commit.
+- Off-goal findings: Potential future inventory improvement: count within-file subprocess call reductions separately from file-level candidates.
+- Lessons carried forward: File-level ratchets can hide meaningful runtime wins inside a retained-boundary test file; record direct call-count evidence.
+- Metrics: render_report.py run_script calls in test_hitl_report_mode.py: base 14, current 4.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
