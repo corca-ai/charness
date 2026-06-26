@@ -30,6 +30,14 @@ INVENTORY = importlib.util.module_from_spec(INVENTORY_SPEC)
 sys.modules[INVENTORY_SPEC.name] = INVENTORY
 INVENTORY_SPEC.loader.exec_module(INVENTORY)
 
+HANDOFF_RESOLVER_SPEC = importlib.util.spec_from_file_location(
+    "resolve_handoff_adapter", ROOT / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py"
+)
+assert HANDOFF_RESOLVER_SPEC is not None and HANDOFF_RESOLVER_SPEC.loader is not None
+HANDOFF_RESOLVER = importlib.util.module_from_spec(HANDOFF_RESOLVER_SPEC)
+sys.modules[HANDOFF_RESOLVER_SPEC.name] = HANDOFF_RESOLVER
+HANDOFF_RESOLVER_SPEC.loader.exec_module(HANDOFF_RESOLVER)
+
 
 def _load_quality_resolver():
     spec = importlib.util.spec_from_file_location(
@@ -527,8 +535,9 @@ def test_simple_adapter_invalid_artifact_class_returns_invalid_payload(tmp_path:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/handoff/scripts/resolve_adapter.py",
+    result = run_loaded_script_main(
+        "resolve_adapter.py",
+        HANDOFF_RESOLVER,
         "--repo-root",
         str(repo),
     )

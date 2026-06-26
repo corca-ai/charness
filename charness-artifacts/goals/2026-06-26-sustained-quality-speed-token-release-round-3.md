@@ -922,6 +922,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Keep generated-command subprocess proof even after converting the local implementation smokes.
 - Metrics: Speed/testability proxy: removed five nested Python process starts and reduced raw candidate keys by one.
 
+### Slice 56: Run handoff adapter resolver smoke in process
+
+- Objective: Remove the clean `skills/public/handoff/scripts/resolve_adapter.py` subprocess from artifact naming tests.
+- Why this approach: The local resolver smoke asserts JSON payload semantics for an invalid adapter; loading the resolver module and calling `main()` through the shared runner preserves that behavior without a parent process.
+- Commits:
+- What changed: Loaded the handoff resolver module with `importlib.util`, registered it in `sys.modules`, and routed the invalid-artifact-class adapter test through `run_loaded_script_main()`.
+- Alternatives rejected: Did not convert exported resolver subprocesses because those prove installed-plugin command paths and emitted argv.
+- Targeted verification: pytest: `tests/quality_gates/test_artifact_naming.py` `18 passed` in 1.82s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 49 candidates, 69 candidate keys, and 4 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 47 candidates and 4 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing smoke.
+- Critique: Same-agent slice critique: local resolver JSON remains asserted, and exported command-path proof remains separate.
+- Off-goal findings: None.
+- Lessons carried forward: Skill-local resolver modules can be loaded directly for local semantic tests; keep subprocesses for installed/exported path proofs.
+- Metrics: Speed/testability proxy: removed one nested Python process start and removed `tests/quality_gates/test_artifact_naming.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
