@@ -1,1 +1,1 @@
-2026-06-26-gather-slack-boundary-quality-review.md
+2026-06-26-public-skill-validation-boundary-quality-review.md

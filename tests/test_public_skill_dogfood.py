@@ -4,6 +4,15 @@ import json
 import shutil
 from pathlib import Path
 
+import pytest
+
+from scripts.public_skill_dogfood_lib import build_matrix
+from scripts.public_skill_dogfood_validation_lib import (
+    ValidationError,
+    load_registry,
+    validate_registry,
+)
+
 from .test_quality_artifact import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,16 +86,7 @@ def seed_skill(repo: Path, skill_id: str, *, description: str, adapter: bool) ->
 
 
 def scaffold_case(repo: Path, skill_id: str) -> dict[str, object]:
-    result = run_script(
-        "scripts/suggest_public_skill_dogfood.py",
-        "--repo-root",
-        str(repo),
-        "--skill-id",
-        skill_id,
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = build_matrix(repo, [skill_id])
     return payload["matrix"][0]
 
 
@@ -119,9 +119,8 @@ def test_validate_public_skill_dogfood_checks_current_scaffold_drift(tmp_path: P
     registry["cases"][0]["prompt"] = "Drifted prompt."
     write_registry(repo, registry)
 
-    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "drifted from current scaffold" in result.stderr
+    with pytest.raises(ValidationError, match="drifted from current scaffold"):
+        validate_registry(load_registry(repo), repo)
 
 
 def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill(tmp_path: Path) -> None:
@@ -131,9 +130,8 @@ def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill
     registry["cases"] = []
     write_registry(repo, registry)
 
-    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "missing required reviewed dogfood case" in result.stderr
+    with pytest.raises(ValidationError, match="missing required reviewed dogfood case"):
+        validate_registry(load_registry(repo), repo)
 
 
 def test_validate_public_skill_dogfood_requires_observed_evidence_for_reviewed_case(tmp_path: Path) -> None:
@@ -143,6 +141,22 @@ def test_validate_public_skill_dogfood_requires_observed_evidence_for_reviewed_c
     registry["cases"][0]["observed_evidence"] = []
     write_registry(repo, registry)
 
-    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "observed_evidence" in result.stderr
+    with pytest.raises(ValidationError, match="observed_evidence"):
+        validate_registry(load_registry(repo), repo)
+
+
+def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path)
+    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+
+    result = run_script(
+        "scripts/suggest_public_skill_dogfood.py",
+        "--repo-root",
+        str(repo),
+        "--skill-id",
+        "demo",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["matrix"][0]["skill_id"] == "demo"

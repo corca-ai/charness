@@ -2,22 +2,13 @@ from __future__ import annotations
 
 import json
 
+from scripts.public_skill_dogfood_lib import build_matrix
+
 from .support import ROOT, run_script
 
 
 def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> None:
-    result = run_script(
-        "scripts/suggest_public_skill_dogfood.py",
-        "--repo-root",
-        str(ROOT),
-        "--skill-id",
-        "handoff",
-        "--skill-id",
-        "quality",
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = build_matrix(ROOT, ["handoff", "quality"])
     matrix = {row["skill_id"]: row for row in payload["matrix"]}
 
     handoff = matrix["handoff"]
