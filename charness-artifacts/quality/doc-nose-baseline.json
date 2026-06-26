@@ -4,7 +4,6 @@
   "note": "Accepted (intentional/shared-template) Markdown duplicate families so the advisory reports only new/changed drift. Signature = sorted member path#heading tuples. Re-baseline per scanner version with --write-baseline; never treat the accepted count as a reduction target (see item 5 review).",
   "signatures": [
     "0624bc31587baeb2",
-    "11a224ef9f29b5a4",
     "11adfa93d5e5f88c",
     "12e9298f7519cff1",
     "147ca75c26cafcaf",
@@ -28,6 +27,7 @@
     "d32e2bf031e5aafc",
     "d572a9958c1264ef",
     "e5da3fe6dbaab051",
+    "e89e772efc0ba634",
     "f31174275cc3130b",
     "f5dd3285991c4a2f",
     "fc7aa1e9c63e19ec"
