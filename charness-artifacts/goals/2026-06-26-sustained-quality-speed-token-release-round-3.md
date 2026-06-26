@@ -754,6 +754,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Validator scripts with `__main__` exception wrappers need runner-specific exception handling when converted in process.
 - Metrics: Speed/testability proxy: removed two nested Python script invocations and reduced raw candidate keys by one.
 
+### Slice 44: Fix boundary inventory path-argument false positives
+
+- Objective: Stop the boundary-bypass inventory from counting script paths that are data arguments to another spawned command.
+- Why this approach: `run_script("scripts/run_slice_closeout.py", "--paths", "skills/.../inspect_repo.py")` starts `run_slice_closeout.py`; the `inspect_repo.py` string is a changed-path fixture, not a process boundary. The scanner should inspect only the spawn command argument.
+- Commits:
+- What changed: Narrowed `_spawn_targets()` to collect script literals only from the command position or command-like keyword (`args`/`cmd`/`command`), added a regression test for `--paths skills/.../inspect_repo.py`, and synced the checked-in plugin mirror.
+- Alternatives rejected: Did not add another exemption for this case because it is an inventory bug, not an intentional boundary.
+- Targeted verification: pytest: `tests/test_boundary_bypass_inventory.py` `9 passed` in 0.33s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 57 candidates, 85 candidate keys, and 14 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 53 candidates and 12 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed, including plugin sync, packaging validation, scan hygiene, and boundary ratchet.
+- Test duplication pressure: Added one focused regression test because this was a scanner correctness bug.
+- Critique: Same-agent slice critique: keyword detection is intentionally narrow; it still handles common `subprocess.run(args=[...])`/`command=...` forms without scanning every non-command option.
+- Off-goal findings: Boundary raw inventory previously over-counted path fixtures as clean in-process targets.
+- Lessons carried forward: Advisory inventories need false-positive fixes, not just exemptions, when the path is not actually spawned.
+- Metrics: Token/testability proxy: reduced raw boundary candidate keys from 89 to 85 and removed misleading clean-target pressure from path-argument fixtures.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

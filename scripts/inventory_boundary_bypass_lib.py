@@ -74,9 +74,8 @@ def _spawn_targets(text: str) -> list[str]:
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call) or not _is_spawn_call(node):
             continue
-        for child in list(node.args) + [kw.value for kw in node.keywords]:
-            for value in _iter_string_constants(child):
-                targets.update(_TARGET_RE.findall(repr(value)))
+        for value in _iter_spawn_command_strings(node):
+            targets.update(_TARGET_RE.findall(repr(value)))
     return sorted(targets)
 
 
@@ -99,6 +98,23 @@ def _iter_string_constants(node: ast.AST) -> Iterator[str]:
     for child in ast.walk(node):
         if isinstance(child, ast.Constant) and isinstance(child.value, str):
             yield child.value
+
+
+def _iter_spawn_command_strings(node: ast.Call) -> Iterator[str]:
+    """Yield string constants only from the command argument of a spawn call.
+
+    Tests often pass repo-owned script paths as data, such as
+    ``run_script("scripts/run_slice_closeout.py", "--paths", "skills/...")``.
+    Only the command position names the process boundary; scanning every arg
+    turns ordinary path fixtures into false boundary-bypass targets.
+    """
+    if node.args:
+        yield from _iter_string_constants(node.args[0])
+        return
+    for keyword in node.keywords:
+        if keyword.arg in {"args", "cmd", "command"}:
+            yield from _iter_string_constants(keyword.value)
+            return
 
 
 def is_import_safe(path: Path) -> bool:

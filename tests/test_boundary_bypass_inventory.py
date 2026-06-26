@@ -148,6 +148,39 @@ def test_ignores_script_path_named_only_in_assertion_string(tmp_path: Path) -> N
     assert out["summary"]["candidate_count"] == 0
 
 
+def test_ignores_script_path_passed_as_data_argument_to_spawned_command(tmp_path: Path) -> None:
+    repo = (
+        Repo()
+        .file("scripts/run_slice_closeout.py", IMPORT_SAFE_INTERNAL_BOUNDARY)
+        .file("skills/public/setup/scripts/inspect_repo.py", IMPORT_SAFE)
+        .file(
+            "tests/test_closeout.py",
+            "\n".join(
+                [
+                    "from support import run_script",
+                    "def test_x():",
+                    "    result = run_script(",
+                    "        'scripts/run_slice_closeout.py',",
+                    "        '--paths',",
+                    "        'skills/public/setup/scripts/inspect_repo.py',",
+                    "    )",
+                    "    assert result.returncode == 0",
+                    "",
+                ]
+            ),
+        )
+        .build(tmp_path)
+    )
+
+    out = LIB.find_boundary_bypass_candidates(repo)
+
+    assert out["summary"]["candidate_count"] == 1
+    cand = out["candidates"][0]
+    assert cand["import_safe_targets"] == ["scripts/run_slice_closeout.py"]
+    assert cand["clean_inprocess_targets"] == []
+    assert cand["internal_boundary_targets"] == ["scripts/run_slice_closeout.py"]
+
+
 def test_read_text_alone_is_not_behavior_assertion(tmp_path: Path) -> None:
     repo = (
         Repo()
