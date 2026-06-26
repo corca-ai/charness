@@ -140,6 +140,26 @@ def inventory(repo_root: Path, paths: list[Path] | None = None) -> dict[str, Any
     }
 
 
+def summarize(payload: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:
+    files = payload["files"]
+    release_only_files = [item["path"] for item in files if item["release_only_count"]]
+    sentinel_files = [item["path"] for item in files if item["standing_sentinel_names"]]
+    missing_sentinel_files = [finding["path"] for finding in payload["findings"]]
+    return {
+        "summary_note": "summary is triage output; use --json for full per-test attribution",
+        "file_count": payload["file_count"],
+        "release_only_file_count": payload["release_only_file_count"],
+        "release_only_test_count": payload["release_only_test_count"],
+        "standing_test_count": payload["standing_test_count"],
+        "release_only_files_sample": release_only_files[:sample_limit],
+        "standing_sentinel_file_count": len(sentinel_files),
+        "standing_sentinel_files_sample": sentinel_files[:sample_limit],
+        "missing_standing_sentinel_file_count": len(missing_sentinel_files),
+        "missing_standing_sentinel_files_sample": missing_sentinel_files[:sample_limit],
+        "findings": payload["findings"][:sample_limit],
+    }
+
+
 def _print_text(payload: dict[str, Any]) -> None:
     print(f"files: {payload['file_count']}")
     print(f"release_only tests: {payload['release_only_test_count']}")
@@ -169,12 +189,19 @@ def main() -> int:
         help="Selected pytest file to inspect; repeatable. Defaults to tests containing release_only.",
     )
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="Emit compact JSON counts and samples instead of full per-test attribution.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     paths = [(repo_root / path).resolve() for path in args.path]
     payload = inventory(repo_root, paths or None)
-    if args.json:
+    if args.summary:
+        print(json.dumps(summarize(payload), ensure_ascii=False, indent=2))
+    elif args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         _print_text(payload)

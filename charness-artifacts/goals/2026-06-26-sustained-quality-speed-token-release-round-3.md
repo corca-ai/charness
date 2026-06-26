@@ -165,6 +165,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Prefer a measured structural runtime fix plus inventory correction over another narrow subprocess conversion.
 - Metrics: Runtime proxy: check_test_repo_copy_invariants.py 1.14s before, 0.31s after on this machine.
 
+### Slice 2: Compact release-only sentinel inventory
+
+- Objective: Reduce token overhead for advisory release-only sentinel review without removing full attribution when needed.
+- Why this approach: The full --json output for inventory_release_only_sentinels.py was about 28KB and mostly per-test names; quality triage usually needs counts, samples, and findings first.
+- Commits:
+- What changed: Added --summary compact JSON output with counts, sample file lists, and bounded findings; preserved --json full per-test attribution; added focused CLI regression coverage.
+- Alternatives rejected: Did not change the default text output or remove full JSON because detailed attribution remains useful for targeted cleanup.
+- Targeted verification: pytest: 5 passed for test_release_only_sentinel_inventory.py; ruff passed; length headroom remains 178 lines for the script and 595 for the test file; full JSON 28142 bytes vs summary 4557 bytes, 83.8% reduction.
+- Test duplication pressure: Added one focused test in an existing test file; no new test file.
+- Critique: Same-agent slice critique: the summary is explicitly labeled triage output and points callers to --json for full attribution, so compact output cannot masquerade as complete evidence.
+- Off-goal findings: The summary makes the existing advisory visible: 10 release_only files still lack obvious standing sentinels; that is not fixed in this slice.
+- Lessons carried forward: Token efficiency improvements should preserve a full-detail escape hatch and label summaries as triage output.
+- Metrics: Token/output proxy: release-only sentinel inventory output reduced 83.8% for summary use.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

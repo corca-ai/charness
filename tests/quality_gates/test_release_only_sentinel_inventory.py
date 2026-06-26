@@ -133,6 +133,65 @@ def test_release_only_sentinel_inventory_cli_accepts_selected_files(tmp_path: Pa
     payload = json.loads(result.stdout)
     assert payload["release_only_test_count"] == 1
     assert payload["standing_test_count"] == 0
+    assert "files" in payload
+
+
+def test_release_only_sentinel_inventory_summary_omits_full_test_names(tmp_path: Path) -> None:
+    test_file = tmp_path / "tests" / "test_release_flow.py"
+    test_file.parent.mkdir()
+    test_file.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "",
+                "@pytest.mark.release_only",
+                "def test_release_boundary_pushes_tag():",
+                "    pass",
+                "",
+                "def test_release_metadata_shape():",
+                "    pass",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    full = subprocess.run(
+        [
+            "python3",
+            str(SCRIPT),
+            "--repo-root",
+            str(tmp_path),
+            "--path",
+            "tests/test_release_flow.py",
+            "--json",
+        ],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    summary = subprocess.run(
+        [
+            "python3",
+            str(SCRIPT),
+            "--repo-root",
+            str(tmp_path),
+            "--path",
+            "tests/test_release_flow.py",
+            "--summary",
+        ],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    payload = json.loads(summary.stdout)
+    assert payload["release_only_test_count"] == 1
+    assert payload["missing_standing_sentinel_file_count"] == 1
+    assert payload["missing_standing_sentinel_files_sample"] == ["tests/test_release_flow.py"]
+    assert "files" not in payload
+    assert "release_only_test_names" not in summary.stdout
+    assert len(summary.stdout.encode("utf-8")) < len(full.stdout.encode("utf-8"))
 
 
 def test_release_only_sentinel_inventory_uses_structural_marker_detection(
