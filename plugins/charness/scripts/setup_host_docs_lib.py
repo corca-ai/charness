@@ -3,33 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
-COMMIT_DISCIPLINE = """## Commit Discipline
 
-- Commit meaningful work slices as they finish; keep each commit scoped to one
-  understandable unit instead of one giant end-of-run commit.
-- Treat meaningful `charness-artifacts/` changes as repo state and commit them
-  with the work they support.
-- Do not report a task-completing goal as done while meaningful implementation,
-  workflow, or artifact work remains uncommitted, unless the deferral is
-  explicit. The two policies differ: artifact changes are commit targets, and
-  implementation/workflow slices are committed as they finish.
-"""
+def _read_template(name: str) -> str:
+    return (Path(__file__).resolve().parent / "templates" / name).read_text(
+        encoding="utf-8"
+    )
 
 
-COMPACT_SUBAGENT_DELEGATION = """## Subagent Delegation
-
-- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation
-  request. Canonical scopes: task-completing `setup`, `quality`, `critique`,
-  `release`, and GitHub `issue` resolution/closeout review runs. Report a host
-  block explicitly; same-agent substitutes are forbidden.
-- When a skill or repo adapter owns a subagent review, follow that adapter's
-  reviewer tier and concrete spawn fields instead of inheriting the parent
-  turn's host defaults or improvising a generic reviewer. For Codex critique
-  reviewers, the adapter resolves the high-leverage tier to medium reasoning
-  effort unless it says otherwise; that is a per-adapter default, not a claim
-  that every subagent is medium. If the required adapter or tier cannot be
-  applied, stop and report the concrete signal.
-"""
+COMMIT_DISCIPLINE = _read_template("agents_commit_discipline.txt")
+COMPACT_SUBAGENT_DELEGATION = _read_template("agents_subagent_delegation.txt")
 
 
 def render_agents_template(*, skill_routing_markdown: str) -> str:

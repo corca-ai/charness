@@ -9,11 +9,12 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: post-ranker-prompt extraction discovery.
-- Current slice intent: commit and push the handoff ranker prompt template
-  extraction, then re-run inventories for the next quality slice.
-- Next action: commit and push slice 12, then continue discovery unless a
-  release-worthy boundary is reached.
+- Current slice: setup host-docs template extraction.
+- Current slice intent: move generated AGENTS.md commit-discipline and compact
+  subagent-delegation blocks out of Python and into template assets, then sync
+  the plugin export.
+- Next action: finish changed-surface proof, commit and push slice 13, then
+  continue discovery unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
 
@@ -73,7 +74,8 @@ accumulate.
 | 10 | Extract remaining release publish sync/quality fake scripts | `release_publish_fixtures.py` still carried inline sync and quality scripts after fake CLI extraction | focused release publish tests, prompt-bulk delta, standing pytest | complete |
 | 11 | Extract handoff auto-draft goal template from Python | Prompt-bulk inventory next surfaced `chunked_routing_auto_draft.py`; the content is a template asset rather than Python logic | focused handoff tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 12 | Extract handoff ranker prompt template from Python | Prompt-bulk inventory next surfaced `chunked_routing_lib.py`; the ranker prompt is static prompt content, not Python logic | focused handoff ranker tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 13 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 13 | Extract setup host-docs AGENTS fragments from Python | Prompt-bulk inventory next surfaced `setup_host_docs_lib.py`; these Markdown fragments are template assets, not Python logic | focused setup tests, prompt-bulk delta, plugin sync, standing pytest | in_progress |
+| 14 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -407,6 +409,38 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     planner reported `next_action: none`; recorded the no-registry-change
     decision in `docs/public-skill-dogfood.json` because this slice changes
     implementation shape, not handoff routing or adapter bootstrap behavior.
+- Slice 13 evidence:
+  - Prompt-bulk inventory after slice 12 reported 35 findings and surfaced
+    `scripts/setup_host_docs_lib.py` as the next generated-doc template
+    candidate.
+  - Moved the AGENTS.md commit-discipline and compact subagent-delegation
+    fragments to `scripts/templates/agents_commit_discipline.txt` and
+    `scripts/templates/agents_subagent_delegation.txt`; `setup_host_docs_lib.py`
+    now reads those template assets.
+  - Synced plugin export, adding the matching
+    `plugins/charness/scripts/templates/agents_commit_discipline.txt` and
+    `plugins/charness/scripts/templates/agents_subagent_delegation.txt` files.
+  - Prompt-bulk inventory after the change reported 33 findings; the two
+    `setup_host_docs_lib.py` template fragments no longer appear.
+  - Focused proof: `py_compile`, focused `ruff check`, and setup
+    commit-discipline/normalize-host-docs pytest passed; focused pytest
+    reported `13 passed in 0.46s`.
+  - Markdown closeout correction: first broad markdown pass failed because the
+    fragment files used `.md` while intentionally starting at `##`; renamed them
+    to `.txt` template assets so generated output stays unchanged and standalone
+    Markdown document rules do not apply.
+  - Changed-surface proof: packaging validators, plugin import smoke, staged
+    mirror drift, markdown/doc/secret checks, focused setup/preflight pytest,
+    and the standing pytest runner passed; standing pytest reported `3680
+    passed in 23.03s`.
+  - Fresh-eye review: blocking closeout risk was the same staging hygiene after
+    the `.txt` correction; folded response: stage the `.md` removals and `.txt`
+    additions together with `git add -A`, then re-run staged mirror drift.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --produce-mutation-coverage --verification-lock` completed, including
+    coverage-instrumented standing pytest, integration/support/tool update
+    checks, gitignore-scan hygiene, and agent browser runtime guard.
 
 ## Context Sources
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import scripts.setup_host_docs_lib as host_docs
 from scripts.setup_agent_docs_lib import (
     FINDING_RECOMMENDATION_PRIORITIES,
     RECOMMENDATION_FINDING_TYPES,
@@ -69,6 +70,16 @@ def test_greenfield_template_seeds_commit_discipline_block() -> None:
     # The generated block must satisfy the inspector's own detector so setup does
     # not seed a body that immediately re-flags as stale.
     assert commit_discipline_present(agents_text) is True
+
+
+def test_greenfield_template_fragments_live_in_template_assets() -> None:
+    template_dir = Path(host_docs.__file__).resolve().parent / "templates"
+    assert (
+        template_dir / "agents_commit_discipline.txt"
+    ).read_text(encoding="utf-8") == host_docs.COMMIT_DISCIPLINE
+    assert (
+        template_dir / "agents_subagent_delegation.txt"
+    ).read_text(encoding="utf-8") == host_docs.COMPACT_SUBAGENT_DELEGATION
 
 
 def test_greenfield_template_passes_inspector(tmp_path: Path) -> None:

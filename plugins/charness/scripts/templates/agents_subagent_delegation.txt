@@ -1,0 +1,13 @@
+## Subagent Delegation
+
+- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation
+  request. Canonical scopes: task-completing `setup`, `quality`, `critique`,
+  `release`, and GitHub `issue` resolution/closeout review runs. Report a host
+  block explicitly; same-agent substitutes are forbidden.
+- When a skill or repo adapter owns a subagent review, follow that adapter's
+  reviewer tier and concrete spawn fields instead of inheriting the parent
+  turn's host defaults or improvising a generic reviewer. For Codex critique
+  reviewers, the adapter resolves the high-leverage tier to medium reasoning
+  effort unless it says otherwise; that is a per-adapter default, not a claim
+  that every subagent is medium. If the required adapter or tier cannot be
+  applied, stop and report the concrete signal.
