@@ -58,6 +58,43 @@ def test_inventory_entrypoint_docs_ergonomics_reports_advisory_flags(tmp_path: P
     assert doc["review_prompts"]
 
 
+def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    lines = [
+        "# Agents",
+        "",
+        "Mode choice matters in this mode-heavy workflow.",
+        "Another mode note keeps the mode pressure explicit.",
+        "This option should probably be inference instead of an option.",
+        "A second flag mention keeps flag pressure visible.",
+    ]
+    lines.extend(f"Use `{index}` as the inline command detail." for index in range(18))
+    lines.extend(f"filler line {index}" for index in range(40))
+    (repo / "AGENTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--max-core-lines",
+        "20",
+        "--summary",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["summary_note"].startswith("summary is triage output")
+    assert payload["document_count"] == 1
+    assert payload["documents_with_heuristics_count"] == 1
+    doc = payload["documents_with_heuristics_sample"][0]
+    assert doc["doc_path"] == "AGENTS.md"
+    assert "review_prompts" not in doc
+    assert "inbound_internal_doc_links" not in doc
+    assert payload["heuristic_counts"]["long_entrypoint"] == 1
+    assert payload["review_prompts"]
+
+
 def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

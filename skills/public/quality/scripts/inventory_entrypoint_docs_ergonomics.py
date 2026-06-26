@@ -52,6 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--doc-path", action="append", default=[], help="Entrypoint doc path relative to the repo root (repeatable; defaults applied if omitted)")
     parser.add_argument("--max-core-lines", type=int, default=140, help="Non-empty line count above which an entrypoint doc is flagged as long")
     parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON counts and samples instead of full per-document attribution")
     return parser.parse_args()
 
 
@@ -180,6 +181,43 @@ def inventory_doc(
     }
 
 
+def summarize_payload(payload: dict[str, object], *, sample_limit: int = 20) -> dict[str, object]:
+    documents = payload.get("documents", [])
+    doc_items = documents if isinstance(documents, list) else []
+    heuristic_counts: dict[str, int] = {}
+    compact_docs: list[dict[str, object]] = []
+    for item in doc_items:
+        if not isinstance(item, dict):
+            continue
+        heuristics = item.get("heuristics", [])
+        heuristic_items = heuristics if isinstance(heuristics, list) else []
+        for heuristic in heuristic_items:
+            heuristic_counts[str(heuristic)] = heuristic_counts.get(str(heuristic), 0) + 1
+        if heuristic_items:
+            compact_docs.append(
+                {
+                    "doc_path": item.get("doc_path"),
+                    "core_nonempty_lines": item.get("core_nonempty_lines"),
+                    "internal_doc_link_count": item.get("internal_doc_link_count"),
+                    "inbound_internal_doc_link_count": item.get("inbound_internal_doc_link_count"),
+                    "inline_code_count": item.get("inline_code_count"),
+                    "code_fence_count": item.get("code_fence_count"),
+                    "numbered_procedure_count": item.get("numbered_procedure_count"),
+                    "heuristics": heuristic_items,
+                }
+            )
+    return {
+        "summary_note": "summary is triage output; use --json for full per-document attribution",
+        "repo_root": payload["repo_root"],
+        "max_core_lines": payload["max_core_lines"],
+        "document_count": len(doc_items),
+        "documents_with_heuristics_count": len(compact_docs),
+        "heuristic_counts": dict(sorted(heuristic_counts.items())),
+        "documents_with_heuristics_sample": compact_docs[:sample_limit],
+        "review_prompts": DEFAULT_REVIEW_PROMPTS,
+    }
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -196,6 +234,8 @@ def main() -> int:
 
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
+    elif args.summary:
+        print(json.dumps(summarize_payload(payload), ensure_ascii=False, indent=2))
     else:
         for item in docs:
             heuristics = ", ".join(item["heuristics"]) or "none"

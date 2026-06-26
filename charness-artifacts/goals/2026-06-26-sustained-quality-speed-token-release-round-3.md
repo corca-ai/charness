@@ -263,6 +263,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Inventories that fail on low-noise findings should keep summary exit codes identical to full JSON.
 - Metrics: Token/output proxy: ubiquitous-language inventory output reduced from 77814 bytes to 3325 bytes with `--summary`, a 95.7% reduction.
 
+### Slice 9: Compact entrypoint-docs ergonomics output
+
+- Objective: Reduce token overhead for entrypoint documentation ergonomics review while preserving full document attribution.
+- Why this approach: `inventory_entrypoint_docs_ergonomics.py --json` emitted about 43KB in this repo, partly because every document row repeated the same review prompts.
+- Commits:
+- What changed: Added `--summary` output to the public quality script and checked-in plugin mirror; summary reports document counts, heuristic counts, bounded heuristic-document samples, and a single review prompt list while omitting full inbound link lists and per-row prompt repetition. Updated quality dogfood evidence.
+- Alternatives rejected: Did not remove full `--json` because detailed docs cleanup still needs per-document attribution and inbound link lists.
+- Targeted verification: pytest: 4 passed for test_quality_entrypoint_docs_ergonomics.py; ruff passed; check_python_lengths headroom remains 137 lines for inventory_entrypoint_docs_ergonomics.py and 660 lines for test_quality_entrypoint_docs_ergonomics.py; public script and plugin mirror compare equal.
+- Test duplication pressure: Added one focused summary contract test in the existing entrypoint-docs ergonomics test file.
+- Critique: Same-agent slice critique: summary focuses on documents with heuristics and keeps prompt context once, so it is useful for triage without hiding full document rows from `--json`.
+- Off-goal findings: Current entrypoint-doc heuristic findings remain advisory; this slice reduces first-read cost rather than deciding each documentation concern.
+- Lessons carried forward: Repeated prompt metadata belongs once in a compact summary, not duplicated across every row.
+- Metrics: Token/output proxy: entrypoint-docs ergonomics output reduced from 43255 bytes to 9786 bytes with `--summary`, a 77.4% reduction.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
