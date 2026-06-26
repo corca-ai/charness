@@ -395,6 +395,30 @@ None yet.
     passed.
   - `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` passed.
 
+### Slice 9 — Split Cautilus diagnostic artifact tests
+
+- Objective: Remove another near-limit test-file warning while keeping
+  Cautilus proof and diagnostic coverage independently scannable.
+- Finding: `tests/test_cautilus_proof_artifact.py` was at 733/800 code lines,
+  with diagnostic-bundle validator tests mixed into proof-artifact tests.
+- Change: Moved diagnostic bundle validator coverage into
+  `tests/test_cautilus_diagnostic_artifact.py`, moved shared repo/diagnostic
+  fixture helpers into `tests/cautilus_artifact_support.py`, and added a
+  boundary-bypass exemption because the split file intentionally proves the
+  diagnostic validator's CLI path grouping, `--all` mode, stderr, and
+  machine-evidence boundary.
+- Verification:
+  - `python3 -m pytest -q tests/test_cautilus_diagnostic_artifact.py tests/test_cautilus_proof_artifact.py --durations=20 --durations-min=0.01`
+    passed, 36 tests.
+  - `python3 scripts/check_python_lengths.py --repo-root . --paths tests/test_cautilus_proof_artifact.py tests/test_cautilus_diagnostic_artifact.py tests/cautilus_artifact_support.py`
+    passed.
+  - `python3 -m py_compile tests/test_cautilus_proof_artifact.py tests/test_cautilus_diagnostic_artifact.py tests/cautilus_artifact_support.py && python3 -m ruff check tests/test_cautilus_proof_artifact.py tests/test_cautilus_diagnostic_artifact.py tests/cautilus_artifact_support.py`
+    passed.
+  - `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` passed.
+  - `wc -l tests/test_cautilus_proof_artifact.py tests/test_cautilus_diagnostic_artifact.py tests/cautilus_artifact_support.py`
+    reported the original proof file at 479 lines, the new diagnostic file at
+    279 lines, and the shared helper at 95 lines.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
