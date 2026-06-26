@@ -107,9 +107,7 @@ def base_registry(repo: Path) -> dict[str, object]:
 
 
 def test_validate_public_skill_dogfood_passes_for_current_real_registry() -> None:
-    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-    assert "Validated public skill dogfood registry" in result.stdout
+    validate_registry(load_registry(ROOT), ROOT)
 
 
 def test_validate_public_skill_dogfood_checks_current_scaffold_drift(tmp_path: Path) -> None:

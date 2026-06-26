@@ -655,6 +655,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Prefer honest structural caching only when output is unchanged, and do not claim speed wins from noise-band timing.
 - Metrics: repeated import-safe/internal/lib probes now cache per target path during one inventory scan.
 
+### Slice 37: Public skill dogfood registry subprocess fanout
+
+- Objective: Remove subprocess startup from the current real public-skill dogfood registry validation test.
+- Why this approach: tests/test_public_skill_dogfood.py already imports load_registry() and validate_registry(), so the checked-in registry can be validated directly.
+- Commits:
+- What changed: Replaced the validate_public_skill_dogfood.py subprocess in the current-real-registry test with validate_registry(load_registry(ROOT), ROOT).
+- Alternatives rejected: Did not add a separate command smoke because the command wrapper is thin and suggestion CLI tests remain subprocess-based.
+- Targeted verification: ruff passed; focused public-skill dogfood/validation pytest passed 13 tests in 3.27s; current-real-registry call duration dropped from 0.81s to 0.69s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; one full real-registry subprocess removed.
+- Critique: charness-artifacts/critique/2026-06-26-public-skill-dogfood-runtime.md; low-risk same-agent critique recorded because the same validator API now runs directly.
+- Off-goal findings: most remaining duration is registry validation itself, not command startup.
+- Lessons carried forward: When the real checked-in data path is expensive, separate command-wrapper proof from data-validation proof instead of paying both every time.
+- Metrics: validate_public_skill_dogfood.py launches in tests/test_public_skill_dogfood.py: base 1, current 0 for the real registry validation path.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
