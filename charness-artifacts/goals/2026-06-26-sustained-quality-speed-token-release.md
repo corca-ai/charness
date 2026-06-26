@@ -417,6 +417,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Renderer tests should retain file-writing subprocess proof and move pure stdout rendering checks in-process.
 - Metrics: run_script calls in test_issue_57_design_study.py: base 2, current 1.
 
+### Slice 20: Narrative scenario subprocess fanout
+
+- Objective: Reduce duplicate narrative adapter subprocess calls while preserving volatile-review and init-write CLI proof.
+- Why this approach: Simple resolve/missing-adapter JSON checks can call main() directly; volatile review and init adapter remain command/write boundaries.
+- Commits:
+- What changed: Added run_narrative_resolve_adapter(...) and run_narrative_review_adapter(...), then converted two simple JSON checks to in-process main() calls.
+- Alternatives rejected: Kept volatile missing-path review and init adapter file creation as real subprocess smokes.
+- Targeted verification: ruff passed; focused pytest: 6 passed in 2.51s; boundary-bypass ratchet OK with 73 candidates / 36 clean-convertible / 33 internally-spawning / 23 likely keep-boundary and candidate keys reduced 130 to 128; run_script calls dropped 4 to 2.
+- Test duplication pressure: No tests added; two JSON checks switched execution layer. File-level candidate count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-narrative-scenario-runtime.md; low-risk same-agent critique recorded because volatile-review/init-write CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Adapter scenario tests should keep command/write proof for init and one complex review while moving simple JSON paths in-process.
+- Metrics: run_script calls in test_narrative_scenario_blocks.py: base 4, current 2.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

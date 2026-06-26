@@ -1,9 +1,32 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script, skill_package_text
+
+RESOLVE_SCRIPT = "skills/public/narrative/scripts/resolve_adapter.py"
+REVIEW_SCRIPT = "skills/public/narrative/scripts/review_adapter.py"
+_resolve_adapter = import_repo_module(ROOT / RESOLVE_SCRIPT, "skills.public.narrative.scripts.resolve_adapter")
+_review_adapter = import_repo_module(ROOT / REVIEW_SCRIPT, "skills.public.narrative.scripts.review_adapter")
+
+
+def run_narrative_resolve_adapter(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [RESOLVE_SCRIPT, *args])
+    code = _resolve_adapter.main() or 0
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
+
+
+def run_narrative_review_adapter(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [REVIEW_SCRIPT, *args])
+    code = _review_adapter.main() or 0
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def test_narrative_skill_carries_scenario_block_guidance() -> None:
@@ -50,7 +73,7 @@ def test_narrative_skill_carries_landing_rewrite_contract() -> None:
     assert "not automatically a good adapter" in adapter_contract
 
 
-def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: Path) -> None:
+def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "narrative-adapter.yaml").write_text(
@@ -81,7 +104,7 @@ def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: P
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/narrative/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    result = run_narrative_resolve_adapter(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["data"]["scenario_surfaces"] == ["Chatbot Regression", "Workflow Recovery"]
@@ -93,12 +116,12 @@ def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: P
     ]
 
 
-def test_narrative_review_adapter_reports_missing_adapter_for_first_touch_work(tmp_path: Path) -> None:
+def test_narrative_review_adapter_reports_missing_adapter_for_first_touch_work(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
 
-    result = run_script("skills/public/narrative/scripts/review_adapter.py", "--repo-root", str(repo))
+    result = run_narrative_review_adapter(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "needs-repair"
@@ -145,7 +168,7 @@ def test_narrative_review_adapter_flags_volatile_and_missing_paths(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/narrative/scripts/review_adapter.py", "--repo-root", str(repo))
+    result = run_script(REVIEW_SCRIPT, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     finding_types = {finding["type"] for finding in payload["findings"]}
