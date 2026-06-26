@@ -1,9 +1,25 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from .support import run_script
+from runtime_bootstrap import import_repo_module
+
+from .support import ROOT, run_script
+
+_render_skill_routing = import_repo_module(
+    ROOT / "skills/public/setup/scripts/render_skill_routing.py",
+    "skills.public.setup.scripts.render_skill_routing",
+)
+
+
+def run_render_skill_routing(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["render_skill_routing.py", *args])
+    returncode = _render_skill_routing.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path) -> None:
@@ -34,12 +50,14 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path) -> 
     assert "release-note style summary or chat-ready human update" not in payload["markdown"]
 
 
-def test_setup_render_skill_routing_suggests_add_block_for_mature_agents(tmp_path: Path) -> None:
+def test_setup_render_skill_routing_suggests_add_block_for_mature_agents(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "AGENTS.md").write_text("# Agents\n\nExisting policy.\n", encoding="utf-8")
 
-    result = run_script("skills/public/setup/scripts/render_skill_routing.py", "--repo-root", str(repo), "--json")
+    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--json")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -47,7 +65,9 @@ def test_setup_render_skill_routing_suggests_add_block_for_mature_agents(tmp_pat
     assert payload["recommended_action"] == "add_skill_routing_block"
 
 
-def test_setup_render_skill_routing_reviews_drifted_existing_block(tmp_path: Path) -> None:
+def test_setup_render_skill_routing_reviews_drifted_existing_block(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "AGENTS.md").write_text(
@@ -55,7 +75,7 @@ def test_setup_render_skill_routing_reviews_drifted_existing_block(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/setup/scripts/render_skill_routing.py", "--repo-root", str(repo), "--json")
+    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--json")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)

@@ -263,6 +263,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Keep real subprocess tests for validator modes that execute external probes or depend on timeout semantics.
 - Metrics: check_cli_skill_surface.py run_script calls in test_cli_skill_surface.py: base 9, current 3.
 
+### Slice 9: Setup skill-routing subprocess fanout
+
+- Objective: Reduce repeated render_skill_routing.py subprocess calls while preserving a real JSON CLI smoke.
+- Why this approach: Two AGENTS-state payload tests asserted ordinary JSON behavior through subprocesses without using a distinct CLI mode.
+- Commits:
+- What changed: Added run_render_skill_routing(monkeypatch, capsys, ...) and converted mature-AGENTS and drifted-block payload tests to in-process main() calls.
+- Alternatives rejected: Kept the default compact-mode subprocess test as the real script-bootstrap and JSON output smoke.
+- Targeted verification: ruff passed; focused pytest: 3 passed in 2.43s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 3 to 1.
+- Test duplication pressure: No tests added; two existing tests switched execution layer. File-level boundary count unchanged because retained CLI smoke remains.
+- Critique: charness-artifacts/critique/2026-06-26-setup-routing-runtime.md; low-risk same-agent critique recorded because the slice is a two-call conversion with retained CLI proof.
+- Off-goal findings: none
+- Lessons carried forward: Small fanout reductions are worth doing when they follow an already-proven retained-CLI pattern and do not add new behavior.
+- Metrics: render_skill_routing.py run_script calls in test_setup_render_skill_routing.py: base 3, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
