@@ -63,7 +63,7 @@ def test_charness_doctor_next_action_flag_prints_only_message(
     )
 
 
-def test_charness_doctor_next_action_reports_missing_source(tmp_path: Path) -> None:
+def test_charness_doctor_next_action_without_source_uses_manual_guidance(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()

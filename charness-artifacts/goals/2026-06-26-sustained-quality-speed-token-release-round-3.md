@@ -179,6 +179,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Token efficiency improvements should preserve a full-detail escape hatch and label summaries as triage output.
 - Metrics: Token/output proxy: release-only sentinel inventory output reduced 83.8% for summary use.
 
+### Slice 3: Standing sentinel coverage for release-only update boundaries
+
+- Objective: Reduce release-only blind spots by making two existing update/doctor boundaries visible to the standing-test sentinel inventory.
+- Why this approach: Fresh-eye read-only review identified a low-risk rename and a small in-process predicate test that cover real release/update behavior without running the heavy managed-install flow.
+- Commits:
+- What changed: Renamed the missing-source doctor standing test so inventory recognizes its `without_source` sentinel role; added a fast `git_has_tracked_changes` standing test proving untracked runtime files remain allowed while tracked edits block managed checkout updates.
+- Alternatives rejected: Did not duplicate the full release-only managed install path in standing tests; did not loosen release_only markers on expensive end-to-end tests.
+- Targeted verification: pytest: 2 passed, 16 deselected for non-release-only tests in test_doctor_next_action.py and test_managed_install.py; ruff passed; length headroom remains 689 lines for test_doctor_next_action.py and 307 lines for test_managed_install.py; inventory_release_only_sentinels.py --summary now reports missing_standing_sentinel_file_count 8, down from 10.
+- Test duplication pressure: Added one focused standing test in an existing CLI test file and renamed one existing test; no new test file.
+- Critique: Same-agent slice critique: the new test asserts the exact predicate that ensure_checkout uses before managed pull, so it adds confidence without pretending to cover pull/reinstall side effects.
+- Off-goal findings: Eight release_only files still lack obvious standing sentinels; remaining candidates need more design care than the two low-risk fixes here.
+- Lessons carried forward: When release-only gates are intentionally expensive, standing coverage should target the smallest safety predicate rather than replay the expensive flow.
+- Metrics: Coverage proxy: release-only sentinel missing file count reduced 20%, from 10 to 8.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

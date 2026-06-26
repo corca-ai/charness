@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib.machinery
+import importlib.util
 import json
 import os
 import subprocess
@@ -20,6 +22,15 @@ from .support import (
 )
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+
+
+def load_charness_module(module_name: str = "charness_managed_install_under_test"):
+    loader = importlib.machinery.SourceFileLoader(module_name, str(CLI))
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def init_managed_home_from_repo(
@@ -70,6 +81,31 @@ def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) 
     assert ignored.returncode == 0, ignored.stderr
     assert ".charness/bootstrap-python/bin/python" in ignored.stdout
     assert ".charness/retro/weekly-latest.json" in ignored.stdout
+
+
+def test_git_has_tracked_changes_blocks_tracked_edits_without_blocking_untracked_files(tmp_path: Path) -> None:
+    module = load_charness_module()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "config", "user.email", "codex-test@example.com"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    tracked = repo / "tracked.txt"
+    tracked.write_text("tracked\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+
+    (repo / "runtime-cache.txt").write_text("untracked runtime cache\n", encoding="utf-8")
+    assert module.git_has_tracked_changes(repo) is False
+
+    tracked.write_text("tracked\nlocal edit\n", encoding="utf-8")
+    assert module.git_has_tracked_changes(repo) is True
 
 
 @pytest.mark.release_only
