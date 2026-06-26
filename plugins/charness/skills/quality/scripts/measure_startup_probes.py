@@ -82,11 +82,19 @@ def _record_runtime_signal(repo_root: Path, label: str, elapsed_ms: int, status:
     )
 
 
+def _timeout_seconds(probe: dict[str, Any]) -> float:
+    try:
+        value = float(probe.get("timeout_seconds", DEFAULT_PROBE_TIMEOUT_SECONDS))
+    except (TypeError, ValueError):
+        return float(DEFAULT_PROBE_TIMEOUT_SECONDS)
+    return value if value > 0 else float(DEFAULT_PROBE_TIMEOUT_SECONDS)
+
+
 def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_signals: bool) -> dict[str, Any]:
     elapsed_samples: list[int] = []
     last_result: subprocess.CompletedProcess[str] | None = None
     timeout_error: subprocess.TimeoutExpired[str] | None = None
-    timeout_seconds = int(probe.get("timeout_seconds", DEFAULT_PROBE_TIMEOUT_SECONDS))
+    timeout_seconds = _timeout_seconds(probe)
     for _ in range(int(probe["samples"])):
         start_ns = time.perf_counter_ns()
         try:

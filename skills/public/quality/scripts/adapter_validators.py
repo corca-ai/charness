@@ -95,8 +95,12 @@ def startup_probes(value: Any, errors: list[str]) -> list[dict[str, Any]] | None
         if isinstance(samples, bool) or not isinstance(samples, int) or samples <= 0:
             errors.append(f"{prefix}.samples must be a positive integer")
         timeout_seconds = raw.get("timeout_seconds", DEFAULT_STARTUP_PROBE_TIMEOUT_SECONDS)
-        if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, int) or timeout_seconds <= 0:
-            errors.append(f"{prefix}.timeout_seconds must be a positive integer")
+        if (
+            isinstance(timeout_seconds, bool)
+            or not isinstance(timeout_seconds, int | float)
+            or timeout_seconds <= 0
+        ):
+            errors.append(f"{prefix}.timeout_seconds must be a positive number")
         if errors and any(message.startswith(prefix) for message in errors):
             continue
         validated.append(

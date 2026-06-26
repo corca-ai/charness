@@ -13,7 +13,7 @@ def _seed_repo(
     *,
     probe_sleep_seconds: float = 0.0,
     failing: bool = False,
-    timeout_seconds: int | None = None,
+    timeout_seconds: float | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
@@ -106,18 +106,18 @@ def test_measure_startup_probes_fails_when_command_fails(tmp_path: Path) -> None
 
 
 def test_measure_startup_probes_times_out_hanging_command(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, probe_sleep_seconds=2.0, timeout_seconds=1)
+    repo = _seed_repo(tmp_path, probe_sleep_seconds=0.2, timeout_seconds=0.05)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--json")
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert len(payload["failures"]) == 1
     assert payload["failures"][0]["status"] == "command-timeout"
-    assert payload["failures"][0]["timeout_seconds"] == 1
+    assert payload["failures"][0]["timeout_seconds"] == 0.05
     assert payload["failures"][0]["returncode"] == 124
 
 
 def test_measure_startup_probes_human_output_reports_timeout(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, probe_sleep_seconds=2.0, timeout_seconds=1)
+    repo = _seed_repo(tmp_path, probe_sleep_seconds=0.2, timeout_seconds=0.05)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing")
 
     assert result.returncode == 1

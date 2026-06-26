@@ -769,6 +769,28 @@ None yet.
   - `ruff check tests/quality_gates/test_quality_cli_side_effect_probes.py`
     passed.
 
+### Slice 25 — Allow fractional startup probe timeouts
+
+- Objective: Remove fixed one-second startup-probe timeout waits and make the
+  quality probe runner more precise for fast CI/test fixtures.
+- Finding: Two startup-probe tests used `timeout_seconds: 1` and a 2s sleeping
+  probe because the adapter validator and runner coerced timeout values to
+  positive integers. The tests therefore always waited about a second each.
+- Change: `measure_startup_probes.py` now accepts positive float timeout values
+  and `adapter_validators.py` validates `timeout_seconds` as a positive number
+  (bool excluded). The default operational timeout remains 20s. Tests now use a
+  0.05s timeout against a 0.2s sleeping fixture. Synced the plugin mirror.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_startup_probe_measure.py::test_measure_startup_probes_times_out_hanging_command tests/quality_gates/test_startup_probe_measure.py::test_measure_startup_probes_human_output_reports_timeout --durations=10 --durations-min=0.01`
+    passed; the two timeout tests now report 0.11s and 0.14s.
+  - `python3 -m pytest -q tests/quality_gates/test_startup_probe_measure.py tests/quality_gates/test_profile_and_preset_validation.py::test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor --durations=20 --durations-min=0.05`
+    passed, 6 tests.
+  - `python3 -m py_compile skills/public/quality/scripts/measure_startup_probes.py skills/public/quality/scripts/adapter_validators.py plugins/charness/skills/quality/scripts/measure_startup_probes.py plugins/charness/skills/quality/scripts/adapter_validators.py tests/quality_gates/test_startup_probe_measure.py`
+    passed.
+  - `ruff check skills/public/quality/scripts/measure_startup_probes.py skills/public/quality/scripts/adapter_validators.py plugins/charness/skills/quality/scripts/measure_startup_probes.py plugins/charness/skills/quality/scripts/adapter_validators.py tests/quality_gates/test_startup_probe_measure.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
