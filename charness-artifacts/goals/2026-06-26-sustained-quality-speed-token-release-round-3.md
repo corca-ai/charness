@@ -333,6 +333,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Fixture copy helpers should exclude durable artifacts unless a test explicitly opts into artifact behavior.
 - Metrics: Copy-size proxy: avoid copying the local 16MB `charness-artifacts` tree in coverage and seeded repo copies.
 
+### Slice 14: Compact public-spec quality inventory output
+
+- Objective: Reduce token overhead for public-spec quality review while preserving full spec attribution.
+- Why this approach: `inventory_public_spec_quality.py --json` emitted about 10KB; small compared with earlier inventories, but the wrapper was simple and public-spec first-read review now follows the summary-first policy.
+- Commits:
+- What changed: Added `--summary` output to the public quality script and checked-in plugin mirror; summary keeps rollup counts, layering recommendations/prompts, and bounded flagged-spec samples. Updated inventory dispatch to use summary-first for public-spec review and refreshed quality dogfood evidence.
+- Alternatives rejected: Did not remove full public_specs rows from `--json`; detailed spec cleanup still needs command examples, proof blocks, and per-spec attribution.
+- Targeted verification: pytest: 36 passed for test_quality_public_spec_quality.py and test_quality_skill_docs.py; ruff passed; check_python_lengths headroom remains 302 lines for inventory_public_spec_quality.py and 199 lines for test_quality_public_spec_quality.py; script and reference mirrors compare equal.
+- Test duplication pressure: Added one focused summary contract test in the existing public-spec quality test file.
+- Critique: Same-agent slice critique: summary keeps layering recommendations and flagged-spec heuristics, so first-pass review remains actionable while full rows stay available for disposition.
+- Off-goal findings: None.
+- Lessons carried forward: Once summary-first routing exists, smaller inventories should still participate when the wrapper cost is low.
+- Metrics: Token/output proxy: public-spec quality inventory output reduced from 10220 bytes to 2389 bytes with `--summary`, a 76.6% reduction.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

@@ -119,6 +119,50 @@ def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path)
     assert smoke_recommendation["target_items"] == ["tests/cli_smoke_test.py"]
 
 
+def test_inventory_public_spec_quality_summary_omits_full_spec_attribution(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs" / "specs").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / "tests" / "cli_smoke_test.py").write_text("def test_smoke():\n    pass\n", encoding="utf-8")
+    (repo / "docs" / "specs" / "current-product.spec.md").write_text(
+        "\n".join(
+            [
+                "# Current Product",
+                "",
+                "Current reader-facing claim.",
+                "Future roadmap note stays here for later.",
+                "Implementation note points at `internal/app/app_test.go` and `scripts/build_contract.py`.",
+                "",
+                "| file | matcher | pattern |",
+                "| --- | --- | --- |",
+                "| README.md | fixed | current shipped phrase |",
+                "",
+                "```bash",
+                "pytest -k cli_smoke",
+                "```",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = _run(
+        "--repo-root",
+        str(repo),
+        "--summary",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["summary_note"].startswith("summary is triage output")
+    assert "public_specs" not in payload
+    assert payload["summary"]["flagged_spec_count"] == 1
+    assert payload["flagged_specs_sample"][0]["spec_path"] == "docs/specs/current-product.spec.md"
+    assert "future_state_mixed" in payload["flagged_specs_sample"][0]["heuristics"]
+    assert "recommendations" in payload["layering"]
+
+
 def test_inventory_public_spec_quality_detects_duplicate_public_examples(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)

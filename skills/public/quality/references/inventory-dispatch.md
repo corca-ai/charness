@@ -40,7 +40,7 @@ multiple archetype schema namespaces, and the command-docs drift gate.
 - entrypoint docs:
   `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py --summary`
 - reader-facing public specs:
-  `$SKILL_DIR/scripts/inventory_public_spec_quality.py`
+  `$SKILL_DIR/scripts/inventory_public_spec_quality.py --summary`
 - rendered Markdown preview:
   `references/bootstrap-escalations.md`
 - public-spec layering:
