@@ -419,6 +419,31 @@ None yet.
     reported the original proof file at 479 lines, the new diagnostic file at
     279 lines, and the shared helper at 95 lines.
 
+### Slice 10 — Split issue closeout rung-1 floor tests
+
+- Objective: Remove another near-limit test-file warning without weakening the
+  issue closeout boundary checks.
+- Finding: `tests/quality_gates/test_issue_closeout_verifier.py` was at
+  770/800 code lines. The behavioral verdict, HOTL disposition, and AI
+  provenance floor tests were a cohesive rung-1 cluster.
+- Change: Moved the rung-1 floor tests into
+  `tests/quality_gates/test_issue_closeout_rung1_floors.py` and moved shared
+  closeout seeding/body helpers into
+  `tests/quality_gates/issue_closeout_support.py`.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_issue_closeout_verifier.py tests/quality_gates/test_issue_closeout_rung1_floors.py --durations=25 --durations-min=0.01`
+    passed, 26 tests.
+  - `python3 -m py_compile tests/quality_gates/test_issue_closeout_verifier.py tests/quality_gates/test_issue_closeout_rung1_floors.py tests/quality_gates/issue_closeout_support.py && python3 -m ruff check tests/quality_gates/test_issue_closeout_verifier.py tests/quality_gates/test_issue_closeout_rung1_floors.py tests/quality_gates/issue_closeout_support.py`
+    passed after import sorting.
+  - `python3 scripts/check_python_lengths.py --repo-root . --paths tests/quality_gates/test_issue_closeout_verifier.py tests/quality_gates/test_issue_closeout_rung1_floors.py tests/quality_gates/issue_closeout_support.py`
+    passed; `wc -l` reported the original verifier at 605 lines, the new
+    rung-1 file at 221 lines, and the support helper at 70 lines.
+  - `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` passed
+    without a new exemption.
+  - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+    now reports four advisory warn-band files, down from five before this
+    slice.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
