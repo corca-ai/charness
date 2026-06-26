@@ -10,6 +10,7 @@ from datetime import date
 from pathlib import Path
 
 import scripts.export_plugin as export_plugin_module
+import scripts.refresh_current_pointer as refresh_current_pointer_module
 from scripts.artifact_naming_lib import (
     current_artifact_filename,
     dated_artifact_filename,
@@ -408,8 +409,9 @@ def test_refresh_current_pointer_copies_record_to_regular_current(tmp_path: Path
     current = artifact_dir / "latest.md"
     current.write_text("# Quality Review\n\nOld.\n", encoding="utf-8")
 
-    dry_run = run_script(
-        "scripts/refresh_current_pointer.py",
+    dry_run = run_loaded_script_main(
+        "refresh_current_pointer.py",
+        refresh_current_pointer_module,
         "--repo-root",
         str(repo),
         "--skill-id",
@@ -423,8 +425,9 @@ def test_refresh_current_pointer_copies_record_to_regular_current(tmp_path: Path
     assert dry_payload["status"] == "planned"
     assert current.read_text(encoding="utf-8") == "# Quality Review\n\nOld.\n"
 
-    result = run_script(
-        "scripts/refresh_current_pointer.py",
+    result = run_loaded_script_main(
+        "refresh_current_pointer.py",
+        refresh_current_pointer_module,
         "--repo-root",
         str(repo),
         "--skill-id",
@@ -452,8 +455,9 @@ def test_refresh_current_pointer_repoints_existing_symlink(tmp_path: Path) -> No
     current = artifact_dir / "latest.md"
     current.symlink_to(old_record.name)
 
-    result = run_script(
-        "scripts/refresh_current_pointer.py",
+    result = run_loaded_script_main(
+        "refresh_current_pointer.py",
+        refresh_current_pointer_module,
         "--repo-root",
         str(repo),
         "--skill-id",
@@ -477,8 +481,9 @@ def test_refresh_current_pointer_blocks_current_class_records(tmp_path: Path) ->
     record = artifact_dir / "2026-04-15-find-skills.md"
     record.write_text("# Find Skills\n", encoding="utf-8")
 
-    result = run_script(
-        "scripts/refresh_current_pointer.py",
+    result = run_loaded_script_main(
+        "refresh_current_pointer.py",
+        refresh_current_pointer_module,
         "--repo-root",
         str(repo),
         "--skill-id",
@@ -544,8 +549,9 @@ def test_refresh_current_pointer_blocks_external_record_path(tmp_path: Path) -> 
     outside_record = tmp_path / "outside.md"
     outside_record.write_text("# External\n", encoding="utf-8")
 
-    result = run_script(
-        "scripts/refresh_current_pointer.py",
+    result = run_loaded_script_main(
+        "refresh_current_pointer.py",
+        refresh_current_pointer_module,
         "--repo-root",
         str(repo),
         "--skill-id",

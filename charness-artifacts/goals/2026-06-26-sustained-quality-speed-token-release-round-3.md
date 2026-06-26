@@ -908,6 +908,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Env isolation can be preserved in-process when the behavior under test is a child command lookup, not Python interpreter startup.
 - Metrics: Speed/testability proxy: removed two nested Python process starts and reduced raw candidate keys by one.
 
+### Slice 55: Run current-pointer refresh smokes in process
+
+- Objective: Remove clean `refresh_current_pointer.py` subprocesses from artifact naming tests.
+- Why this approach: The tests assert JSON payloads plus file/symlink updates; `refresh_current_pointer.main()` through the shared runner preserves argv/stdout behavior without parent process startup.
+- Commits:
+- What changed: Imported `scripts.refresh_current_pointer` and routed dry-run, execute, symlink, current-class block, and external-record block tests through `run_loaded_script_main()`.
+- Alternatives rejected: Did not convert the exported refresh command invoked from generated resolver payload because that proves consumer-facing argv works as emitted.
+- Targeted verification: pytest: `tests/quality_gates/test_artifact_naming.py` `18 passed` in 1.95s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 49 candidates, 70 candidate keys, and 5 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 47 candidates and 5 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed with advisory for the remaining handoff resolver subprocess.
+- Test duplication pressure: No new tests; converted existing smokes.
+- Critique: Same-agent slice critique: filesystem and symlink assertions remain unchanged, and the generated command subprocess remains where it matters.
+- Off-goal findings: None.
+- Lessons carried forward: Keep generated-command subprocess proof even after converting the local implementation smokes.
+- Metrics: Speed/testability proxy: removed five nested Python process starts and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
