@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 import scripts.doctor as doctor_module
+import scripts.validate_integrations as validate_integrations_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
@@ -22,7 +23,7 @@ from scripts.validate_integrations import (
 from tests.dsl import Repo
 from tests.repo_copy import clone_seeded_charness_repo
 
-from .support import ROOT, run_script, seed_control_plane_repo
+from .support import ROOT, run_loaded_script_main, run_script, seed_control_plane_repo
 
 
 def write_manifest_schema(repo: Path) -> Path:
@@ -40,7 +41,7 @@ def read_manifest(path: Path) -> dict[str, object]:
 
 
 def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> None:
-    (
+    repo = (
         Repo()
         .file(
             "integrations/tools/manifest.schema.json",
@@ -74,10 +75,16 @@ def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> 
                 }
             ),
         )
-        .run(tmp_path, "scripts/validate_integrations.py")
-        .failed(1)
-        .stderr_has("local_wrapper requires wrapper_skill_id")
+        .build(tmp_path)
     )
+    result = run_loaded_script_main(
+        "validate_integrations.py",
+        validate_integrations_module,
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 1
+    assert "local_wrapper requires wrapper_skill_id" in result.stderr
 
 
 def test_validate_integrations_requires_install_entrypoint_for_support_backed_tools(tmp_path: Path) -> None:
@@ -294,7 +301,12 @@ def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch
     manifest["checks"].pop("healthcheck")
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
-    validate = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
+    validate = run_loaded_script_main(
+        "validate_integrations.py",
+        validate_integrations_module,
+        "--repo-root",
+        str(repo),
+    )
     assert validate.returncode == 0, validate.stderr
 
     payload = inspect_manifest(repo, load_capabilities(repo)[0], write=False, skip_release_probe=True)
@@ -443,7 +455,12 @@ def test_validate_integrations_accepts_dependencies_referencing_known_tool(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_integrations.py",
+        validate_integrations_module,
+        "--repo-root",
+        str(repo),
+    )
 
     assert result.returncode == 0, result.stderr
     assert "1 declared tool dependencies" in result.stdout
@@ -460,7 +477,12 @@ def test_validate_integrations_rejects_dependencies_with_unknown_tool(tmp_path: 
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_integrations.py",
+        validate_integrations_module,
+        "--repo-root",
+        str(repo),
+    )
 
     assert result.returncode == 1
     assert "unknown tool_ids" in result.stderr

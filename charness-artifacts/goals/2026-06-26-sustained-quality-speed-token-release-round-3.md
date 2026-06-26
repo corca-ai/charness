@@ -782,6 +782,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Validator scripts with pure `main(argv)` paths can keep negative-case coverage in process when CLI wrapping is already exercised elsewhere.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw candidate keys by one.
 
+### Slice 46: Run integration validator smokes in process
+
+- Objective: Remove clean `validate_integrations.py` subprocess calls from control-plane validation tests.
+- Why this approach: These tests assert validator returncode/stdout/stderr behavior over temp manifests; a control-plane-local `run_loaded_script_main()` helper can preserve CLI-shaped evidence while avoiding Python process startup.
+- Commits:
+- What changed: Added a control-plane loaded-script runner that captures stdout/stderr, restores argv and environment, and converts exceptions to returncode 1; routed five `validate_integrations.py` smokes through it across `test_integrations_validation.py` and `test_sync_support.py`.
+- Alternatives rejected: Did not convert remaining `doctor.py`, `install_tools.py`, or `sync_support.py` subprocesses in the same files during this slice because they exercise PATH/env, command execution, or support materialization boundaries.
+- Targeted verification: pytest: `tests/control_plane/test_integrations_validation.py tests/control_plane/test_sync_support.py` `22 passed` in 4.95s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 57 candidates, 82 candidate keys, and 13 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 53 candidates and 11 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed with an advisory for the intentionally unconverted control-plane subprocesses.
+- Test duplication pressure: Added one small local helper so the control-plane tests can convert multiple validator smokes without bespoke stdout/stderr capture.
+- Critique: Same-agent slice critique: the helper restores `sys.argv` and `os.environ`, limiting cross-test leakage; the converted tests still assert the same status and text contracts.
+- Off-goal findings: None.
+- Lessons carried forward: File-count ratchets can stay flat even when raw candidate keys fall; record both so the improvement is not overstated.
+- Metrics: Speed/testability proxy: removed five nested Python script invocations and reduced raw candidate keys by two.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

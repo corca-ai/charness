@@ -4,12 +4,13 @@ import json
 import os
 from pathlib import Path
 
+import scripts.validate_integrations as validate_integrations_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
 from scripts.update_tools import update_one
 
-from .support import ROOT, run_script, seed_control_plane_repo
+from .support import ROOT, run_loaded_script_main, run_script, seed_control_plane_repo
 
 
 def write_manifest_schema(repo: Path) -> None:
@@ -256,6 +257,11 @@ def test_sync_support_rejects_upstream_skill_file_path(tmp_path: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_integrations.py",
+        validate_integrations_module,
+        "--repo-root",
+        str(repo),
+    )
     assert result.returncode == 1
     assert "must point at a skill root directory" in result.stderr
