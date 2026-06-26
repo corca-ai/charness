@@ -153,6 +153,27 @@
       "note": "small render-table comprehension family rotated after HITL report template extraction; extracting a shared HTML row helper would add coupling for little behavioral value",
       "reviewed_at": "2026-06-27",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "13741926e48b3ac1",
+      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "b56c1479ef7c3d0e",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "c4b45fc90f69c007",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

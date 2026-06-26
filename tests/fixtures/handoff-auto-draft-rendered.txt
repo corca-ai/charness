@@ -1,0 +1,91 @@
+# Achieve Goal: Do the work
+
+Status: draft
+Created: 2026-05-28
+Activation: `/goal @charness-artifacts/goals/test.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: before shaping.
+- Next action: run `/achieve @charness-artifacts/goals/test.md` to fill the Before-phase placeholders;
+  activate only after pursue-readiness passes.
+- Verification cadence: to be filled by the achieve Before-phase interview.
+- Slice review packet: to be filled by the achieve Before-phase interview.
+- History boundary: keep this frame current during the active run; move
+  completed detail to `## Slice Log`, `## Operator Decision Queue`,
+  `## Final Verification`, and `## Auto-Retro`.
+
+## Goal
+
+Do the work
+
+**Source handoff entry #7: Title**
+
+> Line one
+>
+> Line three
+
+## Non-Goals
+
+- Not a release: no plugin version bump expected.
+- Do not absorb adjacent handoff entries beyond the selected chunk.
+
+## Boundaries
+
+- In scope: `docs/handoff.md`
+- Portable per implementation-discipline: no host-specific assumption.
+- Stop conditions: name on first discovery; do not guess.
+
+## User Acceptance
+
+*To be filled by the achieve Before-phase interview.*
+
+## Agent Verification Plan
+
+*To be filled by the achieve Before-phase interview.*
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+
+## Operator Decision Queue
+
+Record decisions, confirmations, credential actions, manual proof steps, and
+external-boundary approvals discovered during the run when they do not block
+safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+
+Queue item form:
+
+- Decision: operator-only decision or confirmation needed
+- Owner: operator or named human owner
+- Why deferred: why the run did not stop immediately
+- Unblock action: exact action or answer needed
+- Revisit trigger: event, date, or proof boundary that reopens this
+
+## Slice Log
+
+## Context Sources
+
+- Source: handoff entry #7 (Title) — see [docs/handoff.md](../../docs/handoff.md).
+- Cited path: `docs/handoff.md`
+- Cited issue: #42
+
+## Interview Decisions
+
+*To be filled by the achieve Before-phase interview.*
+
+## Plan Critique Findings
+
+*To be filled by the achieve plan-critique pass.*
+
+## Off-Goal Findings
+
+## Final Verification
+
+## User Verification Instructions
+
+## Auto-Retro

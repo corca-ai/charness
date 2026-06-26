@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: Release publish sync/quality fixture extraction.
+- Current slice: Handoff auto-draft template extraction.
 - Current slice intent: continue reducing test helper prompt/template bulk by
-  moving the remaining release-publish fake sync and quality command bodies out
-  of `tests/quality_gates/release_publish_fixtures.py`.
+  moving the handoff auto-draft goal template out of Python and into a template
+  asset, then syncing the plugin export.
 - Next action: commit and push this fixture extraction, then continue discovery
   unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
@@ -72,7 +72,8 @@ accumulate.
 | 8 | Extract release publish fake CLI scripts from test fixture helper | Prompt-bulk inventory next surfaced large fake release CLI bodies in `release_publish_fixtures.py` | focused release publish tests, prompt-bulk delta, standing pytest | complete |
 | 9 | Reuse release fake git fixture for tag-history and real-host tests | Prompt-bulk inventory still surfaced a second fake git body in `test_release_publish_real_host_delta.py` | focused tag-history/real-host tests, prompt-bulk delta, standing pytest | complete |
 | 10 | Extract remaining release publish sync/quality fake scripts | `release_publish_fixtures.py` still carried inline sync and quality scripts after fake CLI extraction | focused release publish tests, prompt-bulk delta, standing pytest | complete |
-| 11 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 11 | Extract handoff auto-draft goal template from Python | Prompt-bulk inventory next surfaced `chunked_routing_auto_draft.py`; the content is a template asset rather than Python logic | focused handoff tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 12 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -332,6 +333,45 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
   - Fresh-eye review: no blocking issue found; reviewer flagged only that the
     two new fixture files must be committed with the helper change. Folded
     response: stage both new fixture files in the slice commit.
+- Slice 11 evidence:
+  - Prompt-bulk inventory after slice 10 reported 37 findings and surfaced
+    `skills/public/handoff/scripts/chunked_routing_auto_draft.py` as the next
+    large inline template candidate.
+  - Moved the auto-draft goal artifact shell to
+    `skills/public/handoff/scripts/templates/auto_draft_goal.md`; the Python
+    renderer now reads that template file and keeps the existing `.format(...)`
+    contract.
+  - Synced plugin export, adding
+    `plugins/charness/skills/handoff/scripts/templates/auto_draft_goal.md` and
+    updating the plugin mirror of `chunked_routing_auto_draft.py`.
+  - Prompt-bulk inventory after the change reported 36 findings; the handoff
+    auto-draft template no longer appears in the top sample.
+  - Length proof: `skills/public/handoff/scripts/chunked_routing_auto_draft.py`
+    moved to `162/360` code lines.
+  - Fresh-eye review: blocking closeout risk was staging hygiene for the new
+    source and plugin template files; non-blocking gap was the lack of a full
+    rendered-output golden after template extraction. Folded response: stage
+    both template files and add `tests/fixtures/handoff-auto-draft-rendered.txt`
+    plus a full-render comparison test.
+  - Dup-ratchet closeout: classified the 3 new doc duplicate families
+    (`13741926e48b3ac1`, `b56c1479ef7c3d0e`, `c4b45fc90f69c007`) as intentional
+    because the handoff auto-draft template must preserve the achieve goal
+    artifact activation/header, section skeleton, and decision-queue shape;
+    `check_dup_ratchet.py --json` then reported `status: clean`.
+  - Public-skill scenario review: `suggest_public_skill_dogfood.py --skill-id
+    handoff` returned the existing handoff consumer case, and
+    `evals/cautilus/scenarios.json` still maps `handoff` to
+    `handoff-adapter-bootstrap`; recorded the no-registry-change decision in
+    `docs/public-skill-dogfood.json` because this slice changes implementation
+    shape, not routing or adapter bootstrap behavior. Cautilus planner
+    `next_action: none`, so no evaluator run was performed.
+  - Focused proof: `py_compile`, focused `ruff check`, and the handoff
+    auto-draft/end-to-end/producer pytest bundle passed; focused pytest reported
+    `18 passed in 1.02s`.
+  - Changed-surface proof: packaging validators, markdown/doc/secret checks,
+    skill validators, public-skill validation and dogfood validators,
+    gitignore-scan hygiene, and the standing pytest runner passed; standing
+    pytest reported `3678 passed in 20.94s`.
 
 ## Context Sources
 

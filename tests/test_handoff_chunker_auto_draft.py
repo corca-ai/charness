@@ -28,6 +28,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "handoff-snapshot-2026-05-28.md"
+EXPECTED_RENDER_PATH = REPO_ROOT / "tests" / "fixtures" / "handoff-auto-draft-rendered.txt"
 LIB_PATH = (
     REPO_ROOT
     / "skills"
@@ -104,6 +105,31 @@ def test_rendered_heading_is_single_prefix(lib, chunk_from_entry_1):
     assert not body_after_prefix.startswith("Achieve Goal:")
     # The objective should be the chunk's objective_summary verbatim.
     assert body_after_prefix == chunk_from_entry_1.objective_summary.strip()
+
+
+def test_template_extraction_preserves_full_rendered_output(lib):
+    entry = lib.HandoffEntry(
+        index=7,
+        title="Title",
+        body="Line one\n\nLine three",
+        referenced_paths=("docs/handoff.md",),
+        referenced_issues=(42,),
+        referenced_skills=(),
+        boundary_tokens=("docs/handoff.md",),
+    )
+    chunk = lib.ChunkCandidate(
+        entries=(entry,),
+        label="chunk-7",
+        objective_summary="Do the work",
+    )
+
+    text = lib.render_auto_draft_artifact(
+        chunk,
+        date="2026-05-28",
+        goal_rel="charness-artifacts/goals/test.md",
+    )
+
+    assert text == EXPECTED_RENDER_PATH.read_text(encoding="utf-8")
 
 
 # check_goal_artifact contract ----------------------------------------------
