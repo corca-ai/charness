@@ -277,6 +277,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Repeated prompt metadata belongs once in a compact summary, not duplicated across every row.
 - Metrics: Token/output proxy: entrypoint-docs ergonomics output reduced from 43255 bytes to 9786 bytes with `--summary`, a 77.4% reduction.
 
+### Slice 10: Route quality inventory review summary-first
+
+- Objective: Make the compact inventory modes reachable through the public quality workflow instead of leaving them as hidden CLI flags.
+- Why this approach: Adding `--summary` flags saves little if the dispatch reference still teaches first-pass users to run full payloads.
+- Commits:
+- What changed: Updated `references/inventory-dispatch.md` in the public quality skill and checked-in plugin mirror to use `--summary` for compact-supported inventories and to state that summaries are triage, not complete evidence.
+- Alternatives rejected: Did not replace full `--json` guidance everywhere; detailed disposition still needs full attribution when a summary sample earns follow-up.
+- Targeted verification: pytest: 22 passed for test_quality_skill_docs.py; validate_skills.py passed; check_doc_links.py passed; public reference and plugin mirror compare equal.
+- Test duplication pressure: No new tests; existing skill-doc coverage verifies the reference remains reachable.
+- Critique: Same-agent slice critique: summary-first routing changes review ergonomics, not evidence semantics, because the reference explicitly requires `--json` for full attribution/disposition.
+- Off-goal findings: None.
+- Lessons carried forward: A token-efficiency feature should update the operator path that causes token spend, not only the script flag.
+- Metrics: Adoption proxy: seven inventory dispatch bullets now point at `--summary` for first-read review.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
