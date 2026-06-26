@@ -193,6 +193,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Before push/release in a timeboxed goal, inspect Timebox, Activation time, Closeout reserve, and Done-early policy; if reserve has not started, continue safe local work.
 - Metrics: Release was interrupted after publication; no further external actions allowed until final closeout.
 
+### Slice 4: Record metric window subprocess fanout
+
+- Objective: Reduce one duplicate record_metric_window.py subprocess success test while preserving real CLI proof.
+- Why this approach: The file still had two success-path subprocess tests; one can call main() in-process while leaving success and argparse boundary smokes.
+- Commits:
+- What changed: Converted the Claude-session success case to run_record_metric_window(monkeypatch, capsys, ...); added quality and critique artifacts.
+- Alternatives rejected: Did not convert the remaining success/error subprocess cases because they prove real CLI success and argparse session-source behavior.
+- Targeted verification: ruff passed; focused pytest: 13 passed in 2.70s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 4 to 3.
+- Test duplication pressure: No tests added; one existing test switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-record-metric-window-runtime.md; fresh-eye reviewer 019f016f-56de-78c2-8250-88c7d1c006c1 found no issues.
+- Off-goal findings: none
+- Lessons carried forward: Prefer tiny conversions when a file mixes duplicate behavior assertions with unique CLI/argparse proof.
+- Metrics: record_metric_window.py run_script calls in test_record_metric_window.py: base 4, current 3.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

@@ -2,18 +2,33 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from runtime_bootstrap import import_repo_module
 from scripts import host_log_probe_lib
 
 from .support import run_script
 
+ROOT = Path(__file__).resolve().parents[2]
 _LIB = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/goal_artifact_lib.py"
 _spec = importlib.util.spec_from_file_location("goal_artifact_lib", _LIB)
 gal = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gal)
+_record_metric_window = import_repo_module(
+    ROOT / "skills" / "public" / "achieve" / "scripts" / "record_metric_window.py",
+    "skills.public.achieve.scripts.record_metric_window",
+)
+
+
+def run_record_metric_window(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["record_metric_window.py", *args])
+    returncode = _record_metric_window.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def _goal_text(window: str = "") -> str:
@@ -162,14 +177,15 @@ def test_record_metric_window_cli_updates_artifact(tmp_path: Path) -> None:
     assert "Host metric window:" in goal.read_text(encoding="utf-8")
 
 
-def test_record_metric_window_accepts_claude_session_source(tmp_path) -> None:
+def test_record_metric_window_accepts_claude_session_source(tmp_path, monkeypatch, capsys) -> None:
     session = tmp_path / "claude-session.jsonl"
     session.write_text("{}\n", encoding="utf-8")
     goal = tmp_path / "goal.md"
     goal.write_text(_goal_text(), encoding="utf-8")
 
-    result = run_script(
-        "skills/public/achieve/scripts/record_metric_window.py",
+    result = run_record_metric_window(
+        monkeypatch,
+        capsys,
         "--goal-path",
         str(goal),
         "--started-at",
