@@ -1,12 +1,27 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from .support import run_script
+from runtime_bootstrap import import_repo_module
+
+SCRIPT = "skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py"
+_inventory_entrypoint_docs = import_repo_module(
+    Path(__file__).resolve().parents[2] / SCRIPT,
+    "skills.public.quality.scripts.inventory_entrypoint_docs_ergonomics",
+)
 
 
-def test_inventory_entrypoint_docs_ergonomics_reports_advisory_flags(tmp_path: Path) -> None:
+def run_entrypoint_docs(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["inventory_entrypoint_docs_ergonomics.py", *args])
+    returncode = _inventory_entrypoint_docs.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
+
+
+def test_inventory_entrypoint_docs_ergonomics_reports_advisory_flags(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     lines = [
@@ -35,8 +50,9 @@ def test_inventory_entrypoint_docs_ergonomics_reports_advisory_flags(tmp_path: P
     lines.extend(f"filler line {index}" for index in range(40))
     (repo / "AGENTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py",
+    result = run_entrypoint_docs(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--max-core-lines",
@@ -58,7 +74,7 @@ def test_inventory_entrypoint_docs_ergonomics_reports_advisory_flags(tmp_path: P
     assert doc["review_prompts"]
 
 
-def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_path: Path) -> None:
+def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     lines = [
@@ -73,8 +89,9 @@ def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_pa
     lines.extend(f"filler line {index}" for index in range(40))
     (repo / "AGENTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py",
+    result = run_entrypoint_docs(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--max-core-lines",
@@ -95,7 +112,7 @@ def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_pa
     assert payload["review_prompts"]
 
 
-def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_path: Path) -> None:
+def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "AGENTS.md").write_text(
@@ -115,8 +132,9 @@ def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py",
+    result = run_entrypoint_docs(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--json",
@@ -129,7 +147,7 @@ def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_
     assert "host_instruction_runbook_pressure" in doc["heuristics"]
 
 
-def test_inventory_entrypoint_docs_ergonomics_reports_inbound_and_audience_signals(tmp_path: Path) -> None:
+def test_inventory_entrypoint_docs_ergonomics_reports_inbound_and_audience_signals(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     docs = repo / "docs"
     docs.mkdir(parents=True)
@@ -140,8 +158,9 @@ def test_inventory_entrypoint_docs_ergonomics_reports_inbound_and_audience_signa
     (docs / "guide.md").write_text("# Guide\n", encoding="utf-8")
     (docs / "token-efficiency.md").write_text("# Token Efficiency\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py",
+    result = run_entrypoint_docs(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--json",

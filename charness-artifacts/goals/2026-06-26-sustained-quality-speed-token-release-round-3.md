@@ -291,6 +291,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: A token-efficiency feature should update the operator path that causes token spend, not only the script flag.
 - Metrics: Adoption proxy: seven inventory dispatch bullets now point at `--summary` for first-read review.
 
+### Slice 11: Run entrypoint-docs inventory tests in-process
+
+- Objective: Reduce focused test startup cost for the entrypoint-docs ergonomics inventory after adding its summary mode.
+- Why this approach: The tests were spawning the inventory script for every assertion even though the entrypoint is import-safe and already follows the in-process pattern used by neighboring quality inventory tests.
+- Commits:
+- What changed: Loaded `inventory_entrypoint_docs_ergonomics.py` once with `import_repo_module`, added an in-process runner that patches argv and captures stdout/stderr, and converted four tests away from `run_script` subprocess calls.
+- Alternatives rejected: Did not change the inventory implementation or assertions; the tests still exercise the public `main()` path.
+- Targeted verification: pytest: 4 passed for test_quality_entrypoint_docs_ergonomics.py; ruff passed; run_slice_closeout.py passed; boundary-bypass inventory summary reports candidate_count 76 after this conversion.
+- Test duplication pressure: Reused the established in-process entrypoint pattern from adjacent tests; no new test file.
+- Critique: Same-agent slice critique: in-process execution still drives argparse/main output, so it improves startup cost without bypassing the CLI entrypoint contract these tests assert.
+- Off-goal findings: Boundary-bypass inventory still has many candidates; larger conversion should be planned by cluster to avoid low-value churn.
+- Lessons carried forward: After adding a new CLI mode, make its test proof cheap enough to stay in the standing loop.
+- Metrics: Runtime proxy: focused entrypoint-docs ergonomics test file observed at 0.61s before conversion and 0.38s after conversion in this session.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
