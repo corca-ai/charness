@@ -291,6 +291,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Seed scripts should retain subprocess proof for write/refusal behavior, but dry-run and force-path payload assertions can use main().
 - Metrics: seed_usage_episodes_adapter.py run_script calls in test_setup_seed_usage_episodes.py: base 5, current 3.
 
+### Slice 11: Dependency seed subprocess fanout
+
+- Objective: Reduce repeated seed_dependencies.py subprocess calls while preserving write/refusal/error CLI proof.
+- Why this approach: Recommendation seeding and force-overwrite payload checks can call main() directly; initial write, overwrite refusal, and mutually-exclusive input remain useful CLI boundaries.
+- Commits:
+- What changed: Added run_seed_dependencies(monkeypatch, capsys, ...) with SystemExit handling and converted recommendation and force-overwrite behavior to in-process main() calls.
+- Alternatives rejected: Kept explicit write, refusal without --force, and explicit-plus-recommendation rejection as real subprocess tests.
+- Targeted verification: ruff passed; focused pytest: 5 passed in 3.04s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 7 to 5.
+- Test duplication pressure: No tests added; two behavior checks switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-dependencies-seed-runtime.md; low-risk same-agent critique recorded because write/refusal/error CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: For seed-script tests, distinguish setup subprocess calls from the behavior under assertion before claiming a large runtime win.
+- Metrics: seed_dependencies.py run_script calls in test_setup_seed_dependencies.py: base 7, current 5.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
