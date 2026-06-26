@@ -852,6 +852,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Keep real process boundaries where the behavior under test is process ownership or subprocess command dispatch; inline the parent script when it only packages the result.
 - Metrics: Speed/testability proxy: removed one nested `doctor.py` process start and reduced ratchet clean-convertible from 8 to 7.
 
+### Slice 51: Run packaging export smokes in process
+
+- Objective: Remove `export_plugin.py` process startup from packaging validation tests.
+- Why this approach: These tests exercise export tree materialization and version override behavior; `export_plugin.main()` through the shared runner preserves argv/stdout behavior without launching another interpreter.
+- Commits:
+- What changed: Imported `scripts.export_plugin` and routed codex, claude, and version-override export calls in `test_packaging_validation.py` through `run_loaded_script_main()`.
+- Alternatives rejected: Did not convert `sync_root_plugin_manifests.py` or `validate_packaging.py` in this slice because those are mixed with release-only git/worktree and install-surface validation boundaries.
+- Targeted verification: pytest: `tests/quality_gates/test_packaging_validation.py` `12 passed` in 5.55s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 52 candidates, 75 candidate keys, and 8 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 49 candidates and 7 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed with advisory for remaining packaging sync/validation subprocesses.
+- Test duplication pressure: No new tests; reused the shared loaded-script runner.
+- Critique: Same-agent slice critique: export side effects and JSON stdout are still asserted; only interpreter startup was removed.
+- Off-goal findings: None.
+- Lessons carried forward: Script-under-test cases can still use in-process `main()` when the contract is argv/stdout plus filesystem output, not shell isolation.
+- Metrics: Speed/testability proxy: removed three nested `export_plugin.py` process starts and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

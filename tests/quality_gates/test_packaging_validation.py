@@ -10,7 +10,9 @@ from pathlib import Path
 
 import pytest
 
+import scripts.export_plugin as export_plugin_module
 from tests.repo_copy import clone_seeded_charness_repo
+from tests.script_main import run_loaded_script_main
 
 from .support import EVAL_REGISTRY, ROOT, run_script
 
@@ -349,8 +351,9 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     codex_root = tmp_path / "codex-export"
     claude_root = tmp_path / "claude-export"
 
-    codex_result = run_script(
-        "scripts/export_plugin.py",
+    codex_result = run_loaded_script_main(
+        "export_plugin.py",
+        export_plugin_module,
         "--repo-root",
         str(ROOT),
         "--host",
@@ -370,8 +373,9 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
         == "./plugins/charness"
     )
 
-    claude_result = run_script(
-        "scripts/export_plugin.py",
+    claude_result = run_loaded_script_main(
+        "export_plugin.py",
+        export_plugin_module,
         "--repo-root",
         str(ROOT),
         "--host",
@@ -439,8 +443,9 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
 
 def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
     output_root = tmp_path / "codex-export"
-    result = run_script(
-        "scripts/export_plugin.py",
+    result = run_loaded_script_main(
+        "export_plugin.py",
+        export_plugin_module,
         "--repo-root",
         str(ROOT),
         "--host",
