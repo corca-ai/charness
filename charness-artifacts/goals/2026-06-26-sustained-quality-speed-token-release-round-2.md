@@ -582,6 +582,26 @@ None yet.
     `inventory_lint_ignores.py --json`, and from 3.84s to 1.53s for
     `validate_inventory_consumption_declaration.py --repo-root .`.
 
+### Slice 17 — Reuse doctor package-manager prefix probes
+
+- Objective: Reduce CLI plus bundled-skill surface probe runtime without
+  weakening the readiness evidence.
+- Finding: `scripts/check_cli_skill_surface.py --run-probes` spent most of its
+  time in the configured doctor readiness probe. `scripts/doctor.py --json
+  --skip-release-probe` recomputed package-manager prefixes for every selected
+  capability, including repeated `npm prefix -g` and `go env GOPATH` calls.
+- Change: `scripts/doctor.py` now computes package-manager prefixes once for a
+  batch doctor run and passes them into `detect_install_provenance()`. Single
+  `inspect_manifest()` callers still get the previous standalone behavior.
+- Verification:
+  - `python3 -m pytest -q tests/control_plane/test_integrations_validation.py::test_doctor_reuses_package_manager_prefix_probe_for_batch tests/control_plane/test_integrations_validation.py::test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli tests/control_plane/test_sync_support.py::test_doctor_sync_and_update_work_on_seed_repo --durations=20 --durations-min=0.01`
+    passed, 3 tests.
+  - `python3 -m py_compile scripts/doctor.py scripts/install_provenance_lib.py tests/control_plane/test_integrations_validation.py && python3 -m ruff check scripts/doctor.py scripts/install_provenance_lib.py tests/control_plane/test_integrations_validation.py`
+    passed.
+  - Timing improved from 3.33s to 1.60s for
+    `scripts/doctor.py --json --skip-release-probe`, and from 3.43s to 1.95s
+    for `scripts/check_cli_skill_surface.py --run-probes --json`.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

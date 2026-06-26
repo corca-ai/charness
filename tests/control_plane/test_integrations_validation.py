@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import sys
 from pathlib import Path
 
 import pytest
 
+import scripts.doctor as doctor_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
@@ -245,6 +247,36 @@ def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> Non
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "missing"
     assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
+
+
+def test_doctor_reuses_package_manager_prefix_probe_for_batch(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
+    manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
+    second_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    second_manifest["tool_id"] = "demo-tool-two"
+    (repo / "integrations" / "tools" / "demo-tool-two.json").write_text(
+        json.dumps(second_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    calls = 0
+
+    def fake_prefixes() -> dict[str, str]:
+        nonlocal calls
+        calls += 1
+        return {}
+
+    monkeypatch.setattr(doctor_module, "detect_package_manager_prefixes", fake_prefixes)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe"],
+    )
+
+    assert doctor_module.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert {item["tool_id"] for item in payload} == {"demo-tool", "demo-tool-two"}
+    assert calls == 1
 
 
 def test_defuddle_manifest_missing_binary_is_advisory() -> None:

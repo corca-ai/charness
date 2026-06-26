@@ -82,7 +82,11 @@ def _path_matches_manager(binary_path: Path, resolved_path: Path, manager: str, 
     return False
 
 
-def detect_install_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
+def detect_install_provenance(
+    manifest: dict[str, Any],
+    *,
+    available_prefixes: dict[str, str] | None = None,
+) -> dict[str, Any]:
     binary_name = detect_binary_name(manifest)
     if binary_name is None:
         return {
@@ -98,7 +102,7 @@ def detect_install_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
             "update_supported": False,
         }
 
-    available_prefixes = detect_package_manager_prefixes()
+    available_prefixes = available_prefixes if available_prefixes is not None else detect_package_manager_prefixes()
     binary_path_string = shutil.which(binary_name)
     if binary_path_string is None:
         return {

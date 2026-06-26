@@ -25,6 +25,7 @@ healthcheck_attention_suffix = _scripts_control_plane_lifecycle_lib_module.healt
 print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
+detect_package_manager_prefixes = _scripts_install_provenance_lib_module.detect_package_manager_prefixes
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
 probe_release = _scripts_upstream_release_lib_module.probe_release
 upgrade_advisory = _scripts_upstream_release_lib_module.upgrade_advisory
@@ -89,6 +90,7 @@ def inspect_manifest(
     write: bool,
     skip_release_probe: bool,
     plugin_root: Path | None = None,
+    available_prefixes: dict[str, str] | None = None,
 ) -> dict[str, object]:
     state = inspect_capability_state(repo_root, manifest, plugin_root=plugin_root)
     disabled = state.get("doctor_status") == "disabled"
@@ -106,7 +108,7 @@ def inspect_manifest(
             "update_supported": False,
         }
         if disabled
-        else detect_install_provenance(manifest)
+        else detect_install_provenance(manifest, available_prefixes=available_prefixes)
     )
     provenance_result["checked_at"] = now_iso()
     payload = {
@@ -155,6 +157,7 @@ def main() -> int:
     plugin_root = args.plugin_root.resolve() if args.plugin_root else None
     capabilities = load_capabilities(repo_root)
     selected = [capability for capability in capabilities if not args.tool_id or capability["tool_id"] in args.tool_id]
+    available_prefixes = detect_package_manager_prefixes() if selected else {}
     results = [
         inspect_manifest(
             repo_root,
@@ -162,6 +165,7 @@ def main() -> int:
             write=args.write_locks,
             skip_release_probe=args.skip_release_probe,
             plugin_root=plugin_root,
+            available_prefixes=available_prefixes,
         )
         for capability in selected
     ]
