@@ -5,7 +5,13 @@ import shlex
 import subprocess
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
 ROOT = Path(__file__).resolve().parents[1]
+_scaffold_debug = import_repo_module(
+    ROOT / "skills" / "public" / "debug" / "scripts" / "scaffold_debug_artifact.py",
+    "skills.public.debug.scripts.scaffold_debug_artifact",
+)
 
 
 def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -26,14 +32,7 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/debug/scripts/scaffold_debug_artifact.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _scaffold_debug.payload_for(repo, title=None)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
     assert payload["artifact_role"] == "current_pointer"
     assert payload["write_artifact_path"] == "charness-artifacts/debug/latest.md"
@@ -83,15 +82,7 @@ def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path
     target.write_text("# Demo Debug\n", encoding="utf-8")
     (debug_dir / "latest.md").symlink_to(target.name)
 
-    result = run_script(
-        "skills/public/debug/scripts/scaffold_debug_artifact.py",
-        "--repo-root",
-        str(repo),
-        "--json",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _scaffold_debug.payload_for(repo, title=None)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
     assert payload["write_artifact_path"] == "charness-artifacts/debug/debug-2026-05-06-demo.md"
     assert payload["write_artifact_role"] == "current_pointer_target"

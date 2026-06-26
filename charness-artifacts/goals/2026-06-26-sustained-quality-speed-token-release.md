@@ -683,6 +683,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Finish partial main-helper migrations when all remaining cases share the same command wrapper.
 - Metrics: render_skill_routing.py launches in test_setup_render_skill_routing.py: base 1, current 0.
 
+### Slice 39: Debug scaffold subprocess fanout
+
+- Objective: Reduce local debug scaffold command launches while preserving exported package proof.
+- Why this approach: scaffold_debug_artifact.py exposes payload_for(), so local payload assertions can call the real builder directly.
+- Commits:
+- What changed: Imported the debug scaffold module and converted the source-tree local scaffold payload tests to payload_for().
+- Alternatives rejected: Kept exported plugin scaffold command proof and validator command execution as subprocesses.
+- Targeted verification: ruff passed; focused debug scaffold pytest passed 3 tests in 2.77s after a 2.83s pre-change sample; boundary-bypass ratchet improved to 72 candidates / 34 clean-convertible / 33 internally-spawning / 23 likely keep-boundary with candidate keys reduced to 122.
+- Test duplication pressure: No tests added; two local scaffold subprocess launches removed.
+- Critique: charness-artifacts/critique/2026-06-26-debug-scaffold-runtime.md; low-risk same-agent critique recorded because exported command proof remains.
+- Off-goal findings: exported plugin proof dominates this small file's runtime.
+- Lessons carried forward: Local scaffold payload shape can use payload_for(), while exported consumer-package tests should stay command-backed.
+- Metrics: local scaffold_debug_artifact.py launches in tests/test_debug_scaffold.py: base 2, current 0.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
