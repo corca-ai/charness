@@ -10,6 +10,7 @@ import pytest
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import make_fake_claude
+from .test_managed_install import sync_root_plugin_manifests_inprocess
 
 PROBE_SKILL_ID = "update-probe-extra"
 pytestmark = pytest.mark.release_only
@@ -84,14 +85,8 @@ Use this only to confirm that a newly added public skill became visible after
     packaging["codex"]["manifest"]["version"] = "0.0.1-update-probe"
     packaging["claude"]["manifest"]["version"] = "0.0.1-update-probe"
     packaging_path.write_text(json.dumps(packaging, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    sync_result = subprocess.run(
-        ["python3", "scripts/sync_root_plugin_manifests.py", "--repo-root", "."],
-        cwd=source_repo,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert sync_result.returncode == 0, sync_result.stderr
+    sync_payload = sync_root_plugin_manifests_inprocess(source_repo)
+    assert sync_payload["package_id"] == "charness"
     subprocess.run(
         [
             "git",

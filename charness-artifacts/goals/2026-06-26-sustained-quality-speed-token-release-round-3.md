@@ -235,6 +235,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When closeout flags a changed test file for import-safe script subprocess, prefer an in-process helper unless the test asserts CLI exit/stderr semantics.
 - Metrics: Quality proxy: boundary-bypass closeout advisory for test_managed_install.py eliminated.
 
+### Slice 7: Reuse in-process sync proof for update propagation
+
+- Objective: Remove another redundant sync_root_plugin_manifests subprocess boundary from release-only update propagation coverage.
+- Why this approach: test_update_propagation.py used the same import-safe sync script boundary as slice 6 before committing a modified source repo; the new helper preserves the mutation and JSON assertion without spawning a second Python process.
+- Commits:
+- What changed: Reused `sync_root_plugin_manifests_inprocess` from test_managed_install.py and replaced the subprocess call in test_update_propagation.py.
+- Alternatives rejected: Did not weaken the installed CLI update subprocess itself because that is the behavior boundary the test is meant to prove.
+- Targeted verification: pytest: 1 passed for test_installed_cli_update_propagates_new_skill_into_exported_plugin_root; check_boundary_bypass_ratchet.py passed and candidate count dropped from 71 before slice 6 to 70 after this slice; ruff passed; check_python_lengths headroom remains 680 lines for test_update_propagation.py.
+- Test duplication pressure: Reused an existing helper instead of duplicating loader/cwd/argv plumbing in a second test file.
+- Critique: Same-agent slice critique: only the setup sync step moved in-process; the release/update propagation proof still invokes the installed CLI and validates the exported host-visible plugin root.
+- Off-goal findings: Some sync_root_plugin_manifests subprocess uses remain in packaging validation where CLI semantics may be the intended boundary.
+- Lessons carried forward: Shared in-process helpers are preferable when multiple release-only tests need the same setup mutation before proving a different external behavior.
+- Metrics: Quality/runtime proxy: boundary-bypass inventory candidate count reduced by one additional import-safe script subprocess.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
