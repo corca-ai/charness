@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-26",
-  "source_artifact_count": 261,
-  "candidate_count": 1222,
+  "source_artifact_count": 262,
+  "candidate_count": 1230,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -635,6 +635,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:59e0be4b1013",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for `charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release.md`: a roughly three-hour quality continuation run covering bug fixes, test runtime, script runtime, token efficiency, and final publication as `v0.56.2`.",
+      "normalized_key": "closeout retro for charness artifacts goals 2026 06 26 sustained quality speed token release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:87e7366e428a",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.56.1`.",
@@ -695,6 +715,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9d36f538bf2a",
+      "kind": "next_improvement",
+      "lesson": "Before any final release/push in a timeboxed goal, explicitly check activation time, current time, closeout reserve, and done-early policy.",
+      "normalized_key": "before any final release push in a timeboxed goal explicitly check activation time current",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:8e05bb9f0e14",
       "kind": "next_improvement",
       "lesson": "Before any push/release inside a timeboxed goal, check the goal artifact's `Timebox`, `Activation time`, `Closeout reserve`, and `Done-early policy`; if the closeout reserve has not started and safe local slices remain, continue local work.",
@@ -735,6 +775,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a00894575e78",
+      "kind": "next_improvement",
+      "lesson": "For long goals, record the metric window before the first closeout host-log probe, not after seeing an `absent` window.",
+      "normalized_key": "for long goals record the metric window before the first closeout host log probe",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4d2bf4cfb03c",
+      "kind": "next_improvement",
+      "lesson": "Prefer shared concurrency helpers before adding a second ordered parallel subprocess collector.",
+      "normalized_key": "prefer shared concurrency helpers before adding a second ordered parallel subprocess collector",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9f4954cffb51",
       "kind": "next_improvement",
       "lesson": "Record this retro in the active goal's slice log/lessons so future continuations do not treat `v0.56.1` as the end of the goal.",
@@ -751,86 +831,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
           "date": "2026-06-26",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:046ec585bd1a",
-      "kind": "repeat_trap",
-      "lesson": "Release execution rotated installed skill cache paths mid-session, causing at least one stale skill path read and adding avoidable recovery work.",
-      "normalized_key": "release execution rotated installed skill cache paths mid session causing at least one stale",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
-          "date": "2026-06-26",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:9c3aefa6d600",
-      "kind": "repeat_trap",
-      "lesson": "The workflow treated \"broad gate passed\" as \"timebox final phase reached\", even though the artifact had an explicit done-early policy to continue the next safe improvement.",
-      "normalized_key": "the workflow treated broad gate passed as timebox final phase reached even though the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
-          "date": "2026-06-26",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:1b14c1d71a36",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.55.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 55 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-25-v0-55-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-25",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-0-release-auto-retro.md",
-          "date": "2026-06-25",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:b02bba9fdef9",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.55.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 55 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md",
-      "latest_source_date": "2026-06-25",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md",
-          "date": "2026-06-25",
-          "section": "Context"
         }
       ]
     }
@@ -1457,6 +1457,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:59e0be4b1013",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for `charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release.md`: a roughly three-hour quality continuation run covering bug fixes, test runtime, script runtime, token efficiency, and final publication as `v0.56.2`.",
+      "normalized_key": "closeout retro for charness artifacts goals 2026 06 26 sustained quality speed token release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:87e7366e428a",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.56.1`.",
@@ -1517,6 +1537,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9d36f538bf2a",
+      "kind": "next_improvement",
+      "lesson": "Before any final release/push in a timeboxed goal, explicitly check activation time, current time, closeout reserve, and done-early policy.",
+      "normalized_key": "before any final release push in a timeboxed goal explicitly check activation time current",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:8e05bb9f0e14",
       "kind": "next_improvement",
       "lesson": "Before any push/release inside a timeboxed goal, check the goal artifact's `Timebox`, `Activation time`, `Closeout reserve`, and `Done-early policy`; if the closeout reserve has not started and safe local slices remain, continue local work.",
@@ -1557,6 +1597,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a00894575e78",
+      "kind": "next_improvement",
+      "lesson": "For long goals, record the metric window before the first closeout host-log probe, not after seeing an `absent` window.",
+      "normalized_key": "for long goals record the metric window before the first closeout host log probe",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4d2bf4cfb03c",
+      "kind": "next_improvement",
+      "lesson": "Prefer shared concurrency helpers before adding a second ordered parallel subprocess collector.",
+      "normalized_key": "prefer shared concurrency helpers before adding a second ordered parallel subprocess collector",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9f4954cffb51",
       "kind": "next_improvement",
       "lesson": "Record this retro in the active goal's slice log/lessons so future continuations do not treat `v0.56.1` as the end of the goal.",
@@ -1577,6 +1657,46 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:be5eb5a0ce70",
+      "kind": "repeat_trap",
+      "lesson": "Host metrics were initially probed without a goal window, which would have reported whole-session pressure as goal-scoped pressure. Recording the metric window before the final probe fixed the attribution.",
+      "normalized_key": "host metrics were initially probed without a goal window which would have reported whole",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a90829796e13",
+      "kind": "repeat_trap",
+      "lesson": "Many small subprocess-conversion slices repeated the same proof pattern. That was low-risk but generated heavy artifact and commit churn; the later shared helper slice was the higher-leverage form of the same work.",
+      "normalized_key": "many small subprocess conversion slices repeated the same proof pattern that was low risk",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:046ec585bd1a",
       "kind": "repeat_trap",
       "lesson": "Release execution rotated installed skill cache paths mid-session, causing at least one stale skill path read and adding avoidable recovery work.",
@@ -1591,6 +1711,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fc8e9303cf38",
+      "kind": "repeat_trap",
+      "lesson": "The first parallelization implementation duplicated a collection shape in two scripts and tripped `dup-ratchet`; extracting `run_processes_in_order()` was the right repair.",
+      "normalized_key": "the first parallelization implementation duplicated a collection shape in two scripts and tripped dup",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:38a3cec60f74",
+      "kind": "repeat_trap",
+      "lesson": "The first release lane started too early. The goal file already contained the timebox and closeout reserve, but the release phase was treated as available after broad proof instead of after the closeout window opened.",
+      "normalized_key": "the first release lane started too early the goal file already contained the timebox",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
           "date": "2026-06-26",
           "section": "Waste"
         }

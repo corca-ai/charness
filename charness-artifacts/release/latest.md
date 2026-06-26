@@ -82,18 +82,18 @@ Advanced `charness` toward release `0.56.2` (tag `v0.56.2`) through the repo-own
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- Configured release real-host verification is satisfied for this release by
+  the post-publish install refresh and fresh-checkout probes recorded below.
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
-- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
-- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
-- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
-- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
-- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
-- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
+- Release-time real-host proof was required for this slice and is recorded in
+  `## Install Refresh` and `## Fresh Checkout Probes`.
+- `charness update` refreshed the maintainer/dev machine from `0.56.1` to
+  `0.56.2` after publication.
+- Fresh checkout probes passed for the command surfaces listed below.
+- Nose real-host proof is not a release blocker for this slice; the release
+  delta did not change the nose integration contract.
 
 ## Review Proof
 

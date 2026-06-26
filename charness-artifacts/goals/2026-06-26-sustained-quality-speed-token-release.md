@@ -1,6 +1,6 @@
 # Achieve Goal: Sustained quality speed token release
 
-Status: active
+Status: complete
 Created: 2026-06-26
 Activation: `/goal @charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release.md`
 Timebox: 3h
@@ -12,13 +12,11 @@ This file is the active living goal scratchpad for the current run.
 
 ## Active Operating Frame
 
-- Current slice: local-only quality continuation after premature release timing
-  repair.
-- Current slice intent: continue safe reversible quality/runtime/token-efficiency
-  improvements without further push/release actions until the timebox closeout
-  phase.
-- Next action: inspect local quality/runtime candidates, choose one bounded
-  non-release slice, run focused verification, critique, and commit it.
+- Current slice: closed after final release/push verification.
+- Current slice intent: complete the timeboxed quality/runtime/token-efficiency
+  run with honest release proof and closeout evidence.
+- Next action: none — goal complete; future work should start from handoff or a
+  new goal.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -93,26 +91,14 @@ Run a timeboxed implementation-continuation goal for roughly three hours: keep i
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Reduce more nested subprocess fanout while preserving real CLI smokes | Boundary inventory still shows 84 candidates / 144 keys / 47 convertible after prior improvements | Focused pytest, boundary inventory delta, critique artifact, commit | in-progress |
-| 2 | Address the next highest signal quality/runtime/token issue found by inventories | Timebox mode continues improvement if slice 1 completes safely | Focused proof, quality artifact update, commit | queued |
-| 3 | Final release and push bundle | User explicitly requested final push/release | Read-only quality gate, release proof, push output, clean status | queued |
+| 1 | Reduce more nested subprocess fanout while preserving real CLI smokes | Boundary inventory still shows 84 candidates / 144 keys / 47 convertible after prior improvements | Focused pytest, boundary inventory delta, critique artifact, commit | complete |
+| 2 | Address the next highest signal quality/runtime/token issue found by inventories | Timebox mode continues improvement if slice 1 completes safely | Focused proof, quality artifact update, commit | complete |
+| 3 | Final release and push bundle | User explicitly requested final push/release | Read-only quality gate, release proof, push output, clean status | complete |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Current queue: none — the user already authorized the final push/release lane;
-credentials or release-tool refusal will be recorded here if encountered.
+- none — the user already authorized the final push/release lane, release
+  credentials worked, and no operator-only closeout action remains.
 
 ## Coordination Cues
 
@@ -140,13 +126,11 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
-Routing: `find-skills` recommendation for the task returned `quality` for the
-quality/runtime work and `release` for final publication.
+Routing: find-skills selected impl and quality for the code/test mutation and validation slices; find-skills selected release for final publication.
 Gather: n/a — no external URL/source context was provided for this goal.
-Release: v0.56.1 was published prematurely before the intended final phase;
-further push/release actions are paused until closeout. Evidence lives in
-`charness-artifacts/release/latest.md` and
-`charness-artifacts/retro/2026-06-26-premature-release-timing.md`.
+Release: `release` published `v0.56.2` in the final closeout lane; evidence
+lives in `charness-artifacts/release/latest.md`, tag `v0.56.2`, and
+GitHub release `https://github.com/corca-ai/charness/releases/tag/v0.56.2`.
 Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 
 ## Slice Log
@@ -875,16 +859,38 @@ None yet.
 
 ## Final Verification
 
-Closeout pending until the final release/push phase.
+Host metric window: started_at=2026-06-26T09:34:18+09:00 completed_at=2026-06-26T12:13:29+09:00 codex_session_file=/home/hwidong/.codex/sessions/2026/06/26/rollout-2026-06-26T06-35-08-019f00b5-4a5f-74d1-9b77-064e5850b2e3.jsonl
+
+Retro: charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md
+Host log probe: charness-artifacts/probe/2026-06-26-sustained-quality-speed-token-release-host-log.json
+Disposition review: charness-artifacts/critique/2026-06-26-sustained-quality-speed-token-release-disposition-review.md
+
+- `./scripts/run-quality.sh --read-only` passed with 79 passed / 0 failed,
+  total 41.0s, before release publication.
+- `./scripts/run-quality.sh --read-only --release` passed with 79 passed / 0
+  failed, total 67.0s, before release publication.
+- Release helper published `v0.56.2`, pushed tag `v0.56.2`, and wrote release
+  proof to `charness-artifacts/release/latest.md`.
+- GitHub release verification: `gh release view v0.56.2` returned
+  `isDraft=false`, `isPrerelease=false`, `publishedAt=2026-06-26T03:12:04Z`,
+  URL `https://github.com/corca-ai/charness/releases/tag/v0.56.2`.
+- Remote verification: `origin/main` is
+  `e7ad86681f6467fc906105562ef76a575abec2ca`; tag `v0.56.2` is
+  `a47365cb4a3039a467149060f82a465cb9ff8174`.
+- Install refresh proof: `charness update` completed and moved the installed
+  package from `0.56.1` to `0.56.2`; fresh checkout probes passed.
+- Current-pointer freshness and the release critique artifact validator passed
+  after publication.
 
 ## User Verification Instructions
 
 - Run `./scripts/run-quality.sh --read-only`.
-- Inspect `git log --oneline origin/main..HEAD` before push, or the pushed tag /
-  release evidence after publication.
+- Inspect `git log --oneline --decorate --max-count=8`.
+- Inspect `gh release view v0.56.2 --json tagName,name,isDraft,isPrerelease,publishedAt,url`.
 
 ## Auto-Retro
 
-Retro pending final closeout.
-Retro dispositions: pending final closeout.
-Structural follow-up: pending final closeout.
+Retro dispositions: accepted-risk: no new global gate was added for release timing because a deterministic check would likely over-fire on operator-approved early closeout language; this run records the miss, waits for closeout reserve, and publishes `v0.56.2` with release-skill proof plus public verification.
+Retro dispositions: applied: the duplicated ordered-parallel subprocess pattern was replaced with `scripts/subprocess_guard.py::run_processes_in_order()` and focused helper coverage.
+Retro dispositions: applied: the closeout host-log probe is bound to a recorded goal metric window and saved under `charness-artifacts/probe/`.
+Structural follow-up: none — the release-timing lesson is recorded as accepted risk rather than a structural gate; shared subprocess helper and windowed host-log proof are committed in this run.
