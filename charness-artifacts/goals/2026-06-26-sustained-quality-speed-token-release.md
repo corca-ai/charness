@@ -249,6 +249,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: For validators with `main()` plus a thin `__main__` wrapper, in-process tests must reproduce the wrapper's exception-to-exit-code behavior when checking failure paths.
 - Metrics: check_doc_links.py run_script calls in test_check_doc_links.py: base 18, current 3.
 
+### Slice 8: CLI skill surface validator subprocess fanout
+
+- Objective: Reduce repeated check_cli_skill_surface.py subprocess calls while preserving real probe-execution proof.
+- Why this approach: Six static adapter-rule tests asserted JSON payload behavior through subprocesses without needing external command execution.
+- Commits:
+- What changed: Added run_cli_skill_surface(monkeypatch, capsys, ...) and converted six static-rule tests to in-process main() calls.
+- Alternatives rejected: Kept basic JSON invocation and both --run-probes tests as real subprocesses because they cover script bootstrap, external command execution, and timeout behavior.
+- Targeted verification: ruff passed; focused pytest: 9 passed in 2.69s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 9 to 3.
+- Test duplication pressure: No tests added; six existing tests switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-cli-skill-surface-runtime.md; fresh-eye reviewer 019f017d-a9c5-7f11-96a1-1d3e2f1ab86c found no blocking issue and confirmed retained subprocess proof for bootstrap, --run-probes success, and timeout behavior.
+- Off-goal findings: none
+- Lessons carried forward: Keep real subprocess tests for validator modes that execute external probes or depend on timeout semantics.
+- Metrics: check_cli_skill_surface.py run_script calls in test_cli_skill_surface.py: base 9, current 3.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

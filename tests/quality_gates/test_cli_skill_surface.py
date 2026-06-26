@@ -2,9 +2,25 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from .support import run_script, write_executable
+from runtime_bootstrap import import_repo_module
+
+from .support import ROOT, run_script, write_executable
+
+_check_cli_skill_surface = import_repo_module(
+    ROOT / "scripts/check_cli_skill_surface.py",
+    "scripts.check_cli_skill_surface",
+)
+
+
+def run_cli_skill_surface(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["check_cli_skill_surface.py", *args])
+    returncode = _check_cli_skill_surface.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def seed_repo(tmp_path: Path, *, adapter_body: str) -> Path:
@@ -37,10 +53,10 @@ def test_cli_skill_surface_is_not_applicable_without_product_combo_or_inferred_s
     assert json.loads(result.stdout)["status"] == "not_applicable"
 
 
-def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path: Path) -> None:
+def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path, adapter_body="version: 1\nproduct_surfaces: []\n")
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
 
     payload = json.loads(result.stdout)
     assert result.returncode == 1
@@ -50,12 +66,14 @@ def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path:
     assert "cli_skill_surface_probe_commands is empty" in "\n".join(payload["adapter_weaknesses"])
 
 
-def test_cli_skill_surface_blocks_declared_combo_without_binary_delegation(tmp_path: Path) -> None:
+def test_cli_skill_surface_blocks_declared_combo_without_binary_delegation(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="version: 1\nproduct_surfaces:\n- installable_cli\n- bundled_skill\n",
     )
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     payload = json.loads(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "blocked"
@@ -118,7 +136,7 @@ def test_cli_skill_surface_reports_probe_timeout(tmp_path: Path) -> None:
     assert "timed out after 0.1s" in payload["probe_results"][0]["stderr_preview"]
 
 
-def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: Path) -> None:
+def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -137,14 +155,14 @@ def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: 
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     payload = json.loads(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "blocked"
     assert "Unsafe CLI plus skill probe `agent-browser open https://example.com`" in "\n".join(payload["blockers"])
 
 
-def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path: Path) -> None:
+def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -164,7 +182,7 @@ def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path:
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     payload = json.loads(result.stdout)
     assert result.returncode == 1
     blockers = "\n".join(payload["blockers"])
@@ -172,7 +190,7 @@ def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path:
     assert "bash -c 'agent-browser screenshot /tmp/page.png'" in blockers
 
 
-def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path: Path) -> None:
+def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -192,7 +210,7 @@ def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path:
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
 
     payload = json.loads(result.stdout)
     assert result.returncode == 0, result.stderr
@@ -200,7 +218,7 @@ def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path:
     assert "cli_skill_surface_skill_paths is empty" in "\n".join(payload["adapter_weaknesses"])
 
 
-def test_cli_skill_surface_skips_irrelevant_release_change(tmp_path: Path) -> None:
+def test_cli_skill_surface_skips_irrelevant_release_change(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -215,8 +233,9 @@ def test_cli_skill_surface_skips_irrelevant_release_change(tmp_path: Path) -> No
             ]
         ),
     )
-    result = run_script(
-        "scripts/check_cli_skill_surface.py",
+    result = run_cli_skill_surface(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--changed-path",
