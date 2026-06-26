@@ -431,6 +431,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Inventory scripts with full row payloads should offer compact machine-readable summaries, not just human text.
 - Metrics: Token/output proxy: boundary-bypass full JSON was 35165 bytes and summary JSON was 6443 bytes, an 81.7% reduction.
 
+### Slice 21: Standing sentinel for update human summary
+
+- Objective: Reduce release-only blind spots around `charness update all` human output without duplicating the full installed CLI flow.
+- Why this approach: The existing E2E still proves progress lines and installed-tool integration, but the `VERSION: None` and tool-summary formatting contract is produced by `print_update_human_summary()` and can be checked in-process.
+- Commits:
+- What changed: Split `test_update_output.py` from module-level release-only to function-level release-only on the full installed update flow, then added a standing unit for `print_update_human_summary()` covering omitted `None` versions, scope, and sorted tool status output.
+- Alternatives rejected: Did not demote the full `update all` test; it clones a repo, installs a managed home, and exercises fake external tools.
+- Targeted verification: pytest: standing subset `1 passed, 1 deselected` in 0.28s; release-only subset `1 passed, 1 deselected` in 12.27s; `check_test_repo_copy_invariants.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: Added one focused unit test that preserves the E2E's user-visible summary invariant without its fixture cost.
+- Critique: Same-agent slice critique: this sentinel proves formatting only; it does not prove external tool update behavior or progress sequencing, which remain in the release-only E2E.
+- Off-goal findings: Release-only sentinel inventory still reports 2 files without obvious standing sentinels.
+- Lessons carried forward: Human output regressions often have a pure formatter underneath; cover that in standing tests and leave one E2E for wiring.
+- Metrics: Coverage proxy: missing standing-sentinel file count reduced from 3 to 2; standing test count increased from 118 to 119.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

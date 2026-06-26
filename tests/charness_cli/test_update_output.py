@@ -16,12 +16,11 @@ from .support import (
     make_release_fixture,
     make_support_sync_fixture,
 )
-from .test_managed_install import init_managed_home_from_repo
+from .test_managed_install import init_managed_home_from_repo, load_charness_module
 from .tool_fakes import make_fake_cautilus, make_fake_nose
 
-pytestmark = pytest.mark.release_only
 
-
+@pytest.mark.release_only
 def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -73,3 +72,34 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert "agent-browser=updated" in update_result.stdout
     assert "cautilus=manual" in update_result.stdout
     assert "nose=updated healthcheck=not-configured" in update_result.stdout
+
+
+def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) -> None:
+    module = load_charness_module("charness_update_output_unit_under_test")
+
+    module.print_update_human_summary(
+        {
+            "package_id": "charness",
+            "checkout": {"pulled": False, "repo_root": "/tmp/charness"},
+            "scope": "all",
+            "completed_actions": ["external_tools_updated"],
+            "tool_update": {
+                "results": {
+                    "cautilus": {"update": {"status": "manual"}},
+                    "agent-browser": {"update": {"status": "updated"}},
+                    "nose": {
+                        "doctor": {
+                            "doctor_status": "updated",
+                            "healthcheck": {"status": "not-configured"},
+                        }
+                    },
+                }
+            },
+        }
+    )
+
+    output = capsys.readouterr().out
+    assert "VERSION: None" not in output
+    assert "-> None" not in output
+    assert "SCOPE: all" in output
+    assert "TOOLS: agent-browser=updated, cautilus=manual, nose=updated healthcheck=not-configured" in output
