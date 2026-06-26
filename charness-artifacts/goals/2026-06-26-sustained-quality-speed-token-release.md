@@ -207,6 +207,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Prefer tiny conversions when a file mixes duplicate behavior assertions with unique CLI/argparse proof.
 - Metrics: record_metric_window.py run_script calls in test_record_metric_window.py: base 4, current 3.
 
+### Slice 5: Retro host log probe subprocess fanout
+
+- Objective: Reduce repeated probe_host_logs.py subprocess calls while preserving representative real CLI proof.
+- Why this approach: The host-log probe tests paid subprocess startup for payload/behavior assertions even though probe_host_logs.py exposes an import-safe main() seam.
+- Commits:
+- What changed: Added run_probe_host_logs(monkeypatch, capsys, ...) and converted six invalid/empty/payload behavior tests to in-process main() calls.
+- Alternatives rejected: Did not convert the remaining subprocess tests because they prove real script bootstrap and important option families: --home, --repo-root/--goal-path, and --claude-session-file.
+- Targeted verification: ruff passed; focused pytest: 17 passed in 2.65s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 9 to 3.
+- Test duplication pressure: No tests added; six existing tests switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-retro-host-log-probe-runtime.md; fresh-eye reviewer 019f0173-450d-7fc0-bc2e-9cdc55de4774 found no issues.
+- Off-goal findings: Startup-probe timeout tests remain a risky conversion candidate because real subprocess timeout semantics are the behavior under test.
+- Lessons carried forward: Keep one real subprocess path for each important option family before converting repeated payload assertions to in-process main() calls.
+- Metrics: probe_host_logs.py run_script calls in test_retro_host_log_probe.py: base 9, current 3.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

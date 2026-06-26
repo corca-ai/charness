@@ -1,11 +1,26 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
+from runtime_bootstrap import import_repo_module
 from scripts import host_log_probe_lib
 
-from .support import run_script
+from .support import ROOT, run_script
+
+_probe_host_logs = import_repo_module(
+    ROOT / "skills/public/retro/scripts/probe_host_logs.py",
+    "skills.public.retro.scripts.probe_host_logs",
+)
+
+
+def run_probe_host_logs(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["probe_host_logs.py", *args])
+    returncode = _probe_host_logs.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: Path) -> None:
@@ -179,7 +194,7 @@ def test_host_log_probe_reads_goal_metric_window(tmp_path: Path) -> None:
     assert scoped["window_filter"]["excluded_before"] == 1
 
 
-def test_host_log_probe_rejects_goal_window_without_session_file(tmp_path: Path) -> None:
+def test_host_log_probe_rejects_goal_window_without_session_file(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     goal = tmp_path / "goal.md"
     goal.write_text(
@@ -187,8 +202,9 @@ def test_host_log_probe_rejects_goal_window_without_session_file(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/probe_host_logs.py",
+    result = run_probe_host_logs(
+        monkeypatch,
+        capsys,
         "--home",
         str(home),
         "--repo-root",
@@ -205,7 +221,9 @@ def test_host_log_probe_rejects_goal_window_without_session_file(tmp_path: Path)
     assert "goal_window_audit" not in payload["hosts"]["claude"]
 
 
-def test_host_log_probe_rejects_goal_window_with_missing_session_file(tmp_path: Path) -> None:
+def test_host_log_probe_rejects_goal_window_with_missing_session_file(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     home = tmp_path / "home"
     goal = tmp_path / "goal.md"
     goal.write_text(
@@ -214,8 +232,9 @@ def test_host_log_probe_rejects_goal_window_with_missing_session_file(tmp_path: 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/probe_host_logs.py",
+    result = run_probe_host_logs(
+        monkeypatch,
+        capsys,
         "--home",
         str(home),
         "--repo-root",
@@ -231,7 +250,7 @@ def test_host_log_probe_rejects_goal_window_with_missing_session_file(tmp_path: 
     assert "goal_window_audit" not in payload["hosts"]["codex"]
 
 
-def test_host_log_probe_rejects_goal_window_with_invalid_timestamp(tmp_path: Path) -> None:
+def test_host_log_probe_rejects_goal_window_with_invalid_timestamp(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     session_file = tmp_path / "rollout.jsonl"
     session_file.write_text("{}\n", encoding="utf-8")
@@ -241,8 +260,9 @@ def test_host_log_probe_rejects_goal_window_with_invalid_timestamp(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/probe_host_logs.py",
+    result = run_probe_host_logs(
+        monkeypatch,
+        capsys,
         "--home",
         str(home),
         "--repo-root",
@@ -298,11 +318,11 @@ def test_goal_window_session_path_requires_string_value(tmp_path: Path) -> None:
     ) is None
 
 
-def test_host_log_probe_degrades_honestly_when_logs_are_missing(tmp_path: Path) -> None:
+def test_host_log_probe_degrades_honestly_when_logs_are_missing(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     home.mkdir()
 
-    result = run_script("skills/public/retro/scripts/probe_host_logs.py", "--home", str(home))
+    result = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
@@ -344,14 +364,14 @@ def _claude_session_lines() -> str:
     )
 
 
-def test_host_log_probe_emits_claude_single_session_audit(tmp_path: Path) -> None:
+def test_host_log_probe_emits_claude_single_session_audit(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     project = home / ".claude" / "projects" / "demo-project"
     project.mkdir(parents=True)
     session = project / "current.jsonl"
     session.write_text(_claude_session_lines(), encoding="utf-8")
 
-    result = run_script("skills/public/retro/scripts/probe_host_logs.py", "--home", str(home))
+    result = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
@@ -362,7 +382,7 @@ def test_host_log_probe_emits_claude_single_session_audit(tmp_path: Path) -> Non
     assert audit["last_event_at"] == "2026-06-10T02:00:00Z"
 
 
-def test_host_log_probe_scopes_goal_window_to_claude_session(tmp_path: Path) -> None:
+def test_host_log_probe_scopes_goal_window_to_claude_session(tmp_path: Path, monkeypatch, capsys) -> None:
     home = tmp_path / "home"
     project = home / ".claude" / "projects" / "demo-project"
     project.mkdir(parents=True)
@@ -384,8 +404,9 @@ def test_host_log_probe_scopes_goal_window_to_claude_session(tmp_path: Path) -> 
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/probe_host_logs.py",
+    result = run_probe_host_logs(
+        monkeypatch,
+        capsys,
         "--home",
         str(home),
         "--repo-root",
