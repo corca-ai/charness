@@ -7,6 +7,7 @@ from pathlib import Path
 from types import ModuleType
 
 from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES
+from scripts.validate_quality_closeout_contract import validate_quality_closeout_contract
 
 from .support import ROOT, run_script
 
@@ -653,8 +654,7 @@ def test_quality_skill_discloses_advisory_and_prompt_asset_root_boundary() -> No
     assert "`prompt_asset_roots: []` only means no canonical asset root is declared" in dispatch
     assert "must not suppress inline prompt/content inventory" in prompt_policy
 
-    result = run_script("scripts/validate_quality_closeout_contract.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
+    validate_quality_closeout_contract(ROOT)
 
 
 def test_current_cautilus_guidance_uses_eval_surface() -> None:

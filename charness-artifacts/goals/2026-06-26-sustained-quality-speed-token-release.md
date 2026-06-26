@@ -543,6 +543,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Extract script payload builders when tests need repeated pure assertions, but keep package/export command proof at the actual boundary.
 - Metrics: direct resolve_artifact_path.py launches in converted artifact-naming tests: base 3, current 0.
 
+### Slice 29: Quality closeout contract validator subprocess fanout
+
+- Objective: Remove an unnecessary validate_quality_closeout_contract.py subprocess from docs-and-misc policy tests.
+- Why this approach: The test is asserting validator behavior, and the validator is already exposed as validate_quality_closeout_contract().
+- Commits:
+- What changed: Imported validate_quality_closeout_contract() directly in test_docs_and_misc.py and replaced the run_script call with the direct validator call.
+- Alternatives rejected: Left release, narrative, bump-version, and packaging subprocess tests unchanged because those are closer to command/package boundary proof.
+- Targeted verification: ruff passed; focused docs-and-misc pytest passed 30 tests in 3.08s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary and candidate keys reduced from 125 to 124.
+- Test duplication pressure: No tests added; one duplicated command launch converted to direct validator behavior.
+- Critique: charness-artifacts/critique/2026-06-26-quality-closeout-contract-runtime.md; low-risk same-agent critique recorded because this is a direct validator call and command-heavy release tests remain untouched.
+- Off-goal findings: none
+- Lessons carried forward: In mixed documentation suites, convert only the pure validator checks and leave release/package subprocess proof at the boundary.
+- Metrics: validate_quality_closeout_contract.py launches in test_docs_and_misc.py: base 1, current 0.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
