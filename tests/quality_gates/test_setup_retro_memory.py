@@ -3,14 +3,21 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import ROOT, run_script
+from tests.script_loader import load_script_module
+
+from .support import ROOT, run_loaded_script_main
+
+SEED_RETRO_MEMORY = load_script_module(
+    "tests.quality_gates.setup_seed_retro_memory",
+    ROOT / "skills/public/setup/scripts/seed_retro_memory.py",
+)
 
 
 def test_setup_seed_retro_memory_writes_adapter_and_digest(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script("skills/public/setup/scripts/seed_retro_memory.py", "--repo-root", str(repo))
+    result = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["created"] == {"adapter": True, "summary": True, "gitignore": True}
@@ -31,7 +38,7 @@ def test_setup_seed_retro_memory_preserves_existing_gitignore(tmp_path: Path) ->
     repo.mkdir()
     (repo / ".gitignore").write_text("node_modules/\n.charness/retro/\n", encoding="utf-8")
 
-    result = run_script("skills/public/setup/scripts/seed_retro_memory.py", "--repo-root", str(repo))
+    result = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 

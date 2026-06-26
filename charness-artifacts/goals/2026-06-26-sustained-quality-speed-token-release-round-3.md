@@ -684,6 +684,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When process boundaries are intentional, record them in the ratchet exemption file instead of leaving repeat advisory noise.
 - Metrics: Speed/testability proxy: removed repeated inspect subprocesses from policy/source-guard tests, reduced ratcheted clean-convertible count from 20 to 17, and reduced raw candidate keys from 96 to 94.
 
+### Slice 39: Run setup retro seed smokes in process
+
+- Objective: Remove process startup from setup retro-memory seed tests.
+- Why this approach: `seed_retro_memory.py` is a pure parser/filesystem/JSON command; the shared loaded-script runner preserves stdout and returncode behavior without a subprocess.
+- Commits:
+- What changed: Loaded `seed_retro_memory.py` as a module and converted the adapter/digest creation and existing-gitignore preservation tests to `run_loaded_script_main()`.
+- Alternatives rejected: Did not add lower-level library calls because the tests intentionally cover the script's CLI output shape.
+- Targeted verification: pytest: `tests/quality_gates/test_setup_retro_memory.py` `3 passed` in 0.33s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 59 candidates, 93 candidate keys, and 18 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 55 candidates and 16 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; reused the shared loaded-script helper from Slice 38.
+- Critique: Same-agent slice critique: the test still asserts created files and JSON payload; only interpreter startup proof is removed.
+- Off-goal findings: None.
+- Lessons carried forward: The shared loaded-script runner is paying off immediately for setup script smokes.
+- Metrics: Speed/testability proxy: removed two nested Python script invocations and removed `test_setup_retro_memory.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
