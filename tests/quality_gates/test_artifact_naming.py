@@ -9,6 +9,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+import scripts.export_plugin as export_plugin_module
 from scripts.artifact_naming_lib import (
     current_artifact_filename,
     dated_artifact_filename,
@@ -16,6 +17,7 @@ from scripts.artifact_naming_lib import (
     slugify,
 )
 from scripts.resolve_artifact_path import payload_for as resolve_artifact_payload_for
+from tests.script_main import run_loaded_script_main
 
 from .support import ROOT, run_script
 
@@ -563,8 +565,9 @@ def test_refresh_current_pointer_blocks_external_record_path(tmp_path: Path) -> 
 
 def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path: Path) -> None:
     export_root = tmp_path / "export"
-    export_result = run_script(
-        "scripts/export_plugin.py",
+    export_result = run_loaded_script_main(
+        "export_plugin.py",
+        export_plugin_module,
         "--repo-root",
         str(ROOT),
         "--host",

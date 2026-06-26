@@ -810,6 +810,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Export setup can run in process while preserving separate-process proof for the generated consumer-facing commands.
 - Metrics: Speed/testability proxy: removed three nested `export_plugin.py` process starts, reduced ratchet clean-convertible from 11 to 8, and reduced raw candidate keys from 82 to 79.
 
+### Slice 48: Run artifact-naming export setup in process
+
+- Objective: Remove the clean `export_plugin.py` subprocess from the exported artifact resolver test.
+- Why this approach: The test's important proof is that the exported resolver and refresh command work from the consumer repo; the export setup itself can call `export_plugin.main()` through the shared loaded-script runner.
+- Commits:
+- What changed: Imported `scripts.export_plugin` and `run_loaded_script_main()` in `test_artifact_naming.py`, then routed the export setup through the shared in-process runner.
+- Alternatives rejected: Did not convert `refresh_current_pointer.py` or the exported resolver subprocesses in this file because they prove generated command argv and consumer-repo execution.
+- Targeted verification: pytest: `tests/quality_gates/test_artifact_naming.py` `18 passed` in 2.08s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 54 candidates, 78 candidate keys, and 10 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 50 candidates and 8 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed with advisory for intentionally unconverted refresh/resolver subprocesses.
+- Test duplication pressure: No new helper; reused the shared loaded-script runner from Slice 47.
+- Critique: Same-agent slice critique: consumer-facing subprocess proof remains intact, so this only removes incidental export setup process startup.
+- Off-goal findings: None.
+- Lessons carried forward: Keep exported/generated command execution as a process boundary even when the setup command can be in-process.
+- Metrics: Speed/testability proxy: removed one nested `export_plugin.py` process start and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
