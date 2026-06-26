@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from runtime_bootstrap import import_repo_module
 
-from .support import ROOT, run_script
+from .support import ROOT
 
 _render_skill_routing = import_repo_module(
     ROOT / "skills/public/setup/scripts/render_skill_routing.py",
@@ -22,10 +22,10 @@ def run_render_skill_routing(monkeypatch, capsys, *args: str) -> SimpleNamespace
     return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
-def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path) -> None:
+def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    result = run_script("skills/public/setup/scripts/render_skill_routing.py", "--repo-root", str(repo), "--json")
+    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["recommended_action"] == "create_agents_with_skill_routing"

@@ -669,6 +669,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: When the real checked-in data path is expensive, separate command-wrapper proof from data-validation proof instead of paying both every time.
 - Metrics: validate_public_skill_dogfood.py launches in tests/test_public_skill_dogfood.py: base 1, current 0 for the real registry validation path.
 
+### Slice 38: Setup skill-routing subprocess fanout
+
+- Objective: Remove the last render_skill_routing.py subprocess in setup routing tests.
+- Why this approach: test_setup_render_skill_routing.py already had a run_render_skill_routing() main() helper covering argv and stdout capture.
+- Commits:
+- What changed: Converted the default compact-mode rendering test to the existing helper and removed the now-unused run_script import.
+- Alternatives rejected: Kept seed_retro_memory.py tests as subprocesses because they write adapter, summary, and gitignore files.
+- Targeted verification: ruff passed; focused setup render/retro pytest passed 6 tests in 2.44s; boundary-bypass ratchet improved to 72 candidates / 34 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; render_skill_routing.py subprocess launches in test_setup_render_skill_routing.py dropped to zero.
+- Critique: charness-artifacts/critique/2026-06-26-setup-skill-routing-runtime.md; low-risk same-agent critique recorded because helper still exercises main().
+- Off-goal findings: none
+- Lessons carried forward: Finish partial main-helper migrations when all remaining cases share the same command wrapper.
+- Metrics: render_skill_routing.py launches in test_setup_render_skill_routing.py: base 1, current 0.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
