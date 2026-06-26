@@ -726,6 +726,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Prefer direct `main()` for validator wrapper JSON tests once importability is already covered elsewhere.
 - Metrics: Speed/testability proxy: removed three nested Python script invocations and removed `test_skill_ergonomics_gate.py` from the clean-convertible file list.
 
+### Slice 42: Run mutation score summary smoke in process
+
+- Objective: Remove the clean `check_mutation_score.py` subprocess from mutation-testing quality tests.
+- Why this approach: The test asserts summary-file contents and nonzero status for survived mutants; calling `check_mutation_score.main()` through the shared loaded-script runner preserves that contract.
+- Commits:
+- What changed: Imported `scripts.check_mutation_score`, routed the survivor-details summary test through `run_loaded_script_main()`, and left other mutation/propose workflow subprocesses untouched.
+- Alternatives rejected: Did not convert propose/run-cosmic-ray subprocesses because they model broader workflow or command execution boundaries.
+- Targeted verification: pytest: `tests/quality_gates/test_quality_mutation_testing.py` `41 passed` in 1.27s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 57 candidates, 90 candidate keys, and 15 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 53 candidates and 13 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing summary smoke.
+- Critique: Same-agent slice critique: summary file content and returncode 1 still prove the behavior that matters here, while process startup was incidental.
+- Off-goal findings: None.
+- Lessons carried forward: In mixed workflow files, target only the script classified clean and leave broader subprocess workflows alone.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

@@ -19,6 +19,7 @@ from textwrap import dedent
 
 import pytest
 
+from scripts import check_mutation_score
 from scripts.check_mutation_score import (
     iter_dump_records,
     summarize_survived_mutations,
@@ -34,6 +35,7 @@ from scripts.quality_adapter_lib import (
     validate_quality_adapter_data,
 )
 from scripts.quality_policy_defaults import DEFAULT_MUTATION_TESTING
+from tests.quality_gates.support import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -624,19 +626,13 @@ def test_check_mutation_score_writes_survivor_details(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        "check_mutation_score.py",
+        check_mutation_score,
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
     )
 
     assert result.returncode == 1
