@@ -311,6 +311,12 @@ None yet.
   - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary | wc -c`
     reported 12201 bytes, compared with the earlier full `--json` measurement
     of 96643 bytes.
+- Public-skill dogfood decision: `quality` routing, durable artifact behavior,
+  required primer reading, structural review packet, and gate-packet contract
+  are unchanged; only the planner-recommended evidence packet switches from
+  full JSON to the existing compact summary. `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
+  confirmed the current `quality` consumer contract already covers planner
+  gate-packet behavior, so no dogfood scenario change is needed.
 
 ## Final Verification
 
