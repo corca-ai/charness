@@ -28,6 +28,7 @@ def _load_preflight():
 
 
 _POST_CREATE_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_post_create.py"
+_RUNTIME_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_runtime.py"
 
 
 def _load_post_create():
@@ -36,6 +37,21 @@ def _load_post_create():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _load_runtime():
+    spec = importlib.util.spec_from_file_location("publish_release_runtime_under_test", _RUNTIME_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _failure_payload(stderr: str) -> dict:
+    start = "BEGIN publish_release_failure_payload"
+    end = "END publish_release_failure_payload"
+    assert start in stderr and end in stderr, stderr
+    return json.loads(stderr.split(start, 1)[1].split(end, 1)[0].strip())
 
 
 def test_publish_release_cli_direct_loader_context_without_sys_modules() -> None:
@@ -121,6 +137,27 @@ def test_publish_auto_runs_declared_install_refresh_end_to_end(tmp_path: Path) -
     assert "Command: `charness update`" in artifact_text
     assert "## Release Runtime" in artifact_text
     assert "`quality_command`:" in artifact_text
+
+
+def test_release_runtime_timed_records_success_and_failure_paths() -> None:
+    runtime = _load_runtime()
+    payload: dict[str, object] = {}
+
+    assert runtime.timed(payload, "success", lambda: "ok") == "ok"
+
+    def fail() -> None:
+        raise RuntimeError("boom")
+
+    try:
+        runtime.timed(payload, "failure", fail)
+    except RuntimeError as exc:
+        assert str(exc) == "boom"
+    else:
+        raise AssertionError("expected RuntimeError")
+
+    entries = payload["release_runtime"]
+    assert [entry["label"] for entry in entries] == ["success", "failure"]
+    assert all(entry["elapsed_seconds"] >= 0 for entry in entries)
 
 
 def test_post_publish_install_refresh_records_failure_without_raising() -> None:
@@ -477,6 +514,11 @@ def test_resume_aborts_before_push_when_revalidation_fails(tmp_path: Path) -> No
     assert not any(entry[:1] == ["push"] for entry in git_log), f"resume must not push when re-validation fails: {git_log}"
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8")) if (tmp_path / "gh-log.json").exists() else []
     assert not any(entry[:2] == ["release", "create"] for entry in gh_log), gh_log
+    payload = _failure_payload(result.stderr)
+    assert payload["release_failure"]["status"] == "failed"
+    runtime_labels = {entry["label"] for entry in payload["release_runtime"]}
+    assert "quality_command" in runtime_labels
+    assert "push_create_verify_release" not in runtime_labels
 
 
 def test_resume_refuses_when_no_partial_state(tmp_path: Path) -> None:

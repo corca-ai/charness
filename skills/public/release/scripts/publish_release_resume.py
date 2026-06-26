@@ -15,15 +15,14 @@ The resume flow reuses the CLI module's already-bound helpers (passed in as
 from __future__ import annotations
 
 import json
-import time
+import runpy
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
-
-def _record_runtime(payload: dict[str, Any], label: str, start: float) -> None:
-    payload.setdefault("release_runtime", []).append(
-        {"label": label, "elapsed_seconds": round(time.perf_counter() - start, 3)}
-    )
+_runtime = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_runtime.py")))
+)
 
 
 def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
@@ -120,18 +119,14 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # adapter/real-host preflights on this unchanged worktree, so resume re-runs the
     # gates that can flake at push time, not those one-time file-delta checks.
     cli.preflight_release_issues(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run)
-    review_start = time.perf_counter()
-    payload["requested_review_gate"] = cli.run_requested_review_gate(repo_root)
-    _record_runtime(payload, "requested_review_gate", review_start)
-    surface_start = time.perf_counter()
-    cli.run_cli_skill_surface_gate(repo_root, adapter_data)
-    _record_runtime(payload, "cli_skill_surface_gate", surface_start)
-    quality_start = time.perf_counter()
-    cli.run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
-    _record_runtime(payload, "quality_command", quality_start)
-    fresh_start = time.perf_counter()
-    fresh_checkout_payload = cli.run_fresh_checkout_probes(repo_root)
-    _record_runtime(payload, "fresh_checkout_probes_resume", fresh_start)
+    payload["requested_review_gate"] = _runtime.timed(
+        payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
+    )
+    _runtime.timed(payload, "cli_skill_surface_gate", lambda: cli.run_cli_skill_surface_gate(repo_root, adapter_data))
+    _runtime.timed(payload, "quality_command", lambda: cli.run_shell(str(adapter_data["quality_command"]), cwd=repo_root))
+    fresh_checkout_payload = _runtime.timed(
+        payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root)
+    )
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     expected_release_url = cli.expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_release_url
@@ -156,22 +151,23 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # does not block on a dirty charness-artifacts/ left by the resume refresh.
     _commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
 
-    if not state["tag_remote"]:
-        publish_start = time.perf_counter()
-        cli.run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
-    else:
-        publish_start = time.perf_counter()
+    def push_create_verify_release() -> tuple[str, Any]:
+        if not state["tag_remote"]:
+            cli.run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
+        if state["release_exists"]:
+            release_stdout = expected_release_url or ""
+        else:
+            release_stdout = cli.create_release(
+                repo_root, backend, tag_name=tag_name, title=plan["title"], notes_file=notes_file
+            ).stdout
+        release_verify_result = cli.verify_release_visible(
+            repo_root, tag_name, backend, backend_command=cli.backend_command, run=cli.run
+        )
+        return release_stdout, release_verify_result
 
-    if state["release_exists"]:
-        release_stdout = expected_release_url or ""
-    else:
-        release_stdout = cli.create_release(
-            repo_root, backend, tag_name=tag_name, title=plan["title"], notes_file=notes_file
-        ).stdout
-    release_verify_result = cli.verify_release_visible(
-        repo_root, tag_name, backend, backend_command=cli.backend_command, run=cli.run
+    release_stdout, release_verify_result = _runtime.timed(
+        payload, "push_create_verify_release", push_create_verify_release
     )
-    _record_runtime(payload, "push_create_verify_release", publish_start)
     cli.finalize_release_payload(
         repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
         release_stdout=release_stdout, expected_release_url=expected_release_url,
@@ -179,12 +175,14 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     )
     # WS-1: the resumed publish crosses the same irreversible issue-close boundary,
     # so it gets the same rung-2 distinct-channel observer + rung-1 presence floor.
-    distinct_start = time.perf_counter()
-    cli.confirm_release_via_distinct_channel(
-        repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
-        tag_name=tag_name, expected_release_url=expected_release_url,
+    _runtime.timed(
+        payload,
+        "distinct_channel_verification",
+        lambda: cli.confirm_release_via_distinct_channel(
+            repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
+            tag_name=tag_name, expected_release_url=expected_release_url,
+        ),
     )
-    _record_runtime(payload, "distinct_channel_verification", distinct_start)
     if not cli.evaluate_release_distinct_channel(payload)["ok"]:
         cli.commit_final_release_artifact(
             repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
@@ -193,16 +191,22 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
             has_issue_closeout=False,
         )
         cli.fail_release_distinct_channel_floor(payload)
-    issue_start = time.perf_counter()
-    cli.ensure_release_issues_closed(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run)
-    _record_runtime(payload, "issue_closeout", issue_start)
+    _runtime.timed(
+        payload,
+        "issue_closeout",
+        lambda: cli.ensure_release_issues_closed(
+            repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run
+        ),
+    )
     # A resumed publish is still a verified publish: auto-run the adapter-declared
     # install-refresh before the final artifact commit so the result is durable.
-    install_refresh_start = time.perf_counter()
-    payload["install_refresh"] = cli.run_post_publish_install_refresh(
-        repo_root, command=adapter_data.get("post_publish_install_refresh", ""), run_shell=cli.run_shell
+    payload["install_refresh"] = _runtime.timed(
+        payload,
+        "post_publish_install_refresh",
+        lambda: cli.run_post_publish_install_refresh(
+            repo_root, command=adapter_data.get("post_publish_install_refresh", ""), run_shell=cli.run_shell
+        ),
     )
-    _record_runtime(payload, "post_publish_install_refresh", install_refresh_start)
     cli.commit_final_release_artifact(
         repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
         fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,

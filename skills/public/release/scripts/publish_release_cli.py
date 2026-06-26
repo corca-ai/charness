@@ -29,6 +29,7 @@ _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue
 _post_create = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_post_create")
 _release_retro = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_retro")
 _release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
+_release_runtime = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_runtime")
 _resume = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_resume")
 _execute = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_execute")
 load_adapter = _resolve_adapter.load_adapter
@@ -332,10 +333,14 @@ def main() -> None:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
 
     plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run, resume=args.resume)
-    if args.resume:
-        resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=_execution_context())
-        return
     if not args.execute:
         print(json.dumps(plan["payload"], ensure_ascii=False, indent=2))
         return
-    execute_publish_plan(args, repo_root, plan, adapter_data)
+    try:
+        if args.resume:
+            resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=_execution_context())
+            return
+        execute_publish_plan(args, repo_root, plan, adapter_data)
+    except SystemExit as exc:
+        _release_runtime.print_failure_payload(plan["payload"], exc)
+        raise
