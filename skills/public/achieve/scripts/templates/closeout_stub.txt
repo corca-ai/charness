@@ -1,0 +1,10 @@
+<!-- goal-closeout starter; bind each path to THIS goal's slug, or use a skipped: <allowed-reason>: <detail> line. Run --type goal-closeout for the forms. -->
+## Final Verification
+
+Retro: charness-artifacts/retro/<date>-<goal-slug>.md
+Host log probe: charness-artifacts/retro/<date>-<goal-slug>-host-log.md
+Disposition review: charness-artifacts/critique/<date>-<goal-slug>-disposition-review.md
+
+## Auto-Retro
+
+Retro dispositions: none — <>=30-char reason no surfaced improvement needs active disposition>

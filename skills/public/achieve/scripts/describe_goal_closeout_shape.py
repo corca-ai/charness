@@ -68,6 +68,11 @@ def _load_repo_script(module_name: str) -> Any:
 _PRESCRIBED = _load_repo_script("check_prescribed_skill_executed_lib")
 _DISPOSITION_FORM = _load_repo_script("disposition_form")
 _DISPOSITION = _load_sibling("goal_artifact_disposition_grammar")
+# Attention-state visibility marker: the extracted closeout stub still surfaces
+# the allowed skip form `skipped: <allowed-reason>: <detail>`.
+_CLOSEOUT_STUB_TEMPLATE = (
+    Path(__file__).resolve().parent / "templates" / "closeout_stub.txt"
+).read_text(encoding="utf-8")
 
 
 def required_shape() -> str:
@@ -106,16 +111,7 @@ def required_shape() -> str:
 
 def stub() -> str:
     """A starter closeout block (bound evidence paths + a disposition opt-out)."""
-    return (
-        "<!-- goal-closeout starter; bind each path to THIS goal's slug, or use a "
-        "skipped: <allowed-reason>: <detail> line. Run --type goal-closeout for the forms. -->\n"
-        "## Final Verification\n\n"
-        "Retro: charness-artifacts/retro/<date>-<goal-slug>.md\n"
-        "Host log probe: charness-artifacts/retro/<date>-<goal-slug>-host-log.md\n"
-        "Disposition review: charness-artifacts/critique/<date>-<goal-slug>-disposition-review.md\n\n"
-        "## Auto-Retro\n\n"
-        "Retro dispositions: none — <>=30-char reason no surfaced improvement needs active disposition>\n"
-    )
+    return _CLOSEOUT_STUB_TEMPLATE
 
 
 def _evidence_unsatisfied(ev: dict[str, Any], name: str) -> str | None:
@@ -283,7 +279,10 @@ def main(argv: list[str] | None = None) -> int:
         report = goal_conditional_shape(repo_root, path.read_text(encoding="utf-8"))
         sys.stdout.write(render_goal_conditional(report, rel))
         return 0
-    sys.stdout.write(stub() if args.stub else required_shape())
+    if args.stub:
+        sys.stdout.write(stub())
+    else:
+        sys.stdout.write(required_shape())
     return 0
 
 

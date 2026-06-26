@@ -9,11 +9,11 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: plugin import smoke template extraction.
-- Current slice intent: move the packaging plugin-import smoke subprocess body
-  out of Python and into a `.txt` template asset, then sync the plugin export.
-- Next action: finish changed-surface proof, commit and push slice 14, then
-  continue discovery unless a release-worthy boundary is reached.
+- Current slice: slice 15 complete; re-inventory for slice 16.
+- Current slice intent: move the achieve goal-closeout starter stub out of
+  Python and into a `.txt` template asset, then sync the plugin export.
+- Next action: commit and push slice 15, then continue discovery unless a
+  release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
 
@@ -73,9 +73,10 @@ accumulate.
 | 10 | Extract remaining release publish sync/quality fake scripts | `release_publish_fixtures.py` still carried inline sync and quality scripts after fake CLI extraction | focused release publish tests, prompt-bulk delta, standing pytest | complete |
 | 11 | Extract handoff auto-draft goal template from Python | Prompt-bulk inventory next surfaced `chunked_routing_auto_draft.py`; the content is a template asset rather than Python logic | focused handoff tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 12 | Extract handoff ranker prompt template from Python | Prompt-bulk inventory next surfaced `chunked_routing_lib.py`; the ranker prompt is static prompt content, not Python logic | focused handoff ranker tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 13 | Extract setup host-docs AGENTS fragments from Python | Prompt-bulk inventory next surfaced `setup_host_docs_lib.py`; these Markdown fragments are template assets, not Python logic | focused setup tests, prompt-bulk delta, plugin sync, standing pytest | in_progress |
-| 14 | Extract plugin import smoke script template from Python | Prompt-bulk inventory next surfaced `validate_packaging_install_surface.py`; the subprocess body is script text, not validator logic | focused packaging tests, prompt-bulk delta, plugin sync, standing pytest | in_progress |
-| 15 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 13 | Extract setup host-docs AGENTS fragments from Python | Prompt-bulk inventory next surfaced `setup_host_docs_lib.py`; these Markdown fragments are template assets, not Python logic | focused setup tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 14 | Extract plugin import smoke script template from Python | Prompt-bulk inventory next surfaced `validate_packaging_install_surface.py`; the subprocess body is script text, not validator logic | focused packaging tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 15 | Extract achieve closeout stub template from Python | Prompt-bulk inventory next surfaced `describe_goal_closeout_shape.py`; the closeout starter stub is generated content, not Python logic | focused achieve/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 16 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -467,6 +468,55 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     --produce-mutation-coverage --verification-lock` completed, including
     coverage-instrumented standing pytest, integration/support/tool update
     checks, gitignore-scan hygiene, and agent browser runtime guard.
+- Slice 15 evidence:
+  - Prompt-bulk inventory after slice 14 reported 32 findings and surfaced
+    `skills/public/achieve/scripts/describe_goal_closeout_shape.py` as the next
+    generated-content candidate.
+  - Moved the goal-closeout starter stub to
+    `skills/public/achieve/scripts/templates/closeout_stub.txt`; the
+    `stub()` helper now reads that template asset.
+  - Synced plugin export, adding
+    `plugins/charness/skills/achieve/scripts/templates/closeout_stub.txt` and
+    updating the plugin mirror of `describe_goal_closeout_shape.py`.
+  - Prompt-bulk inventory after the change reported 31 findings; the achieve
+    closeout stub no longer appears.
+  - Focused proof: `py_compile`, focused `ruff check`, and the achieve
+    closeout/preflight pytest bundle passed; focused pytest reported `61 passed
+    in 1.77s`.
+  - Attention-state correction: first standing pytest pass surfaced that
+    `validate_attention_state_visibility.py` expects the declared evidence term
+    `skipped: <allowed-reason>` to remain visible from the source file. Added a
+    short source marker pointing at the extracted stub's skip form, then
+    `validate_attention_state_visibility.py` and focused preflight tests passed.
+  - Changed-surface proof: skill/public-skill/packaging validators, markdown/doc
+    checks, plugin import smoke, staged mirror drift, focused achieve/preflight
+    pytest, and the standing pytest runner passed; standing pytest reported
+    `3682 passed in 20.47s`.
+  - Public-skill scenario review: `suggest_public_skill_dogfood.py --skill-id
+    achieve` confirmed `achieve` remains `hitl-recommended`; Cautilus planner
+    reported `next_action: none`. Recorded the unchanged consumer-contract
+    decision in `docs/public-skill-dogfood.json` because this slice changes
+    implementation shape, not routing, activation, draft creation, adapter
+    bootstrap, or maintained evaluator behavior.
+  - Fresh-eye review: no blocking finding. Reviewer verified `stub()` behavior,
+    source/plugin template parity, plugin import-time path parity, and that this
+    is implementation-shape extraction rather than dogfood/scenario behavior
+    change.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --ack-cautilus-skill-review --produce-mutation-coverage
+    --verification-lock` completed, including skill/public-skill/dogfood
+    validators, docs/markdown/secrets checks, focused structural sweeps,
+    coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
+    browser runtime guard. Usage episode:
+    `slice-closeout-2dc738253c624e9eae79706a33631549`.
+  - Pre-push repair: first push attempt passed 78/79 full quality gates but
+    `dup-ratchet` blocked one new code family
+    (`182c64eeb9a8ccb7`) between `achieve` and `issue` closeout-shape helper
+    output tails. Reworked the `achieve` `main()` output branch to remove the
+    family instead of classifying it; `check_dup_ratchet.py` then reported no
+    new code/doc families and the focused achieve/preflight pytest bundle
+    reported `61 passed in 1.63s`.
 
 ## Context Sources
 

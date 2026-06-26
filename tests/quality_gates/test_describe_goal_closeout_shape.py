@@ -195,3 +195,16 @@ def test_static_catalog_path_is_unchanged(capsys) -> None:
     static = capsys.readouterr().out
     assert "goal-closeout required shape" in static
     assert "goal-conditional" not in static  # the static catalog is not the goal-aware view
+
+
+def test_closeout_stub_lives_in_template_asset() -> None:
+    template = (
+        ROOT
+        / "skills"
+        / "public"
+        / "achieve"
+        / "scripts"
+        / "templates"
+        / "closeout_stub.txt"
+    )
+    assert template.read_text(encoding="utf-8") == desc.stub()
