@@ -627,6 +627,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: For checker behavior matrices, keep one command smoke and run the rest through the exported run() API.
 - Metrics: check_standing_doc_provenance.py launches in test_standing_doc_provenance.py: base 11, current 2.
 
+### Slice 35: Surface validation subprocess fanout
+
+- Objective: Reduce selected validate_surfaces.py process launches without weakening surface command-routing tests.
+- Why this approach: surfaces_lib.load_surfaces() is the actual manifest validator, so pure recursive-glob validation cases can call it directly.
+- Commits:
+- What changed: Converted three recursive-glob manifest validation tests to direct load_surfaces()/SurfaceError assertions.
+- Alternatives rejected: Kept duplicate-id and bare-recursive validate_surfaces command smokes, and left check_changed_surfaces/select_verifiers routing tests at the CLI boundary.
+- Targeted verification: ruff passed; focused surface-obligation pytest passed 25 tests in 4.04s after a 4.21s pre-change sample; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; three pure manifest-validation subprocess calls removed.
+- Critique: charness-artifacts/critique/2026-06-26-surface-validation-runtime.md; low-risk same-agent critique recorded because command-routing tests remain.
+- Off-goal findings: none
+- Lessons carried forward: In surface-routing suites, only lower pure manifest-validation cases; keep command routing at the boundary.
+- Metrics: selected validate_surfaces.py launches in test_surface_obligations.py: base 5, current 2.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

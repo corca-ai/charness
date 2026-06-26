@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.surfaces_lib import SurfaceError, load_surfaces
+
 from .support import ROOT, run_script
 
 
@@ -384,18 +386,21 @@ def test_validate_surfaces_rejects_recursive_extension_without_sibling(tmp_path:
     # `<dir>/<file>.X`. The lint must fail closed when the `<dir>/*.X` sibling is absent.
     repo = tmp_path / "repo"
     _write_surfaces(repo, ["scripts/**/*.py"])
-    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "non-recursive-fnmatch footgun" in result.stderr
-    assert "scripts/*.py" in result.stderr
+    try:
+        load_surfaces(repo)
+    except SurfaceError as exc:
+        message = str(exc)
+        assert "non-recursive-fnmatch footgun" in message
+        assert "scripts/*.py" in message
+    else:
+        raise AssertionError("load_surfaces did not reject recursive extension without sibling")
 
 
 def test_validate_surfaces_accepts_recursive_extension_with_sibling(tmp_path: Path) -> None:
     # Keeping the `**/*.X` form is allowed as long as the strict-superset sibling is present.
     repo = tmp_path / "repo"
     _write_surfaces(repo, ["scripts/**/*.py", "scripts/*.py"])
-    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
+    assert load_surfaces(repo) is not None
 
 
 def test_validate_surfaces_rejects_root_level_recursive_extension(tmp_path: Path) -> None:
@@ -403,10 +408,14 @@ def test_validate_surfaces_rejects_root_level_recursive_extension(tmp_path: Path
     # top-level `top.py`. Its required sibling is the bare `*.X` (fresh-eye NIT).
     repo = tmp_path / "repo"
     _write_surfaces(repo, ["**/*.py"])
-    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "non-recursive-fnmatch footgun" in result.stderr
-    assert "sibling `*.py`" in result.stderr
+    try:
+        load_surfaces(repo)
+    except SurfaceError as exc:
+        message = str(exc)
+        assert "non-recursive-fnmatch footgun" in message
+        assert "sibling `*.py`" in message
+    else:
+        raise AssertionError("load_surfaces did not reject root-level recursive extension")
 
 
 def test_validate_surfaces_allows_bare_recursive_dir_glob(tmp_path: Path) -> None:
