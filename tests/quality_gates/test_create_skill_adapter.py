@@ -1,12 +1,32 @@
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
 
-from .support import run_script
+from .support import ROOT, run_script
 
 RESOLVE = "skills/public/create-skill/scripts/resolve_adapter.py"
 INIT = "skills/public/create-skill/scripts/init_adapter.py"
+
+
+def _load_resolver():
+    module_path = ROOT / RESOLVE
+    spec = importlib.util.spec_from_file_location("tests.quality_gates.create_skill_resolve_adapter", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+RESOLVER = _load_resolver()
+
+
+def _resolve(repo: Path) -> dict[str, object]:
+    return RESOLVER.load_adapter(repo.resolve())
 
 
 def test_create_skill_adapter_resolver_reports_visible_missing_adapter(tmp_path: Path) -> None:
@@ -49,10 +69,7 @@ def test_create_skill_adapter_resolver_accepts_repo_topology_terms(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is True
     assert payload["data"]["placement_terms"] == ["host-facing registration"]
@@ -74,10 +91,7 @@ def test_create_skill_adapter_resolver_rejects_invalid_list_field(tmp_path: Path
         encoding="utf-8",
     )
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is False
     assert "implementation_identity_terms must be a list of strings" in payload["errors"]
@@ -92,10 +106,7 @@ def test_create_skill_adapter_resolver_rejects_unsupported_version(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is False
     assert "version must be 1" in payload["errors"]
@@ -107,10 +118,7 @@ def test_create_skill_adapter_resolver_rejects_top_level_list(tmp_path: Path) ->
     adapter_dir.mkdir(parents=True)
     (adapter_dir / "create-skill-adapter.yaml").write_text("- just a list\n", encoding="utf-8")
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is False
     assert "top-level mapping" in "\n".join(payload["errors"])
@@ -122,10 +130,7 @@ def test_create_skill_adapter_resolver_rejects_unparseable_mapping(tmp_path: Pat
     adapter_dir.mkdir(parents=True)
     (adapter_dir / "create-skill-adapter.yaml").write_text("not yaml\n", encoding="utf-8")
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is False
     assert "supported create-skill adapter mapping entries" in "\n".join(payload["errors"])
@@ -140,10 +145,7 @@ def test_create_skill_adapter_resolver_reports_explicit_empty_lists(tmp_path: Pa
         encoding="utf-8",
     )
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is True
     assert payload["field_state"]["implementation_identity_terms"] == "explicit-empty"
@@ -168,10 +170,7 @@ def test_create_skill_adapter_resolver_preserves_host_extensions(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is True
     assert payload["data"]["host_extensions"]["metadata_path"] == ".agents/create-skill-host-metadata.yaml"
@@ -189,10 +188,7 @@ def test_create_skill_adapter_resolver_rejects_non_mapping_host_extensions(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is False
     assert "host_extensions must be a mapping" in payload["errors"]
@@ -206,10 +202,7 @@ def test_create_skill_adapter_resolver_warns_on_compatibility_path(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script(RESOLVE, "--repo-root", str(repo))
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _resolve(repo)
     assert payload["found"] is True
     assert payload["valid"] is True
     assert "compatibility fallback" in "\n".join(payload["warnings"])

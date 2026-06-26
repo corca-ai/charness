@@ -585,6 +585,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Reuse existing main() harnesses for return-code branch matrices, but keep at least one real CLI error/smoke path.
 - Metrics: check_goal_artifact.py subprocess launches in test_goal_head_freshness.py: base 4, current 2.
 
+### Slice 32: Create-skill adapter resolver subprocess fanout
+
+- Objective: Reduce repeated create-skill resolve_adapter.py process launches while preserving resolver and init command proof.
+- Why this approach: The resolver exposes load_adapter(), so the adapter-shape matrix can call the real resolver directly against temp files.
+- Commits:
+- What changed: Loaded the create-skill resolver once in test_create_skill_adapter.py and converted nine resolver matrix tests to direct load_adapter() calls.
+- Alternatives rejected: Kept one resolver CLI smoke and the init_adapter write command test.
+- Targeted verification: ruff passed; focused create-skill adapter pytest passed 11 tests in 2.46s after a 3.05s pre-change sample; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; create-skill resolver subprocess calls dropped from 10 to 1 while init command proof remains.
+- Critique: charness-artifacts/critique/2026-06-26-create-skill-adapter-runtime.md; low-risk same-agent critique recorded because command/write proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Adapter resolver matrices should usually test the resolver API directly and reserve subprocesses for one wrapper smoke plus write commands.
+- Metrics: create-skill resolve_adapter.py launches in test_create_skill_adapter.py: base 10, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
