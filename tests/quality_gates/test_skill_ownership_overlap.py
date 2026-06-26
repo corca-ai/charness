@@ -1,11 +1,22 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
+from runtime_bootstrap import import_repo_module
 from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "scripts/check_skill_ownership_overlap.py"
+_ownership_overlap = import_repo_module(ROOT / SCRIPT, "scripts.check_skill_ownership_overlap")
+
+
+def run_ownership_overlap(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["check_skill_ownership_overlap.py", *args])
+    returncode = _ownership_overlap.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def test_current_repo_passes_with_seeded_allowlist() -> None:
@@ -18,7 +29,7 @@ def test_current_repo_passes_with_seeded_allowlist() -> None:
     assert payload["allowlist_size"] >= 1
 
 
-def test_unallowlisted_cross_namespace_artifact_write_fails(tmp_path: Path) -> None:
+def test_unallowlisted_cross_namespace_artifact_write_fails(tmp_path: Path, monkeypatch, capsys) -> None:
     skills_dir = tmp_path / "skills" / "public"
     rogue = skills_dir / "rogue"
     rogue.mkdir(parents=True)
@@ -35,7 +46,7 @@ def test_unallowlisted_cross_namespace_artifact_write_fails(tmp_path: Path) -> N
     )
     (tmp_path / "scripts").mkdir()
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--json")
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path), "--json")
 
     assert result.returncode == 2, result.stdout
     payload = json.loads(result.stdout)
@@ -48,7 +59,7 @@ def test_unallowlisted_cross_namespace_artifact_write_fails(tmp_path: Path) -> N
     assert finding["allowlist_entry"] == "rogue:artifact:quality:<reason>"
 
 
-def test_allowlist_entry_silences_finding(tmp_path: Path) -> None:
+def test_allowlist_entry_silences_finding(tmp_path: Path, monkeypatch, capsys) -> None:
     skills_dir = tmp_path / "skills" / "public"
     skill = skills_dir / "demo"
     skill.mkdir(parents=True)
@@ -62,7 +73,7 @@ def test_allowlist_entry_silences_finding(tmp_path: Path) -> None:
         "demo:artifact:release:read-only cite\n", encoding="utf-8"
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--json")
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path), "--json")
 
     assert result.returncode == 0, result.stdout + result.stderr
     payload = json.loads(result.stdout)
@@ -70,7 +81,7 @@ def test_allowlist_entry_silences_finding(tmp_path: Path) -> None:
     assert payload["allowlist_size"] == 1
 
 
-def test_unallowlisted_adapter_namespace_mention_fails(tmp_path: Path) -> None:
+def test_unallowlisted_adapter_namespace_mention_fails(tmp_path: Path, monkeypatch, capsys) -> None:
     skills_dir = tmp_path / "skills" / "public"
     skill = skills_dir / "stub"
     skill.mkdir(parents=True)
@@ -80,7 +91,7 @@ def test_unallowlisted_adapter_namespace_mention_fails(tmp_path: Path) -> None:
     )
     (tmp_path / "scripts").mkdir()
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--json")
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path), "--json")
 
     assert result.returncode == 2, result.stdout
     payload = json.loads(result.stdout)
