@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -438,10 +440,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run repo-owned smoke scenarios under evals/.")
     parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     parser.add_argument("--scenario-id", action="append", default=[])
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=0,
+        help="Number of scenarios to run concurrently; defaults to min(4, selected scenarios).",
+    )
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
     selected = [scenario for scenario in SCENARIOS if not args.scenario_id or scenario.scenario_id in args.scenario_id]
+    if args.jobs < 0:
+        raise EvalError("--jobs must be zero or a positive integer")
     if args.scenario_id:
         known = {scenario.scenario_id for scenario in SCENARIOS}
         unknown = sorted(set(args.scenario_id) - known)
@@ -450,9 +460,17 @@ def main() -> int:
     if not selected or any(scenario.scenario_id not in NO_FIXTURE_SCENARIOS for scenario in selected):
         ensure_fixtures_present(root)
 
-    for scenario in selected:
-        run_scenario(root, scenario)
-        print(f"PASS {scenario.scenario_id}: {scenario.description}")
+    jobs = args.jobs or min(4, len(selected), os.cpu_count() or 1)
+    if jobs <= 1 or len(selected) <= 1:
+        for scenario in selected:
+            run_scenario(root, scenario)
+            print(f"PASS {scenario.scenario_id}: {scenario.description}")
+    else:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as executor:
+            futures = {scenario: executor.submit(run_scenario, root, scenario) for scenario in selected}
+            for scenario in selected:
+                futures[scenario].result()
+                print(f"PASS {scenario.scenario_id}: {scenario.description}")
 
     print(f"Ran {len(selected)} eval scenario(s).")
     return 0

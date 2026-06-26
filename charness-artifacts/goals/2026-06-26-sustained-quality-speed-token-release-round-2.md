@@ -853,6 +853,34 @@ None yet.
   - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
     now reports `status: clean`, `new_code_families: []`.
 
+### Slice 29 — Parallelize smoke eval scenarios
+
+- Objective: Reduce the standing `run-evals` quality gate without changing its
+  operator-facing PASS output or scenario selection behavior.
+- Finding: `scripts/run_evals.py` ran 22 independent smoke scenarios
+  sequentially. Most scenarios either use a per-scenario temporary directory or
+  read repo state, so the gate spent about 2.6s wall clock on serial subprocess
+  waits.
+- Change: Added a bounded `--jobs` option and defaulted full runs to
+  `min(4, selected scenarios, cpu_count)`. Results are still consumed and
+  printed in registry order, and `--jobs 1` preserves the previous sequential
+  path. Added a focused regression test for selected-order output. Synced the
+  plugin mirror.
+- Verification:
+  - `time python3 scripts/run_evals.py --repo-root . --jobs 1` passed in about
+    2.60s wall clock.
+  - `time python3 scripts/run_evals.py --repo-root .` passed in about 0.71s
+    wall clock.
+  - `python3 -m pytest -q tests/test_cautilus_scenarios.py::test_run_evals_supports_scenario_filter tests/test_cautilus_scenarios.py::test_run_evals_parallel_jobs_preserve_selected_order --durations=10 --durations-min=0.01`
+    passed, 2 tests.
+  - `python3 -m py_compile scripts/run_evals.py plugins/charness/scripts/run_evals.py tests/test_cautilus_scenarios.py`
+    passed.
+  - `ruff check scripts/run_evals.py plugins/charness/scripts/run_evals.py tests/test_cautilus_scenarios.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+  - `CHARNESS_QUALITY_LABELS=run-evals ./scripts/run-quality.sh --read-only`
+    passed; the quality label reported 734ms.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
