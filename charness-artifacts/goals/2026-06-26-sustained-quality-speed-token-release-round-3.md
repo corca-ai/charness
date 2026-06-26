@@ -347,6 +347,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Once summary-first routing exists, smaller inventories should still participate when the wrapper cost is low.
 - Metrics: Token/output proxy: public-spec quality inventory output reduced from 10220 bytes to 2389 bytes with `--summary`, a 76.6% reduction.
 
+### Slice 15: Standing sentinel for Codex cache selection
+
+- Objective: Reduce release-only blind spots around Codex cache primary selection without adding another expensive installed-host flow.
+- Why this approach: test_doctor_cache_selection.py had a release-only E2E proof but no standing sentinel; the core selection behavior is a pure function.
+- Commits:
+- What changed: Narrowed the release_only marker from module-level to the existing E2E test and added a standing unit test for `codex_primary_cache_entry` selecting the enabled cache whose manifest version matches the source version.
+- Alternatives rejected: Did not duplicate the full doctor/cache fixture setup in standing tests; retained the release-only E2E coverage for host-visible payload behavior.
+- Targeted verification: pytest: standing test passed in 0.31s; release-only test passed in 5.98s; ruff passed; check_python_lengths headroom remains 735 lines; run_slice_closeout.py passed; inventory_release_only_sentinels.py --summary reports missing_standing_sentinel_file_count 7, down from 8 after slice 3.
+- Test duplication pressure: Added one focused unit test inside the existing cache-selection test file.
+- Critique: Same-agent slice critique: the standing test proves the algorithmic selection rule but does not claim to cover config parsing or doctor payload assembly; the release-only test still owns that broader boundary.
+- Off-goal findings: Seven release-only files still lack obvious standing sentinels.
+- Lessons carried forward: Convert module-level release_only markers to function-level when the same file can host a cheap standing predicate.
+- Metrics: Coverage proxy: release-only sentinel missing file count reduced from 8 to 7.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

@@ -6,11 +6,10 @@ from pathlib import Path
 import pytest
 
 from .support import build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
-from .test_managed_install import CURRENT_VERSION
-
-pytestmark = pytest.mark.release_only
+from .test_managed_install import CURRENT_VERSION, load_charness_module
 
 
+@pytest.mark.release_only
 def test_doctor_prefers_enabled_cache_matching_source_version(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(
         tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
@@ -46,3 +45,32 @@ enabled = true
     assert payload["codex_source_cache_drift"] is False
     assert payload["codex_host_guidance"]["status"] == "installed"
     assert "Extra stale enabled cache entries remain" in payload["codex_host_guidance"]["message"]
+
+
+def test_codex_primary_cache_entry_without_stale_enabled_version_prefers_source_version() -> None:
+    module = load_charness_module("charness_doctor_cache_selection_unit_under_test")
+    stale_cache = {
+        "marketplace": "charness",
+        "plugin": "charness",
+        "version": "0.0.0-dev",
+        "version_dir": "/tmp/stale",
+        "manifest_path": "/tmp/stale/.codex-plugin/plugin.json",
+        "manifest_version": "0.0.0-dev",
+    }
+    current_cache = {
+        "marketplace": "local",
+        "plugin": "charness",
+        "version": CURRENT_VERSION,
+        "version_dir": "/tmp/current",
+        "manifest_path": "/tmp/current/.codex-plugin/plugin.json",
+        "manifest_version": CURRENT_VERSION,
+    }
+
+    primary_cache, plugin_id = module.codex_primary_cache_entry(
+        [stale_cache, current_cache],
+        enabled_plugin_ids=["charness@charness", "charness@local"],
+        source_version=CURRENT_VERSION,
+    )
+
+    assert primary_cache == current_cache
+    assert plugin_id == "charness@local"
