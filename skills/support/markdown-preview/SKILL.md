@@ -56,4 +56,4 @@ python3 "$SKILL_DIR/scripts/check_glow_backend.py"
 ## References
 
 - `references/runtime-contract.md`
-- `<repo-root>/scripts/render_markdown_preview.py`
+- `scripts/render_markdown_preview.py`

@@ -39,4 +39,4 @@ python3 scripts/export_page.py \
 
 - `references/runtime-contract.md`
 - `references/provenance.md`
-- `<repo-root>/scripts/export_page.py`
+- `scripts/export_page.py`

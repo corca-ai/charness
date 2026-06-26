@@ -63,7 +63,7 @@ accumulate.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Re-enter quality discovery and repair stale reference drift | User clarified the timebox should continue; startup found a stale handoff and support-skill helper path | find-skills route, quality planner, focused validators | in_progress |
-| 2 | Pick next measured quality candidate | Continue discovery beyond the first cleanup | inventory evidence and focused proof | pending |
+| 2 | Repair remaining support helper reference drift | Continue discovery beyond the first cleanup | support package scan and focused proof | complete |
 | 3 | Closeout/push/release decision | Avoid another premature release | final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
@@ -112,6 +112,22 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     `check-secrets.sh`, `validate_packaging.py`,
     `validate_packaging_committed.py`, `validate_cautilus_proof.py`, and
     `validate_cautilus_diagnostics.py` passed.
+- Slice 2 evidence:
+  - Follow-up scan found the same support-helper reference drift in
+    `gather-notion`, `gather-slack`, and `markdown-preview`: their `## References`
+    sections pointed at `<repo-root>/scripts/...` helpers while the shipped
+    helpers live inside each support skill package.
+  - Repaired root support skill references and provenance references to use
+    package-local `scripts/...` paths, then synced plugin mirrors.
+  - Drift check: `rg -n '<repo-root>/scripts/' skills/support
+    plugins/charness/support` returned no matches after the repair.
+  - Focused proof: `check_references_link_inventory.py` over support
+    `SKILL.md`/references, `validate_skills.py`, `validate_skill_ergonomics.py`,
+    `check_doc_links.py`, `check_command_docs.py`, `check-markdown.sh`,
+    `check-secrets.sh`, `validate_packaging.py`,
+    `validate_packaging_committed.py`, `validate_cautilus_proof.py`,
+    `validate_cautilus_diagnostics.py`, `check_skill_ownership_overlap.py`, and
+    support helper `py_compile` passed.
 
 ## Context Sources
 

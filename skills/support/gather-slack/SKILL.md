@@ -50,4 +50,4 @@ Use the wrapper:
 
 - `references/runtime-contract.md`
 - `references/provenance.md`
-- `<repo-root>/scripts/export-thread.sh`
+- `scripts/export-thread.sh`
