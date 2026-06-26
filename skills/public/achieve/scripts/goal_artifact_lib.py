@@ -49,6 +49,7 @@ metric_window_attention = _metric_window.metric_window_attention
 check_timebox_closeout = _timebox.check_timebox_closeout
 check_blocked_matrix = _blocked_matrix.check
 _mask_fences = _markdown.mask_fences
+slice_plan_data_row_count = _markdown.slice_plan_data_row_count
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -233,50 +234,6 @@ def upsert_goal(
 def next_slice_number(text: str) -> int:
     numbers = [int(match.group(1)) for match in _SLICE_HEADING.finditer(_mask_fences(text))]
     return (max(numbers) + 1) if numbers else 1
-
-
-def slice_plan_data_row_count(text: str) -> int:
-    """Count data rows in the first markdown table inside ``## Slice Plan``.
-
-    Data rows start with ``|`` and are neither the header row nor the table
-    separator row (the ``| --- |`` line). A standalone row-count utility: the
-    handoff auto-draft invariant tests assert a freshly drafted skeleton has
-    zero data rows. The trivial-goal discriminator that once
-    consumed this count to exempt goals from the portability check.)
-    """
-    masked = _mask_fences(text)
-    headings = list(_H2.finditer(masked))
-    section_text: str | None = None
-    for index, match in enumerate(headings):
-        if match.group(1).strip() != "Slice Plan":
-            continue
-        body_start = masked.find("\n", match.start())
-        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
-        section_text = masked[body_start + 1 if body_start != -1 else match.start():body_end]
-        break
-    if section_text is None:
-        return 0
-    seen_header = False
-    seen_separator = False
-    data_rows = 0
-    for line in section_text.splitlines():
-        stripped = line.strip()
-        if not stripped.startswith("|"):
-            if seen_header:
-                break
-            continue
-        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
-        is_separator = bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell or "") for cell in cells)
-        if not seen_header:
-            seen_header = True
-            continue
-        if not seen_separator and is_separator:
-            seen_separator = True
-            continue
-        if is_separator:
-            continue
-        data_rows += 1
-    return data_rows
 
 
 def missing_portability_sections(text: str) -> list[str]:

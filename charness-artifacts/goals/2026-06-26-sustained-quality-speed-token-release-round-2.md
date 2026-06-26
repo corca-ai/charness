@@ -318,6 +318,26 @@ None yet.
   confirmed the current `quality` consumer contract already covers planner
   gate-packet behavior, so no dogfood scenario change is needed.
 
+### Slice 5 — Move slice-plan row counting out of goal core
+
+- Objective: Reduce near-limit pressure in the core achieve goal artifact
+  helper without changing its public API.
+- Finding: `skills/public/achieve/scripts/goal_artifact_lib.py` was in the
+  Python length warning band at 346/360 code lines, and its test-only
+  `slice_plan_data_row_count` helper belonged with markdown parsing utilities.
+- Change: Moved the row-count implementation to `goal_artifact_markdown.py`
+  and re-exported it from `goal_artifact_lib.py`; synced the checked-in plugin
+  mirror.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_goal_artifact_lib.py::test_slice_plan_table_row_count_table_form tests/test_handoff_chunker_auto_draft.py::test_slice_plan_data_row_count_is_zero`
+    passed.
+  - `python3 scripts/check_python_lengths.py --repo-root . --paths skills/public/achieve/scripts/goal_artifact_lib.py skills/public/achieve/scripts/goal_artifact_markdown.py plugins/charness/skills/achieve/scripts/goal_artifact_lib.py plugins/charness/skills/achieve/scripts/goal_artifact_markdown.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+  - `python3 scripts/check_python_lengths.py --repo-root . --headroom --paths skills/public/achieve/scripts/goal_artifact_lib.py plugins/charness/skills/achieve/scripts/goal_artifact_lib.py skills/public/achieve/scripts/goal_artifact_markdown.py plugins/charness/skills/achieve/scripts/goal_artifact_markdown.py`
+    reported `goal_artifact_lib.py` at 305/360 code lines, 55 lines of
+    headroom.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
