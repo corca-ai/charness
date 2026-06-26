@@ -572,6 +572,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: For adapter resolver smokes, prefer a reusable in-process runner and reserve subprocesses for packaging/export/startup assertions.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced both raw and ratcheted clean-convertible boundary counts by one.
 
+### Slice 31: Run narrative bootstrap fallback smoke in process
+
+- Objective: Remove the remaining narrative `resolve_adapter.py` subprocess from bootstrap visibility tests.
+- Why this approach: `test_bootstrap_visibility.py` already has a generic in-process resolver runner for find-skills and announcement; adding narrative to that table keeps the file internally consistent.
+- Commits:
+- What changed: Loaded the narrative resolver module, routed the fallback-rich-docs test through `run_resolve_adapter()`, and removed the now-unused `run_script` import.
+- Alternatives rejected: Did not consolidate with `test_narrative_adapter.py` because the two tests cover different fixtures and assertions; only the runner pattern is shared.
+- Targeted verification: pytest: `tests/quality_gates/test_bootstrap_visibility.py` `3 passed` in 0.32s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 66 candidates and 27 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 63 candidates and 26 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing smoke.
+- Critique: Same-agent slice critique: as with the previous narrative resolver slice, this trades process startup proof for faster `main()` behavior proof; startup remains covered by script-surface validators.
+- Off-goal findings: None.
+- Lessons carried forward: When a test file already has an in-process CLI runner, extend that runner rather than adding another file-local pattern.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced both raw and ratcheted clean-convertible boundary counts by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

@@ -7,10 +7,11 @@ from types import SimpleNamespace
 
 from runtime_bootstrap import load_path_module
 
-from .support import ROOT, run_script
+from .support import ROOT
 
 FIND_SKILLS_SCRIPT = "skills/public/find-skills/scripts/resolve_adapter.py"
 ANNOUNCEMENT_SCRIPT = "skills/public/announcement/scripts/resolve_adapter.py"
+NARRATIVE_SCRIPT = "skills/public/narrative/scripts/resolve_adapter.py"
 _find_skills_resolve_adapter = load_path_module(
     "skills.public.find_skills.scripts.resolve_adapter",
     ROOT / FIND_SKILLS_SCRIPT,
@@ -18,6 +19,10 @@ _find_skills_resolve_adapter = load_path_module(
 _announcement_resolve_adapter = load_path_module(
     "skills.public.announcement.scripts.resolve_adapter",
     ROOT / ANNOUNCEMENT_SCRIPT,
+)
+_narrative_resolve_adapter = load_path_module(
+    "skills.public.narrative.scripts.resolve_adapter",
+    ROOT / NARRATIVE_SCRIPT,
 )
 
 
@@ -28,7 +33,7 @@ def run_resolve_adapter(monkeypatch, capsys, script: str, module: object, *args:
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
-def test_narrative_resolve_adapter_fallback_prefers_richer_truth_docs(tmp_path: Path) -> None:
+def test_narrative_resolve_adapter_fallback_prefers_richer_truth_docs(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
@@ -38,7 +43,14 @@ def test_narrative_resolve_adapter_fallback_prefers_richer_truth_docs(tmp_path: 
     (repo / "docs" / "consumer-readiness.md").write_text("# Consumer Readiness\n", encoding="utf-8")
     (repo / "docs" / "external-consumer-onboarding.md").write_text("# Onboarding\n", encoding="utf-8")
 
-    result = run_script("skills/public/narrative/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    result = run_resolve_adapter(
+        monkeypatch,
+        capsys,
+        NARRATIVE_SCRIPT,
+        _narrative_resolve_adapter,
+        "--repo-root",
+        str(repo),
+    )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["data"]["source_documents"][:5] == [
