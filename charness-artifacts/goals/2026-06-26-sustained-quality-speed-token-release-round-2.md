@@ -558,6 +558,30 @@ None yet.
   - This is a reviewed id-rotation baseline refresh, not a duplicate-reduction
     claim and not a claim that the accepted 540 family ids are a quality target.
 
+### Slice 16 — Prefilter lint-ignore inventory scans
+
+- Objective: Reduce quality gate runtime by removing unnecessary Python
+  tokenization in `inventory_lint_ignores.py`.
+- Finding: `validate_inventory_consumption_declaration.py` spent most of its
+  wall time executing `inventory_lint_ignores.py`; individual timing showed that
+  script at 3.41s, while the declaration validator took 3.84s total.
+- Change: `scripts/lint_ignore_inventory_lib.py` now reads candidate file text
+  once and skips tokenization/line scanning when no suppression marker is present
+  (`noqa`, `ruff:`, `pylint:`, or `eslint-disable`). Files containing markers
+  still use the existing tokenize path, so string-literal false-positive
+  protection remains intact.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_quality_lint_ignores.py --durations=20 --durations-min=0.01`
+    passed, 4 tests.
+  - `python3 -m py_compile scripts/lint_ignore_inventory_lib.py skills/public/quality/scripts/inventory_lint_ignores.py && python3 -m ruff check scripts/lint_ignore_inventory_lib.py skills/public/quality/scripts/inventory_lint_ignores.py`
+    passed.
+  - JSON equivalence check over the pre/post `inventory_lint_ignores.py --json`
+    payload confirmed unchanged `summary`, `findings`, `review_prompts`, and
+    `interpretation`.
+  - Timing improved from 3.41s to 0.45s for
+    `inventory_lint_ignores.py --json`, and from 3.84s to 1.53s for
+    `validate_inventory_consumption_declaration.py --repo-root .`.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

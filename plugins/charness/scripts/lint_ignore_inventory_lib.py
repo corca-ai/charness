@@ -143,14 +143,24 @@ def inventory_lint_ignores(repo_root: Path, vendored_paths: list[str] | None = N
     vendored = vendored_prefixes(vendored_paths)
     for path in _iter_candidate_files(repo_root, vendored):
         text = path.read_text(encoding="utf-8", errors="replace")
-        handled_python = path.suffix.lower() in {".py", ".pyi"} and _inventory_python_comments(repo_root, path, text, findings)
-        if handled_python:
-            _inventory_text_lines(repo_root, path, text, findings)
+        lower_text = text.lower()
+        has_eslint_marker = "eslint-disable" in lower_text
+        has_python_marker = "noqa" in lower_text or "pylint:" in lower_text or "ruff:" in lower_text
+        if not has_eslint_marker and not has_python_marker:
             continue
 
-        _inventory_text_lines(repo_root, path, text, findings)
-        if path.suffix.lower() not in {".py", ".pyi"}:
+        is_python = path.suffix.lower() in {".py", ".pyi"}
+        handled_python = is_python and has_python_marker and _inventory_python_comments(repo_root, path, text, findings)
+        if handled_python:
+            if has_eslint_marker:
+                _inventory_text_lines(repo_root, path, text, findings)
             continue
+
+        if has_eslint_marker:
+            _inventory_text_lines(repo_root, path, text, findings)
+        if not is_python or not has_python_marker:
+            continue
+
         for line_no, line in enumerate(text.splitlines(), start=1):
             if match := PYTHON_RUFF_FILE_RE.match(line):
                 _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="ruff", scope="file", codes=_parse_codes(match.group("codes")), raw=line)
