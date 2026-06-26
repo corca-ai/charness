@@ -1,6 +1,6 @@
 # Achieve Goal: Sustained Quality Speed Token Release Round 3
 
-Status: active
+Status: complete
 Created: 2026-06-26
 Activation: `/goal @charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release-round-3.md`
 Timebox: 3h
@@ -17,12 +17,11 @@ the final boundary only, not a per-slice action.
 
 ## Active Operating Frame
 
-- Current slice: active discovery for the next high-leverage quality slice.
-- Current slice intent: find structural improvements that beat repeated tiny
-  subprocess conversions: prioritize measured runtime, brittle bug risk, and
-  token/verbosity surfaces with deterministic proof.
-- Next action: run focused inventories, choose the first safe mutation slice,
-  then verify with focused tests before any broad closeout.
+- Current slice: complete.
+- Current slice intent: final release closeout completed after sustained quality,
+  speed, script-runtime, and token-efficiency slices.
+- Next action: none for this goal; verify `v0.56.4` and post-publish release
+  evidence if reproducing externally.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -107,15 +106,16 @@ Run a three-hour sustained quality improvement pass over charness, applying the 
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Select high-leverage quality targets from current inventories | Avoid repeating low-yield subprocess micro-slices | runtime summary, ergonomics inventory, selected candidate ledger | active |
-| 2 | Implement bug/runtime/token-efficiency slice(s) | Main value delivery before release | focused tests, ruff/length checks, slice log with duplicate pressure when tests change | pending |
-| 3 | Bundle verification and critique | Prevent green-terminal trust before irreversible boundaries | fresh-eye critique, quality artifact, slice closeout verification lock | pending |
-| 4 | Push and release | User explicitly requested final publication | pre-push full gate, release helper proof, public visibility/readback | pending |
+| 1 | Select high-leverage quality targets from current inventories | Avoid repeating low-yield subprocess micro-slices | runtime summary, ergonomics inventory, selected candidate ledger | complete |
+| 2 | Implement bug/runtime/token-efficiency slice(s) | Main value delivery before release | focused tests, ruff/length checks, slice log with duplicate pressure when tests change | complete |
+| 3 | Bundle verification and critique | Prevent green-terminal trust before irreversible boundaries | fresh-eye critique, quality artifact, slice closeout verification lock | complete |
+| 4 | Push and release | User explicitly requested final publication | pre-push full gate, release helper proof, public visibility/readback | complete |
 
 ## Operator Decision Queue
 
-None currently — the user already approved final push/release for this goal;
-new operator-only decisions discovered mid-run will be added here.
+none — the user already approved final push/release for this goal, and no
+unresolved operator-only decision remained after release helper publication and
+post-publish install refresh completed.
 
 ## Coordination Cues
 
@@ -143,10 +143,11 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
-Routing: `find-skills` recommended `quality` and `release` for this task; no
-external/trusted skill roots configured.
+Routing: find-skills recommended quality for repo quality posture, validation, and gate interpretation in this task.
+Routing: find-skills recommended impl for the repo-local code and test mutation slices inside the quality run.
+Routing: find-skills recommended release for final v0.56.4 publish, release proof, and post-publish verification in this task.
 Gather: n/a — no external source URLs are part of the request.
-Release: pending final release helper proof.
+Release: v0.56.4 published — tag `v0.56.4` points to release commit `cf954b188e4f24347319c198576ae4a3057d8401`; post-publish release evidence is committed at `18d9413f53bc233703b92938bdbd0f3bd98ec32b`; release artifact `charness-artifacts/release/latest.md` records public URL `https://github.com/corca-ai/charness/releases/tag/v0.56.4`, distinct-channel HTTPS confirmation, fresh-checkout probes, and post-publish install refresh.
 Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 
 ## Slice Log
@@ -1004,7 +1005,7 @@ None yet.
 
 ## Final Verification
 
-Host metric window: started_at=2026-06-26T12:02:39Z completed_at=2026-06-26T14:08:45Z codex_session_file=/home/hwidong/.codex/history.jsonl
+Host metric window: started_at=2026-06-26T12:02:39Z completed_at=2026-06-26T15:03:16Z codex_session_file=/home/hwidong/.codex/history.jsonl
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
 retro / host-log probe / disposition-review artifact) or an explicit
@@ -1014,6 +1015,13 @@ retro / host-log probe / disposition-review artifact) or an explicit
 Retro: charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-3-goal-retro.md
 Host log probe: charness-artifacts/probe/2026-06-26-sustained-quality-speed-token-release-round-3-host-log.json
 Disposition review: charness-artifacts/critique/2026-06-26-sustained-quality-speed-token-release-round-3-disposition.md
+
+Release proof: charness-artifacts/release/latest.md
+Release tag: `v0.56.4`
+Release commit: `cf954b188e4f24347319c198576ae4a3057d8401`
+Post-publish evidence commit: `18d9413f53bc233703b92938bdbd0f3bd98ec32b`
+Release URL: https://github.com/corca-ai/charness/releases/tag/v0.56.4
+Final release helper proof: `./scripts/run-quality.sh --release` passed inside the helper; fresh-checkout probes passed; branch/tag push completed; GitHub release visibility verified; distinct-channel HTTPS verification returned HTTP 200; post-publish `charness update` returned 0.
 
 ## User Verification Instructions
 
