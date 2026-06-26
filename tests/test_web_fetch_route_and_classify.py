@@ -11,7 +11,7 @@ WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
 
 import acquire_public_url as apu  # noqa: E402
-import route_public_fetch as rpf  # noqa: E402
+import route_public_fetch_routes as rpf_routes  # noqa: E402
 from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
 
 
@@ -49,8 +49,32 @@ def test_route_public_fetch_maps_reddit_to_feed_strategy() -> None:
 
 
 def test_route_public_fetch_missing_gather_adapter_fallback(monkeypatch) -> None:
-    monkeypatch.setattr(rpf.Path, "is_file", lambda _self: False)
-    assert str(rpf._find_gather_adapter_script()) == "__missing_gather_resolve_adapter__.py"
+    monkeypatch.setattr(rpf_routes.Path, "is_file", lambda _self: False)
+    assert str(rpf_routes._find_gather_adapter_script()) == "__missing_gather_resolve_adapter__.py"
+
+
+def test_route_public_fetch_github_mode_fallbacks(monkeypatch, tmp_path: Path) -> None:
+    assert rpf_routes.resolve_github_mode(None) == "direct-cli"
+
+    monkeypatch.setattr(rpf_routes, "_find_gather_adapter_script", lambda: Path("__missing__.py"))
+    assert rpf_routes.resolve_github_mode(tmp_path) == "direct-cli"
+
+    adapter_script = tmp_path / "resolve_adapter.py"
+    adapter_script.write_text(
+        "def load_adapter(repo_root):\n    raise RuntimeError('adapter unavailable')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(rpf_routes, "_find_gather_adapter_script", lambda: adapter_script)
+    assert rpf_routes.resolve_github_mode(tmp_path) == "direct-cli"
+
+    monkeypatch.setattr(rpf_routes.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None)
+    assert rpf_routes.resolve_github_mode(tmp_path) == "direct-cli"
+
+
+def test_route_public_fetch_route_id_for_host_edge_domains() -> None:
+    assert rpf_routes.route_id_for_host("news.ycombinator.com", github_mode="direct-cli") == "hacker-news-firebase"
+    assert rpf_routes.route_id_for_host("stackoverflow.com", github_mode="direct-cli") == "stackexchange-api"
+    assert rpf_routes.route_id_for_host("blog.naver.com", github_mode="direct-cli") == "naver-blog-mobile"
 
 
 def test_acquire_helper_browser_branch_payloads(monkeypatch) -> None:

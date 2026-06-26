@@ -1,23 +1,19 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
 
 from tests.quality_gates.support import run_script
+from tests.script_loader import load_script_module
 
 PLAN = "skills/public/gather/scripts/gather_plan.py"
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def load_plan_module():
-    spec = importlib.util.spec_from_file_location("gather_plan_under_test", ROOT / PLAN)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module("gather_plan_under_test", ROOT / PLAN)
 
 
 def test_gather_plan_exposes_twitter_exact_source_contract(tmp_path) -> None:
@@ -39,6 +35,12 @@ def test_gather_plan_exposes_twitter_exact_source_contract(tmp_path) -> None:
         "exact-fetched",
         "exact-blocked",
         "exact-unavailable",
+    ]
+    assert payload["exact_source"]["terminal_categories"] == [
+        "acquired",
+        "provider-required",
+        "auth-browser-required",
+        "unsupported",
     ]
     assert payload["next_action"]["command"][:3] == [
         "python3",

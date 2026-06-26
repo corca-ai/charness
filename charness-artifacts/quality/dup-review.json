@@ -111,6 +111,20 @@
       "note": "standalone JS mutation runner keeps a local stable hash helper to avoid script/package import bootstrap churn for a two-line deterministic sampler primitive",
       "reviewed_at": "2026-06-25",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c30c9d5d3a230dd2",
+      "note": "support/web-fetch scripts keep module-local SCRIPT_DIR sys.path bootstrap so each helper stays directly executable in source and exported plugin layouts",
+      "reviewed_at": "2026-06-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "558a970728f0af81",
+      "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
+      "reviewed_at": "2026-06-26",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

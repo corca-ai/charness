@@ -1,47 +1,42 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 from pathlib import Path
-from types import ModuleType
 
 from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES
 from scripts.validate_quality_closeout_contract import validate_quality_closeout_contract
+from tests.script_loader import load_script_module
 
 from .support import ROOT, run_script
 
-
-def _load_script_module(module_name: str, relative_path: str) -> ModuleType:
-    module_path = ROOT / relative_path
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-LIST_CAPABILITIES = _load_script_module(
+LIST_CAPABILITIES = load_script_module(
     "tests.quality_gates.docs_misc_list_capabilities",
-    "skills/public/find-skills/scripts/list_capabilities.py",
+    ROOT / "skills/public/find-skills/scripts/list_capabilities.py",
 )
-SURVEY_VERIFICATION = _load_script_module(
+SURVEY_VERIFICATION = load_script_module(
     "tests.quality_gates.docs_misc_survey_verification",
-    "skills/public/impl/scripts/survey_verification.py",
+    ROOT / "skills/public/impl/scripts/survey_verification.py",
+)
+CURRENT_RELEASE = load_script_module(
+    "tests.quality_gates.docs_misc_current_release",
+    ROOT / "skills/public/release/scripts/current_release.py",
 )
 
 
-def test_release_current_release_reports_packaging_version() -> None:
-    result = run_script("skills/public/release/scripts/current_release.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+def test_release_current_release_reports_packaging_version(monkeypatch, capsys) -> None:
+    payload = CURRENT_RELEASE.build_payload(ROOT)
     expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
     assert payload["package_id"] == "charness"
     assert payload["surface_versions"]["packaging_manifest"] == expected
     assert payload["checked_in_plugin_root"].endswith("plugins/charness")
     assert payload["fresh_checkout_probes"]["status"] in {"configured", "not_configured"}
+
+    monkeypatch.setattr(sys, "argv", ["current_release.py", "--repo-root", str(ROOT)])
+    CURRENT_RELEASE.main()
+    cli_payload = json.loads(capsys.readouterr().out)
+    assert cli_payload["package_id"] == "charness"
+    assert cli_payload["surface_versions"]["packaging_manifest"] == expected
 
 
 def test_narrative_map_sources_reports_checked_in_docs() -> None:

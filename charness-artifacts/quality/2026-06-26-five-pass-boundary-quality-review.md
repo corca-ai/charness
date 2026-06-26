@@ -3,120 +3,114 @@ Date: 2026-06-26
 
 ## Scope
 
-Target boundary: five-plus repeated subprocess/script execution assertions in
-find-skills, integration validation, and docs/misc quality tests.
+Target boundary: follow-up quality slice covering web-fetch route split,
+gather terminal taxonomy, import-safe script tests, boundary-bypass reduction,
+and mutation coverage refresh.
 
-Ambient repo findings: broad gate runtime, doc-duplicate advisory, Python
-warn-band files, and the larger nested-CLI backlog are not fully fixed here.
+Ambient repo findings: broad gate runtime, doc-duplicate advisory, existing
+intentional CLI smokes, and the larger nested-CLI backlog are not fully fixed
+here.
 
 ## Current Gates
 
-- Focused pytest passed 50 tests across find-skills, control-plane validation,
-  and docs/misc quality coverage.
-- Boundary-bypass ratchet passed after the conversion and after restoring two
-  operator-facing CLI proofs that fresh-eye found were unique.
+- Focused pytest passed 165 tests across web-fetch routing, gather terminal
+  source resolution, gather planning, docs/misc quality, find-skills loader
+  conversions, and public URL support.
+- Slice closeout passed deterministic validators, boundary-bypass ratchet,
+  broad read-only pytest, and mutation coverage producer.
+- Public `gather` dogfood validation passed after recording the terminal
+  taxonomy review and scenario-registry decision.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
-- runtime hot spots: `run-quality-read-only` 38.1s latest / 65.7s median,
-  budget 90.0s; `pytest` 29.0s latest / 25.6s median, budget 140.0s;
-  `check-coverage` 18.4s latest / 18.9s median, budget 55.0s.
-- coverage gate: focused pytest, ruff, and boundary-bypass ratchet passed;
-  broad read-only closeout pending at draft time.
+- runtime hot spots: closeout broad read-only pytest completed in 60.0s; fast
+  focused pytest suites completed in 0.59s, 3.30s, and 10.24s.
+- coverage gate: `run_slice_closeout.py --verification-lock
+  --produce-mutation-coverage` passed and wrote mutation coverage artifacts.
 - evaluator depth: deterministic gates only; `plan_cautilus_proof.py` returned
-  `next_action: none`, so no Cautilus run was allowed or needed.
+  `next_action: none`, so no Cautilus run was allowed or needed; gather
+  scenario-registry review stayed on deterministic plan/route tests.
 
 ## Healthy
 
-- `tests/test_find_skills_shadowing.py` now drives `list_capabilities.main()`
-  in-process for local-vs-trusted shadowing and duplicate trusted-id behavior.
-- `tests/test_find_skills_synced_support.py` now drives
-  `list_capabilities.main()` in-process for synced support and discovery-stub
-  cross-link behavior.
-- `tests/control_plane/test_integrations_validation.py` now tests four
-  integration manifest validation failures through direct validator functions
-  instead of launching `validate_integrations.py` four times.
-- `tests/quality_gates/test_docs_and_misc.py` now uses in-process script main
-  calls for list-capabilities trusted-root behavior and impl verification
-  survey JSON behavior.
-- Fresh-eye found two over-conversions; the final slice restored the only known
-  real CLI proofs for setup operator-acceptance synthesis and quality closeout
-  contract validation.
-- Raw boundary-bypass inventory improved from 86 candidates / 148 keys / 49
-  convertible files to 84 / 144 / 47; ratchet-effective counts improved from
-  82 candidates / 45 clean-convertible files to 80 / 43.
+- `route_public_fetch.py` is now a smaller facade; route tables, host matching,
+  GitHub adapter mode resolution, and gather-adapter discovery live in
+  `route_public_fetch_routes.py`.
+- `tests/script_loader.py` removes duplicated dataclass-safe script import
+  helpers from find-skills and docs/misc tests.
+- `tests/quality_gates/test_docs_and_misc.py` reduced one boundary-bypass key
+  while retaining `current_release.py` CLI wiring through direct `main()`
+  invocation with patched argv and captured stdout.
+- X/Twitter source resolution now emits `terminal_category`; gather plans
+  advertise the categories and durable records render them.
+- Effective boundary-bypass key count improved from 117 to 116 for this slice.
 
 ## Weak
 
-- `tests/control_plane/test_integrations_validation.py` still has clean
-  boundary-bypass targets because doctor, install, sync, and update flows keep
-  real process coverage in the same broad file.
-- The new path loaders for find-skills scripts are duplicated across three test
-  modules; they are small but could become a shared test helper if this pattern
-  repeats.
-- `tests/quality_gates/test_docs_and_misc.py` remains near the test-file warn
-  band with 660 Python code lines.
+- `tests/quality_gates/test_docs_and_misc.py` still has an advisory subprocess
+  smoke for `synthesize_operator_acceptance.py`; fresh-eye did not review that
+  older boundary in this slice.
+- Changed-line mutation self-check must be rerun after commit because
+  uncommitted mutation-pool changes are outside the `origin/main..HEAD` range.
+- `tests/quality_gates/test_docs_and_misc.py` remains a large mixed quality
+  test file, although this slice extracted shared script loading.
 
 ## Missing
 
-- Missing before this slice: several routine validation and inventory behavior
-  assertions were only reachable through subprocess execution despite callable
-  seams already existing.
+- Missing before this slice: terminal source-resolution taxonomy had no
+  category field, gather plan did not advertise the category contract, and
+  repeated test-local script loaders made import-safe conversions noisier.
 
 ## Deferred
 
 - Tokenizer-specific prompt measurement remains deferred; this slice targets
-  script execution fanout and boundary-bypass ratchet/token noise.
+  script execution fanout, source-resolution clarity, and mutation proof.
 
 ## Advisory
 
-- structural review result: command: `check_boundary_bypass_ratchet.py --repo-root .`
-  reports 80 effective candidates and 43 clean-convertible files after
-  exemptions; raw inventory reports 84 candidates, 144 keys, and 47 convertible
-  files.
+- structural review result: command:
+  `check_boundary_bypass_ratchet.py --repo-root . --json` reports ok with 116
+  effective candidate keys and no new candidate keys.
 - prose review result: `testability-and-selection.md` supports keeping thin
   real-boundary smokes while moving ordinary behavior assertions below the
-  boundary; the restored CLI proofs follow that rule.
-- standing-test economics result: command:
-  `inventory_standing_test_economics.py --repo-root . --json`;
-  `test_file_count=333`, `nested_cli_file_count=149`, and
-  `nested_cli_standing_or_mixed_file_count=145` still justify continuing this
-  cleanup pattern.
+  boundary; `current_release.py` now follows that rule without subprocess.
+- public-skill review result: `suggest_public_skill_dogfood.py --skill-id
+  gather --json` was inspected, `docs/public-skill-dogfood.json` records the
+  terminal taxonomy update, and `evals/cautilus/scenarios.json` remains mapped
+  to `gather-adapter-bootstrap`.
 - fresh-eye result: artifact:
-  `charness-artifacts/critique/2026-06-26-five-pass-boundary.md` records two
-  high findings that were fixed before closeout.
+  `charness-artifacts/critique/2026-06-26-web-fetch-gather-quality-slice.md`
+  records two findings that were fixed before closeout.
 
 ## Delegated Review
 
 - Delegated Review: executed — fresh-eye reviewer
-  `019f014f-0f66-7582-a917-7bfb3b576989` found two high over-conversions; both
-  were restored before final verification.
+  `019f034f-5e94-74f0-a201-587e6d39978b` found one medium CLI-boundary gap and
+  one low gather-plan contract gap; both were fixed before closeout.
 - Slow-gate lenses (fixture-economics, parallel-critical-path,
-  duplicated-proof): reviewed through boundary-bypass inventory, standing-test
-  economics, and focused-test evidence; no unique CLI boundary proof remains
-  removed in the final diff.
+  duplicated-proof): reviewed through boundary-bypass ratchet, shared loader
+  extraction, focused pytest, broad read-only pytest, and mutation coverage.
 
 ## Commands Run
 
-- `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root . --json`
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
-- `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .`
-- `python3 scripts/check_python_lengths.py --headroom --paths tests/test_find_skills_shadowing.py tests/test_find_skills_synced_support.py tests/control_plane/test_integrations_validation.py tests/quality_gates/test_docs_and_misc.py`
-- command: python3 -m pytest -q tests/test_find_skills_shadowing.py tests/test_find_skills_synced_support.py tests/control_plane/test_integrations_validation.py tests/quality_gates/test_docs_and_misc.py
-- command: python3 -m ruff check tests/test_find_skills_shadowing.py tests/test_find_skills_synced_support.py tests/control_plane/test_integrations_validation.py tests/quality_gates/test_docs_and_misc.py
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id gather --json`
+- `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --produce-mutation-coverage --mutation-coverage-extra-pytest-target tests/test_web_fetch_route_and_classify.py --mutation-coverage-extra-pytest-target tests/test_twitter_exact_source.py --mutation-coverage-extra-pytest-target tests/test_gather_plan.py --mutation-coverage-extra-pytest-target tests/quality_gates/test_docs_and_misc.py --ack-cautilus-skill-review`
+- `python3 scripts/run_slice_closeout.py --repo-root . --base origin/main --verification-lock --produce-mutation-coverage --mutation-coverage-extra-pytest-target tests/test_web_fetch_route_and_classify.py --mutation-coverage-extra-pytest-target tests/test_twitter_exact_source.py --mutation-coverage-extra-pytest-target tests/test_gather_plan.py --mutation-coverage-extra-pytest-target tests/quality_gates/test_docs_and_misc.py --ack-cautilus-skill-review`
+- `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha origin/main --reuse-coverage`
 
 ## Recommended Next Gates
 
-- active none — the existing boundary-bypass ratchet already guards new growth
-  in this class.
-- passive convert another clean candidate because the remaining effective
-  clean-convertible backlog is still 43 files.
-- passive extract a shared script-loader test helper because three files now
-  need dataclass-safe path loading for hyphenated skill script paths.
+- active none — post-commit changed-line mutation coverage passed for the
+  changed mutation-pool files.
+- passive convert the existing `synthesize_operator_acceptance.py` subprocess because
+  only after proving it has another operator-facing CLI boundary; fresh-eye
+  already caught one over-conversion in this class.
+- passive keep `route_public_fetch_routes.py` below the warn band because it
+  now owns the concentrated web-fetch route table and may keep accumulating
+  route-specific behavior.
 
 ## History
 

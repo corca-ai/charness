@@ -178,6 +178,7 @@ def classify_source_resolution(acquisition: dict) -> dict[str, object]:
         return {
             "verdict": verdict,
             "terminal_state": "exact-post-acquired",
+            "terminal_category": "acquired",
             "required_capability": None,
             "next_owner": "none",
         }
@@ -187,6 +188,7 @@ def classify_source_resolution(acquisition: dict) -> dict[str, object]:
         return {
             "verdict": verdict,
             "terminal_state": "unsupported-route",
+            "terminal_category": "unsupported",
             "required_capability": "x-status-url",
             "next_owner": "caller",
         }
@@ -194,6 +196,7 @@ def classify_source_resolution(acquisition: dict) -> dict[str, object]:
         return {
             "verdict": verdict,
             "terminal_state": "authenticated-browser-required",
+            "terminal_category": "auth-browser-required",
             "required_capability": "operator-approved live X route, authenticated browser/profile, or exact-source provider",
             "next_owner": "Charness gather/browser/provider capability",
         }
@@ -201,12 +204,14 @@ def classify_source_resolution(acquisition: dict) -> dict[str, object]:
         return {
             "verdict": verdict,
             "terminal_state": "exact-post-blocked-by-x",
+            "terminal_category": "provider-required",
             "required_capability": "authenticated browser/profile or exact-source provider",
             "next_owner": "browser/profile access or external provider",
         }
     return {
         "verdict": verdict,
         "terminal_state": "unsupported-route",
+        "terminal_category": "unsupported",
         "required_capability": "new exact-source route support",
         "next_owner": "Charness gather",
     }

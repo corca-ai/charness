@@ -195,6 +195,10 @@ def test_classify_source_resolution_names_unblock_owner() -> None:
     assert tes.classify_source_resolution(_acq(blocked))["terminal_state"] == "exact-post-blocked-by-x"
     assert tes.classify_source_resolution(_acq(unavailable))["terminal_state"] == "authenticated-browser-required"
     assert tes.classify_source_resolution(_acq(unsupported))["terminal_state"] == "unsupported-route"
+    assert tes.classify_source_resolution(_acq(exact))["terminal_category"] == "acquired"
+    assert tes.classify_source_resolution(_acq(blocked))["terminal_category"] == "provider-required"
+    assert tes.classify_source_resolution(_acq(unavailable))["terminal_category"] == "auth-browser-required"
+    assert tes.classify_source_resolution(_acq(unsupported))["terminal_category"] == "unsupported"
     assert tes.classify_source_resolution(_acq(not_applicable, route_id="reddit-feed"))["terminal_state"] == "not-applicable"
     assert tes.classify_source_resolution(_acq(unknown_terminal))["required_capability"] == "new exact-source route support"
 
@@ -333,6 +337,7 @@ def test_gather_record_surfaces_source_resolution() -> None:
         "source_resolution": {
             "verdict": "exact-unavailable",
             "terminal_state": "authenticated-browser-required",
+            "terminal_category": "auth-browser-required",
             "required_capability": "operator-approved live X route",
             "next_owner": "Charness gather/browser/provider capability",
         },
@@ -340,6 +345,7 @@ def test_gather_record_surfaces_source_resolution() -> None:
     record = gpu._render_record(STATUS_URL, acquisition, persist_requested=False)
     assert "## Source Resolution" in record
     assert "Terminal State: `authenticated-browser-required`" in record
+    assert "Terminal Category: `auth-browser-required`" in record
     assert "Next Owner: `Charness gather/browser/provider capability`" in record
 
 
@@ -493,6 +499,7 @@ def test_gather_writes_exact_source_unavailable_record(tmp_path: Path) -> None:
     assert payload["acquisition_disposition"] == "degraded"
     assert payload["source_identity"] == "exact-unavailable"
     assert payload["source_resolution"]["terminal_state"] == "authenticated-browser-required"
+    assert payload["source_resolution"]["terminal_category"] == "auth-browser-required"
     record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
     assert "Source Identity: `exact-unavailable`" in record
     assert "Terminal State: `authenticated-browser-required`" in record
@@ -530,6 +537,7 @@ def test_gather_does_not_write_non_status_x_terminal_record(tmp_path: Path) -> N
     payload = json.loads(result.stdout)
     assert payload["source_identity"] == "exact-unavailable"
     assert payload["source_resolution"]["terminal_state"] == "unsupported-route"
+    assert payload["source_resolution"]["terminal_category"] == "unsupported"
     assert payload["write_record"] is None
     assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
 

@@ -17,6 +17,7 @@ EXACT_SOURCE_CONTRACTS = {
         "owner": "support/web-fetch/twitter_exact_source",
         "route_order": ("tweet-result", "oembed"),
         "terminal_verdicts": ("exact-fetched", "exact-blocked", "exact-unavailable"),
+        "terminal_categories": ("acquired", "provider-required", "auth-browser-required", "unsupported"),
         "substitution_policy": "never_as_original",
     },
     "reddit-feed": {

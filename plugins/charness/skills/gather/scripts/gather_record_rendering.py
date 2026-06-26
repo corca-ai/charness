@@ -116,7 +116,7 @@ def source_resolution_lines(acquisition: dict[str, object]) -> list[str]:
     if not isinstance(resolution, dict):
         return []
     lines = ["", "## Source Resolution", ""]
-    for key in ("verdict", "terminal_state", "required_capability", "next_owner"):
+    for key in ("verdict", "terminal_state", "terminal_category", "required_capability", "next_owner"):
         value = resolution.get(key)
         if value not in (None, "", [], {}):
             lines.append(f"- {key.replace('_', ' ').title()}: `{value}`")
