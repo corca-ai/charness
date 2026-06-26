@@ -768,6 +768,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Advisory inventories need false-positive fixes, not just exemptions, when the path is not actually spawned.
 - Metrics: Token/testability proxy: reduced raw boundary candidate keys from 89 to 85 and removed misleading clean-target pressure from path-argument fixtures.
 
+### Slice 45: Run runtime inheritance smoke in process
+
+- Objective: Remove the clean `check_python_runtime_inheritance.py` subprocess from run-slice-closeout surface obligation tests.
+- Why this approach: The test only needs the validator's returncode/stderr behavior against a tiny temp repo fixture; calling `check_python_runtime_inheritance.main()` through the shared loaded-script runner preserves that contract without Python process startup.
+- Commits:
+- What changed: Imported `scripts.check_python_runtime_inheritance` in `test_run_slice_closeout_surface_obligations.py` and routed the unpinned bash-login-shell rejection smoke through `run_loaded_script_main()`.
+- Alternatives rejected: Did not convert broader `run_slice_closeout.py` subprocess tests in the same file because those exercise command orchestration and surface selection behavior.
+- Targeted verification: pytest: `tests/quality_gates/test_run_slice_closeout_surface_obligations.py` `20 passed` in 7.87s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 57 candidates, 84 candidate keys, and 13 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 53 candidates and 11 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing validator smoke.
+- Critique: Same-agent slice critique: the stderr text and returncode stay asserted, while process startup was incidental to the failing-fixture validation.
+- Off-goal findings: None.
+- Lessons carried forward: Validator scripts with pure `main(argv)` paths can keep negative-case coverage in process when CLI wrapping is already exercised elsewhere.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

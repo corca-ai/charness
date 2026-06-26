@@ -8,7 +8,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from .support import ROOT, run_script
+from scripts import check_python_runtime_inheritance
+
+from .support import ROOT, run_loaded_script_main, run_script
 
 
 def demo_surface(
@@ -472,8 +474,9 @@ def test_check_python_runtime_inheritance_rejects_unpinned_bash_login_shell(tmp_
         encoding="utf-8",
     )
 
-    result = run_script(
-        "scripts/check_python_runtime_inheritance.py",
+    result = run_loaded_script_main(
+        "check_python_runtime_inheritance.py",
+        check_python_runtime_inheritance,
         "--repo-root",
         str(repo),
     )
