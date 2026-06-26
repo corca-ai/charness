@@ -207,6 +207,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Large advisory JSON should have a bounded first-read mode before humans or agents spend context on full attribution.
 - Metrics: Token/output proxy: dead-code advisory output reduced from 95468 bytes to 5176 bytes with `--summary`, a 94.6% reduction.
 
+### Slice 5: Compact lint-ignore inventory output
+
+- Objective: Reduce token overhead for lint-suppression review while preserving the full detailed inventory.
+- Why this approach: `inventory_lint_ignores.py --json` emitted about 90KB in this repo; the payload already had useful counts, but callers had to ingest full findings to get them.
+- Commits:
+- What changed: Added `--summary` output to the public quality script and checked-in plugin mirror; summary keeps counts, interpretation, adapter diagnostics, review prompts, and a bounded priority findings sample while omitting full findings. Updated quality dogfood evidence.
+- Alternatives rejected: Did not change the plain text output or remove full `--json`; detailed suppression cleanup still needs snippets and per-finding data.
+- Targeted verification: pytest: 6 passed for test_quality_lint_ignores.py; ruff passed; check_python_lengths headroom remains 289 lines for inventory_lint_ignores.py and 614 lines for test_quality_lint_ignores.py.
+- Test duplication pressure: Added one focused summary contract test in the existing lint-ignore inventory test file; no new test file.
+- Critique: Same-agent slice critique: the summary samples likely-priority suppressions first but remains explicitly triage-only, so it cannot silently hide the full debt list.
+- Off-goal findings: The lint-ignore inventory still reports existing suppression debt; this slice makes first-pass review cheaper rather than deciding those findings.
+- Lessons carried forward: Advisory inventories that already compute counts should expose them without forcing full finding ingestion.
+- Metrics: Token/output proxy: lint-ignore inventory output reduced from 89662 bytes to 6140 bytes with `--summary`, a 93.2% reduction.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

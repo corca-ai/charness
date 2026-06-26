@@ -8,6 +8,33 @@ import sys
 from pathlib import Path
 
 
+def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
+    findings = payload.get("findings", [])
+    finding_items = [finding for finding in findings if isinstance(finding, dict)]
+    priority_sample = sorted(
+        finding_items,
+        key=lambda finding: (
+            0 if finding.get("blanket") else 1,
+            0 if finding.get("scope") == "file" else 1,
+            str(finding.get("path", "")),
+            int(finding.get("line", 0)),
+        ),
+    )[:sample_limit]
+    return {
+        "summary_note": "summary is triage output; use --json for full lint-ignore findings",
+        "repo_root": payload["repo_root"],
+        "summary": payload["summary"],
+        "priority_findings_sample": priority_sample,
+        "review_prompts": payload["review_prompts"],
+        "interpretation": payload["interpretation"],
+        "adapter_path": payload.get("adapter_path"),
+        "adapter_valid": payload.get("adapter_valid", True),
+        "adapter_errors": payload.get("adapter_errors", []),
+        "adapter_warnings": payload.get("adapter_warnings", []),
+        "adapter_load_mode": payload.get("adapter_load_mode", "permissive"),
+    }
+
+
 def main() -> int:
     repo_root = next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "lint_ignore_inventory_lib.py").is_file())
     sys.path.insert(0, str(repo_root))
@@ -17,6 +44,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the lint-ignore inventory")
     parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON counts and priority samples instead of full findings")
     args = parser.parse_args()
     target_root = args.repo_root.resolve()
     adapter = load_quality_adapter_permissive(target_root)
@@ -30,6 +58,8 @@ def main() -> int:
     payload["adapter_load_mode"] = adapter.get("load_mode", "permissive")
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    elif args.summary:
+        print(json.dumps(summarize(payload), ensure_ascii=False, indent=2, sort_keys=True))
     else:
         for finding in payload["findings"]:
             codes = ",".join(finding["codes"]) or "*"

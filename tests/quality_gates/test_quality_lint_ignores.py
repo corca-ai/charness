@@ -34,6 +34,18 @@ def _inventory_json(repo: Path) -> dict:
     return json.loads(buffer.getvalue())
 
 
+def _inventory_summary(repo: Path) -> dict:
+    buffer = io.StringIO()
+    saved_argv = _MODULE.sys.argv
+    _MODULE.sys.argv = ["inventory_lint_ignores.py", "--repo-root", str(repo), "--summary"]
+    try:
+        with contextlib.redirect_stdout(buffer):
+            assert _MODULE.main() == 0
+    finally:
+        _MODULE.sys.argv = saved_argv
+    return json.loads(buffer.getvalue())
+
+
 def test_inventory_lint_ignores_reports_file_level_and_inline_suppressions(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
@@ -81,6 +93,38 @@ def test_inventory_lint_ignores_reports_file_level_and_inline_suppressions(tmp_p
     assert ("scripts/demo.py", "noqa", "inline", (), True) in findings
     assert ("web/demo.ts", "eslint", "file", ("no-console",), False) in findings
     assert ("web/demo.ts", "eslint", "inline", ("no-alert",), False) in findings
+    assert any("structural seam" in item for item in payload["review_prompts"])
+
+
+def test_inventory_lint_ignores_summary_omits_full_findings(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "web").mkdir(parents=True)
+    (repo / "scripts" / "demo.py").write_text(
+        "\n".join(
+            [
+                "# ruff: noqa: E402, I001",
+                "import sys  # noqa: F401",
+                "VALUE = 1  # noqa",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "web" / "demo.ts").write_text(
+        "/* eslint-disable no-console */\n// eslint-disable-next-line no-alert\n",
+        encoding="utf-8",
+    )
+
+    payload = _inventory_summary(repo)
+
+    assert payload["summary_note"].startswith("summary is triage output")
+    assert "findings" not in payload
+    assert payload["summary"]["ignore_count"] == 5
+    assert [finding["snippet"] for finding in payload["priority_findings_sample"][:2]] == [
+        "VALUE = 1  # noqa",
+        "# ruff: noqa: E402, I001",
+    ]
     assert any("structural seam" in item for item in payload["review_prompts"])
 
 
