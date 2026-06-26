@@ -403,6 +403,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: In-process conversions for scripts with __main__ exception wrappers must mirror the wrapper, not only call main().
 - Metrics: run_script calls in test_debug_seam_risk_index.py: base 2, current 1.
 
+### Slice 19: Issue 57 renderer subprocess fanout
+
+- Objective: Reduce repeated render_issue_57_design_study.py subprocess calls while preserving write-mode CLI proof.
+- Why this approach: Default markdown/no-write rendering can call main() directly; write + JSON + artifact creation remains the command boundary.
+- Commits:
+- What changed: Added run_issue_57_design_study(monkeypatch, capsys, ...) and converted the default markdown/no-write test to an in-process main() call.
+- Alternatives rejected: Kept write + JSON output + markdown artifact creation as a real subprocess smoke.
+- Targeted verification: ruff passed; focused pytest: 2 passed in 2.42s; boundary-bypass ratchet OK with 73 candidates / 36 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 2 to 1.
+- Test duplication pressure: No tests added; one output-only check switched execution layer. Boundary ratchet effective candidates dropped by one.
+- Critique: charness-artifacts/critique/2026-06-26-issue-57-renderer-runtime.md; low-risk same-agent critique recorded because write-mode CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Renderer tests should retain file-writing subprocess proof and move pure stdout rendering checks in-process.
+- Metrics: run_script calls in test_issue_57_design_study.py: base 2, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

@@ -1,9 +1,23 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from .support import run_script
+from runtime_bootstrap import import_repo_module
+
+from .support import ROOT, run_script
+
+SCRIPT = "scripts/render_issue_57_design_study.py"
+_render_issue_57_design_study = import_repo_module(ROOT / SCRIPT, "scripts.render_issue_57_design_study")
+
+
+def run_issue_57_design_study(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [SCRIPT, *args])
+    code = _render_issue_57_design_study.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def _write_inventory(repo: Path) -> None:
@@ -68,7 +82,7 @@ def test_issue_57_renderer_writes_capability_spectrum_markdown(tmp_path: Path) -
     _write_inventory(tmp_path)
 
     result = run_script(
-        "scripts/render_issue_57_design_study.py",
+        SCRIPT,
         "--repo-root",
         str(tmp_path),
         "--write",
@@ -102,11 +116,12 @@ def test_issue_57_renderer_writes_capability_spectrum_markdown(tmp_path: Path) -
     assert "live doctor payload ingestion" in rendered
 
 
-def test_issue_57_renderer_prints_markdown_without_writing_by_default(tmp_path: Path) -> None:
+def test_issue_57_renderer_prints_markdown_without_writing_by_default(tmp_path: Path, monkeypatch, capsys) -> None:
     _write_inventory(tmp_path)
 
-    result = run_script(
-        "scripts/render_issue_57_design_study.py",
+    result = run_issue_57_design_study(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
     )
