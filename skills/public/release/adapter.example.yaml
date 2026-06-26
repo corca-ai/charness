@@ -16,6 +16,7 @@ real_host_required_surfaces: []
 real_host_required_path_globs: []
 real_host_checklist: []
 requested_review_commands: []
+requested_review_policy: warn-if-unconfigured
 fresh_checkout_probes: []
 review_unavailable_patterns:
 - review unavailable

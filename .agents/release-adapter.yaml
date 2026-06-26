@@ -59,6 +59,7 @@ fresh_checkout_probes:
 - ./charness goal check --help >/dev/null
 - python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null
 requested_review_commands: []
+requested_review_policy: advisory-only
 review_unavailable_patterns:
 - review unavailable
 - requested review unavailable

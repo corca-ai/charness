@@ -2,8 +2,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from pathlib import Path
 from typing import Any
+
+
+def _record_runtime(payload: dict[str, Any], label: str, start: float) -> None:
+    payload.setdefault("release_runtime", []).append(
+        {"label": label, "elapsed_seconds": round(time.perf_counter() - start, 3)}
+    )
 
 
 def _prepare_release_attempt(
@@ -52,9 +59,15 @@ def _prepare_release_attempt(
         quality_status="is queued for this publish attempt",
         fresh_checkout_payload=fresh_checkout_plan,
     )
-    cli.run_requested_review_gate(repo_root)
+    review_start = time.perf_counter()
+    payload["requested_review_gate"] = cli.run_requested_review_gate(repo_root)
+    _record_runtime(payload, "requested_review_gate", review_start)
+    surface_start = time.perf_counter()
     cli.run_cli_skill_surface_gate(repo_root, adapter_data)
+    _record_runtime(payload, "cli_skill_surface_gate", surface_start)
+    quality_start = time.perf_counter()
     cli.run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
+    _record_runtime(payload, "quality_command", quality_start)
     return {
         "payload": payload,
         "branch": plan["branch"],
@@ -98,7 +111,9 @@ def _commit_release_artifact(
     for body_line in cli.release_commit_body(payload, args.close_issue):
         commit_command.extend(["-m", body_line])
     cli.run(commit_command, cwd=repo_root)
+    fresh_start = time.perf_counter()
     fresh_checkout_payload = cli.run_fresh_checkout_probes(repo_root)
+    _record_runtime(payload, "fresh_checkout_probes_initial", fresh_start)
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     if fresh_checkout_payload["status"] == "passed":
         cli.amend_fresh_checkout_artifact(
@@ -114,7 +129,9 @@ def _commit_release_artifact(
             run_narrative_audit=cli.run_narrative_audit,
             run_command=cli.run,
         )
+        fresh_rerun_start = time.perf_counter()
         fresh_checkout_payload = cli.run_fresh_checkout_probes(repo_root)
+        _record_runtime(payload, "fresh_checkout_probes_after_amend", fresh_rerun_start)
         payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     state["fresh_checkout_payload"] = fresh_checkout_payload
     state["artifact_relpath"] = artifact_relpath
@@ -153,6 +170,7 @@ def _publish_and_finalize(
     fresh_checkout_payload = state["fresh_checkout_payload"]
     artifact_relpath = state["artifact_relpath"]
 
+    publish_start = time.perf_counter()
     cli.run(["git", "tag", tag_name], cwd=repo_root)
     cli.run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 
@@ -160,6 +178,7 @@ def _publish_and_finalize(
     release_verify_result = cli.verify_release_visible(
         repo_root, tag_name, backend, backend_command=cli.backend_command, run=cli.run
     )
+    _record_runtime(payload, "push_create_verify_release", publish_start)
     release_verified = release_verify_result.returncode == 0
     cli.finalize_release_payload(
         repo_root,
@@ -189,10 +208,12 @@ def _publish_and_finalize(
     # the verdict BEFORE the irreversible issue close. Issue-close advances on
     # rung-1 record-PRESENCE only (a confirmation or a typed disposition pass it
     # equally, F2a); a silent record refuses the close.
+    distinct_start = time.perf_counter()
     cli.confirm_release_via_distinct_channel(
         repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
         tag_name=tag_name, expected_release_url=expected_release_url,
     )
+    _record_runtime(payload, "distinct_channel_verification", distinct_start)
     if not cli.evaluate_release_distinct_channel(payload)["ok"]:
         cli.commit_final_release_artifact(
             repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
@@ -201,12 +222,16 @@ def _publish_and_finalize(
             has_issue_closeout=False,
         )
         cli.fail_release_distinct_channel_floor(payload)
+    issue_start = time.perf_counter()
     cli.ensure_release_issues_closed(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run)
+    _record_runtime(payload, "issue_closeout", issue_start)
+    install_refresh_start = time.perf_counter()
     payload["install_refresh"] = cli.run_post_publish_install_refresh(
         repo_root,
         command=adapter_data.get("post_publish_install_refresh", ""),
         run_shell=cli.run_shell,
     )
+    _record_runtime(payload, "post_publish_install_refresh", install_refresh_start)
     cli.commit_final_release_artifact(
         repo_root,
         adapter_data=adapter_data,

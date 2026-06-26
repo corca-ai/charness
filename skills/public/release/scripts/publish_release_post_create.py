@@ -28,12 +28,14 @@ def run_post_publish_install_refresh(
     command = (command or "").strip()
     if not command:
         return {"status": "not_configured", "command": None}
+    start = time.perf_counter()
     result = run_shell(command, cwd=repo_root, check=False)
     ok = result.returncode == 0
     return {
         "status": "refreshed" if ok else "failed",
         "command": command,
         "returncode": result.returncode,
+        "elapsed_seconds": round(time.perf_counter() - start, 3),
         "stdout_tail": (result.stdout or "").strip()[-1500:],
         "stderr_tail": (result.stderr or "").strip()[-1500:],
     }

@@ -37,6 +37,7 @@ Search order:
 - `real_host_required_path_globs`
 - `real_host_checklist`
 - `requested_review_commands`
+- `requested_review_policy`
 - `review_unavailable_patterns`
 - `review_waiver_phrases`
 - `product_surfaces`
@@ -65,6 +66,7 @@ Search order:
 - `real_host_required_path_globs`: empty list
 - `real_host_checklist`: empty list
 - `requested_review_commands`: empty list
+- `requested_review_policy`: `warn-if-unconfigured`
 - `review_unavailable_patterns`: common release-record phrases such as
   `review unavailable`, `review gate unavailable`, and `executor_variants`
 - `review_waiver_phrases`: `review waiver:`, `explicit review waiver:`, and
@@ -103,6 +105,13 @@ fails, `check_requested_review_gate.py` blocks publish/tag instead of treating
 the missing review surface as a caveat. The same helper scans release records
 for configured unavailable-review phrases; those records need a fix or an
 explicit review waiver phrase before release.
+
+`requested_review_policy` controls the empty-command posture. The default
+`warn-if-unconfigured` keeps legacy repos noisy when no requested-review command
+is wired. Repos that intentionally treat requested review as advisory declare
+`advisory-only`; the checker then records `configuration_status: advisory_only`
+without a warning. A configured command still blocks on failure under either
+policy.
 
 `fresh_checkout_probes` is optional command data owned by the repo adapter.
 Each entry is a bash shell string executed from the temporary clone root. Use

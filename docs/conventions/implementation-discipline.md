@@ -38,7 +38,13 @@ the root instruction file but still apply to Charness maintenance work.
   focused command is instrumented for the freshness marker. Without a fresh
   producer run the gate skips non-blocking, so run the producer before a
   pool-touching push to keep the gate active. To check your own uncommitted slice
-  early, run the producer (it stamps the marker over base->worktree) then the
+  when the standing runner is nearly enough but missed one focused node, append
+  it with `--mutation-coverage-extra-pytest-target tests/path.py::test_name`
+  instead of shell-chaining commands inside `--mutation-coverage-command`.
+  [run_standing_pytest.py](../../scripts/run_standing_pytest.py) accepts the same `--extra-pytest-target`
+  option for direct runs and `--print-expanded-targets` diagnostics.
+  To check your own uncommitted slice early, run the producer (it stamps the
+  marker over base->worktree) then the
   consumer, or run the consumer over a head that includes the worktree — a manual
   `--head-sha HEAD` dry-run **before commit** is a false green (HEAD is the
   parent, so `base..HEAD` excludes your changes and they are judged only

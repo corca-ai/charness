@@ -126,10 +126,11 @@ def parse_args() -> argparse.Namespace:
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")
     group.add_argument("--set-version", help="Explicit version string to set before publishing")
     return parser.parse_args()
-def run_requested_review_gate(repo_root: Path) -> None:
+def run_requested_review_gate(repo_root: Path) -> dict[str, Any]:
     review_gate_payload = build_review_gate_payload(repo_root, run_commands=True)
     if review_gate_payload["status"] == "blocked":
         raise SystemExit("requested release review gate blocked publish:\n" + "\n".join(review_gate_payload["blockers"]))
+    return review_gate_payload
 
 
 def run_cli_skill_surface_gate(repo_root: Path, adapter_data: dict[str, Any]) -> None:
@@ -182,8 +183,10 @@ def write_current_artifact(
         tag_name=payload["tag_name"],
         public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
         review_proof=payload.get("critique_artifact"),
+        requested_review_gate=payload.get("requested_review_gate"),
         retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
         distinct_channel_verification=payload.get("distinct_channel_verification"),
+        release_runtime=payload.get("release_runtime"),
     )
 
 

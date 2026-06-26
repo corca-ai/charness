@@ -43,6 +43,13 @@ FOCUSED_REQUIRES_PYTEST_ERROR = (
     "--mutation-coverage-command must start with 'pytest ', 'python3 -m pytest ', "
     "or the standing pytest runner"
 )
+EXTRA_TARGETS_REQUIRES_PRODUCE_ERROR = (
+    "--mutation-coverage-extra-pytest-target requires --produce-mutation-coverage"
+)
+EXTRA_TARGETS_FOCUSED_CONFLICT_ERROR = (
+    "--mutation-coverage-extra-pytest-target composes with the broad coverage producer; "
+    "when using --mutation-coverage-command, put the target in that explicit command instead"
+)
 
 
 def is_standing_pytest_runner_command(command: str) -> bool:
@@ -56,18 +63,26 @@ def is_standing_pytest_runner_command(command: str) -> bool:
     )
 
 
-def instrument_broad_command(command: str, data_file: Path) -> str:
+def instrument_broad_command(
+    command: str,
+    data_file: Path,
+    *,
+    extra_pytest_targets: list[str] | tuple[str, ...] = (),
+) -> str:
     """Rewrite a `pytest ...` / `python3 -m pytest ...` command to run under
     plain `coverage run`, preserving the remaining arguments verbatim (the
     `tests/test_*.py` glob must stay unquoted so bash still expands it)."""
     coverage_prefix = f"python3 -m coverage run --data-file {shlex.quote(str(data_file))} -m pytest "
+    extra_suffix = (" " + shlex.join(list(extra_pytest_targets))) if extra_pytest_targets else ""
     for pytest_prefix in ("python3 -m pytest ", "pytest "):
         if command.startswith(pytest_prefix):
-            return coverage_prefix + command[len(pytest_prefix):]
+            return coverage_prefix + command[len(pytest_prefix):] + extra_suffix
     if is_standing_pytest_runner_command(command):
         tokens = shlex.split(command)
         if tokens and Path(tokens[0]).name == "python3":
             tokens = tokens[1:]
+        for target in extra_pytest_targets:
+            tokens.extend(["--extra-pytest-target", target])
         return (
             f"python3 -m coverage run --data-file {shlex.quote(str(data_file))} "
             + shlex.join(tokens)
@@ -92,12 +107,19 @@ def produce_command_coverage(
     coverage_json: Path,
     run_command: Callable[[Path, str, str], dict[str, object]],
     phase: str = "verify",
+    extra_pytest_targets: list[str] | tuple[str, ...] = (),
 ) -> dict[str, object]:
     """Run a pytest command under plain coverage and stamp the freshness marker."""
     data_file, rcfile, env = _sampling.prepare_plain_coverage(repo_root, coverage_json)
-    instrumented = _with_coverage_env(env, instrument_broad_command(command, data_file))
+    instrumented = _with_coverage_env(
+        env,
+        instrument_broad_command(command, data_file, extra_pytest_targets=extra_pytest_targets),
+    )
     result = dict(run_command(repo_root, instrumented, phase))
     result["command"] = command
+    result["instrumented_command"] = instrumented
+    if extra_pytest_targets:
+        result["mutation_coverage_extra_pytest_targets"] = list(extra_pytest_targets)
     result["produced_mutation_coverage"] = False
     if result.get("returncode") == 0:
         _sampling.combine_and_export_coverage(
@@ -120,6 +142,7 @@ def produce_broad_coverage(
     coverage_json: Path,
     run_command: Callable[[Path, str, str], dict[str, object]],
     phase: str = "verify",
+    extra_pytest_targets: list[str] | tuple[str, ...] = (),
 ) -> dict[str, object]:
     """Run the broad pytest command under plain coverage and, on success, export
     a small coverage JSON plus the freshness fingerprint marker the consumer
@@ -132,6 +155,7 @@ def produce_broad_coverage(
         coverage_json=coverage_json,
         run_command=run_command,
         phase=phase,
+        extra_pytest_targets=extra_pytest_targets,
     )
 
 
@@ -150,6 +174,7 @@ def make_closeout_producer(
     repo_root: Path,
     run_command: Callable[[Path, str, str], dict[str, object]],
     *,
+    extra_pytest_targets: list[str] | tuple[str, ...] = (),
     base_sha_resolver: Callable[[Path], str] = default_mutation_base_sha,
 ) -> Callable[[Path, str, str], dict[str, object]]:
     """A ``(repo_root, command, phase) -> result`` producer bound to the current
@@ -161,6 +186,7 @@ def make_closeout_producer(
         return produce_broad_coverage(
             rr, command, base_sha=base_sha, coverage_json=coverage_json,
             run_command=run_command, phase=phase,
+            extra_pytest_targets=extra_pytest_targets,
         )
 
     return producer
@@ -168,6 +194,11 @@ def make_closeout_producer(
 
 def closeout_producer_validation_error(args: object) -> str | None:
     focused_command = getattr(args, "mutation_coverage_command", None)
+    extra_targets = list(getattr(args, "mutation_coverage_extra_pytest_target", []) or [])
+    if extra_targets and not getattr(args, "produce_mutation_coverage", False):
+        return EXTRA_TARGETS_REQUIRES_PRODUCE_ERROR
+    if extra_targets and focused_command:
+        return EXTRA_TARGETS_FOCUSED_CONFLICT_ERROR
     if focused_command and not getattr(args, "produce_mutation_coverage", False):
         return FOCUSED_REQUIRES_PRODUCE_ERROR
     if focused_command and not is_instrumentable_pytest_command(focused_command):
@@ -230,4 +261,8 @@ def closeout_producer_or_error(
     focused_command = getattr(args, "mutation_coverage_command", None)
     if focused_command:
         return None, None
-    return make_closeout_producer(repo_root, run_command), None
+    return make_closeout_producer(
+        repo_root,
+        run_command,
+        extra_pytest_targets=list(getattr(args, "mutation_coverage_extra_pytest_target", []) or []),
+    ), None

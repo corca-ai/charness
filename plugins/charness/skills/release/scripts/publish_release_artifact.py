@@ -46,6 +46,21 @@ def review_proof_lines(review_proof: str | None) -> list[str]:
     return ["", "## Review Status", "", "- Review proof: not recorded in this helper invocation."]
 
 
+def requested_review_lines(payload: dict[str, Any] | None) -> list[str]:
+    lines = ["", "## Requested Review Gate", ""]
+    if payload is None:
+        return lines + ["- Requested-review gate status: not recorded by this helper invocation."]
+    lines.append(f"- Requested-review gate status: `{payload.get('status', 'unknown')}`.")
+    lines.append(f"- Configuration status: `{payload.get('configuration_status', 'unknown')}`.")
+    if policy := payload.get("requested_review_policy"):
+        lines.append(f"- Policy: `{policy}`.")
+    commands = payload.get("requested_review_commands", [])
+    lines.append(f"- Configured command count: `{len(commands) if isinstance(commands, list) else 0}`.")
+    for warning in payload.get("warnings", []):
+        lines.append(f"- Warning: {warning}")
+    return lines
+
+
 def release_adapter_preflight_lines(payload: dict[str, Any] | None) -> list[str]:
     lines = ["", "## Release Adapter Preflight", ""]
     if payload is None:
@@ -131,6 +146,8 @@ def install_refresh_lines(payload: dict[str, Any] | None) -> list[str]:
         lines.append(f"- Command: `{command}`")
     if payload.get("returncode") is not None:
         lines.append(f"- Return code: `{payload.get('returncode')}`")
+    if payload.get("elapsed_seconds") is not None:
+        lines.append(f"- Elapsed seconds: `{payload.get('elapsed_seconds')}`")
     if stdout_tail := payload.get("stdout_tail"):
         lines.append(f"- Stdout tail: `{stdout_tail}`")
     if stderr_tail := payload.get("stderr_tail"):
@@ -177,13 +194,30 @@ def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[s
     return lines
 
 
-def real_host_lines(real_host_payload: dict[str, Any]) -> list[str]:
+def real_host_lines(real_host_payload: dict[str, Any], install_refresh: dict[str, Any] | None = None) -> list[str]:
     lines = ["", "## Real-Host Verification", ""]
     if real_host_payload.get("required"):
         lines.append(
-            "- This slice still requires configured real-host verification before the release is fully closed."
+            "- Release-time real-host verification was triggered for this slice."
         )
+        if install_refresh and install_refresh.get("status") == "refreshed":
+            lines.append(
+                "- Adapter-declared maintainer install-refresh proof was executed by the release helper "
+                "for installed-vs-repo skew."
+            )
+        else:
+            lines.append(
+                "- Real-host checklist items remain open until their executed proof is recorded."
+            )
         lines.extend(["", "## Real-Host Proof", "", "- Release-time real-host proof is required for this slice."])
+        if install_refresh and install_refresh.get("status") == "refreshed":
+            lines.append(
+                f"- Executed maintainer install refresh: `{install_refresh.get('command')}` "
+                f"(status `{install_refresh.get('status')}`, return code `{install_refresh.get('returncode')}`)."
+            )
+            lines.append(
+                "- Remaining real-host checklist items, if any, still require explicit proof before full closeout."
+            )
         lines.extend(f"- {item}" for item in real_host_payload.get("checklist", []))
         return lines
     lines.append("- No configured release-time real-host verification trigger matched this slice.")
@@ -199,6 +233,20 @@ def fresh_checkout_lines(fresh_checkout_payload: dict[str, Any] | None) -> list[
         return lines + ["- No repo-declared fresh checkout probes were configured for this release."]
     lines.append(f"- Fresh-checkout probe status: {fresh_checkout_payload.get('status')}.")
     lines.extend(f"- `{command}`" for command in fresh_checkout_payload.get("fresh_checkout_probes", []))
+    return lines
+
+
+def release_runtime_lines(runtime_entries: list[dict[str, Any]] | None) -> list[str]:
+    lines = ["", "## Release Runtime", ""]
+    if not runtime_entries:
+        return lines + ["- Release helper runtime: not recorded by this helper invocation."]
+    for entry in runtime_entries:
+        label = entry.get("label", "unknown")
+        elapsed = entry.get("elapsed_seconds")
+        if isinstance(elapsed, (int, float)):
+            lines.append(f"- `{label}`: {elapsed:.3f}s")
+        else:
+            lines.append(f"- `{label}`: elapsed time unavailable")
     return lines
 
 
@@ -228,8 +276,10 @@ def write_release_artifact(
     tag_name: str | None = None,
     public_release_verification: str = "not checked by this helper",
     review_proof: str | None = None,
+    requested_review_gate: dict[str, Any] | None = None,
     retro_trigger_evaluation: dict[str, Any] | None = None,
     distinct_channel_verification: dict[str, Any] | None = None,
+    release_runtime: list[dict[str, Any]] | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -273,10 +323,12 @@ def write_release_artifact(
     lines.extend(distinct_channel_verification_lines(distinct_channel_verification))
     lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
     lines.extend(retro_trigger_evaluation_lines(retro_trigger_evaluation))
-    lines.extend(real_host_lines(real_host_payload))
+    lines.extend(real_host_lines(real_host_payload, install_refresh=install_refresh))
     lines.extend(review_proof_lines(review_proof))
+    lines.extend(requested_review_lines(requested_review_gate))
     lines.extend(post_publish_proof_lines(resolved_tag, public_release_verification))
     lines.extend(install_refresh_lines(install_refresh))
+    lines.extend(release_runtime_lines(release_runtime))
     lines.extend(fresh_checkout_lines(fresh_checkout_payload))
     lines.extend(issue_closeout_lines(issue_closeout))
     lines.extend(user_update_lines(update_instructions))

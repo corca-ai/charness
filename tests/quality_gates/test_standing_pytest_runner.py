@@ -34,6 +34,26 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     assert "tests/charness_cli" in command
 
 
+def test_standing_pytest_command_appends_extra_pytest_targets(tmp_path: Path, monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
+    monkeypatch.setattr(runner, "choose_pytest_command", lambda: ["python3", "-m", "pytest"])
+    monkeypatch.setattr(runner, "has_xdist", lambda command: False)
+
+    command = runner.build_pytest_command(
+        tmp_path,
+        basetemp=tmp_path.parent / "pytest-tmp",
+        include_release_only=False,
+        extra_pytest_targets=["tests/focused.py::test_one"],
+        env={},
+    )
+
+    assert command[-1] == "tests/focused.py::test_one"
+    assert "tests/test_alpha.py" in command
+
+
 def test_standing_pytest_temp_root_stays_outside_repo(tmp_path: Path) -> None:
     from scripts import run_standing_pytest as runner
 
@@ -163,6 +183,7 @@ def test_standing_pytest_run_print_command_and_executes(tmp_path: Path, monkeypa
             mode="read-only",
             print_command=True,
             keep_basetemp=False,
+            extra_pytest_target=[],
         )
     )
     assert printed == 0
@@ -184,6 +205,7 @@ def test_standing_pytest_run_print_command_and_executes(tmp_path: Path, monkeypa
             mode="full",
             print_command=False,
             keep_basetemp=False,
+            extra_pytest_target=[],
         )
     )
 
@@ -207,6 +229,14 @@ def test_standing_pytest_main_print_modes(tmp_path: Path, monkeypatch, capsys) -
     assert "tests/quality_gates" in capsys.readouterr().out
     assert runner.main(["--repo-root", str(repo), "--print-expanded-targets"]) == 0
     assert "tests/demo.py" in capsys.readouterr().out
+    assert runner.main([
+        "--repo-root",
+        str(repo),
+        "--extra-pytest-target",
+        "tests/focused.py::test_one",
+        "--print-expanded-targets",
+    ]) == 0
+    assert "tests/focused.py::test_one" in capsys.readouterr().out
     assert runner.main(["--repo-root", str(repo), "--print-temp-root"]) == 0
     assert str(tmp_path / "temp") in capsys.readouterr().out
     assert runner.main(["--repo-root", str(repo)]) == 7

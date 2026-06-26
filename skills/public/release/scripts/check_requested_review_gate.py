@@ -68,6 +68,7 @@ def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_com
     patterns = list(data.get("review_unavailable_patterns", []))
     waiver_phrases = list(data.get("review_waiver_phrases", []))
     commands = list(data.get("requested_review_commands", []))
+    policy = str(data.get("requested_review_policy", "warn-if-unconfigured") or "warn-if-unconfigured")
     artifact_text = resolved_artifact.read_text(encoding="utf-8", errors="replace") if resolved_artifact.is_file() else ""
     unavailable_hits = _contains_any(artifact_text, patterns) if artifact_text else []
     waiver_hits = _contains_any(artifact_text, waiver_phrases) if artifact_text else []
@@ -75,8 +76,10 @@ def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_com
     failed_commands = [item for item in command_results if item.get("ok") is not True]
     blockers: list[str] = []
     warnings: list[str] = []
-    configuration_status = "configured" if commands else "not_configured"
-    if not commands:
+    configuration_status = "configured" if commands else (
+        "advisory_only" if policy == "advisory-only" else "not_configured"
+    )
+    if not commands and policy != "advisory-only":
         warnings.append(
             "requested_review_commands is empty; requested-review enforcement is advisory-only for this release."
         )
@@ -97,6 +100,7 @@ def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_com
         "unavailable_hits": unavailable_hits,
         "waiver_hits": waiver_hits,
         "requested_review_commands": commands,
+        "requested_review_policy": policy,
         "configuration_status": configuration_status,
         "command_results": command_results,
         "blockers": blockers,
@@ -122,6 +126,7 @@ def main() -> int:
             print(f"BLOCKED: {blocker}")
     else:
         print(f"requested release review gate: {payload['status']}")
+        print(f"configuration status: {payload['configuration_status']}")
         for warning in payload.get("warnings", []):
             print(f"WARNING: {warning}")
     return 1 if payload["status"] == "blocked" else 0

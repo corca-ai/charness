@@ -230,6 +230,16 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--mutation-coverage-extra-pytest-target",
+        action="append",
+        default=[],
+        help=(
+            "Additional pytest path or nodeid appended to the broad coverage producer "
+            "without shell-chaining commands. Requires --produce-mutation-coverage and "
+            "cannot be combined with --mutation-coverage-command."
+        ),
+    )
+    parser.add_argument(
         "--ack-cautilus-skill-review",
         action="store_true",
         help=(
@@ -277,6 +287,15 @@ def _planned_commands(
                 "phase": "verify",
                 "command": args.mutation_coverage_command,
                 "coverage_producer": True,
+            }
+        )
+    extra_targets = list(getattr(args, "mutation_coverage_extra_pytest_target", []) or [])
+    if args.produce_mutation_coverage and extra_targets:
+        planned.append(
+            {
+                "phase": "verify",
+                "coverage_producer": True,
+                "extra_pytest_targets": extra_targets,
             }
         )
     return planned

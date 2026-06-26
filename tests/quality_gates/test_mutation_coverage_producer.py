@@ -56,6 +56,20 @@ def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) ->
     assert "coverage run" in out3
     assert out3.endswith("scripts/run_standing_pytest.py --repo-root . --mode read-only")
 
+    out4 = instrument_broad_command(
+        runner,
+        data_file,
+        extra_pytest_targets=["tests/focused.py::test_one"],
+    )
+    assert "--extra-pytest-target tests/focused.py::test_one" in out4
+
+    out5 = instrument_broad_command(
+        "python3 -m pytest -q tests/quality_gates",
+        data_file,
+        extra_pytest_targets=["tests/focused.py::test_one"],
+    )
+    assert out5.endswith("-m pytest -q tests/quality_gates tests/focused.py::test_one")
+
 
 def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
     from scripts.mutation_coverage_producer import (
@@ -104,6 +118,36 @@ def test_produce_broad_coverage_emits_json_and_marker(tmp_path: Path, monkeypatc
     marker = cov.with_name(cov.name + ".fingerprint")
     assert marker.is_file()
     assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, base)
+
+
+def test_produce_broad_coverage_appends_extra_pytest_targets(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    cov = repo / "reports" / "mutation" / "test-coverage.json"
+    captured: dict = {}
+
+    def fake_run(repo_root, command, phase):
+        captured["command"] = command
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    def fake_combine(repo_root, rcfile, data_file, coverage_json, env, *, show_contexts):
+        Path(coverage_json).write_text('{"files": {}}', encoding="utf-8")
+
+    monkeypatch.setattr(prod._sampling, "combine_and_export_coverage", fake_combine)
+
+    result = prod.produce_broad_coverage(
+        repo,
+        "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only",
+        base_sha=base,
+        coverage_json=cov,
+        run_command=fake_run,
+        extra_pytest_targets=["tests/focused.py::test_one"],
+    )
+
+    assert "--extra-pytest-target tests/focused.py::test_one" in captured["command"]
+    assert result["mutation_coverage_extra_pytest_targets"] == ["tests/focused.py::test_one"]
+    assert "--extra-pytest-target tests/focused.py::test_one" in result["instrumented_command"]
 
 
 def test_produce_command_coverage_emits_json_and_marker(tmp_path: Path, monkeypatch) -> None:

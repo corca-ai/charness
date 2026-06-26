@@ -69,8 +69,14 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "No configured public/real-host verification trigger matched" not in artifact_text
     assert "## Review Proof" in artifact_text
     assert "Review proof: `charness-artifacts/critique/demo.md`." in artifact_text
+    assert "## Requested Review Gate" in artifact_text
+    assert "Requested-review gate status: `ok`." in artifact_text
+    assert "Configuration status: `not_configured`." in artifact_text
     assert "## Post-Publish Proof" in artifact_text
     assert "Public release check: `gh release view v0.0.1`" in artifact_text
+    assert "## Release Runtime" in artifact_text
+    assert "`quality_command`:" in artifact_text
+    assert "`push_create_verify_release`:" in artifact_text
     assert "Run `demo update`." in artifact_text
     assert "Restart the host if the previous version is still visible." in artifact_text
     assert "(tag `v0.0.1`)" in artifact_text
@@ -239,9 +245,11 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
 @pytest.mark.release_only
 def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _write_exec(bin_dir / "demo-refresh", "#!/usr/bin/env bash\nprintf 'refresh ok\\n'\n")
     adapter_path = repo / ".agents" / "release-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
+        + "\npost_publish_install_refresh: demo-refresh\n"
         + "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n",
         encoding="utf-8",
     )
@@ -290,7 +298,10 @@ def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path
     payload = json.loads(result.stdout)
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert payload["real_host_required"] is True
+    assert payload["install_refresh"]["status"] == "refreshed"
     assert "Release-time real-host proof is required for this slice." in artifact_text
+    assert "Executed maintainer install refresh: `demo-refresh`" in artifact_text
+    assert "Elapsed seconds:" in artifact_text
     assert "Verify on a clean host." in artifact_text
 
 
@@ -389,6 +400,73 @@ def test_requested_review_gate_warns_when_commands_are_empty(tmp_path: Path) -> 
     plain = _run_review_gate(repo)
     assert plain.returncode == 0, plain.stderr
     assert "WARNING: requested_review_commands is empty" in plain.stdout
+    assert "configuration status: not_configured" in plain.stdout
+
+
+def test_requested_review_gate_honors_advisory_only_policy(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "release").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "output_dir: charness-artifacts/release",
+                "requested_review_commands: []",
+                "requested_review_policy: advisory-only",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(
+        "# Release Surface Check\n\n- Release proof complete.\n",
+        encoding="utf-8",
+    )
+
+    result = _run_review_gate(repo, "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["configuration_status"] == "advisory_only"
+    assert payload["warnings"] == []
+
+    plain = _run_review_gate(repo)
+    assert plain.returncode == 0, plain.stderr
+    assert "configuration status: advisory_only" in plain.stdout
+
+
+def test_requested_review_gate_blocks_failed_command_under_advisory_only_policy(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "release").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "output_dir: charness-artifacts/release",
+                "requested_review_policy: advisory-only",
+                "requested_review_commands:",
+                "- \"bash -c 'echo review failed >&2; exit 1'\"",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(
+        "# Release Surface Check\n\n- Release proof complete.\n",
+        encoding="utf-8",
+    )
+
+    result = _run_review_gate(repo, "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["configuration_status"] == "configured"
+    assert payload["requested_review_policy"] == "advisory-only"
+    assert "requested review command failed" in payload["blockers"][0]
 
 
 @pytest.mark.release_only

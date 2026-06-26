@@ -106,5 +106,13 @@ def _record_broad(
         changed_paths=current_paths,
     )
     payload.setdefault("recorded_broad_pytest_proofs", []).append(
-        {"cache_path": ".charness/closeout/broad-pytest-proof.json", **proof}
+        {
+            "cache_path": ".charness/closeout/broad-pytest-proof.json",
+            **proof,
+            **(
+                {"mutation_coverage_extra_pytest_targets": result["mutation_coverage_extra_pytest_targets"]}
+                if result.get("mutation_coverage_extra_pytest_targets")
+                else {}
+            ),
+        }
     )

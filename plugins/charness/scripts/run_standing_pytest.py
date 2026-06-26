@@ -113,11 +113,16 @@ def expand_targets(repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_T
     return expanded
 
 
+def combined_targets(repo_root: Path, extra_pytest_targets: list[str] | None = None) -> list[str]:
+    return [*expand_targets(repo_root), *(extra_pytest_targets or [])]
+
+
 def build_pytest_command(
     repo_root: Path,
     *,
     basetemp: Path,
     include_release_only: bool,
+    extra_pytest_targets: list[str] | None = None,
     env: dict[str, str] | None = None,
 ) -> list[str]:
     command = [*choose_pytest_command(), "-q"]
@@ -132,7 +137,7 @@ def build_pytest_command(
             "and may exceed runtime budgets. Install with: pip install pytest-xdist",
             file=sys.stderr,
         )
-    command.extend(expand_targets(repo_root))
+    command.extend(combined_targets(repo_root, extra_pytest_targets))
     return command
 
 
@@ -148,6 +153,7 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
         repo_root,
         basetemp=basetemp,
         include_release_only=args.include_release_only,
+        extra_pytest_targets=getattr(args, "extra_pytest_target", []),
         env=env,
     )
     if args.print_command:
@@ -166,6 +172,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--basetemp", type=Path)
     parser.add_argument("--include-release-only", action="store_true")
     parser.add_argument("--keep-basetemp", action="store_true")
+    parser.add_argument(
+        "--extra-pytest-target",
+        action="append",
+        default=[],
+        help="Additional pytest path or nodeid appended to the standing target set.",
+    )
     parser.add_argument("--print-targets", action="store_true")
     parser.add_argument("--print-expanded-targets", action="store_true")
     parser.add_argument("--print-temp-root", action="store_true")
@@ -179,7 +191,7 @@ def main(argv: list[str] | None = None) -> int:
         print("\n".join(STANDING_PYTEST_TARGETS))
         return 0
     if args.print_expanded_targets:
-        print("\n".join(expand_targets(args.repo_root.resolve())))
+        print("\n".join(combined_targets(args.repo_root.resolve(), args.extra_pytest_target)))
         return 0
     if args.print_temp_root:
         temp_root = default_temp_root(args.repo_root.resolve())

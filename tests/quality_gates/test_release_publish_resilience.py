@@ -119,6 +119,8 @@ def test_publish_auto_runs_declared_install_refresh_end_to_end(tmp_path: Path) -
     assert "## Install Refresh" in artifact_text
     assert "Post-publish install refresh status: `refreshed`." in artifact_text
     assert "Command: `charness update`" in artifact_text
+    assert "## Release Runtime" in artifact_text
+    assert "`quality_command`:" in artifact_text
 
 
 def test_post_publish_install_refresh_records_failure_without_raising() -> None:
@@ -410,6 +412,12 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
 
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert any(entry[:2] == ["release", "create"] for entry in gh_log), gh_log
+
+    payload = json.loads(result.stdout)
+    runtime_labels = {entry["label"] for entry in payload["release_runtime"]}
+    assert "quality_command" in runtime_labels
+    assert "push_create_verify_release" in runtime_labels
+    assert "post_publish_install_refresh" in runtime_labels
 
 
 def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_path: Path) -> None:

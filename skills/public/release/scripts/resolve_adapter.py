@@ -30,6 +30,7 @@ STRING_FIELDS = (
     "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from",
     "package_id", "packaging_manifest_path", "checked_in_plugin_root", "sync_command",
     "quality_command", "post_publish_install_refresh", "post_publish_distinct_channel_probe",
+    "requested_review_policy",
 )
 LIST_FIELDS = (
     "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
@@ -64,6 +65,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "real_host_required_path_globs": [],
         "real_host_checklist": [],
         "requested_review_commands": [],
+        "requested_review_policy": "warn-if-unconfigured",
         "review_unavailable_patterns": [
             "review unavailable", "requested review unavailable", "review gate unavailable",
             "review skipped because", "executor_variants", "no executor_variants",
@@ -109,6 +111,8 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         errors.append("sync_command must not be empty")
     if not validated["quality_command"]:
         errors.append("quality_command must not be empty")
+    if validated["requested_review_policy"] not in {"warn-if-unconfigured", "advisory-only"}:
+        errors.append("requested_review_policy must be 'warn-if-unconfigured' or 'advisory-only'")
 
     validated["release_backend"] = _parse_release_backend(data.get("release_backend"), errors, warnings)
 

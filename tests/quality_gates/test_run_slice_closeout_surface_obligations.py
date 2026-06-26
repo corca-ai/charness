@@ -194,12 +194,60 @@ def test_run_slice_closeout_plan_only_lists_focused_coverage_command() -> None:
     }
 
 
+def test_run_slice_closeout_plan_only_lists_extra_coverage_targets() -> None:
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/mutation_coverage_producer.py",
+        "--skip-sync",
+        "--verification-lock",
+        "--produce-mutation-coverage",
+        "--mutation-coverage-extra-pytest-target",
+        "tests/quality_gates/test_mutation_coverage_producer.py::test_instrument_broad_command_rewrites_and_preserves_glob",
+        "--plan-only",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["planned_commands"][-1] == {
+        "phase": "verify",
+        "coverage_producer": True,
+        "extra_pytest_targets": [
+            "tests/quality_gates/test_mutation_coverage_producer.py::test_instrument_broad_command_rewrites_and_preserves_glob"
+        ],
+    }
+
+
+def test_run_slice_closeout_blocks_extra_targets_without_producer() -> None:
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/mutation_coverage_producer.py",
+        "--skip-sync",
+        "--verification-lock",
+        "--mutation-coverage-extra-pytest-target",
+        "tests/quality_gates/test_mutation_coverage_producer.py",
+        "--plan-only",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert "--mutation-coverage-extra-pytest-target requires" in payload["error"]
+
+
 def test_run_slice_closeout_internal_focused_command_plan_helpers(tmp_path: Path) -> None:
     from scripts import run_slice_closeout as closeout
 
     args = SimpleNamespace(
         produce_mutation_coverage=True,
         mutation_coverage_command="python3 -m pytest -q tests/demo.py",
+        mutation_coverage_extra_pytest_target=[],
     )
 
     assert closeout._unsafe_blocker_command_plan([("verify", "ruff check .")], args) == [

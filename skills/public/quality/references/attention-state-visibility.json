@@ -423,10 +423,10 @@
       "rationale": "Release-triggered retro closeout records skipped trigger evaluations in the release payload/artifact, while matched triggers persist a bounded retro artifact."
     },
     "skills/public/release/scripts/resolve_adapter.py": {
-      "states": ["skipped"],
+      "states": ["advisory-only", "skipped"],
       "visibility": ["terminal_payload"],
-      "evidence_terms": ["review skipped because"],
-      "rationale": "Release adapter parsing preserves skipped-review patterns for requested-review gate decisions."
+      "evidence_terms": ["requested_review_policy", "review skipped because"],
+      "rationale": "Release adapter parsing preserves requested-review advisory-only policy and skipped-review patterns for requested-review gate decisions."
     },
     "skills/public/setup/scripts/seed_dependencies.py": {
       "states": ["skipped"],
