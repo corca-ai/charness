@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from runtime_bootstrap import import_repo_module
 from scripts.public_skill_dogfood_lib import build_matrix
 from scripts.public_skill_dogfood_validation_lib import (
     ValidationError,
@@ -13,9 +16,21 @@ from scripts.public_skill_dogfood_validation_lib import (
     validate_registry,
 )
 
-from .test_quality_artifact import run_script
-
 ROOT = Path(__file__).resolve().parents[1]
+_suggest_public_skill_dogfood = import_repo_module(
+    ROOT / "scripts" / "suggest_public_skill_dogfood.py",
+    "scripts.suggest_public_skill_dogfood",
+)
+
+
+def run_suggest_public_skill_dogfood(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["suggest_public_skill_dogfood.py", *args])
+    try:
+        returncode = _suggest_public_skill_dogfood.main()
+    except SystemExit as exc:
+        returncode = exc.code if isinstance(exc.code, int) else 1
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def seed_repo(tmp_path: Path) -> Path:
@@ -143,12 +158,13 @@ def test_validate_public_skill_dogfood_requires_observed_evidence_for_reviewed_c
         validate_registry(load_registry(repo), repo)
 
 
-def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path) -> None:
+def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
 
-    result = run_script(
-        "scripts/suggest_public_skill_dogfood.py",
+    result = run_suggest_public_skill_dogfood(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--skill-id",

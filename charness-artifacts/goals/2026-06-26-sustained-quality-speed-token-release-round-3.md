@@ -516,6 +516,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When replacing process-boundary error tests, preserve non-integer `SystemExit` messages on stderr or the test loses the user-visible contract.
 - Metrics: Speed/testability proxy: removed render script subprocess helper usage from the markdown preview support suite and reduced raw clean-convertible count by one.
 
+### Slice 27: Run public-skill dogfood CLI smoke in process
+
+- Objective: Reduce one more nested process from public-skill dogfood tests.
+- Why this approach: The file already exercises the dogfood library directly; the remaining subprocess was only a JSON-emission smoke for `suggest_public_skill_dogfood.py`.
+- Commits:
+- What changed: Imported `suggest_public_skill_dogfood.py` through `runtime_bootstrap`, added a small in-process runner, and converted the CLI JSON smoke to call `main()` directly.
+- Alternatives rejected: Did not remove the CLI smoke; it still proves the script's `main()` and `--json` output shape.
+- Targeted verification: pytest: `tests/test_public_skill_dogfood.py` `5 passed` in 0.42s; raw `inventory_boundary_bypass.py` dropped from 71 to 70 candidates and from 32 to 31 clean-convertible; `check_boundary_bypass_ratchet.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted the existing smoke.
+- Critique: Same-agent slice critique: this keeps parser/main/output coverage but not separate interpreter startup; package validation and other CLI startup checks cover that class.
+- Off-goal findings: Boundary-bypass ratchet filtered count stayed unchanged while raw inventory improved.
+- Lessons carried forward: Public-skill support scripts should be tested through direct `main()` calls unless startup itself is the asserted behavior.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw clean-convertible count by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
