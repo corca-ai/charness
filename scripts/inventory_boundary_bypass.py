@@ -12,6 +12,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _lib = import_repo_module(__file__, "scripts.inventory_boundary_bypass_lib")
 find_boundary_bypass_candidates = _lib.find_boundary_bypass_candidates
+summarize_payload = _lib.summarize_payload
 
 
 def main() -> int:
@@ -20,17 +21,19 @@ def main() -> int:
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--json", action="store_true", help="Emit the full payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON triage output")
     parser.add_argument(
         "--output", type=Path, default=None, help="Write the JSON payload to this path in addition to stdout."
     )
     args = parser.parse_args()
 
     payload = find_boundary_bypass_candidates(args.repo_root.resolve())
-    rendered = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
+    output_payload = summarize_payload(payload) if args.summary else payload
+    rendered = json.dumps(output_payload, ensure_ascii=False, indent=2, sort_keys=True)
     if args.output is not None:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(rendered + "\n", encoding="utf-8")
-    if args.json:
+    if args.json or args.summary:
         print(rendered)
     else:
         s = payload["summary"]

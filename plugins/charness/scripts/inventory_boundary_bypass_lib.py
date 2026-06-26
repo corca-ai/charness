@@ -239,3 +239,41 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
             "Python + charness-layout detection only.",
         ],
     }
+
+
+def summarize_payload(payload: dict, *, sample_limit: int = 10) -> dict:
+    """Return compact triage output without the full candidate rows."""
+    candidates = payload.get("candidates", [])
+    clean_samples = [
+        {
+            "test_file": row["test_file"],
+            "clean_inprocess_targets": row["clean_inprocess_targets"][:3],
+        }
+        for row in candidates
+        if row.get("clean_inprocess_targets") and not row.get("likely_keep_boundary")
+    ][:sample_limit]
+    keep_samples = [
+        {
+            "test_file": row["test_file"],
+            "import_safe_targets": row["import_safe_targets"][:3],
+        }
+        for row in candidates
+        if row.get("likely_keep_boundary")
+    ][:sample_limit]
+    internal_samples = [
+        {
+            "test_file": row["test_file"],
+            "internal_boundary_targets": row["internal_boundary_targets"][:3],
+        }
+        for row in candidates
+        if row.get("internal_boundary_targets")
+    ][:sample_limit]
+    return {
+        "schemaVersion": payload["schemaVersion"],
+        "status": payload["status"],
+        "summary_note": "summary is triage output; use --json for full candidate attribution",
+        "summary": payload["summary"],
+        "clean_inprocess_samples": clean_samples,
+        "keep_boundary_samples": keep_samples,
+        "internal_boundary_samples": internal_samples,
+    }

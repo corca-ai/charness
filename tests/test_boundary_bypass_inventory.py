@@ -10,6 +10,8 @@ half is boundary-agnostic and supports exactly this in-process style.
 from __future__ import annotations
 
 import importlib.util
+import json
+import sys
 from pathlib import Path
 
 from tests.dsl import Repo
@@ -188,3 +190,38 @@ def test_flags_internal_boundary_targets_and_excludes_from_convertible_count(tmp
     assert cand["import_safe_targets"] == ["scripts/foo.py"]
     assert cand["clean_inprocess_targets"] == []
     assert cand["internal_boundary_targets"] == ["scripts/foo.py"]
+
+
+def test_inventory_boundary_bypass_cli_summary_omits_full_candidates(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("tests/test_foo.py", _subprocess_test(returncode=0, behavior=True))
+        .build(tmp_path)
+    )
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    spec = importlib.util.spec_from_file_location(
+        "inventory_boundary_bypass_cli_under_test",
+        ROOT / "scripts" / "inventory_boundary_bypass.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["inventory_boundary_bypass.py", "--repo-root", str(repo), "--summary"],
+    )
+
+    assert module.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert "candidates" not in payload
+    assert payload["summary"]["candidate_count"] == 1
+    assert payload["clean_inprocess_samples"] == [
+        {
+            "test_file": "tests/test_foo.py",
+            "clean_inprocess_targets": ["scripts/foo.py"],
+        }
+    ]
+    assert payload["summary_note"] == "summary is triage output; use --json for full candidate attribution"

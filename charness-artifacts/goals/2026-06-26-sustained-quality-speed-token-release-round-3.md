@@ -417,6 +417,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When a release-only E2E asserts a pure helper's branch, add a direct standing sentinel instead of trying to shrink the E2E.
 - Metrics: Coverage proxy: missing standing-sentinel file count reduced from 4 to 3; standing test count increased from 117 to 118.
 
+### Slice 20: Compact boundary-bypass inventory output
+
+- Objective: Reduce token overhead for boundary-bypass quality review while preserving full candidate attribution on demand.
+- Why this approach: `scripts/inventory_boundary_bypass.py --json` emitted every candidate row; most review loops first need counts plus a few samples. Adding `--summary` matches the summary-first pattern already applied to other quality inventories.
+- Commits:
+- What changed: Added `summarize_payload()` to the boundary-bypass inventory lib, wired `--summary` into the root and plugin-mirror CLIs, and added an in-process CLI test proving summary output omits full `candidates` while retaining counts and clean-convertible samples.
+- Alternatives rejected: Did not change default text output or the full `--json` payload; ratchets and detailed cleanups still need exact candidate attribution.
+- Targeted verification: pytest: `tests/test_boundary_bypass_inventory.py` and `tests/test_boundary_bypass_ratchet.py` `13 passed` in 0.37s; root/plugin mirror scripts and libs compare equal; `python3 -m json.tool` accepted summary output; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: Added one CLI summary contract test using in-process `main()` rather than spawning a subprocess.
+- Critique: Same-agent slice critique: summary samples are triage-only and can hide unsampled candidates, so the output explicitly points reviewers to `--json` for full attribution.
+- Off-goal findings: None.
+- Lessons carried forward: Inventory scripts with full row payloads should offer compact machine-readable summaries, not just human text.
+- Metrics: Token/output proxy: boundary-bypass full JSON was 35165 bytes and summary JSON was 6443 bytes, an 81.7% reduction.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
