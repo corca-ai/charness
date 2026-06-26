@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import subprocess
 import sys
@@ -327,20 +328,27 @@ def _check_commands(repo_root: Path) -> list[tuple[str, list[str]]]:
     ]
 
 
+def _run_check(repo_root: Path, check_id: str, command: list[str]) -> dict[str, Any]:
+    completed = subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
+    return {
+        "id": check_id,
+        "command": " ".join(command),
+        "returncode": completed.returncode,
+        "stdout_tail": completed.stdout[-1000:],
+        "stderr_tail": completed.stderr[-1000:],
+    }
+
+
 def _run_checks(repo_root: Path) -> list[dict[str, Any]]:
-    results: list[dict[str, Any]] = []
-    for check_id, command in _check_commands(repo_root):
-        completed = subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
-        results.append(
-            {
-                "id": check_id,
-                "command": " ".join(command),
-                "returncode": completed.returncode,
-                "stdout_tail": completed.stdout[-1000:],
-                "stderr_tail": completed.stderr[-1000:],
-            }
-        )
-    return results
+    commands = _check_commands(repo_root)
+    if not commands:
+        return []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(commands)) as executor:
+        futures = [
+            executor.submit(_run_check, repo_root, check_id, command)
+            for check_id, command in commands
+        ]
+        return [future.result() for future in futures]
 
 
 def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_checks: bool) -> dict[str, Any]:

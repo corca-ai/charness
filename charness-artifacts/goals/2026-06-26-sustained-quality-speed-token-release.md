@@ -735,6 +735,31 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Metrics: broad non-release pytest exposed the failure after 257.54s; focused
   durability proof now passes in 4.37s.
 
+### Slice 42: Skill-surface preflight parallel checks
+
+- Objective: Reduce the slowest broad non-release standing test by speeding the
+  actual `check_skill_surface_preflight.py --run-checks` script path.
+- Why this approach: The run-checks validators are independent read-only package
+  gates; executing them concurrently preserves proof coverage while reducing the
+  critical path.
+- Commits:
+- What changed: `_run_checks()` now uses `ThreadPoolExecutor` to run the same
+  commands concurrently, then returns results in the original command-list order;
+  plugin mirror regenerated.
+- Alternatives rejected: Did not remove any validator from the one-shot
+  preflight; did not make tests bypass the integration path.
+- Targeted verification: ruff passed; focused preflight pytest passed 21 tests
+  in 6.88s; focused integration tests passed; boundary-bypass ratchet passed;
+  staged mirror drift passed.
+- Test duplication pressure: No tests added; existing integration proof now runs
+  faster.
+- Critique: charness-artifacts/critique/2026-06-26-skill-surface-preflight-parallel.md;
+  low-risk same-agent critique recorded because the validator set and output
+  order are preserved.
+- Off-goal findings: none.
+- Metrics: slow integration test call dropped from 7.10s to 4.26s; full focused
+  file dropped from 9.71s to 6.88s in local samples.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
