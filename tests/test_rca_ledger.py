@@ -1,48 +1,19 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 
 from scripts import rca_ledger_lib as lib
-
-ROOT = Path(__file__).resolve().parents[1]
-COMMITTED_LEDGER = ROOT / "charness-artifacts" / "metrics" / "rca-ledger.jsonl"
-
-
-def run_script(script: str, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", f"scripts/{script}", *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-
-
-def event(**overrides: object) -> dict[str, object]:
-    record: dict[str, object] = {
-        "schema_version": 1,
-        "ts": "2026-05-24T00:00:00Z",
-        "source": "debug",
-        "event_kind": "bug",
-        "converted": True,
-        "durable_kind": "gate",
-        "class_key": "k",
-    }
-    record.update(overrides)
-    return record
-
-
-def write_ledger(path: Path, records: list[dict[str, object]]) -> None:
-    path.write_text(
-        "".join(json.dumps(r, sort_keys=True) + "\n" for r in records),
-        encoding="utf-8",
-    )
-
-
-def write_raw(path: Path, lines: list[str]) -> None:
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+from tests.rca_ledger_helpers import (
+    COMMITTED_LEDGER,
+    ROOT,
+    event,
+    run_script,
+    seed_only_both_outcomes,
+    ts_event,
+    write_ledger,
+    write_raw,
+)
 
 
 # AC1 -------------------------------------------------------------------------
@@ -396,14 +367,6 @@ def test_ac3_record_duplicate_scan_ignores_malformed_existing_lines(tmp_path: Pa
     assert ledger.read_text(encoding="utf-8").count("\n") == 3
 
 
-# AC4 -------------------------------------------------------------------------
-def seed_only_both_outcomes() -> list[dict[str, object]]:
-    return [
-        event(converted=True, durable_kind="gate", seed=True),
-        event(converted=False, durable_kind="none", seed=True),
-    ]
-
-
 def test_ac4_committed_ledger_retains_both_seed_outcomes() -> None:
     # The committed ledger keeps its seeded both-outcome set even as live
     # (non-seed) events accrue, so this asserts about the seed subset only —
@@ -538,10 +501,6 @@ def test_slice2_three_skills_cite_append_reference_with_correct_source() -> None
 
 
 # Slice 3: #184 numeric target (floor + zero-falsified-conversion tripwire) ----
-def ts_event(day: int, **overrides: object) -> dict[str, object]:
-    return event(ts=f"2026-06-{day:02d}T00:00:00Z", **overrides)
-
-
 def test_target_falsified_detects_recurrence_after_conversion_only() -> None:
     # converted then recurred -> falsified; never-converted recurrence -> not listed;
     # recurrence BEFORE the conversion -> not listed (the artifact postdates it);

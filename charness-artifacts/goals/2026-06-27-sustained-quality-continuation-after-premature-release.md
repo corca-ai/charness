@@ -9,12 +9,13 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: support-skill helper reference and stale handoff cleanup.
-- Current slice intent: correct a concrete support-skill reference drift and
-  stale handoff instruction discovered while re-entering quality discovery.
-- Next action: patch the source and plugin mirror surfaces, run focused
-  validators, then continue to the next quality candidate if the slice stays
-  cheap.
+- Current slice: RCA ledger test-speed cleanup.
+- Current slice intent: reduce standing pytest cost by replacing repeated
+  subprocess execution in the RCA ledger tests with the already-exposed
+  in-process script entrypoints, while preserving stdout/stderr/returncode
+  assertions.
+- Next action: commit and push the test-speed slice, then continue discovery
+  unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
 
@@ -62,9 +63,10 @@ accumulate.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Re-enter quality discovery and repair stale reference drift | User clarified the timebox should continue; startup found a stale handoff and support-skill helper path | find-skills route, quality planner, focused validators | in_progress |
+| 1 | Re-enter quality discovery and repair stale reference drift | User clarified the timebox should continue; startup found a stale handoff and support-skill helper path | find-skills route, quality planner, focused validators | complete |
 | 2 | Repair remaining support helper reference drift | Continue discovery beyond the first cleanup | support package scan and focused proof | complete |
-| 3 | Closeout/push/release decision | Avoid another premature release | final validators, commit/push, release recommendation | pending |
+| 3 | Speed up RCA ledger tests without weakening CLI assertions | Standing-test economics pointed at nested CLI fanout; this file had 44 subprocess-heavy tests | focused timing, length headroom, changed-surface validators, standing pytest | complete |
+| 4 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -128,6 +130,28 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     `validate_packaging_committed.py`, `validate_cautilus_proof.py`,
     `validate_cautilus_diagnostics.py`, `check_skill_ownership_overlap.py`, and
     support helper `py_compile` passed.
+- Slice 3 evidence:
+  - `inventory_standing_test_economics.py --repo-root . --json` kept nested CLI
+    fanout visible: 346 Python test files, 146 nested CLI files, and 145
+    standing/mixed nested CLI files. This slice chose one contained speed target
+    instead of moving or weakening standing coverage.
+  - Baseline focused timing: `pytest -q tests/test_rca_ledger.py` reported
+    `44 passed in 3.96s`.
+  - Changed `tests/test_rca_ledger.py` to reuse script `main(argv)` entrypoints
+    through `tests/rca_ledger_helpers.py`, preserving subprocess-like
+    `CompletedProcess` returncode/stdout/stderr assertions and retaining a
+    real subprocess fallback for unknown scripts.
+  - Post-change focused timing: `pytest -q tests/test_rca_ledger.py` reported
+    `44 passed in 0.61s` to `0.64s`.
+  - Length proof after helper extraction:
+    `tests/test_rca_ledger.py` is `665/800` code lines (`135` left) and
+    `tests/rca_ledger_helpers.py` is `73/800` code lines (`727` left).
+  - Focused proof: `py_compile` for both test files, `ruff check`,
+    `check_python_lengths.py --require-git-file-listing`,
+    `validate_attention_state_visibility.py`, `check_test_repo_copy_invariants.py`,
+    `check_boundary_bypass_ratchet.py`, and
+    `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
+    passed; standing pytest reported `3675 passed in 19.98s`.
 
 ## Context Sources
 
