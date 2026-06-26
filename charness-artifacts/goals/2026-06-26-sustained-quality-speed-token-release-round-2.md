@@ -602,6 +602,26 @@ None yet.
     `scripts/doctor.py --json --skip-release-probe`, and from 3.43s to 1.95s
     for `scripts/check_cli_skill_surface.py --run-probes --json`.
 
+### Slice 18 — Refresh dup-ratchet baseline after doctor slice
+
+- Objective: Repair the broad quality duplicate ratchet failure introduced by
+  the doctor provenance optimization without hiding real extractable duplication.
+- Finding: `./scripts/run-quality.sh --read-only` passed 79 gates and failed
+  only `dup-ratchet`. The new code family id was `ca9b3049035d8d67`; raw full
+  scan members were two-line guard/return spans in
+  `scripts/control_plane_lifecycle_lib.py`, `scripts/install_provenance_lib.py`,
+  and `skills/support/web-fetch/scripts/acquire_public_url.py`. The advisory
+  `inventory_nose_clones.py --json` remained clean with `family_count: 0` and
+  `total_dup_lines: 0`.
+- Change: Refreshed `charness-artifacts/quality/dup-ratchet-baseline.json` for
+  the reviewed family id rotation after editing a scanned member file.
+- Verification:
+  - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --write-baseline --json`
+    wrote a 540-family baseline.
+  - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
+    now reports `status: clean`, `new_code_families: []`.
+  - This is an id-rotation baseline refresh, not a duplicate-reduction claim.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
