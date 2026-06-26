@@ -502,6 +502,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: CLI JSON smokes can often call `main()` directly when startup is not the behavior under test.
 - Metrics: Speed/testability proxy: removed two nested Python script invocations and reduced raw clean-convertible count by one.
 
+### Slice 26: Run markdown preview CLI smokes in process
+
+- Objective: Reduce nested process cost in markdown preview support tests while preserving CLI behavior assertions.
+- Why this approach: The file already had an in-process `render_markdown_preview.py` runner for most cases; the remaining success/config/error tests could use it once it restored `SystemExit` messages to stderr.
+- Commits:
+- What changed: Removed the subprocess render helper, converted the success/config/unsupported-backend tests to the in-process helper, and taught that helper to capture `SystemExit` return codes and messages.
+- Alternatives rejected: Kept subprocess use for local git repository setup in the changed-only test because that is fixture preparation, not a script-under-test boundary.
+- Targeted verification: pytest: `tests/test_markdown_preview_support.py` `11 passed` in 1.49s; raw `inventory_boundary_bypass.py` after conversion reports 71 candidates and 32 clean-convertible; `check_boundary_bypass_ratchet.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted existing CLI smokes.
+- Critique: Same-agent slice critique: in-process calls still prove parser/main behavior and stderr message content, but not separate interpreter startup; repo-level script validation covers startup/importability.
+- Off-goal findings: Fixture setup still uses git subprocesses intentionally.
+- Lessons carried forward: When replacing process-boundary error tests, preserve non-integer `SystemExit` messages on stderr or the test loses the user-visible contract.
+- Metrics: Speed/testability proxy: removed render script subprocess helper usage from the markdown preview support suite and reduced raw clean-convertible count by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

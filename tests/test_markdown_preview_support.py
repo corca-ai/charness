@@ -39,23 +39,6 @@ def _load_check_glow_backend():
     return module
 
 
-def run_helper(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [
-            sys.executable,
-            "skills/support/markdown-preview/scripts/render_markdown_preview.py",
-            "--repo-root",
-            str(repo_root),
-            *args,
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-
-
 def run_helper_in_process(
     monkeypatch,
     capsys,
@@ -71,7 +54,12 @@ def run_helper_in_process(
         "argv",
         [RENDER_SCRIPT, "--repo-root", str(repo_root), *args],
     )
-    code = RENDER_MARKDOWN_PREVIEW.main()
+    try:
+        code = RENDER_MARKDOWN_PREVIEW.main()
+    except SystemExit as exc:
+        code = exc.code if isinstance(exc.code, int) else 1
+        if exc.code and not isinstance(exc.code, int):
+            print(str(exc.code), file=sys.stderr)
     captured = capsys.readouterr()
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
@@ -167,7 +155,7 @@ def _write_slow_fake_glow(bin_dir: Path) -> None:
     glow.chmod(glow.stat().st_mode | stat.S_IEXEC)
 
 
-def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path) -> None:
+def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Hello\n\nWorld\n", encoding="utf-8")
@@ -177,7 +165,18 @@ def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}:{_isolated_path()}"
 
-    result = run_helper(repo, "--file", "README.md", "--width", "80", "--width", "100", env=env)
+    result = run_helper_in_process(
+        monkeypatch,
+        capsys,
+        repo,
+        "--file",
+        "README.md",
+        "--width",
+        "80",
+        "--width",
+        "100",
+        env=env,
+    )
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -364,7 +363,7 @@ def test_glow_check_main_unhealthy_status_returns_one(monkeypatch, capsys) -> No
     assert mod.main() == 1
 
 
-def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path) -> None:
+def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / ".agents").mkdir()
@@ -400,7 +399,7 @@ def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}:{_isolated_path()}"
 
-    result = run_helper(repo, env=env)
+    result = run_helper_in_process(monkeypatch, capsys, repo, env=env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -412,12 +411,20 @@ def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path
     assert payload["git_head"] is not None
 
 
-def test_markdown_preview_rejects_unsupported_backend(tmp_path: Path) -> None:
+def test_markdown_preview_rejects_unsupported_backend(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Hello\n", encoding="utf-8")
 
-    result = run_helper(repo, "--file", "README.md", "--backend", "pandoc")
+    result = run_helper_in_process(
+        monkeypatch,
+        capsys,
+        repo,
+        "--file",
+        "README.md",
+        "--backend",
+        "pandoc",
+    )
 
     assert result.returncode != 0
     assert "Unsupported markdown preview backend `pandoc`" in result.stderr
