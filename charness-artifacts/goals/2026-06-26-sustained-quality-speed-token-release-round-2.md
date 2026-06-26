@@ -973,16 +973,37 @@ None yet.
   - `python3 scripts/check_doc_links.py --repo-root .` passed.
   - `./scripts/check-markdown.sh` passed.
 
+### Slice 34 — Cover closeout fallback branches before release
+
+- Objective: Remove the final changed-line mutation coverage blockers without
+  weakening the coverage consumer or deleting any release-surface proof.
+- Finding: The release closeout producer initially covered only the new focused
+  fallback tests, which dropped coverage for older changed files. The consumer
+  correctly rejected that coverage fingerprint. After adding the new
+  `tests/test_slice_closeout_run_command.py` file, the standing pytest target
+  expansion included it, so the standing-runner producer could cover both the
+  broad changed surface and the final progress-wrap branch.
+- Change: Added focused tests for support-sync non-reuse, timeout/default
+  parsing, eval `--jobs`, closeout progress wrapping, goal markdown edge cases,
+  gather rendering defensive paths, web-fetch command exceptions, adapter
+  startup-probe timeout validation, and startup probe timeout defaults.
+- Verification:
+  - `python3 -m pytest -q tests/charness_cli/test_update_flow_unit.py tests/test_agent_browser_runtime_guard.py::test_term_grace_seconds_uses_default_for_missing_or_invalid_env tests/quality_gates/test_check_coverage_inventory.py::test_control_plane_extra_coverage_probe_runs tests/quality_gates/test_quality_lint_ignores.py::test_inventory_lint_ignores_skips_files_without_markers tests/quality_gates/test_run_cautilus_eval.py::test_default_timeout_seconds_ignores_invalid_env tests/quality_gates/test_run_cautilus_eval.py::test_refuses_non_positive_timeout_seconds tests/test_cautilus_scenarios.py::test_run_evals_sequential_jobs_and_rejects_negative_jobs tests/test_script_timeout.py::test_arm_cli_timeout_uses_alarm_without_setitimer tests/test_slice_closeout_run_command.py tests/quality_gates/test_goal_disposition_gate.py::test_slice_plan_row_count_handles_absent_section_and_extra_separator tests/test_web_fetch_shared_helpers.py::test_gather_record_rendering_defensive_paths tests/test_web_fetch_shared_helpers.py::test_acquire_public_url_io_reports_command_exceptions tests/quality_gates/test_adapter_lib_yaml.py::test_startup_probe_validator_rejects_invalid_timeout_seconds tests/quality_gates/test_startup_probe_measure.py::test_timeout_seconds_uses_default_for_invalid_probe_value`
+    passed, 16 tests.
+  - `python3 scripts/run_slice_closeout.py --repo-root . --base --produce-mutation-coverage --verification-lock --refresh-broad-pytest-proof --ack-cautilus-skill-review --mutation-coverage-command "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --include-release-only"`
+    completed.
+  - `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 61093b75a23813bf4995c7a8698cb1b0fde3874b --reuse-coverage --require-fresh-coverage`
+    returned `ok: true`.
+
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Host metric window: started_at=2026-06-26T12:30:30+09:00 completed_at=2026-06-26T15:37:26+09:00 codex_session_file=/home/hwidong/.codex/sessions/2026/06/26/rollout-2026-06-26T06-35-08-019f00b5-4a5f-74d1-9b77-064e5850b2e3.jsonl
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md
+Host log probe: charness-artifacts/probe/2026-06-26-sustained-quality-speed-token-release-round-2-host-log.json
+Disposition review: charness-artifacts/critique/2026-06-26-sustained-quality-speed-token-release-round-2-disposition-review.md
+
+Release: pending final publish after checked-in closeout proof; prepared notes at charness-artifacts/release/v0.56.3-notes.md and critique at charness-artifacts/critique/2026-06-26-v0-56-3-release-critique.md
 
 ## User Verification Instructions
 
@@ -992,5 +1013,5 @@ Disposition review: TODO — create or explicitly skip only when policy allows b
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: focused fallback coverage tests, range-aware release critique/notes, and the goal-scoped metric window were committed before final release; accepted-risk: requested-review/scenario-registry hard enforcement remains advisory for this patch.
+Structural follow-up: none — every transferable retro item was either applied in this repo during the run or explicitly accepted as advisory release-policy risk.
