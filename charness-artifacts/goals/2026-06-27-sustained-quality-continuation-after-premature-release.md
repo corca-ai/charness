@@ -9,11 +9,11 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: Charness CLI Go-tool fixture extraction.
+- Current slice: Release publish fake CLI fixture extraction.
 - Current slice intent: continue reducing test helper prompt/template bulk by
-  moving fake Go/specdown/gitleaks/glow executable bodies out of
-  `tests/charness_cli/support.py` and `tests/charness_cli/test_tool_lifecycle.py`
-  into fixture script files.
+  moving release-publish fake `git`, `gh`, and distinct-channel probe bodies
+  out of `tests/quality_gates/release_publish_fixtures.py` and into fixture
+  script files.
 - Next action: commit and push this fixture extraction, then continue discovery
   unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
@@ -70,7 +70,8 @@ accumulate.
 | 5 | Extract Charness CLI fake binary scripts from support helper | Prompt-bulk inventory identified large fake `claude`/`codex` script literals in `tests/charness_cli/support.py` | focused CLI tests, prompt-bulk delta, standing pytest | complete |
 | 6 | Extract remaining Charness CLI external-tool fake scripts from support helper | Prompt-bulk inventory still points at `tests/charness_cli/support.py`; the fake npm/cargo/uv bodies are local, deterministic, and expensive to keep inline | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
 | 7 | Extract Charness CLI Go/specdown/glow fake scripts from test helpers | Prompt-bulk inventory still points at Go installer script literals after slice 6 | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
-| 8 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 8 | Extract release publish fake CLI scripts from test fixture helper | Prompt-bulk inventory next surfaced large fake release CLI bodies in `release_publish_fixtures.py` | focused release publish tests, prompt-bulk delta, standing pytest | complete |
+| 9 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -265,6 +266,28 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     response: the shared `fake_glow.py` reads optional sidecar config, focused
     glow/specdown tests exercised the configured behavior, and the new helper
     test covers `GOBIN`.
+- Slice 8 evidence:
+  - Prompt-bulk inventory before this change reported 42 findings and surfaced
+    `tests/quality_gates/release_publish_fixtures.py` fake release CLI literals
+    in the top sample.
+  - Moved fake `git`, fake `gh`, and distinct-channel probe executable bodies
+    to `tests/quality_gates/fixtures/`; `release_publish_fixtures.py` now copies
+    those fixture scripts and writes a tiny sidecar JSON file for the real git
+    binary path.
+  - Prompt-bulk inventory after the change reported 39 findings; only the
+    smaller inline sync script remains sampled from `release_publish_fixtures.py`.
+  - Length proof: `tests/quality_gates/release_publish_fixtures.py` moved to
+    `194/800` code lines; new release fixture files are each at most `49/800`
+    code lines.
+  - Focused proof: `py_compile`, focused `ruff check`, and the release publish
+    focused pytest bundle passed; focused pytest reported `77 passed in 52.17s`.
+  - Changed-surface proof: full repo `ruff check`, Python length gate,
+    attention-state visibility, test repo copy invariants, boundary-bypass
+    ratchet, and the standing pytest runner passed; standing pytest reported
+    `3676 passed in 20.23s`.
+  - Fresh-eye review: no blocking correctness issue found; reviewer flagged only
+    that the three new fixture scripts must be committed with the helper change.
+    Folded response: stage all new fixture scripts in the slice commit.
 
 ## Context Sources
 

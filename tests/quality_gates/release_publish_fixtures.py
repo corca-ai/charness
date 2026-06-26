@@ -10,6 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLISH_SCRIPT = "skills/public/release/scripts/publish_release.py"
 REVIEW_GATE_SCRIPT = "skills/public/release/scripts/check_requested_review_gate.py"
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 def _write_exec(path: Path, body: str) -> None:
@@ -86,30 +87,13 @@ def _write_release_adapter(repo: Path) -> None:
 
 def _write_fake_git(repo: Path, bin_dir: Path) -> None:
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    _write_exec(
-        bin_dir / "git",
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            from __future__ import annotations
-            import json
-            import os
-            import subprocess
-            import sys
-            from pathlib import Path
-
-            log_path = Path(os.environ["FAKE_GIT_LOG"])
-            args = sys.argv[1:]
-            entries = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
-            entries.append(args)
-            log_path.write_text(json.dumps(entries, indent=2) + "\\n", encoding="utf-8")
-            if os.environ.get("FAKE_GIT_DIFF_NAME_ONLY_FAIL") == "1" and args[:2] == ["diff", "--name-only"]:
-                print("forced diff failure", file=sys.stderr)
-                raise SystemExit(42)
-            raise SystemExit(subprocess.run([{json.dumps(shutil.which("git") or "/usr/bin/git")}, *args]).returncode)
-            """
-        ),
+    script = bin_dir / "git"
+    shutil.copy2(FIXTURES / "release_publish_fake_git.py", script)
+    script.with_suffix(".json").write_text(
+        json.dumps({"real_git": shutil.which("git") or "/usr/bin/git"}, indent=2) + "\n",
+        encoding="utf-8",
     )
+    script.chmod(0o755)
 
 
 def _write_sync_script(repo: Path) -> None:
@@ -161,69 +145,9 @@ def _write_quality_script(repo: Path) -> None:
 
 
 def _write_fake_gh(bin_dir: Path) -> None:
-    _write_exec(
-        bin_dir / "gh",
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            from __future__ import annotations
-            import json
-            import os
-            import sys
-            from pathlib import Path
-
-            log_path = Path(os.environ["FAKE_GH_LOG"])
-            args = sys.argv[1:]
-            entries = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
-            entries.append(args)
-            log_path.write_text(json.dumps(entries, indent=2) + "\\n", encoding="utf-8")
-
-            if args == ["auth", "status"]:
-                print("authenticated")
-                raise SystemExit(0)
-            if args == ["repo", "view", "--json", "url", "--jq", ".url"]:
-                print("https://github.com/example/demo")
-                raise SystemExit(0)
-            if args == ["repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]:
-                print("example/demo")
-                raise SystemExit(0)
-            if args[:2] == ["release", "view"]:
-                state_path = Path(os.environ["FAKE_GH_RELEASE_STATE"])
-                state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else []
-                raise SystemExit(0 if args[2] in state else 1)
-            if args[:2] == ["release", "create"]:
-                tag = args[2]
-                state_path = Path(os.environ["FAKE_GH_RELEASE_STATE"])
-                state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else []
-                if tag not in state and os.environ.get("FAKE_GH_RELEASE_CREATE_WITHOUT_VIEW") != "1":
-                    state.append(tag)
-                state_path.write_text(json.dumps(state, indent=2) + "\\n", encoding="utf-8")
-                print(f"https://github.com/example/demo/releases/tag/{tag}")
-                raise SystemExit(0)
-            if args[:2] == ["issue", "view"]:
-                if os.environ.get("FAKE_GH_ISSUE_VIEW_FAIL") == "1":
-                    print("issue view failed", file=sys.stderr)
-                    raise SystemExit(1)
-                state_path = Path(os.environ["FAKE_GH_ISSUE_STATE"])
-                state = json.loads(state_path.read_text(encoding="utf-8"))
-                number = args[2]
-                print(json.dumps({
-                    "number": int(number),
-                    "state": state.get(number, "OPEN"),
-                    "url": f"https://github.com/example/demo/issues/{number}",
-                }))
-                raise SystemExit(0)
-            if args[:2] == ["issue", "close"]:
-                state_path = Path(os.environ["FAKE_GH_ISSUE_STATE"])
-                state = json.loads(state_path.read_text(encoding="utf-8"))
-                state[args[2]] = "CLOSED"
-                state_path.write_text(json.dumps(state, indent=2) + "\\n", encoding="utf-8")
-                print(f"closed issue {args[2]}")
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
-    )
+    script = bin_dir / "gh"
+    shutil.copy2(FIXTURES / "release_publish_fake_gh.py", script)
+    script.chmod(0o755)
 
 
 def _write_fake_distinct_channel_probe(bin_dir: Path) -> None:
@@ -231,31 +155,9 @@ def _write_fake_distinct_channel_probe(bin_dir: Path) -> None:
     (confirmed) by default; ``FAKE_DISTINCT_CHANNEL_RESULT=fail`` -> exit 1
     (a typed non-`verified` disposition). It logs its invocation so a test can
     assert the distinct channel ran and is NOT `gh release view`."""
-    _write_exec(
-        bin_dir / "distinct-channel-probe",
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            from __future__ import annotations
-            import json
-            import os
-            import sys
-            from pathlib import Path
-
-            log = os.environ.get("FAKE_DISTINCT_CHANNEL_LOG")
-            if log:
-                path = Path(log)
-                entries = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
-                entries.append(sys.argv[1:])
-                path.write_text(json.dumps(entries, indent=2) + "\\n", encoding="utf-8")
-            if os.environ.get("FAKE_DISTINCT_CHANNEL_RESULT") == "fail":
-                print("distinct channel could not confirm the published release", file=sys.stderr)
-                raise SystemExit(1)
-            print("distinct channel confirmed the published release")
-            raise SystemExit(0)
-            """
-        ),
-    )
+    script = bin_dir / "distinct-channel-probe"
+    shutil.copy2(FIXTURES / "release_publish_distinct_channel_probe.py", script)
+    script.chmod(0o755)
 
 
 def _setup_git(repo: Path, remote: Path) -> None:
