@@ -11,6 +11,8 @@ from pathlib import Path
 import pytest
 
 import scripts.export_plugin as export_plugin_module
+import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
+import scripts.validate_packaging as validate_packaging_module
 from tests.repo_copy import clone_seeded_charness_repo
 from tests.script_main import run_loaded_script_main
 
@@ -127,7 +129,7 @@ def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path,
     readme_path = repo / "README.md"
     readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
 
-    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
+    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
     assert result.returncode == 1
     assert "checked-in plugin tree does not match the generated install surface" in result.stderr
     assert "scripts/sync_root_plugin_manifests.py" in result.stderr
@@ -217,14 +219,21 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
         + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo), "--package-id", "demo")
+    result = run_loaded_script_main(
+        "sync_root_plugin_manifests.py",
+        sync_root_plugin_manifests_module,
+        "--repo-root",
+        str(repo),
+        "--package-id",
+        "demo",
+    )
     assert result.returncode == 0, result.stderr
     assert (repo / "plugins" / "demo" / ".claude-plugin" / "plugin.json").exists()
     assert (repo / ".claude-plugin" / "marketplace.json").exists()
     assert (repo / "plugins" / "demo" / ".codex-plugin" / "plugin.json").exists()
     assert (repo / ".agents" / "plugins" / "marketplace.json").exists()
 
-    validate = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
+    validate = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
     assert validate.returncode == 0, validate.stderr
 
 
@@ -243,7 +252,12 @@ def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_ex
     source_skill = repo / "skills" / "public" / "create-cli" / "SKILL.md"
     source_skill.write_text(source_skill.read_text(encoding="utf-8") + "\nPartial commit sentinel.\n", encoding="utf-8")
 
-    sync = run_script("scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo), cwd=repo)
+    sync = run_loaded_script_main(
+        "sync_root_plugin_manifests.py",
+        sync_root_plugin_manifests_module,
+        "--repo-root",
+        str(repo),
+    )
     assert sync.returncode == 0, sync.stderr
 
     subprocess.run(["git", "add", "skills/public/create-cli/SKILL.md"], cwd=repo, check=True, capture_output=True, text=True)
@@ -255,7 +269,12 @@ def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_ex
         text=True,
     )
 
-    worktree_validate = run_script("scripts/validate_packaging.py", "--repo-root", str(repo), cwd=repo)
+    worktree_validate = run_loaded_script_main(
+        "validate_packaging.py",
+        validate_packaging_module,
+        "--repo-root",
+        str(repo),
+    )
     assert worktree_validate.returncode == 0, worktree_validate.stderr
 
     committed_validate = run_script("scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
@@ -301,14 +320,14 @@ def test_eval_registry_scenarios_are_immutable_contract_records() -> None:
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
     repo = make_demo_packaging_repo(tmp_path, codex_manifest_path="plugin.json")
-    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
+    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
     assert result.returncode == 1
     assert ".codex-plugin/plugin.json" in result.stderr
 
 
 def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> None:
     repo = make_demo_packaging_repo(tmp_path, include_unexpected_field=True)
-    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
+    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Additional properties are not allowed" in result.stderr
 
@@ -342,7 +361,7 @@ def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp
     policy["tiers"]["hitl-recommended"].remove("critique")
     policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
+    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
     assert result.returncode == 1
     assert "does not classify every public skill" in result.stderr
 

@@ -936,6 +936,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Skill-local resolver modules can be loaded directly for local semantic tests; keep subprocesses for installed/exported path proofs.
 - Metrics: Speed/testability proxy: removed one nested Python process start and removed `tests/quality_gates/test_artifact_naming.py` from the clean-convertible file list.
 
+### Slice 57: Run packaging sync and validation smokes in process
+
+- Objective: Remove clean `sync_root_plugin_manifests.py` and `validate_packaging.py` subprocesses from packaging validation tests.
+- Why this approach: The tests pass explicit `--repo-root` and assert stdout/stderr plus generated install surface or validation failures; the shared runner preserves those contracts without outer interpreter startup.
+- Commits:
+- What changed: Imported `scripts.sync_root_plugin_manifests` and `scripts.validate_packaging`, then routed all direct sync-root and validate-packaging calls through `run_loaded_script_main()`.
+- Alternatives rejected: Did not convert committed-packaging and validate-skills subprocesses because those remain internal-boundary or installed-surface checks.
+- Targeted verification: pytest: `tests/quality_gates/test_packaging_validation.py` `12 passed` in 4.37s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 49 candidates, 67 candidate keys, and 3 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 47 candidates and 3 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted existing smokes.
+- Critique: Same-agent slice critique: packaging filesystem side effects and validation failures remain asserted; git/committed-surface subprocess checks stay untouched.
+- Off-goal findings: None.
+- Lessons carried forward: `cwd=repo` on a `--repo-root` script is not by itself a meaningful boundary; convert it when the script behavior is root-argument based.
+- Metrics: Speed/testability proxy: removed eight nested Python process starts and removed `tests/quality_gates/test_packaging_validation.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
