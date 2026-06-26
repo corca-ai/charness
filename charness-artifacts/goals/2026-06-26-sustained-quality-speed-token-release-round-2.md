@@ -730,6 +730,24 @@ None yet.
   - `ruff check tests/quality_gates/test_run_slice_closeout_surface_obligations.py`
     passed.
 
+### Slice 23 — Avoid redundant session-capture install subprocess
+
+- Objective: Trim host-hook CLI tests while preserving the CLI status exit-code
+  boundary proof.
+- Finding: `test_session_capture_cli_status_exit_codes` spent about 1.87s and
+  called the `charness` CLI three times. The middle install call only prepared
+  drift state; separate tests already cover the install CLI boundary.
+- Change: The test now prepares the drift state with
+  `host_hook_install_lib.install_claude_hook()` and keeps the two status CLI
+  subprocess calls that prove clean vs drift exit codes.
+- Verification:
+  - `python3 -m pytest -q tests/test_usage_episodes_host_hooks.py::test_session_capture_cli_status_exit_codes --durations=10 --durations-min=0.01`
+    passed; the test fell from 1.87s to 1.37s in the focused run.
+  - `python3 -m pytest -q tests/test_usage_episodes_host_hooks.py --durations=20 --durations-min=0.1`
+    passed, 36 tests; the full file fell from 4.49s to 4.03s.
+  - `python3 -m py_compile tests/test_usage_episodes_host_hooks.py` passed.
+  - `ruff check tests/test_usage_episodes_host_hooks.py` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

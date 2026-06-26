@@ -456,12 +456,7 @@ def test_session_capture_cli_status_exit_codes(fake_home: Path, fake_charness_re
         text=True,
     )
     assert in_sync.returncode == 0
-    subprocess.run(
-        [sys.executable, str(cli), "session-capture", "install", "--host", "claude", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo)],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+    lib.install_claude_hook(fake_charness_repo, home=fake_home)
     drift = subprocess.run(
         [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo), "--json"],
         capture_output=True,
