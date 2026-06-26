@@ -6,6 +6,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from runtime_bootstrap import load_path_module
 from scripts.public_skill_validation_lib import (
     load_policy,
     validate_policy,
@@ -131,6 +132,11 @@ def _resolve_artifact(repo_root: Path, skill_id: str) -> str | None:
     resolve_script = repo_root / "skills" / "public" / skill_id / "scripts" / "resolve_adapter.py"
     if not resolve_script.is_file():
         return None
+    module = load_path_module(f"public_skill_dogfood_{skill_id.replace('-', '_')}_resolve_adapter", resolve_script)
+    load_adapter = getattr(module, "load_adapter", None)
+    if callable(load_adapter):
+        payload = load_adapter(repo_root)
+        return _artifact_path_from_payload(payload)
     result = subprocess.run(
         ["python3", str(resolve_script), "--repo-root", str(repo_root)],
         cwd=repo_root,
@@ -141,6 +147,12 @@ def _resolve_artifact(repo_root: Path, skill_id: str) -> str | None:
     if result.returncode != 0:
         return None
     payload = json.loads(result.stdout)
+    return _artifact_path_from_payload(payload)
+
+
+def _artifact_path_from_payload(payload: object) -> str | None:
+    if not isinstance(payload, dict):
+        return None
     artifact_path = payload.get("artifact_path")
     if isinstance(artifact_path, str) and artifact_path:
         return artifact_path

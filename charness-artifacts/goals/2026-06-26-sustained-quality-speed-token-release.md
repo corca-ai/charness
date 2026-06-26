@@ -697,6 +697,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Local scaffold payload shape can use payload_for(), while exported consumer-package tests should stay command-backed.
 - Metrics: local scaffold_debug_artifact.py launches in tests/test_debug_scaffold.py: base 2, current 0.
 
+### Slice 40: Public skill dogfood resolver subprocess speed
+
+- Objective: Speed up public-skill dogfood matrix generation by avoiding per-skill resolver subprocesses.
+- Why this approach: Almost all public skill resolve_adapter.py scripts expose load_adapter(), while the command wrapper delegates to that function; dogfood only needs the adapter payload's artifact/output path.
+- Commits:
+- What changed: public_skill_dogfood_lib._resolve_artifact() now loads resolver modules in-process and calls load_adapter() when available, with subprocess fallback for legacy resolvers; artifact path extraction moved to _artifact_path_from_payload().
+- Alternatives rejected: Did not remove subprocess fallback for resolvers without load_adapter(); did not add broad exception masking around import failures without a concrete failure case.
+- Targeted verification: ruff passed; focused public-skill dogfood/validation pytest passed 13 tests in 2.65s; current real registry call duration dropped from 0.69s to 0.09s; cProfile validation runtime dropped from about 0.80s to 0.11s; boundary-bypass ratchet OK with 72 candidates / 34 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; plugin mirror synced and drift check passed.
+- Test duplication pressure: Not a test conversion; this reduces actual validator script subprocess fanout.
+- Critique: charness-artifacts/critique/2026-06-26-public-skill-dogfood-resolver-speed.md; low-risk same-agent critique recorded because focused proof, profiler evidence, and mirror proof passed.
+- Off-goal findings: none
+- Lessons carried forward: When a validator fans out into many repo-owned Python entrypoints, prefer import-safe functional APIs with a legacy subprocess fallback.
+- Metrics: resolver subprocess calls from dogfood matrix generation: base 17 in current registry profile, current 1 fallback in profile.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
