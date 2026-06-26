@@ -613,6 +613,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: In mixed validator files, trim direct validator checks first and leave git/adapter command behavior for a separate proof plan.
 - Metrics: pure profile/preset validator subprocess launches in test_profile_and_preset_validation.py: base 3, current 0.
 
+### Slice 34: Standing-doc provenance subprocess fanout
+
+- Objective: Reduce repeated check_standing_doc_provenance.py process launches while preserving CLI and adapter-error proof.
+- Why this approach: The checker exposes run() and _render_plain(), so behavior-matrix tests can call the same implementation in-process.
+- Commits:
+- What changed: Loaded the standing-doc provenance checker once in test_standing_doc_provenance.py and converted most JSON/plain checks to direct run()/formatter calls.
+- Alternatives rejected: Kept one JSON CLI smoke and the invalid-adapter CLI failure case.
+- Targeted verification: ruff passed; focused standing-doc provenance pytest passed 10 tests in 2.61s after a 3.23s pre-change sample; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; standing-doc provenance subprocess calls dropped from 11 to 2.
+- Critique: charness-artifacts/critique/2026-06-26-standing-doc-provenance-runtime.md; low-risk same-agent critique recorded because CLI smokes remain.
+- Off-goal findings: none
+- Lessons carried forward: For checker behavior matrices, keep one command smoke and run the rest through the exported run() API.
+- Metrics: check_standing_doc_provenance.py launches in test_standing_doc_provenance.py: base 11, current 2.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

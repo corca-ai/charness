@@ -1,11 +1,36 @@
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
+from types import ModuleType
 
-from .support import run_script
+from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/check_standing_doc_provenance.py"
+
+
+def _load_checker() -> ModuleType:
+    module_path = ROOT / SCRIPT
+    spec = importlib.util.spec_from_file_location("tests.quality_gates.check_standing_doc_provenance", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+CHECKER = _load_checker()
+
+
+def _run(repo: Path) -> dict[str, object]:
+    return CHECKER.run(repo.resolve())
+
+
+def _returncode(payload: dict[str, object]) -> int:
+    return 0 if payload["ok"] else 1
 
 
 def _write(path: Path, lines: list[str]) -> None:
@@ -78,9 +103,8 @@ def test_allowlisted_tracking_doc_is_silent(tmp_path: Path) -> None:
             "Follow-up 2026-06-01: #321 and #322 still open.",
         ],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 0
     assert payload["ok"] is True
     assert payload["findings"] == []
     assert "docs/conventions/tracking-ledger.md" not in payload["scanned"]
@@ -97,9 +121,8 @@ def test_single_load_bearing_trailing_ref_is_silent(tmp_path: Path) -> None:
             "Sync the mirror before validators; the pre-commit gate blocks the split (#257).",
         ],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 0
     assert payload["ok"] is True
     assert payload["findings"] == []
     assert "docs/conventions/load-bearing.md" in payload["scanned"]
@@ -120,9 +143,8 @@ def test_mixed_corpus_flags_only_the_standing_doc(tmp_path: Path) -> None:
         repo / "docs" / "conventions" / "load-bearing.md",
         ["# LB", "", "The pre-commit gate blocks the staged/unstaged split (#257)."],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 1, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 1
     flagged_paths = {finding["path"] for finding in payload["findings"]}
     assert flagged_paths == {"docs/conventions/operating-rules.md"}
     assert set(payload["scanned"]) == {
@@ -141,23 +163,19 @@ def test_inert_when_no_standing_docs_configured(tmp_path: Path) -> None:
         repo / "docs" / "conventions" / "operating-rules.md",
         ["# Rules", "", "Added 2026-05-01 after the regression."],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 0
     assert payload["inert"] is True
     assert payload["findings"] == []
 
-    plain = run_script(SCRIPT, "--repo-root", str(repo))
-    assert plain.returncode == 0, plain.stderr
-    assert "inert" in plain.stdout
+    assert "inert" in CHECKER._render_plain(payload)
 
 
 def test_no_adapter_block_defaults_inert(tmp_path: Path) -> None:
     """No standing_doc_provenance block at all defaults to inert."""
     repo = _seed_repo(tmp_path, adapter_block=[])
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 0
     assert payload["inert"] is True
 
 
@@ -174,9 +192,8 @@ def test_fenced_and_inline_marked_lines_are_skipped(tmp_path: Path) -> None:
             "A genuinely load-bearing dated fact stays here. 2026-05-15 <!-- provenance-allow -->",
         ],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 0
     assert payload["findings"] == []
     assert "docs/conventions/operating-rules.md" in payload["scanned"]
 
@@ -197,9 +214,8 @@ def test_sanctioned_placements_are_not_flagged(tmp_path: Path) -> None:
             "The pre-commit gate blocks the staged/unstaged split (#257).",
         ],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 0
     assert payload["findings"] == []
 
 
@@ -215,9 +231,8 @@ def test_stacked_refs_in_link_text_still_flag(tmp_path: Path) -> None:
             "Contract for [#230 + #229](../../x.md) self-substitution.",
         ],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 1, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _run(repo)
+    assert _returncode(payload) == 1
     assert payload["findings"][0]["heuristics"] == ["standing_doc_multiple_issue_refs"]
 
 
