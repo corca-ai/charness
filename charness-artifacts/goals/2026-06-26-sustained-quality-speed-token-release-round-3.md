@@ -712,6 +712,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When converting CLI tests with required argparse fields, runner helpers must preserve `SystemExit` return codes or mutation-killing assertions weaken.
 - Metrics: Speed/testability proxy: removed four nested Python script invocations and removed `test_hitl_report_mode.py` from the clean-convertible file list.
 
+### Slice 41: Run skill ergonomics smokes in process
+
+- Objective: Remove leftover `validate_skill_ergonomics.py` subprocess calls from skill ergonomics gate tests.
+- Why this approach: The file already imports the validator module for direct evaluation; the remaining CLI JSON smokes can call the module's `main()` through the shared loaded-script runner.
+- Commits:
+- What changed: Replaced three `run_script()` wrapper calls with `run_loaded_script_main()` and removed the subprocess helper import.
+- Alternatives rejected: Did not replace the CLI smokes with lower-level `evaluate()` calls because the tests intentionally assert JSON wrapper behavior and nonzero status.
+- Targeted verification: pytest: `tests/quality_gates/test_skill_ergonomics_gate.py` `17 passed` in 0.44s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 57 candidates, 91 candidate keys, and 16 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 53 candidates and 14 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; reused the shared loaded-script runner.
+- Critique: Same-agent slice critique: wrapper JSON behavior stays asserted, and nonzero adapter-error/no-skill status remains covered without process startup.
+- Off-goal findings: None.
+- Lessons carried forward: Prefer direct `main()` for validator wrapper JSON tests once importability is already covered elsewhere.
+- Metrics: Speed/testability proxy: removed three nested Python script invocations and removed `test_skill_ergonomics_gate.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

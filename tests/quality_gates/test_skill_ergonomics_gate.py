@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
-from .support import ROOT, run_script
+from .support import ROOT, run_loaded_script_main
 
 SCRIPT = "skills/public/quality/scripts/validate_skill_ergonomics.py"
 
@@ -104,7 +104,7 @@ def _seed_repo(tmp_path: Path, *, rules: list[str]) -> Path:
 
 def test_skill_ergonomics_gate_no_rules_passes(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=[])
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["rules"] == []
@@ -337,7 +337,7 @@ def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Pat
 
     assert "quality adapter: skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in _human(payload)
 
-    wrapper = run_script("scripts/validate_skill_ergonomics.py", "--repo-root", str(repo), "--json")
+    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
     assert wrapper.returncode == 1
     wrapper_payload = json.loads(wrapper.stdout)
     assert "unknown rule `typo_rule`" in wrapper_payload["adapter_errors"][0]
@@ -410,7 +410,7 @@ def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) 
     assert _returncode(payload) == 1
     assert "no skills were checked" in payload["discovery_errors"][0]["message"]
 
-    wrapper = run_script("scripts/validate_skill_ergonomics.py", "--repo-root", str(repo), "--json")
+    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
     assert wrapper.returncode == 1
 
 
