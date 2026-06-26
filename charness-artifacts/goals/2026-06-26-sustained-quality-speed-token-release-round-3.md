@@ -221,6 +221,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Advisory inventories that already compute counts should expose them without forcing full finding ingestion.
 - Metrics: Token/output proxy: lint-ignore inventory output reduced from 89662 bytes to 6140 bytes with `--summary`, a 93.2% reduction.
 
+### Slice 6: Convert managed-install sync proof to in-process execution
+
+- Objective: Remove a boundary-bypass advisory and reduce one release-only test's extra Python process hop without weakening install-surface proof.
+- Why this approach: Slice closeout repeatedly flagged `test_managed_install.py -> scripts/sync_root_plugin_manifests.py` as an import-safe script subprocess from a changed test file; the script has a callable `main()` and the test only needs the mutation result.
+- Commits:
+- What changed: Added an in-process helper that loads `sync_root_plugin_manifests.py`, patches its argv/cwd, captures stdout, and returns the JSON payload; replaced the subprocess call in the embedded managed-checkout test.
+- Alternatives rejected: Did not add a boundary-bypass exemption because the subprocess boundary was not needed for the assertion under test.
+- Targeted verification: pytest: 1 passed for test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url; check_boundary_bypass_ratchet.py passed; ruff passed; check_python_lengths headroom remains 293 lines for test_managed_install.py; run_slice_closeout.py completed with no boundary-bypass advisory.
+- Test duplication pressure: Added a local helper in the existing test file; no new test file and no duplicated release-only flow.
+- Critique: Same-agent slice critique: the test still mutates a cloned upstream repo and commits the refreshed install surface, so the managed-checkout behavior remains covered while avoiding a redundant process boundary.
+- Off-goal findings: Other baseline sync_root_plugin_manifests subprocess call sites remain, including test_update_propagation.py and packaging validation; they need separate fidelity review.
+- Lessons carried forward: When closeout flags a changed test file for import-safe script subprocess, prefer an in-process helper unless the test asserts CLI exit/stderr semantics.
+- Metrics: Quality proxy: boundary-bypass closeout advisory for test_managed_install.py eliminated.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

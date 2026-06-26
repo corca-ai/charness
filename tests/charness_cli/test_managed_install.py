@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import contextlib
 import importlib.machinery
 import importlib.util
+import io
 import json
 import os
 import subprocess
@@ -31,6 +33,26 @@ def load_charness_module(module_name: str = "charness_managed_install_under_test
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def sync_root_plugin_manifests_inprocess(repo_root: Path) -> dict[str, object]:
+    module_name = "sync_root_plugin_manifests_managed_install_under_test"
+    spec = importlib.util.spec_from_file_location(module_name, CLI.parent / "scripts" / "sync_root_plugin_manifests.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    saved_argv = module.sys.argv
+    saved_cwd = Path.cwd()
+    buffer = io.StringIO()
+    module.sys.argv = ["sync_root_plugin_manifests.py", "--repo-root", "."]
+    try:
+        os.chdir(repo_root)
+        with contextlib.redirect_stdout(buffer):
+            assert module.main() == 0
+    finally:
+        os.chdir(saved_cwd)
+        module.sys.argv = saved_argv
+    return json.loads(buffer.getvalue())
 
 
 def init_managed_home_from_repo(
@@ -198,14 +220,8 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     packaging["codex"]["manifest"]["version"] = "0.0.1-upstream-test"
     packaging["claude"]["manifest"]["version"] = "0.0.1-upstream-test"
     packaging_path.write_text(json.dumps(packaging, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    sync_result = subprocess.run(
-        [sys.executable, "scripts/sync_root_plugin_manifests.py", "--repo-root", "."],
-        cwd=upstream_repo,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert sync_result.returncode == 0, sync_result.stderr
+    sync_payload = sync_root_plugin_manifests_inprocess(upstream_repo)
+    assert sync_payload["package_id"] == "charness"
     subprocess.run(
         ["git", "add", "packaging/charness.json", "plugins/charness", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
         cwd=upstream_repo,
