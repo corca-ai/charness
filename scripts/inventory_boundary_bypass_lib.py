@@ -131,17 +131,44 @@ def has_internal_boundary(path: Path) -> bool:
     return False
 
 
-def analyze_test_file(repo_root: Path, test_path: Path) -> dict | None:
+def _cached_path_result(cache: dict[Path, bool], path: Path, probe) -> bool:
+    result = cache.get(path)
+    if result is None:
+        result = probe(path)
+        cache[path] = result
+    return result
+
+
+def analyze_test_file(
+    repo_root: Path,
+    test_path: Path,
+    *,
+    import_safe_cache: dict[Path, bool] | None = None,
+    internal_boundary_cache: dict[Path, bool] | None = None,
+    lib_cache: dict[Path, bool] | None = None,
+) -> dict | None:
     """Return a candidate row when ``test_path`` spawns an import-safe entrypoint,
     else ``None``."""
+    import_safe_cache = import_safe_cache if import_safe_cache is not None else {}
+    internal_boundary_cache = internal_boundary_cache if internal_boundary_cache is not None else {}
+    lib_cache = lib_cache if lib_cache is not None else {}
     text = test_path.read_text(encoding="utf-8")
     targets = _spawn_targets(text)
     if not targets:
         return None
-    import_safe = [t for t in targets if (repo_root / t).is_file() and is_import_safe(repo_root / t)]
+    import_safe = [
+        t
+        for t in targets
+        if (repo_root / t).is_file()
+        and _cached_path_result(import_safe_cache, repo_root / t, is_import_safe)
+    ]
     if not import_safe:
         return None
-    internal_boundary = [t for t in import_safe if has_internal_boundary(repo_root / t)]
+    internal_boundary = [
+        t
+        for t in import_safe
+        if _cached_path_result(internal_boundary_cache, repo_root / t, has_internal_boundary)
+    ]
     clean_inprocess = [t for t in import_safe if t not in internal_boundary]
     behavior = bool(_BEHAVIOR_RE.search(text))
     exit_contract_only = (not behavior) and bool(_EXIT_RE.search(text)) and ("stderr" in text)
@@ -150,7 +177,7 @@ def analyze_test_file(repo_root: Path, test_path: Path) -> dict | None:
         "import_safe_targets": import_safe,
         "clean_inprocess_targets": clean_inprocess,
         "internal_boundary_targets": internal_boundary,
-        "has_lib": any(_has_lib(repo_root / t) for t in import_safe),
+        "has_lib": any(_cached_path_result(lib_cache, repo_root / t, _has_lib) for t in import_safe),
         "behavior_assert": behavior,
         "likely_keep_boundary": exit_contract_only,
     }
@@ -161,9 +188,18 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
     repo_root = Path(repo_root)
     candidates: list[dict] = []
     scanned = 0
+    import_safe_cache: dict[Path, bool] = {}
+    internal_boundary_cache: dict[Path, bool] = {}
+    lib_cache: dict[Path, bool] = {}
     for test_path in _iter_test_files(repo_root):
         scanned += 1
-        row = analyze_test_file(repo_root, test_path)
+        row = analyze_test_file(
+            repo_root,
+            test_path,
+            import_safe_cache=import_safe_cache,
+            internal_boundary_cache=internal_boundary_cache,
+            lib_cache=lib_cache,
+        )
         if row is not None:
             candidates.append(row)
     keep_boundary = sum(1 for c in candidates if c["likely_keep_boundary"])

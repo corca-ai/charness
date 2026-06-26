@@ -641,6 +641,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: In surface-routing suites, only lower pure manifest-validation cases; keep command routing at the boundary.
 - Metrics: selected validate_surfaces.py launches in test_surface_obligations.py: base 5, current 2.
 
+### Slice 36: Boundary inventory repeated-probe cache
+
+- Objective: Reduce repeated file probes inside the boundary-bypass inventory script used by the ratchet gate.
+- Why this approach: The inventory scans many test files that point at the same import-safe scripts, so per-scan path-result caches avoid re-reading the same targets for import-safety, internal-boundary, and sibling-lib checks.
+- Commits:
+- What changed: Added local caches to find_boundary_bypass_candidates() and threaded them through analyze_test_file().
+- Alternatives rejected: Did not broaden optimization further because wall-clock timing stayed in the same 0.64s-0.68s band and AST scanning needs profiling before more complexity.
+- Targeted verification: ruff passed; boundary-bypass ratchet JSON output unchanged with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; five-run timing remained effectively flat; plugin mirror synced and drift check passed.
+- Test duplication pressure: Not a test conversion; this improves the script path used by pre-commit and quality gates.
+- Critique: charness-artifacts/critique/2026-06-26-boundary-inventory-cache.md; low-risk same-agent critique recorded because output is unchanged and generated surfaces are synced.
+- Off-goal findings: timing did not materially improve; further ratchet speed work needs profiling.
+- Lessons carried forward: Prefer honest structural caching only when output is unchanged, and do not claim speed wins from noise-band timing.
+- Metrics: repeated import-safe/internal/lib probes now cache per target path during one inventory scan.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
