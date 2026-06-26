@@ -61,6 +61,64 @@ def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path) -> None:
     ]
 
 
+def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_vulture = bin_dir / "vulture"
+    fake_vulture.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import sys
+
+            confidence = int(sys.argv[sys.argv.index("--min-confidence") + 1])
+            if confidence <= 60:
+                print("scripts/example.py:3: unused function 'old_helper' (60% confidence, 2 lines)")
+                print("tests/conftest.py:1: unused variable 'pytest_plugins' (60% confidence, 1 line)")
+                raise SystemExit(3)
+            raise SystemExit(0)
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_vulture.chmod(0o755)
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "scripts").mkdir()
+    (repo / "scripts" / "example.py").write_text("def old_helper():\n    pass\n", encoding="utf-8")
+    (repo / "tests").mkdir()
+    (repo / "tests" / "conftest.py").write_text("pytest_plugins = []\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--summary"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"},
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["summary_note"].startswith("summary is triage output")
+    assert "command" not in payload["sweep"]
+    assert "findings" not in payload["sweep"]
+    assert payload["sweep"]["finding_count"] == 2
+    assert payload["sweep"]["classification_counts"] == {
+        "likely_framework_convention": 1,
+        "review_candidate": 1,
+    }
+    assert payload["sweep"]["review_candidate_sample"] == [
+        {
+            "path": "scripts/example.py",
+            "line": 3,
+            "message": "unused function 'old_helper'",
+            "confidence": 60,
+            "size": 2,
+            "classification": "review_candidate",
+        }
+    ]
+
+
 def test_dead_code_advisory_scans_untracked_nonignored_python(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

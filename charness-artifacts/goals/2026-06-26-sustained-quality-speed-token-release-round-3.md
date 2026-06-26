@@ -193,6 +193,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When release-only gates are intentionally expensive, standing coverage should target the smallest safety predicate rather than replay the expensive flow.
 - Metrics: Coverage proxy: release-only sentinel missing file count reduced 20%, from 10 to 8.
 
+### Slice 4: Compact dead-code advisory output
+
+- Objective: Reduce token overhead for the quality skill's vulture-backed dead-code advisory without removing full attribution.
+- Why this approach: `run_dead_code_advisory.py --json` emitted about 95KB in this repo, mostly a massive vulture command and full findings; triage usually needs counts, classification buckets, and a small candidate sample first.
+- Commits:
+- What changed: Added `--summary` output to the public quality script and checked-in plugin mirror; summary omits the full command and full findings, keeps counts/classification buckets/review-candidate samples, and points users to `--json` for complete attribution. Updated quality dogfood evidence for the public skill contract.
+- Alternatives rejected: Did not make compact output the default text mode, and did not remove the full `--json` escape hatch because detailed dead-code review still needs complete attribution.
+- Targeted verification: pytest: 8 passed for test_quality_dead_code_advisory.py; ruff passed; check_python_lengths headroom remains 163 lines for run_dead_code_advisory.py and 611 lines for test_quality_dead_code_advisory.py; validate_public_skill_dogfood.py passed; public script and plugin mirror compare equal.
+- Test duplication pressure: Added one focused CLI contract test in the existing dead-code advisory test file; no new test file.
+- Critique: Same-agent slice critique: compact output is explicitly labeled triage output and preserves full `--json`, so downstream callers cannot mistake the summary for full evidence.
+- Off-goal findings: Dead-code advisory still reports many review candidates; this slice improves review efficiency rather than deciding each candidate.
+- Lessons carried forward: Large advisory JSON should have a bounded first-read mode before humans or agents spend context on full attribution.
+- Metrics: Token/output proxy: dead-code advisory output reduced from 95468 bytes to 5176 bytes with `--summary`, a 94.6% reduction.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

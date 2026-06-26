@@ -103,6 +103,34 @@ def classification_counts(findings: list[dict[str, object]]) -> dict[str, int]:
     return dict(sorted(Counter(str(finding["classification"]) for finding in findings).items()))
 
 
+def summarize_run(run: dict[str, object], *, sample_limit: int) -> dict[str, object]:
+    findings = list(run.get("findings", []))
+    review_candidates = [
+        finding for finding in findings if isinstance(finding, dict) and finding.get("classification") == "review_candidate"
+    ][:sample_limit]
+    return {
+        "confidence": run.get("confidence"),
+        "status": run.get("status"),
+        "exit_code": run.get("exit_code"),
+        "finding_count": len(findings),
+        "classification_counts": run.get("classification_counts", {}),
+        "review_candidate_sample": review_candidates,
+        "stderr_present": bool(run.get("stderr")),
+    }
+
+
+def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
+    return {
+        "summary_note": "summary is triage output; use --json for full vulture command and findings",
+        "repo_root": payload["repo_root"],
+        "paths": payload["paths"],
+        "git_visible_python_file_count": payload["git_visible_python_file_count"],
+        "primary": summarize_run(payload["primary"], sample_limit=sample_limit),
+        "sweep": summarize_run(payload["sweep"], sample_limit=sample_limit),
+        "notes": payload["notes"],
+    }
+
+
 def run_vulture(repo_root: Path, paths: list[str], *, confidence: int) -> dict[str, object]:
     if shutil.which("vulture") is None:
         return {
@@ -149,6 +177,7 @@ def main() -> int:
     parser.add_argument("--primary-confidence", type=int, default=80, help="vulture --min-confidence for the high-confidence primary pass")
     parser.add_argument("--sweep-confidence", type=int, default=60, help="vulture --min-confidence for the lower-confidence sweep pass")
     parser.add_argument("--json", action="store_true", help="Emit the full advisory payload as JSON")
+    parser.add_argument("--summary", action="store_true", help="Emit compact JSON counts and samples instead of full vulture commands")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -169,6 +198,9 @@ def main() -> int:
     }
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+    if args.summary:
+        print(json.dumps(summarize(payload), ensure_ascii=False, indent=2))
         return 0
     print(f"Primary ({args.primary_confidence}%): {primary['status']} ({len(primary['findings'])} findings)")
     print(f"Sweep ({args.sweep_confidence}%): {sweep['status']} ({len(sweep['findings'])} findings)")
