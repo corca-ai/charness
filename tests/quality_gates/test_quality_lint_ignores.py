@@ -169,3 +169,13 @@ def test_inventory_lint_ignores_skips_python_string_literals(tmp_path: Path) -> 
     payload = _inventory_json(repo)
     assert payload["summary"]["ignore_count"] == 0
     assert payload["findings"] == []
+
+
+def test_inventory_lint_ignores_skips_files_without_markers(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "plain.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    payload = _inventory_json(repo)
+    assert payload["summary"]["ignore_count"] == 0
+    assert payload["findings"] == []

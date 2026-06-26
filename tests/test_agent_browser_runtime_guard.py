@@ -96,6 +96,14 @@ def make_fake_ps_sequence(bin_dir: Path, *, outputs: list[str]) -> None:
     script.chmod(0o755)
 
 
+def test_term_grace_seconds_uses_default_for_missing_or_invalid_env(monkeypatch) -> None:
+    guard = load_runtime_guard_module()
+    monkeypatch.delenv("CHARNESS_AGENT_BROWSER_TERM_GRACE_SECONDS", raising=False)
+    assert guard.term_grace_seconds() == guard.DEFAULT_TERM_GRACE_SECONDS
+    monkeypatch.setenv("CHARNESS_AGENT_BROWSER_TERM_GRACE_SECONDS", "bad")
+    assert guard.term_grace_seconds() == guard.DEFAULT_TERM_GRACE_SECONDS
+
+
 class MarkerProcesses:
     """Spawn real, harmless long-lived processes so the guard can read a real
     ``/proc/<pid>/cwd`` for ownership scoping (#365). The fake ``ps`` labels these

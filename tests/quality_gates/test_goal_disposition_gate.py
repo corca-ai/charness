@@ -26,6 +26,7 @@ def _load(name: str):
 disp = _load("goal_artifact_disposition")
 ce = _load("goal_artifact_closeout_evidence")
 section_placeholders = _load("goal_artifact_section_placeholders")
+markdown = _load("goal_artifact_markdown")
 
 
 # --- grandfather-by-Created-date -------------------------------------------
@@ -221,6 +222,13 @@ def test_section_placeholder_scan_handles_heading_at_eof() -> None:
 def test_section_placeholder_scan_ignores_non_placeholder_pending_noun() -> None:
     text = "## Auto-Retro\n\nPending reviewer assignment was deliberately out of scope.\n"
     assert section_placeholders.final_status_placeholders(text) == []
+
+
+def test_slice_plan_row_count_handles_absent_section_and_extra_separator() -> None:
+    assert markdown.slice_plan_data_row_count("## Other\n\n| A |\n| --- |\n| x |\n") == 0
+    assert markdown.slice_plan_data_row_count(
+        "## Slice Plan\n\n| Slice | Status |\n| --- | --- |\n| 1 | done |\n| --- | --- |\n| 2 | done |\n"
+    ) == 2
 
 
 def test_section_placeholder_scan_catches_labeled_todo_first_line() -> None:

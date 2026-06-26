@@ -30,6 +30,26 @@ def test_run_evals_supports_scenario_filter() -> None:
     assert "Ran 2 eval scenario(s)." in result.stdout
 
 
+def test_run_evals_sequential_jobs_and_rejects_negative_jobs() -> None:
+    result = run_script(
+        "scripts/run_evals.py",
+        "--repo-root",
+        str(ROOT),
+        "--scenario-id",
+        "skill-valid",
+        "--scenario-id",
+        "doc-links-valid",
+        "--jobs",
+        "1",
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.index("PASS skill-valid") < result.stdout.index("PASS doc-links-valid")
+
+    rejected = run_script("scripts/run_evals.py", "--repo-root", str(ROOT), "--jobs", "-1")
+    assert rejected.returncode == 1
+    assert "--jobs must be zero or a positive integer" in rejected.stderr
+
+
 def test_eval_cautilus_scenarios_writes_summary(tmp_path: Path) -> None:
     output_dir = tmp_path / "cautilus-held-out"
     result = run_script(

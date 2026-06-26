@@ -1,8 +1,18 @@
 from __future__ import annotations
 
+import importlib.util
+
 import pytest
 
-from .support import ADAPTER_LIB
+from .support import ADAPTER_LIB, ROOT
+
+VALIDATORS_SPEC = importlib.util.spec_from_file_location(
+    "adapter_validators_under_test",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "adapter_validators.py",
+)
+assert VALIDATORS_SPEC is not None and VALIDATORS_SPEC.loader is not None
+ADAPTER_VALIDATORS = importlib.util.module_from_spec(VALIDATORS_SPEC)
+VALIDATORS_SPEC.loader.exec_module(ADAPTER_VALIDATORS)
 
 
 def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
@@ -56,6 +66,27 @@ def test_adapter_lib_renders_and_loads_list_of_mappings() -> None:
             }
         ]
     }
+
+
+def test_startup_probe_validator_rejects_invalid_timeout_seconds() -> None:
+    errors: list[str] = []
+    result = ADAPTER_VALIDATORS.startup_probes(
+        [
+            {
+                "label": "demo",
+                "command": ["demo"],
+                "class": "standing",
+                "startup_mode": "warm",
+                "surface": "direct",
+                "samples": 1,
+                "timeout_seconds": 0,
+            }
+        ],
+        errors,
+    )
+
+    assert result == []
+    assert errors == ["startup_probes[0].timeout_seconds must be a positive number"]
 
 
 def test_adapter_lib_loads_quoted_list_items_with_colons() -> None:

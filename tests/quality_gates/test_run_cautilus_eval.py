@@ -8,12 +8,17 @@ operator-supplied --justification-log pointing at a real failing-log file.
 
 from __future__ import annotations
 
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "run_cautilus_eval.py"
+SPEC = importlib.util.spec_from_file_location("run_cautilus_eval_under_test", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+RUN_CAUTILUS_EVAL = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(RUN_CAUTILUS_EVAL)
 
 
 def _run(*extra: str, justification_log: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -154,3 +159,25 @@ def test_forwarded_cautilus_process_has_timeout(tmp_path: Path) -> None:
     )
     assert result.returncode == 124
     assert "timed out after 0.05s" in result.stderr
+
+
+def test_default_timeout_seconds_ignores_invalid_env(monkeypatch) -> None:
+    monkeypatch.setenv("CHARNESS_CAUTILUS_TIMEOUT_SECONDS", "bad")
+    assert RUN_CAUTILUS_EVAL._default_timeout_seconds() == float(
+        RUN_CAUTILUS_EVAL.DEFAULT_CAUTILUS_TIMEOUT_SECONDS
+    )
+    monkeypatch.setenv("CHARNESS_CAUTILUS_TIMEOUT_SECONDS", "0")
+    assert RUN_CAUTILUS_EVAL._default_timeout_seconds() == float(
+        RUN_CAUTILUS_EVAL.DEFAULT_CAUTILUS_TIMEOUT_SECONDS
+    )
+
+
+def test_refuses_non_positive_timeout_seconds(tmp_path: Path) -> None:
+    log = tmp_path / "log.txt"
+    log.write_text(
+        "- source-kind: regression-log\nA long-enough log line satisfying the size minimum.\n",
+        encoding="utf-8",
+    )
+    result = _run("--paths", "--timeout-seconds", "0", justification_log=log)
+    assert result.returncode == 2
+    assert "--timeout-seconds must be a positive number" in result.stderr

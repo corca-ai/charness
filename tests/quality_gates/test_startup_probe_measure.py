@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
-from .support import run_script, write_executable
+from .support import ROOT, run_script, write_executable
 
 SCRIPT = "skills/public/quality/scripts/measure_startup_probes.py"
+SPEC = importlib.util.spec_from_file_location(
+    "measure_startup_probes_under_test", ROOT / SCRIPT
+)
+assert SPEC is not None and SPEC.loader is not None
+MEASURE_STARTUP_PROBES = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MEASURE_STARTUP_PROBES)
 
 
 def _seed_repo(
@@ -123,3 +130,12 @@ def test_measure_startup_probes_human_output_reports_timeout(tmp_path: Path) -> 
     assert result.returncode == 1
     assert "COMMAND-TIMEOUT" in result.stdout
     assert "rc 124" in result.stdout
+
+
+def test_timeout_seconds_uses_default_for_invalid_probe_value() -> None:
+    assert MEASURE_STARTUP_PROBES._timeout_seconds({"timeout_seconds": "bad"}) == float(
+        MEASURE_STARTUP_PROBES.DEFAULT_PROBE_TIMEOUT_SECONDS
+    )
+    assert MEASURE_STARTUP_PROBES._timeout_seconds({"timeout_seconds": 0}) == float(
+        MEASURE_STARTUP_PROBES.DEFAULT_PROBE_TIMEOUT_SECONDS
+    )

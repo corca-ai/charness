@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -11,6 +12,22 @@ sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
 import browser_fallback_stages as bfs  # noqa: E402
 import url_reader  # noqa: E402
 from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
+
+GATHER_RENDERING_SPEC = importlib.util.spec_from_file_location(
+    "gather_record_rendering_under_test",
+    ROOT / "skills" / "public" / "gather" / "scripts" / "gather_record_rendering.py",
+)
+assert GATHER_RENDERING_SPEC is not None and GATHER_RENDERING_SPEC.loader is not None
+gather_record_rendering = importlib.util.module_from_spec(GATHER_RENDERING_SPEC)
+GATHER_RENDERING_SPEC.loader.exec_module(gather_record_rendering)
+
+ACQUIRE_IO_SPEC = importlib.util.spec_from_file_location(
+    "acquire_public_url_io_under_test",
+    WEB_FETCH_SCRIPTS / "acquire_public_url_io.py",
+)
+assert ACQUIRE_IO_SPEC is not None and ACQUIRE_IO_SPEC.loader is not None
+acquire_public_url_io = importlib.util.module_from_spec(ACQUIRE_IO_SPEC)
+ACQUIRE_IO_SPEC.loader.exec_module(acquire_public_url_io)
 
 
 def test_youtube_browser_stage_success_uses_shared_finish(monkeypatch) -> None:
@@ -64,3 +81,25 @@ def test_url_reader_decodes_success_response(monkeypatch) -> None:
     text, error = url_reader.read_url("https://example.com", timeout=1)
     assert error is None
     assert text == "hello ok"
+
+
+def test_gather_record_rendering_defensive_paths() -> None:
+    assert gather_record_rendering.attempt_lines([object()]) == []
+    assert gather_record_rendering.is_open_gap(
+        {"stage_id": "agent-browser-network-recon", "status": "success"}
+    )
+    fence = gather_record_rendering._fence_for("``` fenced\n```` longer")
+    assert fence == "`````"
+    selected, text = gather_record_rendering.selected_content_text({"selected_content": {"text": "   "}})
+    assert selected == {"text": "   "}
+    assert text is None
+
+
+def test_acquire_public_url_io_reports_command_exceptions(monkeypatch) -> None:
+    def boom(*_args, **_kwargs):
+        raise RuntimeError("synthetic failure")
+
+    monkeypatch.setattr(acquire_public_url_io.subprocess, "run", boom)
+    stdout, error = acquire_public_url_io.run_command(["demo"], timeout=1)
+    assert stdout == ""
+    assert error == "RuntimeError:synthetic failure"
