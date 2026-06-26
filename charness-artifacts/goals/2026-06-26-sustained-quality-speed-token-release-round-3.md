@@ -642,6 +642,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: For high-call-count test files, runtime wins can be larger than inventory key count suggests; record actual repeated-call conversion and heed file-length pressure before adding more helpers.
 - Metrics: Speed/testability proxy: removed repeated quality bootstrap/init subprocess calls, reduced raw candidate keys from 101 to 98, and removed `test_quality_bootstrap.py` from the clean-convertible file list.
 
+### Slice 36: Run retro resolver smoke in process
+
+- Objective: Remove a pure retro resolver subprocess from retro memory tests.
+- Why this approach: The test only checks `resolve_adapter.py` JSON for the current repo; a direct `main()` call preserves that behavior and avoids startup cost.
+- Commits:
+- What changed: Loaded the retro resolver script as a module, added a small runner, and converted the recent-lessons summary path smoke.
+- Alternatives rejected: Did not change the prose-only AGENTS/handoff/skill assertions in the same file because they do not involve process startup.
+- Targeted verification: pytest: `tests/quality_gates/test_retro_memory.py` `4 passed` in 0.41s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 63 candidates, 97 candidate keys, and 22 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 60 candidates and 21 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing smoke.
+- Critique: Same-agent slice critique: this no longer proves standalone interpreter startup for the retro resolver, but the adapter JSON contract remains covered.
+- Off-goal findings: None.
+- Lessons carried forward: Continue choosing small resolver smokes when they completely remove a file from the clean-convertible set.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw and ratcheted clean-convertible counts by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

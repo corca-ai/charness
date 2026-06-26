@@ -1,12 +1,28 @@
 from __future__ import annotations
 
 import json
+import sys
+from types import SimpleNamespace
 
-from .support import ROOT, run_script
+from tests.script_loader import load_script_module
+
+from .support import ROOT
+
+RETRO_RESOLVE_ADAPTER = load_script_module(
+    "tests.quality_gates.retro_resolve_adapter",
+    ROOT / "skills/public/retro/scripts/resolve_adapter.py",
+)
 
 
-def test_retro_adapter_exposes_recent_lessons_summary_path() -> None:
-    result = run_script("skills/public/retro/scripts/resolve_adapter.py", "--repo-root", str(ROOT))
+def run_retro_resolve_adapter(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["resolve_adapter.py", *args])
+    code = RETRO_RESOLVE_ADAPTER.main() or 0
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
+
+
+def test_retro_adapter_exposes_recent_lessons_summary_path(monkeypatch, capsys) -> None:
+    result = run_retro_resolve_adapter(monkeypatch, capsys, "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["data"]["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
