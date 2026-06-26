@@ -12,7 +12,7 @@ from scripts.quality_adapter_lib import load_quality_adapter_permissive, load_qu
 from scripts.quality_policy_defaults import DEFAULT_SKILL_ERGONOMICS_GATE_RULES
 from scripts.simple_skill_adapter_lib import validate_simple_adapter_data
 
-from .support import ROOT, run_script
+from .support import ROOT
 
 # In-process boundary conversions keep bootstrap/init and one direct resolve
 # error smoke at the process boundary while moving read-only follow-up probes
@@ -31,6 +31,20 @@ _RESOLVE_SPEC = importlib.util.spec_from_file_location(
 assert _RESOLVE_SPEC is not None and _RESOLVE_SPEC.loader is not None
 _RESOLVE_MODULE = importlib.util.module_from_spec(_RESOLVE_SPEC)
 _RESOLVE_SPEC.loader.exec_module(_RESOLVE_MODULE)
+_BOOTSTRAP_SPEC = importlib.util.spec_from_file_location(
+    "quality_bootstrap_adapter",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "bootstrap_adapter.py",
+)
+assert _BOOTSTRAP_SPEC is not None and _BOOTSTRAP_SPEC.loader is not None
+_BOOTSTRAP_MODULE = importlib.util.module_from_spec(_BOOTSTRAP_SPEC)
+_BOOTSTRAP_SPEC.loader.exec_module(_BOOTSTRAP_MODULE)
+_INIT_SPEC = importlib.util.spec_from_file_location(
+    "quality_init_adapter",
+    ROOT / "skills" / "public" / "quality" / "scripts" / "init_adapter.py",
+)
+assert _INIT_SPEC is not None and _INIT_SPEC.loader is not None
+_INIT_MODULE = importlib.util.module_from_spec(_INIT_SPEC)
+_INIT_SPEC.loader.exec_module(_INIT_MODULE)
 
 
 class _Result(NamedTuple):
@@ -61,6 +75,35 @@ def _run_quality_resolve_adapter(*args: str) -> _Result:
     finally:
         sys.argv = saved_argv
     return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
+
+
+def _run_quality_bootstrap_adapter(*args: str) -> _Result:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["bootstrap_adapter.py", *args]
+    code = 0
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                _BOOTSTRAP_MODULE.main()
+            except _BOOTSTRAP_MODULE.BootstrapValidationError as exc:
+                print(str(exc), file=sys.stderr)
+                code = 1
+    finally:
+        sys.argv = saved_argv
+    return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
+
+
+def _run_quality_init_adapter(*args: str) -> _Result:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["init_adapter.py", *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            _INIT_MODULE.main()
+    finally:
+        sys.argv = saved_argv
+    return _Result(returncode=0, stdout=out.getvalue(), stderr=err.getvalue())
 
 
 def seed_quality_repo(tmp_path: Path) -> Path:
@@ -211,7 +254,7 @@ def test_simple_adapter_data_rejects_non_string_scalar_fields(tmp_path: Path) ->
 
 def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "written"
@@ -306,7 +349,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
 
 def test_quality_bootstrap_short_circuits_when_only_defaulted_fields_added(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    first = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    first = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert first.returncode == 0, first.stderr
     assert json.loads(first.stdout)["adapter_status"] == "written"
 
@@ -320,7 +363,7 @@ def test_quality_bootstrap_short_circuits_when_only_defaulted_fields_added(tmp_p
     assert trimmed != canonical_text
     adapter_path.write_text(trimmed, encoding="utf-8")
 
-    second = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    second = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert second.returncode == 0, second.stderr
     payload = json.loads(second.stdout)
     assert payload["adapter_status"] == "unchanged"
@@ -330,7 +373,7 @@ def test_quality_bootstrap_short_circuits_when_only_defaulted_fields_added(tmp_p
 
 def test_quality_bootstrap_round_trips_unknown_top_level_fields(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    first = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    first = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert first.returncode == 0, first.stderr
 
     adapter_path = repo / ".agents" / "quality-adapter.yaml"
@@ -345,7 +388,7 @@ def test_quality_bootstrap_round_trips_unknown_top_level_fields(tmp_path: Path) 
     )
     adapter_path.write_text(extended, encoding="utf-8")
 
-    second = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    second = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert second.returncode == 0, second.stderr
     payload = json.loads(second.stdout)
     assert payload["adapter_status"] == "unchanged"
@@ -363,7 +406,7 @@ def test_quality_bootstrap_rewrite_keeps_unknown_fields(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "updated"
@@ -377,7 +420,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     repo = seed_quality_repo(tmp_path)
     write_explicit_quality_adapter(repo)
 
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "updated"
@@ -505,7 +548,7 @@ def test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "updated"
@@ -525,7 +568,7 @@ def test_quality_bootstrap_does_not_materialize_pytest_defaults_for_node_go_repo
     (repo / "go.mod").write_text("module example.com/demo\n\ngo 1.22\n", encoding="utf-8")
     (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
 
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["preset_lineage"] == ["go-quality"]
@@ -555,7 +598,7 @@ def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 1
     assert "invalid `skill_ergonomics_gate_rules`" in result.stderr
     assert "Repair the adapter before rerunning bootstrap" in result.stderr
@@ -613,7 +656,7 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["valid"] is False
@@ -631,7 +674,7 @@ def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Pat
     (repo / "scripts" / "run-quality.sh").unlink()
     (repo / "scripts" / "check_github_actions.py").write_text("print('ok')\n", encoding="utf-8")
 
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
     resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
@@ -644,7 +687,7 @@ def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     (repo / ".specdown").mkdir()
 
-    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["field_statuses"]["specdown_smoke_patterns"] == "inferred"
@@ -671,8 +714,7 @@ def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script(
-        "skills/public/quality/scripts/init_adapter.py",
+    result = _run_quality_init_adapter(
         "--repo-root",
         str(repo),
         "--preset-id",
@@ -701,8 +743,7 @@ def test_quality_init_adapter_portable_defaults_omit_pytest_reference(tmp_path: 
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script(
-        "skills/public/quality/scripts/init_adapter.py",
+    result = _run_quality_init_adapter(
         "--repo-root",
         str(repo),
         "--preset-id",

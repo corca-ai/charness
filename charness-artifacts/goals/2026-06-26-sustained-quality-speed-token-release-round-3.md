@@ -628,6 +628,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: For mixed boundary tests, leave setup processes alone when they model runtime state creation and convert only the follow-up clean target.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw candidate keys by one.
 
+### Slice 35: Run quality bootstrap smokes in process
+
+- Objective: Remove repeated nested process startup from quality bootstrap/init/resolve tests.
+- Why this approach: `test_quality_bootstrap.py` already had in-process resolver helpers; adding bootstrap/init helpers converts many repeated CLI calls while preserving the CLI's validation-error stderr contract.
+- Commits:
+- What changed: Loaded `bootstrap_adapter.py` and `init_adapter.py` as modules, added `_run_quality_bootstrap_adapter()` and `_run_quality_init_adapter()`, converted all remaining quality bootstrap/init/resolve `run_script()` calls, and removed the unused `run_script` import.
+- Alternatives rejected: Did not split the large test file in this slice because that would be a broader refactor; closeout now warns the file is 749/800 code lines, so future work should avoid adding more to this file or extract helpers first.
+- Targeted verification: pytest: `tests/quality_gates/test_quality_bootstrap.py` `17 passed` in 0.57s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 64 candidates, 98 candidate keys, and 23 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 61 candidates and 22 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed with the length warning noted above.
+- Test duplication pressure: No new tests; converted existing smokes through two helpers.
+- Critique: Same-agent slice critique: validation-error handling had to mirror the script's `__main__` guard, but the test explicitly checks the same stderr and returncode behavior.
+- Off-goal findings: `tests/quality_gates/test_quality_bootstrap.py` is close to the repo's 800-line code limit after this helper addition.
+- Lessons carried forward: For high-call-count test files, runtime wins can be larger than inventory key count suggests; record actual repeated-call conversion and heed file-length pressure before adding more helpers.
+- Metrics: Speed/testability proxy: removed repeated quality bootstrap/init subprocess calls, reduced raw candidate keys from 101 to 98, and removed `test_quality_bootstrap.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
