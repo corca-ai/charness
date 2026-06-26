@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from .support import ROOT, init_git_repo, run_script
 
@@ -40,6 +41,13 @@ assert SCANNER_SPEC is not None and SCANNER_SPEC.loader is not None
 SCANNER = importlib.util.module_from_spec(SCANNER_SPEC)
 sys.modules[SCANNER_SPEC.name] = SCANNER
 SCANNER_SPEC.loader.exec_module(SCANNER)
+
+
+def run_current_pointer_scanner(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["check_current_pointer_writes.py", *args])
+    code = SCANNER.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def _sha(path: Path) -> str:
@@ -210,7 +218,7 @@ def test_current_pointer_write_scanner_flags_direct_latest_write(tmp_path: Path)
     assert "scripts/bad_writer.py:3" in result.stdout
 
 
-def test_current_pointer_write_scanner_flags_direct_expression_write(tmp_path: Path) -> None:
+def test_current_pointer_write_scanner_flags_direct_expression_write(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     script_dir = repo / "scripts"
     script_dir.mkdir(parents=True)
@@ -224,7 +232,7 @@ def test_current_pointer_write_scanner_flags_direct_expression_write(tmp_path: P
     )
     init_git_repo(repo, ".gitignore", "scripts/expression_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 1
     assert "scripts/expression_writer.py:3" in result.stdout
@@ -268,7 +276,7 @@ def test_current_pointer_write_scanner_fallback_file_listing(
     assert SCANNER._git_visible_python_files(repo) == [target]
 
 
-def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: Path) -> None:
+def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     plugin_script_dir = repo / "plugins" / "charness" / "scripts"
     plugin_script_dir.mkdir(parents=True)
@@ -281,7 +289,7 @@ def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: 
     )
     init_git_repo(repo, ".gitignore", "plugins/charness/scripts/mirrored_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 0
 
@@ -299,7 +307,7 @@ def test_current_pointer_write_scanner_ignores_helper_and_syntax_error(tmp_path:
     assert SCANNER.scan_path(repo, broken) == []
 
 
-def test_current_pointer_write_scanner_does_not_exempt_mixed_helper_file(tmp_path: Path) -> None:
+def test_current_pointer_write_scanner_does_not_exempt_mixed_helper_file(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     script_dir = repo / "scripts"
     script_dir.mkdir(parents=True)
@@ -315,13 +323,13 @@ def test_current_pointer_write_scanner_does_not_exempt_mixed_helper_file(tmp_pat
     )
     init_git_repo(repo, ".gitignore", "scripts/mixed_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 1
     assert "scripts/mixed_writer.py:5" in result.stdout
 
 
-def test_current_pointer_write_scanner_flags_write_bytes_and_path_open(tmp_path: Path) -> None:
+def test_current_pointer_write_scanner_flags_write_bytes_and_path_open(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     script_dir = repo / "scripts"
     script_dir.mkdir(parents=True)
@@ -337,14 +345,14 @@ def test_current_pointer_write_scanner_flags_write_bytes_and_path_open(tmp_path:
     )
     init_git_repo(repo, ".gitignore", "scripts/binary_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 1
     assert "scripts/binary_writer.py:3" in result.stdout
     assert "scripts/binary_writer.py:4" in result.stdout
 
 
-def test_current_pointer_write_scanner_resolves_simple_filename_constants(tmp_path: Path) -> None:
+def test_current_pointer_write_scanner_resolves_simple_filename_constants(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     script_dir = repo / "scripts"
     script_dir.mkdir(parents=True)
@@ -359,13 +367,13 @@ def test_current_pointer_write_scanner_resolves_simple_filename_constants(tmp_pa
     )
     init_git_repo(repo, ".gitignore", "scripts/constant_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 1
     assert "scripts/constant_writer.py:4" in result.stdout
 
 
-def test_current_pointer_write_scanner_resolves_builtin_open_constant_path(tmp_path: Path) -> None:
+def test_current_pointer_write_scanner_resolves_builtin_open_constant_path(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     script_dir = repo / "scripts"
     script_dir.mkdir(parents=True)
@@ -380,7 +388,7 @@ def test_current_pointer_write_scanner_resolves_builtin_open_constant_path(tmp_p
     )
     init_git_repo(repo, ".gitignore", "scripts/constant_open_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 1
     assert "scripts/constant_open_writer.py:3" in result.stdout
@@ -388,6 +396,8 @@ def test_current_pointer_write_scanner_resolves_builtin_open_constant_path(tmp_p
 
 def test_current_pointer_write_scanner_does_not_treat_local_shadow_as_pointer(
     tmp_path: Path,
+    monkeypatch,
+    capsys,
 ) -> None:
     repo = tmp_path / "repo"
     script_dir = repo / "scripts"
@@ -405,7 +415,7 @@ def test_current_pointer_write_scanner_does_not_treat_local_shadow_as_pointer(
     )
     init_git_repo(repo, ".gitignore", "scripts/shadow_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
     assert result.returncode == 0
 

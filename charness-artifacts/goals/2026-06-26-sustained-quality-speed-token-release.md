@@ -445,6 +445,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Hyphenated skill directories need path-based module loading when converting tests in-process.
 - Metrics: run_script calls in test_bootstrap_visibility.py: base 3, current 1.
 
+### Slice 22: Current-pointer scanner subprocess fanout
+
+- Objective: Reduce repeated check_current_pointer_writes.py subprocess calls while preserving scanner output and HITL sync CLI proof.
+- Why this approach: Synthetic scanner variants share the same command mode and can call SCANNER.main(); text/JSON scanner smokes and HITL bootstrap/sync remain real subprocesses.
+- Commits:
+- What changed: Added run_current_pointer_scanner(monkeypatch, capsys, ...) and converted seven synthetic scanner fixtures to in-process main() calls.
+- Alternatives rejected: Kept HITL bootstrap/sync plus text-output and JSON-output scanner tests as real subprocess smokes.
+- Targeted verification: ruff passed; focused pytest: 20 passed in 2.89s; boundary-bypass ratchet OK with 73 candidates / 36 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 11 to 4.
+- Test duplication pressure: No tests added; seven scanner checks switched execution layer. File-level candidate count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-current-pointer-scanner-runtime.md; same-agent deterministic critique recorded because text/JSON scanner and HITL subprocess proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Scanner suites can move repeated synthetic cases in-process when at least one text and one JSON CLI smoke remain.
+- Metrics: run_script calls in test_current_pointer_writes.py: base 11, current 4.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
