@@ -1,11 +1,40 @@
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
+from types import ModuleType
 
-from .support import run_script
+from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/validate_skill_ergonomics.py"
+
+
+def _load_validate_module() -> ModuleType:
+    module_path = ROOT / SCRIPT
+    spec = importlib.util.spec_from_file_location("tests.quality_gates.validate_skill_ergonomics", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+VALIDATE = _load_validate_module()
+
+
+def _evaluate(repo: Path) -> dict[str, object]:
+    return VALIDATE.evaluate(repo.resolve())
+
+
+def _returncode(payload: dict[str, object]) -> int:
+    return 1 if VALIDATE.has_failures(payload) else 0
+
+
+def _human(payload: dict[str, object]) -> str:
+    return VALIDATE._format_human(payload)
 
 
 def _seed_repo(tmp_path: Path, *, rules: list[str]) -> Path:
@@ -84,9 +113,7 @@ def test_skill_ergonomics_gate_no_rules_passes(tmp_path: Path) -> None:
     assert payload["warnings"][0]["warning_id"] == "skill_ergonomics_gate_rules_empty"
     assert payload["warnings"][0]["skill_count"] == 2
 
-    plain = run_script(SCRIPT, "--repo-root", str(repo))
-    assert plain.returncode == 0, plain.stderr
-    assert "WARNING: skill_ergonomics_gate_rules is empty" in plain.stdout
+    assert "WARNING: skill_ergonomics_gate_rules is empty" in _human(payload)
 
 
 def test_skill_ergonomics_gate_warns_when_empty_rules_have_broken_explicit_paths(tmp_path: Path) -> None:
@@ -107,30 +134,24 @@ def test_skill_ergonomics_gate_warns_when_empty_rules_have_broken_explicit_paths
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 0
     assert payload["warnings"][0]["warning_id"] == "skill_ergonomics_requested_paths_empty"
     assert payload["warnings"][0]["requested_paths"] == ["missing-skills"]
 
-    plain = run_script(SCRIPT, "--repo-root", str(repo))
-    assert plain.returncode == 0, plain.stderr
-    assert "WARNING: skill_ergonomics_skill_paths is configured but resolved no non-vendored skills" in plain.stdout
+    assert "WARNING: skill_ergonomics_skill_paths is configured but resolved no non-vendored skills" in _human(payload)
 
 
 def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=["mode_option_pressure_terms"])
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert payload["rules"] == ["mode_option_pressure_terms"]
     assert payload["violations"][0]["rule"] == "mode_option_pressure_terms"
     assert payload["violations"][0]["skill_id"] == "demo"
-    plain = run_script(SCRIPT, "--repo-root", str(repo))
-    assert plain.returncode == 1
-    assert "mode_option_pressure_terms" in plain.stdout
-    assert "skills/public/demo/SKILL.md" in plain.stdout
+    plain = _human(payload)
+    assert "mode_option_pressure_terms" in plain
+    assert "skills/public/demo/SKILL.md" in plain
 
 
 def test_skill_ergonomics_gate_fails_on_issue_and_dated_incident_rules(tmp_path: Path) -> None:
@@ -170,10 +191,8 @@ def test_skill_ergonomics_gate_fails_on_issue_and_dated_incident_rules(tmp_path:
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert [violation["rule"] for violation in payload["violations"]] == [
         "issue_anchor_in_core",
         "dated_incident_in_core",
@@ -210,10 +229,8 @@ def test_skill_ergonomics_gate_fails_on_package_issue_anchor_rule_for_support_sk
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert payload["violations"][0]["rule"] == "portable_package_issue_anchor"
     assert payload["violations"][0]["skill_id"] == "demo"
     assert payload["checked_skills"][0]["package_issue_anchor_count"] == 1
@@ -251,10 +268,8 @@ def test_skill_ergonomics_gate_fails_on_package_text_quality_rules(
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert [violation["rule"] for violation in payload["violations"]] == [
         "portable_package_dated_incident",
         "portable_package_host_surface_reference",
@@ -303,10 +318,8 @@ def test_skill_ergonomics_gate_keeps_existing_rules_public_only_for_support_skil
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 0
     assert payload["checked_skills"][0]["skill_type"] == "support"
     assert payload["violations"] == []
 
@@ -314,19 +327,15 @@ def test_skill_ergonomics_gate_keeps_existing_rules_public_only_for_support_skil
 def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=["typo_rule"])
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert payload["adapter_errors"]
     assert "unknown rule `typo_rule`" in payload["adapter_errors"][0]
     assert payload["discovery_skipped_reason"] == "adapter_invalid"
     assert payload["checked_skills"] == []
     assert payload["violations"] == []
 
-    plain = run_script(SCRIPT, "--repo-root", str(repo))
-    assert plain.returncode == 1
-    assert "quality adapter: skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in plain.stdout
+    assert "quality adapter: skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in _human(payload)
 
     wrapper = run_script("scripts/validate_skill_ergonomics.py", "--repo-root", str(repo), "--json")
     assert wrapper.returncode == 1
@@ -378,9 +387,8 @@ def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path:
         + "\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 0
     assert payload["violations"] == []
 
 
@@ -398,9 +406,8 @@ def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) 
         + "\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    payload = json.loads(result.stdout)
-    assert result.returncode == 1
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert "no skills were checked" in payload["discovery_errors"][0]["message"]
 
     wrapper = run_script("scripts/validate_skill_ergonomics.py", "--repo-root", str(repo), "--json")
@@ -427,9 +434,8 @@ def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> 
         "---\nname: cautilus\n---\n\n# Cautilus\n\nA compact skill body.\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    payload = json.loads(result.stdout)
-    assert result.returncode == 0, result.stderr
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 0
     assert payload["checked_skills"][0]["skill_path"] == "skills/cautilus/SKILL.md"
     assert payload["discovery_errors"] == []
 
@@ -481,9 +487,8 @@ def test_skill_ergonomics_gate_skips_runtime_install_skills(tmp_path: Path) -> N
         + "\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 0
     assert payload["violations"] == []
     assert payload["checked_skills"][0]["skill_type"] == "runtime_install"
 
@@ -530,9 +535,8 @@ def test_skill_ergonomics_gate_skips_vendored_skills(tmp_path: Path) -> None:
         "---\nname: demo\ndescription: \"clean.\"\n---\n\n# Demo\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 0
     assert payload["violations"] == []
     paths = [skill["skill_path"] for skill in payload["checked_skills"]]
     assert paths == ["skills/public/demo/SKILL.md"]
@@ -576,9 +580,8 @@ def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_m
         + "\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert payload["rules"] == ["progressive_disclosure_risk"]
     assert payload["violations"][0]["rule"] == "progressive_disclosure_risk"
 
@@ -624,10 +627,8 @@ def test_skill_ergonomics_gate_fails_when_opted_in_long_core_matches(tmp_path: P
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert payload["violations"][0]["rule"] == "long_core"
 
 
@@ -678,10 +679,8 @@ def test_skill_ergonomics_gate_fails_when_opted_in_code_fence_rule_matches(tmp_p
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert payload["violations"][0]["rule"] == "code_fence_without_helper_script"
 
 
@@ -725,8 +724,6 @@ def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
     assert payload["violations"][0]["rule"] == "portable_helper_path_ambiguity"

@@ -557,6 +557,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: In mixed documentation suites, convert only the pure validator checks and leave release/package subprocess proof at the boundary.
 - Metrics: validate_quality_closeout_contract.py launches in test_docs_and_misc.py: base 1, current 0.
 
+### Slice 30: Skill ergonomics gate subprocess fanout
+
+- Objective: Reduce repeated validate_skill_ergonomics.py process launches while keeping command-wrapper proof.
+- Why this approach: The validator already exposes evaluate(), has_failures(), and _format_human(); repeated rule-behavior assertions can call those APIs directly.
+- Commits:
+- What changed: Loaded the skill ergonomics validator module once in test_skill_ergonomics_gate.py and converted most JSON/plain subprocess assertions to direct evaluate/formatter calls.
+- Alternatives rejected: Kept one skill-helper CLI success smoke and two root wrapper failure smokes instead of removing all command-boundary proof.
+- Targeted verification: ruff passed; focused skill-ergonomics pytest passed 17 tests in 2.68s after a 4.04s pre-change sample; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; repeated validator subprocess calls dropped from 23 to 3 while retaining command smokes.
+- Critique: charness-artifacts/critique/2026-06-26-skill-ergonomics-gate-runtime.md; low-risk same-agent critique recorded because command-wrapper proof remains.
+- Off-goal findings: none
+- Lessons carried forward: For validator suites with many rule permutations, keep a small command smoke set and run the rule matrix against the import-safe evaluator.
+- Metrics: validate_skill_ergonomics subprocess launches in test_skill_ergonomics_gate.py: base 23, current 3.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
