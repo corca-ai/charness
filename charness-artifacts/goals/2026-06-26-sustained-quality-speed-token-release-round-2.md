@@ -516,6 +516,27 @@ None yet.
   - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
     now reports one advisory warn-band file: `scripts/run_slice_closeout.py`.
 
+### Slice 14 — Extract slice closeout command runner
+
+- Objective: Remove the last Python length advisory warning while preserving
+  the `run_slice_closeout.run_command` monkeypatch/test seam.
+- Finding: `scripts/run_slice_closeout.py` was at 465/480 code lines. Its
+  shell command runner, progress heartbeat, PATH wrapper, and timeout handling
+  formed a cohesive reusable unit.
+- Change: Moved the command runner implementation into
+  `scripts/slice_closeout_run_command.py` and left
+  `run_slice_closeout.run_command` as an alias.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_run_slice_closeout_surface_obligations.py::test_run_slice_closeout_preserves_parent_python_before_login_shell_path tests/quality_gates/test_run_slice_closeout_surface_obligations.py::test_run_slice_closeout_emits_heartbeat_for_long_running_commands tests/quality_gates/test_run_slice_closeout_surface_obligations.py::test_run_slice_closeout_internal_focused_command_plan_helpers tests/quality_gates/test_slice_closeout_base_range.py::test_build_parser_base_flag_shapes --durations=20 --durations-min=0.01`
+    passed, 4 tests.
+  - `python3 -m py_compile scripts/run_slice_closeout.py scripts/slice_closeout_run_command.py && python3 -m ruff check scripts/run_slice_closeout.py scripts/slice_closeout_run_command.py`
+    passed.
+  - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+    passed with no advisory warning files.
+  - `wc -l scripts/run_slice_closeout.py scripts/slice_closeout_run_command.py`
+    reported `run_slice_closeout.py` at 444 total lines and the new runner
+    helper at 96 total lines.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
