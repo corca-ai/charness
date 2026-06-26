@@ -622,6 +622,26 @@ None yet.
     now reports `status: clean`, `new_code_families: []`.
   - This is an id-rotation baseline refresh, not a duplicate-reduction claim.
 
+### Slice 19 — Cache control-plane schema validators
+
+- Objective: Reduce the standing `check_coverage.py` runtime without weakening
+  manifest, lock, or support-capability schema validation.
+- Finding: `python3 -m cProfile scripts/check_coverage.py --repo-root .`
+  showed most runtime under repeated `jsonschema.validate()` calls from
+  `validate_manifest_data()`, `validate_lock_data()`, and
+  `validate_support_capability_data()`. The expensive part was schema
+  self-validation (`check_schema`) repeated for the same schema content.
+- Change: `scripts/control_plane_lib.py` now caches compiled JSON Schema
+  validators by canonical schema JSON. Data validation still runs for every
+  manifest, lock, and support capability.
+- Verification:
+  - `python3 -m pytest -q tests/control_plane/test_lock_schema_resilience.py tests/control_plane/test_integrations_validation.py::test_doctor_reuses_package_manager_prefix_probe_for_batch tests/control_plane/test_control_plane_lib_helpers.py --durations=20 --durations-min=0.01`
+    passed, 20 tests.
+  - `python3 -m py_compile scripts/control_plane_lib.py plugins/charness/scripts/control_plane_lib.py && python3 -m ruff check scripts/control_plane_lib.py plugins/charness/scripts/control_plane_lib.py tests/control_plane/test_lock_schema_resilience.py tests/control_plane/test_integrations_validation.py tests/control_plane/test_control_plane_lib_helpers.py`
+    passed.
+  - `python3 scripts/check_coverage.py --repo-root .` improved from the
+    observed 17.8-19.3s range to 4.76s.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

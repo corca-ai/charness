@@ -26,6 +26,7 @@ from scripts.subprocess_guard import run_process
 
 LOCKS_DIR = Path("integrations/locks")
 SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")
+_SCHEMA_VALIDATOR_CACHE: dict[str, Any] = {}
 
 @dataclass
 class CommandResult:
@@ -44,6 +45,16 @@ def load_lock_schema(repo_root: Path | None = None) -> dict[str, Any]:
 def load_support_capability_schema(repo_root: Path | None = None) -> dict[str, Any]:
     root = repo_root if repo_root is not None else repo_root_from_script(__file__)
     return json.loads(support_capability_schema_path(root).read_text(encoding="utf-8"))
+
+def _schema_validator(schema: dict[str, Any]) -> Any:
+    key = json.dumps(schema, sort_keys=True)
+    validator = _SCHEMA_VALIDATOR_CACHE.get(key)
+    if validator is None:
+        validator_class = jsonschema.validators.validator_for(schema)
+        validator_class.check_schema(schema)
+        validator = validator_class(schema)
+        _SCHEMA_VALIDATOR_CACHE[key] = validator
+    return validator
 
 _NON_MANIFEST_TOOLS_FILES = {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
 
@@ -67,7 +78,7 @@ def load_manifest(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 def validate_manifest_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
-    jsonschema.validate(data, schema)
+    _schema_validator(schema).validate(data)
     support = data.get("support_skill_source")
     if not support:
         return
@@ -77,7 +88,7 @@ def validate_manifest_data(data: dict[str, Any], schema: dict[str, Any], path: P
         raise ValueError(f"{path}: upstream_repo support path must point at a skill root directory, not `SKILL.md`")
 
 def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any], path: Path, repo_root: Path) -> None:
-    jsonschema.validate(data, schema)
+    _schema_validator(schema).validate(data)
     expected_skill_path = str((path.parent / "SKILL.md").relative_to(repo_root))
     if data["support_skill_path"] != expected_skill_path:
         raise ValueError(
@@ -345,7 +356,7 @@ def evaluate_version(manifest: dict[str, Any], detect_result: dict[str, Any]) ->
 
 
 def validate_lock_data(data: dict[str, Any], schema: dict[str, Any]) -> None:
-    jsonschema.validate(data, schema)
+    _schema_validator(schema).validate(data)
 
 
 def lock_paths(repo_root: Path) -> list[Path]:
