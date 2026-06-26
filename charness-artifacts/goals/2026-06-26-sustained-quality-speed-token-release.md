@@ -235,6 +235,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: For closeout gates, record whether retained proof is file-local or repo-level before converting any subprocess-backed complete-state behavior.
 - Metrics: check_goal_artifact.py run_script calls in test_goal_head_freshness.py: base 7, current 4.
 
+### Slice 7: Doc links validator subprocess fanout
+
+- Objective: Reduce repeated check_doc_links.py subprocess calls while preserving representative validator CLI proof.
+- Why this approach: The doc-link tests launched the validator 18 times for individual rule fixtures even though the validator exposes main().
+- Commits:
+- What changed: Added run_check_doc_links(monkeypatch, capsys, ...) with the same ValidationError-to-stderr wrapper as the script entrypoint, then converted fifteen rule fixtures to in-process main() calls.
+- Alternatives rejected: Kept three subprocess calls for script bootstrap plus representative failure, normal success, and explicit --require-git-file-listing behavior.
+- Targeted verification: ruff passed; focused pytest: 18 passed in 2.94s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 18 to 3.
+- Test duplication pressure: No tests added; fifteen existing tests switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-doc-links-runtime.md; fresh-eye reviewer 019f017a-9b2e-74b0-8f58-7603a89697c2 found no blocking issue, and its --require-git-file-listing caveat was fixed before commit.
+- Off-goal findings: none
+- Lessons carried forward: For validators with `main()` plus a thin `__main__` wrapper, in-process tests must reproduce the wrapper's exception-to-exit-code behavior when checking failure paths.
+- Metrics: check_doc_links.py run_script calls in test_check_doc_links.py: base 18, current 3.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
