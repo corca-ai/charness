@@ -459,6 +459,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Scanner suites can move repeated synthetic cases in-process when at least one text and one JSON CLI smoke remain.
 - Metrics: run_script calls in test_current_pointer_writes.py: base 11, current 4.
 
+### Slice 23: Usage episode validator subprocess fanout
+
+- Objective: Reduce repeated validate_usage_episodes.py subprocess calls while preserving slice-closeout command proof.
+- Why this approach: Post-closeout validator checks can call main() directly; run_slice_closeout.py remains the behavior boundary for emission, suppression, and rotation.
+- Commits:
+- What changed: Added run_validate_usage_episodes(monkeypatch, capsys, ...) and converted three validator checks to in-process main() calls.
+- Alternatives rejected: Kept _run_closeout(...) as a real subprocess for every closeout scenario.
+- Targeted verification: ruff passed; focused pytest: 6 passed in 3.96s; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary and candidate keys reduced 126 to 125; run_script calls dropped 4 to 1.
+- Test duplication pressure: No tests added; three validator checks switched execution layer. Boundary ratchet clean-convertible count dropped by one.
+- Critique: charness-artifacts/critique/2026-06-26-usage-episode-validator-runtime.md; low-risk same-agent critique recorded because slice-closeout subprocess proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Closeout tests should keep the closeout command boundary and move secondary validators in-process.
+- Metrics: run_script calls in test_slice_closeout_usage_episode.py: base 4, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

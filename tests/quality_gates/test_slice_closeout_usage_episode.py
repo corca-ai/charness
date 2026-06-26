@@ -3,9 +3,24 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+from runtime_bootstrap import import_repo_module
 
 from .support import run_script
+
+ROOT = Path(__file__).resolve().parents[2]
+VALIDATE_SCRIPT = "scripts/validate_usage_episodes.py"
+_validate_usage_episodes = import_repo_module(ROOT / VALIDATE_SCRIPT, "scripts.validate_usage_episodes")
+
+
+def run_validate_usage_episodes(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [VALIDATE_SCRIPT, *args])
+    code = _validate_usage_episodes.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def _write_closeout_fixture(repo: Path, adapter: str) -> None:
@@ -61,7 +76,7 @@ def _run_closeout(repo: Path, *, quality_mode: str | None = None):
     )
 
 
-def test_run_slice_closeout_emits_usage_episode_when_enabled(tmp_path: Path) -> None:
+def test_run_slice_closeout_emits_usage_episode_when_enabled(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     _write_closeout_fixture(
         repo,
@@ -100,13 +115,13 @@ def test_run_slice_closeout_emits_usage_episode_when_enabled(tmp_path: Path) -> 
     assert record["classification_skipped"] == "diff_unavailable"
     assert "session_id" not in record
 
-    valid = run_script("scripts/validate_usage_episodes.py", "--repo-root", str(repo), "--json")
+    valid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert valid.returncode == 0, valid.stderr
     assert json.loads(valid.stdout)["valid_count"] == 1
 
     with records_path.open("a", encoding="utf-8") as handle:
         handle.write('{"event_type": "usage_episode"}\n')
-    invalid = run_script("scripts/validate_usage_episodes.py", "--repo-root", str(repo), "--json")
+    invalid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert invalid.returncode == 1
     assert json.loads(invalid.stdout)["status"] == "invalid_records"
 
@@ -222,7 +237,7 @@ def test_run_slice_closeout_attaches_session_id_and_classifier_signal(tmp_path: 
     assert "classification_skipped" not in record
 
 
-def test_run_slice_closeout_rotates_usage_episode_records(tmp_path: Path) -> None:
+def test_run_slice_closeout_rotates_usage_episode_records(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     _write_closeout_fixture(
         repo,
@@ -246,6 +261,6 @@ def test_run_slice_closeout_rotates_usage_episode_records(tmp_path: Path) -> Non
 
     assert result.returncode == 0, result.stderr
     assert (records_dir / "usage_episode.1.jsonl").is_file()
-    valid = run_script("scripts/validate_usage_episodes.py", "--repo-root", str(repo), "--json")
+    valid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert valid.returncode == 0, valid.stderr
     assert json.loads(valid.stdout)["valid_count"] == 1
