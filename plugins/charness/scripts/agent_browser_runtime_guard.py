@@ -26,7 +26,7 @@ _subprocess_guard = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "
 run_process = _subprocess_guard.run_process
 HELP_TIMEOUT_SECONDS = 10
 PS_TIMEOUT_SECONDS = 10
-TERM_GRACE_SECONDS = 2.0
+DEFAULT_TERM_GRACE_SECONDS = 2.0
 CLEANUP_COMMAND = "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute"
 # Guidance for residue the cleanup command cannot fix: reparented (PPID=1, owning
 # daemon already gone) or zombie (<defunct>) browser processes are not part of any
@@ -241,6 +241,16 @@ def kill_pids(pids: list[int], sig: int) -> list[int]:
     return sent
 
 
+def term_grace_seconds() -> float:
+    raw = os.environ.get("CHARNESS_AGENT_BROWSER_TERM_GRACE_SECONDS")
+    if raw is None:
+        return DEFAULT_TERM_GRACE_SECONDS
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return DEFAULT_TERM_GRACE_SECONDS
+
+
 def cleanup_orphans(repo_root: Path, *, execute: bool) -> dict[str, object]:
     processes = list_processes(repo_root)
     runtime = inspect_runtime(processes, repo_root)
@@ -255,7 +265,8 @@ def cleanup_orphans(repo_root: Path, *, execute: bool) -> dict[str, object]:
         }
 
     terminated = kill_pids(target_pids, signal.SIGTERM)
-    time.sleep(TERM_GRACE_SECONDS)
+    if target_pids:
+        time.sleep(term_grace_seconds())
     remaining_processes = list_processes(repo_root)
     remaining = sorted(process.pid for process in remaining_processes if process.pid in set(target_pids))
     forced = kill_pids(remaining, signal.SIGKILL)

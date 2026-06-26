@@ -681,6 +681,33 @@ None yet.
   - `python3 scripts/check_coverage.py --repo-root .` passed with 92.1%
     control-plane coverage and zero per-file floor violations.
 
+### Slice 21 — Skip no-op agent-browser cleanup grace waits
+
+- Objective: Reduce web-fetch/browser cleanup test runtime and remove a
+  no-op script delay without weakening orphan cleanup proof.
+- Finding: Five web-fetch browser tests were each around 2.7s. The shared
+  cause was `agent_browser_runtime_guard.cleanup_orphans(..., execute=True)`:
+  even when the runtime snapshot had no target PIDs, it still waited the full
+  2.0s term-grace interval before checking the final snapshot.
+- Change: The guard now skips the grace sleep when there are no target PIDs,
+  while still taking the final snapshot so a concurrently appearing orphan tree
+  is caught. Added `CHARNESS_AGENT_BROWSER_TERM_GRACE_SECONDS` as a bounded test
+  / CI override; the default operational grace remains 2.0s. Synced the plugin
+  mirror.
+- Verification:
+  - `python3 -m pytest -q tests/test_agent_browser_runtime_guard.py::test_cleanup_execute_skips_grace_sleep_when_no_targets tests/test_agent_browser_runtime_guard.py::test_runtime_guard_cleanup_fails_when_orphan_respawns_after_clean_snapshot --durations=10 --durations-min=0.01`
+    passed, 2 tests.
+  - `python3 -m pytest -q tests/test_web_fetch_cleanup.py::test_acquire_attempts_close_on_render_success tests/test_web_fetch_cleanup.py::test_acquire_attempts_close_on_render_failure tests/test_web_fetch_cleanup.py::test_acquire_public_url_degrades_when_agent_browser_close_fails tests/test_web_fetch_support.py::test_acquire_public_url_uses_agent_browser_network_recon_for_collect_intent tests/test_web_fetch_support.py::test_acquire_public_url_network_recon_alone_is_not_success --durations=10 --durations-min=0.01`
+    passed, 5 tests; the formerly 2.67-2.74s calls now run in 0.66-0.73s.
+  - `python3 -m pytest -q tests/test_agent_browser_runtime_guard.py tests/test_web_fetch_support.py tests/test_web_fetch_cleanup.py --durations=30 --durations-min=0.1`
+    passed, 45 tests; the target cleanup e2e test now reports 0.12s instead of
+    2.13s and the related bundle fell from 12.25s to 10.46s.
+  - `python3 -m py_compile scripts/agent_browser_runtime_guard.py plugins/charness/scripts/agent_browser_runtime_guard.py tests/test_agent_browser_runtime_guard.py`
+    passed.
+  - `ruff check scripts/agent_browser_runtime_guard.py plugins/charness/scripts/agent_browser_runtime_guard.py tests/test_agent_browser_runtime_guard.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

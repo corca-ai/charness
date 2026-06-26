@@ -131,6 +131,7 @@ class MarkerProcesses:
 def _run_guard(args: list[str], bin_dir: Path, repo_root: Path) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:/usr/bin:/bin"
+    env.setdefault("CHARNESS_AGENT_BROWSER_TERM_GRACE_SECONDS", "0.01")
     env.pop("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS", None)
     return subprocess.run(
         [sys.executable, str(RUNTIME_GUARD_PATH), "--repo-root", str(repo_root), *args],
@@ -522,6 +523,32 @@ def test_runtime_guard_cleanup_fails_when_orphan_respawns_after_clean_snapshot(t
         assert payload["remaining_pids"] == sorted([daemon_pid, child_pid])
     finally:
         markers.close()
+
+
+def test_cleanup_execute_skips_grace_sleep_when_no_targets() -> None:
+    module = load_runtime_guard_module()
+    calls = {"sleep": 0}
+    original_list_processes = module.list_processes
+    original_sleep = module.time.sleep
+
+    def fake_list_processes(_repo_root: Path):
+        return []
+
+    def fail_sleep(_seconds: float) -> None:
+        calls["sleep"] += 1
+        raise AssertionError("cleanup with no target pids must not wait")
+
+    try:
+        module.list_processes = fake_list_processes
+        module.time.sleep = fail_sleep
+        payload = module.cleanup_orphans(Path("/repo/checkout"), execute=True)
+    finally:
+        module.list_processes = original_list_processes
+        module.time.sleep = original_sleep
+
+    assert calls["sleep"] == 0
+    assert payload["target_pids"] == []
+    assert payload["remaining_pids"] == []
 
 
 def test_doctor_marks_agent_browser_unhealthy_when_runtime_guard_fails(tmp_path: Path) -> None:
