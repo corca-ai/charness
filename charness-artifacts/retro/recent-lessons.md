@@ -3,21 +3,21 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v0.56.1`. (source: `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.55.0`. (source: `charness-artifacts/retro/2026-06-25-v0-55-0-release-auto-retro.md`)
+- The user correctly pointed out that the goal asked for roughly three hours of continued quality work, with push/release at the end. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`; sources: 58)
+- Release execution rotated installed skill cache paths mid-session, causing at least one stale skill path read and adding avoidable recovery work. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
+- The workflow treated "broad gate passed" as "timebox final phase reached", even though the artifact had an explicit done-early policy to continue the next safe improvement. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
 - **API 529 overload thrash (S6).** Three sonnet capture attempts failed or partially failed on `529 Overloaded` (one read 6/7 refs but the closing turn errored) before switching to haiku, which captured cleanly first try. ~15 min + tokens lost retrying the same overloaded tier. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
-- **Capture-design iteration (S6/S7).** The first capture prompt NAMED the concept refs, so a capable agent reached them by filename in BOTH arms (zero delta). The v2 "follow pointers only" prompt over-corrected into runaway broad exploration (16 refs, no clean result). Two wasted capture passes before settling on the honest v1 result. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
-- **Lock-schema strictness misread (one debug cycle).** A quick `additionalProperties` probe reported the lock `doctor` block as permissive; it is actually `additionalProperties: False` with a required list. I designed `update_advisory` persistence assuming permissive -> doctor.py raised a jsonschema ValidationError under `--write-locks` -> CLI exit 1, caught by the CLI lifecycle tests. Root: a one-shot probe of the schema instead of reading the actual schema node / running the validator before persisting a new field into a schema-validated artifact. (source: `charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`; sources: 58)
-- **capability:** behind-latest advisory now exists for every advisory-policy tool via the shared `attach_release_metadata` chokepoint + doctor. (applied, committed.) (source: `charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md`)
-- **capability:** the claim-fidelity harness now exists and is reusable; the next-session work is execution-shape (gate triage so the judgment phase is reached), NOT a ref disposition redo. (source: `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`)
-- **capability/workflow:** new files under a surfaces-managed dir need a `.agents/surfaces.json` entry; the gap is that pre-commit doesn't check surface coverage, only the slice closeout does — a candidate pre-commit guard. (source: `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`)
+- Before any push/release inside a timeboxed goal, check the goal artifact's `Timebox`, `Activation time`, `Closeout reserve`, and `Done-early policy`; if the closeout reserve has not started and safe local slices remain, continue local work. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
+- Consider a release preflight nudge that warns when an active goal artifact says `Done-early policy: continue_next_improvement` and the reserve window has not started. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
+- Record this retro in the active goal's slice log/lessons so future continuations do not treat `v0.56.1` as the end of the goal. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
 
 ## Selection Policy
 
@@ -78,8 +78,6 @@
 - `charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md`
-- `charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md`
-- `charness-artifacts/retro/2026-06-22-quality-claim-fidelity-retro.md`
 - `charness-artifacts/retro/2026-06-23-v0-54-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-23-v0-54-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-23-v0-54-2-release-auto-retro.md`
@@ -87,4 +85,5 @@
 - `charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-25-v0-55-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-26-premature-release-timing.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`

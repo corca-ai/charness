@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-26",
-  "source_artifact_count": 259,
-  "candidate_count": 1215,
+  "source_artifact_count": 260,
+  "candidate_count": 1221,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -645,6 +645,126 @@
       ]
     },
     {
+      "candidate_id": "current_focus:e6c60056c561",
+      "kind": "current_focus",
+      "lesson": "The user correctly pointed out that the goal asked for roughly three hours of continued quality work, with push/release at the end.",
+      "normalized_key": "the user correctly pointed out that the goal asked for roughly three hours of",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8e05bb9f0e14",
+      "kind": "next_improvement",
+      "lesson": "Before any push/release inside a timeboxed goal, check the goal artifact's `Timebox`, `Activation time`, `Closeout reserve`, and `Done-early policy`; if the closeout reserve has not started and safe local slices remain, continue local work.",
+      "normalized_key": "before any push release inside a timeboxed goal check the goal artifact s timebox",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:39ae129841a1",
+      "kind": "next_improvement",
+      "lesson": "Consider a release preflight nudge that warns when an active goal artifact says `Done-early policy: continue_next_improvement` and the reserve window has not started.",
+      "normalized_key": "consider a release preflight nudge that warns when an active goal artifact says done",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9f4954cffb51",
+      "kind": "next_improvement",
+      "lesson": "Record this retro in the active goal's slice log/lessons so future continuations do not treat `v0.56.1` as the end of the goal.",
+      "normalized_key": "record this retro in the active goal s slice log lessons so future continuations",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:046ec585bd1a",
+      "kind": "repeat_trap",
+      "lesson": "Release execution rotated installed skill cache paths mid-session, causing at least one stale skill path read and adding avoidable recovery work.",
+      "normalized_key": "release execution rotated installed skill cache paths mid session causing at least one stale",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9c3aefa6d600",
+      "kind": "repeat_trap",
+      "lesson": "The workflow treated \"broad gate passed\" as \"timebox final phase reached\", even though the artifact had an explicit done-early policy to continue the next safe improvement.",
+      "normalized_key": "the workflow treated broad gate passed as timebox final phase reached even though the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:1b14c1d71a36",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.55.0`.",
@@ -700,126 +820,6 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-2-release-auto-retro.md",
           "date": "2026-06-25",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:438412beb4e0",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.56.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 56 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-25",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md",
-          "date": "2026-06-25",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4a3959ada2ea",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.54.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 54 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-23-v0-54-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-23",
-      "age_days": 3,
-      "recency_weight": 0.862,
-      "alpha": 0.07,
-      "selection_weight": 0.862,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-0-release-auto-retro.md",
-          "date": "2026-06-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:aca1881093b7",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.54.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 54 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-23-v0-54-1-release-auto-retro.md",
-      "latest_source_date": "2026-06-23",
-      "age_days": 3,
-      "recency_weight": 0.862,
-      "alpha": 0.07,
-      "selection_weight": 0.862,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-1-release-auto-retro.md",
-          "date": "2026-06-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:3dfacdde5d6b",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.54.2`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 54 2",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-23-v0-54-2-release-auto-retro.md",
-      "latest_source_date": "2026-06-23",
-      "age_days": 3,
-      "recency_weight": 0.862,
-      "alpha": 0.07,
-      "selection_weight": 0.862,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-2-release-auto-retro.md",
-          "date": "2026-06-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:9d5cb91cc864",
-      "kind": "current_focus",
-      "lesson": "One activated `achieve` goal, 8 slices: a real headless-run usage-validation harness so a charness skill change can be proven by a real `claude -p` run scored by cautilus `evaluate skill-experiment`.",
-      "normalized_key": "one activated achieve goal 8 slices a real headless run usage validation harness so",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-skill-usage-validation-harness-retro.md",
-          "date": "2026-06-22",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:923fa221227c",
-      "kind": "current_focus",
-      "lesson": "Operator asked why `cautilus version` stayed 0.15.4 after `charness update all`, then \"why is cautilus manual?",
-      "normalized_key": "operator asked why cautilus version stayed 0 15 4 after charness update all then",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
-      "latest_source_date": "2026-06-22",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-22-cautilus-update-advisory-retro.md",
-          "date": "2026-06-22",
           "section": "Context"
         }
       ]
@@ -1453,6 +1453,126 @@
           "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md",
           "date": "2026-06-26",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e6c60056c561",
+      "kind": "current_focus",
+      "lesson": "The user correctly pointed out that the goal asked for roughly three hours of continued quality work, with push/release at the end.",
+      "normalized_key": "the user correctly pointed out that the goal asked for roughly three hours of",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8e05bb9f0e14",
+      "kind": "next_improvement",
+      "lesson": "Before any push/release inside a timeboxed goal, check the goal artifact's `Timebox`, `Activation time`, `Closeout reserve`, and `Done-early policy`; if the closeout reserve has not started and safe local slices remain, continue local work.",
+      "normalized_key": "before any push release inside a timeboxed goal check the goal artifact s timebox",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:39ae129841a1",
+      "kind": "next_improvement",
+      "lesson": "Consider a release preflight nudge that warns when an active goal artifact says `Done-early policy: continue_next_improvement` and the reserve window has not started.",
+      "normalized_key": "consider a release preflight nudge that warns when an active goal artifact says done",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9f4954cffb51",
+      "kind": "next_improvement",
+      "lesson": "Record this retro in the active goal's slice log/lessons so future continuations do not treat `v0.56.1` as the end of the goal.",
+      "normalized_key": "record this retro in the active goal s slice log lessons so future continuations",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:046ec585bd1a",
+      "kind": "repeat_trap",
+      "lesson": "Release execution rotated installed skill cache paths mid-session, causing at least one stale skill path read and adding avoidable recovery work.",
+      "normalized_key": "release execution rotated installed skill cache paths mid session causing at least one stale",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9c3aefa6d600",
+      "kind": "repeat_trap",
+      "lesson": "The workflow treated \"broad gate passed\" as \"timebox final phase reached\", even though the artifact had an explicit done-early policy to continue the next safe improvement.",
+      "normalized_key": "the workflow treated broad gate passed as timebox final phase reached even though the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+      "latest_source_date": "2026-06-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-premature-release-timing.md",
+          "date": "2026-06-26",
+          "section": "Waste"
         }
       ]
     },

@@ -12,14 +12,13 @@ This file is the active living goal scratchpad for the current run.
 
 ## Active Operating Frame
 
-- Current slice: boundary-bypass/test-runtime cleanup after the prior subprocess
-  fanout reductions.
-- Current slice intent: reduce remaining nested subprocess tests only where
-  ordinary behavior is already reachable in-process, while preserving one real
-  CLI smoke for each operator-facing entrypoint that still needs boundary proof.
-- Next action: inspect candidate test files, convert low-risk subprocess
-  assertions to direct `main()`/library calls, run focused tests plus the
-  boundary inventory, then record critique and commit the slice.
+- Current slice: local-only quality continuation after premature release timing
+  repair.
+- Current slice intent: continue safe reversible quality/runtime/token-efficiency
+  improvements without further push/release actions until the timebox closeout
+  phase.
+- Next action: inspect local quality/runtime candidates, choose one bounded
+  non-release slice, run focused verification, critique, and commit it.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -144,7 +143,10 @@ during the run:
 Routing: `find-skills` recommendation for the task returned `quality` for the
 quality/runtime work and `release` for final publication.
 Gather: n/a — no external URL/source context was provided for this goal.
-Release: pending final release phase.
+Release: v0.56.1 was published prematurely before the intended final phase;
+further push/release actions are paused until closeout. Evidence lives in
+`charness-artifacts/release/latest.md` and
+`charness-artifacts/retro/2026-06-26-premature-release-timing.md`.
 Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 
 ## Slice Log
@@ -176,6 +178,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Off-goal findings: Potential future inventory improvement: count within-file subprocess call reductions separately from file-level candidates.
 - Lessons carried forward: File-level ratchets can hide meaningful runtime wins inside a retained-boundary test file; record direct call-count evidence.
 - Metrics: render_report.py run_script calls in test_hitl_report_mode.py: base 14, current 4.
+
+### Slice 3: Premature release timing repair
+
+- Objective: Record and correct the workflow miss where release ran before the three-hour timebox was complete.
+- Why this approach: The user correctly pointed out that the goal's push/release phase belonged at the end, not immediately after the first broad gate.
+- Commits:
+- What changed: Persisted charness-artifacts/retro/2026-06-26-premature-release-timing.md and refreshed recent retro lessons; stopped further release/push actions and returned to local-only quality work.
+- Alternatives rejected: Did not revert the already-pushed v0.56.1 release because release/tag publication had already crossed the external boundary; instead recorded the state and continued local slices.
+- Targeted verification: validate_retro_artifact passed for the new retro; git state inspected: v0.56.1 tag/release commit pushed, local verification commit remains ahead of origin.
+- Test duplication pressure: No tests changed.
+- Critique: Retro-triggered correction per operating contract; no separate code critique needed for this artifact-only workflow repair.
+- Off-goal findings: none
+- Lessons carried forward: Before push/release in a timeboxed goal, inspect Timebox, Activation time, Closeout reserve, and Done-early policy; if reserve has not started, continue safe local work.
+- Metrics: Release was interrupted after publication; no further external actions allowed until final closeout.
 
 ## Context Sources
 
