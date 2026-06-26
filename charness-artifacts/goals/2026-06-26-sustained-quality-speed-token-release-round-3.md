@@ -530,6 +530,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Public-skill support scripts should be tested through direct `main()` calls unless startup itself is the asserted behavior.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw clean-convertible count by one.
 
+### Slice 28: Run public-skill validation CLI smokes in process
+
+- Objective: Reduce nested process cost in public-skill validation tests while preserving CLI guidance behavior.
+- Why this approach: The tests already imported validation/suggestion modules directly; two CLI smokes still spawned Python. The validation script handles `ValidationError` in its `__main__` guard, so the in-process helper reproduces that stderr guidance explicitly.
+- Commits:
+- What changed: Added an in-process module `main()` runner, converted validation and suggestion CLI smokes, and preserved the `suggest_public_skill_validation.py` guidance stderr contract.
+- Alternatives rejected: Did not bypass `main()` with lower-level helper calls for these two tests, because the CLI guidance/output shape is the behavior under test.
+- Targeted verification: pytest: `tests/test_public_skill_validation.py` `8 passed` in 0.33s; raw `inventory_boundary_bypass.py` dropped from 70 to 69 candidates and from 31 to 30 clean-convertible; `check_boundary_bypass_ratchet.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted existing CLI smokes.
+- Critique: Same-agent slice critique: reproducing the `__main__` guard in the helper is slightly coupled to the script, but it keeps the user-facing guidance contract without a process boundary.
+- Off-goal findings: None.
+- Lessons carried forward: For scripts whose exception handling lives under `if __name__ == "__main__"`, in-process tests must either call that wrapper or reproduce the wrapper contract deliberately.
+- Metrics: Speed/testability proxy: removed two nested Python script invocations and reduced raw clean-convertible count by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

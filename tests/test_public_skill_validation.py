@@ -2,17 +2,35 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from scripts import suggest_public_skill_validation as _suggest_public_skill_validation
+from scripts import validate_public_skill_validation as _validate_public_skill_validation
 from scripts.public_skill_validation_lib import ValidationError, load_policy, validate_policy
 from scripts.suggest_public_skill_validation import _format_human, build_report
 from scripts.validate_public_skill_validation import validate_adapter_requirement
 
-from .test_quality_artifact import run_script
-
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def run_module_main(module, monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [f"{module.__name__.rsplit('.', 1)[-1]}.py", *args])
+    try:
+        returncode = module.main()
+    except _validate_public_skill_validation.ValidationError as exc:
+        print(
+            f"{exc}\nRun `python3 scripts/suggest_public_skill_validation.py --repo-root .` for bucket choices.",
+            file=sys.stderr,
+        )
+        returncode = 1
+    except SystemExit as exc:
+        returncode = exc.code if isinstance(exc.code, int) else 1
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def with_fallback_policy(policy: dict[str, object]) -> dict[str, object]:
@@ -300,7 +318,7 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
     assert "`fallback_policy.visible`" in human
 
 
-def test_validate_public_skill_validation_cli_reports_guidance(tmp_path: Path) -> None:
+def test_validate_public_skill_validation_cli_reports_guidance(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(
         tmp_path,
         policy={
@@ -324,13 +342,13 @@ def test_validate_public_skill_validation_cli_reports_guidance(tmp_path: Path) -
     seed_skill(repo, "demo-a", adapter=True)
     seed_skill(repo, "demo-b", adapter=False)
 
-    result = run_script("scripts/validate_public_skill_validation.py", "--repo-root", str(repo))
+    result = run_module_main(_validate_public_skill_validation, monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 1
     assert "does not classify every public skill" in result.stderr
     assert "suggest_public_skill_validation.py" in result.stderr
 
 
-def test_suggest_public_skill_validation_cli_emits_json(tmp_path: Path) -> None:
+def test_suggest_public_skill_validation_cli_emits_json(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(
         tmp_path,
         policy={
@@ -354,6 +372,6 @@ def test_suggest_public_skill_validation_cli_emits_json(tmp_path: Path) -> None:
     seed_skill(repo, "demo-a", adapter=True)
     seed_skill(repo, "demo-b", adapter=False)
 
-    result = run_script("scripts/suggest_public_skill_validation.py", "--repo-root", str(repo), "--json")
+    result = run_module_main(_suggest_public_skill_validation, monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert result.returncode == 1
     assert json.loads(result.stdout)["suggestions"][0]["skill_id"] == "demo-b"
