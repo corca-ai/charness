@@ -537,6 +537,27 @@ None yet.
     reported `run_slice_closeout.py` at 444 total lines and the new runner
     helper at 96 total lines.
 
+### Slice 15 — Refresh duplicate baselines after helper extraction
+
+- Objective: Repair the broad quality failure introduced by the helper
+  extraction slices without hiding new extractable duplication.
+- Finding: `./scripts/run-quality.sh --read-only` passed 79 gates and failed
+  only `dup-ratchet`. `check_dup_ratchet.py --json` reported 13 new code family
+  ids, while `inventory_nose_clones.py --json` showed one drift family with
+  existing small CLI/parser-style boilerplate samples. The dup-ratchet reference
+  documents this as expected offset-sensitive `family_id` rotation when member
+  files are edited or moved.
+- Change: Re-baselined both code id-set baselines together:
+  `dup-ratchet-baseline.json` and `nose-baseline.json`.
+- Verification:
+  - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
+    now reports `status: clean`, `new_code_families: []`.
+  - `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+    now reports `status: clean`, `family_count: 0`, `total_dup_lines: 0`,
+    with 540 total families accepted in the refreshed baseline.
+  - This is a reviewed id-rotation baseline refresh, not a duplicate-reduction
+    claim and not a claim that the accepted 540 family ids are a quality target.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
