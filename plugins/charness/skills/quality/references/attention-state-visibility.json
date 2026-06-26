@@ -344,7 +344,7 @@
       "evidence_terms": ["doctor_status", "skipped"],
       "rationale": "Slack advice reports skipped doctor status when the host capability is unavailable."
     },
-    "skills/public/gather/scripts/gather_public_url.py": {
+    "skills/public/gather/scripts/gather_record_rendering.py": {
       "states": ["skipped"],
       "visibility": ["support_trace"],
       "evidence_terms": ["attempt", "skipped"],

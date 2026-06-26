@@ -14,6 +14,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORT_ACQUIRE = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"
 WRITE_RECORD = SCRIPT_DIR / "write_record.py"
 
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+import gather_record_rendering  # noqa: E402
+
+_content_persistence = gather_record_rendering.content_persistence
+_render_record = gather_record_rendering.render_record
+_trace_payload = gather_record_rendering.trace_payload
+
 
 def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str, object]:
     completed = subprocess.run(
@@ -42,190 +51,11 @@ def _slug_from_url(url: str) -> str:
     return f"{safe or 'public-url'}-{digest}"
 
 
-def _attempt_lines(attempts: list[object]) -> list[str]:
-    lines: list[str] = []
-    for item in attempts:
-        if not isinstance(item, dict):
-            continue
-        tool = item.get("tool_id") or "direct"
-        reason = ""
-        details = item.get("details")
-        if isinstance(details, dict) and details.get("reason"):
-            reason = f" ({details['reason']})"
-        error = f" error={item['error']}" if item.get("error") else ""
-        lines.append(
-            f"- `{item.get('stage_id', 'unknown')}` via `{tool}`: "
-            f"{item.get('status', 'unknown')} / {item.get('confidence', 'none')}{reason}{error}"
-        )
-    return lines
-
-
-def _is_open_gap(attempt: dict[str, object]) -> bool:
-    if attempt.get("status") != "skipped":
-        if attempt.get("stage_id") == "agent-browser-network-recon":
-            return True
-        if attempt.get("status") == "error":
-            return True
-        return False
-    details = attempt.get("details")
-    reason = details.get("reason") if isinstance(details, dict) else None
-    return reason not in {"prior-stage-sufficient", "not-needed", "intent-not-collect"}
-
-
-def _trace_payload(acquisition: dict[str, object]) -> dict[str, object]:
-    return {key: value for key, value in acquisition.items() if key != "selected_content"}
-
-
-def _fence_for(text: str) -> str:
-    fence = "```"
-    while fence in text:
-        fence += "`"
-    return fence
-
-
 def _positive_int(raw: str) -> int:
     value = int(raw)
     if value < 1:
         raise argparse.ArgumentTypeError("must be a positive integer")
     return value
-
-
-def _selected_content_text(acquisition: dict[str, object]) -> tuple[dict[str, object] | None, str | None]:
-    selected_content = acquisition.get("selected_content")
-    if not isinstance(selected_content, dict):
-        return None, None
-    text = selected_content.get("text")
-    if not isinstance(text, str) or not text.strip():
-        return selected_content, None
-    return selected_content, text
-
-
-def _content_persistence(acquisition: dict[str, object], *, requested: bool) -> str:
-    _selected_content, text = _selected_content_text(acquisition)
-    if text is not None:
-        return "extracted"
-    if requested:
-        return "unavailable"
-    return "none"
-
-
-def _extracted_content_lines(acquisition: dict[str, object], *, requested: bool) -> tuple[str, list[str]]:
-    selected_content, text = _selected_content_text(acquisition)
-    content_persistence = _content_persistence(acquisition, requested=requested)
-    if content_persistence != "extracted" or selected_content is None or text is None:
-        return content_persistence, []
-    fence = _fence_for(text)
-    return content_persistence, [
-        "",
-        "## Extracted Content",
-        "",
-        f"- Source Stage: `{selected_content.get('stage_id', 'unknown')}`",
-        f"- Format: `{selected_content.get('format', 'text')}`",
-        f"- Chars: `{selected_content.get('chars', len(text))}`",
-        f"- Original Chars: `{selected_content.get('original_chars', len(text))}`",
-        f"- Truncated: `{selected_content.get('truncated', False)}`",
-        "",
-        f"{fence}text",
-        text,
-        fence,
-    ]
-
-
-def _source_detail_lines(selected: dict[str, object]) -> list[str]:
-    details = selected.get("details")
-    if not isinstance(details, dict) or not any(
-        details.get(key) not in (None, "", [], {}) for key in ("source_type", "video_id", "reason")
-    ):
-        return []
-    lines = ["", "## Source Details", ""]
-    if details.get("source_type"):
-        lines.append(f"- Source Type: `{details.get('source_type')}`")
-    for key in ("video_id", "transcript_language", "transcript_source", "caption_ext", "reason"):
-        value = details.get(key)
-        if value not in (None, "", [], {}):
-            lines.append(f"- {key.replace('_', ' ').title()}: `{value}`")
-    metadata = details.get("metadata")
-    if isinstance(metadata, dict):
-        for key in ("title", "channel", "upload_date", "duration", "thumbnail", "chapter_count"):
-            value = metadata.get(key)
-            if value not in (None, "", [], {}):
-                lines.append(f"- {key.replace('_', ' ').title()}: {value}")
-    caption_errors = details.get("caption_errors")
-    if isinstance(caption_errors, list) and caption_errors:
-        rendered = ", ".join(str(item) for item in caption_errors)
-        lines.append(f"- Caption Errors: `{rendered}`")
-    return lines
-
-
-def _source_resolution_lines(acquisition: dict[str, object]) -> list[str]:
-    resolution = acquisition.get("source_resolution")
-    if not isinstance(resolution, dict):
-        return []
-    lines = ["", "## Source Resolution", ""]
-    for key in ("verdict", "terminal_state", "required_capability", "next_owner"):
-        value = resolution.get(key)
-        if value not in (None, "", [], {}):
-            lines.append(f"- {key.replace('_', ' ').title()}: `{value}`")
-    return lines
-
-
-def _render_record(url: str, acquisition: dict[str, object], *, persist_requested: bool) -> str:
-    route = acquisition.get("route") if isinstance(acquisition.get("route"), dict) else {}
-    selected = acquisition.get("selected_attempt") if isinstance(acquisition.get("selected_attempt"), dict) else {}
-    access_modes = route.get("access_modes") if isinstance(route.get("access_modes"), list) else []
-    attempts = acquisition.get("attempts") if isinstance(acquisition.get("attempts"), list) else []
-    open_gaps = [
-        item
-        for item in attempts
-        if isinstance(item, dict)
-        and _is_open_gap(item)
-    ]
-    gap_lines = _attempt_lines(open_gaps) or ["- None recorded."]
-    attempt_lines = _attempt_lines(attempts) or ["- None recorded."]
-    content_persistence, content_lines = _extracted_content_lines(acquisition, requested=persist_requested)
-    source_detail_lines = _source_detail_lines(selected)
-    source_resolution_lines = _source_resolution_lines(acquisition)
-    return "\n".join(
-        [
-            "# Gathered Public URL",
-            "",
-            f"- Source: {url}",
-            "- Access Mode: support/web-fetch public route",
-            f"- Content Persistence: `{content_persistence}`",
-            f"- Route: `{route.get('route_id', 'unknown')}`",
-            f"- Route Family: `{route.get('route_family', 'unknown')}`",
-            f"- Route Access Modes: {', '.join(str(mode) for mode in access_modes) or 'unknown'}",
-            f"- Disposition: `{acquisition.get('disposition', 'unknown')}`",
-            f"- Final Status: `{acquisition.get('final_status', 'unknown')}`",
-            f"- Final Confidence: `{acquisition.get('final_confidence', 'none')}`",
-            f"- Source Identity: `{acquisition.get('source_identity', 'not-applicable')}`",
-            "",
-            "## Selected Attempt",
-            "",
-            f"- Stage: `{selected.get('stage_id', 'none')}`",
-            f"- Tool: `{selected.get('tool_id') or 'direct'}`",
-            f"- Status: `{selected.get('status', 'unknown')}`",
-            f"- Confidence: `{selected.get('confidence', 'none')}`",
-            "",
-            "## Acquisition Trace",
-            "",
-            *attempt_lines,
-            "",
-            "## Open Gaps",
-            "",
-            *gap_lines,
-            *source_resolution_lines,
-            *source_detail_lines,
-            *content_lines,
-            "",
-            "## Trace JSON",
-            "",
-            "```json",
-            json.dumps(_trace_payload(acquisition), ensure_ascii=False, indent=2),
-            "```",
-            "",
-        ]
-    )
 
 
 def _build_acquire_cmd(args: argparse.Namespace) -> list[str]:

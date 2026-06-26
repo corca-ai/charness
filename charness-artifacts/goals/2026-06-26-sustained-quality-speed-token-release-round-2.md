@@ -469,6 +469,28 @@ None yet.
     now reports three advisory warn-band files, all production/script files
     rather than tests.
 
+### Slice 12 — Extract gather public URL record rendering
+
+- Objective: Remove the `gather_public_url.py` production-script length warning
+  while preserving its existing CLI and private test alias behavior.
+- Finding: `skills/public/gather/scripts/gather_public_url.py` was at 344/360
+  code lines. Record rendering and trace formatting were a cohesive block
+  separable from acquisition/write orchestration.
+- Change: Added `gather_record_rendering.py` for record rendering helpers and
+  left `gather_public_url._render_record`, `_content_persistence`, and
+  `_trace_payload` as compatibility aliases. Synced the plugin mirror.
+- Verification:
+  - `python3 -m pytest -q tests/test_twitter_exact_source.py::test_gather_record_surfaces_source_identity tests/test_twitter_exact_source.py::test_gather_record_surfaces_source_resolution tests/test_twitter_exact_source.py::test_gather_writes_exact_source_blocked_record tests/test_twitter_exact_source.py::test_gather_writes_exact_source_unavailable_record tests/test_web_fetch_support.py::test_gather_public_url_writes_web_fetch_trace tests/test_web_fetch_support.py::test_gather_public_url_persists_extracted_content_when_requested tests/test_web_fetch_content_persistence.py --durations=20 --durations-min=0.01`
+    passed, 16 tests.
+  - `python3 -m py_compile skills/public/gather/scripts/gather_public_url.py skills/public/gather/scripts/gather_record_rendering.py plugins/charness/skills/gather/scripts/gather_public_url.py plugins/charness/skills/gather/scripts/gather_record_rendering.py && python3 -m ruff check skills/public/gather/scripts/gather_public_url.py skills/public/gather/scripts/gather_record_rendering.py plugins/charness/skills/gather/scripts/gather_public_url.py plugins/charness/skills/gather/scripts/gather_record_rendering.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+  - `wc -l skills/public/gather/scripts/gather_public_url.py skills/public/gather/scripts/gather_record_rendering.py plugins/charness/skills/gather/scripts/gather_public_url.py plugins/charness/skills/gather/scripts/gather_record_rendering.py`
+    reported `gather_public_url.py` at 217 lines and the new rendering helper
+    at 182 lines in both root and plugin copies.
+  - `python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing`
+    now reports two advisory warn-band files.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
