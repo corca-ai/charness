@@ -488,6 +488,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Mixed in-process/subprocess files usually have leftover conversions; search within the same file before scanning globally.
 - Metrics: Speed/testability proxy: removed three nested Python script invocations from retro host-log probe tests and reduced ratchet clean-convertible count by one.
 
+### Slice 25: Run gather advice CLI smokes in process
+
+- Objective: Reduce nested process cost in gather advice tests while keeping CLI JSON smoke coverage.
+- Why this approach: `test_gather_google_workspace.py` already imports both gather advice scripts and validates their payload helpers directly. The two remaining subprocess calls only exercised `main()` JSON emission.
+- Commits:
+- What changed: Replaced subprocess-based Google Workspace and Slack advice CLI tests with an in-process `run_script_main()` helper that patches `sys.argv` and captures stdout/stderr.
+- Alternatives rejected: Did not remove CLI smoke assertions; they still prove `main()` emits JSON.
+- Targeted verification: pytest: `tests/test_gather_google_workspace.py` `11 passed` in 0.36s; `inventory_boundary_bypass.py` dropped from 73 to 72 candidates and from 34 to 33 clean-convertible; `check_boundary_bypass_ratchet.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted two existing subprocess tests.
+- Critique: Same-agent slice critique: in-process CLI smoke no longer proves interpreter startup for the gather advice scripts, but helper payload and script package validation already cover importability.
+- Off-goal findings: Boundary-bypass ratchet summary stayed at 66 candidates because baseline/exemption filtering differs from raw inventory.
+- Lessons carried forward: CLI JSON smokes can often call `main()` directly when startup is not the behavior under test.
+- Metrics: Speed/testability proxy: removed two nested Python script invocations and reduced raw clean-convertible count by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

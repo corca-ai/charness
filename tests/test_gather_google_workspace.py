@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from runtime_bootstrap import import_repo_module
 
@@ -19,22 +18,15 @@ _advise_slack_path = import_repo_module(
 )
 
 
-def run_helper(repo: Path, *, path_env: str) -> subprocess.CompletedProcess[str]:
-    env = os.environ.copy()
-    env["PATH"] = path_env
-    return subprocess.run(
-        [
-            sys.executable,
-            "skills/public/gather/scripts/advise_google_workspace_path.py",
-            "--repo-root",
-            str(repo),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+def run_script_main(module, monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [f"{module.__name__}.py", *args])
+    try:
+        result = module.main()
+        returncode = result if isinstance(result, int) else 0
+    except SystemExit as exc:
+        returncode = exc.code if isinstance(exc.code, int) else 1
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def seed_repo(tmp_path: Path) -> Path:
@@ -83,12 +75,16 @@ def test_advise_google_workspace_path_reports_host_mediated_mode(tmp_path: Path)
     assert "host's google_workspace capability command" in payload["operator_prompt"]
 
 
-def test_advise_google_workspace_path_cli_emits_json(tmp_path: Path) -> None:
+def test_advise_google_workspace_path_cli_emits_json(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path)
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
 
-    result = run_helper(repo, path_env=f"{bin_dir}:/usr/bin:/bin")
+    result = run_script_main(
+        _advise_google_workspace_path,
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+    )
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -129,21 +125,16 @@ def test_advise_slack_path_points_to_gather_slack_wrapper(tmp_path: Path) -> Non
     assert any("charness capability env slack.default" in step for step in payload["next_steps"])
 
 
-def test_advise_slack_path_cli_emits_json(tmp_path: Path) -> None:
+def test_advise_slack_path_cli_emits_json(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            "skills/public/gather/scripts/advise_slack_path.py",
-            "--repo-root",
-            str(repo),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_script_main(
+        _advise_slack_path,
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
     )
 
     assert result.returncode == 0, result.stderr
