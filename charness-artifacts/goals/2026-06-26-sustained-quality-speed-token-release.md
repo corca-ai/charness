@@ -431,6 +431,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Adapter scenario tests should keep command/write proof for init and one complex review while moving simple JSON paths in-process.
 - Metrics: run_script calls in test_narrative_scenario_blocks.py: base 4, current 2.
 
+### Slice 21: Bootstrap visibility subprocess fanout
+
+- Objective: Reduce duplicate resolve-adapter subprocess calls while preserving narrative fallback CLI proof.
+- Why this approach: Find-skills and announcement checks assert JSON payload content only; narrative fallback remains the command smoke for richer-doc discovery.
+- Commits:
+- What changed: Added run_resolve_adapter(monkeypatch, capsys, ...) and converted find-skills plus announcement resolve-adapter checks to in-process main() calls.
+- Alternatives rejected: Kept narrative rich-doc fallback as a real subprocess smoke.
+- Targeted verification: ruff passed; focused pytest: 3 passed in 2.40s; boundary-bypass ratchet OK with 73 candidates / 36 clean-convertible / 33 internally-spawning / 23 likely keep-boundary and candidate keys reduced 128 to 126; run_script calls dropped 3 to 1.
+- Test duplication pressure: No tests added; two JSON checks switched execution layer. File-level candidate count unchanged because retained CLI smoke remains.
+- Critique: charness-artifacts/critique/2026-06-26-bootstrap-visibility-runtime.md; low-risk same-agent critique recorded because narrative fallback CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Hyphenated skill directories need path-based module loading when converting tests in-process.
+- Metrics: run_script calls in test_bootstrap_visibility.py: base 3, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
