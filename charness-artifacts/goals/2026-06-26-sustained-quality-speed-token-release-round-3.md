@@ -838,6 +838,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When a subprocess smoke duplicates an adjacent `main()` test, deletion is cleaner than in-process conversion.
 - Metrics: Test-speed/token proxy: removed one test and one nested Python process start; reduced raw candidate keys by one.
 
+### Slice 50: Run agent-browser doctor propagation in process
+
+- Objective: Remove the clean `doctor.py` subprocess from the agent-browser runtime guard tests.
+- Why this approach: The test needs to prove doctor propagates the fake runtime guard failure into `doctor_status=unhealthy`; `doctor.main()` can run in process while preserving the fake PATH and the runtime guard subprocess boundary.
+- Commits:
+- What changed: Imported `scripts.doctor` and routed the unhealthy agent-browser doctor test through `run_loaded_script_main(..., env=env)`.
+- Alternatives rejected: Did not convert the guard subprocess/marker-process tests because those intentionally prove process listing, ownership, and cleanup behavior.
+- Targeted verification: pytest: `tests/test_agent_browser_runtime_guard.py` `20 passed` in 2.06s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 52 candidates, 76 candidate keys, and 8 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 49 candidates and 7 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing integration-style smoke.
+- Critique: Same-agent slice critique: the fake `ps`/marker process proof still crosses the real runtime boundary; only the outer doctor interpreter startup was removed.
+- Off-goal findings: None.
+- Lessons carried forward: Keep real process boundaries where the behavior under test is process ownership or subprocess command dispatch; inline the parent script when it only packages the result.
+- Metrics: Speed/testability proxy: removed one nested `doctor.py` process start and reduced ratchet clean-convertible from 8 to 7.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

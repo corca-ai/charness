@@ -7,6 +7,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import scripts.doctor as doctor_module
+from tests.script_main import run_loaded_script_main
+
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_GUARD_PATH = ROOT / "scripts" / "agent_browser_runtime_guard.py"
 
@@ -579,12 +582,14 @@ def test_doctor_marks_agent_browser_unhealthy_when_runtime_guard_fails(tmp_path:
         )
         env = os.environ.copy()
         env["PATH"] = f"{bin_dir}:/usr/bin:/bin"
-        result = subprocess.run(
-            [sys.executable, "scripts/doctor.py", "--repo-root", str(ROOT), "--json", "--tool-id", "agent-browser"],
-            cwd=ROOT,
-            check=False,
-            capture_output=True,
-            text=True,
+        result = run_loaded_script_main(
+            "doctor.py",
+            doctor_module,
+            "--repo-root",
+            str(ROOT),
+            "--json",
+            "--tool-id",
+            "agent-browser",
             env=env,
         )
         assert result.returncode == 1
