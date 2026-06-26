@@ -347,6 +347,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Advisory gates should retain human-output subprocess smokes when JSON fixtures move in-process.
 - Metrics: check_public_doc_coupling.py run_script calls in test_check_public_doc_coupling.py: base 5, current 2.
 
+### Slice 15: Ubiquitous language subprocess fanout
+
+- Objective: Reduce repeated inventory_ubiquitous_language.py subprocess calls while preserving first-run and current-repo CLI proof.
+- Why this approach: Contract-backed synthetic fixtures can call main() directly; unconfigured and current-repo checks are useful entrypoint smokes.
+- Commits:
+- What changed: Added run_ubiquitous_language(monkeypatch, capsys, ...) and converted three synthetic scanner fixtures to in-process main() calls.
+- Alternatives rejected: Kept unconfigured adapter and current-repo contract tests as real subprocess smokes.
+- Targeted verification: ruff passed; focused pytest: 5 passed in 3.11s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 5 to 2.
+- Test duplication pressure: No tests added; three synthetic tests switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-ubiquitous-language-runtime.md; low-risk same-agent critique recorded because first-run/current-repo CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Terminology scanners should retain first-run and current-repo subprocess smokes while synthetic contract fixtures can run in-process.
+- Metrics: inventory_ubiquitous_language.py run_script calls in test_quality_ubiquitous_language.py: base 5, current 2.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

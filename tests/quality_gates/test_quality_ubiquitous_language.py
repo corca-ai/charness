@@ -1,9 +1,26 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
+
+SCRIPT = "skills/public/quality/scripts/inventory_ubiquitous_language.py"
+_inventory_ubiquitous_language = import_repo_module(
+    ROOT / SCRIPT,
+    "skills.public.quality.scripts.inventory_ubiquitous_language",
+)
+
+
+def run_ubiquitous_language(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["inventory_ubiquitous_language.py", *args])
+    returncode = _inventory_ubiquitous_language.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def test_inventory_ubiquitous_language_is_unconfigured_without_contract(tmp_path: Path) -> None:
@@ -23,7 +40,7 @@ def test_inventory_ubiquitous_language_is_unconfigured_without_contract(tmp_path
     assert payload["status"] == "unconfigured"
 
 
-def test_inventory_ubiquitous_language_flags_deprecated_alias(tmp_path: Path) -> None:
+def test_inventory_ubiquitous_language_flags_deprecated_alias(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "docs").mkdir()
@@ -46,8 +63,9 @@ def test_inventory_ubiquitous_language_flags_deprecated_alias(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+    result = run_ubiquitous_language(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--json",
@@ -59,7 +77,9 @@ def test_inventory_ubiquitous_language_flags_deprecated_alias(tmp_path: Path) ->
     assert "external-tool-cli: docs/tools.md uses deprecated alias `charness install <tool>`" in payload["findings"][0]
 
 
-def test_inventory_ubiquitous_language_default_scope_does_not_scan_adapter_declarations(tmp_path: Path) -> None:
+def test_inventory_ubiquitous_language_default_scope_does_not_scan_adapter_declarations(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "quality-adapter.yaml").write_text(
@@ -78,8 +98,9 @@ def test_inventory_ubiquitous_language_default_scope_does_not_scan_adapter_decla
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+    result = run_ubiquitous_language(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--json",
@@ -91,7 +112,7 @@ def test_inventory_ubiquitous_language_default_scope_does_not_scan_adapter_decla
     assert payload["terms"][0]["deprecated_alias_total"] == 0
 
 
-def test_inventory_ubiquitous_language_honors_exemption_globs(tmp_path: Path) -> None:
+def test_inventory_ubiquitous_language_honors_exemption_globs(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "skills" / "public" / "quality" / "references").mkdir(parents=True)
@@ -119,8 +140,9 @@ def test_inventory_ubiquitous_language_honors_exemption_globs(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+    result = run_ubiquitous_language(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(repo),
         "--json",
