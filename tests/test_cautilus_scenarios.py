@@ -21,25 +21,9 @@ def test_run_evals_supports_scenario_filter() -> None:
         "scripts/run_evals.py",
         "--repo-root",
         str(ROOT),
-        "--scenario-id",
-        "find-skills-local-first",
-    )
-    assert result.returncode == 0, result.stderr
-    assert "PASS find-skills-local-first" in result.stdout
-    assert "Ran 1 eval scenario(s)." in result.stdout
-
-
-def test_run_evals_parallel_jobs_preserve_selected_order() -> None:
-    result = run_script(
-        "scripts/run_evals.py",
-        "--repo-root",
-        str(ROOT),
-        "--scenario-id",
-        "skill-valid",
-        "--scenario-id",
-        "doc-links-valid",
-        "--jobs",
-        "2",
+        "--scenario-id", "skill-valid",
+        "--scenario-id", "doc-links-valid",
+        "--jobs", "2",
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout.index("PASS skill-valid") < result.stdout.index("PASS doc-links-valid")

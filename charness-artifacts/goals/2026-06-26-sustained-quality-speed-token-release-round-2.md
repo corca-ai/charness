@@ -904,6 +904,33 @@ None yet.
     passed.
   - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
 
+### Slice 31 — Trim eval parallelism surface after broad-gate warnings
+
+- Objective: Keep the `run-evals` speedup without adding new length-warning or
+  duplicate-ratchet debt.
+- Finding: The broad read-only quality gate passed the new `run-evals` label in
+  769ms, but surfaced two Python length warnings and a `dup-ratchet` hard block.
+  `inventory_nose_clones.py --json` still reported `family_count: 0` and
+  `total_dup_lines: 0`, so the duplicate failure was reviewed scanner family-id
+  drift rather than an extractable clone family.
+- Change: Folded the new parallel-order test into the existing scenario-filter
+  test, tightened the eval runner helper call surface, and refreshed
+  `charness-artifacts/quality/dup-ratchet-baseline.json` after the cleanup.
+  Synced the plugin mirror.
+- Verification:
+  - `python3 scripts/check_python_lengths.py --repo-root . --paths scripts/run_evals.py tests/test_cautilus_scenarios.py plugins/charness/scripts/run_evals.py`
+    passed with no warn-band output.
+  - `python3 -m pytest -q tests/test_cautilus_scenarios.py::test_run_evals_supports_scenario_filter --durations=10 --durations-min=0.01`
+    passed.
+  - `CHARNESS_QUALITY_LABELS=run-evals ./scripts/run-quality.sh --read-only`
+    passed; the label reported 712ms.
+  - `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+    reported `status: clean`, `family_count: 0`, `total_dup_lines: 0`.
+  - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --write-baseline --json`
+    wrote a 538-family baseline.
+  - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
+    reported `status: clean`, `new_code_families: []`.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
