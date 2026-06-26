@@ -881,6 +881,29 @@ None yet.
   - `CHARNESS_QUALITY_LABELS=run-evals ./scripts/run-quality.sh --read-only`
     passed; the quality label reported 734ms.
 
+### Slice 30 — Run specdown smoke specs with file-level jobs
+
+- Objective: Use the executable-spec runner's built-in file parallelism in the
+  standing quality gate.
+- Finding: `specdown run` defaults to one job, while this repo currently has
+  four spec files and the installed runner supports `-jobs`.
+- Change: Updated the `specdown` quality phase to call
+  `specdown run -quiet -no-report -jobs 4`. Synced the plugin mirror. This is a
+  small script-execution improvement rather than a guaranteed large win because
+  the gate still pays shared setup and command overhead.
+- Verification:
+  - `specdown run -quiet -no-report` passed in about 3.10s wall clock during
+    the direct comparison.
+  - `specdown run -quiet -no-report -jobs 4` passed in about 2.82s wall clock
+    during the direct comparison.
+  - `CHARNESS_QUALITY_LABELS=specdown ./scripts/run-quality.sh --read-only`
+    passed; the label reported 2.8s.
+  - `python3 -m pytest -q tests/quality_gates/test_quality_standing_gate_verbosity.py --durations=10 --durations-min=0.01`
+    passed, 7 tests.
+  - `ruff check tests/quality_gates/test_quality_standing_gate_verbosity.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
