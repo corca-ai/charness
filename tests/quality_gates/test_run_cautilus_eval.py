@@ -135,7 +135,7 @@ def test_forwarded_cautilus_process_has_timeout(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     cautilus = bin_dir / "cautilus"
-    cautilus.write_text("#!/bin/sh\nsleep 2\n", encoding="utf-8")
+    cautilus.write_text("#!/bin/sh\nsleep 0.2\n", encoding="utf-8")
     cautilus.chmod(0o755)
     result = subprocess.run(
         [
@@ -145,7 +145,7 @@ def test_forwarded_cautilus_process_has_timeout(tmp_path: Path) -> None:
             "--justification-log", str(log),
             "--paths",
             "--cautilus-bin", str(cautilus),
-            "--timeout-seconds", "1",
+            "--timeout-seconds", "0.05",
         ],
         capture_output=True,
         text=True,
@@ -153,4 +153,4 @@ def test_forwarded_cautilus_process_has_timeout(tmp_path: Path) -> None:
         cwd=ROOT,
     )
     assert result.returncode == 124
-    assert "timed out after 1s" in result.stderr
+    assert "timed out after 0.05s" in result.stderr

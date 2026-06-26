@@ -791,6 +791,28 @@ None yet.
     passed.
   - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
 
+### Slice 26 — Allow fractional Cautilus wrapper timeouts
+
+- Objective: Remove another fixed one-second timeout wait while preserving the
+  `run_cautilus_eval.py` forwarded-process timeout boundary.
+- Finding: `test_forwarded_cautilus_process_has_timeout` used a fake Cautilus
+  process sleeping 2s with `--timeout-seconds 1`, making the test cost about
+  2.04s in the standing slow list.
+- Change: `run_cautilus_eval.py` now accepts positive float timeout values from
+  the CLI and `CHARNESS_CAUTILUS_TIMEOUT_SECONDS`; the default remains 1800s.
+  The timeout test now uses a 0.05s timeout against a 0.2s fake process. Synced
+  the plugin mirror.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_run_cautilus_eval.py::test_forwarded_cautilus_process_has_timeout --durations=10 --durations-min=0.01`
+    passed; the timeout test now reports 0.26s.
+  - `python3 -m pytest -q tests/quality_gates/test_run_cautilus_eval.py --durations=20 --durations-min=0.05`
+    passed, 11 tests.
+  - `python3 -m py_compile scripts/run_cautilus_eval.py plugins/charness/scripts/run_cautilus_eval.py tests/quality_gates/test_run_cautilus_eval.py`
+    passed.
+  - `ruff check scripts/run_cautilus_eval.py plugins/charness/scripts/run_cautilus_eval.py tests/quality_gates/test_run_cautilus_eval.py`
+    passed.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

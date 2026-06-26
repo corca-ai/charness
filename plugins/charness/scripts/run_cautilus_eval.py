@@ -57,15 +57,15 @@ SOURCE_KIND_LINE_RE = re.compile(
 )
 
 
-def _default_timeout_seconds() -> int:
+def _default_timeout_seconds() -> float:
     raw = os.environ.get("CHARNESS_CAUTILUS_TIMEOUT_SECONDS")
     if raw is None:
-        return DEFAULT_CAUTILUS_TIMEOUT_SECONDS
+        return float(DEFAULT_CAUTILUS_TIMEOUT_SECONDS)
     try:
-        value = int(raw)
+        value = float(raw)
     except ValueError:
-        return DEFAULT_CAUTILUS_TIMEOUT_SECONDS
-    return value if value > 0 else DEFAULT_CAUTILUS_TIMEOUT_SECONDS
+        return float(DEFAULT_CAUTILUS_TIMEOUT_SECONDS)
+    return value if value > 0 else float(DEFAULT_CAUTILUS_TIMEOUT_SECONDS)
 
 
 def parse_args(argv: list[str] | None = None) -> tuple[argparse.Namespace, list[str]]:
@@ -102,7 +102,7 @@ def parse_args(argv: list[str] | None = None) -> tuple[argparse.Namespace, list[
     )
     parser.add_argument(
         "--timeout-seconds",
-        type=int,
+        type=float,
         default=_default_timeout_seconds(),
         help="Maximum wall-clock seconds for the forwarded cautilus process.",
     )
@@ -145,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     args, remaining = parse_args(argv)
     repo_root = args.repo_root.resolve()
     if args.timeout_seconds <= 0:
-        return _refuse("--timeout-seconds must be a positive integer.", repo_root)
+        return _refuse("--timeout-seconds must be a positive number.", repo_root)
 
     if args.paths is not None:
         changed_paths = [normalize_repo_path(path) for path in args.paths]
