@@ -600,6 +600,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Boundary inventory classification is useful for stopping scope creep inside a nearby file; convert the clean candidate and leave non-clean subprocesses alone.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced both raw and ratcheted clean-convertible boundary counts by one.
 
+### Slice 33: Batch portable JSON smokes in process
+
+- Objective: Remove several nested process invocations from portable artifact tests while keeping path-sanitization assertions intact.
+- Why this approach: `test_portable_json_artifacts.py` had many pure `main()` JSON/stdout smokes and one internal-boundary HITL bootstrap dependency. A shared in-process runner converts the clean targets without weakening bootstrap setup proof.
+- Commits:
+- What changed: Loaded announcement, find-skills, HITL sync/check, retro persistence, and markdown preview scripts as modules; added `run_loaded_script()` with `SystemExit` handling; converted six clean script targets while leaving HITL bootstrap subprocesses in place.
+- Alternatives rejected: Did not convert `bootstrap_review.py` because the boundary inventory classifies it as internal-boundary and the test uses it to create runtime state for later checks.
+- Targeted verification: pytest: `tests/quality_gates/test_portable_json_artifacts.py` `9 passed` in 0.89s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 65 candidates, 102 candidate keys, and 25 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 62 candidates and 24 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted existing smokes through one helper.
+- Critique: Same-agent slice critique: the test file remains in the boundary inventory because `bootstrap_review.py` still correctly spans an internal process boundary, but candidate-key pressure dropped by six and the pure JSON contracts remain covered through `main()`.
+- Off-goal findings: None.
+- Lessons carried forward: Track candidate-key deltas for files that intentionally remain candidates; file-count-only metrics hide partial cleanup wins.
+- Metrics: Speed/testability proxy: removed six nested Python script invocations and reduced raw boundary candidate keys from 108 to 102.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

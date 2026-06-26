@@ -4,11 +4,39 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+from tests.script_loader import load_script_module
 
 from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
+
+ANNOUNCEMENT_RECORD = load_script_module(
+    "tests.quality_gates.portable_record_announcement",
+    ROOT / "skills/public/announcement/scripts/record_announcement.py",
+)
+FIND_SKILLS_LIST = load_script_module(
+    "tests.quality_gates.portable_list_capabilities",
+    ROOT / "skills/public/find-skills/scripts/list_capabilities.py",
+)
+HITL_CHECK_REVIEW_STATE = load_script_module(
+    "tests.quality_gates.portable_hitl_check_review_state",
+    ROOT / "skills/public/hitl/scripts/check_review_state.py",
+)
+HITL_SYNC_REVIEW_ARTIFACT = load_script_module(
+    "tests.quality_gates.portable_hitl_sync_review_artifact",
+    ROOT / "skills/public/hitl/scripts/sync_review_artifact.py",
+)
+RETRO_PERSIST_ARTIFACT = load_script_module(
+    "tests.quality_gates.portable_retro_persist_artifact",
+    ROOT / "skills/public/retro/scripts/persist_retro_artifact.py",
+)
+MARKDOWN_PREVIEW_RENDER = load_script_module(
+    "tests.quality_gates.portable_render_markdown_preview",
+    ROOT / "skills/support/markdown-preview/scripts/render_markdown_preview.py",
+)
 
 
 def _load_script_module(module_name: str) -> Any:
@@ -18,12 +46,30 @@ def _load_script_module(module_name: str) -> Any:
     return __import__(f"scripts.{module_name}", fromlist=["build_summary"])
 
 
+def run_loaded_script(monkeypatch, capsys, script_name: str, module: object, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [script_name, *args])
+    returncode = 0
+    stderr_suffix = ""
+    try:
+        returncode = module.main() or 0
+    except SystemExit as exc:
+        if isinstance(exc.code, int):
+            returncode = exc.code
+        elif exc.code is None:
+            returncode = 0
+        else:
+            returncode = 1
+            stderr_suffix = f"{exc.code}\n"
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err + stderr_suffix)
+
+
 def _assert_no_repo_absolute_path(payload: object, repo: Path) -> None:
     rendered = json.dumps(payload, ensure_ascii=False)
     assert str(repo.resolve()) not in rendered
 
 
-def test_find_skills_inventory_persists_portable_adapter_paths(tmp_path: Path) -> None:
+def test_find_skills_inventory_persists_portable_adapter_paths(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     skill_dir = repo / "skills" / "public" / "demo"
     agents_dir = repo / ".agents"
@@ -46,7 +92,14 @@ def test_find_skills_inventory_persists_portable_adapter_paths(tmp_path: Path) -
         encoding="utf-8",
     )
 
-    result = run_script("skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(repo))
+    result = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "list_capabilities.py",
+        FIND_SKILLS_LIST,
+        "--repo-root",
+        str(repo),
+    )
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -56,13 +109,16 @@ def test_find_skills_inventory_persists_portable_adapter_paths(tmp_path: Path) -
     _assert_no_repo_absolute_path(latest, repo)
 
 
-def test_markdown_preview_manifest_omits_absolute_repo_root(tmp_path: Path) -> None:
+def test_markdown_preview_manifest_omits_absolute_repo_root(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Hello\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/support/markdown-preview/scripts/render_markdown_preview.py",
+    result = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "render_markdown_preview.py",
+        MARKDOWN_PREVIEW_RENDER,
         "--repo-root",
         str(repo),
         "--file",
@@ -80,14 +136,17 @@ def test_markdown_preview_manifest_omits_absolute_repo_root(tmp_path: Path) -> N
     _assert_no_repo_absolute_path(manifest, repo)
 
 
-def test_announcement_record_normalizes_artifact_path_and_stdout(tmp_path: Path) -> None:
+def test_announcement_record_normalizes_artifact_path_and_stdout(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     artifact = repo / "charness-artifacts" / "announcement" / "latest.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_text("# Announcement\n", encoding="utf-8")
 
-    result = run_script(
-        "skills/public/announcement/scripts/record_announcement.py",
+    result = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "record_announcement.py",
+        ANNOUNCEMENT_RECORD,
         "--repo-root",
         str(repo),
         "--head-commit",
@@ -217,7 +276,7 @@ def test_hitl_bootstrap_surfaces_adapter_apply_mode(tmp_path: Path) -> None:
     assert "apply_mode: accepted-chunk-or-final-apply-boundary" in state
 
 
-def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_path: Path) -> None:
+def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     target = repo / "docs" / "decision.md"
     target.parent.mkdir(parents=True)
@@ -245,8 +304,11 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
         encoding="utf-8",
     )
 
-    sync = run_script(
-        "skills/public/hitl/scripts/sync_review_artifact.py",
+    sync = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "sync_review_artifact.py",
+        HITL_SYNC_REVIEW_ARTIFACT,
         "--repo-root",
         str(repo),
         "--session-id",
@@ -270,8 +332,11 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
     assert "Next Chunk To Present" in artifact
     assert ".charness/hitl/runtime/hitl-sync/state.yaml" in artifact
 
-    check = run_script(
-        "skills/public/hitl/scripts/sync_review_artifact.py",
+    check = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "sync_review_artifact.py",
+        HITL_SYNC_REVIEW_ARTIFACT,
         "--repo-root",
         str(repo),
         "--session-id",
@@ -282,8 +347,11 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
     assert check.returncode == 0, check.stderr
     assert json.loads(check.stdout)["status"] == "current"
     state_path.write_text(state_path.read_text(encoding="utf-8").replace("target: docs/decision.md", "target: docs/other.md"), encoding="utf-8")
-    stale = run_script(
-        "skills/public/hitl/scripts/sync_review_artifact.py",
+    stale = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "sync_review_artifact.py",
+        HITL_SYNC_REVIEW_ARTIFACT,
         "--repo-root",
         str(repo),
         "--session-id",
@@ -297,7 +365,7 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
     _assert_no_repo_absolute_path(sync_payload, repo)
 
 
-def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path) -> None:
+def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     bootstrap = run_script(
         "skills/public/hitl/scripts/bootstrap_review.py",
@@ -310,8 +378,11 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path) -> No
     assert bootstrap.returncode == 0, bootstrap.stderr
     payload = json.loads(bootstrap.stdout)
     state_path = repo / payload["state_file"]
-    blocked = run_script(
-        "skills/public/hitl/scripts/check_review_state.py",
+    blocked = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "check_review_state.py",
+        HITL_CHECK_REVIEW_STATE,
         "--repo-root",
         str(repo),
         "--session-id",
@@ -334,8 +405,11 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path) -> No
         .replace("applied_rewrite_review_status: inactive", "applied_rewrite_review_status: pending"),
         encoding="utf-8",
     )
-    pending = run_script(
-        "skills/public/hitl/scripts/check_review_state.py",
+    pending = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "check_review_state.py",
+        HITL_CHECK_REVIEW_STATE,
         "--repo-root",
         str(repo),
         "--session-id",
@@ -353,8 +427,11 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path) -> No
         ),
         encoding="utf-8",
     )
-    malformed = run_script(
-        "skills/public/hitl/scripts/check_review_state.py",
+    malformed = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "check_review_state.py",
+        HITL_CHECK_REVIEW_STATE,
         "--repo-root",
         str(repo),
         "--session-id",
@@ -375,8 +452,11 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path) -> No
         ),
         encoding="utf-8",
     )
-    passed = run_script(
-        "skills/public/hitl/scripts/check_review_state.py",
+    passed = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "check_review_state.py",
+        HITL_CHECK_REVIEW_STATE,
         "--repo-root",
         str(repo),
         "--session-id",
@@ -389,7 +469,7 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path) -> No
     assert json.loads(passed.stdout)["status"] == "pass"
 
 
-def test_retro_snapshot_sanitizes_path_fields(tmp_path: Path) -> None:
+def test_retro_snapshot_sanitizes_path_fields(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     snapshot_file = repo / "snapshot.json"
@@ -413,8 +493,11 @@ def test_retro_snapshot_sanitizes_path_fields(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script(
-        "skills/public/retro/scripts/persist_retro_artifact.py",
+    result = run_loaded_script(
+        monkeypatch,
+        capsys,
+        "persist_retro_artifact.py",
+        RETRO_PERSIST_ARTIFACT,
         "--repo-root",
         str(repo),
         "--artifact-name",
