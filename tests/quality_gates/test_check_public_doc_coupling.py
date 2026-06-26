@@ -2,13 +2,22 @@ from __future__ import annotations
 
 import importlib
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from .support import run_script
 
 coupling_gate = importlib.import_module("scripts.check_public_doc_coupling")
 
 SCRIPT = "scripts/check_public_doc_coupling.py"
+
+
+def run_public_doc_coupling(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["check_public_doc_coupling.py", *args])
+    returncode = coupling_gate.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
 def _seed_repo(tmp_path: Path) -> Path:
@@ -29,12 +38,12 @@ def test_clean_tree_reports_clean_and_exits_zero(tmp_path: Path) -> None:
     assert "exported reusable guidance is clean" in result.stdout
 
 
-def test_issue_anchor_in_shared_reference_is_advisory_flagged(tmp_path: Path) -> None:
+def test_issue_anchor_in_shared_reference_is_advisory_flagged(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = _seed_repo(tmp_path)
     (repo / "skills" / "shared" / "references" / "coupled.md").write_text(
         "This rule exists because of (#999) and stays portable.\n", encoding="utf-8"
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["status"] == "coupled"
@@ -43,7 +52,7 @@ def test_issue_anchor_in_shared_reference_is_advisory_flagged(tmp_path: Path) ->
     ]
 
 
-def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path) -> None:
+def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = _seed_repo(tmp_path)
     (repo / "skills" / "public" / "demo" / "references" / "pins.md").write_text(
         "Since v0.41.0 the helper exists.\n"
@@ -54,7 +63,7 @@ def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path) -> 
         "An external 0.x tool pin like v0.4.0 also matches by design.\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert result.returncode == 0
     findings = json.loads(result.stdout)["findings"]
     assert [(f["kind"], f["line"]) for f in findings] == [
@@ -64,13 +73,13 @@ def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path) -> 
     ]
 
 
-def test_allowed_anchor_context_is_not_flagged(tmp_path: Path) -> None:
+def test_allowed_anchor_context_is_not_flagged(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = _seed_repo(tmp_path)
     (repo / "skills" / "shared" / "references" / "allowed.md").write_text(
         "Use the placeholder https://github.com/<owner>/<repo>/.../issues/5 form.\n",
         encoding="utf-8",
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo), "--json")
     assert result.returncode == 0
     assert json.loads(result.stdout)["status"] == "clean"
 

@@ -333,6 +333,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Repo-copy guards protect expensive tests; retain a current-repo entrypoint smoke even when synthetic fixtures move in-process.
 - Metrics: check_test_repo_copy_invariants.py run_script calls in test_repo_copy_invariants.py: base 5, current 1.
 
+### Slice 14: Public doc coupling subprocess fanout
+
+- Objective: Reduce repeated check_public_doc_coupling.py subprocess calls while preserving human-output CLI proof.
+- Why this approach: JSON advisory fixtures can call main() directly; text-output checks are the delivery surface shown in quality logs.
+- Commits:
+- What changed: Added run_public_doc_coupling(monkeypatch, capsys, ...) and converted three JSON fixture tests to in-process main() calls.
+- Alternatives rejected: Kept clean text and advisory text tests as real subprocess smokes.
+- Targeted verification: ruff passed; focused pytest: 8 passed in 2.80s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 5 to 2.
+- Test duplication pressure: No tests added; three JSON tests switched execution layer. File-level boundary count unchanged because retained CLI smokes remain.
+- Critique: charness-artifacts/critique/2026-06-26-public-doc-coupling-runtime.md; low-risk same-agent critique recorded because human-output CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Advisory gates should retain human-output subprocess smokes when JSON fixtures move in-process.
+- Metrics: check_public_doc_coupling.py run_script calls in test_check_public_doc_coupling.py: base 5, current 2.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
