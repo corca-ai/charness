@@ -813,6 +813,26 @@ None yet.
     passed.
   - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
 
+### Slice 27 — Allow fractional generic script timeouts
+
+- Objective: Remove a fixed one-second timeout wait from the generic CLI
+  timeout wrapper test and make local timeout probes more precise.
+- Finding: `test_arm_cli_timeout_exits_in_subprocess` used
+  `CHARNESS_SCRIPT_TIMEOUT_SECONDS=1` and a 2s sleeping subprocess because
+  `script_timeout.py` used integer-only `signal.alarm()`.
+- Change: `script_timeout.py` now parses positive float timeout values and uses
+  `signal.setitimer()` when available, falling back to integer `signal.alarm()`
+  otherwise. The test now uses a 0.05s timeout against a 0.2s sleep. Synced the
+  plugin mirror.
+- Verification:
+  - `python3 -m pytest -q tests/test_script_timeout.py --durations=10 --durations-min=0.01`
+    passed; the subprocess timeout test now reports 0.08s instead of 1.04s.
+  - `python3 -m py_compile scripts/script_timeout.py plugins/charness/scripts/script_timeout.py tests/test_script_timeout.py`
+    passed.
+  - `ruff check scripts/script_timeout.py plugins/charness/scripts/script_timeout.py tests/test_script_timeout.py`
+    passed after import ordering repair.
+  - `python3 scripts/check_staged_mirror_drift.py --repo-root .` passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

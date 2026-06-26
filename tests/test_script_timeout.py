@@ -26,7 +26,7 @@ def test_arm_cli_timeout_exits_in_subprocess(tmp_path: Path) -> None:
                 "from runtime_bootstrap import arm_cli_timeout",
                 "cancel_timeout = arm_cli_timeout(label='slow-script', default_seconds=5)",
                 "try:",
-                "    time.sleep(2)",
+                "    time.sleep(0.2)",
                 "finally:",
                 "    cancel_timeout()",
                 "",
@@ -36,7 +36,7 @@ def test_arm_cli_timeout_exits_in_subprocess(tmp_path: Path) -> None:
     )
 
     env = os.environ.copy()
-    env["CHARNESS_SCRIPT_TIMEOUT_SECONDS"] = "1"
+    env["CHARNESS_SCRIPT_TIMEOUT_SECONDS"] = "0.05"
     result = subprocess.run(
         [sys.executable, str(script)],
         check=False,
@@ -46,4 +46,4 @@ def test_arm_cli_timeout_exits_in_subprocess(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 1
-    assert "slow-script timed out after 1s" in result.stderr
+    assert "slow-script timed out after 0.05s" in result.stderr
