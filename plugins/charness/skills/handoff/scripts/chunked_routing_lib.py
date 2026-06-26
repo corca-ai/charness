@@ -90,27 +90,8 @@ RANKER_PACKET_VERSION = 1
 # idiom used in skills/public/issue/SKILL.md step 5 ("the move that reduces
 # uncertainty or unlocks the next issue comes first"). Pinned here so a
 # prompt change forces a fixture update; the round-trip test is the gate.
-RANKER_PROMPT = (
-    "Rank the chunk candidates as a Christopher Alexander generative "
-    "sequence: the chunk that reduces the most uncertainty for, or "
-    "unlocks the most of, the remaining chunks comes first. Prefer moves "
-    "that lower risk for later chunks; do not optimize for cheapest-first "
-    "or for personal momentum. Do not rank by input order, alphabetical "
-    "order, or any other ordering that ignores the unlock relation between "
-    "chunks.\n\n"
-    "For each candidate (standalone or merged), assign:\n"
-    "- candidate_label: the candidate's `label` field verbatim\n"
-    "- rank: integer starting at 1; ranks must be a contiguous 1..N\n"
-    "  permutation of all candidates with no gaps or duplicates\n"
-    "- reasoning: 2-3 sentences naming what this chunk unlocks for the\n"
-    "  next chunk, what uncertainty it removes, or which downstream\n"
-    "  decision becomes cheaper. Do not restate the chunk's objective\n"
-    "  summary — the reasoning explains why this position in the\n"
-    "  sequence is right.\n\n"
-    "Reasoning must be non-empty for every candidate so a later "
-    '"why not chunk X?" follow-up can be answered from this rendered '
-    "output without re-running the ranker."
-)
+_RANKER_PROMPT_PATH = Path(__file__).resolve().parent / "templates" / "ranker_prompt.txt"
+RANKER_PROMPT = _RANKER_PROMPT_PATH.read_text(encoding="utf-8").rstrip("\n")
 
 
 _RESPONSE_SCHEMA = {

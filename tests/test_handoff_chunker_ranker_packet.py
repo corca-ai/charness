@@ -25,6 +25,15 @@ PACKET_SCRIPT = (
     / "scripts"
     / "prepare_ranker_packet.py"
 )
+RANKER_PROMPT_PATH = (
+    REPO_ROOT
+    / "skills"
+    / "public"
+    / "handoff"
+    / "scripts"
+    / "templates"
+    / "ranker_prompt.txt"
+)
 
 
 def _load_lib():
@@ -102,6 +111,10 @@ def test_packet_carries_canonical_ranker_prompt(lib, merge_proposal):
     assert "cheapest-first" in prompt_lower
     assert "alphabetical" in prompt_lower
     assert "input order" in prompt_lower
+
+
+def test_ranker_prompt_lives_in_template_asset(lib):
+    assert RANKER_PROMPT_PATH.read_text(encoding="utf-8").rstrip("\n") == lib.RANKER_PROMPT
 
 
 def test_packet_response_schema_requires_three_fields(lib, merge_proposal):

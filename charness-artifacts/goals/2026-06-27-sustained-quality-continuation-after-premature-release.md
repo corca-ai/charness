@@ -9,12 +9,11 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: Handoff auto-draft template extraction.
-- Current slice intent: continue reducing test helper prompt/template bulk by
-  moving the handoff auto-draft goal template out of Python and into a template
-  asset, then syncing the plugin export.
-- Next action: commit and push this fixture extraction, then continue discovery
-  unless a release-worthy boundary is reached.
+- Current slice: post-ranker-prompt extraction discovery.
+- Current slice intent: commit and push the handoff ranker prompt template
+  extraction, then re-run inventories for the next quality slice.
+- Next action: commit and push slice 12, then continue discovery unless a
+  release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
 
@@ -73,7 +72,8 @@ accumulate.
 | 9 | Reuse release fake git fixture for tag-history and real-host tests | Prompt-bulk inventory still surfaced a second fake git body in `test_release_publish_real_host_delta.py` | focused tag-history/real-host tests, prompt-bulk delta, standing pytest | complete |
 | 10 | Extract remaining release publish sync/quality fake scripts | `release_publish_fixtures.py` still carried inline sync and quality scripts after fake CLI extraction | focused release publish tests, prompt-bulk delta, standing pytest | complete |
 | 11 | Extract handoff auto-draft goal template from Python | Prompt-bulk inventory next surfaced `chunked_routing_auto_draft.py`; the content is a template asset rather than Python logic | focused handoff tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 12 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 12 | Extract handoff ranker prompt template from Python | Prompt-bulk inventory next surfaced `chunked_routing_lib.py`; the ranker prompt is static prompt content, not Python logic | focused handoff ranker tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 13 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -372,6 +372,41 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     skill validators, public-skill validation and dogfood validators,
     gitignore-scan hygiene, and the standing pytest runner passed; standing
     pytest reported `3678 passed in 20.94s`.
+- Slice 12 evidence:
+  - Prompt-bulk inventory after slice 11 reported 36 findings and surfaced
+    `skills/public/handoff/scripts/chunked_routing_lib.py` as the next static
+    prompt candidate.
+  - Moved `RANKER_PROMPT` to
+    `skills/public/handoff/scripts/templates/ranker_prompt.txt`; the Python
+    module now reads that template asset and strips only trailing newlines so
+    packet output remains stable.
+  - Synced plugin export, adding
+    `plugins/charness/skills/handoff/scripts/templates/ranker_prompt.txt` and
+    updating the plugin mirror of `chunked_routing_lib.py`.
+  - Prompt-bulk inventory after the change reported 35 findings; the handoff
+    ranker prompt no longer appears in the sample.
+  - Length proof: `skills/public/handoff/scripts/chunked_routing_lib.py` and
+    its plugin mirror report `217` Python code lines.
+  - Focused proof: `py_compile`, focused `ruff check`, and the handoff
+    ranker/end-to-end pytest bundle passed; focused pytest reported `17 passed
+    in 0.60s`.
+  - Changed-surface proof: packaging validators, markdown/doc/secret checks,
+    skill validators, public-skill validation and dogfood validators, staged
+    mirror drift, the focused handoff/goal pytest bundle, and the standing
+    pytest runner passed; standing pytest reported `3679 passed in 20.83s`.
+  - Fresh-eye review: blocking closeout risk was staging hygiene for the new
+    source and plugin template files; non-blocking gap was direct plugin parity
+    coverage. Folded response: stage both template files and rely on
+    `sync_root_plugin_manifests.py`, staged mirror drift, packaging validators,
+    and byte-for-byte source/plugin template diff for plugin parity.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --ack-cautilus-skill-review --produce-mutation-coverage
+    --verification-lock` completed, including coverage-instrumented standing
+    pytest, gitignore-scan hygiene, and agent browser runtime guard. Cautilus
+    planner reported `next_action: none`; recorded the no-registry-change
+    decision in `docs/public-skill-dogfood.json` because this slice changes
+    implementation shape, not handoff routing or adapter bootstrap behavior.
 
 ## Context Sources
 

@@ -1,0 +1,13 @@
+Rank the chunk candidates as a Christopher Alexander generative sequence: the chunk that reduces the most uncertainty for, or unlocks the most of, the remaining chunks comes first. Prefer moves that lower risk for later chunks; do not optimize for cheapest-first or for personal momentum. Do not rank by input order, alphabetical order, or any other ordering that ignores the unlock relation between chunks.
+
+For each candidate (standalone or merged), assign:
+- candidate_label: the candidate's `label` field verbatim
+- rank: integer starting at 1; ranks must be a contiguous 1..N
+  permutation of all candidates with no gaps or duplicates
+- reasoning: 2-3 sentences naming what this chunk unlocks for the
+  next chunk, what uncertainty it removes, or which downstream
+  decision becomes cheaper. Do not restate the chunk's objective
+  summary — the reasoning explains why this position in the
+  sequence is right.
+
+Reasoning must be non-empty for every candidate so a later "why not chunk X?" follow-up can be answered from this rendered output without re-running the ranker.
