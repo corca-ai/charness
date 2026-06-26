@@ -85,18 +85,30 @@ Advanced `charness` toward release `0.56.3` (tag `v0.56.3`) through the repo-own
 
 ## Real-Host Verification
 
-- This slice still requires configured real-host verification before the release is fully closed.
+- Configured real-host verification: satisfied after publish on this
+  maintainer/dev machine.
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
-- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
-- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
-- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
-- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
-- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
-- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
+- `charness update` ran after publish with return code `0`; stdout reported
+  `VERSION: 0.56.2 -> 0.56.3`, refreshed the managed checkout, Codex cache,
+  Claude marketplace/plugin entries, and upstream support skills.
+- `charness doctor --json` ran after update with return code `0`; it reported
+  checkout version `0.56.3`, Codex cache manifest version `0.56.3`, Claude
+  installed plugin version `0.56.3`, and no plugin-preamble warnings.
+- `charness tool doctor nose --json --no-write-locks` ran with return code `0`;
+  it detected `nose 0.15.0`, version status `matched`, latest upstream
+  `v0.15.0`, and `doctor_disposition: ready`.
+- `charness tool install nose --dry-run --json` ran with return code `0`; it
+  pointed at the manifest-supported upstream release installer
+  `nose-cli-installer.sh` and latest release metadata `v0.15.0`.
+- `nose --version` ran with return code `0` and printed `nose 0.15.0`.
+- `charness tool sync-support nose --json` ran with return code `0`; it reported
+  `status: skipped`, `reason: integration has no support_skill_source`, and
+  doctor readiness remained `ready`.
+- `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+  ran with return code `0`; it reported `status: clean`, `family_count: 0`,
+  `total_dup_lines: 0`, and `tool_version: 0.15.0`.
 
 ## Review Proof
 

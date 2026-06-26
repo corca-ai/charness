@@ -1,6 +1,6 @@
 # Achieve Goal: Sustained quality speed token release round 2
 
-Status: active
+Status: complete
 Created: 2026-06-26
 Activation: `/goal @charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release-round-2.md`
 Timebox: 3h
@@ -114,50 +114,18 @@ contract.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Current queue: none — the user explicitly authorized the final closeout
-push/release lane, and no operator-only decision blocks local quality slices.
+none — the user explicitly authorized the final closeout push/release lane, and
+no operator-only decision blocks local quality slices.
 
 ## Coordination Cues
 
-Phase-appropriate routing for this run, deferred to `find-skills` (its
-`--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
-engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
-and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
-during the run:
-
-- **Routing** — ask `find-skills` to recommend the skill for the current phase or
-  boundary, and record the route it returns. At completion, recorded
-  implementation / debug / quality / issue work needs this `Routing:` evidence
-  or a `Routing: n/a — <reason>` opt-out.
-- **Gather step** — when `## Context Sources` names an external source
-  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
-  gathered asset, or write `Gather: n/a — <reason>` when no external context
-  applies.
-- **Release step** — when this run touches a release surface (a version bump or
-  install-manifest edit), add a `Release:` line here pointing at the release
-  proof, or write `Release: n/a — <reason>`.
-- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
-  an `Issue closeout:` line naming the close-intended issue numbers, carrier
-  (`direct-commit`, PR body, release commit, or manual fallback), and
-  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
-  tracked issue appears in `## Context Sources` as context only, use
-  `Issue closeout: n/a — <reason>`.
+Phase-appropriate routing for this run was deferred to `find-skills` and the
+durable work skills named below; the release boundary used `release` plus
+`critique`, and closeout evidence used `retro`.
 
 Routing: find-skills recommended quality for quality/runtime posture and release for final publication; implementation slices will record impl routing at closeout after mutation work exists.
 Gather: n/a — no external URL/source context was provided for this goal.
-Release: pending final closeout — no release/push before 2026-06-26T15:05:30+09:00 unless an early-close report is required.
+Release: v0.56.3 published and verified at https://github.com/corca-ai/charness/releases/tag/v0.56.3 after closeout window 2026-06-26T15:05:30+09:00.
 Issue closeout: n/a — this goal is not currently resolving a tracked GitHub issue.
 
 Discuss before activation: resolved — the user explicitly requested final
@@ -1003,7 +971,7 @@ Retro: charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release
 Host log probe: charness-artifacts/probe/2026-06-26-sustained-quality-speed-token-release-round-2-host-log.json
 Disposition review: charness-artifacts/critique/2026-06-26-sustained-quality-speed-token-release-round-2-disposition-review.md
 
-Release: pending final publish after checked-in closeout proof; prepared notes at charness-artifacts/release/v0.56.3-notes.md and critique at charness-artifacts/critique/2026-06-26-v0-56-3-release-critique.md
+Release: v0.56.3 published and verified at https://github.com/corca-ai/charness/releases/tag/v0.56.3; release proof recorded in charness-artifacts/release/latest.md with release commit d2eb04b7, post-publish artifact commit 467de9e5, fresh-checkout probes passed, distinct-channel HTTPS verification confirmed, and install refresh completed.
 
 ## User Verification Instructions
 
