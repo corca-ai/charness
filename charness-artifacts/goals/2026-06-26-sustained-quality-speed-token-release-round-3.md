@@ -698,6 +698,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: The shared loaded-script runner is paying off immediately for setup script smokes.
 - Metrics: Speed/testability proxy: removed two nested Python script invocations and removed `test_setup_retro_memory.py` from the clean-convertible file list.
 
+### Slice 40: Run HITL report smokes in process
+
+- Objective: Remove leftover `render_report.py` subprocess calls from HITL report-mode tests.
+- Why this approach: The file already had a direct `run_render_report()` helper for most tests; extending it to catch `SystemExit` preserves argparse returncode 2 cases and lets the remaining CLI smokes run in process.
+- Commits:
+- What changed: Added `SystemExit` handling to `run_render_report()`, converted duplicate-id, two-space-indent, and missing-required-argument smokes, and removed the `run_script` import.
+- Alternatives rejected: Did not drop the argparse-required tests because they kill existing mutation-test cases around `required=True`.
+- Targeted verification: pytest: `tests/quality_gates/test_hitl_report_mode.py` `12 passed` in 0.43s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 58 candidates, 92 candidate keys, and 17 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 54 candidates and 15 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; completed an existing partial in-process migration.
+- Critique: Same-agent slice critique: argparse stderr is captured through the `SystemExit` path, so the tests still distinguish usage errors from ordinary validation failures.
+- Off-goal findings: None.
+- Lessons carried forward: When converting CLI tests with required argparse fields, runner helpers must preserve `SystemExit` return codes or mutation-killing assertions weaken.
+- Metrics: Speed/testability proxy: removed four nested Python script invocations and removed `test_hitl_report_mode.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
