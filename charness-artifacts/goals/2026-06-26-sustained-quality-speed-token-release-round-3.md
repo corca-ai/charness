@@ -740,6 +740,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: In mixed workflow files, target only the script classified clean and leave broader subprocess workflows alone.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw candidate keys by one.
 
+### Slice 43: Run surface validator smokes in process
+
+- Objective: Remove clean `validate_surfaces.py` subprocess calls from surface obligation tests.
+- Why this approach: The tests only need validator stdout/stderr/returncode behavior for duplicate and accepted manifests; a file-local runner can call `main()` and preserve `SurfaceError` as CLI stderr with returncode 1.
+- Commits:
+- What changed: Added `run_validate_surfaces()`, converted the duplicate-id and bare-recursive-dir-glob tests, and left broader surface selection/closeout CLI tests unchanged.
+- Alternatives rejected: Did not convert `check_changed_surfaces.py`, `select_verifiers.py`, or `run_slice_closeout.py` tests in this file because those prove command planner surfaces rather than the simple validator target.
+- Targeted verification: pytest: `tests/quality_gates/test_surface_obligations.py` `25 passed` in 1.92s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 57 candidates, 89 candidate keys, and 14 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 53 candidates and 12 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted two existing smokes.
+- Critique: Same-agent slice critique: `SurfaceError` handling is mirrored from the script's `__main__` guard, but the tests still assert the same stderr and returncode contract.
+- Off-goal findings: None.
+- Lessons carried forward: Validator scripts with `__main__` exception wrappers need runner-specific exception handling when converted in process.
+- Metrics: Speed/testability proxy: removed two nested Python script invocations and reduced raw candidate keys by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

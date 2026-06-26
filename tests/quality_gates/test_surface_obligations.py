@@ -1,11 +1,33 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
+from scripts import validate_surfaces
 from scripts.surfaces_lib import SurfaceError, load_surfaces
 
 from .support import ROOT, run_script
+
+
+def run_validate_surfaces(*args: str) -> SimpleNamespace:
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = ["validate_surfaces.py", *args]
+    returncode = 0
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                returncode = validate_surfaces.main() or 0
+            except SurfaceError as exc:
+                print(str(exc), file=sys.stderr)
+                returncode = 1
+    finally:
+        sys.argv = saved_argv
+    return SimpleNamespace(returncode=returncode, stdout=out.getvalue(), stderr=err.getvalue())
 
 
 def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> None:
@@ -351,7 +373,7 @@ def test_validate_surfaces_rejects_duplicate_ids(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
+    result = run_validate_surfaces("--repo-root", str(repo))
     assert result.returncode == 1
     assert "duplicate surface id `dup`" in result.stderr
 
@@ -422,7 +444,7 @@ def test_validate_surfaces_allows_bare_recursive_dir_glob(tmp_path: Path) -> Non
     # `<dir>/**` (no extension) and `<dir>/*/refs/**` are not the footgun and must pass.
     repo = tmp_path / "repo"
     _write_surfaces(repo, ["skills/public/**", "skills/public/*/references/**"])
-    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
+    result = run_validate_surfaces("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
