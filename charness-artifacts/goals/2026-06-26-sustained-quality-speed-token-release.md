@@ -319,6 +319,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Keep one real current-repo subprocess smoke when converting synthetic scanner fixtures.
 - Metrics: check_skill_ownership_overlap.py run_script calls in test_skill_ownership_overlap.py: base 4, current 1.
 
+### Slice 13: Repo-copy invariant subprocess fanout
+
+- Objective: Reduce repeated check_test_repo_copy_invariants.py subprocess calls while preserving current-repo CLI proof.
+- Why this approach: Synthetic drift fixtures can call main() directly; the real current-repo invariant smoke remains a useful script-bootstrap boundary.
+- Commits:
+- What changed: Added run_repo_copy_invariants(monkeypatch, capsys, ...) and converted four synthetic drift fixtures to in-process main() calls.
+- Alternatives rejected: Kept the current-repo invariant test as a real subprocess smoke.
+- Targeted verification: ruff passed; focused pytest: 11 passed in 3.61s; boundary-bypass ratchet OK with 77 candidates / 40 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 5 to 1.
+- Test duplication pressure: No tests added; four synthetic tests switched execution layer. File-level boundary count unchanged because retained CLI smoke remains.
+- Critique: charness-artifacts/critique/2026-06-26-repo-copy-invariant-runtime.md; low-risk same-agent critique recorded because the slice is a synthetic-fixture conversion with retained current-repo CLI proof.
+- Off-goal findings: none
+- Lessons carried forward: Repo-copy guards protect expensive tests; retain a current-repo entrypoint smoke even when synthetic fixtures move in-process.
+- Metrics: check_test_repo_copy_invariants.py run_script calls in test_repo_copy_invariants.py: base 5, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

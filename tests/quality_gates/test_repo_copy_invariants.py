@@ -1,12 +1,27 @@
 from __future__ import annotations
 
 import shutil
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
+from runtime_bootstrap import import_repo_module
 from scripts import check_coverage
 from tests import repo_copy
 
 from .support import ROOT, run_script
+
+_repo_copy_invariants = import_repo_module(
+    ROOT / "scripts/check_test_repo_copy_invariants.py",
+    "scripts.check_test_repo_copy_invariants",
+)
+
+
+def run_repo_copy_invariants(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", ["check_test_repo_copy_invariants.py", *args])
+    returncode = _repo_copy_invariants.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 REQUIRED_VOLATILE_COPY_EXCLUDES = {
     ".cautilus",
@@ -94,7 +109,7 @@ def test_coverage_copy_ignore_drops_generated_reports(tmp_path: Path) -> None:
     assert not (target / "reports").exists()
 
 
-def test_check_test_repo_copy_invariants_flags_inline_ignore(tmp_path: Path) -> None:
+def test_check_test_repo_copy_invariants_flags_inline_ignore(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "fake-charness"
     (repo / "tests").mkdir(parents=True)
     (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
@@ -108,13 +123,15 @@ def test_check_test_repo_copy_invariants_flags_inline_ignore(tmp_path: Path) -> 
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(repo))
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 1
     assert "tests/test_drift.py" in result.stderr
     assert "shutil.ignore_patterns" in result.stderr
 
 
-def test_check_test_repo_copy_invariants_flags_inline_copytree_root(tmp_path: Path) -> None:
+def test_check_test_repo_copy_invariants_flags_inline_copytree_root(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "fake-charness"
     (repo / "tests").mkdir(parents=True)
     (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
@@ -125,13 +142,15 @@ def test_check_test_repo_copy_invariants_flags_inline_copytree_root(tmp_path: Pa
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(repo))
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 1
     assert "tests/test_drift.py" in result.stderr
     assert "clone_seeded_charness_repo" in result.stderr or "shutil.copytree" in result.stderr
 
 
-def test_check_test_repo_copy_invariants_flags_unmarked_copy_heavy_test(tmp_path: Path) -> None:
+def test_check_test_repo_copy_invariants_flags_unmarked_copy_heavy_test(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "fake-charness"
     (repo / "tests").mkdir(parents=True)
     (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
@@ -142,14 +161,16 @@ def test_check_test_repo_copy_invariants_flags_unmarked_copy_heavy_test(tmp_path
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(repo))
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "tests/test_copy_heavy.py::test_copy" in result.stderr
     assert "pytest.mark.release_only" in result.stderr
 
 
-def test_check_test_repo_copy_invariants_accepts_release_only_copy_heavy_test(tmp_path: Path) -> None:
+def test_check_test_repo_copy_invariants_accepts_release_only_copy_heavy_test(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "fake-charness"
     (repo / "tests").mkdir(parents=True)
     (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
@@ -162,6 +183,6 @@ def test_check_test_repo_copy_invariants_accepts_release_only_copy_heavy_test(tm
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(repo))
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
