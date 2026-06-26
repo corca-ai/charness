@@ -32,7 +32,10 @@
   records are done; remaining work is richer verdict taxonomy
   (`auth/browser-required`, `provider-required`, unsupported) and/or a proven
   exact-source acquisition route.
-- **Split remaining near-limit web-fetch helper before more route behavior:** [route_public_fetch.py](../skills/support/web-fetch/scripts/route_public_fetch.py).
+- **Web-fetch route helper split is no longer current:** [route_public_fetch.py](../skills/support/web-fetch/scripts/route_public_fetch.py)
+  is 85/360 Python code lines as of the continuation quality pass. Continue
+  #392 from current gather/web-fetch behavior evidence instead of splitting
+  this helper.
 - **Then build per-skill Cautilus fixtures.** Fixtures should not coach the
   target skill; observe the early run shape, keep logs, and stop early if drifting.
 - **Open issue queue:** #392 gather-X acquisition/taxonomy, #371 agent-browser

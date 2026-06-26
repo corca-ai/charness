@@ -47,6 +47,6 @@ python3 "$SKILL_DIR/scripts/acquire_public_url.py" --url "https://example.com/ar
 - `references/runtime-contract.md`
 - `references/routing-table.md`
 - `references/provenance.md`
-- `<repo-root>/scripts/route_public_fetch.py`
-- `<repo-root>/scripts/classify_fetch_response.py`
+- `scripts/route_public_fetch.py`
+- `scripts/classify_fetch_response.py`
 - `scripts/acquire_public_url.py`
