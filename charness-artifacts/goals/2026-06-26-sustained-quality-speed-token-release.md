@@ -768,8 +768,8 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
   and reads docs; collecting futures in contract order preserves output
   determinism while reducing the critical path.
 - Commits:
-- What changed: `check_command_docs.py` now runs `check_command()` calls through
-  a `ThreadPoolExecutor`; plugin mirror regenerated.
+- What changed: `check_command_docs.py` now runs help probes through
+  ordered parallel subprocess execution; plugin mirror regenerated.
 - Alternatives rejected: Tested but reverted `render_cli_reference.py`
   parallelism because it did not improve direct wall time and made the focused
   render test slightly slower.
@@ -784,6 +784,33 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Off-goal findings: none.
 - Metrics: current-repo command-docs test dropped from 3.37s to 0.35s; focused
   file dropped from 8.98s to 5.98s.
+
+### Slice 44: Parallel helper and dup-ratchet closeout repair
+
+- Objective: Repair the closeout `dup-ratchet` failure introduced by duplicated
+  parallel subprocess collection shapes while preserving the speedups.
+- Why this approach: Dup-ratchet family summaries showed line-offset-sensitive
+  family id churn around the changed helper-like blocks; extracting a shared
+  helper removes the repeated pattern and baseline refresh is the documented
+  recovery after reviewed family-id rotation.
+- Commits:
+- What changed: Added `run_processes_in_order()` to `scripts/subprocess_guard.py`,
+  rewired command-docs and skill-surface preflight to use it, added helper test
+  coverage, regenerated plugin mirrors, and refreshed
+  `charness-artifacts/quality/dup-ratchet-baseline.json`.
+- Alternatives rejected: Did not classify the families as intentional without
+  fixing the repeated shape; did not drop dup-ratchet from closeout.
+- Targeted verification: ruff passed; focused helper/command-docs/preflight
+  pytest passed 30 tests in 11.61s; dup-ratchet passed clean after baseline
+  refresh; staged mirror drift passed.
+- Test duplication pressure: Added one direct helper contract test to prevent
+  future order drift.
+- Critique: charness-artifacts/critique/2026-06-26-parallel-helper-dup-ratchet.md;
+  same-agent closeout repair critique recorded.
+- Off-goal findings: dup-ratchet family ids remain sensitive to line movement in
+  changed member files.
+- Metrics: closeout read-only gate failed only `dup-ratchet` before this repair;
+  focused command-docs current-repo test remained 0.37s after helper extraction.
 
 ## Context Sources
 

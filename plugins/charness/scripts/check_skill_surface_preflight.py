@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import argparse
-import concurrent.futures
 import json
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -14,6 +12,9 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 _issue_anchor_scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+run_processes_in_order = _subprocess_guard.run_processes_in_order
 MAX_SKILL_MD_LINES = 200
 # Non-blocking near-cap warning floor (#350): at or above this total, an added
 # line (e.g. a reciprocal propagation line from an adjacent skill's author) may
@@ -133,12 +134,10 @@ def _is_skill_core_path(rel: str) -> bool:
 
 
 def _git_show(repo_root: Path, ref: str) -> str | None:
-    result = subprocess.run(
+    result = run_process(
         ["git", "show", ref],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     return result.stdout if result.returncode == 0 else None
 
@@ -328,8 +327,7 @@ def _check_commands(repo_root: Path) -> list[tuple[str, list[str]]]:
     ]
 
 
-def _run_check(repo_root: Path, check_id: str, command: list[str]) -> dict[str, Any]:
-    completed = subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
+def _check_result(check_id: str, command: list[str], completed) -> dict[str, Any]:
     return {
         "id": check_id,
         "command": " ".join(command),
@@ -341,14 +339,11 @@ def _run_check(repo_root: Path, check_id: str, command: list[str]) -> dict[str, 
 
 def _run_checks(repo_root: Path) -> list[dict[str, Any]]:
     commands = _check_commands(repo_root)
-    if not commands:
-        return []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(commands)) as executor:
-        futures = [
-            executor.submit(_run_check, repo_root, check_id, command)
-            for check_id, command in commands
-        ]
-        return [future.result() for future in futures]
+    completed = run_processes_in_order([command for _check_id, command in commands], cwd=repo_root, timeout_seconds=None)
+    return [
+        _check_result(check_id, command, result)
+        for (check_id, command), result in zip(commands, completed, strict=True)
+    ]
 
 
 def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_checks: bool) -> dict[str, Any]:

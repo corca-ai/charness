@@ -3,6 +3,7 @@ from __future__ import annotations
 import shlex
 import subprocess
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 TIMEOUT_EXIT_CODE = 124
@@ -28,7 +29,7 @@ def run_process(
     *,
     cwd: Path,
     env: dict[str, str] | None = None,
-    timeout_seconds: float = DEFAULT_COMMAND_TIMEOUT_SECONDS,
+    timeout_seconds: float | None = DEFAULT_COMMAND_TIMEOUT_SECONDS,
     shell: bool = False,
     executable: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
@@ -51,3 +52,30 @@ def run_process(
             _coerce_text(exc.stdout),
             timeout_message(command, timeout_seconds=timeout_seconds),
         )
+
+
+def run_processes_in_order(
+    commands: Sequence[Sequence[str] | str],
+    *,
+    cwd: Path,
+    env: dict[str, str] | None = None,
+    timeout_seconds: float | None = DEFAULT_COMMAND_TIMEOUT_SECONDS,
+    shell: bool = False,
+    executable: str | None = None,
+) -> list[subprocess.CompletedProcess[str]]:
+    if not commands:
+        return []
+    with ThreadPoolExecutor(max_workers=len(commands)) as executor:
+        futures = [
+            executor.submit(
+                run_process,
+                command,
+                cwd=cwd,
+                env=env,
+                timeout_seconds=timeout_seconds,
+                shell=shell,
+                executable=executable,
+            )
+            for command in commands
+        ]
+        return [future.result() for future in futures]

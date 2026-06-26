@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import argparse
-import concurrent.futures
 import json
 import shlex
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -17,6 +15,9 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+run_processes_in_order = _subprocess_guard.run_processes_in_order
 
 DEFAULT_CONTRACT = Path(".agents/command-docs.yaml")
 
@@ -85,19 +86,29 @@ def load_contract(path: Path) -> dict[str, dict[str, object]]:
 
 
 def run_help(repo_root: Path, command: str) -> str:
-    result = subprocess.run(
-        shlex.split(command),
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    return help_output_from_result(command, run_process(shlex.split(command), cwd=repo_root, timeout_seconds=None))
+
+
+def help_output_from_result(command: str, result) -> str:
     if result.returncode != 0:
         raise ValidationError(
             f"help command `{command}` failed with exit {result.returncode}\n"
             f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
         )
     return result.stdout + result.stderr
+
+
+def _parallel_help_outputs(repo_root: Path, commands: dict[str, dict[str, object]]) -> dict[str, str]:
+    help_commands = [str(config["help_command"]) for config in commands.values()]
+    results = run_processes_in_order(
+        [shlex.split(command) for command in help_commands],
+        cwd=repo_root,
+        timeout_seconds=None,
+    )
+    return {
+        command_id: help_output_from_result(command, result)
+        for command_id, command, result in zip(commands, help_commands, results, strict=True)
+    }
 
 
 def read_docs(repo_root: Path, doc_paths: list[str], command_id: str) -> str:
@@ -124,9 +135,9 @@ def assert_absent(haystack: str, needle: str, *, context: str) -> str | None:
     return None
 
 
-def check_command(repo_root: Path, command_id: str, config: dict[str, object]) -> list[str]:
+def check_command(repo_root: Path, command_id: str, config: dict[str, object], *, help_output: str | None = None) -> list[str]:
     help_command = str(config["help_command"])
-    help_output = run_help(repo_root, help_command)
+    help_output = run_help(repo_root, help_command) if help_output is None else help_output
     doc_paths = list(config["doc_paths"])
     docs = read_docs(repo_root, doc_paths, command_id)
     findings: list[str] = []
@@ -154,12 +165,12 @@ def build_report(repo_root: Path, contract_path: Path) -> dict[str, object]:
         return {"status": "skipped", "reason": "missing-contract", "commands": [], "findings": []}
 
     commands = load_contract(contract_path)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(commands)) as executor:
-        futures = [
-            executor.submit(check_command, repo_root, command_id, config)
-            for command_id, config in commands.items()
-        ]
-        findings = [finding for future in futures for finding in future.result()]
+    help_outputs = _parallel_help_outputs(repo_root, commands)
+    findings = [
+        finding
+        for command_id, config in commands.items()
+        for finding in check_command(repo_root, command_id, config, help_output=help_outputs[command_id])
+    ]
     return {
         "status": "fail" if findings else "pass",
         "contract_path": str(contract_path.relative_to(repo_root)),
