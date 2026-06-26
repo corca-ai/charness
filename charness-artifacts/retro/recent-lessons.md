@@ -7,17 +7,17 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md`; sources: 59)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md`; sources: 60)
+- A full `python3 -m pytest -q` coverage run was started as a brute-force fallback and then stopped after it became clear it was much slower than the standing-runner path. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
 - Host metrics were initially probed without a goal window, which would have reported whole-session pressure as goal-scoped pressure. Recording the metric window before the final probe fixed the attribution. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md`)
 - Many small subprocess-conversion slices repeated the same proof pattern. That was low-risk but generated heavy artifact and commit churn; the later shared helper slice was the higher-leverage form of the same work. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md`)
-- Release execution rotated installed skill cache paths mid-session, causing at least one stale skill path read and adding avoidable recovery work. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md`; sources: 59)
-- Before any final release/push in a timeboxed goal, explicitly check activation time, current time, closeout reserve, and done-early policy. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md`)
-- Before any push/release inside a timeboxed goal, check the goal artifact's `Timebox`, `Activation time`, `Closeout reserve`, and `Done-early policy`; if the closeout reserve has not started and safe local slices remain, continue local work. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
-- Consider a release preflight nudge that warns when an active goal artifact says `Done-early policy: continue_next_improvement` and the reserve window has not started. (source: `charness-artifacts/retro/2026-06-26-premature-release-timing.md`)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md`; sources: 60)
+- accepted-risk: did not add a new hard gate for advisory requested-review or scenario-registry follow-up in this patch; the release critique records the limitation and deterministic validation owns this release boundary. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
+- applied: added focused fallback tests for timeout/default/error branches and verified changed-line mutation coverage with a fresh coverage fingerprint. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
+- applied: added range-aware release critique and concise v0.56.3 notes before publish. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
 
 ## Selection Policy
 
@@ -84,7 +84,8 @@
 - `charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-25-v0-55-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-26-premature-release-timing.md`
 - `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md`
+- `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md`
