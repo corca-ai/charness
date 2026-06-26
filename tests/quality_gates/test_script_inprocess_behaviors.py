@@ -8,7 +8,7 @@ from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES, synthesize_
 from scripts.validate_quality_closeout_contract import validate_quality_closeout_contract
 from tests.script_loader import load_script_module
 
-from .support import ROOT, run_script
+from .support import ROOT
 
 LIST_CAPABILITIES = load_script_module(
     "tests.quality_gates.script_behaviors_list_capabilities",
@@ -21,6 +21,10 @@ SURVEY_VERIFICATION = load_script_module(
 CURRENT_RELEASE = load_script_module(
     "tests.quality_gates.script_behaviors_current_release",
     ROOT / "skills/public/release/scripts/current_release.py",
+)
+SYNTHESIZE_OPERATOR_ACCEPTANCE = load_script_module(
+    "tests.quality_gates.script_behaviors_synthesize_operator_acceptance",
+    ROOT / "skills/public/setup/scripts/synthesize_operator_acceptance.py",
 )
 
 
@@ -39,7 +43,7 @@ def test_release_current_release_reports_packaging_version(monkeypatch, capsys) 
     assert cli_payload["surface_versions"]["packaging_manifest"] == expected
 
 
-def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path) -> None:
+def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
@@ -89,14 +93,18 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
     assert "## External Or Costly Checks" in payload["markdown"]
     assert "## Human Judgment" in payload["markdown"]
 
-    result = run_script(
-        "skills/public/setup/scripts/synthesize_operator_acceptance.py",
-        "--repo-root",
-        str(repo),
-        "--json",
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "synthesize_operator_acceptance.py",
+            "--repo-root",
+            str(repo),
+            "--json",
+        ],
     )
-    assert result.returncode == 0, result.stderr
-    cli_payload = json.loads(result.stdout)
+    SYNTHESIZE_OPERATOR_ACCEPTANCE.main()
+    cli_payload = json.loads(capsys.readouterr().out)
     assert cli_payload["acceptance_buckets"]["cheap_first"][0]["commands"] == "./scripts/run-quality.sh"
     assert "## Environment Prerequisites" in cli_payload["markdown"]
 

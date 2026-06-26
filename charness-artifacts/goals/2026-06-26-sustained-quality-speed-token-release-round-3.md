@@ -544,6 +544,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: For scripts whose exception handling lives under `if __name__ == "__main__"`, in-process tests must either call that wrapper or reproduce the wrapper contract deliberately.
 - Metrics: Speed/testability proxy: removed two nested Python script invocations and reduced raw clean-convertible count by one.
 
+### Slice 29: Run setup acceptance synth smoke in process
+
+- Objective: Remove another nested Python script invocation from script behavior tests without weakening the setup acceptance JSON contract.
+- Why this approach: The test already validates `synthesize_operator_acceptance()` directly, and the remaining subprocess only checked `synthesize_operator_acceptance.py --json`; calling the loaded script module's `main()` preserves the parser/output assertion.
+- Commits:
+- What changed: Loaded `skills/public/setup/scripts/synthesize_operator_acceptance.py` through the test script loader, converted the CLI JSON smoke to an in-process `main()` call, and removed the last `run_script` dependency from `test_script_inprocess_behaviors.py`.
+- Alternatives rejected: Did not remove the CLI smoke entirely because the JSON output shape and argument parsing remain user-facing behavior.
+- Targeted verification: pytest: `tests/quality_gates/test_script_inprocess_behaviors.py` `5 passed` in 0.51s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 68 candidates and 29 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 65 candidates and 28 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing smoke.
+- Critique: Same-agent slice critique: this no longer proves a separate interpreter start for that script, but script validation and direct module loading cover importability while this test keeps `main()` and JSON behavior covered.
+- Off-goal findings: None.
+- Lessons carried forward: If a script has no special subprocess-only side effect, prefer a loaded-module `main()` call so CLI smoke coverage does not pay process startup cost.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced raw clean-convertible boundary inventory by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
