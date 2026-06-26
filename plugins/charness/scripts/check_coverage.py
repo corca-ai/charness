@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
 import contextlib
 import io
 import json
@@ -24,6 +23,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
 _scripts_check_coverage_extra_lib_module = import_repo_module(__file__, "scripts.check_coverage_extra_lib")
+_scripts_mutation_line_coverage_lib_module = import_repo_module(__file__, "scripts.mutation_line_coverage_lib")
 PER_FILE_WARN_BELOW = _scripts_check_coverage_lib_module.PER_FILE_WARN_BELOW
 PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
 build_per_file_floor_report = _scripts_check_coverage_lib_module.build_per_file_floor_report
@@ -37,6 +37,7 @@ exercise_install_provenance_helper_scenarios = _scripts_check_coverage_extra_lib
 exercise_install_tool_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_install_tool_helper_scenarios
 exercise_support_sync_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_support_sync_helper_scenarios
 exercise_upstream_release_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_upstream_release_helper_scenarios
+executable_statement_lines = _scripts_mutation_line_coverage_lib_module.executable_statement_lines
 
 # A fixed whole-repo target list, intentionally not a changed-file subset. The
 # per-file PER_FILE_MIN_COVERAGE floor is safe as a hard blocker only because of
@@ -104,15 +105,7 @@ def python_runtime_ignoredirs(repo_root: Path | None = None) -> tuple[str, ...]:
 
 
 def executable_lines(path: Path) -> set[int]:
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    lines: set[int] = set()
-    for node in ast.walk(tree):
-        if not hasattr(node, "lineno"):
-            continue
-        if isinstance(node, ast.Expr) and isinstance(getattr(node, "value", None), ast.Constant) and isinstance(node.value.value, str):
-            continue
-        lines.add(int(node.lineno))
-    return lines
+    return executable_statement_lines(path)
 
 
 def build_release_fixture(path: Path) -> None:

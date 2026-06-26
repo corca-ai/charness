@@ -89,6 +89,42 @@ def _exercise_control_plane_loader_paths(control: object, repo: Path, tools_dir:
     control.load_manifests(repo)
     control.load_support_capabilities(repo)
     control.load_capabilities(repo)
+    control._schema_validator({"type": "object"}).validate({})
+    control._schema_validator({"type": "object"}).validate({})
+    control._manifest_path_for_payload(Path("/tmp/outside-demo.json"), repo)
+    manifests: list[dict[str, object]] = []
+    seen_tool_ids: set[str] = set()
+    control._load_and_append_manifest_payload(
+        manifests,
+        seen_tool_ids,
+        path=tools_dir / "demo-tool.json",
+        repo_root=repo,
+        schema=control.load_manifest_schema(),
+        validate=True,
+        origin="coverage-probe",
+        duplicate_policy="skip",
+    )
+    control._load_and_append_manifest_payload(
+        manifests,
+        seen_tool_ids,
+        path=tools_dir / "demo-tool.json",
+        repo_root=repo,
+        schema=None,
+        validate=False,
+        origin="coverage-probe",
+        duplicate_policy="skip",
+    )
+    with suppress(ValueError):
+        control._load_and_append_manifest_payload(
+            manifests,
+            seen_tool_ids,
+            path=tools_dir / "demo-tool.json",
+            repo_root=repo,
+            schema=None,
+            validate=False,
+            origin="coverage-probe",
+            duplicate_policy="error",
+        )
     with suppress(ValueError):
         (tools_dir / "duplicate.json").write_text(json.dumps(_manifest_base()), encoding="utf-8")
         control.load_manifests(repo)
@@ -166,14 +202,15 @@ def _exercise_control_plane_runtime_paths(control: object, repo: Path) -> None:
         },
         repo,
     )
-    control.evaluate_version(
-        {"version_expectation": {"policy": "weird", "constraint": ">=1.0.0", "detected_by": "stdout"}},
-        {"results": [{"stdout": "demo 1.2.3"}]},
-    )
-    control.evaluate_version(
-        {"version_expectation": {"policy": "minimum", "constraint": "not-a-spec", "detected_by": "stdout"}},
-        {"results": [{"stdout": "demo 1.2.3"}]},
-    )
+    for version_expectation in (
+        {"policy": "weird", "constraint": ">=1.0.0", "detected_by": "stdout"},
+        {"policy": "minimum", "constraint": "not-a-spec", "detected_by": "stdout"},
+    ):
+        control.evaluate_version(
+            {"version_expectation": version_expectation},
+            {"results": [{"stdout": "demo 1.2.3"}]},
+        )
+    control.command_result_payload(control.CommandResult("demo", 0, "ok\n", ""))
 
 
 def exercise_control_plane_helper_scenarios() -> None:

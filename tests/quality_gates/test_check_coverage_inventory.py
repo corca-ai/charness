@@ -71,6 +71,34 @@ def test_check_coverage_json_includes_per_file_floor(monkeypatch, capsys) -> Non
     assert payload["per_file_floor"]["floor"] == 0.85
 
 
+def test_executable_lines_ignore_signature_and_import_metadata(tmp_path) -> None:
+    sample = tmp_path / "sample.py"
+    sample.write_text(
+        "\n".join(
+            [
+                "from pathlib import (",
+                "    Path,",
+                ")",
+                "",
+                "def combine(",
+                "    left,",
+                "    right,",
+                "):",
+                "    return left / right",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    lines = CHECK_COVERAGE.executable_lines(sample)
+
+    assert {1, 5, 9} <= lines
+    assert 2 not in lines
+    assert 6 not in lines
+    assert 7 not in lines
+
+
 def test_check_coverage_agent_browser_probe_ignores_ambient_orphans(monkeypatch, tmp_path) -> None:
     captured: list[dict[str, str]] = []
 

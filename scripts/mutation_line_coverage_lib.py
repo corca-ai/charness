@@ -6,15 +6,27 @@ import ast
 from pathlib import Path
 
 
+def statement_nodes(path: Path) -> list[ast.stmt]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    return [node for node in ast.walk(tree) if isinstance(node, ast.stmt)]
+
+
+def executable_statement_lines(path: Path) -> set[int]:
+    lines: set[int] = set()
+    for node in statement_nodes(path):
+        if isinstance(node, ast.Expr) and isinstance(getattr(node, "value", None), ast.Constant) and isinstance(node.value.value, str):
+            continue
+        lines.add(int(node.lineno))
+    return lines
+
+
 def covered_statement_spans(path: Path, covered: set[int]) -> list[tuple[int, int]]:
     try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        statements = statement_nodes(path)
     except (OSError, SyntaxError):
         return []
     spans: list[tuple[int, int]] = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.stmt):
-            continue
+    for node in statements:
         start = getattr(node, "lineno", None)
         end = getattr(node, "end_lineno", None)
         if start is None:

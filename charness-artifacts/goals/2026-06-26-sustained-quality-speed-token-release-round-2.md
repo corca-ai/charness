@@ -634,20 +634,25 @@ None yet.
 - Change: `scripts/control_plane_lib.py` now caches compiled JSON Schema
   validators by canonical schema JSON. Data validation still runs for every
   manifest, lock, and support capability. The slice also extracted shared
-  manifest append handling and `CommandResult` payload rendering, removing two
-  real duplicate families before refreshing the remaining id-rotation baseline.
+  manifest append handling, `CommandResult` payload rendering, and statement-line
+  coverage classification. `check_coverage.py` now counts executable statements
+  rather than AST metadata nodes from multi-line signatures/imports.
 - Verification:
   - `python3 -m pytest -q tests/control_plane/test_lock_schema_resilience.py tests/control_plane/test_integrations_validation.py::test_doctor_reuses_package_manager_prefix_probe_for_batch tests/control_plane/test_control_plane_lib_helpers.py --durations=20 --durations-min=0.01`
     passed, 20 tests.
+  - `python3 -m pytest -q tests/quality_gates/test_check_coverage_inventory.py::test_executable_lines_ignore_signature_and_import_metadata tests/quality_gates/test_check_coverage_inventory.py::test_check_coverage_json_includes_per_file_floor --durations=10 --durations-min=0.01`
+    passed, 2 tests.
   - `python3 -m py_compile scripts/control_plane_lib.py scripts/control_plane_lifecycle_lib.py plugins/charness/scripts/control_plane_lib.py plugins/charness/scripts/control_plane_lifecycle_lib.py && python3 -m ruff check scripts/control_plane_lib.py scripts/control_plane_lifecycle_lib.py plugins/charness/scripts/control_plane_lib.py plugins/charness/scripts/control_plane_lifecycle_lib.py`
     passed.
   - `python3 scripts/check_coverage.py --repo-root .` improved from the
-    observed 17.8-19.3s range to 4.76-5.30s after the helper extraction.
+    observed 17.8-19.3s range to 4.58-4.78s after the helper extraction and
+    statement-line denominator fix; latest per-file floor has zero violations.
   - `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
     remained clean (`family_count: 0`, `total_dup_lines: 0`).
   - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --write-baseline --json`
-    refreshed the gate baseline from 540 to 538 accepted family ids after the
-    duplicate-removal edits; a follow-up `--json` run reports `status: clean`.
+    refreshed the gate baseline from 540 to 537 accepted family ids after the
+    duplicate-removal and coverage-helper edits; a follow-up `--json` run
+    reports `status: clean`.
 
 ## Final Verification
 
