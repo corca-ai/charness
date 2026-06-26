@@ -586,6 +586,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: When a test file already has an in-process CLI runner, extend that runner rather than adding another file-local pattern.
 - Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced both raw and ratcheted clean-convertible boundary counts by one.
 
+### Slice 32: Run narrative init smoke in process
+
+- Objective: Remove the process boundary from the narrative adapter initialization smoke.
+- Why this approach: `test_narrative_scenario_blocks.py` already imports narrative resolver/reviewer modules and has file-local in-process runners; adding `init_adapter.py` keeps the adapter-script coverage in one pattern.
+- Commits:
+- What changed: Imported the narrative init adapter module, added `run_narrative_init_adapter()`, and converted the default-source test to call `main()` in process.
+- Alternatives rejected: Left the review-adapter subprocess in the same file untouched because it was not classified as a clean in-process candidate in the boundary inventory.
+- Targeted verification: pytest: `tests/quality_gates/test_narrative_scenario_blocks.py` `6 passed` in 0.44s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 65 candidates and 26 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 62 candidates and 25 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted one existing smoke.
+- Critique: Same-agent slice critique: file creation is still verified against the temp repo, while only the interpreter boundary is removed.
+- Off-goal findings: None.
+- Lessons carried forward: Boundary inventory classification is useful for stopping scope creep inside a nearby file; convert the clean candidate and leave non-clean subprocesses alone.
+- Metrics: Speed/testability proxy: removed one nested Python script invocation and reduced both raw and ratcheted clean-convertible boundary counts by one.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
