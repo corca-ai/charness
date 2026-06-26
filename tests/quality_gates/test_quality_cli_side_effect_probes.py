@@ -4,6 +4,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import NamedTuple
@@ -22,6 +23,7 @@ _SPEC = importlib.util.spec_from_file_location(
 assert _SPEC is not None and _SPEC.loader is not None
 _MODULE = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_MODULE)
+_PROBE_LIB = sys.modules["cli_side_effect_probe_lib"]
 
 
 class _Result(NamedTuple):
@@ -271,7 +273,7 @@ def test_inventory_cli_side_effect_probes_executes_safe_fixture_and_flags_mutati
     assert payload["findings"][0]["probe_type"] == "help_probe"
 
 
-def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path) -> None:
+def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     contract_path = repo / "cli-side-effect-probes.json"
@@ -280,13 +282,13 @@ def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path)
             {
                 "commands": [
                     {
-                        "command": "python3 -c 'import time; time.sleep(2)'",
+                        "command": "demo apply",
                         "mutating": True,
                         "safe_to_execute": True,
-                        "help_probe": "python3 -c 'import time; time.sleep(2)'",
-                        "dry_run_probe": "python3 -c 'import time; time.sleep(2)'",
+                        "help_probe": "demo apply --help",
+                        "dry_run_probe": "demo apply --dry-run sample",
                         "side_effect_watch_paths": ["state"],
-                        "probe_timeout_seconds": 1,
+                        "probe_timeout_seconds": 7,
                     }
                 ]
             }
@@ -294,10 +296,19 @@ def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path)
         + "\n",
         encoding="utf-8",
     )
+    monkeypatch.setattr(
+        _PROBE_LIB.subprocess,
+        "run",
+        lambda command, **kwargs: (_ for _ in ()).throw(
+            subprocess.TimeoutExpired(command, kwargs["timeout"])
+        ),
+    )
 
     result = _run(
         "--repo-root",
         str(repo),
+        "--contract-file",
+        str(contract_path),
         "--execute-probes",
         "--fail-on-findings",
         "--json",
@@ -306,4 +317,4 @@ def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path)
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["findings"][0]["type"] == "probe_timed_out"
-    assert payload["findings"][0]["timeout_seconds"] == 1
+    assert payload["findings"][0]["timeout_seconds"] == 7

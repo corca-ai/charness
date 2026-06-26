@@ -748,6 +748,27 @@ None yet.
   - `python3 -m py_compile tests/test_usage_episodes_host_hooks.py` passed.
   - `ruff check tests/test_usage_episodes_host_hooks.py` passed.
 
+### Slice 24 — Simulate CLI side-effect probe timeouts in-process
+
+- Objective: Remove a fixed timeout wait from the quality CLI side-effect probe
+  tests while preserving timeout classification coverage.
+- Finding: `test_inventory_cli_side_effect_probes_times_out_safe_fixture` used a
+  real `python3 -c 'time.sleep(2)'` probe with a 1s timeout, so the test always
+  paid about 2.01s in the standing slow list.
+- Change: The test now supplies an explicit contract file and monkeypatches the
+  probe library's `subprocess.run` call to raise `TimeoutExpired`. This keeps
+  the CLI entrypoint, JSON payload, `--execute-probes`, and
+  `--fail-on-findings` behavior under test without sleeping.
+- Verification:
+  - `python3 -m pytest -q tests/quality_gates/test_quality_cli_side_effect_probes.py::test_inventory_cli_side_effect_probes_times_out_safe_fixture --durations=10 --durations-min=0.01`
+    passed; the test fell from about 2.01s to 0.34s.
+  - `python3 -m pytest -q tests/quality_gates/test_quality_cli_side_effect_probes.py --durations=20 --durations-min=0.05`
+    passed, 7 tests.
+  - `python3 -m py_compile tests/quality_gates/test_quality_cli_side_effect_probes.py`
+    passed.
+  - `ruff check tests/quality_gates/test_quality_cli_side_effect_probes.py`
+    passed.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
