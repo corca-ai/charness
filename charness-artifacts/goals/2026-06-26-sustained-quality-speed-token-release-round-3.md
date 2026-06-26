@@ -389,6 +389,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Module-level `release_only` can hide already-fast tests; split markers only when the repo-copy invariant agrees.
 - Metrics: Coverage proxy: missing standing-sentinel file count reduced from 6 to 5; boundary-bypass candidate count reduced from 76 after earlier conversions to 68.
 
+### Slice 18: Standing sentinel for release-state degradation
+
+- Objective: Reduce another release-only blind spot without adding duplicate release probe setup.
+- Why this approach: `test_managed_install_release_checks.py` had module-level `release_only`, but the unwritable state-cache degradation check uses only a temp home and the repo CLI; it is cheap enough to stay in standing pytest while the managed-home release probe cases remain release-only.
+- Commits:
+- What changed: Split the module-level marker into function-level `release_only` decorators for the managed-home release-check tests and renamed the unwritable-state test so the release-only sentinel inventory recognizes it as a standing guard.
+- Alternatives rejected: Did not demote release probe tests that clone seeded managed homes; those still prove installed CLI/version state behavior across the release fixture boundary.
+- Targeted verification: pytest: standing subset `1 passed, 5 deselected` in 0.44s; release-only subset `5 passed, 1 deselected` in 7.76s; `check_test_repo_copy_invariants.py` passed; `check_boundary_bypass_ratchet.py` passed; ruff passed; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new assertions; moved one existing cheap degradation test into standing coverage.
+- Critique: Same-agent slice critique: the standing test covers degradation when the state path is unwritable, not remote release probing; release-probe behavior remains in release-only tests.
+- Off-goal findings: Release-only sentinel inventory still reports 4 files without obvious standing sentinels.
+- Lessons carried forward: A standing sentinel can be an existing cheap error-path test when its name makes the guarded failure mode obvious.
+- Metrics: Coverage proxy: missing standing-sentinel file count reduced from 5 to 4; release-only test count reduced from 75 to 74 and standing count increased from 116 to 117.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours

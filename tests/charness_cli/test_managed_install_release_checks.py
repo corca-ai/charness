@@ -14,9 +14,9 @@ CURRENT_RELEASE_TAG = f"v{CURRENT_VERSION}"
 NEWER_RELEASE_TAG = "v9.9.9"
 NEWER_PRERELEASE_TAG = "v9.9.9-rc.1"
 OLDER_RELEASE_TAG = "v0.0.0"
-pytestmark = pytest.mark.release_only
 
 
+@pytest.mark.release_only
 def test_charness_version_can_refresh_latest_release_and_record_provenance(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -53,6 +53,7 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
     assert version_state["latest_release"]["current_version"] == CURRENT_VERSION
 
 
+@pytest.mark.release_only
 def test_charness_version_skips_notice_when_latest_release_matches_current(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -76,6 +77,7 @@ def test_charness_version_skips_notice_when_latest_release_matches_current(
     assert payload["update_notice"] is None
 
 
+@pytest.mark.release_only
 def test_charness_version_skips_notice_when_latest_release_is_older(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -99,6 +101,7 @@ def test_charness_version_skips_notice_when_latest_release_is_older(
     assert payload["update_notice"] is None
 
 
+@pytest.mark.release_only
 def test_installed_cli_can_emit_auto_update_notice_for_newer_release(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -120,6 +123,7 @@ def test_installed_cli_can_emit_auto_update_notice_for_newer_release(
     assert f"charness release available: `{CURRENT_VERSION}` -> `{NEWER_RELEASE_TAG}`." in doctor_result.stderr
 
 
+@pytest.mark.release_only
 def test_charness_version_preserves_prerelease_tag_in_update_notice(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -148,7 +152,7 @@ def test_charness_version_preserves_prerelease_tag_in_update_notice(
     )
 
 
-def test_charness_version_degrades_when_state_cache_is_unwritable(tmp_path: Path) -> None:
+def test_charness_version_without_writable_state_cache_degrades_to_payload(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     home_root.mkdir()
     (home_root / ".local").write_text("not a directory\n", encoding="utf-8")
