@@ -389,6 +389,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: Bootstrap tests should retain one full command+backend subprocess and move pure classification/config variants in-process.
 - Metrics: _run_quality_preview calls in test_quality_markdown_preview_bootstrap.py: base 3, current 1.
 
+### Slice 18: Debug seam-risk index subprocess fanout
+
+- Objective: Reduce repeated build_debug_seam_risk_index.py subprocess calls while preserving write-mode CLI proof.
+- Why this approach: Stale-index rejection can call main() directly if the helper mirrors the script's ValidationError wrapper; write mode remains command/file-output proof.
+- Commits:
+- What changed: Added run_debug_seam_risk_index(monkeypatch, capsys, ...) and converted the stale-index check to an in-process main() call.
+- Alternatives rejected: Kept write + JSON output + index file creation as a real subprocess smoke.
+- Targeted verification: ruff passed; focused pytest: 2 passed in 2.48s; boundary-bypass ratchet OK with 74 candidates / 37 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; run_script calls dropped 2 to 1.
+- Test duplication pressure: No tests added; one error-path check switched execution layer. Boundary ratchet effective candidates dropped by one.
+- Critique: charness-artifacts/critique/2026-06-26-debug-seam-index-runtime.md; low-risk same-agent critique recorded because write-mode CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: In-process conversions for scripts with __main__ exception wrappers must mirror the wrapper, not only call main().
+- Metrics: run_script calls in test_debug_seam_risk_index.py: base 2, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

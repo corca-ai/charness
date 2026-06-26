@@ -1,9 +1,27 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from .support import run_script
+from runtime_bootstrap import import_repo_module
+
+from .support import ROOT, run_script
+
+SCRIPT = "scripts/build_debug_seam_risk_index.py"
+_build_debug_seam_risk_index = import_repo_module(ROOT / SCRIPT, "scripts.build_debug_seam_risk_index")
+
+
+def run_debug_seam_risk_index(monkeypatch, capsys, *args: str) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [SCRIPT, *args])
+    try:
+        code = _build_debug_seam_risk_index.main()
+    except _build_debug_seam_risk_index.ValidationError as exc:
+        print(str(exc), file=sys.stderr)
+        code = 1
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def seed_repo(tmp_path: Path, *artifacts: tuple[str, str]) -> Path:
@@ -123,7 +141,7 @@ def test_build_debug_seam_risk_index_writes_source_linked_entries(tmp_path: Path
         ("2026-04-22-host-seam.md", debug_artifact()),
         ("2026-04-10-legacy.md", legacy_debug_artifact()),
     )
-    result = run_script("scripts/build_debug_seam_risk_index.py", "--repo-root", str(repo), "--write", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--write", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["index_path"] == "charness-artifacts/debug/seam-risk-index.json"
@@ -144,11 +162,11 @@ def test_build_debug_seam_risk_index_writes_source_linked_entries(tmp_path: Path
     ]
 
 
-def test_build_debug_seam_risk_index_check_rejects_stale_index(tmp_path: Path) -> None:
+def test_build_debug_seam_risk_index_check_rejects_stale_index(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path, ("2026-04-22-host-seam.md", debug_artifact()))
     stale = repo / "charness-artifacts" / "debug" / "seam-risk-index.json"
     stale.write_text("{}\n", encoding="utf-8")
-    result = run_script("scripts/build_debug_seam_risk_index.py", "--repo-root", str(repo), "--check")
+    result = run_debug_seam_risk_index(monkeypatch, capsys, "--repo-root", str(repo), "--check")
     assert result.returncode == 1
     assert "debug seam-risk index" in result.stderr
     assert "--write" in result.stderr
