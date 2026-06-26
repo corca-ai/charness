@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.cautilus_adapter_lib import load_cautilus_adapter
-from scripts.control_plane_lib import CommandResult, run_check, run_shell
+from scripts.control_plane_lib import command_result_payload, run_check, run_shell
 from scripts.upstream_release_lib import observed_version_from_detect, upgrade_advisory
 
 
@@ -78,15 +78,6 @@ def evaluate_readiness(manifest: dict[str, Any], repo_root: Path) -> dict[str, A
         "ok": all(check["ok"] for check in checks),
         "checks": checks,
         "failed_checks": [check["check_id"] for check in checks if not check["ok"]],
-    }
-
-
-def command_result_payload(result: CommandResult) -> dict[str, Any]:
-    return {
-        "command": result.command,
-        "exit_code": result.exit_code,
-        "stdout": result.stdout.strip(),
-        "stderr": result.stderr.strip(),
     }
 
 

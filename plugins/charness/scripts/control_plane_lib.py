@@ -95,6 +95,57 @@ def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any
             f"{path}: support_skill_path must match colocated support skill `{expected_skill_path}`"
         )
 
+def _manifest_path_for_payload(path: Path, repo_root: Path) -> str:
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        return str(path)
+
+def _append_manifest_payload(
+    manifests: list[dict[str, Any]],
+    seen_tool_ids: set[str],
+    data: dict[str, Any],
+    *,
+    path: Path,
+    repo_root: Path,
+    origin: str,
+    duplicate_policy: str,
+) -> None:
+    tool_id = data["tool_id"]
+    if tool_id in seen_tool_ids:
+        if duplicate_policy == "skip":
+            return
+        raise ValueError(f"duplicate manifest tool_id `{tool_id}`")
+    seen_tool_ids.add(tool_id)
+    data["_manifest_path"] = _manifest_path_for_payload(path, repo_root)
+    data["_manifest_origin"] = origin
+    manifests.append(data)
+
+def _load_and_append_manifest_payload(
+    manifests: list[dict[str, Any]],
+    seen_tool_ids: set[str],
+    *,
+    path: Path,
+    repo_root: Path,
+    schema: dict[str, Any] | None,
+    validate: bool,
+    origin: str,
+    duplicate_policy: str,
+) -> None:
+    data = load_manifest(path)
+    if validate:
+        assert schema is not None
+        validate_manifest_data(data, schema, path)
+    _append_manifest_payload(
+        manifests,
+        seen_tool_ids,
+        data,
+        path=path,
+        repo_root=repo_root,
+        origin=origin,
+        duplicate_policy=duplicate_policy,
+    )
+
 def normalize_support_capability(data: dict[str, Any], path: Path, repo_root: Path) -> dict[str, Any]:
     return {
         "tool_id": data["capability_id"],
@@ -121,33 +172,29 @@ def _load_manifests_merged(repo_root: Path, *, validate: bool) -> list[dict[str,
     manifests: list[dict[str, Any]] = []
     seen_tool_ids: set[str] = set()
     for path in manifest_paths(repo_root):
-        data = load_manifest(path)
-        if validate:
-            validate_manifest_data(data, schema, path)
-        tool_id = data["tool_id"]
-        if tool_id in seen_tool_ids:
-            raise ValueError(f"duplicate manifest tool_id `{tool_id}`")
-        seen_tool_ids.add(tool_id)
-        data["_manifest_path"] = str(path.relative_to(repo_root))
-        data["_manifest_origin"] = "user-repo"
-        manifests.append(data)
+        _load_and_append_manifest_payload(
+            manifests,
+            seen_tool_ids,
+            path=path,
+            repo_root=repo_root,
+            schema=schema,
+            validate=validate,
+            origin="user-repo",
+            duplicate_policy="error",
+        )
     plugin_root = _plugin_fallback_root().resolve()
     if plugin_root != repo_root.resolve():
         for path in plugin_fallback_manifest_paths():
-            data = load_manifest(path)
-            if validate:
-                validate_manifest_data(data, schema, path)
-            tool_id = data["tool_id"]
-            if tool_id in seen_tool_ids:
-                continue
-            seen_tool_ids.add(tool_id)
-            try:
-                rel = str(path.relative_to(repo_root))
-            except ValueError:
-                rel = str(path)
-            data["_manifest_path"] = rel
-            data["_manifest_origin"] = "plugin-fallback"
-            manifests.append(data)
+            _load_and_append_manifest_payload(
+                manifests,
+                seen_tool_ids,
+                path=path,
+                repo_root=repo_root,
+                schema=schema,
+                validate=validate,
+                origin="plugin-fallback",
+                duplicate_policy="skip",
+            )
     return manifests
 
 
@@ -253,6 +300,14 @@ def run_shell(command: str, cwd: Path) -> CommandResult:
         stderr=completed.stderr,
     )
 
+def command_result_payload(result: CommandResult) -> dict[str, Any]:
+    return {
+        "command": result.command,
+        "exit_code": result.exit_code,
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+    }
+
 
 def evaluate_success_criteria(result: CommandResult, criteria: list[str]) -> tuple[bool, list[str]]:
     failures: list[str] = []
@@ -285,15 +340,7 @@ def run_check(check: dict[str, Any], repo_root: Path) -> dict[str, Any]:
             failure_details.extend(failures)
     return {
         "ok": ok,
-        "results": [
-            {
-                "command": result.command,
-                "exit_code": result.exit_code,
-                "stdout": result.stdout.strip(),
-                "stderr": result.stderr.strip(),
-            }
-            for result in command_results
-        ],
+        "results": [command_result_payload(result) for result in command_results],
         "failure_details": failure_details,
         "failure_hint": check.get("failure_hint"),
     }
