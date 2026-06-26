@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 import scripts.doctor as doctor_module
+import scripts.install_tools as install_tools_module
 import scripts.validate_integrations as validate_integrations_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
@@ -233,7 +234,14 @@ def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp
     repo = seed_control_plane_repo(tmp_path)
     (repo / "bin" / "demo-tool").unlink()
 
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe")
+    doctor = run_loaded_script_main(
+        "doctor.py",
+        doctor_module,
+        "--repo-root",
+        str(repo),
+        "--json",
+        "--skip-release-probe",
+    )
     assert doctor.returncode == 0, doctor.stderr
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "missing"
@@ -250,7 +258,14 @@ def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> Non
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     (repo / "bin" / "demo-tool").unlink()
 
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe")
+    doctor = run_loaded_script_main(
+        "doctor.py",
+        doctor_module,
+        "--repo-root",
+        str(repo),
+        "--json",
+        "--skip-release-probe",
+    )
     assert doctor.returncode == 0, doctor.stderr
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "missing"
@@ -318,7 +333,14 @@ def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch
 
     env = os.environ.copy()
     env["PATH"] = f"{repo / 'bin'}:{env.get('PATH', '')}"
-    human_doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--skip-release-probe", env=env)
+    human_doctor = run_loaded_script_main(
+        "doctor.py",
+        doctor_module,
+        "--repo-root",
+        str(repo),
+        "--skip-release-probe",
+        env=env,
+    )
     assert human_doctor.returncode == 0, human_doctor.stderr
     assert "demo-tool: ok" in human_doctor.stdout
     assert "healthcheck=not-configured" in human_doctor.stdout
@@ -501,8 +523,9 @@ def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:/usr/bin:/bin"
 
-    first = run_script(
-        "scripts/install_tools.py",
+    first = run_loaded_script_main(
+        "install_tools.py",
+        install_tools_module,
         "--repo-root",
         str(repo),
         "--tool-id",
@@ -520,8 +543,9 @@ def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_
     deps = json.loads(deps_path.read_text(encoding="utf-8"))
     assert deps == {"schema_version": 1, "tool_dependencies": ["demo-tool"]}
 
-    second = run_script(
-        "scripts/install_tools.py",
+    second = run_loaded_script_main(
+        "install_tools.py",
+        install_tools_module,
         "--repo-root",
         str(repo),
         "--tool-id",

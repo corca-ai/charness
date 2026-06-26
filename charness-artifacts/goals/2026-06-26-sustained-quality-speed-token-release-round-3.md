@@ -866,6 +866,20 @@ Issue closeout: n/a — no tracked GitHub issue is being resolved by this goal.
 - Lessons carried forward: Script-under-test cases can still use in-process `main()` when the contract is argv/stdout plus filesystem output, not shell isolation.
 - Metrics: Speed/testability proxy: removed three nested `export_plugin.py` process starts and reduced raw candidate keys by one.
 
+### Slice 52: Run control-plane doctor and install smokes in process
+
+- Objective: Remove clean `doctor.py` and `install_tools.py` subprocesses from integration validation tests.
+- Why this approach: The tests assert doctor/install JSON or human output plus filesystem lock/dependency side effects; `main()` calls through the shared runner preserve argv and PATH-dependent command execution without a parent interpreter startup.
+- Commits:
+- What changed: Imported `scripts.install_tools`, reused existing `scripts.doctor`, and routed the advisory doctor and add-dependency install smokes through `run_loaded_script_main(..., env=env)` where needed.
+- Alternatives rejected: Did not convert the `charness tool doctor` CLI test because it verifies the top-level CLI dispatch path rather than the script module.
+- Targeted verification: pytest: `tests/control_plane/test_integrations_validation.py` `18 passed` in 3.60s; ruff passed; raw `inventory_boundary_bypass.py --summary` reports 51 candidates, 73 candidate keys, and 7 clean-convertible; `check_boundary_bypass_ratchet.py` passed at 48 candidates and 6 clean-convertible; `run_slice_closeout.py --skip-broad-pytest` passed.
+- Test duplication pressure: No new tests; converted existing smokes.
+- Critique: Same-agent slice critique: install command execution still crosses the shell boundary through lifecycle code, so this only removes outer script process overhead.
+- Off-goal findings: None.
+- Lessons carried forward: For control-plane scripts, preserving env/PATH in the shared runner is enough for tests that care about tool discovery side effects.
+- Metrics: Speed/testability proxy: removed five nested Python process starts and removed `tests/control_plane/test_integrations_validation.py` from the clean-convertible file list.
+
 ## Context Sources
 
 - User request on 2026-06-26: repeat sustained quality improvement for 3 hours
