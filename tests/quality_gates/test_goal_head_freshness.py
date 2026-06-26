@@ -210,11 +210,12 @@ def test_check_goal_artifact_cli_reports_head_freshness_failure(tmp_path: Path) 
     assert "mutable HEAD freshness" in payload["issues"][-1]
 
 
-def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path) -> None:
+def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path, monkeypatch, capsys) -> None:
     ready_path = tmp_path / "ready.md"
     ready_path.write_text("Status: active\n## Goal\nshaped\n", encoding="utf-8")
-    result = run_script(
-        "skills/public/achieve/scripts/check_goal_artifact.py",
+    result = run_check_goal_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
         "--goal-path",
@@ -229,8 +230,9 @@ def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path) -> No
         "Status: draft\n## Goal\nto be filled by the achieve before-phase\n",
         encoding="utf-8",
     )
-    result = run_script(
-        "skills/public/achieve/scripts/check_goal_artifact.py",
+    result = run_check_goal_artifact(
+        monkeypatch,
+        capsys,
         "--repo-root",
         str(tmp_path),
         "--goal-path",

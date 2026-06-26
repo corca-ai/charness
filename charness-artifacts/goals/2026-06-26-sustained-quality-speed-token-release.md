@@ -571,6 +571,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: For validator suites with many rule permutations, keep a small command smoke set and run the rule matrix against the import-safe evaluator.
 - Metrics: validate_skill_ergonomics subprocess launches in test_skill_ergonomics_gate.py: base 23, current 3.
 
+### Slice 31: Goal pursue-ready subprocess fanout
+
+- Objective: Reduce repeated check_goal_artifact.py subprocess launches in pursue-ready return-code tests while preserving CLI smokes.
+- Why this approach: test_goal_head_freshness.py already has run_check_goal_artifact(), which sets argv, calls main(), captures stdout/stderr, and returns a subprocess-shaped result.
+- Commits:
+- What changed: Converted the ready and unshaped pursue-ready checks to run_check_goal_artifact().
+- Alternatives rejected: Kept head-freshness failure and missing-path subprocess tests as command-boundary proof.
+- Targeted verification: ruff passed; focused goal-head-freshness pytest passed 15 tests in 2.62s; pursue-ready test duration dropped from 0.16s to 0.01s in local samples; boundary-bypass ratchet OK with 73 candidates / 35 clean-convertible / 33 internally-spawning / 23 likely keep-boundary.
+- Test duplication pressure: No tests added; check_goal_artifact.py subprocess launches in the file dropped from 4 to 2.
+- Critique: charness-artifacts/critique/2026-06-26-goal-pursue-ready-runtime.md; low-risk same-agent critique recorded because CLI smokes remain.
+- Off-goal findings: none
+- Lessons carried forward: Reuse existing main() harnesses for return-code branch matrices, but keep at least one real CLI error/smoke path.
+- Metrics: check_goal_artifact.py subprocess launches in test_goal_head_freshness.py: base 4, current 2.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
