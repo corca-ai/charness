@@ -375,6 +375,20 @@ Issue closeout: n/a — this goal is not resolving a tracked GitHub issue.
 - Lessons carried forward: For recommendation emitters, keep a real subprocess around argparse failure while moving pure formatting success checks in-process.
 - Metrics: recommend_behavior_test.py subprocess.run calls in test_quality_behavior_recommendation.py: base 3, current 1.
 
+### Slice 17: Markdown preview bootstrap subprocess fanout
+
+- Objective: Reduce repeated bootstrap_markdown_preview.py subprocess-backed helper calls while preserving full execute CLI proof.
+- Why this approach: Existing-config and not-applicable fixtures can call main() directly; scaffold-and-execute remains the command bootstrap plus fake-glow proof.
+- Commits:
+- What changed: Added run_quality_preview(monkeypatch, capsys, ...) and converted existing-config preservation plus not-applicable tests to in-process main() calls.
+- Alternatives rejected: Kept the scaffold-and-execute test as a real subprocess smoke.
+- Targeted verification: ruff passed; focused pytest: 3 passed in 3.01s; boundary-bypass ratchet OK with 75 candidates / 38 clean-convertible / 33 internally-spawning / 23 likely keep-boundary; subprocess-backed helper calls dropped 3 to 1.
+- Test duplication pressure: No tests added; two behavior checks switched execution layer. Boundary ratchet effective candidates dropped by one.
+- Critique: charness-artifacts/critique/2026-06-26-markdown-preview-bootstrap-runtime.md; low-risk same-agent critique recorded because full execute CLI proof remains.
+- Off-goal findings: none
+- Lessons carried forward: Bootstrap tests should retain one full command+backend subprocess and move pure classification/config variants in-process.
+- Metrics: _run_quality_preview calls in test_quality_markdown_preview_bootstrap.py: base 3, current 1.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

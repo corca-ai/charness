@@ -4,16 +4,26 @@ import json
 import os
 import stat
 import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+from runtime_bootstrap import import_repo_module
 
 from .support import ROOT
+
+SCRIPT = "skills/public/quality/scripts/bootstrap_markdown_preview.py"
+_bootstrap_markdown_preview = import_repo_module(
+    ROOT / SCRIPT,
+    "skills.public.quality.scripts.bootstrap_markdown_preview",
+)
 
 
 def _run_quality_preview(repo: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             "python3",
-            "skills/public/quality/scripts/bootstrap_markdown_preview.py",
+            SCRIPT,
             "--repo-root",
             str(repo),
             *args,
@@ -24,6 +34,15 @@ def _run_quality_preview(repo: Path, *args: str, env: dict[str, str] | None = No
         text=True,
         env=env,
     )
+
+
+def run_quality_preview(monkeypatch, capsys, repo: Path, *args: str, path_env: str | None = None) -> SimpleNamespace:
+    monkeypatch.setattr(sys, "argv", [SCRIPT, "--repo-root", str(repo), *args])
+    if path_env is not None:
+        monkeypatch.setenv("PATH", path_env)
+    code = _bootstrap_markdown_preview.main()
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def _write_fake_glow(bin_dir: Path) -> None:
@@ -76,7 +95,7 @@ def test_quality_bootstrap_markdown_preview_scaffolds_and_executes(tmp_path: Pat
     assert (repo / ".artifacts" / "markdown-preview" / "docs__guide.w100.txt").is_file()
 
 
-def test_quality_bootstrap_markdown_preview_preserves_existing_config(tmp_path: Path) -> None:
+def test_quality_bootstrap_markdown_preview_preserves_existing_config(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "docs").mkdir()
@@ -103,7 +122,7 @@ def test_quality_bootstrap_markdown_preview_preserves_existing_config(tmp_path: 
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}:{env['PATH']}"
 
-    result = _run_quality_preview(repo, "--execute", env=env)
+    result = run_quality_preview(monkeypatch, capsys, repo, "--execute", path_env=env["PATH"])
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -117,13 +136,13 @@ def test_quality_bootstrap_markdown_preview_preserves_existing_config(tmp_path: 
     assert (repo / ".artifacts" / "docs-preview" / "docs__guide.w90.txt").is_file()
 
 
-def test_quality_bootstrap_markdown_preview_reports_not_applicable(tmp_path: Path) -> None:
+def test_quality_bootstrap_markdown_preview_reports_not_applicable(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "src").mkdir()
     (repo / "src" / "main.py").write_text("print('hi')\n", encoding="utf-8")
 
-    result = _run_quality_preview(repo)
+    result = run_quality_preview(monkeypatch, capsys, repo)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
