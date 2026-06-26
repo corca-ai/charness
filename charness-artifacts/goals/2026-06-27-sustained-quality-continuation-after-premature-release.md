@@ -9,10 +9,11 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: Charness CLI external-tool fixture extraction.
+- Current slice: Charness CLI Go-tool fixture extraction.
 - Current slice intent: continue reducing test helper prompt/template bulk by
-  moving fake `agent-browser`, `npm`, `cargo`, `uv`, and generated fake tool
-  bodies out of `tests/charness_cli/support.py` and into fixture script files.
+  moving fake Go/specdown/gitleaks/glow executable bodies out of
+  `tests/charness_cli/support.py` and `tests/charness_cli/test_tool_lifecycle.py`
+  into fixture script files.
 - Next action: commit and push this fixture extraction, then continue discovery
   unless a release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
@@ -68,7 +69,8 @@ accumulate.
 | 4 | Extract HITL report HTML template from Python | Prompt-bulk inventory identified two large HTML/CSS/JS literals in `hitl_report_mode_lib.py` | focused HITL report tests, prompt-bulk delta, packaging sync | complete |
 | 5 | Extract Charness CLI fake binary scripts from support helper | Prompt-bulk inventory identified large fake `claude`/`codex` script literals in `tests/charness_cli/support.py` | focused CLI tests, prompt-bulk delta, standing pytest | complete |
 | 6 | Extract remaining Charness CLI external-tool fake scripts from support helper | Prompt-bulk inventory still points at `tests/charness_cli/support.py`; the fake npm/cargo/uv bodies are local, deterministic, and expensive to keep inline | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
-| 7 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 7 | Extract Charness CLI Go/specdown/glow fake scripts from test helpers | Prompt-bulk inventory still points at Go installer script literals after slice 6 | focused CLI update/tool lifecycle tests, prompt-bulk delta, standing pytest | complete |
+| 8 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -231,6 +233,38 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     installer script resolves its own `<script>.json` config, and the focused
     update/tool lifecycle tests exercised the npm, cargo, uv, agent-browser,
     specdown, and glow update/install paths.
+- Slice 7 evidence:
+  - Prompt-bulk inventory before this change reported 46 findings and still
+    sampled `tests/charness_cli/support.py` Go installer literals plus
+    `tests/charness_cli/test_tool_lifecycle.py` glow installer literals.
+  - Moved fake Go/specdown/gitleaks/glow executable bodies to
+    `tests/charness_cli/fixtures/`; the helper functions now copy fixture
+    executables and write small sidecar JSON files for temp `GOPATH`, `GOBIN`,
+    bin-dir, fixture-root, and per-test glow version behavior.
+  - Prompt-bulk inventory after the change reported 42 findings; the
+    `support.py` and `test_tool_lifecycle.py` fake Go literals no longer appear
+    in the top sample.
+  - Length proof: `tests/charness_cli/support.py` moved from `340/800` to
+    `269/800` code lines; `tests/charness_cli/test_tool_lifecycle.py` moved to
+    `550/800`; new Go fixture files are each at most `38/800` code lines.
+  - Fresh-eye review flagged an uncovered `GOBIN` branch in the fake Go
+    installers. Added a narrow helper-level test and fixed the extracted glow
+    fake to create `GOPATH/bin` before writing the target binary when `GOBIN`
+    redirects the install root.
+  - Focused proof: `py_compile`, focused `ruff check`, the new `GOBIN` helper
+    test, and the release-only CLI update/tool lifecycle subset for update-all,
+    specdown, and glow passed; the focused pytest run reported `6 passed,
+    17 deselected in 28.09s`.
+  - Changed-surface proof: full repo `ruff check`, Python length gate,
+    attention-state visibility, test repo copy invariants, boundary-bypass
+    ratchet, and the standing pytest runner passed; standing pytest reported
+    `3675 passed in 21.22s`.
+  - Slice critique: the main risks were preserving the old installer distinction
+    between support's glow version (`glow version 2.1.2`) and the lifecycle
+    test's glow version (`glow 2.1.1-test`), plus `GOBIN` path behavior. Folded
+    response: the shared `fake_glow.py` reads optional sidecar config, focused
+    glow/specdown tests exercised the configured behavior, and the new helper
+    test covers `GOBIN`.
 
 ## Context Sources
 

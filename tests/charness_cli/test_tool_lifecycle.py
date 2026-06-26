@@ -6,8 +6,9 @@ import importlib.util
 import io
 import json
 import os
+import shutil
+import subprocess
 import sys
-import textwrap
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,7 @@ from scripts.control_plane_lifecycle_lib import update_advisory_line
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
+    FIXTURES,
     build_test_path,
     clone_seeded_managed_home,
     make_fake_agent_browser,
@@ -130,59 +132,41 @@ def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     script = bin_dir / "go"
-    script.write_text(
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            import os
-            import pathlib
-            import sys
-
-            gopath = pathlib.Path({str(gopath)!r})
-            gobin = os.environ.get("GOBIN")
-            install_root = pathlib.Path(gobin) if gobin else gopath / "bin"
-            install_root.mkdir(parents=True, exist_ok=True)
-
-            args = sys.argv[1:]
-            if args == ["version"]:
-                print("go version go1.26.2 linux/arm64")
-                raise SystemExit(0)
-            if args == ["env", "GOPATH"]:
-                print(gopath)
-                raise SystemExit(0)
-            if args == ["install", "github.com/charmbracelet/glow/v2@latest"]:
-                glow = gopath / "bin" / "glow"
-                glow.write_text(
-                    "\\n".join(
-                        [
-                            "#!/usr/bin/env python3",
-                            "import sys",
-                            "args = sys.argv[1:]",
-                            "if args == ['--version']:",
-                            "    print('glow 2.1.1-test')",
-                            "    raise SystemExit(0)",
-                            "if args == ['--help']:",
-                            "    print('glow help')",
-                            "    raise SystemExit(0)",
-                            "print('glow runtime')",
-                        ]
-                    ) + "\\n",
-                    encoding="utf-8",
-                )
-                glow.chmod(0o755)
-                target = install_root / "glow"
-                if target != glow:
-                    if target.exists() or target.is_symlink():
-                        target.unlink()
-                    target.symlink_to(glow)
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
+    shutil.copy2(FIXTURES / "fake_go_glow.py", script)
+    script.with_suffix(".json").write_text(
+        json.dumps({"gopath": str(gopath), "fixtures": str(FIXTURES)}, indent=2) + "\n",
         encoding="utf-8",
     )
     script.chmod(0o755)
     return script, gopath
+
+
+def test_fake_go_installers_honor_gobin(tmp_path: Path) -> None:
+    specdown_go, _specdown_bin = make_fake_go_specdown(tmp_path / "specdown")
+    glow_go, gopath = make_fake_go_glow(tmp_path / "glow")
+    gobin = tmp_path / "custom-gobin"
+    env = {**os.environ, "GOBIN": str(gobin)}
+
+    gitleaks_result = subprocess.run(
+        [str(specdown_go), "install", "github.com/gitleaks/gitleaks/v8@latest"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    glow_result = subprocess.run(
+        [str(glow_go), "install", "github.com/charmbracelet/glow/v2@latest"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert gitleaks_result.returncode == 0, gitleaks_result.stderr
+    assert glow_result.returncode == 0, glow_result.stderr
+    assert (gobin / "gitleaks").is_file()
+    assert (gobin / "glow").is_symlink()
+    assert (gobin / "glow").resolve() == gopath / "bin" / "glow"
 
 
 @pytest.mark.release_only

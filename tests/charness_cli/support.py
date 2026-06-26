@@ -5,7 +5,6 @@ import os
 import shutil
 import subprocess
 import sys
-import textwrap
 from pathlib import Path
 
 import pytest
@@ -289,84 +288,14 @@ def make_fake_go_specdown(tmp_path: Path) -> tuple[Path, Path]:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     go_script = bin_dir / "go"
-    go_script.write_text(
-        textwrap.dedent(
-            f"""\
-            #!/usr/bin/env python3
-            import os
-            import pathlib
-            import sys
-
-            gopath = pathlib.Path({str(gopath)!r})
-            gobin = os.environ.get("GOBIN")
-            install_root = pathlib.Path(gobin) if gobin else gopath / "bin"
-            install_root.mkdir(parents=True, exist_ok=True)
-            args = sys.argv[1:]
-            if args == ["env", "GOPATH"]:
-                print(str(gopath))
-                raise SystemExit(0)
-            if args == ["install", "github.com/gitleaks/gitleaks/v8@latest"]:
-                for target in (install_root / "gitleaks", pathlib.Path({str(bin_dir)!r}) / "gitleaks"):
-                    target.write_text(
-                        "#!/usr/bin/env python3\\n"
-                        "import sys\\n"
-                        "args = sys.argv[1:]\\n"
-                        "if args == ['version']:\\n"
-                        "    print('gitleaks version 8.27.2')\\n"
-                        "elif args == ['help']:\\n"
-                        "    print('gitleaks help')\\n"
-                        "else:\\n"
-                        "    print('gitleaks')\\n",
-                        encoding="utf-8",
-                    )
-                    target.chmod(0o755)
-                print("installed gitleaks")
-                raise SystemExit(0)
-            if args == ["install", "github.com/charmbracelet/glow/v2@latest"]:
-                for target in (install_root / "glow", pathlib.Path({str(bin_dir)!r}) / "glow"):
-                    target.write_text(
-                        "#!/usr/bin/env python3\\n"
-                        "import sys\\n"
-                        "args = sys.argv[1:]\\n"
-                        "if args == ['--version']:\\n"
-                        "    print('glow version 2.1.2')\\n"
-                        "elif args == ['--help']:\\n"
-                        "    print('glow help')\\n"
-                        "else:\\n"
-                        "    print('glow')\\n",
-                        encoding="utf-8",
-                    )
-                    target.chmod(0o755)
-                print("installed glow")
-                raise SystemExit(0)
-            if args == ["install", "github.com/corca-ai/specdown/cmd/specdown@latest"]:
-                print("installed specdown")
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
+    shutil.copy2(FIXTURES / "fake_go_specdown.py", go_script)
+    go_script.with_suffix(".json").write_text(
+        json.dumps({"gopath": str(gopath), "bin_dir": str(bin_dir), "fixtures": str(FIXTURES)}, indent=2) + "\n",
         encoding="utf-8",
     )
     go_script.chmod(0o755)
     specdown_script = gopath / "bin" / "specdown"
     specdown_script.parent.mkdir(parents=True, exist_ok=True)
-    specdown_script.write_text(
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["version"]:
-                print("0.47.2")
-                raise SystemExit(0)
-            if args == ["run", "-help"]:
-                print("Usage: specdown run", file=sys.stderr)
-                raise SystemExit(0)
-            raise SystemExit(1)
-            """
-        ),
-        encoding="utf-8",
-    )
+    shutil.copy2(FIXTURES / "fake_specdown.py", specdown_script)
     specdown_script.chmod(0o755)
     return go_script, specdown_script
