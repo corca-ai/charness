@@ -60,6 +60,7 @@ Assume a competent next operator can follow one good link.
      there instead of hardcoding the host choice into the skill
 4. Rewrite the handoff around continuation, not history.
    - exact workflow trigger
+   - continuation capability the next operator must have after reading
    - current state facts that change the next action
    - ordered next actions
    - open decisions that still need user input
@@ -94,6 +95,7 @@ Assume a competent next operator can follow one good link.
 The handoff should usually contain:
 
 - `Workflow Trigger`
+- `Continuation Capability`
 - `Current State`
 - `Next Session`
 - `Discuss`
