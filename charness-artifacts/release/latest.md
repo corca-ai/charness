@@ -17,18 +17,26 @@ Advanced `charness` toward release `0.56.9` (tag `v0.56.9`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
+- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.56.9`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.56.9`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified by the release backend.
+
+## Distinct-Channel Verification
+
+- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
+- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v0.56.9`
+- HTTP status: `200`
+- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
 
 ## Release Adapter Preflight
 
@@ -89,9 +97,31 @@ Advanced `charness` toward release `0.56.9` (tag `v0.56.9`) through the repo-own
 - Policy: `advisory-only`.
 - Configured command count: `0`.
 
+## Post-Publish Proof
+
+- Public release check: `gh release view v0.56.9`.
+
 ## Install Refresh
 
-- Post-publish install refresh: pending final publish verification.
+- Post-publish install refresh status: `refreshed`.
+- Command: `charness update`
+- Return code: `0`
+- Elapsed seconds: `8.255`
+- Stdout tail: `STEP: refreshing source checkout
+STEP: refreshing install surface
+STEP: refreshing Codex host cache
+DONE: update complete
+PACKAGE: charness
+VERSION: 0.56.8 -> 0.56.9
+CHECKOUT: pulled /home/hwidong/.agents/src/charness
+SCOPE: self
+COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
+SESSION_STALENESS: cache paths rotated for active sessions
+  - local/charness 0.56.8 -> 0.56.9
+  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
+NEXT_ACTION: codex: Codex host install markers are present. Start a new Codex session to load charness.
+CODEX_NEXT_STEP: Codex host install markers are present. Start a new Codex session to load charness.
+CLAUDE_NEXT_STEP: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
 
 ## Release Runtime
 
@@ -99,6 +129,11 @@ Advanced `charness` toward release `0.56.9` (tag `v0.56.9`) through the repo-own
 - `cli_skill_surface_gate`: 1.856s
 - `quality_command`: 67.392s
 - `fresh_checkout_probes_initial`: 2.915s
+- `fresh_checkout_probes_after_amend`: 2.754s
+- `push_create_verify_release`: 45.891s
+- `distinct_channel_verification`: 0.506s
+- `issue_closeout`: 0.436s
+- `post_publish_install_refresh`: 8.255s
 
 ## Fresh Checkout Probes
 
@@ -109,7 +144,11 @@ Advanced `charness` toward release `0.56.9` (tag `v0.56.9`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #405: `CLOSED` (https://github.com/corca-ai/charness/issues/405)
+  - carrier: `direct_release_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
