@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `gather` knowledge-capability slice.
-- Current slice intent: keep source capture scoped to what later sessions need
-  to know or decide from the durable asset.
-- Next action: validate and commit the `gather` slice, then keep scanning
+- Current slice: close the `hotl` capability-claim slice.
+- Current slice intent: keep applied/live behavior closeout explicit about the
+  capability claim being verified before it is closed as working.
+- Next action: validate and commit the `hotl` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -126,6 +126,7 @@ unchanged skills.
 | 15 | Add operator-capability hook to `setup` | Keep operating-surface scaffolding from becoming boilerplate docs | Focused setup diff, dogfood freeze, slice closeout | complete |
 | 16 | Add continuation-capability hook to `handoff` | Keep baton refresh continuation-first instead of history-first | Focused handoff diff, dogfood freeze, slice closeout | complete |
 | 17 | Add knowledge-capability hook to `gather` | Keep durable source capture scoped to the later-session capability | Focused gather diff, dogfood freeze, slice closeout | complete |
+| 18 | Add capability-claim hook to `hotl` | Keep live/applied closeout explicit about what capability claim is being verified | Focused hotl diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -389,6 +390,20 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `gather` slice after dogfood
     freeze, scenario registry review, and maintained gather scenario execution.
+- Slice 16 — `hotl` capability-claim hook.
+  - Routing: `find-skills` recommendation returned `hotl`; target-skill
+    quality planning resolved `hotl` for this review slice.
+  - Changed: `skills/public/hotl/SKILL.md` and generated plugin mirror now ask
+    proof packets to name the capability claim the applied behavior loop is
+    closing as working, and expose `Capability Claim` in the output shape.
+  - Dogfood/evaluator disposition: `hotl` is `hitl-recommended`; the current
+    dogfood contract is frozen in `docs/public-skill-dogfood.json`. No live
+    provider proof, ledger mutation, or Cautilus run is claimed.
+  - Non-claim: this does not change adapter-owned proof commands or the
+    seven-status disposition vocabulary.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `hotl` slice after dogfood
+    freeze and scenario review disposition.
 
 ## Context Sources
 

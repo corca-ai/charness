@@ -57,6 +57,7 @@ python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
      example chat, scheduled workflow, table or sheet, public tools,
      control/action, local guard)
 2. Write a proof packet before execution.
+   - capability claim: the applied behavior capability this loop is closing as working
    - success criteria: the exact observable result that counts as verified
    - pre-roundtrip failure checks: config, credentials, listener
      reachability, command support, disposable target, artifact path, and
@@ -113,7 +114,7 @@ Apply `references/proof-rules.md`; the load-bearing rules:
 
 ## Output Shape
 
-The result should usually include Loop Inventory, Surface Class, Proof Packet
+The result should usually include Loop Inventory, Surface Class, Capability Claim, Proof Packet
 (Success Criteria, Pre-Roundtrip Failure Checks, Feasibility, Human
 Intervention, Non-Claims), Executed Proof or Recorded Disposition, Ledger
 Status, Verified-Against or Disposition fields, Staleness Findings, Staleness
