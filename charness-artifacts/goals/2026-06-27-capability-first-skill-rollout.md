@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `hitl` judgment-capability slice.
-- Current slice intent: keep human review loops explicit about the decision
-  capability automation lacks or the human supplies.
-- Next action: validate and commit the `hitl` slice, then keep scanning
+- Current slice: close the `critique` capability-at-stake slice.
+- Current slice intent: keep pre-lock critique anchored on the capability or
+  failure at stake before angles and counterweight triage.
+- Next action: validate and commit the `critique` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -122,6 +122,7 @@ unchanged skills.
 | 11 | Add feature-capability hook to `issue` | Keep feature/deferred-work resolution briefs capability-first | Focused issue diff, dogfood freeze, slice closeout | complete |
 | 12 | Add outcome-capability hook to `achieve` | Prevent long-running goals from becoming feature checklists before slice planning | Focused achieve diff, dogfood freeze, slice closeout | complete |
 | 13 | Add judgment-capability hook to `hitl` | Keep human review scoped to the judgment capability automation lacks | Focused hitl diff, dogfood freeze, slice closeout | complete |
+| 14 | Add capability-at-stake hook to `critique` | Keep pre-lock review from stress-testing changes without naming the capability at risk | Focused critique diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -317,6 +318,22 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
     human judgment or prove any particular review outcome.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `hitl` slice after the
+    dogfood freeze and scenario review disposition.
+- Slice 12 — `critique` capability-at-stake hook.
+  - Routing: `find-skills` recommendation returned `critique`; target-skill
+    quality planning resolved `critique` for this review slice.
+  - Changed: `skills/public/critique/SKILL.md` and generated plugin mirror now
+    ask what capability or failure is at stake and expose `Capability at Stake`
+    in the output shape.
+  - Dogfood/evaluator disposition: `critique` is `hitl-recommended`; the
+    current dogfood contract is frozen in `docs/public-skill-dogfood.json`.
+    No fresh subagent critique run or Cautilus run is claimed for this small
+    prompt-surface framing change.
+  - Non-claim: this does not make every critique use the
+    `customer-of-this-capability` angle; it only makes the capability at risk
+    visible before choosing angles.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `critique` slice after the
     dogfood freeze and scenario review disposition.
 
 ## Context Sources

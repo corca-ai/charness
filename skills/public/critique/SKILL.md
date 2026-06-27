@@ -90,6 +90,7 @@ history.
 
 1. Restate the pending change.
    - what is being changed, removed, or locked
+   - what capability or failure is at stake
    - what would count as success
    - what is explicitly out of scope for this pass
 2. Pick a bounded set of contrasting angles.
@@ -146,6 +147,7 @@ The result should usually include:
   `blocked <reason>` per `references/prepare-packet.md`
 - `Target` — which reference shaped this run
 - `Change`
+- `Capability at Stake`
 - `Angles`
 - `Findings`
 - `Counterweight Triage` (optional `Structured Findings` per `references/counterweight-triage.md`)
