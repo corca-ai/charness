@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `hotl` capability-claim slice.
-- Current slice intent: keep applied/live behavior closeout explicit about the
-  capability claim being verified before it is closed as working.
-- Next action: validate and commit the `hotl` slice, then keep scanning
+- Current slice: close the `announcement` reader-value slice.
+- Current slice intent: keep human-facing update output anchored on what the
+  reader can now do, avoid, or understand.
+- Next action: validate and commit the `announcement` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -127,6 +127,7 @@ unchanged skills.
 | 16 | Add continuation-capability hook to `handoff` | Keep baton refresh continuation-first instead of history-first | Focused handoff diff, dogfood freeze, slice closeout | complete |
 | 17 | Add knowledge-capability hook to `gather` | Keep durable source capture scoped to the later-session capability | Focused gather diff, dogfood freeze, slice closeout | complete |
 | 18 | Add capability-claim hook to `hotl` | Keep live/applied closeout explicit about what capability claim is being verified | Focused hotl diff, dogfood freeze, slice closeout | complete |
+| 19 | Add reader-value output to `announcement` | Keep human-facing communication value-first through closeout | Focused announcement diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -404,6 +405,20 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `hotl` slice after dogfood
     freeze and scenario review disposition.
+- Slice 17 — `announcement` reader-value output.
+  - Routing: `find-skills` recommendation returned `announcement`;
+    target-skill quality planning resolved `announcement` for this review
+    slice.
+  - Changed: `skills/public/announcement/SKILL.md` and generated plugin mirror
+    now include `Reader Value` in the output shape.
+  - Dogfood/evaluator disposition: `announcement` is `hitl-recommended`; the
+    current dogfood contract is frozen in `docs/public-skill-dogfood.json`.
+    No delivery, external write, or Cautilus run is claimed.
+  - Non-claim: this does not change adapter-owned delivery or confirmation
+    policy; drafting remains value-first and delivery remains explicit.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `announcement` slice after
+    dogfood freeze and scenario review disposition.
 
 ## Context Sources
 

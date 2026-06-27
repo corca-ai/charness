@@ -163,6 +163,7 @@ The result should usually include:
 
 - `Scope`
 - `Audience`
+- `Reader Value`
 - `Draft`
 - `Delivery Plan`
 - `Recorded Head`
