@@ -244,6 +244,13 @@
       "note": "single-line None guard family rotated after setup worktree template extraction; not meaningful extractable duplication",
       "reviewed_at": "2026-06-27",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "40a4e156b1efd17f",
+      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

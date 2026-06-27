@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 21 complete; ready to commit and push.
-- Current slice intent: extract Charness CLI fake cautilus/nose scripts from
-  inline test helper strings.
-- Next action: commit and push slice 21, then continue discovery unless a
+- Current slice: slice 22 complete; ready to commit and push.
+- Current slice intent: extract goal closeout roundtrip fixture from inline
+  test Markdown.
+- Next action: commit and push slice 22, then continue discovery unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -82,6 +82,7 @@ accumulate.
 | 19 | Extract HITL scratchpad template from Python | Prompt-bulk inventory next surfaced `hitl/scripts/bootstrap_review.py`; the scratchpad body is generated Markdown, not Python logic | focused HITL/portable tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 20 | Extract setup worktree adapter templates from Python | Prompt-bulk inventory next surfaced generated worktree adapter YAML/comment blocks in `seed_worktree_adapter_lib.py` | focused setup worktree tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 21 | Extract Charness CLI fake cautilus/nose scripts from inline test helper strings | Prompt-bulk inventory next surfaced `tests/charness_cli/tool_fakes.py`; fake executable bodies are fixture assets, not Python helper logic | focused CLI lifecycle tests, prompt-bulk delta, standing pytest | complete |
+| 22 | Extract goal closeout roundtrip fixture from inline test Markdown | Prompt-bulk inventory next surfaced `test_check_artifact_surface_preflight.py`; the synthetic goal body is fixture content, not test logic | focused artifact-surface preflight tests, prompt-bulk delta, standing pytest | complete |
 
 ## Operator Decision Queue
 
@@ -795,6 +796,35 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     `--refresh-broad-pytest-proof` after confirming the mutation set was locked.
     Usage episode:
     `slice-closeout-99d7e36fc5c445ee847d07f99313f367`.
+- Slice 22 evidence:
+  - Prompt-bulk inventory after slice 21 reported 23 findings and surfaced a
+    large synthetic goal artifact body in
+    `tests/quality_gates/test_check_artifact_surface_preflight.py`.
+  - Moved the synthetic closeout roundtrip goal body to
+    `tests/quality_gates/fixtures/goal_closeout_roundtrip.md`; the test now
+    renders it with `string.Template`.
+  - Prompt-bulk inventory after the change reported 22 findings; the artifact
+    surface preflight fixture body no longer appears.
+  - Length proof: `tests/quality_gates/test_check_artifact_surface_preflight.py`
+    moved from `524/800` to `460/800` code lines.
+  - Focused proof: `py_compile`, focused `ruff check`, and the artifact-surface
+    preflight pytest file passed; focused pytest reported `51 passed in 1.70s`.
+  - Same-agent critique: the main risk is placeholder rendering changing the
+    goal fixture shape. Folded response: the same test still runs the real
+    `check_goal_artifact.py` validator over the rendered fixture, so fixture
+    shape drift remains behavior-checked.
+  - Changed-surface proof: doc links, command docs, markdown, secrets, ruff,
+    Python length limits, attention-state visibility, test repo copy
+    invariants, boundary-bypass ratchet, standing pytest, and agent browser
+    runtime guard passed. The first closeout attempt stopped because the broad
+    pytest cache belonged to a different mutation fingerprint; reran with
+    `--refresh-broad-pytest-proof` after confirming the mutation set was locked.
+    Usage episode:
+    `slice-closeout-e4749609b9b648fbad267c7e4f6f3732`.
+  - Push-gate repair: pre-push `dup-ratchet` flagged one new doc family
+    (`40a4e156b1efd17f`) because the fixture intentionally shares the canonical
+    goal Slice Plan table skeleton with achieve/handoff templates. Recorded it
+    as reviewed intentional in `charness-artifacts/quality/dup-review.json`.
 
 ## Context Sources
 
