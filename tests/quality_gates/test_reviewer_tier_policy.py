@@ -13,6 +13,7 @@ CRITIQUE_DIR = ROOT / "skills" / "public" / "critique"
 ADAPTER_EXAMPLE = CRITIQUE_DIR / "adapter.example.yaml"
 ADAPTER_CONTRACT = CRITIQUE_DIR / "references" / "adapter-contract.md"
 INIT_ADAPTER = CRITIQUE_DIR / "scripts" / "init_adapter.py"
+INIT_ADAPTER_TEMPLATE = CRITIQUE_DIR / "scripts" / "templates" / "critique_adapter.yaml"
 NAMED_SKILLS = ("critique", "quality", "release", "issue")
 DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES = (
     ROOT / "skills" / "public" / "quality" / "SKILL.md",
@@ -102,6 +103,19 @@ def test_critique_init_adapter_scaffolds_reviewer_tiers(tmp_path) -> None:
     assert data["reviewer_tiers"]["high-leverage"]["model"] == "gpt-5.5"
     assert data["reviewer_tiers"]["high-leverage"]["reasoning_effort"] == "medium"
     assert data["reviewer_tiers"]["high-leverage"]["service_tier"] == "priority"
+
+
+def test_critique_init_adapter_scaffold_lives_in_template_asset(tmp_path) -> None:
+    result = subprocess.run(
+        ["python3", str(INIT_ADAPTER), "--repo-root", str(tmp_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / ".agents" / "critique-adapter.yaml").read_text(
+        encoding="utf-8"
+    ) == INIT_ADAPTER_TEMPLATE.read_text(encoding="utf-8")
 
 
 def test_missing_critique_adapter_does_not_infer_host_specific_tier(tmp_path) -> None:

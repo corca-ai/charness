@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 15 complete; re-inventory for slice 16.
-- Current slice intent: move the achieve goal-closeout starter stub out of
-  Python and into a `.txt` template asset, then sync the plugin export.
-- Next action: commit and push slice 15, then continue discovery unless a
+- Current slice: slice 16 complete; re-inventory for slice 17.
+- Current slice intent: continue prompt/template bulk reduction after the
+  critique adapter scaffold extraction.
+- Next action: commit and push slice 16, then continue discovery unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -76,7 +76,8 @@ accumulate.
 | 13 | Extract setup host-docs AGENTS fragments from Python | Prompt-bulk inventory next surfaced `setup_host_docs_lib.py`; these Markdown fragments are template assets, not Python logic | focused setup tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 14 | Extract plugin import smoke script template from Python | Prompt-bulk inventory next surfaced `validate_packaging_install_surface.py`; the subprocess body is script text, not validator logic | focused packaging tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 15 | Extract achieve closeout stub template from Python | Prompt-bulk inventory next surfaced `describe_goal_closeout_shape.py`; the closeout starter stub is generated content, not Python logic | focused achieve/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 16 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 16 | Extract critique adapter scaffold template from Python | Prompt-bulk inventory next surfaced `critique/scripts/init_adapter.py`; the adapter skeleton is generated YAML, not Python logic | focused critique/reviewer tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 17 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -517,6 +518,47 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     family instead of classifying it; `check_dup_ratchet.py` then reported no
     new code/doc families and the focused achieve/preflight pytest bundle
     reported `61 passed in 1.63s`.
+- Slice 16 evidence:
+  - Prompt-bulk inventory after slice 15 reported 31 findings and surfaced
+    `skills/public/critique/scripts/init_adapter.py` as the next public-skill
+    generated-content candidate.
+  - Moved the critique adapter skeleton to
+    `skills/public/critique/scripts/templates/critique_adapter.yaml`; the
+    `init_adapter.py` scaffold now reads that template asset.
+  - Synced plugin export, adding
+    `plugins/charness/skills/critique/scripts/templates/critique_adapter.yaml`
+    and updating the plugin mirror of `init_adapter.py`.
+  - Added deterministic coverage that the scaffolded
+    `.agents/critique-adapter.yaml` exactly equals the source template asset.
+  - Prompt-bulk inventory after the change reported 30 findings; the critique
+    adapter skeleton no longer appears.
+  - Focused proof: `py_compile`, focused `ruff check`, and the critique
+    reviewer/prepare-packet pytest bundle passed; focused pytest reported
+    `56 passed in 2.26s`.
+  - Public-skill scenario review: `suggest_public_skill_dogfood.py --skill-id
+    critique` confirmed `critique` remains `hitl-recommended`; Cautilus planner
+    reported `next_action: none`. Recorded the unchanged consumer-contract
+    decision in `docs/public-skill-dogfood.json` because this slice changes
+    implementation shape, not routing, artifact home, packet/reviewer-tier
+    evidence, counterweight triage, output shape, or maintained evaluator
+    behavior.
+  - Changed-surface proof: skill/public-skill/dogfood validators, packaging
+    validators, plugin import smoke, doc/markdown checks, dup-ratchet,
+    attention-state visibility, and the standing pytest runner passed; standing
+    pytest reported `3683 passed in 20.67s`.
+  - Fresh-eye review: no blocking finding. Reviewer verified source/plugin
+    mirror parity, byte-identical template extraction from the old inline
+    skeleton, template-asset test coverage, dogfood/Cautilus `next_action: none`
+    honesty, and packaging surface coverage; only closeout note was to include
+    both new template files in the final commit.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --ack-cautilus-skill-review --produce-mutation-coverage
+    --verification-lock` completed, including skill/public-skill/dogfood
+    validators, docs/markdown/secrets checks, focused structural sweeps,
+    coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
+    browser runtime guard. Usage episode:
+    `slice-closeout-0c48db7271864f42bda0b3a62f5ecde2`.
 
 ## Context Sources
 
