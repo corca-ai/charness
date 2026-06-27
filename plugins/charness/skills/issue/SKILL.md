@@ -63,6 +63,7 @@ closing anything.
    - `bug`: run the causal-review fresh-eye subagent before design; if spawning
      is blocked, stop and report the host signal.
    - `feature` / `deferred-work`: emit the pre-mutation resolution brief and
+     name the capability or capability failure before proposing implementation;
      pause when open decisions are non-empty.
    - `question` / `decision-needed`: discuss or answer before mutation; the
      decision may change the classification.

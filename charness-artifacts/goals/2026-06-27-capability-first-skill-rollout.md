@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `quality` capability-before-gate slice.
-- Current slice intent: make target-skill quality findings name capability or
-  failure before recommending gates, helpers, or wording changes.
-- Next action: validate and commit the `quality` slice, then keep scanning
+- Current slice: close the `issue` feature-capability slice.
+- Current slice intent: keep feature/deferred-work issue resolution from
+  proposing implementation before naming the capability or failure.
+- Next action: validate and commit the `issue` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -119,6 +119,7 @@ unchanged skills.
 | 8 | Add capability-claim hook to `narrative` | Prevent durable story alignment from becoming polished feature inventory | Focused narrative diff, dogfood freeze, slice closeout | complete |
 | 9 | Add capability-failure hook to `debug` | Keep RCA anchored on the failed/restored user or operator capability | Focused debug diff, dogfood freeze, slice closeout | complete |
 | 10 | Add capability-before-gate hook to `quality` | Prevent target-skill review from jumping to gates before capability diagnosis | Focused quality diff, dogfood freeze, slice closeout | complete |
+| 11 | Add feature-capability hook to `issue` | Keep feature/deferred-work resolution briefs capability-first | Focused issue diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -272,6 +273,19 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `quality` slice after the
     dogfood freeze.
+- Slice 9 — `issue` feature-capability hook.
+  - Changed: `skills/public/issue/SKILL.md` and generated plugin mirror now
+    require feature/deferred-work resolution to name capability or capability
+    failure before proposing implementation.
+  - Dogfood/evaluator disposition: `issue` is evaluator-required and mapped to
+    maintained issue scenarios; this diff does not change routing, GitHub
+    source-of-truth selection, causal-review, or feature-brief behavior.
+    `docs/public-skill-dogfood.json` now records the current contract freeze;
+    no live GitHub/Cautilus run or scenario registry mutation is claimed.
+  - Non-claim: this does not close or mutate any live issue.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `issue` slice after the
+    dogfood freeze and scenario mapping review.
 
 ## Context Sources
 
