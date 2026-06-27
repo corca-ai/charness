@@ -9,12 +9,11 @@ goal is already active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the first rollout mutation on `create-skill`.
-- Current slice intent: make the authoring skill start public-skill edits from
-  consumer capability failure, proof boundary, and conditional sequence center
-  rather than from form/gate vocabulary.
-- Next action: commit the `create-skill` slice, then pick the next
-  reviewed-but-deferred target (`ideation` or `spec`).
+- Current slice: choose the next downstream target after `ideation`.
+- Current slice intent: decide whether `spec` needs a matching
+  capability-contract hook or whether the next valuable move is elsewhere.
+- Next action: inspect `spec` through the new create-skill brief before
+  mutating.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -113,7 +112,8 @@ unchanged skills.
 | 1 | Build public-skill rollout matrix | Prevent another premature "all skills done" closeout | Matrix artifact listing reviewed/changed/deferred skills and candidate next moves | complete |
 | 2 | Mutate the highest-leverage non-release skill surface | Extend beyond `create-cli` while avoiding release WIP | Focused skill/reference diff, preflight, validate_skills/doc checks | complete |
 | 3 | Dogfood quality-move recommendations on the changed target | Prove quality can make skill-improvement suggestions in the new language | Target-skill quality artifact or planner output | complete |
-| 4 | Fresh-eye critique and focused closeout | Avoid overclaiming migration breadth | Critique artifact, goal update, non-claims | in progress |
+| 4 | Fresh-eye critique and focused closeout | Avoid overclaiming migration breadth | Critique artifact, goal update, non-claims | complete |
+| 5 | Add capability-over-feature hook to `ideation` | Move the source concept skill before improving downstream `spec` | Focused ideation diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -183,6 +183,21 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
     sentence pin on the old preserve/improve wording. `check_skill_contracts.py`
     now pins the two behavior clauses separately: preserve/improve decision and
     capability-failure naming before trigger/contract changes.
+- Slice 3 — `ideation` capability-over-feature hook.
+  - Changed: `skills/public/ideation/SKILL.md` and generated plugin mirror now
+    add a `capability lens`, flag feature lists that never name the new or
+    failed capability, and add `Capability or Capability Failure` to the output
+    shape.
+  - Dogfood/evaluator disposition: `ideation` is `hitl-recommended` and
+    adapter-free; the planner requested scenario review and current contract
+    freeze, not live Cautilus. `docs/public-skill-dogfood.json` now records the
+    current contract freeze.
+  - Non-claim: this does not prove every ideation output will be capability-led;
+    it gives the skill a first-use prompt surface that can be reviewed by a
+    human operator.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `ideation` slice after the
+    dogfood freeze.
   - Non-claim: this slice improves the authoring contract; it does not complete
     all public skill migration.
 

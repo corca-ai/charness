@@ -411,7 +411,8 @@
       "observed_evidence": [
         "The checked-in public core keeps `ideation` upstream of `spec` and `impl`, forcing a living concept model, dependency-ordered questions, and explicit demand/wedge/feedback checks before downstream contract work starts.",
         "The current validation policy already classifies `ideation` as `hitl-recommended` and `adapter-free`, which matches the repo's present stance that concept-shaping quality is better judged through review than through adapter or artifact enforcement.",
-        "Deferred decision D10 deliberately preserves a lightweight ideation core with detailed world-model and effectuation playbooks in references, which is the strongest current local evidence that the public trigger stays concise without losing its reasoning boundary."
+        "Deferred decision D10 deliberately preserves a lightweight ideation core with detailed world-model and effectuation playbooks in references, which is the strongest current local evidence that the public trigger stays concise without losing its reasoning boundary.",
+        "Capability-first rollout slice (2026-06-27): ideation now includes a capability lens, a weak-concept smell for feature lists that never name the new or failed capability, and an output slot for `Capability or Capability Failure`. This preserves routing to `ideation`, adapter-free posture, and human-review validation while making feature ideas subordinate to the actor capability being shaped."
       ]
     },
     {

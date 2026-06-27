@@ -74,6 +74,9 @@ incrementally instead of leaving the model only in chat.
 2. Choose the shaping lenses that fit.
    - `concept lens`: use Daniel Jackson-style discipline to test whether the
      concept is one clear user-facing unit with honest boundaries
+   - `capability lens`: name the actor, the capability or capability failure,
+     the current workaround, and the threshold where a feature actually improves
+     what the actor can do
    - `truth lens`: pain, customer, status quo, demand evidence
    - `world lens`: durable entities, relationships, constraints
    - `stage lens`: chronology, checkpoints, state transitions
@@ -103,6 +106,7 @@ incrementally instead of leaving the model only in chat.
    - contradictions
    - hidden assumptions
    - solution-in-search-of-problem patterns
+   - feature lists that never name the new capability or failed capability
    - no real customer pain or no concrete actor
    - no wedge, no moat hypothesis, or no feedback path
    - stage confusion where durable structure and chronology are mixed together
@@ -123,6 +127,7 @@ incrementally instead of leaving the model only in chat.
 The final synthesis should usually include:
 
 - `Concept`
+- `Capability or Capability Failure`
 - `Product Posture`
 - `Verified Facts`
 - `Assumptions`
