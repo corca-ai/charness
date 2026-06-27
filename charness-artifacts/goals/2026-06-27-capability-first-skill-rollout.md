@@ -1,11 +1,10 @@
 # Achieve Goal: Capability-first public skill rollout
 
-Status: active
+Status: complete
 Created: 2026-06-27
 Activation: `/goal @charness-artifacts/goals/2026-06-27-capability-first-skill-rollout.md`
 
-This file is the living goal scratchpad for the continued rollout. The host
-goal is already active; keep this artifact current until closeout.
+This file is the completed goal record for the continued rollout.
 
 ## Active Operating Frame
 
