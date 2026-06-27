@@ -1,0 +1,13 @@
+# Optional manifest-defined doctor checks layered on top of the canonical suite
+# (git_common_dir, hooks_path, lefthook_shim, husky_dir).
+# doctor:
+#   checks:
+#     - id: lefthook_self_check
+#       description: "Confirm lefthook resolves from this worktree."
+#       next_action_hint: "Run `charness worktree prepare` to install hooks."
+#       timeout_seconds: 10
+#       argv:
+#         - $package_manager
+#         - exec
+#         - lefthook
+#         - version

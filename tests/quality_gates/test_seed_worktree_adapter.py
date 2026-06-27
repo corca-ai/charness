@@ -14,12 +14,14 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from string import Template
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills" / "public" / "setup" / "scripts" / "seed_worktree_adapter.py"
 LIB_PATH = ROOT / "skills" / "public" / "setup" / "scripts" / "seed_worktree_adapter_lib.py"
+TEMPLATE_DIR = ROOT / "skills" / "public" / "setup" / "scripts" / "templates"
 
 _spec = importlib.util.spec_from_file_location("seed_worktree_adapter_lib", LIB_PATH)
 assert _spec is not None and _spec.loader is not None
@@ -225,6 +227,105 @@ def test_detection_no_node_tooling(tmp_path: Path) -> None:
     # No active argv blocks should appear.
     assert "    - id: install-deps\n" not in rendered
     assert "    - id: install-hooks\n" not in rendered
+
+
+def test_render_template_uses_worktree_template_asset(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "package-lock.json").touch()
+    (repo / ".husky").mkdir()
+
+    detection = LIB.detect(repo)
+    rendered = LIB.render_template(detection)
+    expected = (
+        Template((TEMPLATE_DIR / "worktree_adapter.yaml.txt").read_text(encoding="utf-8"))
+        .substitute(
+            repo_name="repo",
+            language="en",
+            install_deps=(
+                Template(
+                    (TEMPLATE_DIR / "worktree_install_deps_detected.yaml.txt").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                .substitute(
+                    evidence="package-lock.json",
+                    package_manager="npm",
+                    argv_block="        - npm\n        - ci",
+                )
+                .rstrip("\n")
+            ),
+            install_hooks=(
+                Template(
+                    (TEMPLATE_DIR / "worktree_install_hooks_detected.yaml.txt").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                .substitute(
+                    evidence=".husky/",
+                    hook_system="husky",
+                    argv_block="        - npm\n        - exec\n        - husky\n        - install",
+                )
+                .rstrip("\n")
+            ),
+            doctor_block=Template(
+                (TEMPLATE_DIR / "worktree_doctor_default.yaml.txt").read_text(encoding="utf-8")
+            )
+            .substitute()
+            .rstrip("\n"),
+        )
+        .rstrip("\n")
+        + "\n"
+    )
+
+    assert rendered == expected
+
+
+def test_render_template_uses_missing_and_lefthook_template_assets(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "lefthook.yml").write_text("pre-commit:\n  commands: {}\n", encoding="utf-8")
+
+    detection = LIB.detect(repo)
+    rendered = LIB.render_template(detection)
+    expected = (
+        Template((TEMPLATE_DIR / "worktree_adapter.yaml.txt").read_text(encoding="utf-8"))
+        .substitute(
+            repo_name="repo",
+            language="en",
+            install_deps=(
+                Template(
+                    (TEMPLATE_DIR / "worktree_install_deps_missing.yaml.txt").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                .substitute()
+                .rstrip("\n")
+            ),
+            install_hooks=(
+                Template(
+                    (TEMPLATE_DIR / "worktree_install_hooks_detected.yaml.txt").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                .substitute(
+                    evidence="lefthook.yml",
+                    hook_system="lefthook",
+                    argv_block="        - npm\n        - exec\n        - lefthook\n        - install",
+                )
+                .rstrip("\n")
+            ),
+            doctor_block=Template(
+                (TEMPLATE_DIR / "worktree_doctor_lefthook.yaml.txt").read_text(encoding="utf-8")
+            )
+            .substitute(package_manager="pnpm")
+            .rstrip("\n"),
+        )
+        .rstrip("\n")
+        + "\n"
+    )
+
+    assert rendered == expected
 
 
 def test_rendered_template_is_valid_block_style_yaml(tmp_path: Path) -> None:

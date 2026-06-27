@@ -1,0 +1,6 @@
+    # Package manager auto-detected from $evidence (pm=$package_manager).
+    - id: install-deps
+      description: "Install workspace dependencies via $package_manager."
+      timeout_seconds: 600
+      argv:
+$argv_block

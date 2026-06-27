@@ -1,0 +1,11 @@
+    # No hook system detected. If your repo installs git hooks per worktree
+    # (lefthook, husky, simple-git-hooks, or a repo-owned `hooks:install`
+    # script), uncomment and adjust the block below.
+    # - id: install-hooks
+    #   description: "Re-run hook installer for this worktree."
+    #   timeout_seconds: 60
+    #   argv:
+    #     - <your-package-manager>
+    #     - exec
+    #     - <your-hook-tool>
+    #     - install

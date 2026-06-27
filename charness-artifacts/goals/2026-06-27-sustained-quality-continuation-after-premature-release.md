@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 19 complete; re-inventory for slice 20.
-- Current slice intent: continue prompt/template bulk reduction after HITL
-  scratchpad template extraction.
-- Next action: commit and push slice 19, then continue discovery unless a
+- Current slice: slice 20 complete; ready to commit and push.
+- Current slice intent: extract setup worktree adapter YAML templates from
+  Python.
+- Next action: commit and push slice 20, then re-inventory unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -80,7 +80,7 @@ accumulate.
 | 17 | Extract issue closeout-draft stub template from Python | Prompt-bulk inventory next surfaced `describe_closeout_draft_shape.py`; the starter closeout body is generated Markdown, not Python logic | focused issue/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 18 | Extract setup adapter seed templates from Python | Prompt-bulk inventory next surfaced setup seed adapter bodies; these are generated YAML, not Python logic | focused setup seed tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 19 | Extract HITL scratchpad template from Python | Prompt-bulk inventory next surfaced `hitl/scripts/bootstrap_review.py`; the scratchpad body is generated Markdown, not Python logic | focused HITL/portable tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 20 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 20 | Extract setup worktree adapter templates from Python | Prompt-bulk inventory next surfaced generated worktree adapter YAML/comment blocks in `seed_worktree_adapter_lib.py` | focused setup worktree tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 
 ## Operator Decision Queue
 
@@ -712,6 +712,60 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
     browser runtime guard. Usage episode:
     `slice-closeout-65ae7bce26d54e4b9d057a5b16f1d835`.
+- Slice 20 evidence:
+  - Prompt-bulk inventory after slice 19 reported 26 findings and surfaced two
+    generated worktree adapter YAML/comment blocks in
+    `skills/public/setup/scripts/seed_worktree_adapter_lib.py`.
+  - Moved the generated `.agents/worktree-adapter.yaml` shell and install/doctor
+    fragments to `skills/public/setup/scripts/templates/worktree_*.yaml.txt`;
+    `seed_worktree_adapter_lib.py` now renders those assets via
+    `string.Template`.
+  - Synced plugin export, adding matching worktree templates under
+    `plugins/charness/skills/setup/scripts/templates/` and updating the plugin
+    mirror of `seed_worktree_adapter_lib.py`.
+  - Added deterministic coverage that rendered worktree adapter output equals
+    the source template assets for detected npm+husky, missing dependency,
+    lefthook, default doctor, and fragment substitution cases.
+  - Prompt-bulk inventory after the change reported 24 findings; the two setup
+    worktree adapter template bodies no longer appear.
+  - Focused proof: `py_compile`, focused `ruff check`, and the setup seed
+    pytest bundle passed; focused pytest reported `23 passed in 1.03s`.
+  - Changed-surface proof so far: source/plugin mirror parity diff, `git diff
+    --check`, packaging validators, public-skill validation/dogfood validators,
+    Cautilus proof/diagnostic validators, doc links, command docs, markdown,
+    secrets, skill validators, skill ergonomics, ownership overlap,
+    attention-state visibility, test repo copy invariants,
+    boundary-bypass ratchet, gitignore-scan hygiene, ruff, Python length limits,
+    and skill script `py_compile` passed.
+  - Dup-ratchet review: worktree template extraction rotated four existing
+    low-value helper/guard families around git config subprocess helpers,
+    package.json readers, and one-line guards. Recorded them as reviewed
+    intentional in `charness-artifacts/quality/dup-review.json`;
+    `check_dup_ratchet.py` then reported no new code/doc families.
+  - Public-skill scenario review: `suggest_public_skill_dogfood.py --skill-id
+    setup` confirmed `setup` remains `evaluator-required`; Cautilus planner
+    reported `next_action: none` and required scenario-registry review.
+    Inspected `evals/cautilus/scenarios.json`: `setup` remains mapped to
+    `setup-adapter-bootstrap`, `setup-inspect-states`, and
+    `setup-compact-skill-routing-discoverability`; recorded no
+    scenario-registry change in `docs/public-skill-dogfood.json` because this
+    slice changes implementation shape, not setup routing, repo inspection,
+    normalization behavior, adapter bootstrap behavior, or compact
+    skill-routing discoverability.
+  - Fresh-eye review: no blocking finding. Reviewer verified source/plugin
+    mirror parity, byte-for-byte render parity against `HEAD` for no-tooling,
+    package-manager/no-hook, husky, and lefthook cases, focused tests, clean
+    `git diff --check`, and honest Cautilus non-run claims. Reviewer noted
+    missing/lefthook fragments were only indirectly asset-locked; added direct
+    asset-equality coverage and reran the focused setup seed pytest bundle.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --ack-cautilus-skill-review --produce-mutation-coverage
+    --verification-lock` completed, including skill/public-skill/dogfood
+    validators, docs/markdown/secrets checks, focused structural sweeps,
+    coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
+    browser runtime guard. Usage episode:
+    `slice-closeout-1f563ff36d1141bfb4a67c64512a90da`.
 
 ## Context Sources
 

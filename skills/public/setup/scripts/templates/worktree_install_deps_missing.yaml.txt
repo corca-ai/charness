@@ -1,0 +1,8 @@
+    # No package manager lockfile or package.json detected; replace this
+    # block with the install command your repo actually uses.
+    # - id: install-deps
+    #   description: "Install workspace dependencies for this worktree."
+    #   timeout_seconds: 600
+    #   argv:
+    #     - <your-package-manager>
+    #     - install

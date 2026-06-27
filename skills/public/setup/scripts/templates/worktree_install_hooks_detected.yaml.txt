@@ -1,0 +1,6 @@
+    # Hook system auto-detected from $evidence (hook_system=$hook_system).
+    - id: install-hooks
+      description: "Re-run hook installer for this worktree."
+      timeout_seconds: 60
+      argv:
+$argv_block

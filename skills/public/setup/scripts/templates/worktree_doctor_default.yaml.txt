@@ -1,0 +1,5 @@
+# Optional manifest-defined doctor checks layered on top of the canonical suite.
+# Add entries here when you have a repo-specific readiness probe; otherwise the
+# canonical suite (git_common_dir, hooks_path, lefthook_shim, husky_dir) is enough.
+# doctor:
+#   checks: []

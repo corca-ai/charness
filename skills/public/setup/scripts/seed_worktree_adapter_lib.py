@@ -10,12 +10,33 @@ import json
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from string import Template
 
 PACKAGE_MANAGER_PRIORITY: tuple[tuple[str, str], ...] = (
     ("pnpm-lock.yaml", "pnpm"),
     ("yarn.lock", "yarn"),
     ("bun.lockb", "bun"),
     ("package-lock.json", "npm"),
+)
+TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
+WORKTREE_ADAPTER_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_adapter.yaml.txt").read_text(encoding="utf-8")
+)
+INSTALL_DEPS_MISSING_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_install_deps_missing.yaml.txt").read_text(encoding="utf-8")
+)
+INSTALL_DEPS_DETECTED_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_install_deps_detected.yaml.txt").read_text(encoding="utf-8")
+)
+INSTALL_HOOKS_MISSING_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_install_hooks_missing.yaml.txt").read_text(encoding="utf-8")
+)
+INSTALL_HOOKS_DETECTED_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_install_hooks_detected.yaml.txt").read_text(encoding="utf-8")
+)
+DOCTOR_DEFAULT_TEMPLATE = Template((TEMPLATE_DIR / "worktree_doctor_default.yaml.txt").read_text(encoding="utf-8"))
+DOCTOR_LEFTHOOK_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_doctor_lefthook.yaml.txt").read_text(encoding="utf-8")
 )
 
 
@@ -197,98 +218,41 @@ def _render_install_deps(detection: WorktreeAdapterDetection) -> str:
     argv = _install_deps_argv(detection)
     pm = detection.package_manager
     if argv is None:
-        return (
-            "    # No package manager lockfile or package.json detected; replace this\n"
-            "    # block with the install command your repo actually uses.\n"
-            "    # - id: install-deps\n"
-            "    #   description: \"Install workspace dependencies for this worktree.\"\n"
-            "    #   timeout_seconds: 600\n"
-            "    #   argv:\n"
-            "    #     - <your-package-manager>\n"
-            "    #     - install"
-        )
+        return INSTALL_DEPS_MISSING_TEMPLATE.substitute().rstrip("\n")
     evidence = detection.package_manager_evidence or "auto-detected"
-    return (
-        f"    # Package manager auto-detected from {evidence} (pm={pm}).\n"
-        "    - id: install-deps\n"
-        f"      description: \"Install workspace dependencies via {pm}.\"\n"
-        "      timeout_seconds: 600\n"
-        "      argv:\n"
-        f"{_argv_block('        ', argv)}"
-    )
+    return INSTALL_DEPS_DETECTED_TEMPLATE.substitute(
+        evidence=evidence,
+        package_manager=pm,
+        argv_block=_argv_block("        ", argv),
+    ).rstrip("\n")
 
 
 def _render_install_hooks(detection: WorktreeAdapterDetection) -> str:
     if detection.hook_install_argv is None:
-        return (
-            "    # No hook system detected. If your repo installs git hooks per worktree\n"
-            "    # (lefthook, husky, simple-git-hooks, or a repo-owned `hooks:install`\n"
-            "    # script), uncomment and adjust the block below.\n"
-            "    # - id: install-hooks\n"
-            "    #   description: \"Re-run hook installer for this worktree.\"\n"
-            "    #   timeout_seconds: 60\n"
-            "    #   argv:\n"
-            "    #     - <your-package-manager>\n"
-            "    #     - exec\n"
-            "    #     - <your-hook-tool>\n"
-            "    #     - install"
-        )
+        return INSTALL_HOOKS_MISSING_TEMPLATE.substitute().rstrip("\n")
     evidence = detection.hook_system_evidence or "auto-detected"
-    return (
-        f"    # Hook system auto-detected from {evidence} (hook_system={detection.hook_system}).\n"
-        "    - id: install-hooks\n"
-        "      description: \"Re-run hook installer for this worktree.\"\n"
-        "      timeout_seconds: 60\n"
-        "      argv:\n"
-        f"{_argv_block('        ', detection.hook_install_argv)}"
-    )
+    return INSTALL_HOOKS_DETECTED_TEMPLATE.substitute(
+        evidence=evidence,
+        hook_system=detection.hook_system,
+        argv_block=_argv_block("        ", detection.hook_install_argv),
+    ).rstrip("\n")
 
 
 def _render_doctor_block(detection: WorktreeAdapterDetection) -> str:
     if detection.hook_system != "lefthook":
-        return (
-            "# Optional manifest-defined doctor checks layered on top of the canonical suite.\n"
-            "# Add entries here when you have a repo-specific readiness probe; otherwise the\n"
-            "# canonical suite (git_common_dir, hooks_path, lefthook_shim, husky_dir) is enough.\n"
-            "# doctor:\n"
-            "#   checks: []\n"
-        )
+        return DOCTOR_DEFAULT_TEMPLATE.substitute().rstrip("\n")
     pm = detection.package_manager or "pnpm"
-    return (
-        "# Optional manifest-defined doctor checks layered on top of the canonical suite\n"
-        "# (git_common_dir, hooks_path, lefthook_shim, husky_dir).\n"
-        "# doctor:\n"
-        "#   checks:\n"
-        "#     - id: lefthook_self_check\n"
-        "#       description: \"Confirm lefthook resolves from this worktree.\"\n"
-        "#       next_action_hint: \"Run `charness worktree prepare` to install hooks.\"\n"
-        "#       timeout_seconds: 10\n"
-        "#       argv:\n"
-        f"#         - {pm}\n"
-        "#         - exec\n"
-        "#         - lefthook\n"
-        "#         - version\n"
-    )
+    return DOCTOR_LEFTHOOK_TEMPLATE.substitute(package_manager=pm).rstrip("\n")
 
 
 def render_template(detection: WorktreeAdapterDetection) -> str:
     return (
-        "# charness worktree adapter - declares how `charness worktree prepare` makes a\n"
-        "# freshly-created git worktree usable, and which extra `charness worktree doctor`\n"
-        "# checks decide whether the worktree is ready.\n"
-        "#\n"
-        "# argv lists must use block-style YAML (charness's repo-local loader does not\n"
-        "# parse inline `[a, b]` arrays). Edit the auto-detected commands below if the\n"
-        "# detection picked the wrong tool for this repo.\n"
-        "version: 1\n"
-        f"repo: {detection.repo_name}\n"
-        f"language: {detection.language}\n"
-        "\n"
-        "prepare:\n"
-        "  commands:\n"
-        f"{_render_install_deps(detection)}\n"
-        f"{_render_install_hooks(detection)}\n"
-        "  skip_if_doctor_passes: true\n"
-        "\n"
-        f"{_render_doctor_block(detection)}"
+        WORKTREE_ADAPTER_TEMPLATE.substitute(
+            repo_name=detection.repo_name,
+            language=detection.language,
+            install_deps=_render_install_deps(detection),
+            install_hooks=_render_install_hooks(detection),
+            doctor_block=_render_doctor_block(detection),
+        ).rstrip("\n")
+        + "\n"
     )

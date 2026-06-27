@@ -1,0 +1,18 @@
+# charness worktree adapter - declares how `charness worktree prepare` makes a
+# freshly-created git worktree usable, and which extra `charness worktree doctor`
+# checks decide whether the worktree is ready.
+#
+# argv lists must use block-style YAML (charness's repo-local loader does not
+# parse inline `[a, b]` arrays). Edit the auto-detected commands below if the
+# detection picked the wrong tool for this repo.
+version: 1
+repo: $repo_name
+language: $language
+
+prepare:
+  commands:
+$install_deps
+$install_hooks
+  skip_if_doctor_passes: true
+
+$doctor_block

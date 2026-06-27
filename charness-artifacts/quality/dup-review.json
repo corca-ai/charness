@@ -216,6 +216,34 @@
       "note": "HITL review-state item dictionaries share field names by contract; extraction would hide the explicit state payload shape more than it reduces duplication",
       "reviewed_at": "2026-06-27",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "69ce68d021fb65f5",
+      "note": "git config subprocess helper family rotated after setup worktree template extraction; root worktree doctor and portable setup seed script keep local helper ownership to preserve direct execution boundaries",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2e1f5869d9b6b5de",
+      "note": "low-value git subprocess error-handling family rotated after setup worktree template extraction; extracting it would add cross-surface coupling for no behavior gain",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e80d8a986fdba76d",
+      "note": "package.json reader helper family rotated after setup worktree template extraction; setup and impl skill scripts keep small local readers so each script stays portable and directly executable",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c3c42afe404d932f",
+      "note": "single-line None guard family rotated after setup worktree template extraction; not meaningful extractable duplication",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
