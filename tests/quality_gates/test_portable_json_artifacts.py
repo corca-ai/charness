@@ -4,6 +4,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from string import Template
 from types import SimpleNamespace
 from typing import Any
 
@@ -212,6 +213,26 @@ def test_hitl_bootstrap_normalizes_target_and_output_paths(tmp_path: Path) -> No
     assert "- Review Result:" in scratchpad
     assert "## Full Target Review" in scratchpad
     assert "Review the full updated target before accepting the target as complete." in scratchpad
+    updated_line = next(line for line in scratchpad.splitlines() if line.startswith("- Updated: "))
+    template = Template(
+        (
+            ROOT
+            / "skills"
+            / "public"
+            / "hitl"
+            / "scripts"
+            / "templates"
+            / "scratchpad.md.txt"
+        ).read_text(encoding="utf-8")
+    )
+    assert scratchpad == template.substitute(
+        session_id="hitl-test",
+        updated=updated_line.removeprefix("- Updated: "),
+        portable_target="docs/decision.md",
+        base_ref="main",
+        scope="all",
+        mode="explicit-after-all-chunks",
+    )
     queue = json.loads((repo / payload["queue_file"]).read_text(encoding="utf-8"))
     assert queue["target"] == "docs/decision.md"
     assert queue["target_provenance"]["kind"] == "repo-root-relative"

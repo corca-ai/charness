@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 18 complete; re-inventory for slice 19.
-- Current slice intent: continue prompt/template bulk reduction after setup seed
-  template extraction and shared seed CLI cleanup.
-- Next action: commit and push slice 18, then continue discovery unless a
+- Current slice: slice 19 complete; re-inventory for slice 20.
+- Current slice intent: continue prompt/template bulk reduction after HITL
+  scratchpad template extraction.
+- Next action: commit and push slice 19, then continue discovery unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -79,7 +79,8 @@ accumulate.
 | 16 | Extract critique adapter scaffold template from Python | Prompt-bulk inventory next surfaced `critique/scripts/init_adapter.py`; the adapter skeleton is generated YAML, not Python logic | focused critique/reviewer tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 17 | Extract issue closeout-draft stub template from Python | Prompt-bulk inventory next surfaced `describe_closeout_draft_shape.py`; the starter closeout body is generated Markdown, not Python logic | focused issue/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 18 | Extract setup adapter seed templates from Python | Prompt-bulk inventory next surfaced setup seed adapter bodies; these are generated YAML, not Python logic | focused setup seed tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 19 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 19 | Extract HITL scratchpad template from Python | Prompt-bulk inventory next surfaced `hitl/scripts/bootstrap_review.py`; the scratchpad body is generated Markdown, not Python logic | focused HITL/portable tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 20 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -663,6 +664,54 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
     browser runtime guard. Usage episode:
     `slice-closeout-7206a8e3477e47bc9c9528f81e01c874`.
+- Slice 19 evidence:
+  - Prompt-bulk inventory after slice 18 reported 27 findings and surfaced
+    `skills/public/hitl/scripts/bootstrap_review.py` as the next public-skill
+    generated-content candidate.
+  - Moved the HITL scratchpad body to
+    `skills/public/hitl/scripts/templates/scratchpad.md.txt`; the
+    `scratchpad_text()` helper now renders that template asset via
+    `string.Template`.
+  - Synced plugin export, adding
+    `plugins/charness/skills/hitl/scripts/templates/scratchpad.md.txt` and
+    updating the plugin mirror of `bootstrap_review.py`.
+  - Added deterministic coverage that the generated runtime scratchpad exactly
+    equals the source template rendered with the emitted runtime values.
+  - Prompt-bulk inventory after the change reported 26 findings; the HITL
+    scratchpad body no longer appears.
+  - Focused proof: `py_compile`, focused `ruff check`, and the HITL
+    portable/chunk/current-pointer pytest bundle passed; focused pytest
+    reported `40 passed in 1.56s`.
+  - Dup-ratchet review: scratchpad extraction rotated six existing low-value
+    code clone families around import/bootstrap, portable path helpers,
+    timestamp helpers, and explicit HITL review-state item dictionaries.
+    Recorded them as reviewed intentional in
+    `charness-artifacts/quality/dup-review.json`; `check_dup_ratchet.py`
+    then reported no new code/doc families.
+  - Public-skill scenario review: `suggest_public_skill_dogfood.py --skill-id
+    hitl` confirmed `hitl` remains `hitl-recommended`; Cautilus planner
+    reported `next_action: none`. Recorded the unchanged consumer-contract
+    decision in `docs/public-skill-dogfood.json` because this slice changes
+    implementation shape, not routing, artifact home, runtime state shape, queue
+    policy, apply policy, or the human-owned review contract.
+  - Changed-surface proof: skill/public-skill/dogfood validators, packaging
+    validators, plugin import smoke, doc/markdown checks, quality advisory
+    JSON/inventory/dup-ratchet checks, attention-state visibility, and the
+    standing pytest runner passed; standing pytest reported
+    `3684 passed in 21.17s`.
+  - Fresh-eye review: no blocking finding. Reviewer verified source/plugin
+    mirror parity, `string.Template` substitution points, preserved scratchpad
+    structure, template-asset test coverage, honest dogfood/Cautilus no-run
+    claim, defensible dup-review classifications, and packaging/generated sync.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --ack-cautilus-skill-review --produce-mutation-coverage
+    --verification-lock` completed, including quality advisory JSON/inventory
+    checks, dup-ratchet, skill/public-skill/dogfood validators,
+    docs/markdown/secrets checks, focused structural sweeps,
+    coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
+    browser runtime guard. Usage episode:
+    `slice-closeout-65ae7bce26d54e4b9d057a5b16f1d835`.
 
 ## Context Sources
 

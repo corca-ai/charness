@@ -1,0 +1,32 @@
+# HITL Scratchpad: ${session_id}
+
+- Updated: ${updated}
+- Target: ${portable_target}
+- Base Ref: ${base_ref}
+- Scope: ${scope}
+- Apply Mode: ${mode}
+
+## Agreements
+
+## Open Questions
+
+## Pre-Edit Constraints
+- Accepted Rules: []
+- Active Rules Applied:
+- Target/Cursor Checked: false; Target/Cursor Check Result:
+
+## Applied Rewrite Review
+
+- Status: inactive until a reviewer-requested rewrite is applied
+- Decision Needed: Decide whether the rewritten chunk is accepted or needs another revision.
+- Required Surface: applied chunk excerpt with line or hunk anchor when possible, surrounding context, and secondary verification results if available.
+- Pending Chunk ID:
+- Source Anchor:
+- Applied Excerpt:
+- Verification:
+- Review Result:
+
+## Full Target Review
+
+- Status: pending after all chunks and apply/stage boundary
+- Decision Needed: Review the full updated target before accepting the target as complete.

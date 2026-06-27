@@ -174,6 +174,48 @@
       "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
       "reviewed_at": "2026-06-27",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "8976f2870bb61217",
+      "note": "import/bootstrap boilerplate family rotated after HITL scratchpad template extraction; portable skill scripts keep local runtime bootstrap/import setup for direct execution",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fca59420d93d0608",
+      "note": "portable-path helper family rotated after HITL scratchpad template extraction; helpers intentionally stay local because fallback behavior differs by surface and shared import coupling would exceed the value",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cd454fc96ecf92e5",
+      "note": "portable path-provenance helper family rotated after HITL scratchpad template extraction; small local helpers preserve directly executable skill scripts",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "03b490c8e12ca61e",
+      "note": "UTC timestamp helper family rotated after HITL scratchpad template extraction; low-value local now/UTC helpers stay directly executable across repo and skill scripts",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e52db2454b83a977",
+      "note": "single-line fallback/provenance expression family rotated after HITL scratchpad template extraction; not meaningful extractable duplication",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "29410216ec892077",
+      "note": "HITL review-state item dictionaries share field names by contract; extraction would hide the explicit state payload shape more than it reduces duplication",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

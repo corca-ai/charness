@@ -6,6 +6,7 @@ import runpy
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from string import Template
 from types import SimpleNamespace
 
 
@@ -21,6 +22,9 @@ _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(_
 render_yaml_mapping = _scripts_adapter_lib_module.render_yaml_mapping
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_SCRATCHPAD_TEMPLATE = Template(
+    (Path(__file__).resolve().parent / "templates" / "scratchpad.md.txt").read_text(encoding="utf-8")
+)
 
 
 def apply_mode(require_explicit_apply: bool) -> str:
@@ -78,39 +82,14 @@ def applied_rewrite_review_policy() -> dict[str, object]:
 
 
 def scratchpad_text(session_id: str, portable_target: str, base_ref: str, scope: str, mode: str) -> str:
-    return f"""# HITL Scratchpad: {session_id}
-
-- Updated: {utc_now()}
-- Target: {portable_target}
-- Base Ref: {base_ref}
-- Scope: {scope}
-- Apply Mode: {mode}
-
-## Agreements
-
-## Open Questions
-
-## Pre-Edit Constraints
-- Accepted Rules: []
-- Active Rules Applied:
-- Target/Cursor Checked: false; Target/Cursor Check Result:
-
-## Applied Rewrite Review
-
-- Status: inactive until a reviewer-requested rewrite is applied
-- Decision Needed: Decide whether the rewritten chunk is accepted or needs another revision.
-- Required Surface: applied chunk excerpt with line or hunk anchor when possible, surrounding context, and secondary verification results if available.
-- Pending Chunk ID:
-- Source Anchor:
-- Applied Excerpt:
-- Verification:
-- Review Result:
-
-## Full Target Review
-
-- Status: pending after all chunks and apply/stage boundary
-- Decision Needed: Review the full updated target before accepting the target as complete.
-"""
+    return _SCRATCHPAD_TEMPLATE.substitute(
+        session_id=session_id,
+        updated=utc_now(),
+        portable_target=portable_target,
+        base_ref=base_ref,
+        scope=scope,
+        mode=mode,
+    )
 
 
 def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, object]:
