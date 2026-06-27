@@ -49,16 +49,18 @@ canonical adapter when the repo should own topology terms.
    - profile: default bundle of public and support skills
    - preset: opt-in default values for adapters or hosts
    - integration: external ownership contract, never a hidden dependency
-2. Write a short brief before changing files.
-   - concept, audience, trigger, external dependencies, accumulated state
-   - candidate anchors and adjacent-skill behavior rules
+2. Write a capability brief before changing files.
+   - concept, audience, trigger, and consumer capability or capability failure
+   - current and next center only when improving an existing skill or when order matters
+   - external dependencies, adjacent-skill behavior rules, accumulated state, proof boundary
    - implementation topology: shared implementation, repo-local placements,
-     aliases, or intentional fork signals from the create-skill adapter
+     aliases, or intentional fork signals from the adapter
    - cold start, warm start, error recovery, and concrete failure cases
    - source/principal binding drift or prescribed-path self-test concerns when relevant
 3. Freeze the current consumer contract before editing an existing public skill.
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
-   - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
+   - decide whether the slice claims `preserve` or `improve`; if `improve`,
+     name the capability failure before changing the core trigger or behavior contract
    - when the change touches adapters, examples, bootstrap, first-touch docs,
      or repo-local skill customization, run a customer-of-this-skill critique
      before editing: name the user or downstream agent, the first prompt they
@@ -96,9 +98,8 @@ canonical adapter when the repo should own topology terms.
    - treat sparse named person anchors in `SKILL.md` core as a deliberate
      retrieval tool when they materially improve recall of a real reasoning
      frame
-   - keep the behavior rule in core when the philosophy should shape repeated
-     moves; put factual essence, nuance, and reference contents in
-     `references/`
+   - keep the behavior or capability rule in core when it should shape repeated
+     moves; put factual essence, nuance, and reference contents in `references/`
    - for sequencing-shaped skill improvements, consume
      `../../shared/references/generative-sequence.md` lightly instead of
      embedding that lens in this skill
