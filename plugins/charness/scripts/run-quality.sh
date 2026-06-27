@@ -457,7 +457,7 @@ PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
   PYTEST_FLAGS+=(--include-release-only)
 fi
-queue_selected "pytest" python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
+queue_selected "pytest" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi

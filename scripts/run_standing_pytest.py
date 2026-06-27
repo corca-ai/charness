@@ -60,9 +60,11 @@ def default_basetemp(repo_root: Path, env: dict[str, str] | None = None) -> Path
     return temp_root / f"pytest-of-{user}" / f"pytest-{time.time_ns()}"
 
 
-def choose_pytest_command() -> list[str]:
+def choose_pytest_command(env: dict[str, str] | None = None) -> list[str]:
+    env = os.environ if env is None else env
     if importlib.util.find_spec("pytest") is not None:
-        return [sys.executable, "-m", "pytest"]
+        python = env.get("CHARNESS_STANDING_PYTEST_PYTHON", sys.executable).strip() or sys.executable
+        return [python, "-m", "pytest"]
     return ["pytest"]
 
 
@@ -85,7 +87,7 @@ def has_xdist(pytest_command: list[str], env: dict[str, str] | None = None) -> b
         return False
     if _plugin_disabled("xdist", env.get("PYTEST_ADDOPTS", "")):
         return False
-    current_python_pytest = [sys.executable, "-m", "pytest"]
+    current_python_pytest = [env.get("CHARNESS_STANDING_PYTEST_PYTHON", sys.executable).strip() or sys.executable, "-m", "pytest"]
     if pytest_command != current_python_pytest:
         return False
     return importlib.util.find_spec("xdist") is not None
@@ -135,7 +137,8 @@ def build_pytest_command(
     extra_pytest_targets: list[str] | None = None,
     env: dict[str, str] | None = None,
 ) -> list[str]:
-    command = [*choose_pytest_command(), "-q"]
+    env = os.environ if env is None else env
+    command = [*choose_pytest_command(env), "-q"]
     if not include_release_only:
         command.extend(["-m", "not release_only"])
     command.extend(["--basetemp", str(basetemp)])

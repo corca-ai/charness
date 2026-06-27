@@ -249,6 +249,14 @@ Evidence:
 
 - `python3 -m pytest -q tests/quality_gates/test_release_run_planner.py`:
   21 passed in 4.33s.
+- Final closeout first pass blocked on `cautilus_plan.skill_validation_recommendations`
+  for changed public skill `release`. Dogfood recommendation was inspected with
+  `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id release --json`.
+  Decision: no checked-in dogfood contract change is needed for this release
+  because routing to `release`, durable artifact `charness-artifacts/release/latest.md`,
+  and maintainer-reviewable release output remain unchanged; this slice only
+  improves planner evidence scope and plain-output guidance inside the existing
+  release workflow. Rerun closeout with `--ack-cautilus-skill-review`.
 - Release critique: operational reviewer `019f0715-9ec9-76a1-939f-c182ec1fd57b`,
   structure reviewer `019f0715-c385-7720-ba1a-045d41ec9e86`, interface reviewer
   `019f0715-e0eb-7752-9dfb-f85e6fc84417`, and counterweight reviewer
@@ -256,6 +264,38 @@ Evidence:
 - Critique outcome: patch release is appropriate; real-host proof is required
   from release delta; do not use the prepare packet's empty changed-path section
   as inventory; bundle planner plain-output guidance; publish via helper.
+
+### Slice 4: Run-quality pytest shim preservation
+
+Status: implemented.
+
+Broad closeout found a real regression from Slice 2: `run_standing_pytest.py`
+now defaulted to `sys.executable -m pytest`, which fixed standalone interpreter
+drift but bypassed the repo-local `python3` shim that `run-quality.sh` places on
+`PATH` in seeded quality-runner tests. The failure mode was expensive and
+confusing: the seeded repo ran real pytest against an empty test set and returned
+code 5, causing unrelated quality-runner assertions to fail.
+
+Changed:
+
+- `scripts/run_standing_pytest.py`: added
+  `CHARNESS_STANDING_PYTEST_PYTHON` as an explicit override for the pytest
+  Python executable. Default behavior remains `sys.executable -m pytest`; the
+  override is only used by callers that deliberately need PATH-local behavior.
+- `plugins/charness/scripts/run_standing_pytest.py`: synced export.
+- `scripts/run-quality.sh`: runs the pytest phase with
+  `CHARNESS_STANDING_PYTEST_PYTHON=python3`, preserving repo-local shims without
+  restoring the old subprocess probe.
+- `plugins/charness/scripts/run-quality.sh`: synced export.
+- `tests/quality_gates/test_standing_pytest_runner.py`: pinned the override and
+  xdist probe behavior.
+
+Evidence:
+
+- `python3 -m pytest -q -m 'not release_only' tests/quality_gates/test_standing_pytest_runner.py tests/quality_gates/test_quality_runner.py`:
+  47 passed in 15.42s.
+- `ruff check scripts/run_standing_pytest.py plugins/charness/scripts/run_standing_pytest.py tests/quality_gates/test_standing_pytest_runner.py`:
+  passed.
 
 ## Context Sources
 

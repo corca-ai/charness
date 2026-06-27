@@ -15,7 +15,7 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     (tmp_path / "tests" / "quality_gates").mkdir()
     (tmp_path / "tests" / "control_plane").mkdir()
     (tmp_path / "tests" / "charness_cli").mkdir()
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
 
@@ -39,7 +39,7 @@ def test_standing_pytest_command_appends_extra_pytest_targets(tmp_path: Path, mo
 
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: False)
 
     command = runner.build_pytest_command(
@@ -149,6 +149,7 @@ def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
 
     assert runner.choose_pytest_command() == [sys.executable, "-m", "pytest"]
+    assert runner.choose_pytest_command({"CHARNESS_STANDING_PYTEST_PYTHON": "python3"}) == ["python3", "-m", "pytest"]
 
 
 def test_standing_pytest_xdist_probe_uses_importlib_without_subprocess(monkeypatch) -> None:
@@ -168,7 +169,8 @@ def test_standing_pytest_xdist_probe_uses_importlib_without_subprocess(monkeypat
     )
 
     assert runner.has_xdist([sys.executable, "-m", "pytest"], {}) is True
-    assert looked_up == ["xdist"]
+    assert runner.has_xdist(["python3", "-m", "pytest"], {"CHARNESS_STANDING_PYTEST_PYTHON": "python3"}) is True
+    assert looked_up == ["xdist", "xdist"]
 
 
 def test_standing_pytest_xdist_probe_honors_disabled_plugin(monkeypatch) -> None:
