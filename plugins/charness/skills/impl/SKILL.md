@@ -80,6 +80,8 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - identify the canonical artifact or write an inline current-slice contract
      before changing code; restate the slice in implementation terms and list
      the acceptance checks that must pass before stopping
+   - when the contract names a `Capability Contract`, restate it as the
+     user/operator capability and acceptance evidence before coding
    - when user-corrected behavior starts or redirects the work, classify stable
      contract vs better case reading before adding repo rules, tests, or gates
    - if the risk interrupt planner reports a forced interrupt, do not continue
@@ -153,9 +155,10 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
 
 The closeout should usually include:
 
-`Implemented`, `Contract Source`, `Verification` naming code/fixture and
-runtime/evaluator proof, `Lint Gate` per `references/verification-ladder.md`,
-`Truth Surface Sync`, `Critique`, `Contract Updates`, `Residual Risks`, `Next Slice`.
+`Implemented`, `Capability Delivered`, `Contract Source`, `Verification` naming
+code/fixture and runtime/evaluator proof, `Lint Gate` per
+`references/verification-ladder.md`, `Truth Surface Sync`, `Critique`,
+`Contract Updates`, `Residual Risks`, `Next Slice`.
 
 ## Guardrails
 
