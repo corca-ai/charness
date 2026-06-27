@@ -68,7 +68,18 @@ def gate_packet(
     }
 
 
-def gate_packets() -> list[dict[str, str]]:
+def command_text(parts: list[str]) -> str:
+    return " ".join([parts[0], *(shlex.quote(part) for part in parts[1:])])
+
+
+def _real_host_command(real_host_scope: dict[str, Any] | None) -> str:
+    command = ['python3 "$SKILL_DIR/scripts/check_real_host_proof.py"', "--repo-root", "."]
+    if real_host_scope and real_host_scope.get("scope") == "release_delta":
+        command.extend(["--paths", *real_host_scope.get("changed_paths", [])])
+    return command_text(command)
+
+
+def gate_packets(real_host_scope: dict[str, Any] | None = None) -> list[dict[str, str]]:
     return [
         gate_packet(
             "current-release",
@@ -86,7 +97,7 @@ def gate_packets() -> list[dict[str, str]]:
         ),
         gate_packet(
             "real-host-proof",
-            'python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root .',
+            _real_host_command(real_host_scope),
             "determine whether release-time human/host proof is required",
             "trigger detector, not the proof itself",
             "always before closeout claims",
@@ -124,9 +135,6 @@ def publish_packets(
         critique = ["--critique-artifact", args.critique_artifact]
     elif args.critique_blocked:
         critique = ["--critique-blocked", args.critique_blocked]
-
-    def command_text(parts: list[str]) -> str:
-        return " ".join([parts[0], *(shlex.quote(part) for part in parts[1:])])
 
     def packet(packet_id: str, *, execute: bool) -> dict[str, object]:
         command = ['python3 "$SKILL_DIR/scripts/publish_release.py"', "--repo-root", ".", *selector, *critique]

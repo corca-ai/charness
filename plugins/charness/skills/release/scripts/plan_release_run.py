@@ -35,6 +35,7 @@ build_real_host_payload = _real_host.build_payload
 collect_changed_paths = _real_host.collect_changed_paths
 build_review_gate_payload = _review_gate.build_payload
 release_previous_version = _publish_helpers.release_previous_version
+unreleased_paths = _publish_helpers.unreleased_paths
 current_branch = _publish_helpers.current_branch
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 safe_real_host_payload = _preflight.safe_real_host_payload
@@ -80,6 +81,32 @@ def _target_selector(args: argparse.Namespace) -> str | None:
     return None
 
 
+def _real_host_path_scope(
+    repo_root: Path,
+    *,
+    branch: str,
+    remote: str,
+    target_version: str | None,
+    previous_version: str | None,
+) -> dict[str, Any]:
+    if target_version and previous_version:
+        return {
+            "scope": "release_delta",
+            "changed_paths": unreleased_paths(
+                repo_root,
+                remote=remote,
+                branch=branch,
+                previous_version=previous_version,
+            ),
+            "previous_version": previous_version,
+        }
+    return {
+        "scope": "worktree",
+        "changed_paths": collect_changed_paths(repo_root),
+        "previous_version": None,
+    }
+
+
 def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     adapter = load_adapter(repo_root)
@@ -111,20 +138,30 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
             target_version=target_version,
             previous_version=previous_version,
         )
+    branch = current_branch(repo_root)
+    real_host_scope = None
     real_host_payload = None
     if adapter.get("valid"):
         try:
+            real_host_scope = _real_host_path_scope(
+                repo_root,
+                branch=branch,
+                remote=args.remote,
+                target_version=target_version,
+                previous_version=previous_version,
+            )
             real_host_payload = safe_real_host_payload(
                 repo_root,
-                collect_changed_paths(repo_root),
+                real_host_scope["changed_paths"],
                 build_payload=build_real_host_payload,
             )
+            real_host_payload["evidence_scope"] = real_host_scope["scope"]
+            real_host_payload["evidence_previous_version"] = real_host_scope["previous_version"]
         except SystemExit as exc:
             real_host_payload = {"status": "blocked", "error": str(exc)}
     review_payload = None
     if adapter.get("valid"):
         review_payload = build_review_gate_payload(repo_root, run_commands=False)
-    branch = current_branch(repo_root)
     planned_next_action = next_action(
         args=args,
         adapter=adapter,
@@ -154,7 +191,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
             "tag_name": f"v{target_version}" if target_version else None,
         },
         "required_reads": required_reads(args, adapter),
-        "gate_packets": gate_packets(),
+        "gate_packets": gate_packets(real_host_scope),
         "evidence_packets": {
             "fresh_checkout": build_fresh_checkout_payload(repo_root, run_probes=False),
             "real_host": real_host_payload,

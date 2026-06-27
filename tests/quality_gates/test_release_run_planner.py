@@ -27,6 +27,10 @@ def _load_script_module(name: str, rel_path: str):
 
 
 _PLANNER = _load_script_module("plan_release_run_test_module", PLANNER)
+_BUMP = _load_script_module(
+    "bump_version_test_module",
+    "skills/public/release/scripts/bump_version.py",
+)
 _PACKETS = _load_script_module(
     "plan_release_run_packets_test_module",
     "skills/public/release/scripts/plan_release_run_packets.py",
@@ -63,6 +67,15 @@ def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
+def _write_real_host_release_config(repo: Path) -> None:
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n",
+        encoding="utf-8",
+    )
+
+
 def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
@@ -74,6 +87,9 @@ def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: P
     assert payload["schema_version"] == "release.run_plan.v1"
     assert payload["next_action"]["kind"] == "inspect_only"
     assert payload["release_state"]["drift"] == []
+    assert payload["evidence_packets"]["real_host"]["evidence_scope"] == "worktree"
+    real_host_gate = next(packet for packet in payload["gate_packets"] if packet["id"] == "real-host-proof")
+    assert "--paths" not in real_host_gate["command"]
     assert payload["gate_packets"]
     assert {item["path"] for item in payload["required_reads"]} >= {
         "references/index.md",
@@ -82,6 +98,69 @@ def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: P
         "references/publication-boundary.md",
     }
     assert not (repo / ".quality-ran").exists()
+
+
+def test_release_run_planner_uses_release_delta_for_real_host_evidence(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _git(repo, "tag", "v0.0.0")
+    _git(repo, "push", "origin", "v0.0.0")
+    _write_real_host_release_config(repo)
+    (repo / "README.md").write_text("# Demo\n\nChanged after the previous release.\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "Change release surface")
+    (repo / "WIP.txt").write_text("dirty worktree should not define release proof scope", encoding="utf-8")
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_plan(repo, env, "--part", "patch")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    real_host = payload["evidence_packets"]["real_host"]
+    assert real_host["evidence_scope"] == "release_delta"
+    assert real_host["evidence_previous_version"] == "0.0.0"
+    assert real_host["required"] is True
+    assert "README.md" in real_host["changed_paths"]
+    assert "README.md" in real_host["path_hits"]
+    assert "WIP.txt" not in real_host["changed_paths"]
+    assert real_host["checklist"] == ["Verify on a clean host."]
+    real_host_gate = next(packet for packet in payload["gate_packets"] if packet["id"] == "real-host-proof")
+    assert "--paths" in real_host_gate["command"]
+    assert "README.md" in real_host_gate["command"]
+    assert "WIP.txt" not in real_host_gate["command"]
+
+    set_version_result = _run_plan(repo, env, "--set-version", "0.0.1")
+
+    assert set_version_result.returncode == 0, set_version_result.stderr
+    set_version_real_host = json.loads(set_version_result.stdout)["evidence_packets"]["real_host"]
+    assert set_version_real_host["evidence_scope"] == "release_delta"
+    assert set_version_real_host["evidence_previous_version"] == "0.0.0"
+    assert set_version_real_host["required"] is True
+
+
+def test_release_run_planner_publish_current_uses_previous_release_delta_for_real_host_evidence(
+    tmp_path: Path,
+) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _git(repo, "tag", "v0.0.0")
+    _git(repo, "push", "origin", "v0.0.0")
+    _write_real_host_release_config(repo)
+    (repo / "README.md").write_text("# Demo\n\nChanged before publish-current.\n", encoding="utf-8")
+    adapter = _BUMP.load_adapter(repo)
+    manifest_path = repo / adapter["data"]["packaging_manifest_path"]
+    _BUMP.write_packaging_version(manifest_path, _BUMP.bump_part("0.0.0", "patch"))
+    _BUMP.run_sync(repo, adapter["data"]["sync_command"])
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "Prepare current release")
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_plan(repo, env, "--publish-current")
+
+    assert result.returncode == 0, result.stderr
+    real_host = json.loads(result.stdout)["evidence_packets"]["real_host"]
+    assert real_host["evidence_scope"] == "release_delta"
+    assert real_host["evidence_previous_version"] == "0.0.0"
+    assert real_host["required"] is True
+    assert "README.md" in real_host["path_hits"]
 
 
 def test_release_run_planner_requires_critique_before_publish(tmp_path: Path) -> None:
