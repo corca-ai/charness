@@ -1,6 +1,6 @@
 # Achieve Goal: Capability-first generative-sequence skill redesign
 
-Status: active
+Status: complete
 Created: 2026-06-27
 Activation: `/goal @charness-artifacts/goals/2026-06-27-capability-first-skill-redesign.md`
 
@@ -9,11 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: capability-first sequencing contract plus `create-cli` pilot.
-- Current slice intent: shared lens, quality-move migration, target-skill packet,
-  and one concrete `create-cli` hook without adding a blocking floor.
-- Next action: decide whether to continue with broader target pilots or pause to
-  reconcile the interrupted v0.56.7 release WIP.
+- Current slice: complete; closeout binds retro, disposition review, and focused
+  verification evidence for the capability-first skill redesign.
+- Current slice intent: prove the shared lens, quality-move migration,
+  target-skill packet, and one concrete `create-cli` hook without adding a
+  blocking floor.
+- Next action: separate follow-on work can continue with broader target pilots
+  or resume the interrupted v0.56.7 release WIP, but neither is part of this
+  closed goal.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -74,11 +77,9 @@ skill-authoring checklists. The result should:
   executable. The default enforcement posture is advisory, describe-first,
   existing-gate-reuse, or no-gate.
 
-Timebox: current active session, continuing by meaningful local slices until the
-user pauses or the goal reaches a natural closeout.
-Activation time: 2026-06-27T13:32:30+0900.
-Closeout reserve: reserve final time for critique, focused validation, goal
-artifact update, and honest non-claims; do not spend the reserve on a release.
+Timebox: 45m
+Activation time: 2026-06-27T13:32:30+09:00
+Closeout reserve: 25m
 Done-early policy: continue_next_improvement within the same local, non-release
 scope.
 
@@ -129,20 +130,8 @@ scope.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Current queue: none — the user has approved starting this goal locally; release
-publication remains out of scope for this goal.
+none — the user approved starting this goal locally; release publication and
+v0.56.7 cleanup remain out of scope for this goal.
 
 ## Coordination Cues
 
@@ -170,10 +159,11 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
-Routing: `find-skills` was already run in this task-oriented session; selected
-workflow skills are `achieve` for the goal lifecycle, `gather` for external
-source capture, `quality` for the target-skill quality contract, `create-skill`
-as a downstream consumer only, and `critique` for design lock-in review.
+Routing: find-skills recommended `quality` for final quality-move closeout and
+verification; the executed route used `achieve` for the goal lifecycle, `gather`
+for external source capture, `quality` for the target-skill quality contract,
+`create-skill` as downstream consumer awareness only, `critique` for design and
+disposition review, and `retro` for closeout learning.
 Gather: `charness-artifacts/gather/2026-06-18-capabilities-over-features.md`
 and `charness-artifacts/gather/2026-06-27-genseq3-skill.md`.
 Release: n/a — this goal explicitly excludes release publish/version bump work.
@@ -320,18 +310,59 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Retro: charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md
+Host log probe: skipped: host-log-not-exposed: this runtime exposes no stable goal-scoped token/time/session-log source for a provider-safe host-log probe; efficiency is reviewed through local proof boundaries in the retro.
+Disposition review: charness-artifacts/critique/2026-06-27-capability-first-skill-redesign-disposition-review.md
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Implementation commit: `10b048e7 Add capability-first quality move pilot`.
+
+Focused verification recorded before commit:
+
+- `python3 -m pytest -q tests/test_quality_scaffold.py tests/test_quality_artifact_report_all.py tests/test_quality_artifact.py tests/quality_gates/test_quality_run_planner.py tests/quality_gates/test_quality_handoff_inventory.py tests/quality_gates/test_quality_skill_docs.py`
+  -> `80 passed`
+- `python3 -m pytest -q tests/quality_gates/test_inference_interpretation_meta_validator.py tests/quality_gates/test_quality_skill_docs.py`
+  -> `40 passed`
+- `ruff check ...`, `python3 scripts/validate_skills.py --repo-root .`,
+  `python3 scripts/check_doc_links.py --repo-root .`,
+  `./scripts/check-markdown.sh ...`, and
+  `python3 scripts/validate_attention_state_visibility.py --repo-root ...`
+  passed.
+- Pre-commit on `10b048e7` passed staged-reversion, staged/worktree
+  consistency, py_compile, ruff, length, attention-state, skill validation,
+  eval wrapper, adapter validation, mirror drift, doc links, markdown, skill
+  contracts, inference/interpretation, bootstrap shim, skill ergonomics, and
+  boundary-bypass checks.
+
+Non-claims:
+
+- No release publish, version bump, GitHub issue closeout, external write, or
+  live host proof belongs to this goal.
+- No broad `run_slice_closeout.py --verification-lock` claim is made here
+  because unrelated v0.56.7 release WIP remains in the worktree.
+- No new blocking floor was added; the quality-move fields remain advisory and
+  the old `Recommended Next Gates` heading remains a compatibility alias.
 
 ## User Verification Instructions
 
+- Read `skills/shared/references/generative-sequence.md` and confirm the lens is
+  applicability-gated rather than `create-skill`-specific doctrine.
+- Inspect `skills/public/quality/SKILL.md`,
+  `skills/public/quality/scripts/scaffold_quality_artifact.py`,
+  `skills/public/quality/scripts/plan_quality_run.py`, and
+  `scripts/validate_quality_artifact.py` for `Recommended Next Quality Moves`
+  plus legacy `Recommended Next Gates` compatibility.
+- Inspect
+  `charness-artifacts/quality/2026-06-27-create-cli-capability-move-pilot.md`
+  and `skills/public/create-cli/SKILL.md` to judge whether the pilot improves
+  command-capability review without creating gate paperwork.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: the retro's three Next Improvements are
+dispositioned in the retro itself and audited by the bound disposition review;
+all are either applied in this goal or constrained by the existing dirty-worktree
+boundary.
+Structural follow-up: none — the retro names a transferable closeout-ordering
+pattern, but the repo-local guard already exists through the goal template and
+`describe_goal_closeout_shape.py`; this closeout applies the existing guard
+without adding a new floor.
