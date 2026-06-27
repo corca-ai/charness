@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `narrative` capability-claim slice.
-- Current slice intent: keep durable repo story alignment centered on reader or
-  operator capability rather than feature inventory.
-- Next action: validate and commit the `narrative` slice, then keep scanning
+- Current slice: close the `debug` capability-failure slice.
+- Current slice intent: keep RCA centered on the user/operator capability that
+  failed, not only the technical symptom.
+- Next action: validate and commit the `debug` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -117,6 +117,7 @@ unchanged skills.
 | 6 | Add capability-contract hook to `spec` | Preserve capability intent when moving from concept to implementation contract | Focused spec diff, dogfood freeze, slice closeout | complete |
 | 7 | Add capability-delivery handoff to `impl` | Preserve capability intent during coding and closeout | Focused impl diff, dogfood freeze, slice closeout | complete |
 | 8 | Add capability-claim hook to `narrative` | Prevent durable story alignment from becoming polished feature inventory | Focused narrative diff, dogfood freeze, slice closeout | complete |
+| 9 | Add capability-failure hook to `debug` | Keep RCA anchored on the failed/restored user or operator capability | Focused debug diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -243,6 +244,21 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `narrative` slice after the
     dogfood freeze.
+- Slice 7 — `debug` capability-failure hook.
+  - Changed: `skills/public/debug/SKILL.md` and generated plugin mirror now name
+    the user/operator capability that failed when it matters, state the
+    capability restored by correct behavior, and add `Capability Failure` to the
+    durable artifact shape.
+  - Dogfood/evaluator disposition: `debug` is evaluator-required and mapped to
+    `debug-adapter-bootstrap`; this diff does not change routing, adapter
+    bootstrap behavior, or scenario mapping. `docs/public-skill-dogfood.json`
+    now records the current contract freeze; no live Cautilus run or scenario
+    registry mutation is claimed.
+  - Non-claim: this does not replace RCA mechanics; it keeps the capability loss
+    visible while the existing diagnosis-first workflow remains authoritative.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `debug` slice after the
+    dogfood freeze and scenario mapping review.
 
 ## Context Sources
 

@@ -67,9 +67,11 @@ related incidents in the artifact when they shape the current hypothesis.
 
 1. Define the problem.
    - write a one-line problem statement
+   - name the user or operator capability that failed when it matters
    - capture the exact symptom, error text, or failing behavior verbatim
 2. Define correct behavior.
    - write what should happen in given/when/then form
+   - state the capability restored by that correct behavior
    - separate observed facts from assumptions or prior knowledge
    - use web search by default for exact error text and likely causes
    - for async, scheduled, or user-visible workflows, separate pre-worker
@@ -129,6 +131,7 @@ related incidents in the artifact when they shape the current hypothesis.
 The durable debug artifact should usually include:
 
 - `Problem`
+- `Capability Failure`
 - `Correct Behavior`
 - `Observed Facts`
 - `Reproduction`
