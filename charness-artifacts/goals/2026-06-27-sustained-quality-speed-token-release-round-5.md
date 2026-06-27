@@ -12,12 +12,12 @@ This file is the living goal scratchpad for the active three-hour quality loop.
 
 ## Active Operating Frame
 
-- Current slice: release planning evidence scope.
-- Current slice intent: make release planning/proof evaluate the intended
-  release delta instead of silently trusting a clean worktree-only view.
+- Current slice: standing pytest runner startup probes.
+- Current slice intent: remove fixed subprocess startup overhead from the
+  canonical standing pytest runner without changing selected targets or
+  release-only exclusion.
 - Next action: complete fresh-eye critique, run the slice lint gate, commit the
-  release planner evidence-scope fix, then continue to the next measured
-  quality slice.
+  runner startup optimization, then continue to the next measured quality slice.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -92,8 +92,8 @@ push, and release.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Release planning evidence scope | Handoff named clean-worktree release planning as the next smell after focused producer UX | Regression test and planner/helper fix proving release proof uses intended delta | in-progress |
-| 2 | Runtime/test/script speed or token-efficiency slice | Continue timebox after slice 1; select from measured runtime/inventory evidence | Focused implementation, targeted tests, commit | pending |
+| 1 | Release planning evidence scope | Handoff named clean-worktree release planning as the next smell after focused producer UX | Regression test and planner/helper fix proving release proof uses intended delta | committed `1d749d1c` |
+| 2 | Standing pytest runner startup probes | Runtime artifact names pytest as the dominant standing cost; runner startup had avoidable probe subprocesses | Focused implementation, targeted tests, timing sample, commit | in-progress |
 | 3 | Additional safe quality slice | Continue until closeout reserve | Focused implementation, targeted tests, commit | pending |
 | Final | Push and release | User requested final push/release | Full quality, release critique, publish helper, public verification | pending |
 
@@ -154,6 +154,46 @@ Findings: Medium gate-packet command still used worktree scope; fixed by passing
 the same release-delta paths to `gate_packets()`. Low selector coverage was
 narrow; fixed with `--set-version`, `--publish-current`, and inspect-mode
 assertions. Reviewer found no blocking issue in the release-delta implementation.
+
+### Slice 2: Standing pytest runner startup probes
+
+Status: in-review after fresh-eye blocker fix.
+
+Changed:
+
+- `scripts/run_standing_pytest.py`: replaced subprocess probes for pytest and
+  xdist discovery with fast interpreter-local checks. `choose_pytest_command()`
+  now returns `sys.executable -m pytest` when pytest is importable, so the probe
+  and execution interpreter match. `has_xdist()` now fails closed for
+  `PYTEST_DISABLE_PLUGIN_AUTOLOAD`, `PYTEST_ADDOPTS=-p no:xdist` /
+  `-pno:xdist`, and external `pytest` fallback commands.
+- `tests/quality_gates/test_standing_pytest_runner.py`: updated fallback
+  coverage for importlib detection and added a no-subprocess assertion for
+  xdist discovery plus plugin-disabled serial fallback coverage.
+
+Evidence:
+
+- Probe baseline from this session: `importlib.util.find_spec("pytest")` and
+  `find_spec("xdist")` were each below 0.1ms; `python3 -m pytest --version`
+  took about 147ms; `python3 -m pytest --help` took about 252ms.
+- `python3 -m pytest -q tests/quality_gates/test_standing_pytest_runner.py`:
+  13 passed in 0.39s.
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 scripts/run_standing_pytest.py --repo-root . --print-command`:
+  emitted a serial command without `-n`.
+- `PYTEST_ADDOPTS='-p no:xdist' python3 scripts/run_standing_pytest.py --repo-root . --print-command`:
+  emitted a serial command without `-n` and the corrected `pytest-xdist is not
+  active` warning.
+- `python3 scripts/run_standing_pytest.py --repo-root . --print-command` sampled
+  five times after the blocker fix: 71.4ms, 51.2ms, 70.5ms, 59.8ms, 35.7ms.
+
+Critique: full fresh-eye reviewer `019f070a-8581-7f20-bd68-398e49c887c6`.
+Initial findings: High xdist importability was not equivalent to active pytest
+plugin options; fixed by using the runner interpreter and failing closed when
+autoload or xdist is disabled. Medium hard-coded `python3` interpreter mismatch;
+fixed by returning `sys.executable -m pytest`. Follow-up finding: Low serial
+fallback warning said `not installed` when xdist was installed but disabled;
+fixed the message to `pytest-xdist is not active`. Reviewer found no remaining
+blocker.
 
 ## Context Sources
 

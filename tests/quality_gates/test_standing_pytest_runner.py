@@ -15,8 +15,8 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     (tmp_path / "tests" / "quality_gates").mkdir()
     (tmp_path / "tests" / "control_plane").mkdir()
     (tmp_path / "tests" / "charness_cli").mkdir()
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda: ["python3", "-m", "pytest"])
-    monkeypatch.setattr(runner, "has_xdist", lambda command: True)
+    monkeypatch.setattr(runner, "choose_pytest_command", lambda: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
 
     command = runner.build_pytest_command(
@@ -26,7 +26,7 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
         env={},
     )
 
-    assert command[:6] == ["python3", "-m", "pytest", "-q", "-m", "not release_only"]
+    assert command[:6] == [sys.executable, "-m", "pytest", "-q", "-m", "not release_only"]
     assert "-n" in command
     assert "16" in command
     assert "tests/test_alpha.py" in command
@@ -39,8 +39,8 @@ def test_standing_pytest_command_appends_extra_pytest_targets(tmp_path: Path, mo
 
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda: ["python3", "-m", "pytest"])
-    monkeypatch.setattr(runner, "has_xdist", lambda command: False)
+    monkeypatch.setattr(runner, "choose_pytest_command", lambda: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: False)
 
     command = runner.build_pytest_command(
         tmp_path,
@@ -104,15 +104,7 @@ def test_standing_pytest_command_probes_and_serial_fallback(
 ) -> None:
     from scripts import run_standing_pytest as runner
 
-    calls: list[list[str]] = []
-
-    def fake_run(command, **kwargs):
-        calls.append(command)
-        if command == ["python3", "-m", "pytest", "--version"]:
-            return subprocess.CompletedProcess(command, returncode=1, stdout="", stderr="")
-        return subprocess.CompletedProcess(command, returncode=0, stdout="pytest help\n", stderr="")
-
-    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+    monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: None)
 
     assert runner.choose_pytest_command() == ["pytest"]
     assert runner.has_xdist(["pytest"]) is False
@@ -124,7 +116,7 @@ def test_standing_pytest_command_probes_and_serial_fallback(
 
     assert command[:3] == ["pytest", "-q", "--basetemp"]
     assert "-m" not in command
-    assert "pytest-xdist not installed" in capsys.readouterr().err
+    assert "pytest-xdist is not active" in capsys.readouterr().err
 
 
 def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
@@ -154,13 +146,49 @@ def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
 def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
     from scripts import run_standing_pytest as runner
 
+    monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
+
+    assert runner.choose_pytest_command() == [sys.executable, "-m", "pytest"]
+
+
+def test_standing_pytest_xdist_probe_uses_importlib_without_subprocess(monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    looked_up: list[str] = []
+
+    def fake_find_spec(name: str) -> object | None:
+        looked_up.append(name)
+        return object() if name == "xdist" else None
+
+    monkeypatch.setattr(runner.importlib.util, "find_spec", fake_find_spec)
     monkeypatch.setattr(
         runner.subprocess,
         "run",
-        lambda command, **kwargs: subprocess.CompletedProcess(command, returncode=0, stdout="", stderr=""),
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("subprocess probe should not run")),
     )
 
-    assert runner.choose_pytest_command() == ["python3", "-m", "pytest"]
+    assert runner.has_xdist([sys.executable, "-m", "pytest"], {}) is True
+    assert looked_up == ["xdist"]
+
+
+def test_standing_pytest_xdist_probe_honors_disabled_plugin(monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
+
+    assert runner.has_xdist(
+        [sys.executable, "-m", "pytest"],
+        {"PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
+    ) is False
+    assert runner.has_xdist(
+        [sys.executable, "-m", "pytest"],
+        {"PYTEST_ADDOPTS": "-p no:xdist"},
+    ) is False
+    assert runner.has_xdist(
+        [sys.executable, "-m", "pytest"],
+        {"PYTEST_ADDOPTS": "-pno:xdist"},
+    ) is False
+    assert runner.has_xdist(["pytest"], {}) is False
 
 
 def test_standing_pytest_run_print_command_and_executes(tmp_path: Path, monkeypatch, capsys) -> None:

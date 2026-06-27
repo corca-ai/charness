@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import os
 import shlex
 import shutil
@@ -60,25 +61,34 @@ def default_basetemp(repo_root: Path, env: dict[str, str] | None = None) -> Path
 
 
 def choose_pytest_command() -> list[str]:
-    probe = subprocess.run(
-        ["python3", "-m", "pytest", "--version"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if probe.returncode == 0:
-        return ["python3", "-m", "pytest"]
+    if importlib.util.find_spec("pytest") is not None:
+        return [sys.executable, "-m", "pytest"]
     return ["pytest"]
 
 
-def has_xdist(pytest_command: list[str]) -> bool:
-    help_result = subprocess.run(
-        [*pytest_command, "--help"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    return "--numprocesses" in (help_result.stdout + help_result.stderr)
+def _plugin_disabled(plugin_name: str, addopts: str) -> bool:
+    try:
+        parts = shlex.split(addopts)
+    except ValueError:
+        parts = addopts.split()
+    for index, part in enumerate(parts):
+        if part == "-p" and index + 1 < len(parts) and parts[index + 1] == f"no:{plugin_name}":
+            return True
+        if part == f"-pno:{plugin_name}":
+            return True
+    return False
+
+
+def has_xdist(pytest_command: list[str], env: dict[str, str] | None = None) -> bool:
+    env = os.environ if env is None else env
+    if env.get("PYTEST_DISABLE_PLUGIN_AUTOLOAD"):
+        return False
+    if _plugin_disabled("xdist", env.get("PYTEST_ADDOPTS", "")):
+        return False
+    current_python_pytest = [sys.executable, "-m", "pytest"]
+    if pytest_command != current_python_pytest:
+        return False
+    return importlib.util.find_spec("xdist") is not None
 
 
 def choose_xdist_workers(env: dict[str, str] | None = None) -> str:
@@ -129,12 +139,12 @@ def build_pytest_command(
     if not include_release_only:
         command.extend(["-m", "not release_only"])
     command.extend(["--basetemp", str(basetemp)])
-    if has_xdist(command[:3] if command[:3] == ["python3", "-m", "pytest"] else command[:1]):
+    if has_xdist(command[:3], env):
         command.extend(["-n", choose_xdist_workers(env)])
     else:
         print(
-            "standing-pytest: pytest-xdist not installed; pytest will run serially "
-            "and may exceed runtime budgets. Install with: pip install pytest-xdist",
+            "standing-pytest: pytest-xdist is not active; pytest will run serially "
+            "and may exceed runtime budgets. Install or enable with: pip install pytest-xdist",
             file=sys.stderr,
         )
     command.extend(combined_targets(repo_root, extra_pytest_targets))
