@@ -69,6 +69,7 @@ the repo has named where state, rules, and queue ownership live.
 
 1. Restate the review goal.
    - what human judgment is needed
+   - what decision capability automation lacks or the human supplies
    - what target is under review
    - what must not be auto-decided
    - if the input came from a `quality` `NON_AUTOMATABLE` proposal, preserve
@@ -147,7 +148,7 @@ the repo has named where state, rules, and queue ownership live.
 
 ## Output Shape
 
-The result should usually include Review Goal, Target, Current Chunk, Original
+The result should usually include Review Goal, Judgment Capability, Target, Current Chunk, Original
 Material, Related Context, Agent Assessment, Recommended Disposition (display-only), Decision Needed, Active Rules Applied, Target/Cursor
 Checked, Accepted Working Text, Accepted Rules, and Next State.
 

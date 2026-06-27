@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `achieve` outcome-capability slice.
-- Current slice intent: keep long-running goals from becoming feature
-  checklists before naming the capability created or restored.
-- Next action: validate and commit the `achieve` slice, then keep scanning
+- Current slice: close the `hitl` judgment-capability slice.
+- Current slice intent: keep human review loops explicit about the decision
+  capability automation lacks or the human supplies.
+- Next action: validate and commit the `hitl` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -121,6 +121,7 @@ unchanged skills.
 | 10 | Add capability-before-gate hook to `quality` | Prevent target-skill review from jumping to gates before capability diagnosis | Focused quality diff, dogfood freeze, slice closeout | complete |
 | 11 | Add feature-capability hook to `issue` | Keep feature/deferred-work resolution briefs capability-first | Focused issue diff, dogfood freeze, slice closeout | complete |
 | 12 | Add outcome-capability hook to `achieve` | Prevent long-running goals from becoming feature checklists before slice planning | Focused achieve diff, dogfood freeze, slice closeout | complete |
+| 13 | Add judgment-capability hook to `hitl` | Keep human review scoped to the judgment capability automation lacks | Focused hitl diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -302,6 +303,20 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
     operator judgment.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `achieve` slice after the
+    dogfood freeze and scenario review disposition.
+- Slice 11 — `hitl` judgment-capability hook.
+  - Routing: `find-skills` recommendation returned `hitl`; target-skill
+    quality planning resolved `hitl` for this review slice.
+  - Changed: `skills/public/hitl/SKILL.md` and generated plugin mirror now ask
+    what decision capability automation lacks or the human supplies, and expose
+    `Judgment Capability` in the output shape.
+  - Dogfood/evaluator disposition: `hitl` is `hitl-recommended`; the current
+    dogfood contract is frozen in `docs/public-skill-dogfood.json`. No live
+    human review loop, target edit, or Cautilus run is claimed.
+  - Non-claim: this improves review-loop framing; it does not automate the
+    human judgment or prove any particular review outcome.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `hitl` slice after the
     dogfood freeze and scenario review disposition.
 
 ## Context Sources
