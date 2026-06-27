@@ -91,6 +91,24 @@ word "subagent"; first try the host spawn tool under the repo contract. Only a
 real tool refusal, missing spawn surface, exhausted host budget, or higher
 priority instruction that forbids honoring repo delegation is a blocker.
 
+## Distinct Named Lenses
+
+When a caller spawns more than one bounded fresh-eye reviewer over the same
+artifact, assign each reviewer a **distinct, explicitly-named lens** (for
+example encoding/i18n, injection/escaping, portability, or one of the `quality`
+Behavior lenses such as verification-channel fitness and guard-propagation
+across seams) rather than N generic "review this change" reviewers.
+
+A generic reviewer tends to inherit the author's framing blind spot. In the
+incident that motivated this note, the generic reviewer caught a bracket/escaping
+bug at the salient crossing but missed a sibling charset bug, because both author
+and reviewer pattern-matched the same surface and read the same channel that
+could not exhibit the failure. Named-lens diversity catches failure modes that
+reviewer redundancy cannot — it is the "perspective-diverse verify" idea (give
+each verifier a distinct lens, not N identical refuters) applied to review-lens
+assignment. The lens names are a request like the reviewer tier, not a fixed
+taxonomy: pick the hazard classes the diff actually crosses.
+
 ## Shared-Tree Git Hygiene
 
 Bounded fresh-eye reviewers usually run in the *parent session's* working tree,

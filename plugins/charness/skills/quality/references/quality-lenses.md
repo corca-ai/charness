@@ -41,6 +41,20 @@ Use a behavior-confidence lens:
 - failure-path confidence
 - low-signal or gameable checks
 - duplicate-pressure and missing seam coverage
+- verification-channel fitness: a runtime "proof" only counts when it is
+  collected in a channel that can actually *exhibit* the failure under review.
+  A charset/encoding/rendering bug is invisible to a UTF-8 terminal (it decodes
+  the bytes regardless of the declared `charset`), so prove it in a
+  charset-respecting client or by rendering as a user would, not by eyeballing a
+  terminal dump. Read each response field — `status`, `content-type`, `charset`,
+  `cache` — against the spec instead of pattern-matching "looks right."
+- guard-propagation across seams: when a fix escapes, guards, converts, or sets
+  a header at one boundary crossing, enumerate *every* sibling crossing of that
+  same hazard class in the diff and apply the guard as an invariant, not a local
+  patch. Errors cluster at seams where two systems with different rules meet
+  (corpus text → markdown / JSON-LD / HTML; endpoint response → deployed
+  static-asset header); a guard applied only at the salient crossing leaves the
+  siblings exposed.
 - helper scripts that actually prove the skill can cold-start and resolve its
   adapter seams
 - code-reduction-first: if a confidence gap can be closed either by shrinking
