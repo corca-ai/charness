@@ -14,14 +14,18 @@ path; the update surface is unchanged.
 
 ## Skill Surface Changes
 
-- Public skills now lead with the capability at stake instead of only describing
-  a workflow: `achieve`, `announcement`, `create-skill`, `critique`, `debug`,
-  `gather`, `handoff`, `hitl`, `hotl`, `ideation`, `impl`, `issue`, `narrative`,
-  `quality`, `setup`, and `spec` carry refined capability framing.
+- Public skill **contracts** now name the capability at stake — refined workflow
+  steps and Output-Shape field names across 17 skills: `achieve`, `announcement`,
+  `create-cli`, `create-skill`, `critique`, `debug`, `gather`, `handoff`, `hitl`,
+  `hotl`, `ideation`, `impl`, `issue`, `narrative`, `quality`, `setup`, and
+  `spec`. These edits are in the skill bodies; the skill-picker `description:`
+  text is unchanged except `quality`, whose description now proposes "quality
+  moves" rather than "next gates".
 - The rollout is bounded and advisory: it refines skill prose and contracts. It
   does **not** add a new capability-language validator or blocking gate, and it
-  does **not** claim every public skill is fully migrated — unmigrated skills are
-  left with explicit non-claims.
+  does **not** claim every public skill is fully migrated — the explicit
+  non-claims for unmigrated skills live in the rollout's goal and quality
+  artifacts, not in the shipped skill prose.
 
 ## Validation & Release Tooling
 
