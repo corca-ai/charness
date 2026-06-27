@@ -4,47 +4,41 @@
 
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
-- No loop is pre-queued. Decide the push/release of the committed D30 fix first
-  (see Next Session), then start the next quality loop with `quality` for gate
-  posture before `impl`. Before mutating, read
+- No loop is pre-queued. For the next quality loop, start with `quality` for gate
+  posture, then `impl` one narrow slice. Before mutating, read
   [implementation discipline](./conventions/implementation-discipline.md) and
   [operating contract](./conventions/operating-contract.md).
 
 ## Current State
 
-- **D30 (dup-ratchet id-rotation) is RESOLVED and committed, NOT yet pushed.**
-  `origin/main` is `b460dc3a`; HEAD is `47767b8d` (impl) on top of `21e2b755`
-  (spec checkpoint) — **ahead 2, unpushed**. The dup-ratchet code gate + clone
-  advisory now key newness on a gate-computed, offset/path-independent **content
-  fingerprint** (new `nose_fingerprint_lib`) instead of nose's offset/path-folding
-  `family_id`, so a member-file line-shift no longer false-blocks. Baselines
-  migrated in lockstep (`dup_ratchet_baseline.v2` / `nose_baseline.v3`,
-  `code_family_fingerprints`, 541 ids) with the dup-review overlay re-keyed and the
-  nose tool-manifest floor reconciled to `>=0.15.0`.
-- Verified: full pytest (3797) + `run-quality.sh --read-only` (79/0, live
-  dup-ratchet phase PASS) green; bounded fresh-eye spec critique (3 angles +
-  counterweight) and impl critique (code-correctness CORRECT + migration-integrity
-  SOUND + counterweight SHIP) folded in. **v0.56.7 remains the published version.**
+- **v0.56.8 is published and verified — it resolves D30 (dup-ratchet id-rotation).**
+  `origin/main` is synced; tag `v0.56.8` points at `2f4e76e1`. Public release
+  confirmed by four independent channels: the helper's https-fetch (HTTP 200),
+  `gh release view` (isDraft false), `git ls-remote` (tag on origin), and the
+  installed packaging version. `charness update` moved the install `0.56.7 -> 0.56.8`;
+  `doctor` is green and `nose 0.15.0` matches the release's new `>=0.15.0` floor.
+- v0.56.8 re-keyed the dup-ratchet code gate + clone advisory off nose's
+  offset/path-folding `family_id` onto a gate-computed content fingerprint (new
+  `nose_fingerprint_lib`), so a member-file line-shift no longer false-blocks.
+  Baselines + the dup-review overlay were schema-migrated in lockstep. Spec, impl,
+  and release each carried a bounded fresh-eye critique.
 
 ## Next Session
 
-- **First — decide push + release of the D30 fix.** It is consumer-visible (the
-  dup-ratchet gate keys differently; baselines are schema-migrated and need no
-  consumer action beyond `charness update` after a release). Push `main`, then run
-  `release` for the lightest honest bump (patch) — or batch it with the next
-  release. The fix is a behavior repair, so **patch** is the honest level.
-- **Then pick the next quality loop:** start with `quality` for gate posture, then
-  `impl` one narrow slice.
+- **Pick the next quality loop:** start with `quality` for gate posture, then `impl`
+  one narrow slice. The D30 follow-on residuals are deferred and not urgent
+  (S4-Defer-1 token-aware fingerprint normalization; S4-Defer-3 subset-aware
+  reduction diff) — reopen only on observed re-baseline friction.
 
 ## Discuss
 
-- Whether the changed-line mutation-coverage closeout
-  (`run_slice_closeout.py --produce-mutation-coverage`) surfaced any surviving
-  mutants on the migrated quality scripts; fold fixes before release if so.
+- A `nose v0.16.0` upgrade is advisory-available; bumping the installed nose would
+  regroup families and trigger the scanner-version skew WARNING -> a one-time
+  lockstep re-baseline (by design, not a defect).
 
 ## References
 
-- [spec Slice 4 (canonical)](../charness-artifacts/spec/boy-scout-dup-ratchet.md)
+- [spec Slice 4 (D30, DONE)](../charness-artifacts/spec/boy-scout-dup-ratchet.md)
 - [deferred-decisions D30 (resolved)](./deferred-decisions.md)
-- [impl critique packet](../charness-artifacts/critique/2026-06-27-103255-packet.md)
+- [release notes v0.56.8](../charness-artifacts/release/notes-v0.56.8.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
