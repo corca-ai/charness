@@ -264,6 +264,12 @@ Evidence:
 - Critique outcome: patch release is appropriate; real-host proof is required
   from release delta; do not use the prepare packet's empty changed-path section
   as inventory; bundle planner plain-output guidance; publish via helper.
+- Pre-release closeout:
+  `python3 scripts/run_slice_closeout.py --repo-root . --base auto --verification-lock --refresh-broad-pytest-proof --produce-mutation-coverage --mutation-coverage-command ... --ack-cautilus-skill-review --json`
+  completed. It refreshed broad pytest proof fingerprint
+  `9fde94441ced5d849151cae403ae480a8c7d8e6b65e881cb05a523e0a3a5802a`,
+  recorded broad pytest pass in 21.64s, ran the focused mutation coverage
+  producer in 36.2s, and had no gate runtime over-budget findings.
 
 ### Slice 4: Run-quality pytest shim preservation
 
