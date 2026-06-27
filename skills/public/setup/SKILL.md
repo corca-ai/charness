@@ -100,6 +100,7 @@ Then load only the references needed for the detected state:
 3. Run a short ideation pass when needed.
    - if the repo has no honest concept surface yet, ask the minimum
      high-leverage questions needed to write real docs
+   - name the maintainer or operator capability the operating surface must enable
    - capture verified facts, assumptions, open questions, and the next concrete
      direction before scaffolding
    - do not dump generic templates into a concept vacuum
