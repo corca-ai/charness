@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `debug` capability-failure slice.
-- Current slice intent: keep RCA centered on the user/operator capability that
-  failed, not only the technical symptom.
-- Next action: validate and commit the `debug` slice, then keep scanning
+- Current slice: close the `quality` capability-before-gate slice.
+- Current slice intent: make target-skill quality findings name capability or
+  failure before recommending gates, helpers, or wording changes.
+- Next action: validate and commit the `quality` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -118,6 +118,7 @@ unchanged skills.
 | 7 | Add capability-delivery handoff to `impl` | Preserve capability intent during coding and closeout | Focused impl diff, dogfood freeze, slice closeout | complete |
 | 8 | Add capability-claim hook to `narrative` | Prevent durable story alignment from becoming polished feature inventory | Focused narrative diff, dogfood freeze, slice closeout | complete |
 | 9 | Add capability-failure hook to `debug` | Keep RCA anchored on the failed/restored user or operator capability | Focused debug diff, dogfood freeze, slice closeout | complete |
+| 10 | Add capability-before-gate hook to `quality` | Prevent target-skill review from jumping to gates before capability diagnosis | Focused quality diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -259,6 +260,18 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `debug` slice after the
     dogfood freeze and scenario mapping review.
+- Slice 8 — `quality` capability-before-gate hook.
+  - Changed: `skills/public/quality/SKILL.md` and generated plugin mirror now
+    require skill-design findings to name the capability or capability failure
+    before proposing a gate, helper, or wording change.
+  - Dogfood/evaluator disposition: `quality` is `hitl-recommended`; the planner
+    requested scenario review and current contract freeze, not live Cautilus.
+    `docs/public-skill-dogfood.json` now records the current contract freeze.
+  - Non-claim: this reduces reflexive gate pressure; it does not ban gates when
+    a capability failure truly needs a deterministic owner.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `quality` slice after the
+    dogfood freeze.
 
 ## Context Sources
 

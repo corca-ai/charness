@@ -45,6 +45,8 @@ git status --short
    recommendations. Separate target-skill findings, ambient repo gate failures,
    opportunistic repairs, and non-claims; record a `structural review result:`
    line when consuming skill-ergonomics inventory.
+   For skill-design findings, name the capability or capability failure before
+   proposing a gate, helper, or wording change.
 6. Open `on_demand_reads` only when a concrete gate, inventory, source, or
    operator finding matches its trigger.
 7. Classify findings by enforcement tier and posture, then recommend the next
