@@ -1,6 +1,6 @@
 # Achieve Goal: Capability-first public skill rollout
 
-Status: active
+Status: complete
 Created: 2026-06-27
 Activation: `/goal @charness-artifacts/goals/2026-06-27-capability-first-skill-rollout.md`
 
@@ -9,11 +9,12 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `announcement` reader-value slice.
-- Current slice intent: keep human-facing update output anchored on what the
-  reader can now do, avoid, or understand.
-- Next action: validate and commit the `announcement` slice, then keep scanning
-  remaining non-release public skills.
+- Current slice: closeout artifact repair after fresh-eye review.
+- Current slice intent: align the claim boundary with committed slices 1-19 and
+  avoid pretending the rollout changed every public skill.
+- Next action: no further non-release public-skill mutation in this loop; the
+  remaining candidates are either already capability-native or blocked by dirty
+  release WIP.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -128,6 +129,36 @@ unchanged skills.
 | 17 | Add knowledge-capability hook to `gather` | Keep durable source capture scoped to the later-session capability | Focused gather diff, dogfood freeze, slice closeout | complete |
 | 18 | Add capability-claim hook to `hotl` | Keep live/applied closeout explicit about what capability claim is being verified | Focused hotl diff, dogfood freeze, slice closeout | complete |
 | 19 | Add reader-value output to `announcement` | Keep human-facing communication value-first through closeout | Focused announcement diff, dogfood freeze, slice closeout | complete |
+
+## Rollout Claim Boundary
+
+Changed in this goal: `create-skill`, `ideation`, `spec`, `impl`,
+`narrative`, `debug`, `quality`, `issue`, `achieve`, `hitl`, `critique`,
+`setup`, `handoff`, `gather`, `hotl`, and `announcement`, with matching plugin
+mirrors and dogfood contract freezes.
+
+Prior pilot only: `create-cli` was already handled before this continuation and
+is not re-claimed as new work here.
+
+Intentionally unchanged in this loop:
+
+- `find-skills`: already capability-discovery-first; additional wording looked
+  like vocabulary churn without a concrete failure.
+- `retro`: already names workflow/capability/memory improvements as the next
+  self-improvement classes; no current failure justified another prompt edit.
+- `release`: explicitly out of scope because v0.56.7 release WIP is dirty and
+  release carries irreversible-boundary proof obligations.
+
+Global non-claims:
+
+- No claim that every referenced support file, scenario, or evaluator fixture was
+  migrated to capability-first language.
+- No new blocking gate or deterministic floor was added for capability,
+  north-star, or generative-sequence vocabulary.
+- No live Cautilus run, provider write, release proof, push, or GitHub issue
+  closeout is claimed.
+- `announcement` is a minor output-shape reinforcement, not a strong new
+  workflow decision point.
 
 ## Operator Decision Queue
 
@@ -480,14 +511,17 @@ Over-worry not folded:
 - No live Cautilus run, broad pytest, release proof, or quality/latest pointer
   refresh is required for this local design-skill slice.
 
-Valid but deferred:
+Final fresh-eye review:
 
-- `create-skill` frontmatter/topology wording can be reviewed later; the current
-  trigger already routes correctly.
-- Final rollout reviewer found the quality matrix stale after later slices; that
-  was remediated in `charness-artifacts/quality/2026-06-27-public-skill-capability-rollout.md`.
-- `achieve`, `critique`, `issue`, `release`, and other public skills remain
-  non-claimed and need separate slices before any migration claim.
+- Reviewer `019f07ba-7583-70b1-aec6-2b96bdaaaf01` found no reflexive gate
+  addition in `ea4c70ee..HEAD`.
+- Blocker found and folded: the goal and quality artifacts were stale after the
+  later slices, which garbled the claim boundary.
+- Low finding accepted: `announcement` is weaker than the other slices because
+  it reinforces output shape rather than adding a workflow decision point.
+- Stop condition accepted: excluding release WIP, the remaining unchanged public
+  skills (`find-skills`, `retro`) do not currently offer an obvious
+  high-leverage non-vocabulary slice.
 
 ## Off-Goal Findings
 
@@ -500,15 +534,25 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Focused closeout passed for each committed rollout slice:
+Focused closeout passed for each committed mutation slice:
 
-- `create-skill`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
-- `ideation`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
-- `spec`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
-- `impl`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
+- `create-skill`, `ideation`, `spec`, `impl`, `narrative`, `debug`, `quality`,
+  `issue`, `achieve`, `hitl`, `critique`, `setup`, `handoff`, `gather`, `hotl`,
+  and `announcement`: `run_slice_closeout.py --skip-broad-pytest
+  --ack-cautilus-skill-review`
+- `setup`, `handoff`, and `gather`: maintained scenario registry review plus
+  `run_evals.py` for the local evaluator suite.
+- Every mutation slice: `check_skill_surface_preflight.py --run-checks`,
+  `plan_cautilus_proof.py --repo-root . --json` disposition, dogfood contract
+  freeze, `validate_public_skill_dogfood.py`, goal-artifact check, markdown
+  check, and pre-commit before commit.
 
-Fresh-eye rollout critique:
-`charness-artifacts/critique/2026-06-27-capability-first-skill-rollout-final.md`.
+Fresh-eye rollout critiques:
+
+- `charness-artifacts/critique/2026-06-27-capability-first-skill-rollout-final.md`
+  covered the early rollout matrix.
+- Reviewer `019f07ba-7583-70b1-aec6-2b96bdaaaf01` covered the later slices from
+  `ea4c70ee..HEAD` and found the closeout artifact staleness fixed here.
 
 Broad pytest/live proof: skipped by contract because this is local skill/design
 work with no release, push, external write, or live behavior claim. Existing
@@ -516,9 +560,12 @@ v0.56.7 release WIP remains outside the proof.
 
 ## User Verification Instructions
 
-Inspect changed skill surfaces for `create-skill`, `ideation`, `spec`, and
-`impl`, plus the dogfood entries for those skills. Treat other public skills as
-non-claimed.
+Inspect changed skill surfaces for `create-skill`, `ideation`, `spec`, `impl`,
+`narrative`, `debug`, `quality`, `issue`, `achieve`, `hitl`, `critique`,
+`setup`, `handoff`, `gather`, `hotl`, and `announcement`, plus the matching
+dogfood entries and plugin mirrors. Treat `find-skills`, `retro`, and `release`
+as unchanged in this loop; `release` remains out of scope until dirty release
+WIP is reconciled.
 
 ## Auto-Retro
 
