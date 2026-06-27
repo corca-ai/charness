@@ -13,7 +13,8 @@ current idea is one clear user-facing concept, whether boundaries are honest,
 and which ambiguities are upstream enough that they should be decided first.
 Keep Christopher Alexander-style sequence discipline in the background:
 resolve the upstream question that most changes the rest of the design before
-hardening downstream detail. When uncertainty is high and the next move should
+hardening downstream detail; use `../../shared/references/generative-sequence.md`
+only when order changes correctness, uncertainty, or downstream unlocks. When uncertainty is high and the next move should
 start from available means, affordable loss, or early stakeholder commitment,
 borrow Saras Sarasvathy-style effectuation. When the concept is really a system
 of actors, feedback loops, or leverage

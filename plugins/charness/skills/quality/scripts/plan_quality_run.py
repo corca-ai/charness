@@ -57,35 +57,55 @@ def _skill_paths(repo_root: Path) -> list[str]:
 
 STRUCTURAL_REVIEW_QUESTIONS = (
     {
-        "id": "target_vs_ambient",
-        "question": "Which findings are target-skill quality findings, which are ambient repo gate failures, and which opportunistic repairs are non-claims for the target?",
-        "artifact_signal": "Record target boundary and ambient repo findings before recommendations.",
+        "id": "capability_needed",
+        "question": "What user or downstream-agent capability is weak or missing for this target?",
+        "artifact_signal": "Record the capability before naming the move; do not start from a gate or authoring form.",
     },
     {
-        "id": "helper_owned_packet",
-        "question": "Does the target skill ask the model to rediscover an order or packet that a helper/planner should emit?",
-        "artifact_signal": "Record whether a planner/report packet is needed, already sufficient, or deliberately unnecessary.",
+        "id": "sequencing_applicability",
+        "question": "Does order affect correctness, uncertainty reduction, or downstream unlocks here, or should the generative-sequence lens stay unused?",
+        "artifact_signal": "Use ../../../shared/references/generative-sequence.md only when the failure is sequencing-shaped.",
     },
     {
-        "id": "core_vs_reference",
-        "question": "Does SKILL.md own selection and sequencing while references deepen the path, or has a reference become a second workflow?",
-        "artifact_signal": "Record the progressive-disclosure judgment even when heuristics are quiet.",
+        "id": "current_centers",
+        "question": "Which current centers already help the capability, and which one should be strengthened next?",
+        "artifact_signal": "Record current centers and the next center before choosing a transformation.",
     },
     {
-        "id": "dogfood_pressure",
-        "question": "Does the public-skill dogfood case pressure the real consumer behavior, not only syntax, packaging, or producer-side validators?",
-        "artifact_signal": "Record dogfood sufficiency or the next consumer-side proof.",
+        "id": "quality_move_card",
+        "question": "For each recommended quality move, what is the bounded transformation, proof boundary, and enforcement posture?",
+        "artifact_signal": "Apply the move card only to recommended moves, not every finding.",
     },
     {
-        "id": "heuristic_blind_spot",
-        "question": "If skill ergonomics heuristics are quiet, is that evidence of health or a blind spot against the target's main behavior risk?",
-        "artifact_signal": "Record the prose judgment; do not equate zero heuristics with health.",
+        "id": "enforcement_posture",
+        "question": "Is the posture advisory, describe-first, existing-gate-reuse, candidate-floor, or no-gate?",
+        "artifact_signal": "Default missing or uncertain posture to advisory/no-gate; candidate-floor requires north-star plus floor-addition-restraint provenance.",
     },
     {
-        "id": "next_structural_move",
-        "question": "What is the next delete/merge/split/helper/interface-narrowing move, or why is there no structural move now?",
-        "artifact_signal": "Record an active next gate or an evidence-backed no-change/defer disposition.",
+        "id": "authoring_form_relevance",
+        "question": "Do helper ownership, core-vs-reference, dogfood, or ergonomics issues explain the weak capability, or are they ambient/non-claims?",
+        "artifact_signal": "Use authoring/form questions only when they explain the consumer capability weakness.",
     },
+)
+
+QUALITY_MOVE_TYPES = (
+    "cleanup-delete",
+    "merge-or-split-ownership",
+    "helper-extraction",
+    "interface-narrowing",
+    "dogfood-or-evidence-packet",
+    "gate-reuse",
+    "floor-candidate",
+    "defer-watch",
+    "no-op",
+)
+
+ENFORCEMENT_POSTURES = (
+    "advisory",
+    "describe-first",
+    "existing-gate-reuse",
+    "candidate-floor",
+    "no-gate",
 )
 
 
@@ -138,13 +158,29 @@ def _structural_review_packet(repo_root: Path, skills: list[str], target_skill: 
             "Ambient repo findings:",
             "prose review result:",
             "structural review result:",
+            "Recommended Next Quality Moves:",
         ],
+        "quality_move_card": {
+            "applies_to": "recommended moves only",
+            "fields": [
+                "capability_needed",
+                "current_centers",
+                "next_center",
+                "transformation",
+                "proof_boundary",
+                "enforcement_posture",
+            ],
+            "move_types": list(QUALITY_MOVE_TYPES),
+            "enforcement_postures": list(ENFORCEMENT_POSTURES),
+            "default_enforcement_posture": "advisory-or-no-gate",
+            "candidate_floor_requirement": "explicit north-star plus floor-addition-restraint record",
+        },
         "questions": list(STRUCTURAL_REVIEW_QUESTIONS),
         "interpretation": {
             "measures": "a required judgment packet over the target skill, not another heuristic score",
-            "proxy_for": "whether the quality run reached the north-star judgment phase before recommending fixes",
-            "blind_spots": "the packet enforces that questions are answered, not that the answers are correct",
-            "interpretation_question": "did the answers identify the next structural move or justify no structural move with evidence?",
+            "proxy_for": "whether the quality run reached capability-first judgment before recommending moves",
+            "blind_spots": "the packet enforces that questions are answered, not that the answers are correct; it must not become form-filling for every finding",
+            "interpretation_question": "did the answers identify the next quality move or justify no quality move with evidence?",
         },
     }
 

@@ -116,7 +116,7 @@ inference-layer surface, not a banner repeated per invocation):
   is a warn-band file an honest cohesive unit near its limit,
   or genuine over-accumulation THIS repo should split now?
 - recommendation rankings (`find-skills` `recommendation_interpretation`; this
-  artifact's `Recommended Next Gates` ordering — see
+  artifact's `Recommended Next Quality Moves` ordering — see
   [gate-classification.md](./gate-classification.md)): does the top-ranked item
   genuinely fit THIS repo's current state, or is it a generic default / a
   trigger-phrase coincidence the ranking cannot contextualize?

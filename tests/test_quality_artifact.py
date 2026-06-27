@@ -126,7 +126,7 @@ def valid_quality_artifact(*, runtime_source: str, runtime_hotspots: str = "`pyt
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -147,6 +147,20 @@ def test_validate_quality_artifact_accepts_generic_structured_runtime_source(tmp
         ),
     )
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_quality_artifact_accepts_legacy_recommended_next_gates_heading(tmp_path: Path) -> None:
+    body = valid_quality_artifact(
+        runtime_source=(
+            "structured metrics from `artifacts/runtime-timing.jsonl` "
+            "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+        )
+    ).replace("## Recommended Next Quality Moves", "## Recommended Next Gates")
+    repo = seed_repo(tmp_path, body)
+
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+
     assert result.returncode == 0, result.stderr
 
 
@@ -344,7 +358,7 @@ def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Pat
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
             ]
         )
@@ -385,7 +399,7 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- archive pending",
@@ -428,7 +442,7 @@ def test_validate_quality_artifact_accepts_dot_slash_history_link(tmp_path: Path
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](./history/one.md)",
@@ -470,7 +484,7 @@ def test_validate_quality_artifact_requires_runtime_closeout_fields(tmp_path: Pa
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -513,7 +527,7 @@ def test_validate_quality_artifact_rejects_explicit_allowance_as_subagent_blocke
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -552,7 +566,7 @@ def test_validate_quality_artifact_requires_advisory_and_delegated_review(tmp_pa
                 "- deferred",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -595,7 +609,7 @@ def test_validate_quality_artifact_requires_inventory_backed_empty_advisory(tmp_
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -638,7 +652,7 @@ def test_validate_quality_artifact_rejects_unevidenced_advisory_bullets(tmp_path
                 "- status: executed; bounded subagent review ran.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -681,7 +695,7 @@ def test_validate_quality_artifact_requires_blocked_delegated_review_signal(tmp_
                 "- status: blocked; subagents unavailable.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -724,7 +738,7 @@ def test_validate_quality_artifact_rejects_missed_delegated_review(tmp_path: Pat
                 "- status: missed; not executed in this run.",
                 "## Commands Run",
                 "- cmd",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "- active AUTO_CANDIDATE: next",
                 "## History",
                 "- [archive](history/one.md)",
@@ -735,4 +749,3 @@ def test_validate_quality_artifact_rejects_missed_delegated_review(tmp_path: Pat
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must not report a missed review" in result.stderr
-

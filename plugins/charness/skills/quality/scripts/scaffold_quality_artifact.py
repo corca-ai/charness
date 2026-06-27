@@ -34,7 +34,7 @@ SECTIONS = (
     "## Advisory",
     "## Delegated Review",
     "## Commands Run",
-    "## Recommended Next Gates",
+    "## Recommended Next Quality Moves",
     "## History",
 )
 VALIDATOR_SCRIPT_NAMES = ("validate_quality_artifact.py", "validate-quality-artifact.py")
@@ -102,16 +102,18 @@ def render_template(*, title: str, date_text: str) -> str:
                 ]
             )
             continue
-        if heading == "## Recommended Next Gates":
+        if heading == "## Recommended Next Quality Moves":
             lines.extend(
                 [
                     heading,
                     "",
-                    "- active TODO — name the exact gate/seam/command family to implement now.",
-                    "- passive TODO — describe the watch item, because TODO it is not yet actionable.",
+                    "- active TODO — capability_needed=TODO; next_center=TODO; transformation=TODO; proof_boundary=TODO; enforcement_posture=advisory.",
+                    "- passive TODO — capability_needed=TODO; next_center=TODO; transformation=TODO; proof_boundary=TODO; enforcement_posture=no-gate because TODO it is not yet actionable.",
                     "<!-- fill guard: every bullet's FIRST line starts with `- active ` or"
                     " `- passive `, and a passive bullet's first line must carry ` because`"
-                    " or ` until` before any wrap -->",
+                    " or ` until` before any wrap; apply move-card fields only to recommended"
+                    " moves, not every finding; candidate-floor requires a north-star plus"
+                    " floor-addition-restraint record -->",
                     "",
                 ]
             )

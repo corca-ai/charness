@@ -118,7 +118,9 @@ steps call tools outside the baseline shell surface.
      framework
    - factor shared lifecycle logic instead of copying subcommand shapes
    - keep environment detection and filesystem mutation explicit
-6. Add the right gates.
+6. Add the right gates from the command capability seam already named above.
+   - choose proof from the operator contract, command surface, mutation rules,
+     and distribution contract before listing gate families
    - cover the gate axes per `references/quality-gates.md`: parser/`--help` smoke,
      mutating-command side-effect probe fixtures (read-only help probes,
      option-looking positional rejection, dry-run/plan coverage or waiver, watched

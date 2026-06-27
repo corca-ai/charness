@@ -31,7 +31,7 @@ REQUIRED_HEADINGS = (
     "## Advisory",
     "## Delegated Review",
     "## Commands Run",
-    "## Recommended Next Gates",
+    "## Recommended Next Quality Moves",
     "## History",
 )
 
@@ -98,6 +98,10 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     assert "--report-all" in template
     assert "`- active ` or `- passive `" in template
     assert "` because`" in template and "` until`" in template
+    assert "capability_needed=TODO" in template
+    assert "enforcement_posture=advisory" in template
+    assert "candidate-floor requires" in template
+    assert "move_type=TODO" not in template
 
     # Dogfood: the emitted skeleton must pass the real validator unedited.
     artifact_path = repo / payload["artifact_path"]

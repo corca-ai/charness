@@ -269,7 +269,7 @@ def test_live_registry_is_structurally_valid() -> None:
     ids = {s["surface_id"] for s in registry["surfaces"]}
     # the 10 python declarations enumerated empirically + the 1 prose ranking
     assert "find-skills-recommendation" in ids
-    assert "quality-next-gates-ranking" in ids
+    assert "quality-next-moves-ranking" in ids
     assert "ci-recoverable-gate-triage" in ids
     assert "structural-waste" in ids
     assert "doc-duplicates" in ids

@@ -107,18 +107,18 @@
       "note": "Duplicate discovery and broad scanner waste advisory. Token evidence surfaces candidate collection and broad AST parser patterns; the consumer must decide whether the candidate duplicates a real runner/target-list owner or whether broad parsing is the correctness boundary."
     },
     {
-      "surface_id": "quality-next-gates-ranking",
+      "surface_id": "quality-next-moves-ranking",
       "kind": "prose",
       "declaration_file": "skills/public/quality/references/gate-classification.md",
       "prose_anchors": [
         "It measures *your* judged leverage",
-        "the single highest-value next proof move",
+        "the single highest-value next quality move",
         "blind to maintenance burden",
         "answer its interpretation question"
       ],
       "consumer_reference": "skills/public/quality/references/gate-classification.md",
-      "consumer_anchor": "does the top-ranked gate genuinely",
-      "note": "Agent-authored `Recommended Next Gates` prose ranking. No Python declaration dict exists, so it is registered as prose and checked by anchor presence (the 4 framing elements + the consumer-answer line). Out of the python leak scan by design; the declaration and consumer live in the same self-consuming doc."
+      "consumer_anchor": "does the top-ranked move genuinely",
+      "note": "Agent-authored `Recommended Next Quality Moves` prose ranking. No Python declaration dict exists, so it is registered as prose and checked by anchor presence (the 4 framing elements + the consumer-answer line). Out of the python leak scan by design; the declaration and consumer live in the same self-consuming doc."
     }
   ]
 }

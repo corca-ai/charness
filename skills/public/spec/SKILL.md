@@ -58,6 +58,8 @@ honest about cost and push duplicated unit-detail coverage downward.
 Before locking the contract, run success criteria review so future-success claims
 become criteria, checks, and tripwires. Routine use may be inline; it does not
 replace the bounded critique required before finalizing a task-completing contract; call `critique` for non-trivial contract decisions. Focuses: likely implementer misread, overstated acceptance, hidden sequencing.
+When hidden sequencing is the risk, use `../../shared/references/generative-sequence.md`
+as a lens, not as a required form.
 
 ## Workflow
 

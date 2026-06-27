@@ -31,7 +31,7 @@ def validate_quality_closeout_contract(repo_root: Path) -> None:
 
     require_text(
         skill_path,
-        "The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings",
+        "The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Quality Moves` findings",
         "final-response disclosure contract",
     )
     require_text(
@@ -44,7 +44,7 @@ def validate_quality_closeout_contract(repo_root: Path) -> None:
         "must not suppress inline prompt/content inventory",
         "prompt asset root boundary",
     )
-    for section in ("## Weak", "## Missing", "## Advisory", "## Delegated Review", "## Recommended Next Gates"):
+    for section in ("## Weak", "## Missing", "## Advisory", "## Delegated Review", "## Recommended Next Quality Moves"):
         require_text(artifact_validator_path, f'"{section}"', f"quality artifact section requirement {section}")
 
 

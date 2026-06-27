@@ -37,6 +37,7 @@ HITL_FIELDS = (
     "automation_candidate",
 )
 SECTION_RE = re.compile(r"^##\s+")
+RECOMMENDED_HEADINGS = ("## Recommended Next Quality Moves", "## Recommended Next Gates")
 
 
 def section_text(lines: list[str], heading: str, next_heading: str | None = None) -> list[str]:
@@ -80,7 +81,11 @@ def collect_bullets(lines: list[str]) -> list[str]:
 
 def inventory_quality_handoff(artifact_text: str, artifact_path: str) -> dict[str, object]:
     lines = artifact_text.splitlines()
-    recommended = section_text(lines, "## Recommended Next Gates", "## History")
+    recommended: list[str] = []
+    for heading in RECOMMENDED_HEADINGS:
+        recommended = section_text(lines, heading, "## History")
+        if recommended:
+            break
     findings: list[dict[str, object]] = []
     for bullet in collect_bullets(recommended):
         if "NON_AUTOMATABLE" not in bullet:

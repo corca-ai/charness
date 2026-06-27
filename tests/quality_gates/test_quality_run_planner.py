@@ -88,12 +88,18 @@ def test_quality_run_plan_includes_skill_refs_for_skill_authoring_repo(tmp_path:
     assert "Target boundary:" in packet["write_artifact_signals"]
     assert "Ambient repo findings:" in packet["write_artifact_signals"]
     assert "structural review result:" in packet["write_artifact_signals"]
+    assert "Recommended Next Quality Moves:" in packet["write_artifact_signals"]
     assert {question["id"] for question in packet["questions"]} >= {
-        "target_vs_ambient",
-        "helper_owned_packet",
-        "dogfood_pressure",
-        "next_structural_move",
+        "capability_needed",
+        "sequencing_applicability",
+        "current_centers",
+        "quality_move_card",
+        "enforcement_posture",
     }
+    assert packet["quality_move_card"]["applies_to"] == "recommended moves only"
+    assert packet["quality_move_card"]["default_enforcement_posture"] == "advisory-or-no-gate"
+    assert "floor-candidate" in packet["quality_move_card"]["move_types"]
+    assert "candidate-floor" in packet["quality_move_card"]["enforcement_postures"]
     assert any("before broad gates" in barrier for barrier in plan["phase_barriers"])
     assert any("before fixing" in barrier for barrier in plan["phase_barriers"])
     assert any("structural_review_packet" in barrier for barrier in plan["phase_barriers"])

@@ -45,8 +45,8 @@ discipline exists to make a wrong number visible early.
 
 ## Anti-Need Before Need
 
-Before drafting `Recommended Next Gates`, run the existing-convention check
-above for each candidate. If the cost or risk is already declared
+Before drafting `Recommended Next Quality Moves`, run the existing-convention
+check above for each candidate. If the cost or risk is already declared
 (`@pytest.mark.<marker>`, marker docs in `pyproject.toml`, repo-owned policy
 files, comments at the origin commit), the recommendation must be the
 routing fix or deletion that honors the prior declaration — not an additive

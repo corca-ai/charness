@@ -24,7 +24,7 @@ def test_inventory_quality_handoff_reports_missing_fields(tmp_path: Path) -> Non
                 "# Quality Review",
                 "Date: 2026-04-15",
                 "",
-                "## Recommended Next Gates",
+                "## Recommended Next Quality Moves",
                 "",
                 "- passive `NON_AUTOMATABLE`: decide whether the review stays manual because it needs judgment.",
                 "",

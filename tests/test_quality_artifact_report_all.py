@@ -69,7 +69,7 @@ def valid_quality_artifact(*, runtime_source: str) -> str:
             "- status: executed; bounded subagent review ran.",
             "## Commands Run",
             "- cmd",
-            "## Recommended Next Gates",
+            "## Recommended Next Quality Moves",
             "- active AUTO_CANDIDATE: next",
             "## History",
             "- [archive](history/one.md)",
@@ -106,7 +106,7 @@ def _multi_violation_artifact() -> str:
             "- status: executed; bounded subagent review ran.",
             "## Commands Run",
             "- cmd",
-            "## Recommended Next Gates",
+            "## Recommended Next Quality Moves",
             "- passive AUTO_CANDIDATE: do later",
             "## History",
             "- [archive](history/one.md)",
@@ -121,7 +121,7 @@ def test_validate_quality_artifact_default_mode_fails_fast(tmp_path: Path) -> No
     assert result.returncode == 1
     assert "runtime source must not be markdown" in result.stderr
     assert "rule violation(s)" not in result.stderr
-    assert "passive recommended next gates" not in result.stderr
+    assert "passive recommended next quality moves" not in result.stderr
 
 
 def test_validate_quality_artifact_report_all_lists_every_violation(tmp_path: Path) -> None:
@@ -131,7 +131,7 @@ def test_validate_quality_artifact_report_all_lists_every_violation(tmp_path: Pa
     assert "quality artifact rule violation(s)" in result.stderr
     assert "runtime source must not be markdown" in result.stderr
     assert "none found by inventory" in result.stderr
-    assert "passive recommended next gates must explain" in result.stderr
+    assert "passive recommended next quality moves must explain" in result.stderr
 
 
 def test_validate_quality_artifact_report_all_passes_clean_artifact(tmp_path: Path) -> None:

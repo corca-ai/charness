@@ -99,6 +99,9 @@ canonical adapter when the repo should own topology terms.
    - keep the behavior rule in core when the philosophy should shape repeated
      moves; put factual essence, nuance, and reference contents in
      `references/`
+   - for sequencing-shaped skill improvements, consume
+     `../../shared/references/generative-sequence.md` lightly instead of
+     embedding that lens in this skill
    - move schemas, examples, and theory into `references/`
    - add scripts for repeated bootstrap, adapter resolution, artifact upsert,
      or recovery behavior that would otherwise become prose-only ritual

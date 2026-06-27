@@ -1,6 +1,6 @@
 ---
 name: quality
-description: "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete next gates instead of only complaining about what is missing."
+description: "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete quality moves instead of only complaining about what is missing."
 ---
 # Quality
 
@@ -48,8 +48,10 @@ git status --short
 6. Open `on_demand_reads` only when a concrete gate, inventory, source, or
    operator finding matches its trigger.
 7. Classify findings by enforcement tier and posture, then recommend the next
-   concrete gate, cleanup, deletion, merge, ownership split, helper extraction,
-   or interface narrowing.
+   concrete quality move: cleanup, deletion, merge, ownership split, helper
+   extraction, interface narrowing, advisory, existing-gate reuse, or a
+   candidate floor that has passed the north-star and floor-addition-restraint
+   checks.
 8. Use `scaffold_quality_artifact.py` for the quality artifact; the scaffold and
    validator own the output shape.
 9. Run bounded fresh-eye review after initial inventory and before broad
@@ -69,9 +71,9 @@ git status --short
 - Do not move local proof to CI unless another channel fully reruns the same
   proof.
 - Final summaries and artifacts must not hide `Weak`, `Missing`, `Advisory`,
-  `Delegated Review`, or active `Recommended Next Gates` because a final gate
-  passed.
-- The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings.
+  `Delegated Review`, or active `Recommended Next Quality Moves` because a final
+  gate passed.
+- The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Quality Moves` findings.
 - Open `references/prompt-asset-policy.md` when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured.
 
 ## References

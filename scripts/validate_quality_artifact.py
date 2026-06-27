@@ -47,9 +47,11 @@ REQUIRED_SECTIONS = (
     "## Advisory",
     "## Delegated Review",
     "## Commands Run",
-    "## Recommended Next Gates",
+    "## Recommended Next Quality Moves",
     "## History",
 )
+LEGACY_RECOMMENDED_SECTION = "## Recommended Next Gates"
+RECOMMENDED_SECTION = "## Recommended Next Quality Moves"
 HISTORY_LINK_RE = re.compile(r"\[.+\]\((?:\./)?history/[^)]+\.md\)")
 RUNTIME_SIGNAL_PREFIXES = (
     "- runtime source:",
@@ -78,7 +80,7 @@ MISSING_RUNTIME_SOURCE_MARKERS = (
     "missing",
     "unavailable",
 )
-RECOMMENDED_GATE_PREFIXES = ("- active ", "- passive ")
+RECOMMENDED_MOVE_PREFIXES = ("- active ", "- passive ")
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -175,18 +177,23 @@ def validate_runtime_signals_section(lines: list[str]) -> None:
         raise ValidationError("runtime hot spot timings must cite the summary helper that rendered them")
 
 
-def validate_recommended_next_gates_section(lines: list[str]) -> None:
-    start = find_index(lines, "## Recommended Next Gates") + 1
+def normalized_recommended_heading_lines(lines: list[str]) -> list[str]:
+    return [RECOMMENDED_SECTION if line == LEGACY_RECOMMENDED_SECTION else line for line in lines]
+
+
+def validate_recommended_next_moves_section(lines: list[str]) -> None:
+    normalized_lines = normalized_recommended_heading_lines(lines)
+    start = find_index(normalized_lines, RECOMMENDED_SECTION) + 1
     end = find_index(lines, "## History")
-    section_lines = [line.strip() for line in lines[start:end] if line.strip()]
+    section_lines = [line.strip() for line in normalized_lines[start:end] if line.strip()]
     bullets = [line for line in section_lines if line.startswith("- ")]
     if not bullets:
-        raise ValidationError("`## Recommended Next Gates` must contain at least one bullet")
-    if any(not line.startswith(RECOMMENDED_GATE_PREFIXES) for line in bullets):
-        raise ValidationError("recommended next gates must start with `- active ` or `- passive `")
+        raise ValidationError("`## Recommended Next Quality Moves` must contain at least one bullet")
+    if any(not line.startswith(RECOMMENDED_MOVE_PREFIXES) for line in bullets):
+        raise ValidationError("recommended next quality moves must start with `- active ` or `- passive `")
     for line in bullets:
         if line.startswith("- passive ") and " because" not in line and " until" not in line:
-            raise ValidationError("passive recommended next gates must explain why they are passive")
+            raise ValidationError("passive recommended next quality moves must explain why they are passive")
 
 
 def validate_advisory_section(lines: list[str]) -> None:
@@ -318,11 +325,11 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
         _header,
         lambda: validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="quality artifact"),
         lambda: validate_date_line(lines),
-        lambda: validate_section_order(lines, REQUIRED_SECTIONS),
+        lambda: validate_section_order(normalized_recommended_heading_lines(lines), REQUIRED_SECTIONS),
         lambda: validate_runtime_signals_section(lines),
         lambda: validate_advisory_section(lines),
         lambda: validate_delegated_review_section(lines),
-        lambda: validate_recommended_next_gates_section(lines),
+        lambda: validate_recommended_next_moves_section(lines),
         lambda: validate_history_section(lines),
         lambda: validate_subagent_blocker_reasoning(lines),
         lambda: validate_skill_ergonomics_count_claims(lines, resolved_repo_root),
