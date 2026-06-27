@@ -9,11 +9,10 @@ goal is already active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: choose the next downstream target after `ideation`.
-- Current slice intent: decide whether `spec` needs a matching
-  capability-contract hook or whether the next valuable move is elsewhere.
-- Next action: inspect `spec` through the new create-skill brief before
-  mutating.
+- Current slice: choose the next downstream target after `spec`.
+- Current slice intent: decide whether `impl` needs matching consumer-capability
+  handoff language or whether this rollout should pause for final critique.
+- Next action: inspect `impl` before mutating.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -114,6 +113,7 @@ unchanged skills.
 | 3 | Dogfood quality-move recommendations on the changed target | Prove quality can make skill-improvement suggestions in the new language | Target-skill quality artifact or planner output | complete |
 | 4 | Fresh-eye critique and focused closeout | Avoid overclaiming migration breadth | Critique artifact, goal update, non-claims | complete |
 | 5 | Add capability-over-feature hook to `ideation` | Move the source concept skill before improving downstream `spec` | Focused ideation diff, dogfood freeze, slice closeout | complete |
+| 6 | Add capability-contract hook to `spec` | Preserve capability intent when moving from concept to implementation contract | Focused spec diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -198,6 +198,20 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `ideation` slice after the
     dogfood freeze.
+- Slice 4 — `spec` capability-contract hook.
+  - Changed: `skills/public/spec/SKILL.md` and generated plugin mirror now carry
+    forward the capability or capability failure from `ideation`, require actor,
+    capability delta, and acceptance boundary before feature enumeration when
+    missing, and add `Capability Contract` to the output shape.
+  - Dogfood/evaluator disposition: `spec` is evaluator-required and mapped to
+    `representative-skill-contracts`; this diff does not change routing,
+    frontmatter, or scenario mapping. `docs/public-skill-dogfood.json` now
+    records the current contract freeze; no live Cautilus run or scenario
+    registry mutation is claimed.
+  - Non-claim: no new deterministic floor was added for capability vocabulary.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `spec` slice after the
+    dogfood freeze and scenario mapping review.
   - Non-claim: this slice improves the authoring contract; it does not complete
     all public skill migration.
 

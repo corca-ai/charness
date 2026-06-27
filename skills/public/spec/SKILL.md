@@ -48,6 +48,8 @@ Before mutating spec/design docs in a worktree, run `command -v charness >/dev/n
 ## Contract Shaping
 
 Choose the lightest honest contract shape.
+Carry forward the capability or failure from `ideation`; if missing, name the
+actor, capability delta, and acceptance boundary before enumerating features.
 When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing taxonomy choice. Before adding public kind/strategy/profile/target vocabulary, run `references/taxonomy-axis-checkpoint.md`.
 
 If the repo already treats executable checks as contract artifacts, push acceptance into those checks instead of managing a separate prose-only branch. For public executable pages, keep current-state claims and bounded proof only; move future-state planning, source inventory, and low-level implementation guards down a layer. If the repo wants the latest on-demand validation visible to readers, project the checked artifact into a viewer-style executable page instead of rebuilding the evaluator logic inline or promoting source guards into the public spec.
@@ -84,7 +86,7 @@ as a lens, not as a required form.
      opening broad branch trees
    - check taxonomy-axis consistency before adding public enum vocabulary
 4. Define the current execution contract.
-   - current slice, non-goals, constraints, success criteria, and acceptance checks
+   - capability contract, current slice, non-goals, constraints, success criteria, and acceptance checks
    - deliberately not doing or rejected alternatives when future readers may reopen the branch
    - apply `../../shared/references/source-bound-records.md` for multi-source external writes
    - open risks, probe questions, or deferred decisions
@@ -133,6 +135,7 @@ as a lens, not as a required form.
 The final spec should usually include:
 
 - `Problem`
+- `Capability Contract`
 - `Current Slice`
 - `Fixed Decisions`
 - `Probe Questions`

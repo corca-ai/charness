@@ -729,7 +729,8 @@
         "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
         "The spec guardrail now forbids skipping bounded critique before finalizing a task-completing contract, removing the earlier narrow risky/cross-surface qualifier.",
         "Representative contract pins in `scripts/check_skill_contracts.py` now also keep the risk-interrupt carry-forward seam load-bearing: when the planner surfaces a forced debug interrupt, `spec` must consume it explicitly in `Critique` instead of clearing it with generic doc churn.",
-        "That keeps the planner-backed `debug -> spec -> impl` boundary visible as a reviewed consumer seam: the current contract makes seam risk survive into the spec handoff before plain implementation is allowed to resume."
+        "That keeps the planner-backed `debug -> spec -> impl` boundary visible as a reviewed consumer seam: the current contract makes seam risk survive into the spec handoff before plain implementation is allowed to resume.",
+        "Capability-first rollout slice (2026-06-27): spec now carries forward the capability or capability failure from ideation, requires the actor, capability delta, and acceptance boundary before feature enumeration when missing, and adds `Capability Contract` to the output shape. This preserves routing to `spec`, adapter-free posture, and maintained `representative-skill-contracts` scenario coverage; no live Cautilus run or scenario registry mutation is claimed."
       ]
     }
   ]
