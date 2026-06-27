@@ -46,7 +46,12 @@ next_action = _planner_packets.next_action
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        epilog=(
+            "Use --json before release mutation to inspect required_reads, "
+            "gate_packets, evidence_packets, and real-host proof scope."
+        )
+    )
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--remote", default="origin")
     parser.add_argument("--critique-artifact")
@@ -223,6 +228,10 @@ def main() -> int:
             print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         else:
             print(f"next_action={payload['next_action']['kind']}: {payload['next_action']['reason']}")
+            real_host = payload.get("evidence_packets", {}).get("real_host")
+            if isinstance(real_host, dict) and real_host.get("required"):
+                scope = real_host.get("evidence_scope") or "unknown"
+                print(f"real_host=required scope={scope}; inspect --json evidence_packets.real_host before closeout")
         return 0
     finally:
         cancel_timeout()

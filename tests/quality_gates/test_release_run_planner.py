@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -272,6 +273,47 @@ def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatc
 
     assert _PLANNER.main() == 0
     assert "next_action=inspect_only: choose target" in capsys.readouterr().out
+
+
+def test_release_run_planner_plain_output_names_required_real_host_scope(
+    capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(json=False))
+    monkeypatch.setattr(
+        _PLANNER,
+        "build_plan",
+        lambda _args: {
+            "next_action": {"kind": "needs_critique", "reason": "critique required"},
+            "evidence_packets": {
+                "real_host": {
+                    "required": True,
+                    "evidence_scope": "release_delta",
+                },
+            },
+        },
+    )
+    monkeypatch.setattr(
+        _PLANNER.SKILL_RUNTIME,
+        "arm_cli_timeout",
+        lambda label: (lambda: None),
+    )
+
+    assert _PLANNER.main() == 0
+    out = capsys.readouterr().out
+    assert "next_action=needs_critique: critique required" in out
+    assert "real_host=required scope=release_delta" in out
+
+
+def test_release_run_planner_help_points_to_json_evidence_packets(
+    capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(sys, "argv", ["plan_release_run.py", "--help"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        _PLANNER.parse_args()
+
+    assert excinfo.value.code == 0
+    assert "evidence_packets" in capsys.readouterr().out
 
 
 def test_release_run_planner_bootstrap_missing_raises(monkeypatch: pytest.MonkeyPatch) -> None:

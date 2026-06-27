@@ -12,12 +12,12 @@ This file is the living goal scratchpad for the active three-hour quality loop.
 
 ## Active Operating Frame
 
-- Current slice: broad pytest proof-scope self-check.
-- Current slice intent: turn the broad pytest fingerprint drift smell into a
-  local closeout self-check instead of relying on human comparison.
-- Next action: complete fresh-eye critique, run the slice lint gate, commit the
-  proof-scope self-check, then choose whether to continue or enter closeout
-  reserve.
+- Current slice: release critique and closeout.
+- Current slice intent: publish `v0.56.7` through the repo-owned release helper
+  after final gates, release critique, release notes, push, public verification,
+  and install refresh.
+- Next action: commit release critique/notes/planner UX follow-up, run final
+  closeout and quality gates, then execute release helper.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -94,7 +94,7 @@ push, and release.
 | --- | --- | --- | --- | --- |
 | 1 | Release planning evidence scope | Handoff named clean-worktree release planning as the next smell after focused producer UX | Regression test and planner/helper fix proving release proof uses intended delta | committed `1d749d1c` |
 | 2 | Standing pytest runner startup probes | Runtime artifact names pytest as the dominant standing cost; runner startup had avoidable probe subprocesses | Focused implementation, targeted tests, timing sample, commit | committed `d6a02330` |
-| 3 | Broad pytest proof-scope self-check | User flagged broad pytest fingerprint drift as a smell; debug artifact identified proof changed_paths drift as the failure mode | Closeout self-check, targeted tests, commit | in-progress |
+| 3 | Broad pytest proof-scope self-check | User flagged broad pytest fingerprint drift as a smell; debug artifact identified proof changed_paths drift as the failure mode | Closeout self-check, targeted tests, commit | committed `9a8b49f3` |
 | Final | Push and release | User requested final push/release | Full quality, release critique, publish helper, public verification | pending |
 
 ## Operator Decision Queue
@@ -224,6 +224,38 @@ Critique: full fresh-eye reviewer `019f0711-776e-7590-a856-bfbc76022123`.
 Finding: Low helper-level tests did not prove executable placement; fixed by
 adding the `main()` placement regression. Reviewer found no blockers and
 confirmed the proof shapes match current executor output.
+
+### Final Slice: Release critique and notes
+
+Status: in-progress.
+
+Changed:
+
+- `skills/public/release/scripts/plan_release_run.py`: release critique found
+  plain planner output hid newly important real-host proof scope. Added a help
+  epilog steering operators to `--json` evidence packets and a plain-output line
+  when `real_host.required` is true.
+- `plugins/charness/skills/release/scripts/plan_release_run.py`: synced export.
+- `tests/quality_gates/test_release_run_planner.py`: added plain-output and help
+  coverage for required real-host proof guidance.
+- `charness-artifacts/critique/2026-06-27-release-0.56.7-quality-loop.md`:
+  persisted the standalone release critique result.
+- `charness-artifacts/release/notes-v0.56.7.md`: self-contained release notes
+  for the publish helper.
+- `charness-artifacts/critique/2026-06-27-031756-packet.md` and `.json`: tracked
+  critique prepare packet consumed by the release critique.
+
+Evidence:
+
+- `python3 -m pytest -q tests/quality_gates/test_release_run_planner.py`:
+  21 passed in 4.33s.
+- Release critique: operational reviewer `019f0715-9ec9-76a1-939f-c182ec1fd57b`,
+  structure reviewer `019f0715-c385-7720-ba1a-045d41ec9e86`, interface reviewer
+  `019f0715-e0eb-7752-9dfb-f85e6fc84417`, and counterweight reviewer
+  `019f0716-0451-7a83-ac71-0e4f502c7961`.
+- Critique outcome: patch release is appropriate; real-host proof is required
+  from release delta; do not use the prepare packet's empty changed-path section
+  as inventory; bundle planner plain-output guidance; publish via helper.
 
 ## Context Sources
 
