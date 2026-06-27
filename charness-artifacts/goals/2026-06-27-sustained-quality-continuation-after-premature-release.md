@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 17 complete; re-inventory for slice 18.
-- Current slice intent: continue prompt/template bulk reduction after the issue
-  closeout-draft stub extraction.
-- Next action: commit and push slice 17, then continue discovery unless a
+- Current slice: slice 18 complete; re-inventory for slice 19.
+- Current slice intent: continue prompt/template bulk reduction after setup seed
+  template extraction and shared seed CLI cleanup.
+- Next action: commit and push slice 18, then continue discovery unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -78,7 +78,8 @@ accumulate.
 | 15 | Extract achieve closeout stub template from Python | Prompt-bulk inventory next surfaced `describe_goal_closeout_shape.py`; the closeout starter stub is generated content, not Python logic | focused achieve/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 16 | Extract critique adapter scaffold template from Python | Prompt-bulk inventory next surfaced `critique/scripts/init_adapter.py`; the adapter skeleton is generated YAML, not Python logic | focused critique/reviewer tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 17 | Extract issue closeout-draft stub template from Python | Prompt-bulk inventory next surfaced `describe_closeout_draft_shape.py`; the starter closeout body is generated Markdown, not Python logic | focused issue/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 18 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 18 | Extract setup adapter seed templates from Python | Prompt-bulk inventory next surfaced setup seed adapter bodies; these are generated YAML, not Python logic | focused setup seed tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 19 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -608,6 +609,60 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     focused structural sweeps, coverage-instrumented standing pytest,
     gitignore-scan hygiene, and agent browser runtime guard. Usage episode:
     `slice-closeout-19fa63a158684405b2f6a1fb258cd712`.
+- Slice 18 evidence:
+  - Prompt-bulk inventory after slice 17 reported 29 findings and surfaced
+    `skills/public/setup/scripts/seed_t_events_adapter.py` and
+    `skills/public/setup/scripts/seed_usage_episodes_adapter.py` as the next
+    public-skill generated-content candidates.
+  - Moved the static seed bodies to
+    `skills/public/setup/scripts/templates/t_events_adapter.yaml` and
+    `skills/public/setup/scripts/templates/usage_episodes_adapter.yaml`; the
+    seed scripts now read those template assets.
+  - Extracted the shared seed-adapter CLI write/dry-run/force flow to
+    `skills/public/setup/scripts/seed_adapter_cli_lib.py` and routed the
+    t-events, usage-episodes, and worktree seed scripts through it after
+    dup-ratchet surfaced a real three-script clone family.
+  - Synced plugin export, adding the matching templates under
+    `plugins/charness/skills/setup/scripts/templates/`.
+  - Added deterministic coverage that seeded/dry-run adapter output exactly
+    equals the source template assets.
+  - Prompt-bulk inventory after the change reported 27 findings; the setup
+    t-events and usage-episodes seed bodies no longer appear.
+  - Focused proof: `py_compile`, focused `ruff check`, and the setup seed pytest
+    bundle passed; focused pytest reported `10 passed in 0.94s`. After the
+    shared CLI helper extraction, the setup seed/worktree focused bundle
+    reported `22 passed in 1.21s`, and `check_dup_ratchet.py` reported no new
+    code/doc families.
+  - Public-skill scenario review: `suggest_public_skill_dogfood.py --skill-id
+    setup` confirmed `setup` remains `evaluator-required`; Cautilus planner
+    reported `next_action: none` but required maintained scenario review.
+    Inspected `evals/cautilus/scenarios.json`: `setup` remains mapped to
+    `setup-adapter-bootstrap`, `setup-inspect-states`, and
+    `setup-compact-skill-routing-discoverability`; recorded no
+    scenario-registry change in `docs/public-skill-dogfood.json` because this
+    slice changes implementation shape, not setup routing, repo inspection,
+    normalization behavior, adapter bootstrap behavior, or compact
+    skill-routing discoverability.
+  - Fresh-eye review: no blocking finding. Reviewer verified source/plugin
+    mirror parity, byte-identical t-events and usage-episodes templates
+    including final newline, equivalent worktree seed behavior through the
+    shared helper, honest evaluator-required scenario review, and packaging
+    export coverage. Non-blocking coverage note was that t-events only locked
+    written output to the template asset; added a dry-run equality assertion and
+    reran the focused setup seed/worktree bundle (`23 passed in 1.24s`).
+  - Changed-surface proof: skill/public-skill/dogfood/scenario validators,
+    packaging validators, plugin import smoke, doc/markdown checks,
+    dup-ratchet, attention-state visibility, and the standing pytest runner
+    passed; standing pytest reported `3683 passed in 20.61s`.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --ack-cautilus-skill-review --produce-mutation-coverage
+    --verification-lock` completed, including a new mutation-pool module
+    advisory for `seed_adapter_cli_lib.py`, skill/public-skill/dogfood
+    validators, docs/markdown/secrets checks, focused structural sweeps,
+    coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
+    browser runtime guard. Usage episode:
+    `slice-closeout-7206a8e3477e47bc9c9528f81e01c874`.
 
 ## Context Sources
 

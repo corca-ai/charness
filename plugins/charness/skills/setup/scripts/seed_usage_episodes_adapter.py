@@ -4,61 +4,28 @@
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from seed_adapter_cli_lib import run_seed_adapter  # noqa: E402
+
 DEFAULT_TARGET = Path(".agents/usage-episodes-adapter.yaml")
-TEMPLATE = """\
-# charness usage-episodes adapter: validate privacy-bounded H-LAM/T product
-# usage episodes emitted by this repo. Runtime JSONL is generated local state
-# under .charness/ and should not be committed except curated fixtures.
-#
-# Schemas and validator ship with the Charness/plugin usage-episodes integration.
-# Validate from a Charness checkout or plugin install against this product repo.
-version: 1
-repo: my-product
-enabled: true
-storage_path: .charness/usage-episodes
-events:
-  - usage_episode
-privacy:
-  raw_prompt: false
-  raw_transcript: false
-  user_identity: host-owned
-  policy_ref: docs/privacy.md
-rotation:
-  max_files: 10
-  max_size_mb: 10
-"""
+TEMPLATE = (
+    Path(__file__).resolve().parent / "templates" / "usage_episodes_adapter.yaml"
+).read_text(encoding="utf-8")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose usage-episodes adapter should be seeded")
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Overwrite an existing .agents/usage-episodes-adapter.yaml.",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the would-be manifest to stdout instead of writing.",
-    )
-    args = parser.parse_args()
-    if args.dry_run:
-        sys.stdout.write(TEMPLATE)
-        return 0
-    repo_root = args.repo_root.resolve()
-    target = repo_root / DEFAULT_TARGET
-    if target.is_file() and not args.force:
-        print(f"{target} already exists; pass --force to overwrite.", file=sys.stderr)
-        return 1
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(TEMPLATE, encoding="utf-8")
-    print(f"wrote {target.relative_to(repo_root)}")
-    return 0
+    options = {
+        "description": __doc__,
+        "repo_root_help": "Repo root whose usage-episodes adapter should be seeded",
+        "target": DEFAULT_TARGET,
+        "force_help": "Overwrite an existing .agents/usage-episodes-adapter.yaml.",
+        "render": lambda _repo_root: TEMPLATE,
+    }
+    return run_seed_adapter(**options)
 
 
 if __name__ == "__main__":

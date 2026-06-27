@@ -1,0 +1,20 @@
+# charness usage-episodes adapter: validate privacy-bounded H-LAM/T product
+# usage episodes emitted by this repo. Runtime JSONL is generated local state
+# under .charness/ and should not be committed except curated fixtures.
+#
+# Schemas and validator ship with the Charness/plugin usage-episodes integration.
+# Validate from a Charness checkout or plugin install against this product repo.
+version: 1
+repo: my-product
+enabled: true
+storage_path: .charness/usage-episodes
+events:
+  - usage_episode
+privacy:
+  raw_prompt: false
+  raw_transcript: false
+  user_identity: host-owned
+  policy_ref: docs/privacy.md
+rotation:
+  max_files: 10
+  max_size_mb: 10

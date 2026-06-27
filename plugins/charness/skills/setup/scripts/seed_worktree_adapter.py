@@ -13,45 +13,25 @@ writes a starter template matched to that stack. Detection lives in
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from seed_adapter_cli_lib import run_seed_adapter  # noqa: E402
 from seed_worktree_adapter_lib import detect, render_template  # noqa: E402
 
 DEFAULT_TARGET = Path(".agents/worktree-adapter.yaml")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose worktree adapter should be seeded")
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Overwrite an existing .agents/worktree-adapter.yaml.",
+    return run_seed_adapter(
+        description=__doc__,
+        repo_root_help="Repo root whose worktree adapter should be seeded",
+        target=DEFAULT_TARGET,
+        force_help="Overwrite an existing .agents/worktree-adapter.yaml.",
+        render=lambda repo_root: render_template(detect(repo_root)),
     )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the would-be manifest to stdout instead of writing.",
-    )
-    args = parser.parse_args()
-    repo_root = args.repo_root.resolve()
-    detection = detect(repo_root)
-    rendered = render_template(detection)
-    if args.dry_run:
-        sys.stdout.write(rendered)
-        return 0
-    target = (repo_root / DEFAULT_TARGET).resolve()
-    if target.is_file() and not args.force:
-        print(f"{target} already exists; pass --force to overwrite.", file=sys.stderr)
-        return 1
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(rendered, encoding="utf-8")
-    print(f"wrote {target.relative_to(repo_root)}")
-    return 0
 
 
 if __name__ == "__main__":

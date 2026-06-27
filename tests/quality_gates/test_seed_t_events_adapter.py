@@ -11,6 +11,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills" / "public" / "setup" / "scripts" / "seed_t_events_adapter.py"
+TEMPLATE = (
+    ROOT
+    / "skills"
+    / "public"
+    / "setup"
+    / "scripts"
+    / "templates"
+    / "t_events_adapter.yaml"
+)
 
 
 def _run(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -31,7 +40,16 @@ def test_repo_root_dot_invocation_exits_zero(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert "wrote .agents/t-events-adapter.yaml" in result.stdout
-    assert (repo / ".agents" / "t-events-adapter.yaml").is_file()
+    target = repo / ".agents" / "t-events-adapter.yaml"
+    assert target.is_file()
+    assert target.read_text(encoding="utf-8") == TEMPLATE.read_text(encoding="utf-8")
+
+
+def test_dry_run_emits_source_template() -> None:
+    result = _run(ROOT, "--dry-run")
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == TEMPLATE.read_text(encoding="utf-8")
 
 
 def test_existing_file_refuses_without_force(tmp_path: Path) -> None:

@@ -1,0 +1,18 @@
+# charness t-events adapter: capture T-loop lifecycle events emitted by
+# charness skills running inside this repo. The Skill-T mechanism inventory
+# reads these records as Tier C evidence.
+#
+# Schema:    integrations/t-events/manifest.schema.json
+# Records:   integrations/t-events/event.schema.json
+# Spec:      charness-artifacts/spec/t-first-self-evolving-unit.md
+# Storage:   .charness/t-events/<event_type>.jsonl (gitignore the directory)
+version: 1
+enabled: true
+storage_path: .charness/t-events
+events:
+  - skill_invoked
+  - lesson_cited
+  - anchor_invoked
+rotation:
+  max_files: 5
+  max_size_mb: 5

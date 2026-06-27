@@ -16,6 +16,15 @@ from .support import ROOT, run_script
 jsonschema = pytest.importorskip("jsonschema")
 
 SCRIPT = "skills/public/setup/scripts/seed_usage_episodes_adapter.py"
+TEMPLATE = (
+    ROOT
+    / "skills"
+    / "public"
+    / "setup"
+    / "scripts"
+    / "templates"
+    / "usage_episodes_adapter.yaml"
+)
 _seed_usage_episodes = import_repo_module(
     ROOT / SCRIPT,
     "skills.public.setup.scripts.seed_usage_episodes_adapter",
@@ -33,6 +42,7 @@ def test_seed_usage_episodes_dry_run_validates_against_manifest_schema(monkeypat
     result = run_seed_usage_episodes(monkeypatch, capsys, "--dry-run")
 
     assert result.returncode == 0, result.stderr
+    assert result.stdout == TEMPLATE.read_text(encoding="utf-8")
     rendered = yaml.safe_load(result.stdout)
     schema = json.loads(
         (ROOT / "integrations" / "usage-episodes" / "manifest.schema.json").read_text(encoding="utf-8")
@@ -49,6 +59,7 @@ def test_seed_usage_episodes_writes_adapter(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     target = repo / ".agents" / "usage-episodes-adapter.yaml"
     assert target.is_file()
+    assert target.read_text(encoding="utf-8") == TEMPLATE.read_text(encoding="utf-8")
     assert "usage_episode" in target.read_text(encoding="utf-8")
 
 
