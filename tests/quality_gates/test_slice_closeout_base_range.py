@@ -17,6 +17,7 @@ import pytest
 from scripts.run_slice_closeout import (
     _build_parser,
     _closeout_changed_paths_collector,
+    _maybe_fail_on_broad_pytest_scope_drift,
     _resolve_changed_paths,
 )
 from scripts.surfaces_lib import (
@@ -105,6 +106,41 @@ def test_broad_pytest_proof_scope_keeps_base_range_and_live_worktree(tmp_path: P
     (repo / "dirty.txt").write_text("dirty\n", encoding="utf-8")
 
     assert collector(repo) == ["committed.txt", "dirty.txt"]
+
+
+def test_broad_pytest_scope_drift_fails_closeout_payload() -> None:
+    payload: dict[str, object] = {
+        "status": "completed",
+        "changed_paths": ["committed.txt", "dirty.txt"],
+        "recorded_broad_pytest_proofs": [
+            {"command": "pytest", "changed_paths": ["dirty.txt"]},
+        ],
+        "reused_broad_pytest_proofs": [
+            {"command": "pytest", "match": {"changed_paths": ["committed.txt"]}},
+        ],
+    }
+
+    assert _maybe_fail_on_broad_pytest_scope_drift(payload) is True
+    assert payload["status"] == "failed"
+    findings = payload["broad_pytest_scope_findings"]
+    assert isinstance(findings, list)
+    assert findings[0]["proof_key"] == "recorded_broad_pytest_proofs"
+    assert findings[0]["missing_changed_paths"] == ["committed.txt"]
+    assert findings[1]["proof_key"] == "reused_broad_pytest_proofs"
+    assert findings[1]["missing_changed_paths"] == ["dirty.txt"]
+
+
+def test_broad_pytest_scope_check_accepts_payload_subset() -> None:
+    payload: dict[str, object] = {
+        "status": "completed",
+        "changed_paths": ["committed.txt"],
+        "recorded_broad_pytest_proofs": [
+            {"command": "pytest", "changed_paths": ["committed.txt", "dirty.txt"]},
+        ],
+    }
+
+    assert _maybe_fail_on_broad_pytest_scope_drift(payload) is False
+    assert payload["status"] == "completed"
 
 
 def test_resolve_changed_paths_explicit_paths_stay_the_override(tmp_path: Path) -> None:

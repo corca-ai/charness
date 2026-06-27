@@ -12,12 +12,12 @@ This file is the living goal scratchpad for the active three-hour quality loop.
 
 ## Active Operating Frame
 
-- Current slice: standing pytest runner startup probes.
-- Current slice intent: remove fixed subprocess startup overhead from the
-  canonical standing pytest runner without changing selected targets or
-  release-only exclusion.
+- Current slice: broad pytest proof-scope self-check.
+- Current slice intent: turn the broad pytest fingerprint drift smell into a
+  local closeout self-check instead of relying on human comparison.
 - Next action: complete fresh-eye critique, run the slice lint gate, commit the
-  runner startup optimization, then continue to the next measured quality slice.
+  proof-scope self-check, then choose whether to continue or enter closeout
+  reserve.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -93,8 +93,8 @@ push, and release.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Release planning evidence scope | Handoff named clean-worktree release planning as the next smell after focused producer UX | Regression test and planner/helper fix proving release proof uses intended delta | committed `1d749d1c` |
-| 2 | Standing pytest runner startup probes | Runtime artifact names pytest as the dominant standing cost; runner startup had avoidable probe subprocesses | Focused implementation, targeted tests, timing sample, commit | in-progress |
-| 3 | Additional safe quality slice | Continue until closeout reserve | Focused implementation, targeted tests, commit | pending |
+| 2 | Standing pytest runner startup probes | Runtime artifact names pytest as the dominant standing cost; runner startup had avoidable probe subprocesses | Focused implementation, targeted tests, timing sample, commit | committed `d6a02330` |
+| 3 | Broad pytest proof-scope self-check | User flagged broad pytest fingerprint drift as a smell; debug artifact identified proof changed_paths drift as the failure mode | Closeout self-check, targeted tests, commit | in-progress |
 | Final | Push and release | User requested final push/release | Full quality, release critique, publish helper, public verification | pending |
 
 ## Operator Decision Queue
@@ -194,6 +194,36 @@ fixed by returning `sys.executable -m pytest`. Follow-up finding: Low serial
 fallback warning said `not installed` when xdist was installed but disabled;
 fixed the message to `pytest-xdist is not active`. Reviewer found no remaining
 blocker.
+
+### Slice 3: Broad pytest proof-scope self-check
+
+Status: in-review.
+
+Changed:
+
+- `scripts/run_slice_closeout.py`: added `_maybe_fail_on_broad_pytest_scope_drift()`
+  after command execution and focused coverage. If any recorded or reused broad
+  pytest proof omits a top-level closeout `changed_paths` entry, closeout now
+  fails with `broad_pytest_scope_findings` rather than leaving a manual
+  comparison smell.
+- `plugins/charness/scripts/run_slice_closeout.py`: synced export.
+- `tests/quality_gates/test_slice_closeout_base_range.py`: added recorded and
+  reused proof drift tests plus an allowed superset case.
+- `tests/quality_gates/test_run_slice_closeout_surface_obligations.py`: added a
+  monkeypatched `main()` placement test proving a narrow recorded broad proof
+  fails the executable closeout path.
+
+Evidence:
+
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .` rewrote the
+  plugin export.
+- `python3 -m pytest -q tests/quality_gates/test_run_slice_closeout_surface_obligations.py::test_run_slice_closeout_main_fails_narrow_broad_pytest_proof_scope tests/quality_gates/test_slice_closeout_base_range.py tests/quality_gates/test_slice_closeout_broad_gate.py`:
+  22 passed in 2.90s.
+
+Critique: full fresh-eye reviewer `019f0711-776e-7590-a856-bfbc76022123`.
+Finding: Low helper-level tests did not prove executable placement; fixed by
+adding the `main()` placement regression. Reviewer found no blockers and
+confirmed the proof shapes match current executor output.
 
 ## Context Sources
 

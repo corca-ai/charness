@@ -290,6 +290,48 @@ def _closeout_changed_paths_collector(
     return _collect
 
 
+def _proof_scope_paths(proof: object) -> list[str]:
+    if not isinstance(proof, dict):
+        return []
+    if isinstance(proof.get("changed_paths"), list):
+        return [str(path) for path in proof["changed_paths"]]
+    match = proof.get("match")
+    if isinstance(match, dict) and isinstance(match.get("changed_paths"), list):
+        return [str(path) for path in match["changed_paths"]]
+    return []
+
+
+def _maybe_fail_on_broad_pytest_scope_drift(payload: dict[str, object]) -> bool:
+    expected = {str(path) for path in payload.get("changed_paths", []) if path}
+    if not expected:
+        return False
+    findings: list[dict[str, object]] = []
+    for proof_key in ("recorded_broad_pytest_proofs", "reused_broad_pytest_proofs"):
+        proofs = payload.get(proof_key)
+        if not isinstance(proofs, list):
+            continue
+        for proof in proofs:
+            actual = set(_proof_scope_paths(proof))
+            missing = sorted(expected - actual)
+            if missing:
+                findings.append(
+                    {
+                        "proof_key": proof_key,
+                        "command": proof.get("command") if isinstance(proof, dict) else None,
+                        "missing_changed_paths": missing,
+                    }
+                )
+    if not findings:
+        return False
+    payload["status"] = "failed"
+    payload["broad_pytest_scope_findings"] = findings
+    payload["error"] = (
+        "broad pytest proof scope is narrower than the closeout payload; "
+        "rerun closeout after fixing the proof collector"
+    )
+    return True
+
+
 def _planned_commands(
     repo_root: Path,
     changed_paths: list[str],
@@ -460,6 +502,10 @@ def main() -> int:
     attach_gate_runtime_advisory(payload)
 
     if should_stop:
+        _attach_closeout_telemetry(repo_root, payload)
+        return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))
+
+    if _maybe_fail_on_broad_pytest_scope_drift(payload):
         _attach_closeout_telemetry(repo_root, payload)
         return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))
 
