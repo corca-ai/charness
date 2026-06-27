@@ -11,21 +11,21 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-27",
-  "source_artifact_count": 269,
-  "candidate_count": 1256,
+  "source_artifact_count": 271,
+  "candidate_count": 1263,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
       "kind": "next_improvement",
       "lesson": "Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance.",
       "normalized_key": "release helper auto persisted this bounded retro trigger closeout no additional follow up is",
-      "source_count": 63,
-      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+      "source_count": 64,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
       "latest_source_date": "2026-06-27",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 22.7,
+      "selection_weight": 23.05,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -341,6 +341,11 @@
           "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
           "date": "2026-06-27",
           "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -349,13 +354,13 @@
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
-      "source_count": 63,
-      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+      "source_count": 64,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
       "latest_source_date": "2026-06-27",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 22.7,
+      "selection_weight": 23.05,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -669,6 +674,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
           "date": "2026-06-27",
           "section": "Waste"
         }
@@ -689,6 +699,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6f2235a63ea3",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v0.56.7`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v0 56 7",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:75a190f573f5",
+      "kind": "current_focus",
+      "lesson": "This retro reviews `charness-artifacts/goals/2026-06-27-capability-first-skill-redesign.md`: the skill-design slice that absorbed `genseq3` as a shared sequencing lens, migrated `quality` from next-gate language to next-quality-move language, and piloted the pattern on `create-cli` without adding a new blocking floor.",
+      "normalized_key": "this retro reviews charness artifacts goals 2026 06 27 capability first skill redesign md",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
           "date": "2026-06-27",
           "section": "Context"
         }
@@ -735,6 +785,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:2440c1b5a6e8",
+      "kind": "next_improvement",
+      "lesson": "Do not let unrelated release WIP become proof for or against a design-skill goal. Disposition: applied: the goal's dirty-worktree boundary keeps v0.56.7 release WIP out of scope, and final verification records the broad-closeout non-claim.",
+      "normalized_key": "do not let unrelated release wip become proof for or against a design skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:75de5e7c607f",
+      "kind": "next_improvement",
+      "lesson": "Quality target-skill review should be able to propose skill improvements in the same language used here: capability failure, current center, next center, proof boundary, and enforcement posture. Disposition: applied: `quality` planner/scaffold/validator now write and read `Recommended Next Quality Moves`, while the compatibility alias keeps old artifacts non-blocking.",
+      "normalized_key": "quality target skill review should be able to propose skill improvements in the same",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:44ce6e86e9b4",
+      "kind": "next_improvement",
+      "lesson": "When a goal changes shared skill contracts, bind the consumer pilot and the final closeout evidence names before broad hook propagation. Disposition: applied: this goal records the `create-cli` pilot before the adjacent hooks and closes with explicit retro/disposition evidence; no new blocking gate is added.",
+      "normalized_key": "when a goal changes shared skill contracts bind the consumer pilot and the final",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b77cc0275a27",
       "kind": "next_improvement",
       "lesson": "When excluding AST docstrings, add a control-flow string-expression test in the first patch, not only after review.",
@@ -755,12 +865,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:9763f0892e1d",
+      "candidate_id": "repeat_trap:bab80ff954e3",
       "kind": "repeat_trap",
-      "lesson": "The first prompt-bulk helper patch treated the first string expression inside any AST body as a docstring. Fresh-eye review caught the bug before broad proof, but the first implementation should have limited docstring ownership to module/class/function nodes up front.",
-      "normalized_key": "the first prompt bulk helper patch treated the first string expression inside any ast",
+      "lesson": "The active worktree also contains unrelated v0.56.7 release WIP. Keeping that boundary explicit was necessary, but it means broad lock-style closeout cannot honestly be claimed for this goal without mixing unrelated release state.",
+      "normalized_key": "the active worktree also contains unrelated v0 56 7 release wip keeping that boundary",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
       "latest_source_date": "2026-06-27",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -768,109 +878,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
           "date": "2026-06-27",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:7f6afb921313",
-      "kind": "repeat_trap",
-      "lesson": "The new quality artifact initially failed inventory-consumption and durability checks during broad pytest. The fix was simple, but the artifact could have been validated immediately after writing instead of during the locked closeout rerun.",
-      "normalized_key": "the new quality artifact initially failed inventory consumption and durability checks during broad pytest",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md",
-      "latest_source_date": "2026-06-27",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md",
-          "date": "2026-06-27",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:59e0be4b1013",
-      "kind": "current_focus",
-      "lesson": "Closeout retro for `charness-artifacts/goals/2026-06-26-sustained-quality-speed-token-release.md`: a roughly three-hour quality continuation run covering bug fixes, test runtime, script runtime, token efficiency, and final publication as `v0.56.2`.",
-      "normalized_key": "closeout retro for charness artifacts goals 2026 06 26 sustained quality speed token release",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-goal-retro.md",
-          "date": "2026-06-26",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:87e7366e428a",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.56.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 56 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4eeb585c63b9",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.56.2`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 56 2",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:cb1f1d705e0e",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.56.3`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 56 3",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md",
-      "latest_source_date": "2026-06-26",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Context"
         }
       ]
     }
@@ -881,13 +891,13 @@
       "kind": "next_improvement",
       "lesson": "Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance.",
       "normalized_key": "release helper auto persisted this bounded retro trigger closeout no additional follow up is",
-      "source_count": 63,
-      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+      "source_count": 64,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
       "latest_source_date": "2026-06-27",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 22.7,
+      "selection_weight": 23.05,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -1203,6 +1213,11 @@
           "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
           "date": "2026-06-27",
           "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -1211,13 +1226,13 @@
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
-      "source_count": 63,
-      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+      "source_count": 64,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
       "latest_source_date": "2026-06-27",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 22.7,
+      "selection_weight": 23.05,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -1531,6 +1546,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
           "date": "2026-06-27",
           "section": "Waste"
         }
@@ -1551,6 +1571,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6f2235a63ea3",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v0.56.7`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v0 56 7",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:75a190f573f5",
+      "kind": "current_focus",
+      "lesson": "This retro reviews `charness-artifacts/goals/2026-06-27-capability-first-skill-redesign.md`: the skill-design slice that absorbed `genseq3` as a shared sequencing lens, migrated `quality` from next-gate language to next-quality-move language, and piloted the pattern on `create-cli` without adding a new blocking floor.",
+      "normalized_key": "this retro reviews charness artifacts goals 2026 06 27 capability first skill redesign md",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
           "date": "2026-06-27",
           "section": "Context"
         }
@@ -1597,6 +1657,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:2440c1b5a6e8",
+      "kind": "next_improvement",
+      "lesson": "Do not let unrelated release WIP become proof for or against a design-skill goal. Disposition: applied: the goal's dirty-worktree boundary keeps v0.56.7 release WIP out of scope, and final verification records the broad-closeout non-claim.",
+      "normalized_key": "do not let unrelated release wip become proof for or against a design skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:75de5e7c607f",
+      "kind": "next_improvement",
+      "lesson": "Quality target-skill review should be able to propose skill improvements in the same language used here: capability failure, current center, next center, proof boundary, and enforcement posture. Disposition: applied: `quality` planner/scaffold/validator now write and read `Recommended Next Quality Moves`, while the compatibility alias keeps old artifacts non-blocking.",
+      "normalized_key": "quality target skill review should be able to propose skill improvements in the same",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:44ce6e86e9b4",
+      "kind": "next_improvement",
+      "lesson": "When a goal changes shared skill contracts, bind the consumer pilot and the final closeout evidence names before broad hook propagation. Disposition: applied: this goal records the `create-cli` pilot before the adjacent hooks and closes with explicit retro/disposition evidence; no new blocking gate is added.",
+      "normalized_key": "when a goal changes shared skill contracts bind the consumer pilot and the final",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+          "date": "2026-06-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b77cc0275a27",
       "kind": "next_improvement",
       "lesson": "When excluding AST docstrings, add a control-flow string-expression test in the first patch, not only after review.",
@@ -1617,6 +1737,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:bab80ff954e3",
+      "kind": "repeat_trap",
+      "lesson": "The active worktree also contains unrelated v0.56.7 release WIP. Keeping that boundary explicit was necessary, but it means broad lock-style closeout cannot honestly be claimed for this goal without mixing unrelated release state.",
+      "normalized_key": "the active worktree also contains unrelated v0 56 7 release wip keeping that boundary",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:9763f0892e1d",
       "kind": "repeat_trap",
       "lesson": "The first prompt-bulk helper patch treated the first string expression inside any AST body as a docstring. Fresh-eye review caught the bug before broad proof, but the first implementation should have limited docstring ownership to module/class/function nodes up front.",
@@ -1631,6 +1771,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b04a69400b0a",
+      "kind": "repeat_trap",
+      "lesson": "The implementation slice was already coherent before closeout, but the goal artifact still carried unfilled closeout placeholders for retro, host-log probe, disposition review, and timebox fields. That made closeout a second artifact-repair task rather than a cheap final proof step.",
+      "normalized_key": "the implementation slice was already coherent before closeout but the goal artifact still carried",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
+      "latest_source_date": "2026-06-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md",
           "date": "2026-06-27",
           "section": "Waste"
         }

@@ -3,21 +3,21 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v0.56.6`. (source: `charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md`)
-- This retro reviews the goal `charness-artifacts/goals/2026-06-27-sustained-quality-speed-token-release-round-4.md`: a quality slice that split a near-limit test file, removed one `run-quality.sh` help-path startup cost, narrowed prompt-bulk inventory noise, refreshed quality evidence, and completed locked closeout proof. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
+- Release publish triggered a configured automatic session retro for `v0.56.7`. (source: `charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md`; sources: 63)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md`; sources: 64)
+- The active worktree also contains unrelated v0.56.7 release WIP. Keeping that boundary explicit was necessary, but it means broad lock-style closeout cannot honestly be claimed for this goal without mixing unrelated release state. (source: `charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md`)
 - The first prompt-bulk helper patch treated the first string expression inside any AST body as a docstring. Fresh-eye review caught the bug before broad proof, but the first implementation should have limited docstring ownership to module/class/function nodes up front. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
-- The new quality artifact initially failed inventory-consumption and durability checks during broad pytest. The fix was simple, but the artifact could have been validated immediately after writing instead of during the locked closeout rerun. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
-- A full `python3 -m pytest -q` coverage run was started as a brute-force fallback and then stopped after it became clear it was much slower than the standing-runner path. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
+- The implementation slice was already coherent before closeout, but the goal artifact still carried unfilled closeout placeholders for retro, host-log probe, disposition review, and timebox fields. That made closeout a second artifact-repair task rather than a cheap final proof step. (source: `charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md`; sources: 63)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md`; sources: 64)
 - After writing a quality current-pointer artifact, immediately run `validate_quality_artifact.py`, `validate_inventory_consumption.py`, `check_spec_evidence_durability.py`, and `validate_current_pointer_freshness.py` before starting locked closeout. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
-- When excluding AST docstrings, add a control-flow string-expression test in the first patch, not only after review. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
-- accepted-risk: did not add a new hard gate for advisory requested-review or scenario-registry follow-up in this patch; the release critique records the limitation and deterministic validation owns this release boundary. (source: `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`)
+- Do not let unrelated release WIP become proof for or against a design-skill goal. Disposition: applied: the goal's dirty-worktree boundary keeps v0.56.7 release WIP out of scope, and final verification records the broad-closeout non-claim. (source: `charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md`)
+- Quality target-skill review should be able to propose skill improvements in the same language used here: capability failure, current center, next center, proof boundary, and enforcement posture. Disposition: applied: `quality` planner/scaffold/validator now write and read `Recommended Next Quality Moves`, while the compatibility alias keeps old artifacts non-blocking. (source: `charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md`)
 
 ## Selection Policy
 
@@ -84,11 +84,12 @@
 - `charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-25-v0-55-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-26-sustained-quality-speed-token-release-round-2-goal-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-5-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md`
 - `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`
 - `charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md`
