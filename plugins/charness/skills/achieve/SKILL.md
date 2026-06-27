@@ -46,8 +46,9 @@ lifecycle instead of starting a new one.
      ask at least one question before saving, or state the assumed interpretation
      when a strong default settles it
    - establish outcome, non-goals, boundaries, user acceptance, verification
-     plan, proof cost, test-duplication pressure, slice sequence, critique plan,
-     stop conditions, reporting expectations, and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
+     plan, outcome capability or failed capability, proof cost,
+     test-duplication pressure, slice sequence, critique plan, stop conditions,
+     reporting expectations, and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready`
    - for consequential defaults (live/prod proof, issue close/split, broad scope,

@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `issue` feature-capability slice.
-- Current slice intent: keep feature/deferred-work issue resolution from
-  proposing implementation before naming the capability or failure.
-- Next action: validate and commit the `issue` slice, then keep scanning
+- Current slice: close the `achieve` outcome-capability slice.
+- Current slice intent: keep long-running goals from becoming feature
+  checklists before naming the capability created or restored.
+- Next action: validate and commit the `achieve` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -120,6 +120,7 @@ unchanged skills.
 | 9 | Add capability-failure hook to `debug` | Keep RCA anchored on the failed/restored user or operator capability | Focused debug diff, dogfood freeze, slice closeout | complete |
 | 10 | Add capability-before-gate hook to `quality` | Prevent target-skill review from jumping to gates before capability diagnosis | Focused quality diff, dogfood freeze, slice closeout | complete |
 | 11 | Add feature-capability hook to `issue` | Keep feature/deferred-work resolution briefs capability-first | Focused issue diff, dogfood freeze, slice closeout | complete |
+| 12 | Add outcome-capability hook to `achieve` | Prevent long-running goals from becoming feature checklists before slice planning | Focused achieve diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -286,6 +287,22 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `issue` slice after the
     dogfood freeze and scenario mapping review.
+- Slice 10 — `achieve` outcome-capability hook.
+  - Routing: `find-skills` recommendation returned `achieve`; implementation
+    used `impl` and validation posture used `quality`.
+  - Changed: `skills/public/achieve/SKILL.md` and generated plugin mirror now
+    require the Before-phase to establish the outcome capability or failed
+    capability before proof cost and slice sequencing.
+  - Dogfood/evaluator disposition: `achieve` is `hitl-recommended`; the Cautilus
+    planner requested scenario review and current contract freeze, not a live
+    Cautilus run. `docs/public-skill-dogfood.json` records that routing, inert
+    draft artifact creation, and `/goal @...` activation remain unchanged.
+  - Non-claim: this shapes goal artifacts around capability delivery; it does
+    not prove every active goal will maintain capability discipline without
+    operator judgment.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `achieve` slice after the
+    dogfood freeze and scenario review disposition.
 
 ## Context Sources
 
