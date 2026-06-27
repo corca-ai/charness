@@ -16,6 +16,22 @@ from scripts.mutation_changed_files_lib import changed_pool_files_vs_base  # noq
 from scripts.mutation_coverage_producer import default_mutation_base_sha  # noqa: E402
 from scripts.run_standing_pytest import expand_targets  # noqa: E402
 
+HELP_EPILOG = """\
+Statuses:
+  recommended  all changed mutation-pool files map to standing pytest targets
+  partial      at least one changed file maps, and at least one does not
+  missing      changed mutation-pool files exist, but none map to standing tests
+  noop         no eligible mutation-pool files changed over base -> worktree
+  blocked      base discovery failed; pass --base-sha explicitly
+
+Workflow:
+  1. Prefer --json when feeding this into closeout automation.
+  2. For recommended, pass closeout_args or command to --mutation-coverage-command.
+  3. For partial, inspect unmapped_changed_pool_files before trusting the focused
+     producer; use broad coverage fallback when those files need proof.
+  4. For missing or blocked, run the broad mutation coverage producer instead.
+"""
+
 
 def _module_name(path: str) -> str:
     without_suffix = path[:-3] if path.endswith(".py") else path
@@ -96,12 +112,20 @@ def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dic
             "unmapped_changed_pool_files": missing,
         }
     command = "python3 -m pytest -q -m 'not release_only' " + " ".join(targets)
+    status = "recommended" if not missing else "partial"
+    reason = (
+        "textual references found in standing pytest targets; run the command as "
+        "--mutation-coverage-command, then trust the changed-line gate result"
+    )
+    if status == "partial":
+        reason = (
+            "textual references found for a subset of changed pool files; the command "
+            "only proves mapped files, so inspect unmapped_changed_pool_files or use "
+            "the broad coverage fallback"
+        )
     return {
-        "status": "recommended" if not missing else "partial",
-        "reason": (
-            "textual references found in standing pytest targets; run the command as "
-            "--mutation-coverage-command, then trust the changed-line gate result"
-        ),
+        "status": status,
+        "reason": reason,
         "base_sha": base,
         "changed_pool_files": changed,
         "mapped_tests_by_file": matches,
@@ -115,8 +139,34 @@ def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dic
     }
 
 
+def _format_text_diagnostics(payload: dict[str, object]) -> list[str]:
+    status = str(payload["status"])
+    reason = str(payload["reason"])
+    lines = [f"status: {status}", reason]
+    unmapped = payload.get("unmapped_changed_pool_files")
+    if isinstance(unmapped, list) and unmapped:
+        lines.append("unmapped_changed_pool_files:")
+        lines.extend(f"  - {path}" for path in unmapped)
+    if status == "partial":
+        lines.append(
+            "next: pass the printed command only if the mapped subset is enough; "
+            "otherwise use the broad coverage fallback."
+        )
+    elif status == "missing":
+        lines.append("next: use the broad coverage fallback; no focused producer was found.")
+    elif status == "noop":
+        lines.append("next: no mutation coverage producer is needed for this diff.")
+    elif status == "blocked":
+        lines.append("next: pass --base-sha or ensure origin/main is available.")
+    return lines
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        epilog=HELP_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--base-sha", default=None)
     parser.add_argument("--json", action="store_true")
@@ -133,8 +183,10 @@ def main(argv: list[str] | None = None) -> int:
         command = payload.get("command")
         if command:
             print(command)
+            if payload["status"] == "partial":
+                print("\n".join(_format_text_diagnostics(payload)), file=sys.stderr)
         else:
-            print(payload["reason"], file=sys.stderr)
+            print("\n".join(_format_text_diagnostics(payload)), file=sys.stderr)
     return 0 if payload["status"] in {"recommended", "partial", "noop"} else 1
 
 

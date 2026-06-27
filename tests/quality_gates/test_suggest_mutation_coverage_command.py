@@ -24,6 +24,7 @@ def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
     _git(repo, "config", "user.email", "t@example.com")
     _git(repo, "config", "user.name", "t")
     (repo / "scripts" / "foo.py").write_text("def value():\n    return 1\n", encoding="utf-8")
+    (repo / "scripts" / "bar.py").write_text("def other():\n    return 1\n", encoding="utf-8")
     (repo / "tests" / "quality_gates" / "test_foo.py").write_text(
         "from scripts import foo\n\n\ndef test_value():\n    assert foo.value() == 1\n",
         encoding="utf-8",
@@ -72,6 +73,24 @@ def test_reports_missing_when_changed_pool_file_has_no_test_reference(tmp_path: 
     assert payload["status"] == "missing"
     assert payload["unmapped_changed_pool_files"] == ["scripts/foo.py"]
     assert "command" not in payload
+
+
+def test_reports_partial_when_only_some_changed_files_map_to_tests(tmp_path: Path) -> None:
+    from scripts.suggest_mutation_coverage_command import build_recommendation
+
+    repo, base = _seed_repo(tmp_path)
+    (repo / "scripts" / "bar.py").write_text("def other():\n    return 2\n", encoding="utf-8")
+
+    payload = build_recommendation(repo, base_sha=base)
+
+    assert payload["status"] == "partial"
+    assert payload["changed_pool_files"] == ["scripts/bar.py", "scripts/foo.py"]
+    assert payload["mapped_tests_by_file"] == {
+        "scripts/foo.py": ["tests/quality_gates/test_foo.py", "tests/test_top.py"]
+    }
+    assert payload["unmapped_changed_pool_files"] == ["scripts/bar.py"]
+    assert "only proves mapped files" in payload["reason"]
+    assert "tests/quality_gates/test_foo.py" in payload["command"]
 
 
 def test_reports_noop_when_no_pool_file_changed(tmp_path: Path) -> None:
@@ -133,6 +152,47 @@ def test_main_prints_command_and_json(tmp_path: Path, capsys: pytest.CaptureFixt
     assert '"status": "recommended"' in payload
 
 
+def test_main_warns_for_partial_focused_command(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, base = _seed_repo(tmp_path)
+    (repo / "scripts" / "bar.py").write_text("def other():\n    return 2\n", encoding="utf-8")
+
+    assert sugg.main(["--repo-root", str(repo), "--base-sha", base]) == 0
+    output = capsys.readouterr()
+    assert "python3 -m pytest" in output.out
+    assert "status: partial" in output.err
+    assert "scripts/bar.py" in output.err
+    assert "broad coverage fallback" in output.err
+
+
+def test_main_reports_noop_text_next_step(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, base = _seed_repo(tmp_path)
+    (repo / "scripts" / "foo.py").write_text("def value():\n    return 1\n", encoding="utf-8")
+
+    assert sugg.main(["--repo-root", str(repo), "--base-sha", base]) == 0
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert "status: noop" in output.err
+    assert "no mutation coverage producer is needed" in output.err
+
+
+def test_main_reports_blocked_text_next_step(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+
+    assert sugg.main(["--repo-root", str(repo)]) == 1
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert "status: blocked" in output.err
+    assert "pass --base-sha" in output.err
+
+
 def test_cli_exits_nonzero_when_no_focused_command_exists(tmp_path: Path) -> None:
     repo, base = _seed_repo(tmp_path)
     (repo / "tests" / "quality_gates" / "test_foo.py").write_text("def test_other(): pass\n", encoding="utf-8")
@@ -142,3 +202,18 @@ def test_cli_exits_nonzero_when_no_focused_command_exists(tmp_path: Path) -> Non
 
     assert result.returncode == 1
     assert "no standing pytest target" in result.stderr
+    assert "status: missing" in result.stderr
+    assert "broad coverage fallback" in result.stderr
+
+
+def test_cli_help_explains_statuses_and_closeout_workflow() -> None:
+    result = run_script(SCRIPT, "--help")
+
+    assert result.returncode == 0
+    assert "recommended" in result.stdout
+    assert "partial" in result.stdout
+    assert "missing" in result.stdout
+    assert "noop" in result.stdout
+    assert "blocked" in result.stdout
+    assert "--mutation-coverage-command" in result.stdout
+    assert "broad coverage fallback" in result.stdout
