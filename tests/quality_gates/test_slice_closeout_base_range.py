@@ -143,6 +143,35 @@ def test_broad_pytest_scope_check_accepts_payload_subset() -> None:
     assert payload["status"] == "completed"
 
 
+def test_broad_pytest_scope_check_accepts_empty_payload() -> None:
+    payload: dict[str, object] = {
+        "status": "completed",
+        "changed_paths": [],
+        "recorded_broad_pytest_proofs": [{"command": "pytest"}],
+    }
+
+    assert _maybe_fail_on_broad_pytest_scope_drift(payload) is False
+    assert payload["status"] == "completed"
+
+
+def test_broad_pytest_scope_paths_handles_non_dict_and_reused_match() -> None:
+    payload: dict[str, object] = {
+        "status": "completed",
+        "changed_paths": ["committed.txt"],
+        "recorded_broad_pytest_proofs": ["not-a-proof"],
+        "reused_broad_pytest_proofs": [
+            {"command": "pytest", "match": {"changed_paths": ["committed.txt"]}},
+        ],
+    }
+
+    assert _maybe_fail_on_broad_pytest_scope_drift(payload) is True
+    assert payload["status"] == "failed"
+    findings = payload["broad_pytest_scope_findings"]
+    assert isinstance(findings, list)
+    assert findings[0]["proof_key"] == "recorded_broad_pytest_proofs"
+    assert findings[0]["missing_changed_paths"] == ["committed.txt"]
+
+
 def test_resolve_changed_paths_explicit_paths_stay_the_override(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path)
 

@@ -146,6 +146,7 @@ def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
 def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
     from scripts import run_standing_pytest as runner
 
+    monkeypatch.delenv("CHARNESS_STANDING_PYTEST_PYTHON", raising=False)
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
 
     assert runner.choose_pytest_command() == [sys.executable, "-m", "pytest"]
@@ -191,6 +192,17 @@ def test_standing_pytest_xdist_probe_honors_disabled_plugin(monkeypatch) -> None
         {"PYTEST_ADDOPTS": "-pno:xdist"},
     ) is False
     assert runner.has_xdist(["pytest"], {}) is False
+
+
+def test_standing_pytest_xdist_disabled_option_falls_back_on_unbalanced_addopts(monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
+
+    assert runner.has_xdist(
+        [sys.executable, "-m", "pytest"],
+        {"PYTEST_ADDOPTS": "-p no:xdist 'unterminated"},
+    ) is False
 
 
 def test_standing_pytest_run_print_command_and_executes(tmp_path: Path, monkeypatch, capsys) -> None:
