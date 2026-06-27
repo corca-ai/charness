@@ -78,6 +78,7 @@ git status --short
    - realign stale source-of-truth docs
    - realign docs and also produce an audience-neutral brief skeleton
    - state the primary reader context before rewriting a first-touch surface
+   - name the reader or operator capability the durable story must make true
 2. Map the current truth surface.
    - read the source documents before inventing a fresh summary
    - review adapter fitness before trusting its source set, mutable documents,
@@ -95,6 +96,7 @@ git status --short
 3. Inventory intent before rewriting a high-leverage first-touch surface.
    - recover explicit intent from source docs, repo-local adapter guidance, and
      user-confirmed direction from the current thread
+   - separate capability claims from feature inventory before polishing the story
    - classify high-signal prior blocks as preserved, moved, compressed, or
      intentionally deleted
    - treat preserved meaning as the contract; headings and section order are
@@ -146,8 +148,7 @@ git status --short
 
 ## Output Shape
 
-The result should usually include `Source Map`, `Narrative Drift`, `Updated Truth`,
-`Brief`, `Claim Audit`, `Compression`, `Carry-Forward`, `Open Questions`, and `Next Step`.
+The result should usually include `Source Map`, `Narrative Drift`, `Capability Claim`, `Updated Truth`, `Brief`, `Claim Audit`, `Compression`, `Carry-Forward`, `Open Questions`, and `Next Step`.
 
 ## Guardrails
 

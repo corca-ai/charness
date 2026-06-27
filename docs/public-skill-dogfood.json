@@ -509,7 +509,8 @@
       "observed_evidence": [
         "The checked-in public core keeps durable truth alignment separate from audience adaptation and explicitly hands delivery-only work to `announcement`.",
         "The adapter resolves the durable artifact to `charness-artifacts/narrative/latest.md`, which matches the reviewed expectation for the aligned truth-surface output.",
-        "Repo-owned tests and docs already exercise the narrative adapter, source-map path, and narrative versus announcement boundary, which is enough local evidence to treat first-touch story alignment as a real maintained seam."
+        "Repo-owned tests and docs already exercise the narrative adapter, source-map path, and narrative versus announcement boundary, which is enough local evidence to treat first-touch story alignment as a real maintained seam.",
+        "Capability-first rollout slice (2026-06-27): narrative now names the reader or operator capability the durable story must make true, separates capability claims from feature inventory before polishing, and includes `Capability Claim` in the output shape. This preserves routing to `narrative`, adapter-backed artifact ownership, and human-review validation; no live Cautilus run or scenario registry mutation is claimed."
       ]
     },
     {

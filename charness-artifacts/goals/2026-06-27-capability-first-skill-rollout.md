@@ -9,11 +9,11 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: final critique/non-claim review over the rollout.
-- Current slice intent: verify the rollout did not overclaim all-skill migration
-  or add reflexive capability gates.
-- Next action: run final review over the committed skill slices and decide
-  whether the goal can close.
+- Current slice: close the `narrative` capability-claim slice.
+- Current slice intent: keep durable repo story alignment centered on reader or
+  operator capability rather than feature inventory.
+- Next action: validate and commit the `narrative` slice, then keep scanning
+  remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -116,6 +116,7 @@ unchanged skills.
 | 5 | Add capability-over-feature hook to `ideation` | Move the source concept skill before improving downstream `spec` | Focused ideation diff, dogfood freeze, slice closeout | complete |
 | 6 | Add capability-contract hook to `spec` | Preserve capability intent when moving from concept to implementation contract | Focused spec diff, dogfood freeze, slice closeout | complete |
 | 7 | Add capability-delivery handoff to `impl` | Preserve capability intent during coding and closeout | Focused impl diff, dogfood freeze, slice closeout | complete |
+| 8 | Add capability-claim hook to `narrative` | Prevent durable story alignment from becoming polished feature inventory | Focused narrative diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -228,6 +229,20 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `impl` slice after the
     dogfood freeze and scenario mapping review.
+- Slice 6 — `narrative` capability-claim hook.
+  - Changed: `skills/public/narrative/SKILL.md` and generated plugin mirror now
+    name the reader/operator capability the durable story must make true,
+    separate capability claims from feature inventory, and include
+    `Capability Claim` in the output shape.
+  - Dogfood/evaluator disposition: `narrative` is `hitl-recommended`; the
+    planner requested scenario review and current contract freeze, not live
+    Cautilus. `docs/public-skill-dogfood.json` now records the current contract
+    freeze.
+  - Non-claim: this improves first-touch story alignment, not all audience
+    delivery or announcement behavior.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `narrative` slice after the
+    dogfood freeze.
 
 ## Context Sources
 
