@@ -9,10 +9,11 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 24 complete; ready to commit and push.
-- Current slice intent: clarify broad pytest proof cache invalidation as locked
-  diff fingerprint behavior.
-- Next action: commit and push slices 23-24, then continue discovery unless a
+- Current slice: slice 25 complete; ready to commit and push.
+- Current slice intent: reduce changed-line mutation coverage producer cost by
+  recommending focused pytest producer commands before broad fallback.
+- Next action: run final locked closeout after this artifact update, then commit
+  and push.
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -85,6 +86,7 @@ accumulate.
 | 22 | Extract goal closeout roundtrip fixture from inline test Markdown | Prompt-bulk inventory next surfaced `test_check_artifact_surface_preflight.py`; the synthetic goal body is fixture content, not test logic | focused artifact-surface preflight tests, prompt-bulk delta, standing pytest | complete |
 | 23 | Extract drifted bootstrap shim fixture from inline test source | Prompt-bulk inventory next surfaced `test_check_bootstrap_shim_consistency.py`; the drifted shim body is fixture content, not test logic | focused bootstrap-shim tests, prompt-bulk delta, standing pytest | complete |
 | 24 | Clarify broad pytest proof cache fingerprint diagnostic | Repeated broad-cache invalidation looked like a smell; investigation showed expected locked-diff invalidation but ambiguous wording | focused closeout cache tests, doc update, closeout proof | complete |
+| 25 | Recommend focused mutation coverage producer commands | Coverage producer proof still costs full instrumented pytest when no focused command is supplied; make the fast path discoverable and warning-linked | helper tests, focused coverage producer proof, changed-line consumer proof, closeout | complete |
 
 ## Operator Decision Queue
 
@@ -880,6 +882,36 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     ratchet, standing pytest (`3687 passed in 22.72s`), gitignore scan hygiene,
     and agent browser runtime guard. Usage episode:
     `slice-closeout-96e45df7dbd74509bf214a5d4c3cdf47`.
+- Slice 25 evidence:
+  - Coverage producer cost finding: full changed-line coverage instrumentation
+    remains expensive; the previous direct producer proof took `412.96s`, while
+    ordinary standing pytest stayed around `22s`.
+  - Added `scripts/suggest_mutation_coverage_command.py`, which finds changed
+    mutation-pool files over the producer base and maps them to standing pytest
+    files that textually reference the changed module/path.
+  - The stale changed-line coverage warning now points operators to the helper
+    first, then keeps the full `--produce-mutation-coverage --verification-lock`
+    broad producer as the fallback.
+  - Current slice recommendation proof: after staging the new helper so it was
+    included in the changed-pool fingerprint, the helper mapped
+    `scripts/check_changed_line_mutation_coverage.py` to
+    `tests/quality_gates/test_changed_line_mutation_coverage.py` and
+    `scripts/suggest_mutation_coverage_command.py` to
+    `tests/quality_gates/test_suggest_mutation_coverage_command.py`; it emitted
+    the focused producer command
+    `python3 -m pytest -q -m 'not release_only' tests/quality_gates/test_changed_line_mutation_coverage.py tests/quality_gates/test_suggest_mutation_coverage_command.py`.
+  - Focused proof so far: `py_compile`, focused `ruff check`, and focused pytest
+    for the helper, coverage producer, and closeout surface tests passed;
+    focused pytest reported `59 passed in 8.28s`.
+  - Focused coverage producer proof: locked closeout with the helper-recommended
+    command passed. The broad standing pytest proof remained normal
+    (`3689 passed in 21.67s`), while the focused coverage producer ran only the
+    two mapped tests under coverage (`23 passed in 4.74s`, producer elapsed
+    `5.23s`) and wrote mutation coverage fingerprint
+    `c51f0b2b70628ba1786562161faaa92d35f68147ed72879a7c6169dc260f5b43`.
+    This replaces the previous manual full instrumented producer path that took
+    `412.96s` for the same class of changed-line proof. Usage episode:
+    `slice-closeout-3f19b8f321734c179751a6ad0f760bf9`.
 
 ## Context Sources
 

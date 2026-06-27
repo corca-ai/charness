@@ -251,6 +251,20 @@
       "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
       "reviewed_at": "2026-06-27",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "17a4a0f622fa895a",
+      "note": "standalone CLI entrypoint exception-wrapper family rotated after closeout scope work; direct script execution keeps local main/SurfaceError/ValidationError adapters explicit",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7dbc27a3099dbe17",
+      "note": "repo-root sys.path bootstrap shim introduced by focused mutation coverage suggester; top-level scripts keep local import bootstraps for direct execution",
+      "reviewed_at": "2026-06-27",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

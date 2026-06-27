@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 73,
-  "indexed_artifact_count": 61,
+  "source_artifact_count": 74,
+  "indexed_artifact_count": 62,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 2,
-    "none": 13,
+    "none": 14,
     "operator-visible-recovery": 21,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 2,
     "monitor": 57,
-    "none": 2
+    "none": 3
   },
   "entries": [
     {
@@ -855,6 +855,20 @@
       "seam": "GitHub Actions scheduled mutation workflow versus local recovery proof.",
       "generalization_pressure": "monitor",
       "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-06-27-broad-pytest-proof-base-scope.md",
+      "is_current_pointer": false,
+      "interrupt_id": "broad-pytest-proof-base-scope-2026-06-27",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
+      "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false

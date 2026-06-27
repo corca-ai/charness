@@ -231,9 +231,11 @@ def coverage_not_verified_warning(changed_eligible: list[str], reason: str) -> s
         f"{len(changed_eligible)} eligible mutation-pool file(s) changed but their "
         f"changed lines were NOT verified for coverage ({reason.rstrip('.')}). An "
         "unverified skip reads as a clean pass, so uncovered changed lines reach main "
-        "and the next scheduled mutation run flags them (the #335 recurrence). Run "
+        "and the next scheduled mutation run flags them (the #335 recurrence). First run "
+        "`python3 scripts/suggest_mutation_coverage_command.py --repo-root . --json` "
+        "to find a focused producer command; if it cannot map the change, run "
         "`python3 scripts/run_slice_closeout.py --produce-mutation-coverage "
-        "--verification-lock` to verify the changed lines before they land. "
+        "--verification-lock` as the full fallback before the lines land. "
         f"Files: {files}"
     )
 

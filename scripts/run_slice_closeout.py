@@ -273,6 +273,23 @@ def _resolve_changed_paths(repo_root: Path, args) -> list[str]:
     return collect_changed_paths(repo_root)
 
 
+def _closeout_changed_paths_collector(
+    initial_changed_paths: list[str],
+):
+    """Return a live proof-scope collector for broad pytest cache records.
+
+    The closeout payload may be wider than the current worktree when `--base`
+    covers already-committed slice changes. Keep those payload paths in the
+    fingerprint while still adding any sync-generated worktree changes that
+    appear during command execution.
+    """
+
+    def _collect(repo_root: Path) -> list[str]:
+        return sorted(dict.fromkeys([*initial_changed_paths, *collect_changed_paths(repo_root)]))
+
+    return _collect
+
+
 def _planned_commands(
     repo_root: Path,
     changed_paths: list[str],
@@ -428,7 +445,7 @@ def main() -> int:
         command_plan,
         payload,
         run_command=run_command,
-        collect_changed_paths=collect_changed_paths,
+        collect_changed_paths=_closeout_changed_paths_collector(list(payload["changed_paths"])),
         refresh_broad_pytest_proof=args.refresh_broad_pytest_proof,
         broad_pytest_producer=broad_pytest_producer,
     )

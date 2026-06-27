@@ -37,6 +37,9 @@ the root instruction file but still apply to Charness maintenance work.
   honest focused pytest proof, prefer a focused producer command alongside
   `--produce-mutation-coverage`; for example,
   `--mutation-coverage-command "python3 -m pytest -q tests/quality_gates/test_x.py"`.
+  Use `python3 scripts/suggest_mutation_coverage_command.py --repo-root . --json`
+  to find a focused producer command from changed mutation-pool files and their
+  standing-test references before falling back to the broad producer.
   The broad pytest proof stays on the normal closeout/cache path, and only the
   focused command is instrumented for the freshness marker. Without a fresh
   producer run the gate skips non-blocking, so run the producer before a

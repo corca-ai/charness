@@ -14,7 +14,11 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_slice_closeout import _build_parser, _resolve_changed_paths
+from scripts.run_slice_closeout import (
+    _build_parser,
+    _closeout_changed_paths_collector,
+    _resolve_changed_paths,
+)
 from scripts.surfaces_lib import (
     SurfaceError,
     collect_changed_paths_since_base,
@@ -90,6 +94,17 @@ def test_resolve_changed_paths_default_stays_working_tree_only(tmp_path: Path) -
 
     assert _resolve_changed_paths(repo, _args()) == []
     assert _resolve_changed_paths(repo, _args(base="auto")) == ["committed.txt"]
+
+
+def test_broad_pytest_proof_scope_keeps_base_range_and_live_worktree(tmp_path: Path) -> None:
+    # Regression: the closeout payload can include already-committed `--base`
+    # changes, but the broad proof cache used to fingerprint only the live
+    # worktree when recording/reusing broad pytest proof.
+    repo = _seed_repo(tmp_path)
+    collector = _closeout_changed_paths_collector(["committed.txt"])
+    (repo / "dirty.txt").write_text("dirty\n", encoding="utf-8")
+
+    assert collector(repo) == ["committed.txt", "dirty.txt"]
 
 
 def test_resolve_changed_paths_explicit_paths_stay_the_override(tmp_path: Path) -> None:

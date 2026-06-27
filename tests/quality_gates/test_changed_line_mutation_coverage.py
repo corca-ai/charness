@@ -212,6 +212,7 @@ def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None
     assert "scripts/foo.py" in payload["changed_eligible_files"]
     assert "WARNING (changed-line mutation gate)" in result.stderr
     assert "NOT verified for coverage" in result.stderr
+    assert "suggest_mutation_coverage_command.py" in result.stderr
     assert "--produce-mutation-coverage" in result.stderr
 
 
@@ -225,6 +226,7 @@ def test_coverage_not_verified_warning_names_files_and_fix() -> None:
     assert "2 eligible mutation-pool file(s) changed" in msg
     assert "NOT verified for coverage" in msg
     assert "#335 recurrence" in msg
+    assert "suggest_mutation_coverage_command.py" in msg
     assert "--produce-mutation-coverage" in msg
     assert "scripts/foo.py" in msg and "scripts/bar.py" in msg
 
