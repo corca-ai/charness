@@ -228,8 +228,6 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
   - Closeout: `run_slice_closeout.py --skip-broad-pytest
     --ack-cautilus-skill-review` completed for the `impl` slice after the
     dogfood freeze and scenario mapping review.
-  - Non-claim: this slice improves the authoring contract; it does not complete
-    all public skill migration.
 
 ## Context Sources
 
@@ -293,10 +291,12 @@ Over-worry not folded:
 
 Valid but deferred:
 
-- `ideation`, `spec`, and `impl` need later output-shape review after the
-  `create-skill` authoring contract is used on another real slice.
 - `create-skill` frontmatter/topology wording can be reviewed later; the current
   trigger already routes correctly.
+- Final rollout reviewer found the quality matrix stale after later slices; that
+  was remediated in `charness-artifacts/quality/2026-06-27-public-skill-capability-rollout.md`.
+- `achieve`, `critique`, `issue`, `release`, and other public skills remain
+  non-claimed and need separate slices before any migration claim.
 
 ## Off-Goal Findings
 
@@ -309,23 +309,29 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Closeout pending. Replace the lines below with bound evidence paths or allowed
-skips only when the rollout is actually ready to close.
+Focused closeout passed for each committed rollout slice:
 
-Retro: pending-closeout — active rollout has not reached final retro yet.
-Host log probe: pending-closeout — active rollout has not reached final host-log
-probe decision yet.
-Disposition review: pending-closeout — active rollout has not reached final
-disposition review yet.
+- `create-skill`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
+- `ideation`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
+- `spec`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
+- `impl`: `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
+
+Fresh-eye rollout critique:
+`charness-artifacts/critique/2026-06-27-capability-first-skill-rollout-final.md`.
+
+Broad pytest/live proof: skipped by contract because this is local skill/design
+work with no release, push, external write, or live behavior claim. Existing
+v0.56.7 release WIP remains outside the proof.
 
 ## User Verification Instructions
 
-Pending closeout. During the run, inspect the rollout matrix and changed skill
-surfaces rather than treating this artifact as a completion claim.
+Inspect changed skill surfaces for `create-skill`, `ideation`, `spec`, and
+`impl`, plus the dogfood entries for those skills. Treat other public skills as
+non-claimed.
 
 ## Auto-Retro
 
-Retro dispositions: pending-closeout — no final retro has been written for this
-active rollout yet.
-Structural follow-up: pending-closeout — classify after final retro if it names
-transferable waste.
+Retro dispositions: not run — no workflow miss or release boundary was closed in
+this local rollout.
+Structural follow-up: keep future rollout slices narrow and update the rollout
+matrix after each later target, not only at the first mutation.

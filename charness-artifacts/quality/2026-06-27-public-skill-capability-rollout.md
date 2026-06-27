@@ -4,8 +4,8 @@ Date: 2026-06-27
 ## Scope
 
 Target boundary: public-skill capability/north-star rollout after the completed
-`create-cli` pilot. Primary mutation target for this slice is `create-skill`;
-`ideation`, `spec`, and `impl` are reviewed but not yet claimed migrated.
+`create-cli` pilot. Mutated rollout targets: `create-skill`, `ideation`,
+`spec`, and `impl`; no all-skill migration claim is made.
 
 Ambient repo findings: existing v0.56.7 release WIP is ignored for this local
 design-skill goal. Skill-ergonomics host-surface heuristic hits are mostly
@@ -46,23 +46,20 @@ portable-package review prompts, not direct capability-migration failures.
 - `create-skill` had only a light sequencing hook; its pre-edit brief did not
   force a capability delta/current-center/next-center freeze before improving
   an existing public skill.
-- `ideation` and `spec` mention sequencing, but their output shapes still
-  mostly describe concept/contract artifacts.
-- `impl` mentions capability and sequence discipline, but its stop-gate flow is
-  still mostly verification-oriented; this is acceptable for now because `impl`
-  should consume a shaped contract rather than own skill-design doctrine.
+- `achieve`, `critique`, `issue`, and `release` still need separate
+  irreversible-boundary review before any capability-surface changes.
 
 ## Missing
 
 - No public-skill-wide migration proof exists yet. This artifact is the first
   rollout matrix, not a completion claim.
-- No additional target-skill dogfood artifact has been written for `ideation` or
-  `spec` in this slice.
+- `create-cli`, `create-skill`, `ideation`, `spec`, and `impl` are improved
+  targets; other public skills remain non-claimed.
 
 ## Deferred
 
-- `ideation` and `spec` should get concrete skill-improvement output hooks only
-  after `create-skill` proves the authoring contract is useful.
+- Apply this lens to additional public skills only through separate slices, not
+  vocabulary sweeps.
 - `release` is deferred because existing release WIP is dirty and this goal
   explicitly excludes version/publish work.
 - `achieve`, `critique`, `issue`, and `release` have irreversible-boundary
@@ -77,16 +74,14 @@ portable-package review prompts, not direct capability-migration failures.
   mostly host-surface prompts; the manual gap was `create-skill` lacking
   current/next center freeze.
 - rollout matrix result: command `for f in skills/public/*/SKILL.md; do ...`
-  ranked `create-skill`, `ideation`, `spec`, and `impl`; this slice mutates only
-  `create-skill`.
+  ranked `create-skill`, `ideation`, `spec`, and `impl`; all four were mutated
+  in separate focused slices.
 
 ## Delegated Review
 
-- Delegated Review: completed — three bounded fresh-eye reviewers inspected the
-  `create-skill` slice after mutation. Two Act Before Ship findings were
-  remediated before closeout: proof boundary now includes consumer dogfood
-  evidence, and current/next-center language is conditional rather than a
-  universal sequencing mandate.
+- Delegated Review: completed — slice review remediated the `create-skill`
+  proof-boundary and universal-sequencing risks; final rollout review found the
+  matrix stale, which this revision fixes.
 - Slow-gate lenses (fixture-economics, parallel-critical-path,
   duplicated-proof): not_applicable because this slice does not recommend moving
   or weakening standing gates.
@@ -109,7 +104,8 @@ portable-package review prompts, not direct capability-migration failures.
 - `python3 scripts/validate_packaging.py --repo-root .` and committed variant.
 - `python3 scripts/validate_public_skill_validation.py --repo-root .`
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
-- `python3 scripts/run_slice_closeout.py --repo-root . --paths ... --skip-broad-pytest --ack-cautilus-skill-review`
+- `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`
+  completed for `create-skill`, `ideation`, `spec`, and `impl`.
 - `cmp -s skills/public/create-skill/SKILL.md plugins/charness/skills/create-skill/SKILL.md`
 
 ## Recommended Next Quality Moves
@@ -126,9 +122,8 @@ portable-package review prompts, not direct capability-migration failures.
   frontmatter, or maintained `representative-skill-contracts` scenario mapping;
   `docs/public-skill-dogfood.json` freezes the current contract; no Cautilus
   scenario registry change or live evaluator run is claimed.
-- passive defer `ideation`/`spec` output-shape changes until `create-skill`
-  proves the authoring contract because broad vocabulary propagation without a
-  customer-valid authoring seam would be cosmetic.
+- active carry capability through `ideation` -> `spec` -> `impl` — each target
+  has dogfood freeze and no scenario registry mutation or live Cautilus claim.
 - passive keep `release` out of this rollout until v0.56.7 WIP is reconciled
   because release has irreversible-boundary proof obligations.
 
