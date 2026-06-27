@@ -12,6 +12,13 @@ def action(kind: str, reason: str) -> dict[str, str]:
     return {"kind": kind, "reason": reason}
 
 
+def first_matching_action(checks: list[tuple[bool, str, str]]) -> dict[str, str] | None:
+    for condition, kind, reason in checks:
+        if condition:
+            return action(kind, reason)
+    return None
+
+
 def required_reads(args: Any, adapter: dict[str, Any]) -> list[dict[str, str]]:
     reads = [
         read_packet("references/index.md", "Manual progressive-disclosure map for release references."),
@@ -163,10 +170,17 @@ def next_action(
     target_version: str | None,
     update_blocker: str | None,
 ) -> dict[str, str]:
-    if not adapter.get("found"):
-        return action("scaffold_adapter", "No release adapter was found; declare release boundaries before mutation.")
-    if not adapter.get("valid"):
-        return action("repair_adapter", "Release adapter is invalid.")
+    if adapter_action := first_matching_action(
+        [
+            (
+                not adapter.get("found"),
+                "scaffold_adapter",
+                "No release adapter was found; declare release boundaries before mutation.",
+            ),
+            (not adapter.get("valid"), "repair_adapter", "Release adapter is invalid."),
+        ]
+    ):
+        return adapter_action
     if release_payload is None:
         return action("repair_release_surface", "Current release state could not be built.")
     if release_payload.get("drift"):

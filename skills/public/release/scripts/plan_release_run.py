@@ -19,17 +19,16 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_release")
-_bump_version = SKILL_RUNTIME.load_local_skill_module(__file__, "bump_version")
 _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 _real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_host_proof")
 _review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _publish_helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _planner_packets = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_run_packets")
+_publish_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
 
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
-bump_part = _bump_version.bump_part
 build_fresh_checkout_payload = _fresh_checkout.build_payload
 build_real_host_payload = _real_host.build_payload
 collect_changed_paths = _real_host.collect_changed_paths
@@ -43,6 +42,7 @@ required_reads = _planner_packets.required_reads
 gate_packets = _planner_packets.gate_packets
 publish_packets = _planner_packets.publish_packets
 next_action = _planner_packets.next_action
+release_plan_target_version = _publish_plan.target_version
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,13 +67,9 @@ def parse_args() -> argparse.Namespace:
 def _target_version(args: argparse.Namespace, current_version: str | None) -> str | None:
     if not isinstance(current_version, str):
         return None
-    if args.publish_current:
-        return current_version
-    if args.set_version:
-        return args.set_version
-    if args.part:
-        return bump_part(current_version, args.part)
-    return None
+    if not (args.publish_current or args.set_version or args.part):
+        return None
+    return release_plan_target_version(args, current_version)
 
 
 def _target_selector(args: argparse.Namespace) -> str | None:
