@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 20 complete; ready to commit and push.
-- Current slice intent: extract setup worktree adapter YAML templates from
-  Python.
-- Next action: commit and push slice 20, then re-inventory unless a
+- Current slice: slice 21 complete; ready to commit and push.
+- Current slice intent: extract Charness CLI fake cautilus/nose scripts from
+  inline test helper strings.
+- Next action: commit and push slice 21, then continue discovery unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -81,6 +81,7 @@ accumulate.
 | 18 | Extract setup adapter seed templates from Python | Prompt-bulk inventory next surfaced setup seed adapter bodies; these are generated YAML, not Python logic | focused setup seed tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 19 | Extract HITL scratchpad template from Python | Prompt-bulk inventory next surfaced `hitl/scripts/bootstrap_review.py`; the scratchpad body is generated Markdown, not Python logic | focused HITL/portable tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 20 | Extract setup worktree adapter templates from Python | Prompt-bulk inventory next surfaced generated worktree adapter YAML/comment blocks in `seed_worktree_adapter_lib.py` | focused setup worktree tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 21 | Extract Charness CLI fake cautilus/nose scripts from inline test helper strings | Prompt-bulk inventory next surfaced `tests/charness_cli/tool_fakes.py`; fake executable bodies are fixture assets, not Python helper logic | focused CLI lifecycle tests, prompt-bulk delta, standing pytest | complete |
 
 ## Operator Decision Queue
 
@@ -766,6 +767,34 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
     browser runtime guard. Usage episode:
     `slice-closeout-1f563ff36d1141bfb4a67c64512a90da`.
+- Slice 21 evidence:
+  - Prompt-bulk inventory after slice 20 reported 24 findings and surfaced
+    `tests/charness_cli/tool_fakes.py` as the next inline fake executable
+    candidate.
+  - Moved fake `cautilus` and fake `nose` executable bodies to
+    `tests/charness_cli/fixtures/fake_cautilus.py` and
+    `tests/charness_cli/fixtures/fake_nose.py`; `tool_fakes.py` now copies
+    those fixtures into the temp `bin/` directory.
+  - Prompt-bulk inventory after the change reported 23 findings; the
+    `tool_fakes.py` fake executable body no longer appears.
+  - Length proof: `tests/charness_cli/tool_fakes.py` moved from `56/800` to
+    `20/800` code lines; new fixture files are `10/800` and `13/800` code
+    lines.
+  - Focused proof: `py_compile`, focused `ruff check`, and the CLI
+    update/managed-install/tool-lifecycle subset passed; focused pytest
+    reported `23 passed in 64.19s`.
+  - Same-agent critique: the main risk is fixture copy behavior diverging from
+    the old inline script permissions or outputs. Folded response: helper still
+    writes into the same temp `bin/` paths, calls `chmod(0o755)`, and focused
+    lifecycle tests exercised the fake `cautilus` and `nose` paths.
+  - Changed-surface proof: doc links, command docs, markdown, secrets, ruff,
+    Python length limits, attention-state visibility, test repo copy
+    invariants, boundary-bypass ratchet, standing pytest, and agent browser
+    runtime guard passed. The first closeout attempt stopped because the broad
+    pytest cache belonged to a different mutation fingerprint; reran with
+    `--refresh-broad-pytest-proof` after confirming the mutation set was locked.
+    Usage episode:
+    `slice-closeout-99d7e36fc5c445ee847d07f99313f367`.
 
 ## Context Sources
 
