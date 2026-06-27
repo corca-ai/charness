@@ -477,3 +477,409 @@ nose 0.13.3 and both id-baselines were re-seeded on it.
   baseline `nose scan` provenance note + stale `scan` comments, and an FD8 `OSError`
   hardening were all acted; the version-floor message divergence was counterweighted
   as an honest asymmetry (NIT, left).
+
+## Slice 4 — D30 content-fingerprint re-key (SPEC, 2026-06-27, critique-hardened)
+
+Resolves [`docs/deferred-decisions.md` D30](../../docs/deferred-decisions.md)
+("dup-ratchet id-rotation affordance") and the
+[2026-06-21 rotation debug](../debug/2026-06-21-dup-ratchet-family-id-rotation.md).
+**Supersedes Slice 2 D1 + FD4's literal "diff the current `family_id` set vs the
+gate baseline":** the gate stops keying code newness on nose's `family_id` and keys
+on a gate-computed, offset/path-independent **content fingerprint** instead. The
+two-arm policy, adapter surface, floor/escalation, and git stagnation seams are
+unchanged — only the *identity the set-diff runs on* changes. Hardened by the
+2026-06-27 bounded fresh-eye spec critique (3 angles + counterweight; see `### Critique`).
+
+### Problem
+
+nose's `family_id = f(normalized span content, line offset, file path)`, and the
+family id folds every member's per-span id, so editing ANY scanned member file —
+even inserting lines *above* an unchanged duplicated span — rotates the whole
+family id with zero new duplication. The hard arm reads that pure rotation as a
+brand-new family and blocks; the only honest recovery is a manual `--write-baseline`
+re-baseline. This fires on essentially every member-file edit (#395, the v0.56.7
+release hit it again → D30 reopen trigger). Slice 3 documented the rotation and the
+re-baseline workflow; Slice 4 removes the false block at its root.
+
+### Empirical anchor (reproduced this session on live nose 0.15.0, schema v6)
+
+Two-file fixture sharing a 12-line function; raw nose-query member `locations` are
+repo-relative `file` + 1-based-inclusive `start`/`end` (confirmed, not assumed):
+
+- **Pure line-shift** (prepend 5 comment lines to one member): nose family id
+  `f1e6823f50846bb3 → 806e4b5664258151` (ROTATES), content fingerprint
+  `4032933ec3cfec51 → 4032933ec3cfec51` (**STABLE**) → the false hard-block is gone.
+- **Genuine span-content change** (`total = 0 → total = 1` inside the span):
+  fingerprint `4032933ec3cfec51 → a58724bff95adc18` (ROTATES) → genuine new/changed
+  duplication is still caught. **This is the false-negative D30 blocked on** — a
+  path-set `(file, name)` fingerprint would have masked it; the content fingerprint
+  does not.
+
+Fingerprints are computed against the SAME working tree the producing nose scan ran
+on (the gate scans, then immediately fingerprints the same tree), so member line
+numbers and file content are always consistent — no staleness window.
+
+### Decisions
+
+- **S4-D1 — Key code newness on a content fingerprint, not nose's `family_id`.**
+  Per family the gate computes one fingerprint from member span CONTENT only;
+  `evaluate` diffs the fingerprint set vs a fingerprint baseline (identical set-diff
+  shape, different identity). nose's `family_id` is no longer stored or diffed.
+- **S4-D2 — Fingerprint algorithm v1, PINNED VERBATIM** (an under-specified hash
+  produces a self-consistent-but-cross-incompatible baseline that passes its own
+  tests yet silently mis-gates — implementer/adversary F3/F2). Compute from the RAW
+  `nose query` family's `locations` list (keys `file`/`start`/`end`), NOT
+  `family_summary`/`sample_locations`/`start_line` (those truncate to 6 members).
+  Member `file` is repo-relative because nose runs with `cwd=repo_root`, so the
+  reader opens `repo_root / member["file"]`:
+
+  ```python
+  lines = (repo_root / member["file"]).read_text(encoding="utf-8").splitlines()
+  member_hash = sha256("\n".join(l.rstrip() for l in lines[start-1:end]).encode())[:16]
+  # member_hashes is a duplicate-PRESERVING list — do NOT set()-dedup before sorting,
+  # or {A,A,B} collapses to {A,B} and collides with a real 2-member {A,B} (adversary F2).
+  family_fp = sha256("\n".join(sorted(member_hashes)).encode())[:16]
+  ```
+
+  Invariant to member order, line offset, and file path; sensitive to member content,
+  membership, and member-multiplicity. (`sorted` over per-member hashes makes it
+  order/path-independent; reading span bytes by `[start-1:end]` makes it
+  offset-independent; duplicate-preserving keeps multiplicity.)
+- **S4-D3 — Resolves D30's blocking false-negative.** D30 deferred because a sorted
+  member `(file, name)` fingerprint masks a new clone reusing the same files. The
+  CONTENT fingerprint distinguishes content, so it strictly dominates that approach
+  (proven by the content-change anchor above).
+- **S4-D4 — Migrate gate AND advisory baselines in lockstep.** Both
+  `dup-ratchet-baseline.json` (gate) and `nose-baseline.json` (advisory) currently
+  store `code_family_ids` (nose ids), re-baselined in lockstep to identical 538-id
+  sets. Both move to a NEW key `code_family_fingerprints` under bumped schema versions
+  (`dup_ratchet_baseline.v2`, `nose_baseline.v3`). The loader reads ONLY the new key;
+  a pre-migration baseline (old key) loads as `None` → degraded advisory (FD8) — NO
+  dual-read legacy fallback (a stale checkout misreading nose ids as fingerprints is
+  exactly the mis-gating the new-key choice prevents; that choice is load-bearing,
+  not cosmetic). Keep the loader's function NAME (`load_gate_baseline_ids`) — it is
+  identity-agnostic ("the accepted identity set"), only the key it reads changes.
+  Re-baseline in the SAME commit so no SHIPPED commit has a toothless window (S4-D7).
+  Stamp `fingerprint_algo_version` beside the existing nose `tool_version`.
+- **S4-D5 — Stamp the fingerprint at the report layer; one shared helper.** New
+  `skills/public/quality/scripts/nose_fingerprint_lib.py` owns the pure normalization +
+  `family_content_fingerprint(family, repo_root) -> str | None`.
+  `nose_report_lib.collect_families` (which holds the RAW full `locations`) calls it
+  once per family and stamps `family["family_fingerprint"]`, the same way it already
+  stamps `family_id` (`keyed.setdefault`). EVERY consumer then reads that one stamped
+  field: the gate (`check_dup_ratchet`), the advisory (`inventory_nose_clones`), AND
+  the overlay seed (`dup_review_lib.family_records`, today reading `family_id`). One
+  computation, no per-consumer truncation, no three-way divergence — and it respects
+  the cohesion/length-cap split pattern (slice 1 split `nose_report_lib` out for the
+  same reason).
+- **S4-D6 — FD8 preserved: an uncomputable fingerprint degrades the WHOLE gate, never
+  blocks, never drops the family.** A missing/unreadable member file or an
+  out-of-range line span returns `None`; the scan path then appends a
+  `degraded_reasons` entry (whole-gate advisory, the existing FD8 ladder) — it must
+  NOT silently drop the family from the diff set (a dropped family reads as a false
+  "removed family"). Inherit the Slice-2 whole-gate posture; do not add per-family
+  degrade or richer telemetry (counterweighted Over-Worry A in Slice 2).
+- **S4-D7 — "No live window" holds only for SHIPPED commits; lockstep is one commit.**
+  Safety = (old-key baseline on disk) + (new code reading the new key) → `None` →
+  degraded advisory (FD8, never false-block). This is airtight for any shipped commit
+  ONLY because the lib, both baselines, the overlay, and the mirror all land in ONE
+  commit (Phase Rules treat baselines as repo state committed with their code). An
+  intermediate WORKING-TREE state (lib edited, baseline not yet re-written) degrades
+  to advisory — never false-blocks — so the implementer's own pre-push is safe too.
+  Acceptance gate: a fresh checkout AT the migration commit shows the dup-ratchet
+  phase PASS or ADVISORY, never hard-block.
+- **S4-D8 — Migrate the `dup-review.json` overlay identity in lockstep (the surface
+  both this File plan AND D30's impact list originally missed — operational F1, the
+  most dangerous gap).** `evaluate` computes
+  `new_code = fingerprints − baseline_fingerprints − intentional_code_ids`, where
+  `intentional_code_ids` come verbatim from the overlay's code `id` fields. The live
+  overlay stores **33 code `intentional` entries keyed by nose `family_id`, 27 of them
+  live in the current baseline; only 2 are auto-seeded, 31 are HAND-classified** with
+  irreplaceable review notes. If left nose-id-keyed after the swap, the subtraction
+  becomes a no-op and all 27 accepted boilerplate families re-enter the hard arm as
+  "new" → the fix would itself introduce a false-block on every accepted family.
+  Therefore: (a) migrate the seed identity — `dup_review_lib.family_records` reads the
+  stamped `family_fingerprint` instead of `family_id` (so future auto-seeds are
+  fingerprint-keyed); (b) one-time DATA migration of `dup-review.json` is a
+  **member-preserving REMAP, never a seed re-run**: build a `nose_id → fingerprint`
+  map from the live scan, rewrite each code entry's `id` in place while PRESERVING its
+  `class`/`note`/`reviewed_at`; entries whose nose_id is not in the live scan
+  (already-orphaned classifications, the 33−27) are dropped with a logged note. The
+  add-only `build_review` merge must NOT be used here (it would keep stale nose-id
+  cruft and silently drop the 31 manual entries). Acceptance: after migration every
+  `intentional` code `id` ∈ the migrated fingerprint baseline (no orphaned intentional
+  id) and all 31 manual notes survive verbatim.
+- **S4-D9 — `evaluate`'s param/key names stay (identity-agnostic); membership change
+  still rotates the identity = expected re-baseline.** Keep `evaluate`'s parameters
+  and verdict keys (`code_family_ids`, `gate_baseline_ids`, `new_code_families`) — the
+  values are now fingerprints but the logic is a pure opaque-string set-diff; do NOT
+  rename (a rename ripples through `check_dup_ratchet` + ~15 policy tests for zero
+  behavior change). Consequence to document (adversary F1, sharpest attack): because
+  the fingerprint folds membership, removing one of N copies (a legitimate reduction)
+  rotates the family fingerprint → the reduced family reads "new" → hard-block. This
+  is NOT a regression — nose's `family_id` already rotates on membership change today
+  (the family id is a function of all member ids) — so the recovery is the SAME
+  re-baseline. The reference and SC must state it so operators are not surprised;
+  Slice 4 fixes the OFFSET rotation (the D30 bug), not membership rotation.
+
+### Probe Questions (resolve in the first impl slice, against the live corpus)
+
+- **PQ1 — Fingerprint uniqueness.** Confirm `len(distinct fingerprints) ==
+  len(distinct nose families)` across the full charness scan. Under nose's GLOBAL
+  clustering, identical exact-member-text sets would already have merged (and
+  `collect_families` dedups by nose id before fingerprinting), so a NATURAL collision
+  is precluded; the residual is only a 64-bit sha256[:16] birthday collision (~8e-15
+  over 538 families) — negligible. The check guards an IMPLEMENTATION-induced collision
+  (e.g. an accidental `set()`-dedup, S4-D2) more than a natural one. One-shot probe →
+  SC3, not a permanent runtime gate.
+- **PQ2 — In-place comment/whitespace-edit residual.** v1 rstrip-only normalization is
+  STRICTER than nose's tokenizer: an in-place comment or internal-whitespace edit
+  inside a duplicated span (no line-count change) rotates the fingerprint where nose's
+  normalized id would NOT — a *different* (in-place, non-shifting) edit class, not a
+  subset of today's offset triggers. It is low-frequency and falls back to the SAME
+  re-baseline recovery, but the honest framing is "trades a high-frequency offset
+  trigger for a low-frequency semantically-spurious one nose itself would not
+  produce," NOT "strictly rarer." Measure materiality on the corpus before shipping;
+  token/comment-aware normalization is S4-Defer-1.
+- **PQ3 — Performance.** Stamping a fingerprint for ~538 families adds file I/O to the
+  ~0.6s code scan; cache reads per file and confirm the `dup-ratchet` phase stays
+  within its ~1.4s budget.
+
+### Deferred Decisions
+
+- **S4-Defer-1 — Token/comment-aware normalization** matching nose's tokenizer
+  (eliminates the PQ2 in-place-edit residual). Deferred unless PQ2 shows it material;
+  v1 ships rstrip-only. Reopen: in-place-comment false-rotation observed in practice.
+  (Its arrival is itself an algo change → bump `fingerprint_algo_version` so stored
+  fingerprints surface as algo-skew re-baseline, not a corpus-wide false-block — this
+  is exactly why the algo-version stamp is load-bearing, not gold-plating.)
+- **S4-Defer-2 — content-fingerprint's own narrow false-negative (vanish/shrink then
+  recur).** A baseline family fully vanishes (or SHRINKS, freeing its original
+  member-hash set) AND a byte-identical clone with the exact same member set recurs
+  elsewhere → fingerprint re-matches → re-accepted as "known." This re-accepts
+  already-accepted duplication CONTENT (not new content), needs the original member
+  set to recur exactly, and is far narrower than the path-set false-negative D30
+  rejected. Accepted as residual; revisit only if observed.
+- **S4-Defer-3 — subset-aware reduction diff.** Treat a live fingerprint whose
+  member-hash set is a strict subset of a vanished baseline family as a REDUCTION
+  (not new dup), so removing a copy does not hard-block (the S4-D9 case). A genuine
+  enhancement beyond D30's offset scope; deferred to keep the slice focused (and per
+  the counterweight's "don't over-build"). Reopen: operators hit membership-shrink
+  re-baseline friction often.
+
+### Non-Goals
+
+- Doc-side change. The doc gate already keys on the position-independent `signature`
+  (`path#heading`, Slice 2 D2) and never rotated on offset. Slice 4 is CODE-side
+  only; both surfaces are now position-independent (different mechanisms because the
+  inputs differ).
+- Changing nose, or waiting for nose to ship a content id (D30's other reopen
+  trigger) — the gate computes the identity itself.
+- Changing the two-arm policy, adapter block, floor/escalation, or git seams.
+
+### Deliberately Not Doing
+
+- **Gate-only migration** (advisory left on nose ids). Rejected: the two baselines
+  must stay schema-compatible for the lockstep re-baseline discipline, and the shared
+  helper kills the advisory's cosmetic false-rotation noise at the same cost
+  (counterweight: skipping it is the MORE expensive path — two incompatible schemas).
+- **Reusing the `code_family_ids` key with changed meaning.** Rejected: a stale
+  checkout would misread nose ids as fingerprints; a new key + schema bump degrades
+  safely (→ advisory) instead of mis-gating. (Load-bearing per S4-D7's safety proof.)
+- **Subset-aware reduction diff or collision-proofing in v1** (S4-Defer-3 / PQ1).
+  Rejected for v1: membership-shrink is non-regressive (S4-D9) and natural collisions
+  are precluded (PQ1); both are over-build for an operator-approved D30 offset fix.
+
+### Success Criteria
+
+1. A pure member-file line-shift (no duplication added/removed) yields NO new code
+   family (no hard-block) — the D30 bug is fixed, locked by a real-nose test.
+2. A genuine new/changed duplicated span yields a new fingerprint and hard-blocks
+   (no false-negative; D30's blocking concern resolved).
+3. Distinct nose families ↔ distinct fingerprints on the live corpus (PQ1 measured),
+   AND a golden-value unit test pins a known-good fingerprint for a fixed
+   `(file,start,end)` span (an offset-consistent off-by-one read passes SC1/SC2 but
+   fails the golden value — adversary F3), AND `fp({A,A,B}) != fp({A,B})` (no
+   `set()`-collapse — adversary F2).
+4. An uncomputable fingerprint degrades the whole gate to advisory with a
+   `degraded_reasons` entry, never blocks, never drops the family (FD8 / S4-D6).
+5. Gate + advisory baselines AND the `dup-review.json` overlay migrated to fingerprints
+   in lockstep in ONE commit; every `intentional` code id ∈ the migrated baseline (no
+   orphaned-intentional disarm, S4-D8); a fresh checkout at the migration commit shows
+   the dup-ratchet phase PASS/ADVISORY, never hard-block (S4-D7); full `quality_gates`
+   suite green; `run-quality.sh --read-only` green with the live `dup-ratchet` phase
+   PASS within budget.
+6. Plugin mirror in lockstep; the real-nose characterization test reshaped — the
+   nose-id-rotates assertion STAYS (documents the behavior we route around) and a NEW
+   gate-fingerprint-stable test asserts the fix; `docs/deferred-decisions.md` D30
+   marked RESOLVED.
+7. The reference documents the S4-D9 membership-change-rotates-identity behavior as
+   expected re-baseline maintenance (not a surprise), and the PQ2 in-place-edit
+   limitation honestly (v1 rotates where nose would not).
+
+### Acceptance Checks
+
+- `tests/quality_gates/test_dup_ratchet.py`:
+  - KEEP `test_real_nose_family_id_rotates_on_member_line_shift` (nose still rotates
+    — the "why we route around nose" anchor) and ADD
+    `test_gate_content_fingerprint_stable_on_member_line_shift` (same fixture; assert
+    the gate fingerprint is unchanged across the shift) [SC1].
+  - ADD `test_content_fingerprint_changes_on_span_content_change` [SC2].
+  - ADD a uniqueness assertion on a synthetic multi-family fixture, a golden-value
+    assertion for a fixed span, and `fp({A,A,B}) != fp({A,B})` [SC3].
+  - ADD a missing-member-file → whole-gate-degrade test (asserts `degraded_reasons`,
+    not a dropped family) [SC4].
+  - ADD an orphaned-intentional guard: with a migrated overlay, every `intentional`
+    code id is present in the migrated fingerprint baseline [SC5].
+  - `nose_fingerprint_lib` units: offset-invariance, path-invariance,
+    member-order-invariance, multiplicity-sensitivity, content-sensitivity,
+    read-failure → `None`.
+  - migrate existing policy-test fixtures from injecting `family_id` to injecting
+    `family_fingerprint` (else they pass for the wrong reason — empty new set);
+    decide whether the `family_id` read path is removed or kept as a no-op (no dead
+    seam) [operational F7].
+- `validate_gate_baseline` accepts the bumped schemaVersion + `code_family_fingerprints`
+  + string `fingerprint_algo_version`; rejects the stale combination (no dual-read).
+- Plugin mirror-drift gate + `pytest tests/quality_gates/ -q` green.
+
+### File plan
+
+1. `skills/public/quality/scripts/nose_fingerprint_lib.py` — NEW. `FINGERPRINT_ALGO_VERSION`,
+   `normalize_span`, `member_fingerprint`, `family_content_fingerprint(family,
+   repo_root) -> str | None` (PINNED algorithm S4-D2; reads RAW `locations`,
+   duplicate-preserving, `None` on read/range failure).
+2. `nose_report_lib.py` — `collect_families` stamps `family["family_fingerprint"]`
+   from full `locations` (S4-D5); rewrite the `tool_version_skew` message text so it
+   no longer says "family_ids are scanner-version-scoped" — the family SET (which
+   spans nose groups) is nose-version-scoped, the IDENTITY is a content fingerprint
+   (adversary F7).
+3. `dup_ratchet_lib.py` — baseline build/load/validate `code_family_ids` →
+   `code_family_fingerprints` (loader reads ONLY the new key, no dual-read); bump
+   `GATE_BASELINE_SCHEMA_VERSION` → `...v2`; add `fingerprint_algo_version` stamp + an
+   `algo_version_skew` helper (sibling of `tool_version_skew`); rewrite
+   `GATE_BASELINE_NOTE` CHURN CAVEAT (now offset/path-independent; re-baseline on
+   genuine content/membership/nose-version/algo change). `evaluate` UNCHANGED — keep
+   its `*_ids` param/verdict names (S4-D9).
+4. `check_dup_ratchet.py` — `_scan_code_family_ids` reads the stamped
+   `family_fingerprint` (degrade-whole-gate on `None` per S4-D6); `--code-inventory`
+   reads injected `family_fingerprint` else computes from `locations`; update docstring
+   CHURN CAVEAT + the skew note. The one-time migration write is NOT delta-guarded —
+   `_write_baseline` reads the old key as `None` → the guard is skipped → it writes
+   plainly (no `--confirm-baseline-delta` needed; operational F2); the guard resumes
+   for all post-migration re-baselines.
+5. `nose_baseline_lib.py` + `inventory_nose_clones.py` — advisory migrates in lockstep
+   via the stamped field; bump `BASELINE_SCHEMA_VERSION` → `nose_baseline.v3`; update
+   notes. (The advisory has no delta guard at all — its migration is a plain
+   `--write-baseline`.)
+6. `dup_review_lib.py` (+ `seed_dup_review.py`) — `family_records` code identity
+   `family_id` → stamped `family_fingerprint` (S4-D8a); the seed thereafter writes
+   fingerprint-keyed entries.
+7. `charness-artifacts/quality/dup-review.json` — one-time member-preserving REMAP of
+   the 33 code entries' `id`s (nose → fingerprint), preserving the 31 manual notes,
+   dropping orphaned ids (S4-D8b). A throwaway migration helper builds the
+   `nose_id → fingerprint` map from one live scan; NOT the add-only seed.
+8. `charness-artifacts/quality/dup-ratchet-baseline.json` + `nose-baseline.json` —
+   one-time lockstep migration re-baseline to fingerprint sets under the new schema,
+   in the SAME commit as steps 1–7 and 10.
+9. `skills/public/quality/references/dup-ratchet.md` — replace the offset-rotation
+   CHURN CAVEAT + "Re-Baseline Triggers" with fingerprint semantics; ADD the S4-D9
+   membership-change-still-rebaselines note and the PQ2 in-place-edit v1 limitation
+   (SC7).
+10. `integrations/tools/nose.json` — reconcile the pre-existing drift the seed depends
+    on: floor + "0.14.0 / schema v4 / 0.14.0-seeded" wording → the 0.15.0 / schema-v6
+    reality the fingerprint baseline is seeded on (the gate baseline is version-scoped,
+    so a 0.14.0 binary vs a 0.15.0 fingerprint baseline is the false-block the manifest
+    warns about — operational F4). Bump the floor to `>=0.15.0` or justify keeping it.
+11. `tests/quality_gates/test_dup_ratchet.py` — the reshape + new tests (Acceptance).
+12. `sync_root_plugin_manifests.py` before validators (rmtree+re-export mirror).
+13. `docs/deferred-decisions.md` D30 → RESOLVED (Slice 4), pointer to this spec; add
+    `dup-review.json` to the impact-surface list it originally omitted.
+
+### Critique
+
+Execution: completed via bounded fresh-eye subagents (3 angles + 1 counterweight)
+through the host Agent tool, 2026-06-27.
+Fresh-Eye Satisfaction: parent-delegated.
+Packet Consumed: `charness-artifacts/critique/2026-06-27-093537-packet.md`.
+Target: `references/spec-critique.md`.
+Reviewer Tier Evidence — Requested tier: high-leverage; Requested spawn fields:
+model=gpt-5.5, reasoning_effort=medium, service_tier=priority; Host exposure state:
+metadata-hidden (the host Agent tool does not expose model/effort/tier spawn fields;
+reviewers ran on the parent's available high-leverage model). Application state:
+parent spawned three angle reviewers (implementer-misread, adversarial-correctness,
+operational-migration) and one counterweight; host accepted the agents but did not
+confirm tier metadata application.
+
+Angles: implementer-misread (Weinberg), adversarial-correctness (try-to-break),
+operational-migration (Gawande); separate counterweight pass.
+
+Structured Findings (acted before lock unless noted):
+
+- F1 | bin: Act Before Ship | evidence: strong | ref: dup-review.json overlay /
+  evaluate:239 | note: 33 nose-id-keyed `intentional` code entries (27 live, 31 manual)
+  would silently disarm after the swap → false-block on every accepted family. FIXED:
+  S4-D8 (member-preserving overlay+seed identity migration) + SC5 orphaned-intentional
+  guard + File-plan steps 6–7,13.
+- F2 | bin: Act Before Ship | evidence: strong | ref: S4-D2 | note: algorithm
+  under-specified (RAW locations vs truncated sample_locations; repo_root join; "tuple"
+  ambiguity; set()-collapse collision; line-base). FIXED: S4-D2 pinned verbatim with
+  the code block + dup-preserving rule; SC3 golden value + `fp({A,A,B})!=fp({A,B})`.
+- F3 | bin: Act Before Ship | evidence: strong | ref: File plan §5 / _write_baseline |
+  note: the "delta guard fires, use --confirm-baseline-delta" claim is wrong (old key →
+  None → guard skipped). FIXED: File-plan step 4 — migration write is plainly not
+  delta-guarded, guard resumes post-migration.
+- F4 | bin: Act Before Ship | evidence: strong | ref: S4-D9 / SC1 | note:
+  membership-shrink (removing one of N copies) hard-blocks a legitimate reduction; the
+  spec presented membership-sensitivity only as a feature. FIXED: S4-D9 documents it as
+  non-regressive expected re-baseline; SC7 + reference note; S4-Defer-3 for the
+  subset-aware option.
+- F5 | bin: Act Before Ship | evidence: strong | ref: load/validate | note: schema
+  migration must be single-new-key, loader reads only it, no dual-read, names kept.
+  FIXED: S4-D4 + S4-D9.
+- F6 | bin: Bundle Anyway | evidence: moderate | ref: S4-D5/S4-D6 | note: stamp the
+  fingerprint centrally (no per-consumer truncation), `None` → whole-gate degrade with
+  a reason (never drop a family). FIXED: S4-D5 report-layer stamping + S4-D6.
+- F7 | bin: Bundle Anyway | evidence: moderate | ref: S4-D4 / skew | note: two skew
+  axes (nose tool_version + fingerprint algo_version) must each name its axis and
+  neither degrade; rewrite the stale "family_ids scanner-scoped" message. FIXED:
+  File-plan steps 2–3.
+- F8 | bin: Bundle Anyway | evidence: moderate | ref: nose.json | note: pre-existing
+  0.14.0/schema-v4 drift vs the 0.15.0 seed; reconcile here (version-scoped baseline).
+  FIXED: File-plan step 10.
+- F9 | bin: Over-Worry | evidence: strong | ref: PQ1 / S4-Defer-2 | note: natural
+  fingerprint collisions precluded by global clustering (only a negligible 64-bit
+  birthday residual); the vanish/shrink-then-recur false-negative is honest and
+  narrow. No change beyond wording; recorded so not relitigated (PQ1 reframed as an
+  implementation-collision guard; S4-Defer-2 widened to include shrink-then-recur).
+- F10 | bin: Valid but Defer | evidence: moderate | ref: PQ2 / S4-Defer-1 | note:
+  rstrip-only is a *different* (in-place) false-positive class, not "strictly rarer."
+  FIXED wording: PQ2 reframed; SC7; S4-Defer-1 retained.
+
+Counterweight Triage: bundle verdict PROCEED (cut list: nothing). The new module,
+the lockstep advisory migration, and the `fingerprint_algo_version` stamp each trace
+to an existing same-file pattern (nose_report_lib split; tool_version skew; FD8
+ladder) and are cheaper to include than the divergence they'd otherwise create —
+kept. S4-Defer-1 (token-aware normalization) and S4-Defer-2/3 held DEFERRED against
+any push for v1 token-normalization, collision-proofing, or subset-aware diffs:
+membership-shrink is non-regressive and natural collisions are precluded, so those
+are over-build for an operator-approved offset fix. The deferral steelman (D30 was
+right to defer a path-set re-key that carried a real false-negative) is overcome
+because the content fingerprint is gate-side and content-derived, proven by the
+empirical anchor to rotate on a real span edit.
+
+### Canonical Artifact
+
+This spec (Slice 4 of `charness-artifacts/spec/boy-scout-dup-ratchet.md`) is canonical
+during implementation.
+
+### First Implementation Slice
+
+1. Build `nose_fingerprint_lib.py` + its unit tests (offset/path/order invariance,
+   multiplicity, content-sensitivity, read-failure, golden value, `fp({A,A,B})`) and
+   run the live-corpus PQ1 uniqueness + PQ2 in-place-edit + PQ3 perf probes FIRST —
+   de-risk the algorithm before touching the gate.
+2. Stamp `family_fingerprint` in `collect_families` (S4-D5).
+3. Migrate the gate (`dup_ratchet_lib` + `check_dup_ratchet`), the advisory, the seed
+   (`dup_review_lib`), and the overlay+both baselines (member-preserving remap) — all
+   in ONE lockstep commit with the mirror sync (S4-D7/D8).
+4. Reference + nose.json reconcile + D30 resolution.
