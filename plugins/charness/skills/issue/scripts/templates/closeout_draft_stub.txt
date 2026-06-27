@@ -1,0 +1,9 @@
+<!-- closeout-draft starter; pick the ledger fields for YOUR --classification (run --type closeout-draft for the full shape). Example: feature/deferred-work. -->
+Closes #N
+
+JTBD: <the job this issue was the obstacle to>
+Boundary: <what is in / out of scope for this resolution>
+Resolution brief: <the chosen approach in a sentence or two>
+Implementation: <what changed — files / commits>
+Prevention: <what stops this class from recurring>
+Critique #N: charness-artifacts/critique/<dated-resolution-critique>.md

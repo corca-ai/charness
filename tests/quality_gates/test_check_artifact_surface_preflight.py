@@ -477,6 +477,16 @@ def test_closeout_draft_emit_stub_renders_a_starter_body() -> None:
     assert code == 0
     assert "Closes #N" in text
     assert "Critique #N:" in text
+    template = (
+        ROOT
+        / "skills"
+        / "public"
+        / "issue"
+        / "scripts"
+        / "templates"
+        / "closeout_draft_stub.txt"
+    )
+    assert template.read_text(encoding="utf-8") == text
 
 
 def test_goal_closeout_describe_now_surfaces_the_enforced_forms() -> None:

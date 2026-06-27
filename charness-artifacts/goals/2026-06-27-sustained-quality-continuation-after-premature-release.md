@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 16 complete; re-inventory for slice 17.
-- Current slice intent: continue prompt/template bulk reduction after the
-  critique adapter scaffold extraction.
-- Next action: commit and push slice 16, then continue discovery unless a
+- Current slice: slice 17 complete; re-inventory for slice 18.
+- Current slice intent: continue prompt/template bulk reduction after the issue
+  closeout-draft stub extraction.
+- Next action: commit and push slice 17, then continue discovery unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -77,7 +77,8 @@ accumulate.
 | 14 | Extract plugin import smoke script template from Python | Prompt-bulk inventory next surfaced `validate_packaging_install_surface.py`; the subprocess body is script text, not validator logic | focused packaging tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 15 | Extract achieve closeout stub template from Python | Prompt-bulk inventory next surfaced `describe_goal_closeout_shape.py`; the closeout starter stub is generated content, not Python logic | focused achieve/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 16 | Extract critique adapter scaffold template from Python | Prompt-bulk inventory next surfaced `critique/scripts/init_adapter.py`; the adapter skeleton is generated YAML, not Python logic | focused critique/reviewer tests, prompt-bulk delta, plugin sync, standing pytest | complete |
-| 17 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
+| 17 | Extract issue closeout-draft stub template from Python | Prompt-bulk inventory next surfaced `describe_closeout_draft_shape.py`; the starter closeout body is generated Markdown, not Python logic | focused issue/preflight tests, prompt-bulk delta, plugin sync, standing pytest | complete |
+| 18 | Continue discovery/push/release decision | Avoid another premature release | next candidate ledger, final validators, commit/push, release recommendation | pending |
 
 ## Operator Decision Queue
 
@@ -559,6 +560,54 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     coverage-instrumented standing pytest, gitignore-scan hygiene, and agent
     browser runtime guard. Usage episode:
     `slice-closeout-0c48db7271864f42bda0b3a62f5ecde2`.
+- Slice 17 evidence:
+  - Prompt-bulk inventory after slice 16 reported 30 findings and surfaced
+    `skills/public/issue/scripts/describe_closeout_draft_shape.py` as the next
+    public-skill generated-content candidate.
+  - Moved the issue closeout-draft starter body to
+    `skills/public/issue/scripts/templates/closeout_draft_stub.txt`; the
+    `stub()` helper now reads that template asset.
+  - Synced plugin export, adding
+    `plugins/charness/skills/issue/scripts/templates/closeout_draft_stub.txt`
+    and updating the plugin mirror of `describe_closeout_draft_shape.py`.
+  - Added deterministic coverage that the emitted closeout-draft stub exactly
+    equals the source template asset.
+  - Prompt-bulk inventory after the change reported 29 findings; the issue
+    closeout-draft stub no longer appears.
+  - Focused proof: `py_compile`, focused `ruff check`, and the issue
+    closeout/preflight pytest bundle passed; focused pytest reported
+    `69 passed in 2.71s`.
+  - Public-skill scenario review: `suggest_public_skill_dogfood.py --skill-id
+    issue` confirmed `issue` remains `evaluator-required`; Cautilus planner
+    reported `next_action: none` but required maintained scenario review.
+    Inspected `evals/cautilus/scenarios.json`: `issue` remains mapped to
+    `issue-sibling-search-concept-fixtures` and
+    `representative-skill-contracts`; recorded no scenario-registry change in
+    `docs/public-skill-dogfood.json` because this slice changes implementation
+    shape, not issue routing, GitHub source-of-truth behavior, causal review,
+    feature-brief behavior, or the enforced `validate-closeout-draft` grammar.
+  - Changed-surface proof: skill/public-skill/dogfood/scenario validators,
+    packaging validators, plugin import smoke, doc/markdown checks,
+    dup-ratchet, attention-state visibility, and the standing pytest runner
+    passed; standing pytest reported `3683 passed in 22.89s`.
+  - Fresh-eye review: no blocking finding. Reviewer verified source/plugin
+    mirror parity, exact old `--stub` body including final newline, template
+    asset coverage, honest evaluator-required scenario review, and packaging
+    export coverage.
+  - Closeout producer repair: first closeout producer attempt failed
+    `check-markdown.sh` because the template was named `.md`, so placeholder
+    forms such as `<the job...>` were linted as Markdown/HTML. Renamed the
+    template to `closeout_draft_stub.txt`, resynced the plugin export, updated
+    references/tests, and reran focused issue/preflight tests (`69 passed in
+    2.49s`) plus markdown/mirror checks successfully.
+  - Closeout producer proof:
+    `run_slice_closeout.py --skip-sync --allow-unmatched
+    --ack-cautilus-skill-review --produce-mutation-coverage
+    --verification-lock` completed after the `.txt` repair, including
+    skill/public-skill/dogfood validators, docs/markdown/secrets checks,
+    focused structural sweeps, coverage-instrumented standing pytest,
+    gitignore-scan hygiene, and agent browser runtime guard. Usage episode:
+    `slice-closeout-19fa63a158684405b2f6a1fb258cd712`.
 
 ## Context Sources
 

@@ -22,6 +22,9 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 _VERIFY = _load_local("issue_verify_closeout")
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique")
+_CLOSEOUT_DRAFT_STUB_TEMPLATE = (
+    Path(__file__).resolve().parent / "templates" / "closeout_draft_stub.txt"
+).read_text(encoding="utf-8")
 
 
 def _field_label(field_id: str, aliases: tuple[str, ...]) -> str:
@@ -92,17 +95,7 @@ def required_shape() -> str:
 
 def stub() -> str:
     """A starter closeout body (feature/deferred-work shape — the common case)."""
-    return (
-        "<!-- closeout-draft starter; pick the ledger fields for YOUR --classification "
-        "(run --type closeout-draft for the full shape). Example: feature/deferred-work. -->\n"
-        "Closes #N\n\n"
-        "JTBD: <the job this issue was the obstacle to>\n"
-        "Boundary: <what is in / out of scope for this resolution>\n"
-        "Resolution brief: <the chosen approach in a sentence or two>\n"
-        "Implementation: <what changed — files / commits>\n"
-        "Prevention: <what stops this class from recurring>\n"
-        "Critique #N: charness-artifacts/critique/<dated-resolution-critique>.md\n"
-    )
+    return _CLOSEOUT_DRAFT_STUB_TEMPLATE
 
 
 def main(argv: list[str] | None = None) -> int:
