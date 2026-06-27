@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-25T02:48:28Z",
+  "generated_at": "2026-06-27T12:01:37Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -120,6 +120,7 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/create-skill/SKILL.md",
+          "skills/shared/references/generative-sequence.md",
           "skills/public/create-skill/references/portable-authoring.md",
           "skills/public/create-skill/references/adapter-contract.md",
           "skills/public/create-skill/references/adapter-pattern.md",
@@ -367,6 +368,7 @@
           "charness:ideation"
         ],
         "referenced_paths": [
+          "skills/shared/references/generative-sequence.md",
           "skills/public/ideation/references/sequence-discipline.md",
           "skills/public/ideation/references/effectuation.md",
           "skills/public/ideation/references/decision-question-response.md",
@@ -479,8 +481,8 @@
       {
         "id": "quality",
         "name": "quality",
-        "description": "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete next gates instead of only complaining about what is missing.",
-        "summary": "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete next gates instead of only complaining about what is missing.",
+        "description": "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete quality moves instead of only complaining about what is missing.",
+        "summary": "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete quality moves instead of only complaining about what is missing.",
         "path": "skills/public/quality/SKILL.md",
         "skill_dir": "skills/public/quality",
         "canonical_path": "skills/public/quality/SKILL.md",
@@ -617,6 +619,7 @@
           "skills/public/spec/references/sequence-discipline.md",
           "skills/public/spec/references/design-lenses.md",
           "skills/public/spec/references/taxonomy-axis-checkpoint.md",
+          "skills/shared/references/generative-sequence.md",
           "skills/shared/references/source-bound-records.md",
           "skills/public/spec/references/evidence-durability.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
@@ -659,7 +662,8 @@
         ],
         "referenced_paths": [
           "skills/support/gather-notion/references/runtime-contract.md",
-          "skills/support/gather-notion/references/provenance.md"
+          "skills/support/gather-notion/references/provenance.md",
+          "skills/support/gather-notion/scripts/export_page.py"
         ],
         "source": "local-support",
         "layer": "support skill"
@@ -684,7 +688,8 @@
         ],
         "referenced_paths": [
           "skills/support/gather-slack/references/runtime-contract.md",
-          "skills/support/gather-slack/references/provenance.md"
+          "skills/support/gather-slack/references/provenance.md",
+          "skills/support/gather-slack/scripts/export-thread.sh"
         ],
         "source": "local-support",
         "layer": "support skill"
@@ -709,7 +714,8 @@
         ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
-          "skills/support/markdown-preview/references/runtime-contract.md"
+          "skills/support/markdown-preview/references/runtime-contract.md",
+          "skills/support/markdown-preview/scripts/render_markdown_preview.py"
         ],
         "source": "local-support",
         "layer": "support skill"
@@ -737,75 +743,11 @@
           "skills/support/web-fetch/references/runtime-contract.md",
           "skills/support/web-fetch/references/routing-table.md",
           "skills/support/web-fetch/references/provenance.md",
+          "skills/support/web-fetch/scripts/route_public_fetch.py",
+          "skills/support/web-fetch/scripts/classify_fetch_response.py",
           "skills/support/web-fetch/scripts/acquire_public_url.py"
         ],
         "source": "local-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "agent-browser",
-        "name": "agent-browser",
-        "description": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "summary": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/agent-browser/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/agent-browser",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/agent-browser/SKILL.md",
-        "trigger_phrases": [
-          "agent-browser",
-          "agent-browser skill",
-          "agent-browser 스킬",
-          "charness:agent-browser",
-          "support/agent-browser",
-          "agent-browser support",
-          "agent-browser support skill",
-          "agent-browser helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "cautilus",
-        "name": "cautilus-agent",
-        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/cautilus/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/cautilus",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/cautilus/SKILL.md",
-        "trigger_phrases": [
-          "cautilus-agent",
-          "cautilus-agent skill",
-          "cautilus-agent 스킬",
-          "charness:cautilus-agent",
-          "support/cautilus-agent",
-          "cautilus-agent support",
-          "cautilus-agent support skill",
-          "cautilus-agent helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "specdown",
-        "name": "specdown",
-        "description": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "summary": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/specdown/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/specdown",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.54.2/support/specdown/SKILL.md",
-        "trigger_phrases": [
-          "specdown",
-          "specdown skill",
-          "specdown 스킬",
-          "charness:specdown",
-          "support/specdown",
-          "specdown support",
-          "specdown support skill",
-          "specdown helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
         "layer": "support skill"
       }
     ],
@@ -1027,7 +969,7 @@
           {
             "layer_id": "web-fetch-authenticated-binaries",
             "layer_type": "authenticated-binary",
-            "summary": "Use host-mediated fetch helpers only when the selected route or fallback stage explicitly calls for them."
+            "summary": "Use authenticated or installed binaries/packages such as GitHub worker, `yt-dlp`, `curl_cffi`, `defuddle`, Patchright, or `agent-browser` only when the selected route or fallback stage explicitly calls for them."
           },
           {
             "layer_id": "web-fetch-operator-step",
@@ -1292,7 +1234,7 @@
       {
         "id": "nose",
         "kind": "external_binary",
-        "summary": "Required (>=0.14.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3); 0.14.0 emits schema v4 query JSON, and the committed dup-ratchet/clone id-baselines are seeded from 0.14.0's family ids.",
+        "summary": "Required (>=0.15.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed dup-ratchet/clone baselines are seeded on 0.15.0 (schema v6) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.",
         "access_modes": [
           "binary"
         ],
