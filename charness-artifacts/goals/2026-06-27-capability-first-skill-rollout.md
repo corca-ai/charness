@@ -9,10 +9,10 @@ goal is active; keep this artifact current until closeout.
 
 ## Active Operating Frame
 
-- Current slice: close the `handoff` continuation-capability slice.
-- Current slice intent: keep baton refresh anchored on what the next operator
-  must be able to continue.
-- Next action: validate and commit the `handoff` slice, then keep scanning
+- Current slice: close the `gather` knowledge-capability slice.
+- Current slice intent: keep source capture scoped to what later sessions need
+  to know or decide from the durable asset.
+- Next action: validate and commit the `gather` slice, then keep scanning
   remaining non-release public skills.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -125,6 +125,7 @@ unchanged skills.
 | 14 | Add capability-at-stake hook to `critique` | Keep pre-lock review from stress-testing changes without naming the capability at risk | Focused critique diff, dogfood freeze, slice closeout | complete |
 | 15 | Add operator-capability hook to `setup` | Keep operating-surface scaffolding from becoming boilerplate docs | Focused setup diff, dogfood freeze, slice closeout | complete |
 | 16 | Add continuation-capability hook to `handoff` | Keep baton refresh continuation-first instead of history-first | Focused handoff diff, dogfood freeze, slice closeout | complete |
+| 17 | Add knowledge-capability hook to `gather` | Keep durable source capture scoped to the later-session capability | Focused gather diff, dogfood freeze, slice closeout | complete |
 
 ## Operator Decision Queue
 
@@ -371,6 +372,23 @@ Issue closeout: n/a — no GitHub issue closeout is in scope.
     --ack-cautilus-skill-review` completed for the `handoff` slice after
     dogfood freeze, scenario registry review, and maintained handoff scenario
     execution.
+- Slice 15 — `gather` knowledge-capability hook.
+  - Routing: `find-skills` recommendation returned `gather`; target-skill
+    quality planning resolved `gather` for this review slice.
+  - Changed: `skills/public/gather/SKILL.md` and generated plugin mirror now
+    ask gather to name the knowledge capability later sessions need from the
+    source and expose `Knowledge Capability` in the output shape.
+  - Dogfood/evaluator disposition: `gather` is evaluator-required and mapped to
+    `gather-adapter-bootstrap`; this small framing change does not alter
+    exact-source routing, typed stop conditions, artifact ownership, source
+    identity, or provider ownership. `docs/public-skill-dogfood.json` freezes
+    the current contract; no live external acquisition or Cautilus run is
+    claimed.
+  - Non-claim: this does not widen narrow gather requests into research; it is
+    a scope-control hook for durable assets.
+  - Closeout: `run_slice_closeout.py --skip-broad-pytest
+    --ack-cautilus-skill-review` completed for the `gather` slice after dogfood
+    freeze, scenario registry review, and maintained gather scenario execution.
 
 ## Context Sources
 

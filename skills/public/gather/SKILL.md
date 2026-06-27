@@ -48,6 +48,7 @@ python3 "$SKILL_DIR/scripts/gather_public_url.py" --repo-root . --url <public-ur
 ## Workflow
 
 1. Identify the exact source and requested scope.
+   - name the knowledge capability later sessions need from this source
    - classify the source as local, public URL, GitHub, Slack, Notion, Google
      Workspace, browser-mediated private source, or broad research
    - Prefer primary sources.
@@ -106,6 +107,7 @@ preserve the Reddit URL identity even when the route blocks.
 The result should usually include:
 
 - `Source`
+- `Knowledge Capability`
 - `Canonical Asset`
 - `Freshness`
 - `Access Mode`
