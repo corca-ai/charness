@@ -10,18 +10,8 @@ from .support import run_script
 shim_gate = importlib.import_module("scripts.check_bootstrap_shim_consistency")
 
 SCRIPT = "scripts/check_bootstrap_shim_consistency.py"
-DRIFTED_SHIM = textwrap.dedent(
-    '''\
-    def _load_skill_runtime_bootstrap():
-        bootstrap = next(
-            (ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()),
-            None,
-        )
-        if bootstrap is None:
-            raise ImportError("skill_runtime_bootstrap.py not found")
-        return SimpleNamespace(**runpy.run_path(str(bootstrap)))
-    '''
-)
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+DRIFTED_SHIM = (FIXTURES / "drifted_skill_runtime_bootstrap.py.txt").read_text(encoding="utf-8")
 HEADER = "import runpy\nfrom pathlib import Path\nfrom types import SimpleNamespace\n\n\n"
 
 

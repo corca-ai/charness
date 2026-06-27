@@ -9,10 +9,10 @@ cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
 
-- Current slice: slice 22 complete; ready to commit and push.
-- Current slice intent: extract goal closeout roundtrip fixture from inline
-  test Markdown.
-- Next action: commit and push slice 22, then continue discovery unless a
+- Current slice: slice 24 complete; ready to commit and push.
+- Current slice intent: clarify broad pytest proof cache invalidation as locked
+  diff fingerprint behavior.
+- Next action: commit and push slices 23-24, then continue discovery unless a
   release-worthy boundary is reached.
 - Verification cadence: focused deterministic checks at each small slice;
   broader proof only when code, generated surfaces, or release boundaries move.
@@ -83,6 +83,8 @@ accumulate.
 | 20 | Extract setup worktree adapter templates from Python | Prompt-bulk inventory next surfaced generated worktree adapter YAML/comment blocks in `seed_worktree_adapter_lib.py` | focused setup worktree tests, prompt-bulk delta, plugin sync, standing pytest | complete |
 | 21 | Extract Charness CLI fake cautilus/nose scripts from inline test helper strings | Prompt-bulk inventory next surfaced `tests/charness_cli/tool_fakes.py`; fake executable bodies are fixture assets, not Python helper logic | focused CLI lifecycle tests, prompt-bulk delta, standing pytest | complete |
 | 22 | Extract goal closeout roundtrip fixture from inline test Markdown | Prompt-bulk inventory next surfaced `test_check_artifact_surface_preflight.py`; the synthetic goal body is fixture content, not test logic | focused artifact-surface preflight tests, prompt-bulk delta, standing pytest | complete |
+| 23 | Extract drifted bootstrap shim fixture from inline test source | Prompt-bulk inventory next surfaced `test_check_bootstrap_shim_consistency.py`; the drifted shim body is fixture content, not test logic | focused bootstrap-shim tests, prompt-bulk delta, standing pytest | complete |
+| 24 | Clarify broad pytest proof cache fingerprint diagnostic | Repeated broad-cache invalidation looked like a smell; investigation showed expected locked-diff invalidation but ambiguous wording | focused closeout cache tests, doc update, closeout proof | complete |
 
 ## Operator Decision Queue
 
@@ -825,6 +827,59 @@ Issue closeout: n/a — this continuation has not claimed tracked issue closeout
     (`40a4e156b1efd17f`) because the fixture intentionally shares the canonical
     goal Slice Plan table skeleton with achieve/handoff templates. Recorded it
     as reviewed intentional in `charness-artifacts/quality/dup-review.json`.
+- Slice 23 evidence:
+  - Prompt-bulk inventory after slice 22 reported 22 findings and surfaced the
+    drifted bootstrap shim source in
+    `tests/quality_gates/test_check_bootstrap_shim_consistency.py`.
+  - Moved the drifted shim body to
+    `tests/quality_gates/fixtures/drifted_skill_runtime_bootstrap.py.txt`; the
+    bootstrap-shim consistency tests now read that fixture asset.
+  - Prompt-bulk inventory after the change reported 21 findings; the drifted
+    shim body no longer appears.
+  - Length proof: `tests/quality_gates/test_check_bootstrap_shim_consistency.py`
+    moved from `137/800` to `127/800` code lines.
+  - Focused proof: `py_compile`, focused `ruff check`, and the bootstrap-shim
+    pytest file passed; focused pytest reported `11 passed in 1.19s`.
+  - Same-agent critique: the main risk is fixture-file whitespace changing the
+    drift shape. Folded response: the same focused tests still exercise report,
+    fix, nested-unfixable, and roundtrip behavior against the fixture content.
+  - Changed-surface proof: doc links, command docs, markdown, secrets, ruff,
+    Python length limits, attention-state visibility, test repo copy
+    invariants, boundary-bypass ratchet, standing pytest, and agent browser
+    runtime guard passed. The first closeout attempt stopped because the broad
+    pytest cache belonged to a different locked diff fingerprint; reran with
+    `--refresh-broad-pytest-proof` after confirming the mutation set was locked.
+    Usage episode:
+    `slice-closeout-11d90a85e8af436498610f1cea5621b8`.
+- Slice 24 evidence:
+  - User challenged the repeated broad pytest cache mismatch as suspicious.
+  - Investigation: `broad_pytest_fingerprint()` hashes `HEAD`, changed-path git
+    diff, staged diff, and changed file bytes. The cache history showed each
+    continuation slice had distinct `changed_paths`; therefore the repeated
+    invalidation was expected when each slice changed the locked diff, not proof
+    reuse corruption.
+  - Repair: changed the blocker from "different mutation fingerprint" to
+    "different locked diff fingerprint" and explicitly names file content,
+    staged diff, and `HEAD` changes as invalidators.
+  - Documentation: `docs/conventions/implementation-discipline.md` now defines
+    the locked-diff fingerprint inputs so operators know why a previous broad
+    pytest proof cannot validate later file mutations.
+  - Regression proof: added a tmp git repo test that records a broad proof,
+    mutates the same file again, and asserts the closeout blocks with the
+    locked-diff diagnostic while preserving the invalidated latest proof.
+  - Focused proof: `py_compile`, focused `ruff check`, Python length limits, and
+    focused pytest for broad-cache plus bootstrap-shim tests passed; focused
+    pytest reported `20 passed in 2.98s`.
+  - Reproduction proof: a no-refresh locked closeout blocked with the new
+    "different locked diff fingerprint" diagnostic and showed the latest cached
+    proof belonged to slice 23's smaller changed-path set.
+  - Changed-surface proof: after plugin mirror sync and doc-authoring preflight,
+    locked closeout with `--refresh-broad-pytest-proof` passed packaging,
+    docs, secrets, integration dry-runs, ruff, Python length limits,
+    attention-state visibility, test repo copy invariants, boundary-bypass
+    ratchet, standing pytest (`3687 passed in 22.72s`), gitignore scan hygiene,
+    and agent browser runtime guard. Usage episode:
+    `slice-closeout-96e45df7dbd74509bf214a5d4c3cdf47`.
 
 ## Context Sources
 

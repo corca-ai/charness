@@ -83,9 +83,10 @@ def _maybe_reuse_or_block_broad(
         payload.setdefault("invalidated_broad_pytest_proofs", []).append(cache_report)
         payload["status"] = "blocked"
         payload["error"] = (
-            "cached broad pytest proof exists for a different mutation fingerprint; "
-            "inspect the changed files and rerun with --refresh-broad-pytest-proof "
-            "only after the mutation set is final"
+            "cached broad pytest proof exists for a different locked diff fingerprint; "
+            "this is expected after any file content, staged diff, or HEAD change "
+            "since the cached proof. Inspect the changed files and rerun with "
+            "--refresh-broad-pytest-proof only after the mutation set is final"
         )
     return False
 

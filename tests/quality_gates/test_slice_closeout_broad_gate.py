@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from pathlib import Path
 
 from .support import ROOT, run_script
 
@@ -196,3 +197,51 @@ def test_broad_pytest_cache_reuses_matching_fingerprint(tmp_path) -> None:
     assert stale_latest_report["status"] == "reusable"
     assert stale_latest_report["latest"]["fingerprint"] == changed
     assert stale_latest_report["match"]["fingerprint"] == fingerprint
+
+
+def test_execute_plan_explains_invalidated_broad_cache_as_locked_diff(tmp_path: Path) -> None:
+    from scripts.slice_closeout_broad_gate import (
+        broad_pytest_fingerprint,
+        record_broad_pytest_proof,
+    )
+    from scripts.slice_closeout_command_executor import execute_command_plan
+
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    (tmp_path / "f.txt").write_text("one\n", encoding="utf-8")
+    subprocess.run(["git", "add", "f.txt"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-m", "init"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    (tmp_path / "f.txt").write_text("two\n", encoding="utf-8")
+    command = STANDING_PYTEST
+    record_broad_pytest_proof(
+        tmp_path,
+        command=command,
+        fingerprint=broad_pytest_fingerprint(tmp_path, ["f.txt"]),
+        elapsed_seconds=1.0,
+        changed_paths=["f.txt"],
+    )
+    (tmp_path / "f.txt").write_text("three\n", encoding="utf-8")
+
+    payload: dict[str, object] = {"executed_commands": []}
+
+    stopped = execute_command_plan(
+        tmp_path,
+        [("verify", command)],
+        payload,
+        run_command=lambda *_args: {"returncode": 99},
+        collect_changed_paths=lambda _repo_root: ["f.txt"],
+        refresh_broad_pytest_proof=False,
+    )
+
+    assert stopped is True
+    assert payload["status"] == "blocked"
+    assert "different locked diff fingerprint" in str(payload["error"])
+    assert "mutation fingerprint" not in str(payload["error"])
+    assert payload["executed_commands"] == []
+    invalidated = payload["invalidated_broad_pytest_proofs"][0]
+    assert invalidated["status"] == "invalidated"
+    assert invalidated["latest"]["changed_paths"] == ["f.txt"]

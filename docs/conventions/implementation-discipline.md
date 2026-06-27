@@ -20,9 +20,12 @@ the root instruction file but still apply to Charness maintenance work.
   set is locked and rerun with `--verification-lock`; a broad closeout without
   either flag must refuse before launching broad pytest. The runner prints a
   broad-pytest policy mode and recommendation when broad pytest is selected or
-  skipped. Under `--verification-lock`, broad pytest proof is cached by mutation
-  fingerprint under `.charness/closeout/`; the same locked diff reuses the cached
-  proof, while a changed fingerprint blocks until the operator reruns with
+  skipped. Under `--verification-lock`, broad pytest proof is cached by locked
+  diff fingerprint under `.charness/closeout/`; the fingerprint includes `HEAD`,
+  the changed-path diff, staged diff, and file bytes, so any later file content,
+  staging, or base-commit change intentionally invalidates the cached broad
+  proof. The same locked diff reuses the cached proof, while a changed
+  fingerprint blocks until the operator reruns with
   `--refresh-broad-pytest-proof`. Record focused current-diff proof for pre-lock
   slices rather than treating the skipped broad run as final evidence.
 - When a slice changes eligible mutation-pool Python files, add
