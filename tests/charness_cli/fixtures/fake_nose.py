@@ -5,7 +5,7 @@ import sys
 
 args = sys.argv[1:]
 if args == ["--version"]:
-    print("nose 0.14.0")
+    print("nose 0.15.0")
     raise SystemExit(0)
 if args == ["scan", "--help"]:
     print("Find duplicated code")

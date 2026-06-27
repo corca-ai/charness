@@ -535,10 +535,10 @@ numbers and file content are always consistent — no staleness window.
 
   ```python
   lines = (repo_root / member["file"]).read_text(encoding="utf-8").splitlines()
-  member_hash = sha256("\n".join(l.rstrip() for l in lines[start-1:end]).encode())[:16]
+  member_hash = sha256("\n".join(l.rstrip() for l in lines[start-1:end]).encode()).hexdigest()[:16]
   # member_hashes is a duplicate-PRESERVING list — do NOT set()-dedup before sorting,
   # or {A,A,B} collapses to {A,B} and collides with a real 2-member {A,B} (adversary F2).
-  family_fp = sha256("\n".join(sorted(member_hashes)).encode())[:16]
+  family_fp = sha256("\n".join(sorted(member_hashes)).encode()).hexdigest()[:16]   # 16 hex = 64-bit
   ```
 
   Invariant to member order, line offset, and file path; sensitive to member content,
@@ -883,3 +883,77 @@ during implementation.
    (`dup_review_lib`), and the overlay+both baselines (member-preserving remap) — all
    in ONE lockstep commit with the mirror sync (S4-D7/D8).
 4. Reference + nose.json reconcile + D30 resolution.
+
+### Slice 4 DONE (2026-06-27)
+
+All 13 file-plan steps landed in one lockstep commit. Verified on live nose 0.15.0:
+SC1 (`test_gate_content_fingerprint_stable_on_member_line_shift`) + SC2
+(`..._changes_on_span_content_change`) green alongside the retained nose-rotation
+characterization; the live corpus probe confirmed PQ1 (541 families → 541 distinct
+fingerprints, no collision), PQ3 (+0.10s, total scan 0.64s — within budget), and zero
+degrades; the live `check_dup_ratchet` runs CLEAN against the migrated v2 baseline; the
+old v1 baseline + new code degrades-to-advisory (S4-D7 safety proven). Full
+`quality_gates` + `tests/` suites green.
+
+Deviations / notes for the next reader:
+
+- **Family count 538 → 541.** The implementation's deliberate axis-symmetry helpers
+  (`algo_version_skew` mirroring `tool_version_skew`; `load_gate_baseline_algo_version`
+  mirroring the tool-version loader; `build_baseline`≈`build_gate_baseline` with the new
+  `algo_version` stamp) formed near-clone families. The two in-file loaders were deduped
+  via `_baseline_string_field`; the cross-module skew pair and the advisory/gate builder
+  parallel were left as intentional symmetry (a shared abstraction would add cross-module
+  coupling for 2-line helpers — consistent with the overlay's existing "small parallel
+  helper, keep local" intentional class) and accepted into the re-baseline like the rest.
+- **Overlay remap (S4-D8): 27 code remapped + 5 doc kept, 6 already-stale orphans
+  dropped** (5 carried manual notes). The 6 referenced nose ids absent from the live scan
+  — i.e. families that vanished/rotated in PRIOR work — so they suppressed nothing even
+  before the migration (their notes describe families no longer scanned; preserved in git
+  history). Orphaned-intentional guard (SC5) passes: every surviving code overlay id ∈ the
+  migrated baseline.
+- **nose.json floor bumped `>=0.14.0` → `>=0.15.0`** to match the 0.15.0-seeded fingerprint
+  baselines (the prior 0.14.0 wording was pre-existing drift from the v0.56.7 0.15.0
+  re-baseline; operational-critique F4). The family SET stays nose-version-scoped, so the
+  tool_version skew warning still applies.
+- **S4-D5 central stamping confirmed necessary:** the overlay seed consumes the truncated
+  `family_summary` (`sample_locations`, capped at 6), so it cannot compute its own
+  fingerprint — `collect_families` stamps `family_fingerprint` once and `family_summary`
+  propagates it to every consumer.
+- PQ2 (in-place comment-edit residual) and S4-Defer-2/3 remain deferred as specified; the
+  reference documents the v1 limitation and the membership-shrink re-baseline honestly.
+
+### Slice 4 Impl Critique (2026-06-27)
+
+Bounded fresh-eye CODE critique via the prepare packet
+(`charness-artifacts/critique/2026-06-27-103255-packet.md`): 2 angle reviewers
+(code-correctness / migration-integrity) + 1 separate counterweight, all parent-delegated.
+Fresh-Eye Satisfaction: parent-delegated. Verdicts: code-correctness CORRECT (no
+mis-gating bug — independently verified the pinned algorithm, central stamping, degrade
+ladder, no-dual-read, both skew axes, injected seam); migration-integrity SOUND on the
+data (lockstep-identical 541-fp sets, SC5 orphaned-intentional guard passes, all 27
+survivor notes preserved verbatim, byte-identical mirror parity, nose.json history
+preserved) with one honesty defect; counterweight SHIP.
+
+Acted before commit:
+
+- **Migration F1 (Bundle):** the member-preserving overlay remap rewrote `dup-review.json`
+  entry `id`s but left the stored top-level `note` as the stale "code: nose family_id"
+  text (the sibling `DEFAULT_NOTE` + both baseline notes were already corrected). Synced
+  the overlay note to the canonical `DEFAULT_NOTE` — the gate never parses it, but it was
+  exactly the identity-honesty drift this slice removes.
+- **Correctness F1 (Over-Worry, doc-fidelity):** the S4-D2 pinned pseudocode wrote
+  `sha256(...)[:16]` (missing `.hexdigest()`); the code was already correct
+  (`.hexdigest()[:16]`). Corrected the pseudocode so a future copy-paste does not regress.
+- **Correctness F2 (Over-Worry, test-hygiene):** `test_inproc_no_version_skew_on_legacy_unstamped_baseline`
+  passed its `clean` assertion via an empty injected set; switched it to inject
+  `family_fingerprint` so it asserts "known1 ∈ baseline" + added a `new_code_families == []`
+  check.
+
+Counterweighted Over-Worry (recorded, not relitigated): the two cross-module
+parallel-helper near-clones left local (pre-existed slice 4; a shared abstraction for
+axis-specific ~12-line helpers adds coupling for negative gain); the nose.json floor bump
+(reconciles genuinely stale 0.14.0 provenance the 0.15.0 seed depends on); the 6 dropped
+orphaned overlay entries (absent from the live scan, suppressed nothing, notes in git
+history); the membership-shrink case (non-regressive, documented, subset-aware diff
+deferred to S4-Defer-3). The overlay keeping `dup_review.v1` is correct (member-preserving
+remap, shape unchanged).

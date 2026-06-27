@@ -24,6 +24,7 @@ def _load_skill_runtime_bootstrap():
 _SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 nose_baseline = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_baseline_lib")
 nose_report = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
+nose_fingerprint = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
 DEFAULT_BASELINE_REL = nose_baseline.DEFAULT_BASELINE_REL
 
 DEFAULT_PATHS = ("scripts", "skills/public", "skills/support")
@@ -126,10 +127,11 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
                 "stderr": collected["stderr"],
                 "notes": ["nose query errored; baseline not written. Review manually."],
             }
-        ids = {nose_report.family_identity(family) for family in families}
+        fingerprints = {family.get("family_fingerprint") for family in families}
         return nose_baseline.write_baseline_payload(
-            repo_root, baseline, {fid for fid in ids if fid}, roots,
+            repo_root, baseline, {fp for fp in fingerprints if fp}, roots,
             tool_version=collected.get("tool_version", ""),
+            algo_version=nose_fingerprint.FINGERPRINT_ALGO_VERSION,
         )
     if collected["status"] == "error":
         return {
@@ -152,7 +154,7 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
         }
     baseline_ids = nose_baseline.load_baseline_ids(repo_root, baseline)
     if baseline_ids is not None:
-        drift = [family for family in families if nose_report.family_identity(family) not in baseline_ids]
+        drift = [family for family in families if family.get("family_fingerprint") not in baseline_ids]
     else:
         drift = families
     summaries = [nose_report.family_summary(family) for family in drift]

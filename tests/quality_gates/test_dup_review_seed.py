@@ -35,8 +35,9 @@ lib = _load("dup_review_lib")
 seed = _load("seed_dup_review")
 
 
-def _code_family(family_id: str, files: list[str]) -> dict:
-    return {"family_id": family_id, "sample_locations": [{"file": f} for f in files]}
+def _code_family(identity: str, files: list[str]) -> dict:
+    # Slice 4: the seed keys code identity on the stamped `family_fingerprint` (was family_id).
+    return {"family_fingerprint": identity, "sample_locations": [{"file": f} for f in files]}
 
 
 # --------------------------------------------------------------------------- #
@@ -65,7 +66,7 @@ def test_classify_never_returns_fixable() -> None:
 # --------------------------------------------------------------------------- #
 # family_records + build_review
 # --------------------------------------------------------------------------- #
-def test_family_records_keys_code_by_family_id_and_doc_by_signature() -> None:
+def test_family_records_keys_code_by_fingerprint_and_doc_by_signature() -> None:
     code = [_code_family("aaa", ["x/resolve_adapter.py"])]
     doc = [{"signature": "bbb"}, {"signature": ""}, {"no": "sig"}]
     records = lib.family_records(code, doc)

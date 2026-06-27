@@ -214,10 +214,14 @@ def test_nose_advisory_id_baseline_filters_drift_without_nose_baseline_flag(tmp_
     baseline = tmp_path / "charness-artifacts" / "quality" / "nose-baseline.json"
     baseline.parent.mkdir(parents=True)
     baseline.write_text(
-        json.dumps({"schemaVersion": "charness.quality.nose_baseline.v2", "code_family_ids": ["accepted1"]}),
+        json.dumps({"schemaVersion": "charness.quality.nose_baseline.v3",
+                    "code_family_fingerprints": ["accepted1"]}),
         encoding="utf-8",
     )
     bin_dir = tmp_path / "bin"
+    # Slice 4: the advisory keys drift on the stamped content fingerprint. The fake
+    # families carry it directly (empty locations -> collect_families cannot compute it,
+    # and its setdefault keeps a provided value).
     _make_nose(
         bin_dir,
         """
@@ -225,8 +229,8 @@ def test_nose_advisory_id_baseline_filters_drift_without_nose_baseline_flag(tmp_
         assert "--baseline" not in args
         assert "--write-baseline" not in args
         print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": [
-            {"id": "accepted1", "members": 2, "locations": []},
-            {"id": "drift1", "members": 2, "locations": []}
+            {"id": "accepted1", "family_fingerprint": "accepted1", "members": 2, "locations": []},
+            {"id": "drift1", "family_fingerprint": "drift1", "members": 2, "locations": []}
         ]}))
         """,
     )
@@ -242,7 +246,7 @@ def test_nose_advisory_defaults_baseline_when_present(tmp_path: Path) -> None:
     baseline = tmp_path / "charness-artifacts" / "quality" / "nose-baseline.json"
     baseline.parent.mkdir(parents=True)
     baseline.write_text(
-        json.dumps({"schemaVersion": "charness.quality.nose_baseline.v2", "code_family_ids": []}),
+        json.dumps({"schemaVersion": "charness.quality.nose_baseline.v3", "code_family_fingerprints": []}),
         encoding="utf-8",
     )
     bin_dir = tmp_path / "bin"
@@ -257,9 +261,9 @@ def test_nose_advisory_defaults_baseline_when_present(tmp_path: Path) -> None:
     assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
 
 
-def test_nose_advisory_write_baseline_writes_id_set(tmp_path: Path) -> None:
-    # Migration: --write-baseline records EVERY scanned family_id as an id-set in
-    # Python (no `nose --write-baseline`, which clobbers per single-path run).
+def test_nose_advisory_write_baseline_writes_fingerprint_set(tmp_path: Path) -> None:
+    # Slice 4: --write-baseline records EVERY scanned family's content fingerprint as a
+    # fingerprint-set in Python (no `nose --write-baseline`, which clobbers per single-path run).
     bin_dir = tmp_path / "bin"
     _make_nose(
         bin_dir,
@@ -267,7 +271,8 @@ def test_nose_advisory_write_baseline_writes_id_set(tmp_path: Path) -> None:
         assert args[0] == "query"
         assert "--write-baseline" not in args
         print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": [
-            {"id": "fid2", "locations": []}, {"id": "fid1", "locations": []}
+            {"id": "x2", "family_fingerprint": "fid2", "locations": []},
+            {"id": "x1", "family_fingerprint": "fid1", "locations": []}
         ]}))
         """,
     )
@@ -276,7 +281,8 @@ def test_nose_advisory_write_baseline_writes_id_set(tmp_path: Path) -> None:
     assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
     assert payload["code_family_count"] == 2
     written = json.loads((tmp_path / "charness-artifacts" / "quality" / "nose-baseline.json").read_text(encoding="utf-8"))
-    assert written["code_family_ids"] == ["fid1", "fid2"]
+    assert written["code_family_fingerprints"] == ["fid1", "fid2"]
+    assert written["schemaVersion"] == "charness.quality.nose_baseline.v3"
 
 
 def test_nose_advisory_parses_query_schema_v3(tmp_path: Path) -> None:

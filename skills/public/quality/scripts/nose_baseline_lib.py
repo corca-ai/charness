@@ -33,18 +33,20 @@ from typing import Any, Iterable
 # bootstrap boilerplate every run. Re-baseline per scanner version with
 # --write-baseline (see the advisory-interpretation contract).
 DEFAULT_BASELINE_REL = "charness-artifacts/quality/nose-baseline.json"
-BASELINE_SCHEMA_VERSION = "charness.quality.nose_baseline.v2"
+BASELINE_SCHEMA_VERSION = "charness.quality.nose_baseline.v3"
 BASELINE_NOTE = (
-    "Accepted (intentional/portability) code clone family_ids so the advisory "
-    "reports only new/changed drift. Keyed by nose family_id (16-hex content hash) "
-    "from a full `nose query` over the scanned roots — NOT nose's cluster key/--baseline "
-    "(plumbing reasons; see nose_baseline_lib docstring). family_id is NOT churn-stable: "
-    "any member edit (content, line offset, file path — and, by construction, membership) "
-    "rotates it. The "
-    "advisory is non-blocking, so re-baseline per scanner version (and when ids rotate) "
-    "with --write-baseline; never treat the accepted count as a reduction target (see item 5 review). "
-    "The baseline stamps the producing nose tool_version; the read path warns when the live "
-    "scanner version differs so a silent bump reads as re-baseline, not a flood of false drift."
+    "Accepted (intentional/portability) code clone content fingerprints so the advisory "
+    "reports only new/changed drift. Keyed by the gate-computed, offset/path-INDEPENDENT "
+    "content fingerprint (sha256 over the sorted, duplicate-preserving rstrip-normalized "
+    "member spans; see nose_fingerprint_lib), in lockstep with the dup-ratchet gate baseline "
+    "— NOT nose's offset/path-folding family_id (slice 4 re-key, resolving D30). The "
+    "fingerprint is STABLE across pure line-shifts, so incidental member-file edits no longer "
+    "flood the advisory with false drift; it still rotates on genuine content/membership change. "
+    "The advisory is non-blocking, so re-baseline with --write-baseline on a nose-version bump "
+    "(regroups families), a fingerprint_algo_version bump, or reviewed new families; never treat "
+    "the accepted count as a reduction target (see item 5 review). The baseline stamps the "
+    "producing nose tool_version and fingerprint_algo_version; the read path warns on a version "
+    "skew so a silent bump reads as re-baseline, not a flood of false drift."
 )
 
 
@@ -66,11 +68,12 @@ def resolve_baseline(*, write_baseline: bool, baseline: str | None, repo_root: P
 
 
 def load_baseline_ids(repo_root: Path, baseline_rel: str | None) -> set[str] | None:
-    """Accepted family_id set, or ``None`` when the baseline is absent / unreadable
-    / not an id-set (the advisory then reports all families as drift). A legacy
-    cluster-key baseline (pre-migration ``[{key, ...}]``) carries no
-    ``code_family_ids`` and so reads as ``None`` — everything is drift until
+    """Accepted content-fingerprint set, or ``None`` when the baseline is absent /
+    unreadable / not a fingerprint-set (the advisory then reports all families as drift).
+    A legacy baseline keyed by ``code_family_ids`` (pre-slice-4 nose ids) carries no
+    ``code_family_fingerprints`` and so reads as ``None`` — everything is drift until
     re-seeded, an honest "re-baseline needed" signal rather than a silent all-clear.
+    No dual-read: a stale checkout must not misread nose ids as fingerprints.
     """
     if not baseline_rel:
         return None
@@ -81,7 +84,7 @@ def load_baseline_ids(repo_root: Path, baseline_rel: str | None) -> set[str] | N
         return None
     if not isinstance(data, dict):
         return None
-    ids = data.get("code_family_ids")
+    ids = data.get("code_family_fingerprints")
     if not isinstance(ids, list):
         return None
     return {str(fid) for fid in ids if isinstance(fid, str) and fid}
@@ -103,23 +106,33 @@ def load_baseline_tool_version(repo_root: Path, baseline_rel: str | None) -> str
 
 
 def build_baseline(
-    code_family_ids: Iterable[str], *, tool_version: str = "", note: str = BASELINE_NOTE
+    code_family_fingerprints: Iterable[str],
+    *,
+    tool_version: str = "",
+    algo_version: str = "",
+    note: str = BASELINE_NOTE,
 ) -> dict[str, Any]:
-    ids = sorted({str(fid) for fid in code_family_ids if fid})
-    baseline: dict[str, Any] = {"schemaVersion": BASELINE_SCHEMA_VERSION, "note": note, "code_family_ids": ids}
+    ids = sorted({str(fid) for fid in code_family_fingerprints if fid})
+    baseline: dict[str, Any] = {
+        "schemaVersion": BASELINE_SCHEMA_VERSION,
+        "note": note,
+        "code_family_fingerprints": ids,
+    }
     # Stamp only when known: a legacy/unknown write stays unstamped (the read path
     # treats a missing stamp as "unknown", never a false skew warning), not ``""``.
     if tool_version:
         baseline["tool_version"] = str(tool_version)
+    if algo_version:
+        baseline["fingerprint_algo_version"] = str(algo_version)
     return baseline
 
 
 def write_baseline_payload(
-    repo_root: Path, baseline_rel: str | None, code_family_ids: Iterable[str], roots: list[str],
-    *, tool_version: str = "",
+    repo_root: Path, baseline_rel: str | None, code_family_fingerprints: Iterable[str], roots: list[str],
+    *, tool_version: str = "", algo_version: str = "",
 ) -> dict[str, Any]:
     rel = baseline_rel or DEFAULT_BASELINE_REL
-    baseline = build_baseline(code_family_ids, tool_version=tool_version)
+    baseline = build_baseline(code_family_fingerprints, tool_version=tool_version, algo_version=algo_version)
     path = repo_root / rel
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -132,7 +145,7 @@ def write_baseline_payload(
         "paths": roots,
         "baseline": rel,
         "tool_version": tool_version,
-        "code_family_count": len(baseline["code_family_ids"]),
+        "code_family_count": len(baseline["code_family_fingerprints"]),
         "notes": [
             "Baseline accepts today's intentional/portability code clone family_ids so the advisory reports only new/changed drift.",
             "Re-baseline per scanner version; never treat the accepted count as a reduction target.",

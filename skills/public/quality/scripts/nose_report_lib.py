@@ -47,27 +47,44 @@ NOSE_TIMEOUT_SECONDS = 180
 _VERSION_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 
 
+def _load_fingerprint_lib() -> Any:
+    """Load the pure sibling ``nose_fingerprint_lib`` by path (stdlib-only, no bootstrap
+    dependency) so ``collect_families`` can stamp an offset/path-independent content
+    fingerprint without coupling this resolver to the skill runtime loader."""
+    import importlib.util
+
+    path = Path(__file__).resolve().with_name("nose_fingerprint_lib.py")
+    spec = importlib.util.spec_from_file_location("nose_fingerprint_lib", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_fingerprint = _load_fingerprint_lib()
+
+
 def tool_version_skew(baseline_version: str | None, live_version: str | None) -> str | None:
     """Operator warning when a stored baseline was minted under a different nose
     version than the one now scanning, else ``None``.
 
-    family_ids are scanner-version-scoped (the id folds nose's normalize+hash, which
-    a version bump can change), so an unrecorded version skew makes every stored id
-    stale — the advisory floods with false drift and the blocking gate false-hard-
-    blocks a wall of "new" families that are really just version-rotated. A MISSING
-    stamp on either side returns ``None`` (it is "unknown", NOT a mismatch): legacy
-    unstamped baselines do not warn until a deliberate re-baseline stamps the version,
-    after which a future bump surfaces here. The warning never degrades a gate — it
-    explains a block rather than suppressing one (suppressing would hide real new
-    duplication)."""
+    Since Slice 4 the gate/advisory identity is a gate-computed content fingerprint, not
+    nose's id — but the clone family SET (which spans nose groups at a given mode/min-size)
+    is still nose-version-scoped, so a nose bump can regroup families and drift the stored
+    fingerprint set even though each family's identity is offset/path-stable. An unrecorded
+    skew therefore still makes the stored set stale. A MISSING stamp on either side returns
+    ``None`` (it is "unknown", NOT a mismatch): legacy unstamped baselines do not warn until
+    a deliberate re-baseline stamps the version, after which a future bump surfaces here. The
+    warning never degrades a gate — it explains a block rather than suppressing one
+    (suppressing would hide real new duplication)."""
     base = str(baseline_version or "").strip()
     live = str(live_version or "").strip()
     if base and live and base != live:
         return (
             f"nose version skew: baseline written under nose {base}, now scanning with "
-            f"nose {live}. family_ids are scanner-version-scoped, so a re-baseline "
-            "(--write-baseline) is the honest fix — do NOT treat the rotated ids as new "
-            "duplication."
+            f"nose {live}. The clone family SET is nose-version-scoped (a bump can regroup "
+            "families), so a re-baseline (--write-baseline) is the honest fix — do NOT treat "
+            "the drifted fingerprints as new duplication."
         )
     return None
 
@@ -170,6 +187,15 @@ def collect_families(
     keyed: dict[str, dict[str, Any]] = {}
     unkeyed: list[dict[str, Any]] = []
     for family in result["families"]:
+        # Stamp the offset/path-independent content fingerprint once here (Slice 4),
+        # from the RAW full `locations`, the same way family_id is stamped. Every
+        # consumer (gate, advisory, overlay seed via family_summary) reads this one
+        # field instead of recomputing it, so there is no per-consumer truncation
+        # (family_summary's sample_locations caps at 6) and no three-way divergence.
+        # Absent (None) when a member span is unreadable -> the gate degrades whole.
+        fingerprint = _fingerprint.family_content_fingerprint(family, repo_root)
+        if fingerprint:
+            family.setdefault("family_fingerprint", fingerprint)
         identity = family_identity(family)
         if identity:
             family.setdefault("family_id", identity)
@@ -233,6 +259,7 @@ def family_summary(family: dict[str, Any]) -> dict[str, Any]:
         shared_lines = family.get("shared")
     return {
         "family_id": family.get("family_id") or family.get("id"),
+        "family_fingerprint": family.get("family_fingerprint"),
         "value": family.get("value"),
         "members": family.get("members"),
         "files": family.get("files"),

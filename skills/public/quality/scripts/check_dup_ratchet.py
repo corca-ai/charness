@@ -51,6 +51,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _ratchet = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_lib")
 _inventory = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_nose_clones")
 _nose_report = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
+_fingerprint = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
 _quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
 
 DOC_INVENTORY = Path(__file__).resolve().parent / "inventory_doc_duplicates.py"
@@ -98,15 +99,16 @@ def _families_from_text(text: str | None) -> list | None:
     return families if isinstance(families, list) else []
 
 
-def _scan_code_family_ids(repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
+def _scan_code_fingerprints(repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
     nose_bin = _inventory.resolve_nose_bin()
     if nose_bin is None:
         return set(), "nose binary not found; code clone scan skipped", ""
     paths = [str(path) for path in (scope_paths or _inventory.DEFAULT_PATHS)]
-    # Full enumeration via the pinned `nose query` resolver: one nose 0.14.0
-    # `--root` multi-root query over the whole scope (a cross-root clone is grouped,
-    # not split per root), high top= so every family_id is recorded (a truncated
-    # seed would false-block later).
+    # Full enumeration via the pinned `nose query` resolver: one nose `--root` multi-root
+    # query over the whole scope (a cross-root clone is grouped, not split per root), high
+    # top= so every family is recorded. `collect_families` stamps each family's offset/path-
+    # independent content fingerprint (slice 4); the gate keys newness on that, not the
+    # offset/path-folding family_id (resolves D30).
     result = _nose_report.collect_families(
         repo_root, nose_bin, paths, mode=_inventory.DEFAULT_MODE,
         min_size=FULL_SCAN_MIN_SIZE, top=FULL_SCAN_TOP, sort="extractability",
@@ -114,12 +116,20 @@ def _scan_code_family_ids(repo_root: Path, scope_paths: list[str]) -> tuple[set[
     live_version = result.get("tool_version", "")
     if result.get("status") == "error":
         return set(), f"nose code scan error: {result.get('stderr', '')[:160]}", live_version
-    ids = {
-        _nose_report.family_identity(fam)
-        for fam in result.get("families", [])
-        if isinstance(fam, dict) and _nose_report.family_identity(fam)
-    }
-    return {fid for fid in ids if fid}, None, live_version
+    families = [fam for fam in result.get("families", []) if isinstance(fam, dict)]
+    # A family with no stamped fingerprint had an unreadable member span (file changed
+    # between scan and read, etc.). Degrade the WHOLE gate to advisory (FD8) — never a
+    # false block, never a silently dropped family that would read as "removed".
+    missing = [fam for fam in families if not fam.get("family_fingerprint")]
+    if missing:
+        return (
+            set(),
+            f"{len(missing)} clone family(ies) had an unreadable member span; "
+            "content fingerprint degraded (whole gate advisory)",
+            live_version,
+        )
+    fingerprints = {str(fam["family_fingerprint"]) for fam in families}
+    return {fp for fp in fingerprints if fp}, None, live_version
 
 
 def _payload_tool_version(text: str | None) -> str:
@@ -134,15 +144,26 @@ def _payload_tool_version(text: str | None) -> str:
     return version if isinstance(version, str) else ""
 
 
-def _code_family_ids(args, repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
+def _code_fingerprints(args, repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
     if args.code_inventory is not None:
         text = _safe_read(args.code_inventory)
         families = _families_from_text(text)
         if families is None:
             return set(), f"injected code inventory unreadable ({args.code_inventory})", ""
-        ids = {str(fam.get("family_id")) for fam in families if isinstance(fam, dict) and fam.get("family_id")}
-        return ids, None, _payload_tool_version(text)
-    return _scan_code_family_ids(repo_root, scope_paths)
+        # Test seam: an injected family carries `family_fingerprint` directly (symmetric
+        # with the pre-slice-4 injected `family_id`); else compute it from injected raw
+        # `locations` so an injected nose-shaped inventory also works.
+        fingerprints: set[str] = set()
+        for fam in families:
+            if not isinstance(fam, dict):
+                continue
+            fingerprint = fam.get("family_fingerprint")
+            if not fingerprint and fam.get("locations"):
+                fingerprint = _fingerprint.family_content_fingerprint(fam, repo_root)
+            if fingerprint:
+                fingerprints.add(str(fingerprint))
+        return fingerprints, None, _payload_tool_version(text)
+    return _scan_code_fingerprints(repo_root, scope_paths)
 
 
 def _run_doc_inventory(repo_root: Path) -> str:
@@ -190,7 +211,7 @@ def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | N
 def _write_baseline(repo_root: Path, config: dict, args) -> dict:
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
-    ids, reason, live_version = _code_family_ids(args, repo_root, scope_paths)
+    ids, reason, live_version = _code_fingerprints(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "write-baseline-failed",
                 "messages": [f"cannot write gate baseline: {reason}"]}
@@ -221,12 +242,15 @@ def _write_baseline(repo_root: Path, config: dict, args) -> dict:
                     ],
                 }
             delta_note = f"confirmed large delta (+{len(added)}/-{len(removed)})"
-    # Stamp the producing nose version from THIS scan (the run that minted these ids),
-    # never a fresh probe — so the stamp can never disagree with the ids it labels.
-    baseline = _ratchet.build_gate_baseline(ids, tool_version=live_version)
+    # Stamp the producing nose version from THIS scan (the run that minted these
+    # fingerprints) plus the fingerprint algo version, never a fresh probe — so the stamps
+    # can never disagree with the fingerprints they label.
+    baseline = _ratchet.build_gate_baseline(
+        ids, tool_version=live_version, algo_version=_fingerprint.FINGERPRINT_ALGO_VERSION
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(baseline, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    message = f"wrote gate baseline ({len(ids)} code family_ids) -> {baseline_rel}"
+    message = f"wrote gate baseline ({len(ids)} code family fingerprints) -> {baseline_rel}"
     if delta_note:
         message += f" [{delta_note}]"
     return {"ok": True, "inert": False, "status": "baseline-written",
@@ -260,6 +284,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     raw_baseline = _load_json(repo_root / baseline_rel)
     baseline_ids = _ratchet.load_gate_baseline_ids(raw_baseline)
     baseline_version = _ratchet.load_gate_baseline_tool_version(raw_baseline)
+    baseline_algo = _ratchet.load_gate_baseline_algo_version(raw_baseline)
     if baseline_ids is None:
         degraded.append(f"gate baseline missing/unreadable ({baseline_rel})")
     elif (integrity := _ratchet.validate_gate_baseline(raw_baseline)):
@@ -268,7 +293,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         # but wired to nothing; fold it in here so a silent integrity drift surfaces
         # as advisory through the existing dup-ratchet phase. Advisory only (FD8).
         degraded.append(f"gate baseline integrity ({baseline_rel}): " + "; ".join(integrity))
-    code_ids, code_reason, live_version = _code_family_ids(args, repo_root, scope_paths)
+    code_ids, code_reason, live_version = _code_fingerprints(args, repo_root, scope_paths)
     if code_reason:
         degraded.append(code_reason)
     elif args.code_inventory is None and not code_ids and baseline_ids:
@@ -303,6 +328,13 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     verdict["version_skew"] = skew
     if skew:
         verdict["messages"].append(f"WARNING (scanner-version skew): {skew}")
+    # Independent of the nose-version axis above: the gate-owned fingerprint algo version.
+    # Either skew is a re-baseline signal; each names its axis so recovery is unambiguous.
+    # Neither degrades — a block stays a block (suppressing would hide real new dup).
+    algo_skew = _ratchet.algo_version_skew(baseline_algo, _fingerprint.FINGERPRINT_ALGO_VERSION)
+    verdict["algo_skew"] = algo_skew
+    if algo_skew:
+        verdict["messages"].append(f"WARNING (fingerprint-algo skew): {algo_skew}")
     return verdict
 
 

@@ -5,7 +5,8 @@ The two nose advisories (``inventory_nose_clones.py`` for code,
 ``inventory_doc_duplicates.py`` for docs) report RAW clone families, including
 intentional portable boilerplate. The ratchet (slice 2) acts only on a REVIEWED
 ``fixable`` subset, so this layer records a classification overlay keyed by family
-identity: ``family_id`` for code (nose 0.13.0's stable 16-hex content hash) and
+identity: the offset/path-independent ``family_fingerprint`` for code (slice 4 re-key,
+in lockstep with the gate/advisory baselines — was nose's ``family_id``) and
 ``family_signature`` for docs.
 
 Design (slice 1):
@@ -36,7 +37,7 @@ CLASSES = ("fixable", "intentional", "unreviewed")
 PORTABLE_COPY_BASENAMES = ("resolve_adapter.py", "init_adapter.py")
 DEFAULT_NOTE = (
     "Reviewed fixable-duplication overlay (item 5). Keyed by family identity "
-    "(code: nose family_id; doc: family_signature). Stores only explicitly-"
+    "(code: offset/path-independent content fingerprint; doc: family_signature). Stores only explicitly-"
     "classified families; an unlisted family defaults to 'unreviewed'. "
     "fixable_ceiling (count of 'fixable') is one-way and only decreases via a "
     "deliberate re-review. nose-baseline.json / doc-nose-baseline.json own drift "
@@ -70,14 +71,15 @@ def family_records(
 ) -> list[tuple[str, str, list[str]]]:
     """Normalize both inventories into ``(surface, identity, member_files)`` rows.
 
-    Code identity is ``family_id``; doc identity is ``signature``. Doc families
-    expose no clean per-member paths (only witness spans), so they carry no member
-    files and therefore never auto-seed ``intentional`` in slice 1."""
+    Code identity is the offset/path-independent ``family_fingerprint`` (slice 4 re-key,
+    in lockstep with the gate/advisory baselines — was nose's ``family_id``); doc identity
+    is ``signature``. Doc families expose no clean per-member paths (only witness spans), so
+    they carry no member files and therefore never auto-seed ``intentional`` in slice 1."""
     records: list[tuple[str, str, list[str]]] = []
     for family in code_families:
-        family_id = family.get("family_id")
-        if isinstance(family_id, str) and family_id:
-            records.append(("code", family_id, _code_member_files(family)))
+        fingerprint = family.get("family_fingerprint")
+        if isinstance(fingerprint, str) and fingerprint:
+            records.append(("code", fingerprint, _code_member_files(family)))
     for family in doc_families:
         signature = family.get("signature")
         if isinstance(signature, str) and signature:

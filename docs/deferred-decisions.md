@@ -260,29 +260,36 @@ Reopen trigger:
 - Impact surfaces: [skills/public/quality/references/quality-signal-scorecard.md](../skills/public/quality/references/quality-signal-scorecard.md), [skills/public/quality/references/inventory-dispatch.md](../skills/public/quality/references/inventory-dispatch.md), quality closeout validators.
 - Reopen trigger: A consumer-repo run skips the scorecard despite the wiring (discovery failure), or a quality closeout ships metric-only rationale past review (guard-shaped failure), or an operator asks for the rendered skeleton.
 
-### D30. dup-ratchet id-rotation affordance (gate auto-downgrade)
+### D30. dup-ratchet id-rotation affordance (gate auto-downgrade) — RESOLVED (2026-06-27, Slice 4)
 
 - Question: Should the boy-scout dup-ratchet gate recognize a pure `family_id`
   rotation (a "new" family whose position-independent member set matches a
   vanished baseline family) and downgrade it from hard-block to advisory, instead
   of forcing a manual re-baseline on every member-file edit that shifts a
   duplicated span?
-- Current choice: Defer the affordance. Resolve the documentation half (correct
-  the false "stable across sibling churn" claim) and document the
-  verify-then-`--write-baseline` recovery as expected maintenance. The blocking
-  behavior is unchanged; rotation-driven re-baselines remain manual.
-- Why now: Solution (a) (re-key on a content-only id) is empirically impossible —
-  nose's schema-v4 query output exposes no position-independent content id. The
-  affordance needs a baseline schema migration (store a per-family
-  position-independent member fingerprint) AND carries a false-negative tradeoff:
-  a sorted member `(file, name)` fingerprint masks a genuinely new clone that
-  reuses the same member files, which would be wrongly downgraded. That tradeoff
-  deserves its own design + critique slice, not a rushed addition to a doc fix.
-- Impact surfaces: [skills/public/quality/scripts/dup_ratchet_lib.py](../skills/public/quality/scripts/dup_ratchet_lib.py), [skills/public/quality/scripts/check_dup_ratchet.py](../skills/public/quality/scripts/check_dup_ratchet.py), [skills/public/quality/references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md) ("Re-Baseline Triggers"), the gate + advisory id-set baselines, [charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md](../charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md)
-- Reopen trigger: An operator hits rotation-driven re-baseline friction often
-  enough to justify the schema migration, OR nose ships a position-independent
-  content identity (which would enable solution (a) and flip the
-  `test_real_nose_family_id_rotates_on_member_line_shift` characterization test).
+- Resolution: Solved at the root rather than via a downgrade affordance. The gate
+  and advisory now key code newness on a gate-computed, offset/path-INDEPENDENT
+  **content fingerprint** (`nose_fingerprint_lib`) instead of nose's
+  offset/path-folding `family_id`, so a pure line-shift no longer produces a "new"
+  family at all (no hard-block to downgrade). See
+  [spec Slice 4](../charness-artifacts/spec/boy-scout-dup-ratchet.md). The
+  false-negative this decision blocked on is eliminated, not merely guarded: the
+  fingerprint is content-derived, so a genuinely new clone that reuses the same
+  member files still rotates the fingerprint (proven on live nose 0.15.0 — a real
+  span edit `total=0 -> total=1` rotates it) — strictly dominating the path-set
+  `(file, name)` fingerprint this decision rejected.
+- Why deferral was right at the time: solution (a) (re-key on a content-only id)
+  was read as "nose emits no position-independent content id" — true, but the
+  resolution computes that identity gate-side from member spans rather than asking
+  nose for it, behind a baseline schema migration (`dup_ratchet_baseline.v2` /
+  `nose_baseline.v3`, `code_family_fingerprints`) and a member-preserving overlay
+  remap. Residuals are honest and narrow (v1 rstrip-only rotates on in-place
+  comment edits; membership-shrink still re-baselines) — see the spec's
+  `S4-Defer-1..3`.
+- Impact surfaces (migrated in lockstep): [skills/public/quality/scripts/nose_fingerprint_lib.py](../skills/public/quality/scripts/nose_fingerprint_lib.py) (new), [skills/public/quality/scripts/dup_ratchet_lib.py](../skills/public/quality/scripts/dup_ratchet_lib.py), [skills/public/quality/scripts/check_dup_ratchet.py](../skills/public/quality/scripts/check_dup_ratchet.py), [skills/public/quality/scripts/nose_report_lib.py](../skills/public/quality/scripts/nose_report_lib.py), [skills/public/quality/scripts/nose_baseline_lib.py](../skills/public/quality/scripts/nose_baseline_lib.py), [skills/public/quality/scripts/inventory_nose_clones.py](../skills/public/quality/scripts/inventory_nose_clones.py), [skills/public/quality/scripts/dup_review_lib.py](../skills/public/quality/scripts/dup_review_lib.py), [skills/public/quality/references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md), the gate + advisory fingerprint baselines and the [dup-review.json](../charness-artifacts/quality/dup-review.json) overlay (originally omitted from this list), [integrations/tools/nose.json](../integrations/tools/nose.json), [charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md](../charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md)
+- Residual reopen trigger: in-place-comment false-rotation (S4-Defer-1) or
+  membership-shrink re-baseline friction (S4-Defer-3) observed often enough to
+  justify token-aware normalization or a subset-aware reduction diff.
 
 ### D31. Handoff chunker should reconcile against recent commits
 

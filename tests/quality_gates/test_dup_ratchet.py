@@ -44,6 +44,7 @@ def _load(name: str):
 
 lib = _load("dup_ratchet_lib")
 nose_report = _load("nose_report_lib")
+fingerprint = _load("nose_fingerprint_lib")
 # check_dup_ratchet is loaded in-process (not only via subprocess) so its CLI/run
 # branches attribute coverage — the #393 subprocess-only-attribution class. The
 # subprocess SC5 tests below still prove the real process contract (argv, exit codes,
@@ -163,47 +164,63 @@ def test_evaluate_degraded_never_blocks() -> None:
 # --------------------------------------------------------------------------- #
 def test_build_and_load_gate_baseline_roundtrip() -> None:
     baseline = lib.build_gate_baseline(["b", "a", "a", ""])
-    assert baseline["code_family_ids"] == ["a", "b"]  # sorted, deduped, empties dropped
+    assert baseline["code_family_fingerprints"] == ["a", "b"]  # sorted, deduped, empties dropped
     assert baseline["schemaVersion"] == lib.GATE_BASELINE_SCHEMA_VERSION
     assert lib.validate_gate_baseline(baseline) == []
     assert lib.load_gate_baseline_ids(baseline) == {"a", "b"}
 
 
-def test_load_gate_baseline_ids_none_on_malformed() -> None:
+def test_load_gate_baseline_ids_none_on_malformed_or_legacy() -> None:
     assert lib.load_gate_baseline_ids(None) is None
-    assert lib.load_gate_baseline_ids({"code_family_ids": "nope"}) is None
+    assert lib.load_gate_baseline_ids({"code_family_fingerprints": "nope"}) is None
     assert lib.load_gate_baseline_ids([1, 2]) is None
+    # A legacy v1 baseline keyed by code_family_ids reads as None (no dual-read), so the
+    # gate degrades to advisory until a deliberate re-baseline mints fingerprints.
+    assert lib.load_gate_baseline_ids({"code_family_ids": ["a", "b"]}) is None
 
 
 def test_validate_gate_baseline_flags_bad_schema_and_ids() -> None:
-    errors = lib.validate_gate_baseline({"schemaVersion": "wrong", "code_family_ids": ["", 5]})
+    errors = lib.validate_gate_baseline({"schemaVersion": "wrong", "code_family_fingerprints": ["", 5]})
     joined = " ".join(errors)
-    assert "schemaVersion" in joined and "code_family_ids[0]" in joined
+    assert "schemaVersion" in joined and "code_family_fingerprints[0]" in joined
 
 
 # --------------------------------------------------------------------------- #
 # Scanner tool_version stamp (issue #391): build stamps it, validate accepts it as
 # an optional string, the read path exposes it for skew detection.
 # --------------------------------------------------------------------------- #
-def test_build_gate_baseline_stamps_and_reads_tool_version() -> None:
+def test_build_gate_baseline_stamps_and_reads_tool_and_algo_version() -> None:
     assert "tool_version" not in lib.build_gate_baseline(["a"])  # unknown stays unstamped
-    stamped = lib.build_gate_baseline(["b", "a"], tool_version="0.14.0")
-    assert stamped["tool_version"] == "0.14.0" and stamped["code_family_ids"] == ["a", "b"]
-    assert lib.validate_gate_baseline(stamped) == []  # additive, no schemaVersion bump
-    assert lib.load_gate_baseline_tool_version(stamped) == "0.14.0"
+    assert "fingerprint_algo_version" not in lib.build_gate_baseline(["a"])
+    stamped = lib.build_gate_baseline(["b", "a"], tool_version="0.15.0", algo_version="1")
+    assert stamped["tool_version"] == "0.15.0" and stamped["code_family_fingerprints"] == ["a", "b"]
+    assert stamped["fingerprint_algo_version"] == "1"
+    assert lib.validate_gate_baseline(stamped) == []
+    assert lib.load_gate_baseline_tool_version(stamped) == "0.15.0"
+    assert lib.load_gate_baseline_algo_version(stamped) == "1"
 
 
-def test_load_gate_baseline_tool_version_empty_on_absent_or_nonstring() -> None:
-    assert lib.load_gate_baseline_tool_version({"code_family_ids": ["a"]}) == ""
+def test_algo_version_skew_warns_on_mismatch_else_none() -> None:
+    assert lib.algo_version_skew("1", "2") is not None
+    assert lib.algo_version_skew("1", "1") is None
+    assert lib.algo_version_skew("", "1") is None  # missing stamp is "unknown", not a mismatch
+    assert lib.algo_version_skew("1", "") is None
+
+
+def test_load_gate_baseline_versions_empty_on_absent_or_nonstring() -> None:
+    assert lib.load_gate_baseline_tool_version({"code_family_fingerprints": ["a"]}) == ""
     assert lib.load_gate_baseline_tool_version({"tool_version": 14}) == ""
-    assert lib.load_gate_baseline_tool_version(None) == ""
+    assert lib.load_gate_baseline_algo_version({"fingerprint_algo_version": 1}) == ""
+    assert lib.load_gate_baseline_algo_version(None) == ""
 
 
-def test_validate_gate_baseline_rejects_nonstring_tool_version() -> None:
+def test_validate_gate_baseline_rejects_nonstring_version_stamps() -> None:
     errors = lib.validate_gate_baseline(
-        {"schemaVersion": lib.GATE_BASELINE_SCHEMA_VERSION, "tool_version": 14, "code_family_ids": ["a"]}
+        {"schemaVersion": lib.GATE_BASELINE_SCHEMA_VERSION, "tool_version": 14,
+         "fingerprint_algo_version": 1, "code_family_fingerprints": ["a"]}
     )
     assert any("tool_version" in e for e in errors)
+    assert any("fingerprint_algo_version" in e for e in errors)
 
 
 def test_overlay_intentional_only_collects_intentional() -> None:
@@ -276,10 +293,13 @@ def test_git_seams_orphan_and_missing(tmp_path: Path) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# SC6 — family_summary emits family_id (the code arm's identity)
+# SC6 — family_summary emits family_id AND propagates the slice-4 content
+# fingerprint (so the inventory --json the overlay seed consumes carries it).
 # --------------------------------------------------------------------------- #
-def test_family_summary_emits_family_id() -> None:
-    assert nose_report.family_summary({"family_id": "abc123"})["family_id"] == "abc123"
+def test_family_summary_emits_family_id_and_propagates_fingerprint() -> None:
+    summary = nose_report.family_summary({"family_id": "abc123", "family_fingerprint": "ff00ff00"})
+    assert summary["family_id"] == "abc123"
+    assert summary["family_fingerprint"] == "ff00ff00"
 
 
 # --------------------------------------------------------------------------- #
@@ -292,7 +312,8 @@ def _write_json(path: Path, obj: dict) -> Path:
 
 
 def _code_inventory(path: Path, family_ids: list[str]) -> Path:
-    return _write_json(path, {"status": "findings", "families": [{"family_id": fid} for fid in family_ids]})
+    # Slice 4: the gate keys on the injected `family_fingerprint` (was `family_id`).
+    return _write_json(path, {"status": "findings", "families": [{"family_fingerprint": fid} for fid in family_ids]})
 
 
 def _doc_inventory(path: Path, signatures: list[str]) -> Path:
@@ -315,8 +336,8 @@ def _consumer_repo(
         "fixable_ceiling": fixable_ceiling, "entries": entries,
     })
     _write_json(repo / "q" / "dup-ratchet-baseline.json", {
-        "schemaVersion": "charness.quality.dup_ratchet_baseline.v1",
-        "code_family_ids": list(baseline_ids),
+        "schemaVersion": "charness.quality.dup_ratchet_baseline.v2",
+        "code_family_fingerprints": list(baseline_ids),
     })
     if with_block:
         lines = [
@@ -497,6 +518,77 @@ def test_real_nose_family_id_rotates_on_member_line_shift(tmp_path: Path) -> Non
     )
 
 
+_CLONE_FUNC = (
+    "def compute_widget_summary(items, threshold):\n"
+    "    total = 0\n"
+    "    kept = []\n"
+    "    for item in items:\n"
+    '        value = item.get("value", 0)\n'
+    "        if value is None:\n"
+    "            continue\n"
+    "        if value >= threshold:\n"
+    "            kept.append(item)\n"
+    "            total += value\n"
+    "    average = total / len(kept) if kept else 0\n"
+    '    return {"total": total, "kept": kept, "count": len(kept), "average": average}\n'
+)
+
+
+def _clone_scope(tmp_path: Path) -> Path:
+    scope = tmp_path / "scope"
+    scope.mkdir()
+    (scope / "alpha.py").write_text("import os\n\n\n" + _CLONE_FUNC, encoding="utf-8")
+    (scope / "beta.py").write_text("import sys\n\n\n" + _CLONE_FUNC, encoding="utf-8")
+    return scope
+
+
+def _single_family_fingerprints(nose_bin: str, repo_root: Path) -> set:
+    """Gate-side content fingerprints of the lone clone family under repo_root/scope."""
+    result = subprocess.run(
+        [nose_bin, "query", "scope", "--format", "json", "--min-size", "24", "--min-members", "2"],
+        cwd=repo_root, capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    families = json.loads(result.stdout).get("families", [])
+    assert len(families) == 1, f"expected exactly one clone family, got {len(families)}"
+    return {fingerprint.family_content_fingerprint(fam, repo_root) for fam in families}
+
+
+@pytest.mark.skipif(
+    shutil.which("nose") is None and not os.environ.get("NOSE_BIN"),
+    reason="nose binary required for the gate fingerprint stability characterization",
+)
+def test_gate_content_fingerprint_stable_on_member_line_shift(tmp_path: Path) -> None:
+    # SC1, the D30 fix: where test_real_nose_family_id_rotates... proves nose's id ROTATES
+    # on a pure line-shift, this proves the GATE's content fingerprint is STABLE across the
+    # same shift -> no false hard-block. The gate keys on this, not nose's id.
+    nose_bin = os.environ.get("NOSE_BIN") or "nose"
+    scope = _clone_scope(tmp_path)
+    before = _single_family_fingerprints(nose_bin, tmp_path)
+    assert None not in before  # every member span readable
+    alpha = scope / "alpha.py"
+    alpha.write_text("# shift\n" * 5 + alpha.read_text(encoding="utf-8"), encoding="utf-8")  # pure line-shift
+    after = _single_family_fingerprints(nose_bin, tmp_path)
+    assert before == after, "content fingerprint rotated on a pure line-shift (the D30 false-block)"
+
+
+@pytest.mark.skipif(
+    shutil.which("nose") is None and not os.environ.get("NOSE_BIN"),
+    reason="nose binary required for the gate fingerprint content-sensitivity characterization",
+)
+def test_gate_content_fingerprint_changes_on_span_content_change(tmp_path: Path) -> None:
+    # SC2: a genuine change to the duplicated span content rotates the fingerprint, so real
+    # new/changed duplication is still caught (no false-negative — D30's blocking concern).
+    nose_bin = os.environ.get("NOSE_BIN") or "nose"
+    scope = _clone_scope(tmp_path)
+    before = _single_family_fingerprints(nose_bin, tmp_path)
+    for name in ("alpha.py", "beta.py"):  # change both copies so they stay one family
+        path = scope / name
+        path.write_text(path.read_text(encoding="utf-8").replace("total = 0", "total = 1"), encoding="utf-8")
+    after = _single_family_fingerprints(nose_bin, tmp_path)
+    assert before != after, "content fingerprint did NOT change on a real span edit (false-negative)"
+
+
 def test_cli_write_baseline_from_injected_inventory(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("old",))
     code_json = _code_inventory(tmp_path / "code.json", ["a", "b", "a"])
@@ -506,7 +598,8 @@ def test_cli_write_baseline_from_injected_inventory(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert written["code_family_ids"] == ["a", "b"]
+    assert written["code_family_fingerprints"] == ["a", "b"]
+    assert written["fingerprint_algo_version"] == fingerprint.FINGERPRINT_ALGO_VERSION
     assert lib.validate_gate_baseline(written) == []
 
 
@@ -533,7 +626,7 @@ def test_inproc_I_schema_invalid_baseline_degrades_advisory(tmp_path: Path) -> N
     # surfaces an integrity advisory via validate_gate_baseline — never blocks.
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     (repo / "q" / "dup-ratchet-baseline.json").write_text(
-        json.dumps({"schemaVersion": "WRONG", "code_family_ids": ["known1"]}), encoding="utf-8",
+        json.dumps({"schemaVersion": "WRONG", "code_family_fingerprints": ["known1"]}), encoding="utf-8",
     )
     code_json = _code_inventory(tmp_path / "code.json", ["known1", "BRANDNEW"])
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
@@ -552,7 +645,7 @@ def test_inproc_C_large_delta_without_confirm_refuses_and_preserves_baseline(tmp
     assert report["ok"] is False and report["status"] == "baseline-delta-unconfirmed"
     assert report["baseline_delta"] == {"added": 4, "removed": 3, "threshold": 2}
     preserved = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert preserved["code_family_ids"] == ["old1", "old2", "old3"]  # unchanged
+    assert preserved["code_family_fingerprints"] == ["old1", "old2", "old3"]  # unchanged
 
 
 def test_inproc_C_large_delta_with_confirm_rebaselines(tmp_path: Path) -> None:
@@ -564,7 +657,7 @@ def test_inproc_C_large_delta_with_confirm_rebaselines(tmp_path: Path) -> None:
                          "--baseline-delta-threshold", "2", "--confirm-baseline-delta")
     assert report["ok"] is True and report["status"] == "baseline-written"
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert written["code_family_ids"] == ["n1", "n2", "n3", "n4"]
+    assert written["code_family_fingerprints"] == ["n1", "n2", "n3", "n4"]
 
 
 # --------------------------------------------------------------------------- #
@@ -653,67 +746,84 @@ def test_payload_tool_version_reads_or_empty() -> None:
     assert check._payload_tool_version("[1, 2]") == ""  # not a dict
 
 
-def test_scan_code_family_ids_threads_live_version(monkeypatch, tmp_path: Path) -> None:
+def test_scan_code_fingerprints_threads_live_version(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         check._nose_report, "collect_families",
-        lambda *_a, **_k: {"status": "findings", "families": [{"id": "x"}], "tool_version": "0.14.0"},
+        lambda *_a, **_k: {"status": "findings", "families": [{"family_fingerprint": "x"}], "tool_version": "0.14.0"},
     )
-    ids, reason, version = check._scan_code_family_ids(tmp_path, ["scripts"])
+    ids, reason, version = check._scan_code_fingerprints(tmp_path, ["scripts"])
     assert ids == {"x"} and reason is None and version == "0.14.0"
 
 
-def test_scan_code_family_ids_error_and_missing_nose_carry_version(monkeypatch, tmp_path: Path) -> None:
+def test_scan_code_fingerprints_unreadable_member_degrades_whole_gate(monkeypatch, tmp_path: Path) -> None:
+    # A family with no stamped fingerprint (unreadable member span) degrades the WHOLE
+    # scan to a reason -> advisory (FD8), never a dropped family.
+    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(
+        check._nose_report, "collect_families",
+        lambda *_a, **_k: {"status": "findings",
+                           "families": [{"family_fingerprint": "x"}, {"family_id": "noFP"}],
+                           "tool_version": "0.15.0"},
+    )
+    ids, reason, version = check._scan_code_fingerprints(tmp_path, ["scripts"])
+    assert ids == set() and "unreadable member span" in reason and version == "0.15.0"
+
+
+def test_scan_code_fingerprints_error_and_missing_nose_carry_version(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         check._nose_report, "collect_families",
         lambda *_a, **_k: {"status": "error", "stderr": "boom", "families": [], "tool_version": "0.14.0"},
     )
-    ids, reason, version = check._scan_code_family_ids(tmp_path, ["scripts"])
+    ids, reason, version = check._scan_code_fingerprints(tmp_path, ["scripts"])
     assert ids == set() and "boom" in reason and version == "0.14.0"  # error still carries the live version
     monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: None)
-    ids, reason, version = check._scan_code_family_ids(tmp_path, [])
+    ids, reason, version = check._scan_code_fingerprints(tmp_path, [])
     assert ids == set() and "nose binary not found" in reason and version == ""
 
 
-def test_code_family_ids_injected_threads_version_and_unreadable(tmp_path: Path) -> None:
+def test_code_fingerprints_injected_threads_version_and_unreadable(tmp_path: Path) -> None:
     inv_path = tmp_path / "c.json"
-    inv_path.write_text(json.dumps({"families": [{"family_id": "a"}], "tool_version": "0.14.0"}), encoding="utf-8")
+    inv_path.write_text(
+        json.dumps({"families": [{"family_fingerprint": "a"}], "tool_version": "0.14.0"}), encoding="utf-8"
+    )
     args = check.parse_args(["--code-inventory", str(inv_path)])
-    ids, reason, version = check._code_family_ids(args, tmp_path, [])
+    ids, reason, version = check._code_fingerprints(args, tmp_path, [])
     assert ids == {"a"} and reason is None and version == "0.14.0"
     missing = check.parse_args(["--code-inventory", str(tmp_path / "absent.json")])
-    ids, reason, version = check._code_family_ids(missing, tmp_path, [])
+    ids, reason, version = check._code_fingerprints(missing, tmp_path, [])
     assert ids == set() and "unreadable" in reason and version == ""
 
 
-def test_inproc_write_baseline_stamps_tool_version(tmp_path: Path) -> None:
+def test_inproc_write_baseline_stamps_tool_and_algo_version(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("old",))
     code_json = _write_json(
         tmp_path / "code.json",
-        {"families": [{"family_id": "a"}, {"family_id": "b"}], "tool_version": "0.14.0"},
+        {"families": [{"family_fingerprint": "a"}, {"family_fingerprint": "b"}], "tool_version": "0.14.0"},
     )
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--write-baseline")
     assert report["status"] == "baseline-written" and report["tool_version"] == "0.14.0"
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
     assert written["tool_version"] == "0.14.0"
+    assert written["fingerprint_algo_version"] == fingerprint.FINGERPRINT_ALGO_VERSION
     assert lib.validate_gate_baseline(written) == []
 
 
 def test_inproc_version_skew_warns_without_degrading_block(tmp_path: Path) -> None:
-    # Baseline minted under nose 0.13.0; the live (injected) scan is 0.14.0 and every
-    # id rotated -> a wall of "new" families. The gate STILL hard-blocks (never
-    # degrades on skew), but surfaces the skew so the operator re-baselines.
+    # Baseline minted under nose 0.13.0; the live (injected) scan is 0.14.0 and the family
+    # set drifted -> "new" families. The gate STILL hard-blocks (never degrades on skew),
+    # but surfaces the skew so the operator re-baselines.
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     (repo / "q" / "dup-ratchet-baseline.json").write_text(
-        json.dumps({"schemaVersion": "charness.quality.dup_ratchet_baseline.v1",
-                    "tool_version": "0.13.0", "code_family_ids": ["known1"]}),
+        json.dumps({"schemaVersion": "charness.quality.dup_ratchet_baseline.v2",
+                    "tool_version": "0.13.0", "code_family_fingerprints": ["known1"]}),
         encoding="utf-8",
     )
     code_json = _write_json(
         tmp_path / "code.json",
         {"status": "findings", "tool_version": "0.14.0",
-         "families": [{"family_id": "ROT1"}, {"family_id": "ROT2"}]},
+         "families": [{"family_fingerprint": "ROT1"}, {"family_fingerprint": "ROT2"}]},
     )
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
@@ -728,8 +838,11 @@ def test_inproc_no_version_skew_on_legacy_unstamped_baseline(tmp_path: Path) -> 
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     code_json = _write_json(
         tmp_path / "code.json",
-        {"status": "findings", "tool_version": "0.14.0", "families": [{"family_id": "known1"}]},
+        {"status": "findings", "tool_version": "0.14.0", "families": [{"family_fingerprint": "known1"}]},
     )
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    # clean because 'known1' IS in the baseline (not via an empty set), and no skew on an
+    # unstamped baseline.
     assert report["version_skew"] is None and report["status"] == "clean"
+    assert report["new_code_families"] == []

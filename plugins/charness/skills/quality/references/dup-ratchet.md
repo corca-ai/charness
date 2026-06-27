@@ -36,45 +36,43 @@ escalates to a one-time block, which resets when the overlay edit advances the g
 anchor. At or below the floor `F`, the boy-scout arm is fully advisory; the hard
 arm still fires.
 
-## Code / Doc Asymmetry
+## Code / Doc Identity
 
-The two surfaces key newness on different identities, and this is deliberate —
-driven by what is stable in the detector, not by preference:
+Both surfaces key newness on a position-independent identity — deliberately,
+driven by what is stable in the detector. They differ in mechanism only because
+the inputs differ:
 
-- **Code: a gate-owned `family_id` baseline** (`dup-ratchet-baseline.json`,
-  `schemaVersion: charness.quality.dup_ratchet_baseline.v1`, a `code_family_ids`
-  list). A full `nose query` (one nose 0.14.0 `--root` multi-root call over the
-  whole scope, no nose `--baseline`) yields the current code `family_id` set; a
-  `family_id` absent from the baseline and not `intentional` is new. The scope is
-  analyzed as a single corpus, so a cross-root clone family is grouped (not split
-  per root — the pre-0.14.0 per-root-loop missed those; switching that scope model
-  is a deliberate one-time re-baseline, since identities are scope-model-scoped and
-  the family set shifts when the model does). The identity is nose's
-  content-hash `id` (named `family_id` in the removed `scan` output, normalized by
-  the resolver). nose's own `key`-based `--baseline` is NOT used for gating, for
-  plumbing reasons: it keys on the churn-prone cluster `key` and `--write-baseline`
-  clobbers its target each run, so it cannot serve as the accepted-id set.
+- **Code: a gate-owned content-fingerprint baseline** (`dup-ratchet-baseline.json`,
+  `schemaVersion: charness.quality.dup_ratchet_baseline.v2`, a
+  `code_family_fingerprints` list). A full `nose query` (one `--root` multi-root
+  call over the whole scope, no nose `--baseline`) yields the current code families;
+  the gate computes, per family, an offset/path-INDEPENDENT content fingerprint
+  (`nose_fingerprint_lib`): sha256 over the sorted, duplicate-preserving
+  rstrip-normalized member spans, read by each member's `(file, start, end)`. A
+  fingerprint absent from the baseline and not `intentional` is new. The scope is a
+  single corpus, so a cross-root clone family is grouped (not split per root).
 
-  **Stability caveat — `family_id` is NOT churn-stable.** The gate keys on
-  `family_id` for that plumbing reason, not because it survives sibling churn — it
-  does not. The family `id` folds every member's per-span id, and each per-span id
-  folds the span's normalized content, its **line offset**, AND its **file path**.
-  So editing any scanned member file — even inserting lines *above* an unchanged
-  duplicated span — shifts that member's offset, rotates its id, and rotates the
-  whole family `id`, even for the byte-identical sibling copies in unrelated files.
-  This is the same "an unchanged copy re-keys when a sibling copy changes" failure
-  nose's `key` has; `family_id` does not escape it. A rotated id reads as a new
-  family (the hard arm blocks) with zero new duplication. The honest recovery is a
-  deliberate re-baseline (see "Re-baseline triggers" below). Re-seed per nose
-  version too: identities are scanner-version-scoped.
+  **Why not nose's `family_id` (slice 4 re-key, resolving D30).** nose's `family_id`
+  folds each member span's normalized content, its **line offset**, AND its **file
+  path**, so editing any scanned member file — even inserting lines *above* an
+  unchanged span — rotated the whole id and false-blocked the hard arm with zero new
+  duplication. The content fingerprint is STABLE across such pure line-shifts (a
+  member's own span bytes do not change when lines move around it) and still rotates
+  on a genuine span-content change, so real new/changed duplication is caught with no
+  false-negative. The family SET (which spans nose groups at a given mode/min-size)
+  is still nose-version-scoped, so a nose bump can regroup families and drift the
+  fingerprint set — re-baseline per nose version (self-detecting; see below).
+
+  **v1 limitation.** The rstrip-only normalization is stricter than nose's tokenizer:
+  an in-place comment or internal-whitespace edit *inside* a duplicated span (no
+  line-count change) rotates the fingerprint where nose's id would not. This is a
+  different, low-frequency edit class than the offset shift the fix removes, and it
+  falls back to the same re-baseline recovery; token/comment-aware normalization is
+  deferred (its arrival would bump `fingerprint_algo_version`).
 - **Doc: the existing signature drift** (`doc-nose-baseline.json`, sorted member
-  `path#heading` signature). The doc `signature` is heading-based and
-  position-independent — stable across line-number churn (unlike the code
-  `family_id` above), so the doc inventory's drift output already is the
-  new-family set; a doc drift family not `intentional` blocks. No separate doc
-  gate baseline is needed. (The code/doc asymmetry is real, but only the doc side
-  is genuinely churn-stable; the code side trades that away for the multi-root
-  plumbing reasons above.)
+  `path#heading` signature). Heading-based and position-independent; the doc
+  inventory's drift output already is the new-family set, so a doc drift family not
+  `intentional` blocks and no separate doc gate baseline is needed.
 
 The counts feeding both the gate and the newness check come from the SAME family
 enumeration per surface, never from nose's `--fail-on` (whose count diverges from
@@ -83,54 +81,42 @@ the enumerated families).
 ## Re-Baseline Triggers
 
 A `--write-baseline` re-baseline is legitimate maintenance, not a workaround, in
-three cases — all of which rotate `family_id`s without representing new
-duplication:
+these cases — none of which represent new duplication. (A pure member-file
+line-shift is NO LONGER one of them: the content fingerprint is stable across it —
+the false-block slice 4 removed.)
 
-1. **Scanner-version bump.** A new nose version re-hashes every `family_id`; the
-   whole set shifts. Trips the `--write-baseline` large-delta guard, so confirm it
-   deliberately with `--confirm-baseline-delta`. This case is now *self-detecting*:
-   each baseline stamps the producing `tool_version` on write, and the read path
-   surfaces a skew WARNING when the live scanner version differs (see below), so a
-   wall of "new" families reads as "re-baseline", not "remove duplication".
-2. **Member-file edit that shifts a duplicated span.** Editing any scanned file —
-   even inserting lines *above* an unchanged duplicated span, or renaming/moving a
-   member file — rotates the `family_id`s of every family that file belongs to
-   (see the stability caveat above), even though the duplication is unchanged. The
-   gate's hard arm reports these as new families. Before re-baselining, **verify
-   the rotated families are byte-identical base-vs-HEAD** (`git show <base>:<file>`)
-   so a real new clone is not laundered through as a "rotation"; then re-baseline.
-3. **Reviewed batch accept.** You genuinely accept new fixable families after
-   review (the only case that should change the duplication picture).
+1. **Scanner-version bump.** A new nose version can regroup families (the family SET
+   is nose-version-scoped), drifting the fingerprint set. Self-detecting: each
+   baseline stamps the producing `tool_version`, and the read path surfaces a skew
+   WARNING when the live version differs.
+2. **Membership change.** Adding or removing a copy of a clone family changes its
+   member set, so its content fingerprint rotates (the fingerprint folds membership
+   and multiplicity). Removing one of N copies — a legitimate reduction — therefore
+   reads as a new family and re-baselines, the SAME behavior as nose's id today (the
+   fingerprint does not make it worse; a subset-aware "reduction" diff is a deferred
+   enhancement). Verify the change is a real reduction, not a laundered new clone,
+   then re-baseline.
+3. **Fingerprint-algorithm bump.** A change to the normalization (e.g. landing
+   token/comment-aware normalization) bumps `fingerprint_algo_version`; the gate
+   surfaces an algo-skew WARNING so the drifted fingerprints read as re-baseline.
+4. **Reviewed batch accept.** You genuinely accept new fixable families after review.
 
-Re-baseline **both id-set baselines together** when ids rotate: the gate baseline
+Re-baseline **both fingerprint baselines together**: the gate baseline
 (`dup-ratchet-baseline.json`) and the clone-advisory baseline (`nose-baseline.json`)
-key on the same `family_id` set and rotate in lockstep, so updating only the gate
-baseline that blocked you leaves the advisory baseline stale (silent advisory drift).
+key on the same fingerprint set in lockstep, so updating only the one that blocked
+you leaves the advisory baseline stale. The `dup-review.json` overlay also keys code
+entries by fingerprint, so a re-baseline that changes family identities must keep the
+overlay's `intentional` classifications mapped to live fingerprints (a member-preserving
+remap), or accepted boilerplate re-enters the hard arm.
 
-**Scanner-version skew detection.** Both code id-set baselines stamp the nose
-`tool_version` that produced them (from the same scan that minted the ids, never a
-fresh probe). On read, the gate and the advisory compare the stamped version against
-the live scanner version and surface a one-line skew WARNING when they differ. The
-warning *explains* a block, it never *suppresses* one: the blocking gate keeps
-blocking on skew (degrading would silently drop the gate and let real new
-duplication through) — the operator just reads the hard-block as version-rotation to
-re-baseline rather than dup to remove. A *missing* stamp (a legacy baseline written
-before this field) is treated as "unknown", not a mismatch, so existing repos do not
-warn until their next deliberate re-baseline stamps the version. The doc-signature
-baseline (`doc-nose-baseline.json`) is the same class but lower stakes — advisory,
-and its `path#heading` signatures are position-independent and already floor-guarded
-at `nose >= 0.13.0` — so its version stamp is a deferred same-class sibling, not
-shipped here.
-
-A re-baseline driven by case 2 is expected churn, not a defect — it is the cost of
-keying on an offset-sensitive `family_id` (the known limitation the gate documents
-rather than hides). A future gate affordance could recognize a pure id-rotation
-(a "new" family whose position-independent member set matches a vanished baseline
-family) and downgrade it from hard-block to advisory — though that design must guard
-a false-negative: a genuinely new clone that reuses the same member files would
-fingerprint-match a vanished family and be wrongly downgraded, so the affordance is
-deferred to its own slice rather than bolted on here. Until then, case-2 re-baselines
-are the honest recovery.
+**Version skew detection.** Both code baselines stamp the nose `tool_version` and the
+`fingerprint_algo_version` that produced them (from the same scan, never a fresh
+probe). On read, the gate and advisory compare each against the live values and
+surface a one-line WARNING per axis when they differ. The warning *explains* a block,
+never *suppresses* one (degrading would silently drop the gate and let real new
+duplication through) — the operator reads the hard-block as version/algo drift to
+re-baseline, not dup to remove. A *missing* stamp is "unknown", not a mismatch, so
+legacy baselines do not warn until their next deliberate re-baseline.
 
 ## Stagnation Without A Counter
 

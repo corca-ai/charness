@@ -296,12 +296,12 @@ def test_resolve_baseline_read_default_absent(tmp_path: Path) -> None:
     assert nb.resolve_baseline(write_baseline=False, baseline=None, repo_root=tmp_path) is None
 
 
-def test_load_baseline_ids_reads_code_family_ids(tmp_path: Path) -> None:
+def test_load_baseline_ids_reads_code_family_fingerprints(tmp_path: Path) -> None:
     rel = nb.DEFAULT_BASELINE_REL
     target = tmp_path / rel
     target.parent.mkdir(parents=True)
     target.write_text(
-        json.dumps({"schemaVersion": nb.BASELINE_SCHEMA_VERSION, "code_family_ids": ["a", "b", 5, ""]}),
+        json.dumps({"schemaVersion": nb.BASELINE_SCHEMA_VERSION, "code_family_fingerprints": ["a", "b", 5, ""]}),
         encoding="utf-8",
     )
     assert nb.load_baseline_ids(tmp_path, rel) == {"a", "b"}
@@ -311,13 +311,18 @@ def test_load_baseline_ids_none_on_missing_legacy_or_malformed(tmp_path: Path) -
     assert nb.load_baseline_ids(tmp_path, None) is None
     assert nb.load_baseline_ids(tmp_path, "nope.json") is None
     # A pre-migration cluster-key baseline (a bare [{key, members}] list) carries no
-    # code_family_ids -> None, so everything reads as drift until re-seeded.
+    # code_family_fingerprints -> None, so everything reads as drift until re-seeded.
     legacy = tmp_path / "legacy.json"
     legacy.write_text(json.dumps([{"key": "x", "members": []}]), encoding="utf-8")
     assert nb.load_baseline_ids(tmp_path, "legacy.json") is None
+    # A legacy slice-3 baseline keyed by code_family_ids (nose ids) also reads as None
+    # (no dual-read): a stale checkout must not misread nose ids as fingerprints.
+    legacy_v2 = tmp_path / "legacy_v2.json"
+    legacy_v2.write_text(json.dumps({"code_family_ids": ["a", "b"]}), encoding="utf-8")
+    assert nb.load_baseline_ids(tmp_path, "legacy_v2.json") is None
 
 
-def test_write_baseline_payload_writes_id_set(tmp_path: Path) -> None:
+def test_write_baseline_payload_writes_fingerprint_set(tmp_path: Path) -> None:
     payload = nb.write_baseline_payload(tmp_path, None, ["b", "a", "a", ""], ["scripts"])
     assert payload["status"] == "baseline-written"
     assert payload["advisory"] is True
@@ -325,7 +330,7 @@ def test_write_baseline_payload_writes_id_set(tmp_path: Path) -> None:
     assert payload["code_family_count"] == 2
     assert len(payload["notes"]) == 2
     written = json.loads((tmp_path / nb.DEFAULT_BASELINE_REL).read_text(encoding="utf-8"))
-    assert written["code_family_ids"] == ["a", "b"]  # sorted, deduped, empties dropped
+    assert written["code_family_fingerprints"] == ["a", "b"]  # sorted, deduped, empties dropped
     assert written["schemaVersion"] == nb.BASELINE_SCHEMA_VERSION
     assert "tool_version" not in written  # unstamped when the producing version is unknown
 
@@ -347,9 +352,10 @@ def test_tool_version_skew_warns_only_on_real_mismatch() -> None:
 
 def test_build_baseline_stamps_tool_version_only_when_known() -> None:
     assert "tool_version" not in nb.build_baseline(["a"])  # legacy/unknown stays unstamped
-    stamped = nb.build_baseline(["a"], tool_version="0.14.0")
+    stamped = nb.build_baseline(["a"], tool_version="0.14.0", algo_version="1")
     assert stamped["tool_version"] == "0.14.0"
-    assert stamped["code_family_ids"] == ["a"]
+    assert stamped["fingerprint_algo_version"] == "1"
+    assert stamped["code_family_fingerprints"] == ["a"]
 
 
 def test_write_baseline_payload_stamps_tool_version(tmp_path: Path) -> None:
@@ -566,14 +572,18 @@ def test_payload_for_args_drift_filters_baseline_ids(monkeypatch, tmp_path: Path
     target = tmp_path / rel
     target.parent.mkdir(parents=True)
     target.write_text(
-        json.dumps({"schemaVersion": inv.nose_baseline.BASELINE_SCHEMA_VERSION, "code_family_ids": ["keep"]}),
+        json.dumps({"schemaVersion": inv.nose_baseline.BASELINE_SCHEMA_VERSION,
+                    "code_family_fingerprints": ["keep"]}),
         encoding="utf-8",
     )
     monkeypatch.setattr(inv, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         inv.nose_report,
         "collect_families",
-        lambda *_a, **_k: _collected([{"family_id": "keep"}, {"family_id": "newfam"}]),
+        lambda *_a, **_k: _collected([
+            {"family_id": "keep", "family_fingerprint": "keep"},
+            {"family_id": "newfam", "family_fingerprint": "newfam"},
+        ]),
     )
     payload = inv.payload_for_args(_args(tmp_path))
     assert payload["family_count"] == 1  # 'keep' is accepted in the baseline; only 'newfam' is drift
@@ -599,7 +609,11 @@ def test_payload_for_args_write_baseline(monkeypatch, tmp_path: Path) -> None:
 
     def fake_collect(_repo, _bin, _paths, **kwargs):
         seen.update(kwargs)
-        return _collected([{"family_id": "fid2"}, {"family_id": "fid1"}, {"id": ""}])
+        return _collected([
+            {"family_id": "x2", "family_fingerprint": "fid2"},
+            {"family_id": "x1", "family_fingerprint": "fid1"},
+            {"id": ""},
+        ])
 
     monkeypatch.setattr(inv.nose_report, "collect_families", fake_collect)
     payload = inv.payload_for_args(_args(tmp_path, path=["scripts"], top=20, write_baseline=True))
@@ -609,7 +623,7 @@ def test_payload_for_args_write_baseline(monkeypatch, tmp_path: Path) -> None:
     # would truncate it and re-flag the rest as drift forever).
     assert seen["top"] == inv.WRITE_BASELINE_TOP and seen["top"] != 20
     written = json.loads((tmp_path / inv.nose_baseline.DEFAULT_BASELINE_REL).read_text(encoding="utf-8"))
-    assert written["code_family_ids"] == ["fid1", "fid2"]
+    assert written["code_family_fingerprints"] == ["fid1", "fid2"]
     # The write stamps the producing nose version (from the same scan, _collected's 0.13.3).
     assert payload["tool_version"] == "0.13.3"
     assert written["tool_version"] == "0.13.3"
@@ -623,13 +637,13 @@ def test_payload_for_args_surfaces_version_skew(monkeypatch, tmp_path: Path) -> 
     target.parent.mkdir(parents=True)
     target.write_text(
         json.dumps({"schemaVersion": inv.nose_baseline.BASELINE_SCHEMA_VERSION,
-                    "code_family_ids": ["keep"], "tool_version": "0.13.0"}),
+                    "code_family_fingerprints": ["keep"], "tool_version": "0.13.0"}),
         encoding="utf-8",
     )
     monkeypatch.setattr(inv, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         inv.nose_report, "collect_families",
-        lambda *_a, **_k: _collected([{"family_id": "keep"}], tool_version="0.14.0"),
+        lambda *_a, **_k: _collected([{"family_id": "keep", "family_fingerprint": "keep"}], tool_version="0.14.0"),
     )
     payload = inv.payload_for_args(_args(tmp_path))
     assert payload["version_skew"] and "0.13.0" in payload["version_skew"] and "0.14.0" in payload["version_skew"]

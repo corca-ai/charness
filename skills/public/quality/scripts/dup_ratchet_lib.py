@@ -12,27 +12,22 @@ Two arms (spec Fixed Decision 1 + Slice 2 D1–D3):
 
 - **Hard arm (always):** a NEW fixable-eligible family hard-blocks. "New" =
   present now, absent from the accepted reference, not classified ``intentional``.
-  Code newness diffs the current ``family_id`` set against a gate-owned
-  ``family_id`` baseline (``dup-ratchet-baseline.json``), NOT nose's ``key``-based
-  ``--baseline`` — for plumbing reasons: nose's native ``--baseline`` is the
-  churn-prone cluster ``key`` and ``--write-baseline`` clobbers its target each run,
-  so it cannot serve as the gate's accepted-id set. (The scope is enumerated in one
-  nose 0.14.0 ``--root`` multi-root ``query`` call.) CHURN CAVEAT: the gate keys on
-  ``family_id`` for that plumbing reason, NOT because it is churn-stable — it is NOT.
-  The family ``id``
-  folds every member's per-span id, and each per-span id folds the span's normalized
-  content, its **line offset**, AND its **file path**. So editing any scanned member
-  file — even inserting lines *above* an unchanged duplicated span — shifts that
-  member's offset, rotates its id, and rotates the whole family ``id``, even for the
-  byte-identical sibling copies in unrelated files (the same "an unchanged copy
-  re-keys when a sibling changes" failure nose's ``key`` has). A rotated id reads as
-  a brand-new family (hard arm blocks) with ZERO new duplication; the honest recovery
-  is a deliberate ``--write-baseline`` re-baseline — verify the rotated families are
-  byte-identical base-vs-HEAD first, then treat re-baseline-on-member-edit as expected
-  maintenance, the same discipline as a scanner-version bump. Doc newness instead
-  reuses the position-independent ``signature`` drift (``doc-nose-baseline.json``,
-  ``path#heading`` — stable across line-number churn). Recording a new family
-  ``unreviewed`` does NOT unblock it (D3).
+  Code newness diffs the current content-fingerprint set against a gate-owned
+  fingerprint baseline (``dup-ratchet-baseline.json``). The fingerprint is a
+  gate-computed, offset/path-INDEPENDENT content hash of the family's member spans
+  (``nose_fingerprint_lib``), NOT nose's ``family_id`` — slice 4 re-key resolving
+  deferred decision D30. nose's ``family_id`` folds each member span's normalized
+  content, its **line offset**, AND its **file path**, so editing any scanned member
+  file — even inserting lines *above* an unchanged span — rotated the whole id and
+  false-blocked the hard arm with ZERO new duplication. The content fingerprint is
+  STABLE across such pure line-shifts (a member's own span bytes do not change when
+  lines move around it) while still rotating on a genuine span-content change, so real
+  new/changed duplication is caught with no false-negative. Re-baseline deliberately
+  (``--write-baseline``) on a reviewed new family, a member-set (membership) change, a
+  nose-version bump that regroups families, OR a ``fingerprint_algo_version`` bump —
+  not on incidental member-file edits. Doc newness reuses the position-independent
+  ``signature`` drift (``doc-nose-baseline.json``, ``path#heading``). Recording a new
+  family ``unreviewed`` does NOT unblock it (D3).
 - **Boy-scout arm (escalating nudge):** while ``fixable_ceiling > floor_F`` and the
   reviewed overlay has not advanced (``stagnation_commits >= escalation_K``), the
   normally-advisory "remove existing fixable dup" nudge escalates to a one-time
@@ -54,20 +49,20 @@ import subprocess
 from pathlib import Path
 from typing import Any, Iterable
 
-GATE_BASELINE_SCHEMA_VERSION = "charness.quality.dup_ratchet_baseline.v1"
+GATE_BASELINE_SCHEMA_VERSION = "charness.quality.dup_ratchet_baseline.v2"
 GATE_BASELINE_NOTE = (
-    "Accepted code clone family_ids for the boy-scout dup ratchet (item 5, slice 2). "
-    "A code family_id present now but absent here (and not 'intentional' in dup-review.json) "
-    "is a NEW fixable-eligible family and hard-blocks. Keyed by nose family_id (16-hex "
-    "content hash) from a FULL `nose query` (one 0.14.0 `--root` multi-root call over the "
-    "scope) — NOT nose's `key`/--baseline (clobbers each run). CHURN CAVEAT: family_id is NOT "
-    "churn-stable — it folds member span offset + file path, so editing any scanned member "
-    "file (even adding lines above an unchanged span) rotates it and forces a re-baseline with "
-    "zero new duplication. Docs key on the position-independent doc-nose-baseline signature "
-    "instead, not here. Re-baseline deliberately (to accept reviewed new families) per scanner "
-    "version AND on member-file edits that rotate ids (verify byte-identical base-vs-HEAD). "
-    "The baseline stamps the producing nose tool_version; the gate WARNS (never degrades) when the "
-    "live scanner version differs, so a silent bump's id-rotation reads as re-baseline, not new dup."
+    "Accepted code clone content fingerprints for the boy-scout dup ratchet (item 5, slice 4). "
+    "A code family fingerprint present now but absent here (and not 'intentional' in dup-review.json) "
+    "is a NEW fixable-eligible family and hard-blocks. Keyed by a gate-computed, offset/path-"
+    "INDEPENDENT content fingerprint (sha256 over the sorted, duplicate-preserving rstrip-normalized "
+    "member spans; see nose_fingerprint_lib) from a FULL `nose query` over the scope — NOT nose's "
+    "offset/path-folding family_id (slice 4 re-key, resolving deferred decision D30). CHURN CAVEAT: "
+    "the fingerprint is STABLE across pure line-shifts (inserting lines above an unchanged span no "
+    "longer rotates it), so incidental member-file edits do not force a re-baseline. Re-baseline "
+    "deliberately on: a reviewed new/changed family, a member-set (membership) change, a nose-version "
+    "bump that regroups families, OR a fingerprint_algo_version bump. The baseline stamps the producing "
+    "nose tool_version AND fingerprint_algo_version; the gate WARNS (never degrades) on either skew, so "
+    "a silent bump's drift reads as re-baseline, not new dup. Docs key on the doc-nose-baseline signature."
 )
 
 
@@ -104,39 +99,81 @@ def overlay_fixable_ceiling(overlay: dict[str, Any] | None) -> int:
 # Gate baseline (dup-ratchet-baseline.json) load/build/validate
 # --------------------------------------------------------------------------- #
 def build_gate_baseline(
-    code_family_ids: Iterable[str], *, tool_version: str = "", note: str = GATE_BASELINE_NOTE
+    code_family_fingerprints: Iterable[str],
+    *,
+    tool_version: str = "",
+    algo_version: str = "",
+    note: str = GATE_BASELINE_NOTE,
 ) -> dict[str, Any]:
-    ids = sorted({str(fid) for fid in code_family_ids if fid})
-    baseline: dict[str, Any] = {"schemaVersion": GATE_BASELINE_SCHEMA_VERSION, "note": note, "code_family_ids": ids}
-    # Additive, optional, no schemaVersion bump (a bump would make every existing
-    # unstamped baseline fail validate_gate_baseline and degrade the gate repo-wide).
+    ids = sorted({str(fid) for fid in code_family_fingerprints if fid})
+    baseline: dict[str, Any] = {
+        "schemaVersion": GATE_BASELINE_SCHEMA_VERSION,
+        "note": note,
+        "code_family_fingerprints": ids,
+    }
     # Stamp only when known so a legacy write stays unstamped, never a false skew.
     if tool_version:
         baseline["tool_version"] = str(tool_version)
+    if algo_version:
+        baseline["fingerprint_algo_version"] = str(algo_version)
     return baseline
 
 
 def load_gate_baseline_ids(data: Any) -> set[str] | None:
-    """Return the accepted code family_id set, or ``None`` when the file is
-    absent/unreadable/malformed (the CLI treats ``None`` as degraded => advisory)."""
+    """Return the accepted code fingerprint set, or ``None`` when the file is
+    absent/unreadable/malformed OR keyed by the legacy ``code_family_ids`` (pre-slice-4
+    nose-id baseline) — both read as ``None`` so the CLI degrades to advisory (FD8) until
+    a deliberate re-baseline mints the new identity. The function name stays
+    identity-agnostic ("the accepted identity set"); only the key it reads changed.
+    No dual-read: a stale checkout must NOT misread nose ids as fingerprints."""
     if not isinstance(data, dict):
         return None
-    ids = data.get("code_family_ids")
+    ids = data.get("code_family_fingerprints")
     if not isinstance(ids, list):
         return None
     return {str(fid) for fid in ids if isinstance(fid, str) and fid}
 
 
+def _baseline_string_field(data: Any, key: str) -> str:
+    """A stamped string field from the gate baseline, or ``""`` when absent/legacy."""
+    if isinstance(data, dict):
+        value = data.get(key)
+        if isinstance(value, str):
+            return value
+    return ""
+
+
 def load_gate_baseline_tool_version(data: Any) -> str:
     """The nose version stamped into the gate baseline, or ``""`` when absent/legacy.
     The gate compares it against the live scan version and surfaces a skew WARNING
-    (never a degrade): a silent scanner bump rotates every id into a false hard-block,
+    (never a degrade): a nose bump can regroup families and drift the fingerprint set,
     so the operator must read "re-baseline", not "remove duplication"."""
-    if isinstance(data, dict):
-        version = data.get("tool_version")
-        if isinstance(version, str):
-            return version
-    return ""
+    return _baseline_string_field(data, "tool_version")
+
+
+def load_gate_baseline_algo_version(data: Any) -> str:
+    """The fingerprint algorithm version stamped into the gate baseline, or ``""`` when
+    absent/legacy. A future normalization change (e.g. landing token/comment-aware
+    normalization) bumps the algo version; the gate then WARNS (never degrades) so the
+    drifted fingerprints read as re-baseline, not a corpus-wide false hard-block."""
+    return _baseline_string_field(data, "fingerprint_algo_version")
+
+
+def algo_version_skew(baseline_algo: str | None, live_algo: str | None) -> str | None:
+    """Operator warning when the stored fingerprints were minted under a different
+    fingerprint algorithm version than the one now computing, else ``None``. A MISSING
+    stamp on either side returns ``None`` (unknown, not a mismatch). Mirrors
+    ``nose_report_lib.tool_version_skew`` for the gate-owned identity axis."""
+    base = str(baseline_algo or "").strip()
+    live = str(live_algo or "").strip()
+    if base and live and base != live:
+        return (
+            f"fingerprint algo skew: baseline written under algo v{base}, now computing "
+            f"with algo v{live}. The content-fingerprint normalization changed, so a "
+            "re-baseline (--write-baseline) is the honest fix — do NOT treat the rotated "
+            "fingerprints as new duplication."
+        )
+    return None
 
 
 def validate_gate_baseline(data: Any) -> list[str]:
@@ -148,13 +185,16 @@ def validate_gate_baseline(data: Any) -> list[str]:
     version = data.get("tool_version")
     if version is not None and not isinstance(version, str):
         errors.append("tool_version must be a string when present")
-    ids = data.get("code_family_ids")
+    algo = data.get("fingerprint_algo_version")
+    if algo is not None and not isinstance(algo, str):
+        errors.append("fingerprint_algo_version must be a string when present")
+    ids = data.get("code_family_fingerprints")
     if not isinstance(ids, list):
-        errors.append("code_family_ids must be a list")
+        errors.append("code_family_fingerprints must be a list")
         return errors
     for index, value in enumerate(ids):
         if not isinstance(value, str) or not value:
-            errors.append(f"code_family_ids[{index}] must be a non-empty string")
+            errors.append(f"code_family_fingerprints[{index}] must be a non-empty string")
     return errors
 
 
