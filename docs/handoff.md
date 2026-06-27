@@ -11,49 +11,36 @@
 
 ## Current State
 
-- **v0.56.6 is published and verified.** `origin/main` is `15d0f038`
-  (`Record release verification for v0.56.6`); tag `v0.56.6` points at
-  `cb815f45`. Public release URL verified HTTP 200:
-  `https://github.com/corca-ai/charness/releases/tag/v0.56.6`.
-- Installed Charness was refreshed: `charness update` moved `0.56.5 -> 0.56.6`;
-  `charness doctor --json` reported installed checkout, Codex cache, Claude plugin,
-  and manifests at `0.56.6`. Existing Codex/Claude sessions may still need restart.
-- Latest material slice shipped
-  [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py)
-  and fixed broad pytest proof scoping for `run_slice_closeout.py --base`.
+- **v0.56.7 is published and verified.** `origin/main` is `0378b519`; tag
+  `v0.56.7` points at `4307c2e2`. Public release verified by a distinct channel
+  (https-fetch HTTP 200) and `gh release view` (`isDraft:false`):
+  `https://github.com/corca-ai/charness/releases/tag/v0.56.7`. `charness update`
+  moved the install `0.56.6 -> 0.56.7`.
+- 0.56.7 finished a prior agent's stopped release, shipping the full
+  `v0.56.6..HEAD` delta: the capability-first skill surface rollout (17 SKILL.md
+  contracts) plus proof-scope/validation-startup tooling fixes. The dup-ratchet
+  gate was re-baselined in lockstep (gate + advisory) for 11 rotated family_ids
+  after verifying net-zero new duplication; a full-delta release critique
+  (4 angles + counterweight) corrected the notes before publish.
 
 ## Next Session
 
-- **First high-value loop:** improve the new focused coverage producer UX. Candidate
-  slices: add clearer `--help`/status guidance for `recommended`, `partial`,
-  `missing`, and `noop`; then consider closeout auto-discovery that offers the
-  suggested `--mutation-coverage-command` without hiding the explicit proof path.
-- **Second high-value loop:** harden release planning evidence scope. The release
-  critique caught that clean-worktree planning can miss commit-range real-host
-  triggers; test or improve the planner/helper path so release proof is evaluated
-  from the intended release delta, not just current dirty paths.
-- **When touching coverage speed:** run
-  `python3 scripts/suggest_mutation_coverage_command.py --repo-root . --json`
-  before broad coverage fallback, but do not overclaim staged-slice timings. Use
-  final commit-range producer timing as the release/closeout number.
+- **First high-value loop:** start with `quality` for gate posture, then `impl`
+  one narrow slice. Candidate: closeout auto-discovery that offers the suggested
+  focused mutation-coverage command without hiding the explicit proof path.
 - **When reviewing broad pytest proof:** compare top-level closeout `changed_paths`
-  with `recorded_broad_pytest_proofs.changed_paths`. Any narrower proof record is
+  with `recorded_broad_pytest_proofs.changed_paths`; any narrower proof record is
   evidence-scope drift, not harmless JSON noise.
 
 ## Discuss
 
-- Whether closeout should auto-run the suggested focused producer or only print a
-  command remains a design call: automation saves time, but explicit producer
-  selection keeps changed-line proof easier to audit.
-- `dup-ratchet` may flag boilerplate family-id rotations after helper additions.
-  Inspect family members first; classify intentional standalone-script bootstraps
-  or CLI wrappers only after confirming they are not extractable behavior.
-- External tool advisories remain non-blocking but visible: `agent-browser`,
-  `github-gh`, and `nose` had newer upstream releases during v0.56.6 proof.
+- The dup-ratchet clone family ids rotate whenever a scanned file shifts span
+  offsets; treat a constant-total in/out balance as a re-baseline (gate plus
+  advisory in lockstep), not new duplication.
 
 ## References
 
-- [release v0.56.6 proof](../charness-artifacts/release/latest.md)
-- [release critique](../charness-artifacts/critique/2026-06-27-release-0.56.6-focused-mutation-coverage.md)
-- [broad pytest proof debug](../charness-artifacts/debug/2026-06-27-broad-pytest-proof-base-scope.md)
+- [release v0.56.7 proof](../charness-artifacts/release/latest.md)
+- [release v0.56.7 full-delta critique](../charness-artifacts/critique/2026-06-27-release-0.56.7-full-delta.md)
+- [v0.56.7 release notes](../charness-artifacts/release/notes-v0.56.7.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
