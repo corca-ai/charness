@@ -138,7 +138,7 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
         "--browser-mode",
         browser_mode,
     ]
-    redirect = _provider_redirect(route.get("normalized_host") or urlparse(url).hostname)
+    redirect = _provider_redirect(route.get("normalized_host"))
     if redirect is not None:
         next_action: dict[str, object] = {
             "command": ["python3", redirect["adviser"], "--repo-root", str(repo_root)],
