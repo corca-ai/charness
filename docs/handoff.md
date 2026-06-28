@@ -5,7 +5,7 @@
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
 - **Pinned next task: resume the per-skill claim-fidelity fixture review at
-  `10/20 hitl`.** Go skill-by-skill applying the calibration lenses
+  `11/20 hotl`.** Go skill-by-skill applying the calibration lenses
   (methodology spec `## Per-Skill RCF Calibration Lenses`, now 7) AND the
   `## Per-Skill Review Protocol` (also-fix-the-skill, north-star-over-prose-teeth,
   less-but-better) in order; carry edits through `impl`; run `critique` before each
@@ -13,19 +13,20 @@
 
 ## Current State
 
-- **Schema evolved + skills 1-9 calibrated, committed.** Validator accepts
+- **Schema evolved + skills 1-10 calibrated, committed.** Validator accepts
   objective-carrying prompts (`startswith /charness:<skill>`) and multi-scenario
   fixtures per skill (`(skill_id, scenario_id)`; default `spec.json`, branch
   `<scenario>.spec.json`). Commits `427f473f` (schema+achieve+setup), `33c591dd`
   (announcement/create-cli/create-skill/critique/debug), `4e99ff03` (find-skills),
-  `4aba39c1` (gather), `8fb030ca` (handoff). 24 scenario specs validate.
+  `4aba39c1` (gather), `8fb030ca` (handoff), `43d066a9` (hitl). 24 scenario specs validate.
 - **Method + lessons live in the methodology spec, not inline.** See the spec's
   `## Per-Skill RCF Calibration Lenses` (now 7: lens 1 planner-ground-truth caught
   debug, gather, AND handoff RCF inverted/over-broad vs their planners; lens 7
   script-briefs-judge) and `## Per-Skill Review Protocol`. Skill fixes shipped with
   the fixtures: find-skills `next_step`, gather provider-host redirect, and handoff's
   chunker bug (plugin-namespaced `/charness:handoff` was bypassing chunked routing) —
-  each critique-checked. handoff also split into 3 intent scenarios (lens 4).
+  each critique-checked. handoff also split into 3 intent scenarios (lens 4). hitl was
+  fixture-only (no planner; RCF derived via script-resolution → single chunk-contract.md).
 - **CEAL portability deleak done** (`007b6b0f`): `ceal` -> generic `acme` across
   the live portable surface; only 6 protected files retain `ceal` (domain-blind
   guard, `slack.ceal-dev` examples, frozen logs). Broader ceal-dev consumer-name
@@ -33,8 +34,8 @@
 
 ## Next Session
 
-1. **Resume at `10/20 hitl`**, then registry order, **skipping setup (already
-   split), quality (the pilot), find-skills + gather + handoff (done)**. For each skill: check
+1. **Resume at `11/20 hotl`**, then registry order, **skipping setup (already
+   split), quality (the pilot), find-skills + gather + handoff + hitl (done)**. For each skill: check
    for a deterministic planner / required-reads script FIRST (lens 1), then
    bare-vs-pin (2), script-resolved demotions (3), multi-fixture splits (4), and
    script-briefs-judge (7) — and run the Review Protocol (fix the skill, not just
