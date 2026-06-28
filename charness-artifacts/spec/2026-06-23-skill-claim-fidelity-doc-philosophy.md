@@ -472,9 +472,11 @@ The per-skill review sets each skill's `prompt` and `requiredCommandFragments`
    it hard-matched the planner's on-demand reads (five-whys/detection-gap/
    sibling-search) and omitted the unconditional `five-steps.md` + `debug-memory.md`.
 2. **Bare vs pin.** A bare `/charness:<skill>` reaches the reference-routing phase
-   only for self-activators with a no-argument default action (quality reviews
-   this repo; find-skills self-activates; critique autonomous-triggers). A skill
-   that needs a subject gets a representative objective pinned into the prompt
+   only for self-activators whose no-argument default action IS the claim worth
+   testing (quality reviews this repo; critique autonomous-triggers). A skill
+   whose no-arg default does NOT exercise its central claim (find-skills' default
+   is a script-resolved inventory dump that reaches no doc-routing floor — lens 7)
+   or that needs a subject gets a representative objective pinned into the prompt
    (the matcher inspects only file-open events, so wording cannot affect scoring).
    Pinning a representative SHAPE also makes shape-conditional RCF refs
    unconditional (create-cli multi-command CLI; create-skill external-tool skill).
@@ -493,3 +495,30 @@ The per-skill review sets each skill's `prompt` and `requiredCommandFragments`
    target is non-deterministic (critique default), deterministic RCF proves only
    that the path was followed; inference QUALITY is the Cautilus-recommendation
    signal, not a hard matcher.
+7. **Script-briefs-judge dissolves doc-RCF floors (sharper than lens 3).** When a
+   skill's deterministic surface actively BRIEFS the judge — find-skills'
+   `list_capabilities.py` emits a `next_step` that hands the agent the
+   ranking-interpretation question and routes it to the doc — even a judgment doc
+   becomes skippable, so a surviving RCF entry must be a doc whose UNIQUE content
+   the script and SKILL.md body do NOT inline (discovery-order.md's tie-break
+   rules), AND the prompt must force that content's use. find-skills' single
+   `discovery-order.md` floor holds only because the pinned cross-layer tie
+   (public `spec` vs synced-support `specdown`) needs the doc-only tie-break; the
+   `_comment` records that prompt↔RCF coupling so a softened prompt cannot
+   silently turn the floor into a false-fail.
+
+## Per-Skill Review Protocol (2026-06-28)
+
+A per-skill review is not fixture-only. Apply all three, every skill:
+
+- **Fix the skill's own defect too.** The fixture review surfaces real skill
+  defects (find-skills routed on a ranking without surfacing the interpretation
+  question); fix them in the same pass, carried through `impl`.
+- **North star over prose teeth.** Prefer making a deterministic surface brief the
+  judge (a script that suggests the next move / answers-before-routing) over a
+  SKILL.md sentence that hopes the agent remembers — the script briefing is
+  stronger and unskippable at runtime. Teeth only where a wrong answer escapes.
+- **Less but better.** Run a subtraction pass — delete now-redundant code/prose
+  (the static SKILL.md pointer the script's `next_step` made redundant; the
+  `recommendation_interpretation` artifact leak the critique caught). One source
+  of truth per fact.
