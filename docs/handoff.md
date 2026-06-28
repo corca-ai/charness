@@ -4,22 +4,24 @@
 
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
-- **Pinned next task: resume the per-skill claim-fidelity fixture review at
-  `20/20 spec` (the last one; 19/20 setup already done).** Go skill-by-skill applying the calibration lenses
-  (methodology spec `## Per-Skill RCF Calibration Lenses`, now 8) AND the
-  `## Per-Skill Review Protocol` (also-fix-the-skill, north-star-over-prose-teeth,
-  less-but-better) in order; carry edits through `impl`; run `critique` before each
-  commit.
+- **Per-skill claim-fidelity sweep COMPLETE — all 20 public skills calibrated
+  (static).** Pinned next task: **empirically validate via live `/charness:<skill>`
+  captures** (ask-before-run, one at a time, per the Cautilus eval-only contract —
+  consult `plan_cautilus_proof.py` first, use `run_cautilus_eval.py`) to confirm each
+  calibrated prompt actually opens its RCF docs and to set `thresholds` baselines.
+  Start with the cleanest single-floor skills (retro→expert-lens, ideation→concept-
+  architecture, narrative→brief-shape, impl→verification-ladder). Method + lenses (now 8)
+  live in the methodology spec `## Per-Skill RCF Calibration Lenses`.
 
 ## Current State
 
-- **Schema evolved + skills 1-15 calibrated, committed.** Validator accepts
+- **Schema evolved + all 20 skills calibrated, committed (static).** Validator accepts
   objective-carrying prompts (`startswith /charness:<skill>`) and multi-scenario
   fixtures (`(skill_id, scenario_id)`; default `spec.json`, branch `<scenario>.spec.json`).
-  Commits `427f473f`, `33c591dd`, `4e99ff03`, `4aba39c1`, `8fb030ca`, `43d066a9`,
+  Per-skill commits `427f473f`, `33c591dd`, `4e99ff03`, `4aba39c1`, `8fb030ca`, `43d066a9`,
   `974dae10`, `168d856c`, `29260c26`, `bb715a88` (lens 8 + executable-subject re-pin),
-  `88785945` (issue new/resolve split), `429bf50e` (narrative), `7a550270` (release),
-  `7fb51ac8` (retro). 25 scenario specs validate.
+  `88785945` (issue split), `429bf50e` (narrative), `7a550270` (release), `7fb51ac8` (retro),
+  `c389d916` (spec). 25 scenario specs validate. No live captures run yet.
 - **Method lives in the methodology spec + each commit, not inline.** The 8 calibration
   lenses and the Review Protocol are in the spec; per-skill rationale is in the commit
   messages — do not replay them here. Skill fixes shipped: find-skills `next_step`, gather
@@ -35,16 +37,12 @@
 
 ## Next Session
 
-1. **Resume at `20/20 spec`** — the LAST fixture (16/20 quality pilot + 19/20 setup +
-   find-skills + gather + handoff + hitl + hotl + ideation + impl + issue + narrative +
-   release + retro all done). For spec: check
-   for a deterministic planner / required-reads script FIRST (lens 1), then
-   bare-vs-pin (2), script-resolved demotions (3), multi-fixture splits (4), and
-   script-briefs-judge (7) — and run the Review Protocol (fix the skill, not just
-   the fixture).
-2. Secondary: support-skill tier not started; quality pilot #397 runtime-
-   consultation proof open; `thresholds` need per-skill baseline captures
-   (ask-before-run, one at a time).
+1. **Live-capture validation phase** (the static sweep is done). Per skill, ask before
+   running: `plan_cautilus_proof.py` gate → `run_cautilus_eval.py` → confirm the observed
+   packet opens the RCF docs (coverage ≥ RCF) → set `thresholds.max_duration_ms` from the
+   real run. A miss is a real signal: re-pin or re-classify the skill, not the matcher.
+2. Secondary: support-skill claim-fidelity tier not started; quality pilot #397
+   runtime-consultation proof still open (its own live capture).
 
 ## Discuss
 
