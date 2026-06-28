@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-27T12:01:37Z",
+  "generated_at": "2026-06-28T21:14:52Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -223,10 +223,10 @@
         "referenced_paths": [
           "skills/public/find-skills/references/session-start-routing.md",
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/public/find-skills/references/support-consumption.md",
           "skills/public/find-skills/adapter.example.yaml",
           "skills/public/find-skills/references/adapter-contract.md",
           "skills/public/find-skills/references/discovery-order.md",
-          "skills/public/find-skills/references/support-consumption.md",
           "skills/public/ideation/references/decision-question-response.md",
           "skills/public/find-skills/scripts/list_capabilities.py",
           "skills/public/find-skills/scripts/list_capabilities_lib.py"
@@ -373,11 +373,11 @@
           "skills/public/ideation/references/effectuation.md",
           "skills/public/ideation/references/decision-question-response.md",
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/public/ideation/references/concept-architecture.md",
           "skills/public/ideation/references/structured-questions.md",
           "skills/public/ideation/references/truth-and-edge.md",
           "skills/public/ideation/references/world-modeling.md",
           "skills/public/ideation/references/agent-human-lens.md",
-          "skills/public/ideation/references/concept-architecture.md",
           "skills/public/ideation/references/spec-boundary.md",
           "skills/public/spec/references/taxonomy-axis-checkpoint.md",
           "skills/shared/references/success-criteria-review.md"
@@ -421,8 +421,8 @@
       {
         "id": "issue",
         "name": "issue",
-        "description": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `ceal github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.",
-        "summary": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `ceal github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.",
+        "description": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `acme github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.",
+        "summary": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `acme github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.",
         "path": "skills/public/issue/SKILL.md",
         "skill_dir": "skills/public/issue",
         "canonical_path": "skills/public/issue/SKILL.md",
@@ -468,10 +468,10 @@
           "skills/public/narrative/references/landing-rewrite-loop.md",
           "skills/public/narrative/references/cross-repo-issue-shaping.md",
           "skills/public/narrative/references/scenario-blocks.md",
+          "skills/public/narrative/references/brief-shape.md",
           "skills/shared/references/closeout-discipline.md",
           "skills/public/narrative/references/adapter-contract.md",
           "skills/public/narrative/references/source-map.md",
-          "skills/public/narrative/references/brief-shape.md",
           "skills/shared/references/agent-assessment-invariant.md",
           "skills/shared/references/success-criteria-review.md"
         ],
@@ -1455,6 +1455,7 @@
     "workflow_recommendations": [],
     "public_skill_recommendations": [],
     "public_recommendation_query": null,
-    "support_recommendation_note": null
+    "support_recommendation_note": null,
+    "next_step": null
   }
 }

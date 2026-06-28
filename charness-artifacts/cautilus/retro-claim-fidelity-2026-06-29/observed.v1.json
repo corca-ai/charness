@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "retro",
+  "skillDisplayName": "retro",
+  "evaluations": [
+    {
+      "evaluationId": "execution-retro-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "retro",
+      "displayName": "retro",
+      "evaluationKind": "execution",
+      "prompt": "/charness:retro 방금 끝낸 claim-fidelity 픽스처 보정 작업을 session retro로 review해줘 — Context·Waste·Critical Decisions를 정리하고, 다음 세션을 바꿀 counterfactual lens(named expert 또는 direct) 최소 하나와 workflow/capability/memory별 Next Improvements를 도출한 뒤, durable home이 있으면 persist해줘.",
+      "startedAt": "2026-06-28T21:26:17.926Z",
+      "invoked": true,
+      "summary": "Execution of /retro: 2704615 total tokens (59569 output, 2367170 cache-read), 285074ms wall. Tool profile: Bash=19 Edit=2 Skill=1 Write=1 Read=1. Claim failures: command log missing required fragment: expert-lens.md. Reference coverage: 0/9 declared references opened (missing: adapter-contract.md, expert-lens.md, mode-guide.md, phase-aware-efficiency.md, prepare-packet.md, section-guide.md, trigger-and-persistence.md, waste-sibling-scan.md, weekly-trends.md).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 2704615,
+        "duration_ms": 285074
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      }
+    }
+  ]
+}
