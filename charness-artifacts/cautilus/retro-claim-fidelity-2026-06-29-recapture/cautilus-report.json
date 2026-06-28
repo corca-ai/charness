@@ -1,0 +1,131 @@
+{
+  "comparisonSummary": {
+    "betterThanBaseline": 0,
+    "evaluationsWithBaseline": 0,
+    "sameAsBaseline": 0,
+    "worseThanBaseline": 0
+  },
+  "evaluatedAt": "2026-06-28T22:58:14.167673651Z",
+  "evaluationCounts": {
+    "blocked": 0,
+    "degraded": 0,
+    "execution": 1,
+    "failed": 0,
+    "passed": 1,
+    "total": 1,
+    "trigger": 0,
+    "unstable": 0
+  },
+  "evaluationRuns": [
+    {
+      "displayName": "retro",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-retro-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          }
+        ],
+        "summary": "retro should complete the intended task cleanly once the skill is invoked."
+      },
+      "metrics": {
+        "duration_ms": 193700,
+        "total_tokens": 1800207
+      },
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "passed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-28T22:53:22.058Z",
+      "status": "passed",
+      "summary": "Execution of /retro: 1800207 total tokens (40580 output, 1589405 cache-read), 193700ms wall. Tool profile: Bash=15 Read=4 Write=1. All declared claims met. Reference coverage: 4/9 declared references opened (missing: adapter-contract.md, mode-guide.md, prepare-packet.md, trigger-and-persistence.md, weekly-trends.md).",
+      "surface": "execution_quality",
+      "targetId": "retro",
+      "targetKind": "public_skill"
+    }
+  ],
+  "evaluations": [
+    {
+      "displayName": "retro",
+      "evaluationId": "execution-retro-claim-fidelity",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-retro-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          }
+        ],
+        "summary": "retro should complete the intended task cleanly once the skill is invoked."
+      },
+      "invoked": true,
+      "metrics": {
+        "duration_ms": 193700,
+        "total_tokens": 1800207
+      },
+      "prompt": "/charness:retro 방금 끝낸 claim-fidelity 픽스처 보정 작업을 session retro로 review해줘 — Context·Waste·Critical Decisions를 정리하고, 다음 세션을 바꿀 counterfactual lens(named expert 또는 direct) 최소 하나와 workflow/capability/memory별 Next Improvements를 도출한 뒤, durable home이 있으면 persist해줘.",
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "passed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-28T22:53:22.058Z",
+      "status": "passed",
+      "summary": "Execution of /retro: 1800207 total tokens (40580 output, 1589405 cache-read), 193700ms wall. Tool profile: Bash=15 Read=4 Write=1. All declared claims met. Reference coverage: 4/9 declared references opened (missing: adapter-contract.md, mode-guide.md, prepare-packet.md, trigger-and-persistence.md, weekly-trends.md).",
+      "surface": "execution_quality",
+      "targetId": "retro",
+      "targetKind": "public_skill"
+    }
+  ],
+  "recommendation": "accept-now",
+  "samplingSummary": {
+    "evaluationsWithSampling": 1,
+    "overallConsensusRate": 1,
+    "overallInvocationRate": 1,
+    "overallPassRate": 1,
+    "totalConsensusSamples": 1,
+    "totalInvocations": 1,
+    "totalPassingSamples": 1,
+    "totalSamples": 1,
+    "unstableEvaluations": 0
+  },
+  "schemaVersion": "cautilus.skill_evaluation_summary.v1",
+  "skillDisplayName": "retro",
+  "skillId": "retro"
+}

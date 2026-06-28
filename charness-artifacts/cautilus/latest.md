@@ -1,78 +1,81 @@
 # Cautilus Dogfood
-Date: 2026-06-22
+Date: 2026-06-29
 
 ## Trigger
 
-- slice: cautilus skill-experiment usage-validation harness — the one real
-  baseline-vs-variant proof run (goal
-  `charness-artifacts/goals/2026-06-22-cautilus-skill-usage-validation-harness.md`).
-- source: operator-approved single eval-only run proving the capture → extract →
-  score chain emits a real verdict from real `claude -p` transcripts.
+- slice: planner-first retro fix (`167cad5c`) — extract `plan_retro_run.py` so
+  retro routes `references/expert-lens.md` at the point of need. Needs a
+  live-behavior proof that the fix changes real run behavior.
+- source: the FIRST live capture of the claim-fidelity sweep failed retro's floor
+  (the run never opened expert-lens.md); this proves the fix flips it.
 
 ## Validation Goal
 
-- goal: preserve
-- reason: confirm the chain emits a real, honest verdict; this single-capture
-  run is deliberately not a power-bearing A/B (the verdict is the chain working,
-  not a promotion claim).
+- goal: improve
+- reason: prove the planner-first routing flips retro's claim-fidelity floor
+  failed→proven and delivers the quality outcome (the briefed lens is applied),
+  not only a doc-open proxy.
 
 ## Change Intent
 
-- harness/eval-tooling change: new stream-json transcript capture + extractor +
-  obligations spec; no public prompt surface semantics changed.
-- the quality-ref disposition `5ded9f3a` (variant) vs `b01cee6b` (baseline) is
-  the subject under evaluation, not a change landed by this run.
+- public prompt-surface change: new `plan_retro_run.py` planner (matching the
+  debug/handoff/quality/issue/gather/release family) + planner-first SKILL.md;
+  expert-lens.md is now an unconditional planner `required_read`.
 
 ## Prompt Surfaces
 
-- subject under evaluation (read-only): `skills/public/quality/SKILL.md` and its
-  `references/**` at variant `5ded9f3a` vs baseline `b01cee6b`.
-- planner reported zero prompt-affecting changed paths for this run; the harness
-  files are eval tooling, not prompt surfaces.
+- subject under evaluation (read-only) at `HEAD`=167cad5c:
+  `skills/public/retro/SKILL.md`, `skills/public/retro/scripts/plan_retro_run.py`,
+  `skills/public/retro/references/expert-lens.md`.
 
 ## Behavior Source
 
-- source-kind: transcript
-- source-ref: `charness-artifacts/cautilus/skill-experiment-2026-06-22/`
-- note: two real haiku-4.5 `claude -p` quality-task transcripts captured in
-  isolated read-only worktrees (baseline.transcript.jsonl + variant.transcript.jsonl),
-  extracted to input.v1.json; no shared install clone was mutated.
+- source-kind: operator-log
+- source-ref: `charness-artifacts/cautilus/retro-claim-fidelity-2026-06-29-recapture/`
+- note: operator-authorized retro test (one re-capture) per the decided plan
+  "extract planner → re-capture → then change methodology". Two real `claude -p`
+  captures (fail baseline + pass) in isolated read-only worktrees; no shared
+  install clone mutated.
 
 ## Commands Run
 
 - planner consult (verbatim, read-only): `python3 scripts/plan_cautilus_proof.py
   --repo-root . --json` → `next_action: none`, `must_ask_before_running: true`,
-  `run_mode: ask`, `goal: preserve` (hardcoded; authorization is the operator's
-  explicit one-run approval + the transcript justification-log, not a planner green).
-- `python3 scripts/run_cautilus_eval.py --mode skill-experiment --justification-log
-  charness-artifacts/cautilus/skill-experiment-2026-06-22/justification.md --
-  --input .../input.v1.json --output .../report.json`
+  `run_mode: ask` (authorization is the operator's plan-level approval, not a green).
+- `python3 scripts/run_cautilus_eval.py --mode observation --justification-log
+  charness-artifacts/cautilus/retro-claim-fidelity-2026-06-29-recapture/justification.md
+  -- --input .../observed.v1.json --output .../cautilus-report.json`
 
 ## Regression Proof
 
-- cautilus evaluate skill-experiment: both arms passed (variant_ran: true,
-  baseline_comparable: true); 0 failed runs.
-- promotion_recommendation: `discard` — `source_coverage_delta.gained: []` and
-  `lost: []` (baselineCovered 6 == variantCovered 6 of 7 obligations); rubric
-  status `pass`; finding severity `note` ("no declared coverage or rubric delta
-  requires promotion").
-- report: `charness-artifacts/cautilus/skill-experiment-2026-06-22/report.json`
-  (schema `cautilus.skill_clone_experiment_report.v1`).
+- `cautilus evaluate observation` (0.17.1): RE-CAPTURE `status: passed`
+  (passed=1, failed=0); FIRST capture `status: failed` (the floor miss).
+- behavior delta: first run `Read=1`, coverage 0/9, expert-lens.md never opened,
+  counterfactual = Feathers + direct lens (missed the on-the-nose lens). Re-capture
+  `Read=4`, coverage 4/9, ran `plan_retro_run.py` then opened expert-lens.md, and
+  applied the briefed **Engelbart system-improving lens** + a Charity Majors lens.
+- no new `.cautilus/runs/` dir: observation scores an already-observed packet.
+
+## A/B Compare
+
+- baseline_ref: 482352dc (retro before the planner) vs candidate 167cad5c
+  (planner-first). `cautilus evaluate comparison prepare --repo-root .
+  --baseline-ref 482352dc --output-dir /tmp/cautilus-compare` prepared both
+  worktrees (deterministic; no paid run).
+- A/B verdict via `cautilus evaluate observation` on the real captured packet at
+  each ref: baseline `failed` (expert-lens.md never opened, coverage 0/9),
+  candidate `passed` (expert-lens.md opened, coverage 4/9, Engelbart lens applied).
+  The planner-first fix is the only delta between the two refs.
 
 ## Outcome
 
-- recommendation: accept the proof as a chain demonstration, not a promotion
-  signal. The chain (capture → extract → cautilus scorer) emitted a real
-  `discard` verdict from real transcripts.
-- honest reading: `discard` reflects zero source-coverage delta — both arms read
-  the same six references. This disposition improved pointer-*directness*
-  (reach-via-pointer, measured 7/7 by the prior routing blind A/B), which the
-  source-coverage lens does not measure; it is not a "bad disposition" signal.
+- recommendation: accept — the planner-first fix flips retro's floor failed→proven
+  and delivers the quality outcome (right lens applied), not just a doc-open. The
+  floor is now planner-anchored like the other 6 planner skills.
 
 ## Follow-ups
 
-- The full multi-scenario baseline-vs-variant sweep stays an operator decision
-  (one paid run authorized; a second run re-enters the operator queue).
-- If a future eval wants source-coverage to discriminate this class of
-  disposition, design a no-name-hint task so pointer-following is the only path
-  to the refs (a name-hinted task lets a capable agent reach refs by filename).
+- methodology change (open): anchor RCF to planner `required_reads` / outcome
+  assertions; refresh the retro-claim-fidelity spec `_comment` (still says "retro
+  has no planner"); set `thresholds.max_duration_ms` from the 193700ms pass baseline.
+- rollout (open): give a planner to `hitl` (the other planner-absent skill).
