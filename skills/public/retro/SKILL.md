@@ -15,23 +15,22 @@ revealed; do not turn every correction into a long postmortem.
 
 ## Bootstrap
 
-Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Every
-invocation starts here.
+Resolve the adapter and run the planner before gathering evidence or writing the
+artifact. Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`,
+then run:
 
 ```bash
-# 1. basic repo and workflow context
-sed -n '1,220p' docs/handoff.md
-git status --short
-git log --oneline -10
-
-# 2. adapter resolution
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-
-# 3. first-run scaffold when needed
-python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --prepared-for "<short label>" --json
+python3 "$SKILL_DIR/scripts/plan_retro_run.py" --repo-root . --invocation-text "<retro request>" --json
+python3 "$SKILL_DIR/scripts/scaffold_retro_artifact.py" --repo-root . --json
 ```
+
+The planner names the mode, the work-class counterfactual lens brief, required
+reads (incl. `references/expert-lens.md` for the briefed lens), gate packets, and
+the next action. Open the `required_reads` before writing; expert-lens.md is an
+unconditional read because the counterfactual is mandatory and its lens catalog is
+not inlined here. For a first run with no adapter, run `init_adapter.py` then
+`prepare_packet.py --prepared-for "<label>"` before relying on adapter paths.
 
 Adapter policy:
 
@@ -146,12 +145,14 @@ in `references/trigger-and-persistence.md`.
 
 ## Expert Counterfactual Rule
 
-Every retro includes at least one counterfactual lens. Use named experts only
-when the name sharpens a *different* changed action, constraint, or question
-(never decoration); when sub-agents are available and the session warrants
-depth, up to two distinct-lens expert sub-agents, otherwise write the
-counterfactuals inline. The lens patterns, named-expert examples, and sub-agent
-flow live in `references/expert-lens.md`.
+Every retro includes at least one counterfactual lens. The planner classifies the
+work under review and briefs the fitting lens as a `required_read` of
+`references/expert-lens.md` (for harness/skill/workflow/eval/contract work, the
+Engelbart `system-improving-itself` lens); open it and apply the briefed lens —
+the catalog and sub-agent flow are not inlined here. Use named experts only when
+the name sharpens a *different* changed action (never decoration); when sub-agents
+are available and the session warrants depth, up to two distinct-lens expert
+sub-agents, otherwise write the counterfactuals inline.
 
 ## Guardrails
 
