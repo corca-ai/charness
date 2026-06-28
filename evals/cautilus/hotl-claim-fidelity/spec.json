@@ -1,13 +1,12 @@
 {
-  "_comment": "Claim-fidelity spec for the hotl skill: does a real `/charness:hotl` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: The skill's workflow routes through adapter resolution (adapter-contract), proof validation (proof-rules), and ledger disposition (ledger-and-dispositions) at the point of need for every representative HOTL run.",
+  "_comment": "Claim-fidelity spec for the hotl skill: does a real `/charness:hotl` run honor its central claim — route to its references at the point of need? hotl has no planner that emits required reads (only resolve_adapter.py + init_adapter.py); RCF is derived from the SKILL.md workflow plus script-resolution analysis (lens 3), the same shape as hitl. adapter-contract.md is resolved by the mandatory resolve_adapter.py bootstrap — the run consumes the resolved adapter output, not the explainer doc — so it is engage-always but NOT an RCF floor (lens 3, script-resolved-context). The two engage-always floors a representative external-capability closeout cannot skip are the authored-artifact contracts: proof-rules.md governs the proof packet and the proof-LEVEL classification in steps 2-4 (SKILL.md previews the six rules + packet shape, but the proof-level ladder and packet discipline are the unique authority the preview defers to), and ledger-and-dispositions.md governs the step-5 disposition (SKILL.md previews the status/adjudication names, but the field semantics, staleness model, and completion-audit anti-proxy rule are unique). The prompt is pinned to a representative applied/live behavior closeout whose proof needs an external provider readback (bare /charness:hotl stalls — hotl needs an applied-behavior target, lens 2; the external framing forces the proof-level classification so proof-rules.md is genuinely load-bearing). charness ships no hotl live surface (empty adapter surfaces/proof_commands), so the representative run honestly reaches a blocked-needs-capability or manual-action disposition — still routing through both authored-artifact contracts. declaredReferences is the full skill-local set (coverage); the shared external-capability-proof-ladder.md is not skill-local so it is not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
   "skillId": "hotl",
   "skillDisplayName": "hotl",
   "evaluationId": "execution-hotl-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "hotl",
-  "prompt": "/charness:hotl",
+  "prompt": "/charness:hotl 방금 라이브에 적용한 동작 하나를 evidence 기반으로 closeout 하려고 해 — 외부 provider readback이 필요한 동작이라고 보고, 실행 전에 proof packet(성공 기준·pre-roundtrip 실패 점검·feasibility·non-claims)을 먼저 쓰고, 그 proof가 어느 수준(surface~provider_roundtrip)까지 도달하는지 분류한 다음, 증명을 끝낼 수 없으면 ledger에 정확한 status 하나로 명시적 disposition 처리해줘.",
   "requiredCommandFragments": [
-    "adapter-contract.md",
     "proof-rules.md",
     "ledger-and-dispositions.md"
   ],
@@ -20,15 +19,18 @@
   "referenceEngagement": {
     "adapter-contract.md": {
       "engagement": "engage-always",
-      "rationale": "The skill's core workflow (Bootstrap and steps 1-4) requires resolving and understanding the adapter contract to discover repo-owned proof surfaces, commands, and ledger paths — this doc governs the adapter semantics."
+      "rationale": "Bootstrap resolves the adapter via resolve_adapter.py on every run (surfaces, proof_commands, ledger paths, and the missing/empty/placeholder warnings), so adapter readiness is unconditional; but the run consumes the script's resolved adapter output, not this explainer doc, so it is engage-always yet not an RCF floor (lens 3, script-resolved — the same shape as hitl's adapter-contract.md).",
+      "claimRole": "script-resolved-context"
     },
     "ledger-and-dispositions.md": {
       "engagement": "engage-always",
-      "rationale": "Step 5 of the workflow explicitly routes to this doc: 'Update the ledger and close out per references/ledger-and-dispositions.md' — it provides the status vocabulary, field semantics, and adjudication rules that shape every run's final disposition."
+      "rationale": "Step 5 authors the final disposition against this doc. SKILL.md previews the status and adjudication names, but the field semantics (verified_against.source_commit/proof_artifact/proving_surface_refs), the staleness model, and above all the completion-audit anti-proxy rule (a deployment readback or CLOSED tracker state is not proof — the P4 re-examination failure) are the unique load-bearing authority the preview defers to. A representative closeout that records a status without opening this skips the authority for what that status requires.",
+      "claimRole": "disposition-contract"
     },
     "proof-rules.md": {
       "engagement": "engage-always",
-      "rationale": "The Proof Rules section explicitly states 'Apply references/proof-rules.md; the load-bearing rules' — this is the governing interpretation rubric for what counts as valid proof vs false-proof patterns in step 3-4 of any representative run."
+      "rationale": "Steps 2-4 author the proof packet and classify the proof against this doc. SKILL.md's `## Proof Rules` previews the six load-bearing rules and step 2 previews the packet structure, but the proof-LEVEL ladder (surface/worker_queued/host_decision/provider_roundtrip/agent_choice) and the packet discipline are the unique authority the preview defers to. A representative external-capability closeout that never opens this cannot honestly classify how far its proof reaches (lens 7, script-briefs-judge: the prompt forces an external proof so the level classification is load-bearing).",
+      "claimRole": "proof-rubric"
     }
   }
 }
