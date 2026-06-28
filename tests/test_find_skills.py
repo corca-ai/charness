@@ -504,8 +504,14 @@ def test_recommendation_queries_can_force_canonical_inventory_refresh(tmp_path: 
     assert query_payload["artifacts"]["mode"] == "write"
     assert query_payload["artifacts"]["updated"] is True
     assert query_payload["tool_recommendations"][0]["tool_id"] == "cautilus"
+    assert query_payload["next_step"] is not None
+    assert "recommendation_interpretation" in query_payload
     assert artifact_json["inventory"]["tool_recommendations"] == []
     assert artifact_json["inventory"]["tool_recommendation_query"] is None
+    # Both the active next-step and the inference-layer self-declaration ride the
+    # ranking only — neither attaches to the canonical (verified) inventory.
+    assert artifact_json["inventory"]["next_step"] is None
+    assert "recommendation_interpretation" not in artifact_json["inventory"]
 
 
 def test_list_capabilities_read_only_does_not_write_durable_artifact(tmp_path: Path) -> None:

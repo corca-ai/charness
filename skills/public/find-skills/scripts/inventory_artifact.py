@@ -122,6 +122,11 @@ def _canonical_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
     canonical["support_skill_recommendations"] = []
     canonical["support_recommendation_query"] = None
     canonical["support_recommendation_note"] = None
+    canonical["next_step"] = None
+    # Both ride the ranking only: strip them so a no-ranking run produces an
+    # identical canonical inventory (stable/no-op) and no inference-layer distrust
+    # declaration ever attaches to the verified inventory.
+    canonical.pop("recommendation_interpretation", None)
     canonical["workflow_recommendations"] = []
     canonical["public_skill_recommendations"] = []
     canonical["public_recommendation_query"] = None

@@ -124,13 +124,14 @@ explicitly allows it.
    - `synced support skill`
    - `external integration`
    - `missing capability`
+   - for a non-public best match, read `references/support-consumption.md` for when each label applies (esp. synced-support-skill, materialized locally, vs external-integration, an upstream binary)
 5. Recommend the smallest usable next step.
    - invoke an existing public skill
    - point to an adapter-configured trusted skill if the current host uses one
    - use a support capability through the right workflow
    - install or wire an external integration if the policy already supports it,
      and surface the supported access modes when that changes the next step
-   - use structured recommendation payloads for external-tool, runtime, validation, support, or verbatim-named public-skill (`public_skill_recommendations`) routes
+   - use structured recommendation payloads for external-tool, runtime, validation, support, or verbatim-named public-skill (`public_skill_recommendations`) routes; the ranking is an inference-layer proxy, so the script's emitted `next_step` routes you to answer its interpretation question before you route on it
    - when the user asks about stronger validation, prompt-affecting or
      behavior-affecting changes, validation-shaped review/closeout, issue
      closeout, or operator reading test wording, query

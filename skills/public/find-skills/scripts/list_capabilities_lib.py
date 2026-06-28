@@ -21,6 +21,23 @@ RECOMMENDATION_INTERPRETATION = {
     "blind_spots": "matches declared trigger vocabulary, not task semantics — a strong phrase match can still be the wrong route, and a genuinely-fitting skill whose metadata lacks the phrase ranks low or is absent; an empty ranking is not proof that no capability exists",
     "interpretation_question": "does the top-ranked route actually fit THIS task and repo state, or is it a trigger-phrase coincidence (and is a better-fitting skill missing from the ranking)?",
 }
+
+# North-star "brief the judge with the next move": when a ranking exists the
+# deterministic inventory does not just emit the self-declaration above and hope the
+# consumer reads its reference doc — it hands the agent the active next step, so
+# routing-on-a-proxy is a move it consciously takes rather than a default it slides
+# into. This is a plain routing imperative, NOT a 4-field interpretation declaration:
+# it rides only the recommendation surface and is stripped from the canonical
+# inventory artifact (see inventory_artifact._canonical_inventory).
+ROUTING_NEXT_STEP = (
+    "Before routing on this ranking, answer its interpretation question in your own "
+    "words against THIS repo (see recommendation_interpretation.interpretation_question; "
+    "the tie-break rules and ranking-interpretation framing live in this skill's "
+    "references/discovery-order.md): does the top route actually fit this task, or is it "
+    "a trigger-phrase coincidence — and is a better-fitting capability missing? Then "
+    "invoke the confirmed route, widen the search, or classify the gap. A thin or empty "
+    "ranking is not proof a capability is absent."
+)
 def resolve_tool_recommendations(
     args: Any,
     *,
@@ -288,6 +305,7 @@ def build_inventory_payload(
         "`--recommendation-role validation --next-skill-id <skill-id>`."
     ) if show_note else None
     has_recommendations = any([tool_recommendations, support_skill_recommendations, workflow_recommendations, public_skill_recommendations])
+    next_step = ROUTING_NEXT_STEP if has_recommendations else None
     return {
         "adapter": {
             "found": adapter["found"],
@@ -312,6 +330,9 @@ def build_inventory_payload(
         "public_skill_recommendations": public_skill_recommendations or [],
         "public_recommendation_query": public_recommendation_query,
         "support_recommendation_note": note,
+        # Active next move the script hands the judge; rides the ranking only and is
+        # stripped from the canonical inventory artifact, so a no-ranking run stays clean.
+        "next_step": next_step,
         # Inference-layer self-declaration rides the ranking only; absent when no
         # recommendation was produced so it never attaches to the verified inventory.
         **({"recommendation_interpretation": dict(RECOMMENDATION_INTERPRETATION)} if has_recommendations else {}),

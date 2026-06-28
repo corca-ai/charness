@@ -24,6 +24,7 @@ def summary_payload(payload: dict[str, object]) -> dict[str, object]:
             "support_skill_recommendations": payload.get("support_skill_recommendations", []),
             "support_recommendation_query": payload.get("support_recommendation_query"),
             "support_recommendation_note": payload.get("support_recommendation_note"),
+            "next_step": payload.get("next_step"),
             "workflow_recommendations": payload.get("workflow_recommendations", []),
             "public_skill_recommendations": payload.get("public_skill_recommendations", []),
             "public_recommendation_query": payload.get("public_recommendation_query"),

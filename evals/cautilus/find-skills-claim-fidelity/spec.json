@@ -1,14 +1,13 @@
 {
-  "_comment": "Claim-fidelity spec for the find-skills skill: does a real `/charness:find-skills` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These two docs define the ordering of the search (discovery-order) and the classification labels applied to each match (support-consumption), forming the core decision frame for any representative capability-discovery run.",
+  "_comment": "Claim-fidelity spec for the find-skills skill: does a real `/charness:find-skills` run honor its own central claim — not 'dump an inventory' but ROUTE to the right capability without routing on a trigger-phrase coincidence? find-skills is the purest script-driven self-activator: list_capabilities.py emits the ordered, per-layer-labeled inventory AND, when a ranking exists, hands the agent an active next_step that routes it to answer the ranking-interpretation question (the script briefs the judge — north star). So most of the surface is script-resolved and carries no mandatory reference read. The one floor that survives is the tie-break + ranking-interpretation framing the script does NOT inline and the SKILL.md body does not restate: references/discovery-order.md, which the script's next_step explicitly routes the agent to open. That is the single requiredCommandFragment. The prompt pins a representative routing objective whose right answer is non-obvious across layers (executable-spec work → support/specdown, possibly a synced support skill vs an external integration) so the run actually reaches the ranking-interpretation decision. This single RCF floor is coupled to that prompt: it survives only because the objective forces a cross-layer tie (public `spec` vs synced-support `specdown`) whose tie-break rules are doc-only — if this prompt is ever softened to a single-layer hit, discovery-order.md stops being a floor and the RCF would false-fail, so keep the cross-layer tie in the prompt. support-consumption.md is on-demand: its layer labels are inline in SKILL.md step 4 and consulted only for a non-obvious non-public classification, so requiring its open would false-fail a legitimate run. declaredReferences drives a coverage report. referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget.",
   "skillId": "find-skills",
   "skillDisplayName": "find-skills",
   "evaluationId": "execution-find-skills-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "find-skills",
-  "prompt": "/charness:find-skills",
+  "prompt": "/charness:find-skills docs/specs 아래에 실행 가능한 명세(*.spec.md)를 작성하고 check:jq 같은 검사로 돌려보려 합니다. 이 작업을 맡을 capability가 public 스킬인지 support 스킬인지 외부 integration인지, 그리고 이미 로컬에 materialized 됐는지 정직하게 분류하고 다음 한 걸음을 알려주세요.",
   "requiredCommandFragments": [
-    "discovery-order.md",
-    "support-consumption.md"
+    "discovery-order.md"
   ],
   "requiredSummaryFragments": [],
   "declaredReferences": [
@@ -25,7 +24,7 @@
     },
     "discovery-order.md": {
       "engagement": "engage-always",
-      "rationale": "Defines the canonical search ordering that any capability discovery run executes (local public > support > synced support > integrations > trusted roots > missing)."
+      "rationale": "list_capabilities.py resolves the search ORDER and per-entry layer deterministically, so the bare inventory is script-resolved; but the agent-only judgment this doc owns — the tie-break when several layers match, and the ranking-interpretation framing (is the top route a real fit or a trigger-phrase coincidence, is a better-fitting skill missing, an empty ranking is not proof of absence) that the script's next_step explicitly routes the agent here to apply — is the engage-always floor any representative routing run must open before routing on the inventory."
     },
     "session-start-routing.md": {
       "engagement": "on-demand",
@@ -33,8 +32,9 @@
       "trigger": "when a session opens with a pickup (bare handoff mention) or named workflow to execute, requiring the skill to drive the routed workflow"
     },
     "support-consumption.md": {
-      "engagement": "engage-always",
-      "rationale": "Provides the classification vocabulary and rationale for step 4 of the workflow (classify the best match honestly), distinguishing public skill, support skill, trusted skill, synced support skill, external integration, and missing capability layers."
+      "engagement": "on-demand",
+      "rationale": "The layer LABELS are enumerated inline in SKILL.md step 4 and the synced-support-vs-integration state is largely carried by the script's per-entry layer field, so a representative run classifies without this doc; it is consulted only when the best match is a non-obvious non-public layer whose synced-support-skill (materialized locally) vs external-integration (upstream binary) call is genuinely hard to make.",
+      "trigger": "when the best match is a non-public layer whose synced-support-skill vs external-integration classification is non-obvious"
     }
   }
 }

@@ -701,10 +701,23 @@ def test_recommendation_ranking_carries_interpretation_self_declaration(tmp_path
     assert all(interpretation[field].strip() for field in interpretation)
     assert "coincidence" in interpretation["interpretation_question"]
 
+    # North-star "brief the judge": when a ranking exists the script hands the agent the
+    # ACTIVE next move, not just the passive self-declaration. It must point back at the
+    # interpretation question so routing-on-a-proxy is a conscious step.
+    next_step = recommendations["next_step"]
+    assert isinstance(next_step, str) and next_step.strip()
+    assert "interpretation question" in next_step
+    assert "not proof a capability" in next_step
+    # The active briefing also routes the judge to the doc that owns the tie-break /
+    # interpretation framing, so SKILL.md need not carry that pointer statically.
+    assert "discovery-order.md" in next_step
+
     # Cardinal-error guard: a plain inventory (no recommendation query) must NOT
     # attach the declaration — it would otherwise ride the verified inventory.
     plain = _run_list_capabilities(tmp_path)
     assert "recommendation_interpretation" not in plain
+    # The active next-step rides the ranking too: a no-ranking inventory stays clean.
+    assert plain.get("next_step") is None
 
     reference = (
         REPO_ROOT / "skills" / "public" / "find-skills" / "references" / "discovery-order.md"
