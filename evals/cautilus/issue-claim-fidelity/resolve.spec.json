@@ -1,0 +1,56 @@
+{
+  "_comment": "Claim-fidelity spec for the issue skill, RESOLVE-intent scenario: does a real `/charness:issue resolve` run honor its central claim — route to its references at the point of need? issue ships a planner (issue_tool.py plan), so RCF is derived from the planner's UNCONDITIONAL required_reads (lens 1), not from prose. For --intent resolve the planner emits required_reads = [resolve-flow.md, issue-backend.md, closeout-discipline.md], each tagged engage-always; issue-shaping.md is resolve-only on_demand (sibling-filing), and causal-review.md / resolution-brief.md are classification-conditional on_demand. The prior single fixture over-broadened RCF to the new+resolve UNION and MIS-classified issue-backend.md as on-demand — a lens-1 inversion: the planner requires issue-backend.md for both intents, and the doc holds unique load-bearing content the script does not inline (read-before-design comments_read, verify-closeout carrier modes + --expect-state CLOSED semantics, the body_verified contract), so lens 7 does not dissolve it. This scenario is the resolve-intent split (lens 4, mutually-exclusive flows, same shape as setup greenfield/normalization and handoff intents); new lives at new.spec.json. The three RCF docs are all forced by a representative resolve run: resolve-flow.md governs selection/sequencing/source-of-truth, issue-backend.md governs the backend read + carrier-verify ops, closeout-discipline.md governs the auto-close carrier and the irreversible-boundary Per-Issue Behavioral Verdict (P4: a CLOSED state is necessary-not-sufficient; confirm JTBD behavior through a channel distinct from CLOSED/the carrier). Bare /charness:issue stalls (no intent, no subject); the prompt pins a CONCRETE repo-honest target — the newest open GitHub issue, the planner's documented default-selector path (lens 2 + lens 8). CAPTURE CONTEXT (non-claim, lens 5, like setup greenfield / debug): a faithful live capture READS and CLOSES a real GitHub issue — it requires a real open issue to exist and performs an external irreversible close the Cautilus sandbox does not contain — so a clean capture needs a disposable GitHub sandbox repo with a seeded issue, or stops before the close call; the reference routing under test is reachable in the plan/read/design phase before the mutation. declaredReferences is the full skill-local set (coverage); shared refs are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds omitted until a baseline capture sets a budget.",
+  "skillId": "issue",
+  "skillDisplayName": "issue",
+  "scenarioId": "resolve",
+  "evaluationId": "execution-issue-resolve-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "issue",
+  "prompt": "/charness:issue resolve — 이 repo의 가장 최근 열린 GitHub 이슈를 선택해 comments까지 읽고, reporter의 JTBD를 한 줄로 잡고 fix-unit(bug/feature/deferred-work/question/decision-needed)을 classify한 뒤, 가장 작은 완전한 fix로 resolve하고 auto-close carrier로 closeout한 다음, CLOSED 상태와 별개의 증거 채널로 per-issue behavior verdict를 내줘.",
+  "requiredCommandFragments": [
+    "resolve-flow.md",
+    "issue-backend.md",
+    "closeout-discipline.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "causal-review.md",
+    "closeout-discipline.md",
+    "issue-backend.md",
+    "issue-shaping.md",
+    "resolution-brief.md",
+    "resolve-flow.md"
+  ],
+  "referenceEngagement": {
+    "causal-review.md": {
+      "engagement": "on-demand",
+      "rationale": "Planner on_demand for --intent resolve: SKILL.md step 5 routes here only for 'bug': run the causal-review fresh-eye subagent before design; the doc itself states only bug-class issues require the full causal review.",
+      "trigger": "When the selected issue classifies as bug; skipped for feature/deferred-work/question/decision-needed."
+    },
+    "closeout-discipline.md": {
+      "engagement": "engage-always",
+      "rationale": "Planner required_read for --intent resolve ('before publishing or verifying a closeout carrier'). It owns the auto-close carrier linkage, the resolution-critique carrier header, and above all the Per-Issue Behavioral Verdict At Close (the P4 irreversible-boundary mandate: CLOSED is necessary-not-sufficient, confirm JTBD via a channel distinct from CLOSED/the carrier) — unique content the SKILL.md only points at, so an honest resolve closeout cannot be produced without it.",
+      "claimRole": "closeout-and-behavioral-verdict"
+    },
+    "issue-backend.md": {
+      "engagement": "engage-always",
+      "rationale": "Planner required_read for --intent resolve ('before backend read, carrier validation, or close'), tagged engage-always. The doc owns read-before-design (comments_read: true), the verify-closeout carrier modes (direct-commit/pr-body/manual-fallback) and --expect-state CLOSED semantics — content issue_tool.py runs but does not brief, so the agent must open it to read and verify-close correctly (lens 1 restores this; the prior on-demand tag was the inversion).",
+      "claimRole": "backend-read-and-carrier-verify"
+    },
+    "issue-shaping.md": {
+      "engagement": "on-demand",
+      "rationale": "Planner on_demand for --intent resolve: opened only when resolution discovers a sibling that should become a new filed issue (sibling-filing), not on the resolve path itself.",
+      "trigger": "When the resolution surfaces a sibling that should be filed as a new issue."
+    },
+    "resolution-brief.md": {
+      "engagement": "on-demand",
+      "rationale": "Planner on_demand for --intent resolve: SKILL.md step 5 routes here only for 'feature' / 'deferred-work' — emit the pre-mutation resolution brief before proposing implementation; skipped for bug/question/decision-needed.",
+      "trigger": "When the selected issue classifies as feature or deferred-work."
+    },
+    "resolve-flow.md": {
+      "engagement": "engage-always",
+      "rationale": "Planner required_read for --intent resolve ('before selecting or ordering issues'). It owns the GitHub source-of-truth selection (newest-open default), the generative resolution sequence, classification routing, and the auto-close preference — the governing lens that shapes the whole resolve run.",
+      "claimRole": "sequencing-and-routing"
+    }
+  }
+}

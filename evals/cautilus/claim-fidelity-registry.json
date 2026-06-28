@@ -87,8 +87,15 @@
     },
     {
       "skill_id": "issue",
-      "spec_path": "evals/cautilus/issue-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
+      "scenario_id": "new",
+      "spec_path": "evals/cautilus/issue-claim-fidelity/new.spec.json",
+      "fan_out_fit": "yes — issue branches by intent (issue_tool.py plan emits intent-keyed required_reads); the new intent's unconditional reads are [issue-shaping, issue-backend, closeout-discipline], mutually exclusive with the resolve intent's resolve-flow read."
+    },
+    {
+      "skill_id": "issue",
+      "scenario_id": "resolve",
+      "spec_path": "evals/cautilus/issue-claim-fidelity/resolve.spec.json",
+      "fan_out_fit": "yes — the resolve intent's unconditional reads are [resolve-flow, issue-backend, closeout-discipline]; a new-intent run opens none of resolve-flow, so requiring it needs its own scenario."
     },
     {
       "skill_id": "narrative",

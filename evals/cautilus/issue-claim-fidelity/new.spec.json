@@ -1,0 +1,56 @@
+{
+  "_comment": "Claim-fidelity spec for the issue skill, NEW-intent scenario: does a real `/charness:issue new` run honor its central claim — route to its references at the point of need? issue ships a planner (issue_tool.py plan), so RCF is derived from the planner's UNCONDITIONAL required_reads (lens 1), not from prose. For --intent new the planner emits required_reads = [issue-shaping.md, issue-backend.md, closeout-discipline.md], each tagged engage-always; resolve-flow.md is not a new-intent read at all, and causal-review.md / resolution-brief.md are resolve-only on_demand. The prior single fixture over-broadened RCF to the new+resolve UNION [resolve-flow, issue-shaping, closeout-discipline] and MIS-classified issue-backend.md as on-demand — a lens-1 inversion: the planner requires issue-backend.md for both intents, and the doc holds unique load-bearing content the script does not inline (body-file safety + the body_verified true/false/null interpretation, milestone gating, carrier/verify-closeout semantics), so lens 7 does not dissolve it. This scenario is the new-intent split (lens 4, mutually-exclusive flows, same shape as setup greenfield/normalization and handoff intents); resolve lives at resolve.spec.json. The three RCF docs are all forced by a representative create run: issue-shaping.md governs the problem-first body, issue-backend.md governs the safe create + body_verified read, closeout-discipline.md governs the created-issue verified ledger + external-source preservation. Bare /charness:issue stalls (no intent, no subject); the prompt pins a CONCRETE repo-honest problem to file (lens 2 + lens 8). CAPTURE CONTEXT (non-claim, lens 5, like setup greenfield / debug): a faithful live capture CREATES a real GitHub issue — an external irreversible side effect the Cautilus sandbox does not contain — so a clean capture needs a disposable GitHub sandbox repo or stops before the create call; the reference routing under test is reachable in the plan/shape phase before the write. declaredReferences is the full skill-local set (coverage); shared refs (fresh-eye-subagent-review.md, external-capability-proof-ladder.md, rca-ledger-append.md, active-goal-coordination.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds omitted until a baseline capture sets a budget.",
+  "skillId": "issue",
+  "skillDisplayName": "issue",
+  "scenarioId": "new",
+  "evaluationId": "execution-issue-new-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "issue",
+  "prompt": "/charness:issue new — claim-fidelity 픽스처들이 아직 라이브 캡처되지 않고 추론+critique로만 보정돼 있다는 추적 문제를 이 repo의 GitHub 이슈로 파일해줘. 문제 우선으로 상황·경험·증거·영향을 적고, 기존 라벨/마일스톤만 사용하고, 검증된 {repo, number, url} ledger와 body_verified 결과에서만 보고해줘.",
+  "requiredCommandFragments": [
+    "issue-shaping.md",
+    "issue-backend.md",
+    "closeout-discipline.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "causal-review.md",
+    "closeout-discipline.md",
+    "issue-backend.md",
+    "issue-shaping.md",
+    "resolution-brief.md",
+    "resolve-flow.md"
+  ],
+  "referenceEngagement": {
+    "causal-review.md": {
+      "engagement": "on-demand",
+      "rationale": "Bug-class RESOLVE concern; a new-intent create run never reaches causal review.",
+      "trigger": "When resolving bug-class issues (the resolve scenario), not when filing."
+    },
+    "closeout-discipline.md": {
+      "engagement": "engage-always",
+      "rationale": "Planner required_read for --intent new ('before reporting the created issue'). It owns the created-issue verified-ledger rule (render only from {repo, number, url}; warn when body_verified is not true) and the external-source identity/preservation contract — unique content the SKILL.md only routes to, so an honest create closeout cannot be produced without it.",
+      "claimRole": "created-issue-ledger-and-source-preservation"
+    },
+    "issue-backend.md": {
+      "engagement": "engage-always",
+      "rationale": "Planner required_read for --intent new ('before create, labels, milestones, or backend mutation'), tagged engage-always. The doc owns the body-file safety trap and the body_verified true/false/null interpretation, milestone gating, and create-op contract — content issue_tool.py encapsulates mechanically but does not brief, so the agent must open it to create safely and read back body_verified correctly (lens 1 restores this; the prior on-demand tag was the inversion).",
+      "claimRole": "backend-create-and-body-safety"
+    },
+    "issue-shaping.md": {
+      "engagement": "engage-always",
+      "rationale": "Planner required_read for --intent new ('before drafting the issue body'). It owns the problem-first body structure (situation/experience/evidence/impact), label/milestone discipline, and the full external-source preservation form set that the SKILL.md step 2 only summarizes — forced on every create run.",
+      "claimRole": "body-composition"
+    },
+    "resolution-brief.md": {
+      "engagement": "on-demand",
+      "rationale": "Feature/deferred-work RESOLVE concern (pre-mutation brief); a new-intent create run never emits a resolution brief.",
+      "trigger": "When resolving feature-class or deferred-work issues (the resolve scenario), not when filing."
+    },
+    "resolve-flow.md": {
+      "engagement": "on-demand",
+      "rationale": "Resolve sequencing/source-of-truth/classification routing; the planner does not list it as a new-intent read at all, so a representative create run never opens it.",
+      "trigger": "When the intent is resolve (the resolve scenario), not when filing a new issue."
+    }
+  }
+}
