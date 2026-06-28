@@ -1,17 +1,15 @@
 {
-  "_comment": "Claim-fidelity spec for the release skill: does a real `/charness:release` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These five references form the core decision frame for the release skill: adapter seams (adapter-contract.md), version governance (version-policy.md), critique gating (critique-boundary.md), public verification (publication-boundary.md), and operator refresh (install-refresh.md). SKILL.md routes through all five in the representative run before mutation, tag, or publish completion.",
+  "_comment": "Claim-fidelity spec for the release skill: does a real `/charness:release` run honor its central claim — route to its references at the point of need? release ships a planner (plan_release_run.py, mandatory bootstrap: SKILL.md says 'run the planner before mutation... read every required_reads entry'), so RCF is derived from the planner's UNCONDITIONAL required_reads (lens 1), not prose. plan_release_run_packets.required_reads emits index.md + version-policy.md + critique-boundary.md + publication-boundary.md UNCONDITIONALLY, and appends adapter-contract.md (only if the adapter is missing/invalid/warning-bearing), install-refresh.md (only if the adapter declares post_publish_install_refresh), and real-host-proof.md (only if the adapter declares real_host_required_surfaces/path_globs) CONDITIONALLY. The prior fixture had a five-way lens-1 inversion: it tagged adapter-contract.md and install-refresh.md as engage-always RCF though the planner appends them only conditionally, and tagged index.md as on-demand though the planner requires it unconditionally. The corrected RCF is the unconditional set minus index.md: version-policy.md (the bump rubric the planner pointer does not inline), critique-boundary.md (the publish-gate rule: --execute refuses unless --critique-artifact XOR --critique-blocked), and publication-boundary.md (the irreversible-boundary rule: tag push is not public verification; record a distinct-channel verdict). index.md is dissolved from RCF by lens 7: the planner lists it unconditionally so a planner-driven run opens it, but its content IS the manual reference map the planner's own required_reads output already provides — redundant, engage-always-not-RCF (claimRole planner-briefed-disclosure-map). The three conditional reads are on-demand keyed to their adapter triggers; install-surface.md is a legacy compatibility pointer (not a planner read). Bare /charness:release stalls (no release goal/subject); the prompt pins a CONCRETE bump-and-publish objective (lens 2 + lens 8) so the planner emits the unconditional reads and the run reaches them. CAPTURE CONTEXT (non-claim, lens 5, like issue / setup greenfield): a faithful live capture TAGS, PUSHES, and PUBLISHES a GitHub release — an external irreversible side effect the Cautilus sandbox does not contain — so a clean capture needs a disposable repo/remote or stops before the publish helper's mutation; the reference routing under test is reachable in the planner/plan phase before any tag or publish. Fixture-only: the planner already gates each read correctly; the fixture just did not follow it (the index.md redundancy in the planner output is harmless, not a skill defect). declaredReferences is the full skill-local set (coverage); shared refs (fresh-eye-subagent-review.md, closeout-discipline.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds omitted until a baseline capture sets a budget.",
   "skillId": "release",
   "skillDisplayName": "release",
   "evaluationId": "execution-release-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "release",
-  "prompt": "/charness:release",
+  "prompt": "/charness:release 다음 릴리스를 준비해줘 — 변경의 user-visible 효과에 맞는 가장 가벼운 정직한 semver bump(patch/minor/major)을 근거와 함께 정하고, mutation 전에 standalone critique 증거를 확보했는지 먼저 확인하고, tag/push 완료가 public 릴리스 검증과 같지 않다는 전제로 public surface가 distinct channel로 verified인지와 남은 risk를 정직하게 판정해줘.",
   "requiredCommandFragments": [
     "version-policy.md",
-    "adapter-contract.md",
     "critique-boundary.md",
-    "publication-boundary.md",
-    "install-refresh.md"
+    "publication-boundary.md"
   ],
   "requiredSummaryFragments": [],
   "declaredReferences": [
@@ -26,39 +24,44 @@
   ],
   "referenceEngagement": {
     "adapter-contract.md": {
-      "engagement": "engage-always",
-      "rationale": "The planner and bootstrap scripts depend on understanding the adapter schema, defaults, and repo-specific seams; every representative run must consult this to interpret adapter configuration before mutation."
+      "engagement": "on-demand",
+      "rationale": "The planner appends this read only when the adapter is missing, invalid, or warning-bearing (plan_release_run_packets.required_reads); a representative run against a valid adapter never opens it, so the prior engage-always-RCF tag was a lens-1 over-classification.",
+      "trigger": "When the planner reports the adapter is missing, invalid, or warning-bearing and must be scaffolded or repaired."
     },
     "critique-boundary.md": {
       "engagement": "engage-always",
-      "rationale": "SKILL.md step 4 explicitly routes to this reference to apply the artifact/blocked-host rule for critique proof; the representative run gates task-completing mutation on this boundary."
+      "rationale": "Unconditional planner required_read; SKILL.md step 4 also routes here explicitly. It owns the publish-gate rule (publish_release.py --execute refuses unless exactly one of --critique-artifact / --critique-blocked is present, gated before any bump/tag/push) — the rule content the planner's required_reads pointer does not inline, so a representative release run is forced to open it.",
+      "claimRole": "critique-gate"
     },
     "index.md": {
-      "engagement": "on-demand",
-      "rationale": "The file itself states 'Use this index when browsing the package manually. The run planner owns progressive disclosure during normal operation'; the planner handles reference routing for the representative run.",
-      "trigger": "when operator manually browses the release references without running the planner"
+      "engagement": "engage-always",
+      "rationale": "The planner lists index.md unconditionally so a planner-driven run opens it, but its content is the manual reference map ('use this index when browsing manually; the run planner owns progressive disclosure') — the same disclosure the planner's own required_reads output already provides, so it carries no unique load-bearing content: engage-always yet not an RCF floor (lens 7, the planner briefs the disclosure).",
+      "claimRole": "planner-briefed-disclosure-map"
     },
     "install-refresh.md": {
-      "engagement": "engage-always",
-      "rationale": "SKILL.md step 6 and workflow output require operator update instructions and maintainer install refresh; the representative run must consult this for complete release closeout."
+      "engagement": "on-demand",
+      "rationale": "The planner appends this read only when the adapter declares a post_publish_install_refresh command; a release whose adapter declares no post-publish refresh never opens it, so the prior engage-always-RCF tag was a lens-1 over-classification.",
+      "trigger": "When the adapter declares post_publish_install_refresh (a post-publish maintainer install-refresh command)."
     },
     "install-surface.md": {
       "engagement": "on-demand",
-      "rationale": "This file is explicitly a compatibility pointer that redirects readers to publication-boundary.md, install-refresh.md, and real-host-proof.md; new runs use the concept-specific files instead.",
-      "trigger": "when maintainer consults legacy documentation or older release records that reference install-surface concepts"
+      "rationale": "A legacy compatibility pointer that redirects to publication-boundary.md / install-refresh.md / real-host-proof.md; it is not a planner read, and new runs use the concept-specific files instead.",
+      "trigger": "When a maintainer consults legacy documentation or older release records that reference install-surface concepts."
     },
     "publication-boundary.md": {
       "engagement": "engage-always",
-      "rationale": "SKILL.md step 7 explicitly routes to this reference to judge public release surface verified status and open risks; the representative run must consult this to distinguish tag-push from actual public verification."
+      "rationale": "Unconditional planner required_read; SKILL.md step 7 also routes here explicitly. It owns the irreversible-boundary rule (tag push / workflow completion is not public release verification; record a distinct-channel behavioral verdict, never a second gh release view as the distinct channel) — load-bearing content the planner pointer does not inline, so a representative run is forced to open it.",
+      "claimRole": "publication-boundary"
     },
     "real-host-proof.md": {
       "engagement": "on-demand",
-      "rationale": "The reference documents host-proof triggers that apply only when the release touches install/tool/cache seams; not all representative runs need this gate.",
-      "trigger": "when the adapter declares real_host_required_surfaces or real_host_required_path_globs that apply to the current release slice"
+      "rationale": "The planner appends this read only when the adapter declares real_host_required_surfaces or real_host_required_path_globs; a release slice that touches no such seam never opens it.",
+      "trigger": "When the adapter declares real_host_required_surfaces or real_host_required_path_globs that apply to the current release slice."
     },
     "version-policy.md": {
       "engagement": "engage-always",
-      "rationale": "SKILL.md step 5 explicitly routes through version-policy to choose patch/minor/major bump level; the representative run always needs this lens for honest bump selection."
+      "rationale": "Unconditional planner required_read; SKILL.md step 5 chooses the bump against it. It owns the patch/minor/major rubric plus the guardrail (if the bump level is debatable, say why — do not silently turn a human judgment call into a hidden default) — the judgment content the planner pointer and bump_version.py (which only computes the number from a chosen part) do not supply, so a representative run is forced to open it.",
+      "claimRole": "version-bump-rubric"
     }
   }
 }
