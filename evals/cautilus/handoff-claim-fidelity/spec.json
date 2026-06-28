@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the handoff skill: does a real `/charness:handoff` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These five docs form the core decision rubrics: adapter-contract identifies the artifact location, continuation-sequence and state-selection govern the rewriting logic, spill-targets determines what stays versus what moves elsewhere, and workflow-trigger ensures clarity on the next workflow.",
+  "_comment": "Claim-fidelity spec for the handoff skill, DEFAULT scenario (chunked_routing). handoff ships a deterministic planner (`plan_handoff_run.py`) whose `_required_reads` are INTENT-keyed and mutually exclusive: chunked_routing -> chunked-routing.md; pickup -> workflow-trigger.md + continuation-sequence.md; refresh -> state-selection.md + spill-targets.md; adapter-contract.md is read only when the adapter is missing/warned/invalid. The old fixture's RCF was the UNION of all intents and so false-failed every real run (no single intent opens all of them); per lens 4 the skill is split into one scenario per intent, each with its planner-derived RCF (lens 1). This default scenario is the bare `/charness:handoff`: `should_fire_chunker` fires on the plugin-namespaced invocation (a chunker fix shipped with this calibration made `/charness:handoff` register as the handoff command rather than 'another slash command', so the bare namespaced call deterministically resolves to chunked_routing), whose only required read is chunked-routing.md. Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
   "skillId": "handoff",
   "skillDisplayName": "handoff",
   "evaluationId": "execution-handoff-claim-fidelity",
@@ -7,11 +7,7 @@
   "targetId": "handoff",
   "prompt": "/charness:handoff",
   "requiredCommandFragments": [
-    "adapter-contract.md",
-    "continuation-sequence.md",
-    "state-selection.md",
-    "spill-targets.md",
-    "workflow-trigger.md"
+    "chunked-routing.md"
   ],
   "requiredSummaryFragments": [],
   "declaredReferences": [
@@ -25,34 +21,38 @@
   ],
   "referenceEngagement": {
     "adapter-contract.md": {
-      "engagement": "engage-always",
-      "rationale": "The skill's workflow step 3 explicitly routes through this to identify the canonical handoff artifact location before proceeding."
+      "engagement": "on-demand",
+      "rationale": "The planner reads this only when the adapter is missing, warned, or invalid; a healthy repo resolves the artifact location from the resolved adapter without opening the explainer doc.",
+      "trigger": "adapter is missing, warned, or invalid (planner _required_reads condition)"
     },
     "chunked-routing.md": {
-      "engagement": "on-demand",
-      "rationale": "Chunked routing is a conditional workflow phase that fires only when no explicit task directive exists; a representative run with a named next task bypasses the chunker entirely.",
-      "trigger": "User invokes handoff with no explicit task directive and a handoff signal is present"
+      "engagement": "engage-always",
+      "rationale": "For the chunked_routing intent (bare/namespaced invocation with no task directive) this is the planner's single UNCONDITIONAL required read: it owns the deterministic trigger rule and the backlog-routing pipeline the run must follow before any pickup."
     },
     "continuation-sequence.md": {
-      "engagement": "engage-always",
-      "rationale": "The skill's workflow steps 2, 4, and guardrails section explicitly route through this to determine continuation order and dependency sequencing for the next moves."
+      "engagement": "on-demand",
+      "rationale": "A pickup-intent planner read; not opened on a chunked_routing run.",
+      "trigger": "pickup intent — ordering the next move as continuation rather than history"
     },
     "document-seams.md": {
       "engagement": "on-demand",
-      "rationale": "This doc addresses portability decisions when a repo already uses a checked-in handoff surface; adapter-contract handles the default path in most representative runs.",
-      "trigger": "Repo has a pre-existing checked-in handoff surface that should override the default location"
+      "rationale": "Addresses portability when a repo already uses a checked-in handoff surface; the adapter handles the default path otherwise.",
+      "trigger": "repo has a pre-existing checked-in handoff surface that should override the default location"
     },
     "spill-targets.md": {
-      "engagement": "engage-always",
-      "rationale": "The skill's guardrails section and workflow step 4 explicitly consult this to determine what detail moves to owning artifacts versus what stays in the handoff."
+      "engagement": "on-demand",
+      "rationale": "A refresh-intent planner read; not opened on a chunked_routing run.",
+      "trigger": "refresh intent — spilling durable detail to its owning artifact instead of growing a diary"
     },
     "state-selection.md": {
-      "engagement": "engage-always",
-      "rationale": "The skill's workflow step 4 and guardrails section explicitly route through this as the governing rubric for keeping only facts that change the next action."
+      "engagement": "on-demand",
+      "rationale": "A refresh/judge-intent planner read; not opened on a chunked_routing run.",
+      "trigger": "refresh intent — keeping only state that changes the next action"
     },
     "workflow-trigger.md": {
-      "engagement": "engage-always",
-      "rationale": "The skill's workflow step 5 explicitly consults this to ensure the next workflow or skill is named directly, not inferred."
+      "engagement": "on-demand",
+      "rationale": "A pickup/judge-intent planner read; not opened on a chunked_routing run.",
+      "trigger": "pickup intent — starting from the named workflow trigger"
     }
   }
 }

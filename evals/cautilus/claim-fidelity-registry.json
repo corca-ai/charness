@@ -51,7 +51,19 @@
     {
       "skill_id": "handoff",
       "spec_path": "evals/cautilus/handoff-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
+      "fan_out_fit": "yes — handoff branches by intent (plan_handoff_run.py _required_reads are intent-keyed and mutually exclusive); this default scenario is the chunked_routing (bare) intent whose single required read is chunked-routing.md."
+    },
+    {
+      "skill_id": "handoff",
+      "scenario_id": "pickup",
+      "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup.spec.json",
+      "fan_out_fit": "yes — the pickup intent reads workflow-trigger.md + continuation-sequence.md; a chunked_routing or refresh run opens neither, so requiring them needs its own scenario."
+    },
+    {
+      "skill_id": "handoff",
+      "scenario_id": "refresh",
+      "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
+      "fan_out_fit": "yes — the refresh intent reads state-selection.md + spill-targets.md, mutually exclusive with the pickup and chunked_routing reads, so its own scenario."
     },
     {
       "skill_id": "hitl",

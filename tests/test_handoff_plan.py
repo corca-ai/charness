@@ -158,6 +158,17 @@ def test_handoff_plan_routes_documented_slash_invocation_to_chunked_routing() ->
     assert plan["next_action"]["kind"] == "run_chunked_routing"
 
 
+def test_handoff_plan_routes_namespaced_slash_invocation_to_chunked_routing() -> None:
+    # The plugin-namespaced `/charness:handoff` IS the handoff command, not "another
+    # slash command": a bare namespaced invocation (no --invoked-directly) must
+    # resolve to chunked_routing. The default claim-fidelity scenario relies on this
+    # production path, so guard it at the planner layer, not only in the chunker fixture.
+    plan = run_plan("--repo-root", ".", "--invocation-text", "/charness:handoff")
+
+    assert plan["intent"]["resolved"] == "chunked_routing"
+    assert plan["next_action"]["kind"] == "run_chunked_routing"
+
+
 def test_handoff_plan_does_not_chunk_explicit_task_directive() -> None:
     plan = run_plan(
         "--repo-root",

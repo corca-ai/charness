@@ -231,8 +231,12 @@ _TASK_DIRECTIVE_PATTERNS = (
         r"(?<![A-Za-z0-9_])(?!docs/handoff\.md\b|handoff\.md\b)"
         r"(?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+\.[A-Za-z]{1,8}\b"
     ),
-    # Slash command other than /handoff.
-    r"/(?!handoff\b)[A-Za-z][A-Za-z0-9_-]*",
+    # Slash command other than /handoff. The negative lookaheads keep BOTH the
+    # bare `/handoff` and the plugin-namespaced `/<plugin>:handoff` (e.g.
+    # `/charness:handoff`) from matching here: those ARE the handoff command and
+    # must fall through to the mention / direct-invocation path so a bare
+    # namespaced invocation still fires the chunker.
+    r"/(?!handoff\b)(?![A-Za-z][A-Za-z0-9_-]*:handoff\b)[A-Za-z][A-Za-z0-9_-]*",
     # CLI flag.
     r"\s--[A-Za-z][A-Za-z0-9-]*\b",
 )

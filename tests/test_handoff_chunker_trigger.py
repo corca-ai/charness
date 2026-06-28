@@ -54,6 +54,8 @@ TRIGGER_FIXTURE = (
     (7, "pick up from handoff", "chunk", "Handoff pickup phrase, no other noun."),
     (8, "/handoff", "chunk", "Bare slash invocation of the handoff skill, no task (#249)."),
     (9, "/handoff fix #233", "no-chunk", "Skill invocation + explicit issue directive bypasses."),
+    (10, "/charness:handoff", "chunk", "Plugin-namespaced bare invocation IS the handoff command, not another slash command."),
+    (11, "/charness:handoff fix #233", "no-chunk", "Namespaced invocation + explicit issue directive bypasses."),
 )
 
 

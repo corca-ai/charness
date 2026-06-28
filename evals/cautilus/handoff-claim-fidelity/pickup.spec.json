@@ -1,0 +1,59 @@
+{
+  "_comment": "Claim-fidelity spec for the handoff skill, PICKUP scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`start the named workflow`) that bypasses the chunker plus pickup wording (`resume`), so `plan_handoff_run.py` deterministically resolves intent=pickup, whose planner _required_reads are workflow-trigger.md + continuation-sequence.md (the RCF). Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
+  "skillId": "handoff",
+  "scenarioId": "pickup",
+  "skillDisplayName": "handoff",
+  "evaluationId": "execution-handoff-pickup-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "handoff",
+  "prompt": "/charness:handoff resume the pinned task from the current state and start the named workflow before doing anything else",
+  "requiredCommandFragments": [
+    "workflow-trigger.md",
+    "continuation-sequence.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "chunked-routing.md",
+    "continuation-sequence.md",
+    "document-seams.md",
+    "spill-targets.md",
+    "state-selection.md",
+    "workflow-trigger.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "The planner reads this only when the adapter is missing, warned, or invalid; a healthy repo resolves the artifact location from the resolved adapter without opening the explainer doc.",
+      "trigger": "adapter is missing, warned, or invalid (planner _required_reads condition)"
+    },
+    "chunked-routing.md": {
+      "engagement": "on-demand",
+      "rationale": "A chunked_routing-intent planner read; not opened on a pickup run that carries a task directive.",
+      "trigger": "bare/namespaced invocation with no task directive — route the backlog before pickup"
+    },
+    "continuation-sequence.md": {
+      "engagement": "engage-always",
+      "rationale": "A pickup-intent UNCONDITIONAL planner required read: orders the next move as continuation (dependency sequencing) rather than replaying history."
+    },
+    "document-seams.md": {
+      "engagement": "on-demand",
+      "rationale": "Addresses portability when a repo already uses a checked-in handoff surface; the adapter handles the default path otherwise.",
+      "trigger": "repo has a pre-existing checked-in handoff surface that should override the default location"
+    },
+    "spill-targets.md": {
+      "engagement": "on-demand",
+      "rationale": "A refresh-intent planner read; not opened on a pickup run.",
+      "trigger": "refresh intent — spilling durable detail to its owning artifact instead of growing a diary"
+    },
+    "state-selection.md": {
+      "engagement": "on-demand",
+      "rationale": "A refresh/judge-intent planner read; not opened on a pickup run.",
+      "trigger": "refresh intent — keeping only state that changes the next action"
+    },
+    "workflow-trigger.md": {
+      "engagement": "engage-always",
+      "rationale": "A pickup-intent UNCONDITIONAL planner required read: a pickup starts from the named workflow trigger, so the run must consult this to invoke the next workflow directly rather than infer it."
+    }
+  }
+}
