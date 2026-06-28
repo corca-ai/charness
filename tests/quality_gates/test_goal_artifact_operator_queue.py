@@ -40,21 +40,37 @@ def test_operator_queue_created_swap_is_a_tested_behavior_change() -> None:
     assert oq.applies("Created: 2026-06-17\n") is True
 
 
+def _names_target_shape(reason: str) -> bool:
+    """A describe-first rejection names the satisfying forms, not just the violation."""
+    return "none — <reason>" in reason and "Decision:" in reason
+
+
 def test_operator_queue_blank_heading_body_fails() -> None:
     result = oq.check("Created: 2026-06-17\n\n## Operator Decision Queue")
 
-    assert result == {
-        "applies": True,
-        "ok": False,
-        "reason": "queue section is blank",
-    }
+    assert result["applies"] is True
+    assert result["ok"] is False
+    assert "blank" in result["reason"]
+    assert _names_target_shape(result["reason"])  # describe-first: shows the target
+
+
+def test_operator_queue_scaffold_body_fails_and_names_target() -> None:
+    scaffold = (
+        "Created: 2026-06-17\n\n## Operator Decision Queue\n\n"
+        "Record decisions, confirmations, credential actions, manual proof steps,\n"
+        "and external-boundary approvals.\n"
+    )
+    result = oq.check(scaffold)
+
+    assert result["applies"] is True
+    assert result["ok"] is False
+    assert "scaffold" in result["reason"]
+    assert _names_target_shape(result["reason"])  # describe-first: shows the target
 
 
 def test_operator_queue_unrecognized_body_fails_with_actionable_reason() -> None:
     result = oq.check("Created: 2026-06-17\n\n## Operator Decision Queue\n\nNeeds follow-up.\n")
 
-    assert result == {
-        "applies": True,
-        "ok": False,
-        "reason": "queue needs `none — <reason>` or at least one `Decision:` item",
-    }
+    assert result["applies"] is True
+    assert result["ok"] is False
+    assert _names_target_shape(result["reason"])  # describe-first: shows the target

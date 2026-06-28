@@ -26,6 +26,13 @@ STRUCTURED_BINS = frozenset({"act-before-ship", "bundle-anyway", "over-worry", "
 STRUCTURED_EVIDENCE = frozenset({"strong", "moderate", "weak", "contested"})
 STRUCTURED_ACTIONS = frozenset({"fix", "file-issue", "document", "defer"})
 STRUCTURED_REQUIRED_FIELDS = ("bin", "evidence", "ref", "action", "note")
+# Describe-first: rejections render this canonical entry form so an author fixes
+# the whole entry once instead of discovering each required field by serial
+# re-runs (the closeout-authoring-churn class).
+STRUCTURED_FINDING_FORM = (
+    "- <id> | bin: <bin> | evidence: <evidence> | ref: <path-or-line> | "
+    "action: <action> | note: <one-line rationale>"
+)
 REVIEWER_TIER_HEADING = "## Reviewer Tier Evidence"
 REVIEWER_TIER_REQUIRED_FIELDS = (
     "requested tier",
@@ -194,7 +201,9 @@ def validate_structured_findings(path: Path, text: str) -> None:
         for field in STRUCTURED_REQUIRED_FIELDS:
             if not finding.get(field):
                 raise ValidationError(
-                    f"{path}: `## Structured Findings` entry {finding_id} missing required field `{field}`"
+                    f"{path}: `## Structured Findings` entry {finding_id} missing required field `{field}`; "
+                    f"every entry needs all of {list(STRUCTURED_REQUIRED_FIELDS)} — target form: "
+                    f"`{STRUCTURED_FINDING_FORM}`"
                 )
         if "id" in finding:
             if finding["id"] in seen_ids:

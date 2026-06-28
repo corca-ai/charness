@@ -84,6 +84,26 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Routing step line — record it on ONE physical line so the floor reads the whole
+value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
+form below and replace `<skill>` with the find-skills-recommended skill; the
+placeholder is intentionally non-satisfying (the Gather / Release / Issue
+closeout floors are presence-only, so no stub is seeded for them — add their line
+per the bullets above when that boundary is crossed):
+
+- `Routing: find-skills -> <skill> — <why this phase needs it>`
+
+## Discuss Before Activation
+
+A Before-phase summary of any consequential activation decision — surfaced from
+the Non-Goals / Boundaries / Verification / Interview / Critique sections — that
+must be resolved before `/goal`. Required only when a trigger fires (live/prod
+proof, issue close/split, broad scope, irreversible side effect, or a
+proof-level non-claim); replace the `fill` line below, or delete it when none
+applies.
+
+- Discuss before activation: fill — replace with resolved, confirmed, or approved, then the consequential activation decision and how it was settled
+
 ## Slice Log
 
 ## Context Sources

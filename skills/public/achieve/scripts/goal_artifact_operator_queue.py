@@ -57,20 +57,30 @@ def _section_body(text: str, heading: str) -> str | None:
 def check(text: str) -> dict[str, Any]:
     if not applies(text):
         return {"applies": False, "ok": True, "reason": "pre-rule goal"}
+    # Describe-first rejections: every refusal names the target shape to author,
+    # not just the violation, so the author fixes once instead of reverse-
+    # engineering the parser. The satisfying forms are `none — <reason>` (a
+    # substantive empty-queue reason) or at least one `- Decision: <…>` item.
+    _TARGET = (
+        "record `none — <reason>` (a substantive reason, ~20+ chars) when the queue "
+        "is empty, or at least one `- Decision: <operator-only decision>` item"
+    )
     body = _section_body(text, SECTION)
     if body is None:
-        return {"applies": True, "ok": False, "reason": f"missing `## {SECTION}` section"}
+        return {"applies": True, "ok": False,
+                "reason": f"missing `## {SECTION}` section; add it and {_TARGET}"}
     if not body.strip():
-        return {"applies": True, "ok": False, "reason": "queue section is blank"}
+        return {"applies": True, "ok": False,
+                "reason": f"`## {SECTION}` is blank; {_TARGET}"}
     if _SCAFFOLD.search(body):
-        return {"applies": True, "ok": False, "reason": "queue still contains scaffold instructions"}
+        return {"applies": True, "ok": False,
+                "reason": ("`## " + SECTION + "` still contains the seeded scaffold prose "
+                           "(`Record decisions, confirmations, ...`); replace it before "
+                           "`complete` — " + _TARGET)}
     if _EMPTY.search(body) or _ITEM.search(body):
         return {"applies": True, "ok": True, "reason": "queue disposition recorded"}
-    return {
-        "applies": True,
-        "ok": False,
-        "reason": "queue needs `none — <reason>` or at least one `Decision:` item",
-    }
+    return {"applies": True, "ok": False,
+            "reason": f"`## {SECTION}` has content but no recognized disposition; {_TARGET}"}
 
 
 def apply_operator_queue_floor(report: dict[str, Any], text: str) -> None:

@@ -29,7 +29,7 @@ from pathlib import Path
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
-from goal_artifact_markdown import mask_fences  # noqa: E402
+from goal_artifact_markdown import join_soft_wraps, mask_fences  # noqa: E402
 
 # Permissive ``Created:`` line: tolerant of a leading ``>``/``-``/``*`` prefix,
 # surrounding whitespace, and case, so a blockquoted or list-item ``Created:`` line
@@ -104,3 +104,16 @@ def section_body(masked: str, heading: str) -> str | None:
     if span is None:
         return None
     return masked[span[0] : span[1]]
+
+
+def joined_section_body(text: str, heading: str) -> str | None:
+    """``section_body`` over fence-masked ``text`` with soft-wraps joined.
+
+    The step-line coordination floors match ``Routing:``/``Gather:``/``Release:``/
+    ``Issue closeout:`` per *physical* line; joining first means a correct value
+    whose tail wrapped onto a continuation line is read whole. This is the one
+    seam both step-line floors share, so the mask + slice + join lives here rather
+    than copied into each floor. ``None`` when the section is absent.
+    """
+    body = section_body(mask_fences(text), heading)
+    return join_soft_wraps(body) if body is not None else None

@@ -60,6 +60,7 @@ _CLOSE_KEYWORD = re.compile(
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
 from goal_artifact_floor_grammar import is_floor_in_scope  # noqa: E402
+from goal_artifact_floor_grammar import joined_section_body as _joined_section_body  # noqa: E402
 from goal_artifact_floor_grammar import parse_created_date as goal_created_date  # noqa: E402
 from goal_artifact_floor_grammar import section_body as _section_body  # noqa: E402
 from goal_artifact_floor_grammar import section_span as _section_span  # noqa: E402
@@ -174,7 +175,9 @@ def apply_coordination_floors(report: dict[str, Any], text: str) -> None:
     }
     if not in_scope:
         return
-    section = _section_body(_mask_fences(text), COORDINATION_SECTION)
+    # Joined section body so a `Gather:`/`Release:`/`Issue closeout:` step whose
+    # value wrapped onto a continuation line is matched, not false-rejected.
+    section = _joined_section_body(text, COORDINATION_SECTION)
     missing: list[dict[str, str]] = []
 
     g_trig = gather_triggered(text)

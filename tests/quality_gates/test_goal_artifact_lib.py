@@ -621,7 +621,10 @@ def test_new_complete_goal_requires_operator_queue_disposition(tmp_path: Path) -
     )
     report = gal.check_complete_evidence(tmp_path, text)
     assert report["ok"] is False
-    assert report["operator_decision_queue"]["reason"] == "queue still contains scaffold instructions"
+    reason = report["operator_decision_queue"]["reason"]
+    assert "scaffold" in reason
+    # describe-first: the rejection names the target shape, not only the violation
+    assert "none — <reason>" in reason and "Decision:" in reason
 
 
 def test_new_complete_goal_allows_empty_operator_queue_optout(tmp_path: Path) -> None:

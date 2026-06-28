@@ -105,6 +105,13 @@ def required_shape() -> str:
         f"    (the `none — <reason>` opt-out is >= {min_optout} chars; bare prose/memory is rejected).",
         f"  - `Structural follow-up:` (when the retro names transferable waste), one of: {dest_form}",
         "A blank/placeholder `## Auto-Retro` with a cited retro listing improvements is refused.",
+        "",
+        "`## Operator Decision Queue` — the seeded scaffold prose (`Record decisions,",
+        "confirmations, ...`) is intentionally non-satisfying and must be REPLACED before",
+        "`complete` with EITHER `none — <reason>` (a substantive reason; the floor needs",
+        "~20+ chars) when the queue is empty, OR at least one `- Decision: <operator-only",
+        "decision>` item. The scaffold is seeded so the obligation is visible — leaving it",
+        "verbatim is refused.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -196,6 +203,12 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
                  "triggered": bool(deleg.get("declared")) and mode in {"orchestrated", "orchestrator"},
                  "satisfied": not failures,
                  "detail": "; ".join(failures) if failures else "every delegated-proof item resolved (verified/skipped/issue #N)"})
+    oq = ev.get("operator_decision_queue", {})
+    rows.append({"floor": "operator_decision_queue", "label": "`## Operator Decision Queue` scaffold cleared",
+                 "triggered": bool(oq.get("applies")),
+                 "satisfied": bool(oq.get("ok", True)),
+                 "detail": oq.get("reason")
+                 or "replace the seeded scaffold prose with `none — <reason>` (~20+ chars) or a `- Decision:` item"})
     placeholders = ev.get("section_placeholders", [])
     rows.append({"floor": "section_placeholders", "label": "no seeded section placeholders remain (final-status floor)",
                  "triggered": bool(placeholders), "satisfied": not placeholders,

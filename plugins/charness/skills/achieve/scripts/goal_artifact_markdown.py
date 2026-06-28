@@ -26,6 +26,48 @@ def mask_fences(text: str) -> str:
 
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 
+# A line that *starts* a new block construct, so it is never a soft-wrap
+# continuation of the line above: a list item, a heading, a table row, or a
+# ``Label:`` field. The field label allows interior spaces (``Issue closeout:``,
+# ``Host log probe:``) but is length-bounded and must be followed by whitespace,
+# which biases toward NOT joining an ambiguous ``word word:`` tail — a missed
+# join only reverts to the old per-physical-line behavior, whereas an over-join
+# would leak an adjacent field's value into this one.
+_BLOCK_STARTER = re.compile(
+    r"^[ \t]*(?:[-*+] |#{1,6} |\||[A-Za-z][A-Za-z ./-]{0,40}:\s)",
+)
+
+
+def join_soft_wraps(section_body: str) -> str:
+    """Reflow markdown soft-wraps so a logically-single line is one physical line.
+
+    A non-blank line that does not itself begin a new block construct (list item,
+    heading, table row, or ``Label:`` field — see ``_BLOCK_STARTER``) is treated
+    as a soft-wrap continuation of the preceding line and joined with a space;
+    markdown renders the two that way. A blank line or a block-starter line
+    protects the line above it (a later continuation attaches to the blank line
+    instead), so a step line followed by a blank line or another field is never
+    merged.
+
+    The Created-gated coordination/phase-routing floors match their
+    ``Routing:``/``Gather:``/``Release:``/``Issue closeout:`` step lines per
+    *physical* line, so a correct value whose tail (or routed skill name) wrapped
+    onto the next physical line was false-rejected; joining first removes that.
+    Inseparable shadow (accepted, not a no-op): a step value whose required token
+    sits on an immediately-following continuation line is now also accepted —
+    nothing distinguishes a legitimate wrap from prose completion. Acceptable
+    because these are presence-only, self-authored, reversible closeout floors and
+    the content is substantively present across the wrap; it is not a path for a
+    wrong answer to reach an irreversible boundary.
+    """
+    out: list[str] = []
+    for raw in section_body.splitlines():
+        if out and raw.strip() and not _BLOCK_STARTER.match(raw):
+            out[-1] = f"{out[-1]} {raw.strip()}"
+        else:
+            out.append(raw)
+    return "\n".join(out)
+
 
 def slice_plan_data_row_count(text: str) -> int:
     """Count data rows in the first markdown table inside ``## Slice Plan``."""

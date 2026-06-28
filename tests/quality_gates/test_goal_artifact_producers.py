@@ -50,6 +50,19 @@ def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
     ):
         assert placeholder in achieve_text, placeholder
 
+    # Closeout-churn levers (see the achieve closeout floors): the scaffold seeds
+    # the correct authoring shape so a soft-wrapped / mislocated field is not
+    # discovered by serial floor rejection. The `Routing:` stub is one physical
+    # line and names `find-skills` + a non-satisfying `<skill>` placeholder; the
+    # `Discuss before activation:` summary is seeded in its correct location
+    # (before `## Slice Log`) with a non-satisfying starter.
+    assert "Routing: find-skills -> <skill>" in achieve_text
+    assert "Discuss before activation: fill" in achieve_text
+    # The summary must precede the real `## Slice Log` heading (not the Active
+    # Operating Frame's inline backticked mention) — that placement is what the
+    # discussion floor reads via its `\n## Slice Log` split.
+    assert achieve_text.index("Discuss before activation:") < achieve_text.index("\n## Slice Log\n")
+
     entry = handoff_lib.HandoffEntry(
         index=1,
         title="Continue a shaped goal",

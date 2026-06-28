@@ -40,6 +40,7 @@ _QUALITY_RECORD = re.compile(
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
 from goal_artifact_floor_grammar import is_floor_in_scope  # noqa: E402
+from goal_artifact_floor_grammar import joined_section_body as _joined_section_body  # noqa: E402
 from goal_artifact_floor_grammar import parse_created_date as goal_created_date  # noqa: E402
 from goal_artifact_floor_grammar import section_body as _section_body  # noqa: E402
 from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
@@ -110,7 +111,9 @@ def apply_phase_routing_floor(report: dict[str, Any], text: str) -> None:
     in_scope = phase_routing_floor_applies(text)
     triggers = phase_route_triggers(text) if in_scope else {}
     required_routes = [skill for skill, triggered in triggers.items() if triggered]
-    section = _section_body(_mask_fences(text), COORDINATION_SECTION)
+    # Joined section body so a `Routing:` value whose routed skill name wrapped
+    # onto a continuation physical line is matched, not false-rejected.
+    section = _joined_section_body(text, COORDINATION_SECTION)
     route_evidence: dict[str, str | None] = {}
     missing_routes: list[str] = []
     for skill in required_routes:

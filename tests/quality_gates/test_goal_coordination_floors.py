@@ -27,6 +27,7 @@ pr = _load("goal_artifact_phase_routing")
 ce = _load("goal_artifact_closeout_evidence")
 gal = _load("goal_artifact_lib")
 cga = _load("check_goal_artifact")
+md = _load("goal_artifact_markdown")
 
 
 # --- grandfather-by-Created-date -------------------------------------------
@@ -635,6 +636,61 @@ def test_phase_routing_satisfied_by_find_skills_skill_reference(tmp_path: Path) 
     )
     assert report["phase_routing_floor"]["required"] == ["impl", "quality"]
     assert report["phase_routing_floor"]["evidence"] == {"impl": "ref", "quality": "ref"}
+    assert "coordination_missing" not in report
+    assert report["ok"] is True
+
+
+# --- #406 wrapped-line robustness: join soft-wraps before matching ----------
+
+
+def test_join_soft_wraps_joins_continuation_but_not_adjacent_field() -> None:
+    joined = md.join_soft_wraps(
+        "Routing: find-skills recommends\nimpl and quality here\nGather: n/a — x\n"
+    )
+    # the bare continuation line merges into the Routing value...
+    assert "Routing: find-skills recommends impl and quality here" in joined
+    # ...but the following `Gather:` field line stays its own line (no over-join).
+    assert "\nGather: n/a — x" in joined
+
+
+def test_phase_routing_satisfied_when_routed_skill_wraps_to_continuation(tmp_path: Path) -> None:
+    # #406: a correct Routing value whose routed skill name wrapped onto the next
+    # physical line was false-rejected (the regex read only the first line).
+    created = "2026-06-04"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources=_LOCAL_SOURCE,
+            coordination="Routing: find-skills recommends\nimpl and quality for this slice\n",
+            release_work=(
+                "- What changed: updated goal helper behavior\n"
+                "- Targeted verification: pytest -q tests/quality_gates/test_goal_coordination_floors.py\n"
+            ),
+        ),
+    )
+    assert report["phase_routing_floor"]["required"] == ["impl", "quality"]
+    assert report["phase_routing_floor"]["evidence"] == {"impl": "ref", "quality": "ref"}
+    assert "coordination_missing" not in report
+    assert report["ok"] is True
+
+
+def test_gather_optout_satisfied_when_reason_wraps_to_continuation(tmp_path: Path) -> None:
+    # #406 sibling floor: a >=30-char opt-out reason wrapped across two physical
+    # lines was under-counted (only the first physical line was measured).
+    created = "2026-05-31"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources=_URL_SOURCE,
+            coordination="Gather: n/a — handled via\nthe issue skill instead of gather this run\n",
+        ),
+    )
+    assert report["gather_floor"]["triggered"] is True
+    assert report["gather_floor"]["satisfied"] is True
     assert "coordination_missing" not in report
     assert report["ok"] is True
 

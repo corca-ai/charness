@@ -92,6 +92,20 @@ the root instruction file but still apply to Charness maintenance work.
   The advisory never blocks on near-limit status; the existing length gate is
   the hard floor. Function limits remain AST-span based because `tokei` does not
   report function-level counts.
+- The per-surface aggregate preflights below —
+  [check_skill_surface_preflight.py](../../scripts/check_skill_surface_preflight.py)
+  for skills,
+  [check_doc_authoring_preflight.py](../../scripts/check_doc_authoring_preflight.py)
+  for docs, and
+  [check_artifact_surface_preflight.py](../../scripts/check_artifact_surface_preflight.py)
+  for artifacts (the `## Generated And Installed Surfaces` bullet) — are one guard
+  class, not three unrelated tips: **before editing ANY gated authoring surface,
+  run its matching aggregate preflight.** Each bundles that surface's real
+  validators into one pre-edit pass, so the surface passes its commit gates first
+  try instead of one serial rejection at a time. Running the preflight for one
+  authoring seam but skipping a sibling seam is the same
+  guard-propagation-across-seams miss the `quality` Behavior lens names — apply
+  the guard at every authoring crossing, not only the one you remember.
 - Before adding prose to `skills/public/*/SKILL.md`, `skills/support/*/SKILL.md`,
   or their `references/*.md`, run
   `python3 scripts/check_skill_surface_preflight.py --repo-root . --path <file> --preview-delta <planned-lines>`;
