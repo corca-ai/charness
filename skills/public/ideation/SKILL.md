@@ -64,13 +64,13 @@ incrementally instead of leaving the model only in chat.
 
 ## Workflow
 
-1. Establish a living concept model.
-   - restate what the user seems to want
-   - record verified facts, assumptions, open questions, and candidate direction
-   - keep updating this model as the conversation evolves because neither the
-     user nor the agent can rely on perfect working memory
-   - when the idea has durable structure, update the working document or docs at
-     each meaningful step
+1. Establish a living concept model per `references/concept-architecture.md`,
+   which owns the main loop and document discipline.
+   - restate the concept; separate verified facts, assumptions, open questions,
+     and candidate direction, and rewrite the model as it sharpens rather than
+     letting contradictory versions pile up
+   - when the idea has durable structure, keep the model in the working
+     document, not only in chat
 2. Choose the shaping lenses that fit.
    - `concept lens`: use Daniel Jackson-style discipline to test whether the
      concept is one clear user-facing unit with honest boundaries

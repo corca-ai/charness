@@ -1,11 +1,11 @@
 {
-  "_comment": "Claim-fidelity spec for the ideation skill: does a real `/charness:ideation` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: Concept-architecture.md is the only engage-always reference because it defines the main loop and document discipline that governs every representative ideation run, enabling the skill's core claim to 'maintain a living world model' across the conversation lifecycle.",
+  "_comment": "Claim-fidelity spec for the ideation skill: does a real `/charness:ideation` run honor its central claim — route to its references at the point of need? ideation has no planner that emits required reads; its only script, scaffold_ideation_artifact.py, emits the OUTPUT artifact skeleton (## World Model / Verified Facts / Assumptions / Structured Questions / Open Questions / Next Step), not the living-model discipline. The references are a lens MENU: eight of nine are genuinely conditional (on-demand with triggers — agent-human, decision-question, effectuation, sequence-discipline, spec-boundary, structured-questions, truth-and-edge, world-modeling), applied only when the concept fits. The single engage-always spine is concept-architecture.md: it owns the main loop, the document discipline, and the maintenance discipline (rewrite obsolete parts rather than letting contradictory versions accumulate) that governs every representative living-model run. This calibration shipped a skill fix in the same pass: SKILL.md Workflow step 1 previously INLINED concept-architecture.md's content without routing to it at the point of need (the doc was only linked in the bottom References list), so a representative run could establish the model from the inline bullets and never open the doc — an unsatisfiable RCF floor. Step 1 now routes 'per references/concept-architecture.md' (preview-and-defer, the same point-of-need routing hitl/hotl/quality use for their engage-always docs) and the redundant inline was trimmed, making the doc the single source and the floor real. The prompt is pinned to a representative under-shaped concept that drives the living-model loop (bare /charness:ideation stalls — ideation needs a concept target, lens 2); it is kept general so it forces the core concept-architecture.md spine rather than over-triggering a specific conditional lens. declaredReferences is the full skill-local set (coverage); shared refs (generative-sequence.md, success-criteria-review.md) and the cross-skill taxonomy-axis-checkpoint.md are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
   "skillId": "ideation",
   "skillDisplayName": "ideation",
   "evaluationId": "execution-ideation-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "ideation",
-  "prompt": "/charness:ideation",
+  "prompt": "/charness:ideation 아직 모양이 안 잡힌 새 워크플로 컨셉을 같이 다듬고 싶어 — 살아있는 concept model을 유지하면서 verified facts·assumptions·open questions·candidate direction을 분리하고, 대화가 진행되면 모델을 갱신해줘. 충분히 날카로워지면 ideation에 더 머물지 아니면 spec으로 넘길지까지 판단해줘.",
   "requiredCommandFragments": [
     "concept-architecture.md"
   ],
@@ -29,12 +29,12 @@
     },
     "concept-architecture.md": {
       "engagement": "engage-always",
-      "rationale": "The SKILL.md Workflow step 1 explicitly states 'Establish a living concept model' and the skill's core mechanism depends on maintaining a durable world model across turns; this reference defines the main loop and document discipline that governs the entire representative run.",
+      "rationale": "The single engage-always spine. Workflow step 1 now establishes the living concept model 'per references/concept-architecture.md', which owns the main loop and document discipline; the scaffold script emits only the artifact skeleton, so the discipline for maintaining the model (rewrite obsolete parts, do not let contradictory versions accumulate, keep a stable canonical home) lives only in this doc. A representative concept-shaping run that never opens it skipped its own routing. The same-pass skill fix trimmed the redundant inline and added the point-of-need route so this floor is real, not aspirational.",
       "claimRole": "living-model"
     },
     "decision-question-response.md": {
       "engagement": "on-demand",
-      "rationale": "SKILL.md lines 25-29 explicitly route this: 'When the user asks a design or workflow decision-shaped question... answer with a decision frame'; this is a conditional pattern match, not a universal part of the workflow.",
+      "rationale": "SKILL.md routes this conditionally: 'When the user asks a design or workflow decision-shaped question... answer with a decision frame'; this is a pattern match on the user's question shape, not a universal part of the workflow.",
       "trigger": "when the user asks a decision-shaped question such as 'what do we need to decide?', 'which direction is better?', or 'what decision issues are open?'"
     },
     "effectuation.md": {
@@ -49,12 +49,12 @@
     },
     "spec-boundary.md": {
       "engagement": "on-demand",
-      "rationale": "SKILL.md Workflow step 6 asks 'whether the work should stay in ideation, move to spec, or run a quick validation loop first'; this reference provides the handoff decision criteria.",
+      "rationale": "SKILL.md Workflow step 6 asks 'whether the work should stay in ideation, move to spec, or run a quick validation loop first'; this reference provides the handoff decision criteria, engaged only when the run reaches a ready-to-route boundary.",
       "trigger": "at the end of ideation when deciding whether the concept is ready to move to spec, stay in ideation, or run validation first"
     },
     "structured-questions.md": {
       "engagement": "on-demand",
-      "rationale": "SKILL.md lines 152-156 present this as opt-in: 'When the open questions are ones a downstream skill must act on, emit an opt-in Structured Questions section'; prose-only output stays valid.",
+      "rationale": "SKILL.md presents this as opt-in: 'When the open questions are ones a downstream skill must act on, emit an opt-in Structured Questions section'; prose-only output stays valid, so the machine-legible schema this doc owns is engaged only on that downstream-handoff trigger.",
       "trigger": "when the ideation concludes with open questions that downstream skills (spec or impl) must act on, requiring machine-legible handoff format"
     },
     "truth-and-edge.md": {
