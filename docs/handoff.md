@@ -5,7 +5,7 @@
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
 - **Pinned next task: resume the per-skill claim-fidelity fixture review at
-  `14/20 issue`.** Go skill-by-skill applying the calibration lenses
+  `15/20 narrative`.** Go skill-by-skill applying the calibration lenses
   (methodology spec `## Per-Skill RCF Calibration Lenses`, now 8) AND the
   `## Per-Skill Review Protocol` (also-fix-the-skill, north-star-over-prose-teeth,
   less-but-better) in order; carry edits through `impl`; run `critique` before each
@@ -13,12 +13,12 @@
 
 ## Current State
 
-- **Schema evolved + skills 1-13 calibrated, committed.** Validator accepts
+- **Schema evolved + skills 1-14 calibrated, committed.** Validator accepts
   objective-carrying prompts (`startswith /charness:<skill>`) and multi-scenario
   fixtures (`(skill_id, scenario_id)`; default `spec.json`, branch `<scenario>.spec.json`).
   Commits `427f473f`, `33c591dd`, `4e99ff03`, `4aba39c1`, `8fb030ca`, `43d066a9`,
-  `974dae10`, `168d856c`, `29260c26`, `bb715a88` (lens 8 + executable-subject re-pin).
-  24 scenario specs validate.
+  `974dae10`, `168d856c`, `29260c26`, `bb715a88` (lens 8 + executable-subject re-pin),
+  `88785945` (issue new/resolve split). 25 scenario specs validate.
 - **Method lives in the methodology spec + each commit, not inline.** The 8 calibration
   lenses and the Review Protocol are in the spec; per-skill rationale is in the commit
   messages — do not replay them here. Skill fixes shipped: find-skills `next_step`, gather
@@ -33,8 +33,8 @@
 
 ## Next Session
 
-1. **Resume at `14/20 issue`**, then registry order, **skipping setup (already
-   split), quality (the pilot), find-skills + gather + handoff + hitl + hotl + ideation + impl (done)**. For each skill: check
+1. **Resume at `15/20 narrative`**, then registry order, **skipping setup (already
+   split), quality (the pilot), find-skills + gather + handoff + hitl + hotl + ideation + impl + issue (done)**. For each skill: check
    for a deterministic planner / required-reads script FIRST (lens 1), then
    bare-vs-pin (2), script-resolved demotions (3), multi-fixture splits (4), and
    script-briefs-judge (7) — and run the Review Protocol (fix the skill, not just
