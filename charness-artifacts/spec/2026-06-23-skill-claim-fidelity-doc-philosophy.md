@@ -419,10 +419,10 @@ Scope held to the contract:
   `spec` was tightened during the closeout critique (13 -> 4) as the clearest
   over-claim.
 
-Not done here (still open): live `/charness:<skill>` captures + `cautilus
-evaluate observation` scoring per skill (ask-before-run, one at a time); the
-quality pilot's own #397 runtime-consultation proof (goal Slice 7); the
-support-skill tier.
+Not done here (still open): live `/charness:<skill>` captures +
+`cautilus evaluate observation` scoring per skill (ask-before-run, one at a
+time); the quality pilot's own #397 runtime-consultation proof (goal Slice 7);
+the support-skill tier.
 
 ## Schema Evolution (2026-06-28): Multi-Scenario Fixtures And Objective Prompts
 
@@ -506,6 +506,24 @@ The per-skill review sets each skill's `prompt` and `requiredCommandFragments`
    (public `spec` vs synced-support `specdown`) needs the doc-only tie-break; the
    `_comment` records that prompt↔RCF coupling so a softened prompt cannot
    silently turn the floor into a false-fail.
+8. **Executable subject, not just a shape (sharpens lens 2).** A pinned objective
+   must carry a CONCRETE subject the run can act on — a real target file, URL,
+   goal, decision, or applied behavior — not merely the SHAPE of the desired run.
+   "implement a small code slice" (no slice named), "close out an applied
+   behavior" (no behavior named), and "shape a new workflow concept" (no seed)
+   each describe a run's shape while giving the agent nothing to begin on, so a
+   representative run stalls at "what?" or invents its own subject — and the RCF
+   floor then rests on a run that never actually occurs. Read the prompt as a
+   literal first user turn and ask: can the agent act on a specific subject
+   without asking me what I mean? If not, it is a shape, not a probe. Pin a real,
+   repo-honest subject (hitl's `docs/operator-acceptance.md` is the model; impl on
+   a named real slice; hotl on a real repo guard/behavior; ideation on a concrete
+   seed). The live capture runs in the Cautilus sandbox, so a concrete subject
+   with side effects (impl mutating code, hotl probing a real behavior) is safe to
+   name — abstracting the subject to dodge side effects is a false economy that
+   silently breaks executability. This lens caught impl/hotl/ideation prompts that
+   passed an RCF-logic critique but were not executable (the critique brief had not
+   asked the executability question — now loop step 6 requires it).
 
 ## Per-Skill Review Protocol (2026-06-28)
 
@@ -539,5 +557,11 @@ The per-skill loop (the cadence to resume in the same key):
    mirror (`sync_root_plugin_manifests.py`); run the subtraction pass.
 5. Verify: `validate_claim_fidelity_specs.py` + the skill's own tests + dup-ratchet
    / skill-ergonomics gates.
-6. Fresh-eye `critique` in a different agent context; fold in only concrete fixes.
+6. Fresh-eye `critique` in a different agent context; the brief MUST include the
+   executable-subject check (lens 8: read the prompt as a literal first user turn —
+   can a real run begin on a concrete subject, or does it stall/invent?) alongside
+   the RCF-logic and matcher-gaming checks. Fold in only concrete fixes.
+   Exception, by design: a scenario lens 5 marks as needing a repo STATE the
+   prompt cannot fabricate (debug needs a real reproducible bug) is a recorded
+   non-claim, not an executability defect — its `_comment` carries the non-claim.
 7. Commit source + mirror + fixture + tests together; bump the handoff pointer.
