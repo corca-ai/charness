@@ -56,6 +56,38 @@ def _source_kind(url: str) -> str:
     return "local_or_unknown"
 
 
+# Provider-backed hosts gather_plan.py does NOT plan: it only routes public-URL
+# fetches, so a Slack/Google Workspace URL would otherwise be silently planned as a
+# generic public fetch. Detect them and hand the judge the right adviser instead of
+# a misroute (north star: the script briefs the judge). GitHub is excluded — it has
+# a real route (github-host-mediated); Notion/other private SaaS go through the
+# browser-mediated path, not a dedicated adviser.
+_GOOGLE_WORKSPACE_HOSTS = {
+    "docs.google.com",
+    "drive.google.com",
+    "sheets.google.com",
+    "slides.google.com",
+    "script.google.com",
+}
+
+
+def _provider_redirect(host: str | None) -> dict[str, str] | None:
+    host = (host or "").lower()
+    if host == "slack.com" or host.endswith(".slack.com"):
+        return {
+            "source": "slack",
+            "adviser": "$SKILL_DIR/scripts/advise_slack_path.py",
+            "why": "Slack threads are acquired through the gather-slack provider path, not the public-URL fetch route.",
+        }
+    if host in _GOOGLE_WORKSPACE_HOSTS:
+        return {
+            "source": "google_workspace",
+            "adviser": "$SKILL_DIR/scripts/advise_google_workspace_path.py",
+            "why": "Google Workspace content needs the workspace path adviser (host-mediated > operator export > browser-mediated), not the public-URL fetch route.",
+        }
+    return None
+
+
 def _exact_source_contract(route_id: str) -> dict[str, object]:
     contract = EXACT_SOURCE_CONTRACTS.get(route_id)
     if contract is None:
@@ -106,6 +138,22 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
         "--browser-mode",
         browser_mode,
     ]
+    redirect = _provider_redirect(route.get("normalized_host") or urlparse(url).hostname)
+    if redirect is not None:
+        next_action: dict[str, object] = {
+            "command": ["python3", redirect["adviser"], "--repo-root", str(repo_root)],
+            "redirect": (
+                f"{redirect['source']} source: gather_plan.py only plans the public-URL fetch route, so "
+                f"run the named adviser and follow the provider path instead. {redirect['why']}"
+            ),
+            "stop_when": "the adviser reports the provider mode is none/unavailable and no honest fallback (operator export or labeled browser-mediated) remains",
+        }
+    else:
+        next_action = {
+            "command": command,
+            "execute_flag": "--execute writes the durable record when acquisition succeeds, when a route explicitly allows an honest partial record, or when an exact-source route reaches a terminal identity verdict",
+            "stop_when": "typed blocked, unsupported, missing capability, or exact-source unavailable result answers the acquisition boundary",
+        }
     return {
         "schema_version": "gather.run_plan.v1",
         "ok": bool(adapter.get("valid")),
@@ -138,11 +186,8 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
                 "cost_tier": "route-dependent",
             },
         ],
-        "next_action": {
-            "command": command,
-            "execute_flag": "--execute writes the durable record when acquisition succeeds, when a route explicitly allows an honest partial record, or when an exact-source route reaches a terminal identity verdict",
-            "stop_when": "typed blocked, unsupported, missing capability, or exact-source unavailable result answers the acquisition boundary",
-        },
+        "source_owner": redirect,
+        "next_action": next_action,
     }
 
 

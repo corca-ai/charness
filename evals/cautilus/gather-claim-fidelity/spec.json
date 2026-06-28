@@ -1,15 +1,13 @@
 {
-  "_comment": "Claim-fidelity spec for the gather skill: does a real `/charness:gather` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These four references encode the core decision axes of gather: which source to prioritize, where artifacts live, which provider mode is available, and which acquisition path is strongest — all needed to make the central judgment in a representative run.",
+  "_comment": "Claim-fidelity spec for the gather skill: does a real `/charness:gather` run honor its own central claims — route to its references at the point of need, prefer the primary source, and stop honestly? gather ships a deterministic planner (`gather_plan.py`); per the methodology lens 1 the RCF is derived from the planner's UNCONDITIONAL `_required_reads`, which for any non-twitter/reddit route are exactly source-priority.md + capability-contract.md (the twitter/reddit branch adds support/web-fetch/routing-table.md, which is not a gather reference and so out of scope here). adapter-contract.md and gather-provider.md are NOT in the planner's required reads: the bootstrap resolves the adapter via resolve_adapter.py and the provider mode VALUE comes from that resolved adapter, so both are script-resolved (lens 3) — adapter-contract.md stays engage-always (adapter readiness is unconditional) but is not an RCF floor, and gather-provider.md is on-demand (only a provider-backed, non-public source consults it). The prompt is pinned to a representative public-URL gather (gather needs a source URL; bare /charness:gather cannot run the planner). The run reaches the planner/reference-routing phase before any network fetch, so the RCF is exercised even if the source is unreachable. Skill fix shipped with this calibration: gather_plan.py now detects provider-backed hosts (Slack/Google Workspace) and redirects the agent to the right adviser via source_owner + next_action instead of silently planning a generic public fetch (north star: the script briefs the judge). declaredReferences drives a coverage report. referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget.",
   "skillId": "gather",
   "skillDisplayName": "gather",
   "evaluationId": "execution-gather-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "gather",
-  "prompt": "/charness:gather",
+  "prompt": "/charness:gather https://docs.python.org/3/library/asyncio-task.html 페이지를 durable 지식 자산으로 수집해줘 — 나중 세션이 asyncio 태스크 스케줄링 API(create_task / gather / wait_for 타임아웃 / 취소 전파)를 다시 페치하지 않고 참조할 수 있도록, 1차 출처 식별을 지키면서.",
   "requiredCommandFragments": [
     "source-priority.md",
-    "adapter-contract.md",
-    "gather-provider.md",
     "capability-contract.md"
   ],
   "requiredSummaryFragments": [],
@@ -26,7 +24,7 @@
   "referenceEngagement": {
     "adapter-contract.md": {
       "engagement": "engage-always",
-      "rationale": "Bootstrap section requires resolving the adapter to determine artifact location and current-pointer mechanics before any acquisition begins."
+      "rationale": "The bootstrap resolves the adapter via resolve_adapter.py on every run (artifact location + current-pointer mechanics + provider modes), so adapter readiness is unconditional; but the run reads the resolved adapter output, not this explainer doc, so it is engage-always yet not an RCF floor (lens 3, script-resolved)."
     },
     "asset-refresh.md": {
       "engagement": "on-demand",
@@ -40,7 +38,7 @@
     },
     "capability-contract.md": {
       "engagement": "engage-always",
-      "rationale": "Defines the access-mode decision ladder (grant/binary/env/public/human-only/degraded), browser-mediated fallback rules, and durable artifact shape that govern step 3's acquisition path selection."
+      "rationale": "A planner UNCONDITIONAL required read: defines the access-mode decision ladder (grant/binary/env/public/human-only/degraded), trace preservation, and clean-stop behavior the run applies to interpret the acquisition result — judgment the script does not resolve."
     },
     "document-seams.md": {
       "engagement": "on-demand",
@@ -48,8 +46,9 @@
       "trigger": "When the repo has a custom checked-in knowledge surface (docs folder, references directory, knowledge folder) that should override the default artifact location."
     },
     "gather-provider.md": {
-      "engagement": "engage-always",
-      "rationale": "The planner and workflow must read this to determine which provider mode is available (direct-cli, host-mediated, or none) before attempting acquisition."
+      "engagement": "on-demand",
+      "rationale": "The provider mode VALUE is resolved from the adapter by the bootstrap; this doc explains the direct-cli/host-mediated/none modes and is consulted only when acquiring a provider-backed (non-public) source, not on a public-URL gather where no provider is involved.",
+      "trigger": "When the source needs a direct-cli or host-mediated provider mode (Slack, Notion, Google Workspace, or other provider-backed source) rather than a public URL."
     },
     "google-workspace-access.md": {
       "engagement": "on-demand",
@@ -58,7 +57,7 @@
     },
     "source-priority.md": {
       "engagement": "engage-always",
-      "rationale": "The skill's step 1 explicitly routes to source priority rules to identify which source to gather from and prefer primary sources over derivatives."
+      "rationale": "A planner UNCONDITIONAL required read and the skill's step 1: identify which source to gather from, keep primary-source identity explicit, and do not widen into search or substitute a derivative — judgment the script does not resolve."
     }
   }
 }

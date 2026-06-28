@@ -90,6 +90,36 @@ def test_gather_plan_prefers_reddit_feed_route(tmp_path) -> None:
     assert any(read["path"] == "../../support/web-fetch/references/routing-table.md" for read in payload["required_reads"])
 
 
+def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
+    # north star: a Slack/Google Workspace URL is provider-backed, so the planner
+    # must hand the judge the right adviser instead of silently planning a generic
+    # public fetch. GitHub/public URLs keep the public-fetch next_action.
+    slack = run_script(
+        PLAN, "--repo-root", str(tmp_path), "--url", "https://acme.slack.com/archives/C0/p1700000000000000"
+    )
+    assert slack.returncode == 0, slack.stderr
+    slack_payload = json.loads(slack.stdout)
+    assert slack_payload["source_owner"]["source"] == "slack"
+    assert slack_payload["source_owner"]["adviser"] == "$SKILL_DIR/scripts/advise_slack_path.py"
+    assert slack_payload["next_action"]["command"][1] == "$SKILL_DIR/scripts/advise_slack_path.py"
+    assert "redirect" in slack_payload["next_action"]
+
+    gdoc = run_script(
+        PLAN, "--repo-root", str(tmp_path), "--url", "https://docs.google.com/document/d/abc/edit"
+    )
+    assert gdoc.returncode == 0, gdoc.stderr
+    gdoc_payload = json.loads(gdoc.stdout)
+    assert gdoc_payload["source_owner"]["source"] == "google_workspace"
+    assert gdoc_payload["next_action"]["command"][1] == "$SKILL_DIR/scripts/advise_google_workspace_path.py"
+
+    public = run_script(
+        PLAN, "--repo-root", str(tmp_path), "--url", "https://docs.python.org/3/library/json.html"
+    )
+    public_payload = json.loads(public.stdout)
+    assert public_payload["source_owner"] is None
+    assert public_payload["next_action"]["command"][1] == "$SKILL_DIR/scripts/gather_public_url.py"
+
+
 def test_gather_plan_resolves_support_route_in_exported_plugin_layout(tmp_path: Path) -> None:
     user_repo = tmp_path / "user_repo"
     user_repo.mkdir()
