@@ -1,14 +1,15 @@
 {
-  "_comment": "Claim-fidelity spec for the critique skill, AUTONOMOUS scenario (default fixture): does a bare `/charness:critique` run honor its own routing? critique is a self-activator — with no pending artifact it does NOT ask first but follows references/autonomous-trigger.md to infer a bounded target from repo state (SKILL.md 42-45; Bootstrap: 'For no-argument slash-command use, run the autonomous trigger scan first'). The deterministic RCF proves only that the run FOLLOWED its path: autonomous-trigger.md (it ran the inference scan = it engaged repo state to pick a target) and counterweight-triage.md (it triaged concerns into the four bins, step 5). Which of the five target references opens is NON-DETERMINISTIC (depends on what the scan infers is pending), so each stays on-demand and is not hard-matched — pinning a specific target here would be matcher theater. The QUALITY of the inference (did it read the right change surface, pick a sensible target) is the Cautilus recommendation / LLM-judge signal scored at live capture, not a deterministic fragment (methodology two-signal model). The pinned-target counterpart is decision.spec.json. thresholds omitted until a first baseline capture sets a runtime budget.",
+  "_comment": "Claim-fidelity spec for the critique skill, DECISION scenario: does a `/charness:critique` run with a pinned decision premortem honor its own routing? The prompt supplies a concrete decision lock-in, so the Target Selection table routes 'decision premortem' -> references/premortem-decision.md UNCONDITIONALLY (SKILL.md Target Selection), and step 5 always triages via counterweight-triage.md. Both RCF refs are therefore deterministic here (no autonomous inference, no non-determinism), so this is the fixture where the deterministic teeth carry the weight — the complement to the autonomous default fixture, where the Cautilus recommendation / LLM-judge signal carries the inference-quality weight. autonomous-trigger.md is on-demand here because a target is supplied (no scan). thresholds omitted until a first baseline capture sets a runtime budget.",
   "skillId": "critique",
   "skillDisplayName": "critique",
-  "evaluationId": "execution-critique-claim-fidelity",
+  "scenarioId": "decision",
+  "evaluationId": "execution-critique-decision-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "critique",
-  "prompt": "/charness:critique",
+  "prompt": "/charness:critique  '모든 claim-fidelity 픽스처 prompt를 한국어로 작성한다' 결정을 lock-in 전에 decision premortem으로 비평해줘",
   "requiredCommandFragments": [
-    "autonomous-trigger.md",
-    "counterweight-triage.md"
+    "counterweight-triage.md",
+    "premortem-decision.md"
   ],
   "requiredSummaryFragments": [],
   "declaredReferences": [
@@ -37,9 +38,9 @@
       "trigger": "when understanding the anchor lineup, selecting contrasting angles, or reviewing angle weighting for non-standard change surfaces"
     },
     "autonomous-trigger.md": {
-      "engagement": "engage-always",
-      "rationale": "In the autonomous (no-argument) scenario the run MUST scan repo state to infer a bounded target: SKILL.md routes 'follow references/autonomous-trigger.md' and the Bootstrap mandates the autonomous-trigger scan for no-argument slash-command use, so a bare run that skips it did not follow its own self-activation path.",
-      "claimRole": "autonomous-inference"
+      "engagement": "on-demand",
+      "rationale": "Scans repo state to infer a bounded target when the caller has not supplied one; in this scenario a decision target is supplied, so the autonomous scan does not fire.",
+      "trigger": "when critique is invoked with no pending-change artifact, diff summary, PR, spec, or release note supplied"
     },
     "cadence.md": {
       "engagement": "on-demand",
@@ -48,7 +49,7 @@
     },
     "code-critique.md": {
       "engagement": "on-demand",
-      "rationale": "Routes to this target reference only when change type is code/diff; shapes angle distribution and counterweight bins for code review.",
+      "rationale": "Routes to this target reference only when change type is code/diff; this scenario pins a decision, not code.",
       "trigger": "when the pending change is concrete code under review (code critique, PR critique, commit critique, pre-merge review)"
     },
     "confirmed-input-over-anchoring.md": {
@@ -58,31 +59,32 @@
     },
     "counterweight-triage.md": {
       "engagement": "engage-always",
-      "rationale": "Every representative run triages concerns into the four bins (Act Before Ship, Bundle Anyway, Over-Worry, Valid but Defer) using this reference (Workflow step 5)."
+      "rationale": "Every representative run triages concerns into the four bins (Act Before Ship, Bundle Anyway, Over-Worry, Valid but Defer) using this reference (Workflow step 5).",
+      "claimRole": "counterweight-triage"
     },
     "premortem-decision.md": {
-      "engagement": "on-demand",
-      "rationale": "Routes to this target reference only when change type is a decision; shapes angle distribution and counterweight bins for that specific change class.",
-      "trigger": "when the pending change is a decision lock-in without committed code, release, or rename (decision premortem, design lock-in, workflow contract change)"
+      "engagement": "engage-always",
+      "rationale": "The prompt pins a decision premortem, so the Target Selection table routes here unconditionally; this target reference owns the angle distribution, counterweight bins, and output shape for a decision lock-in.",
+      "claimRole": "decision-target"
     },
     "prepare-packet.md": {
       "engagement": "on-demand",
       "rationale": "Conditional mechanism fired by adapter configuration; when adapter declares sections, bootstrap runs the prepare runner before spawning reviewers.",
-      "trigger": "when the repo's .agents/critique-adapter.yaml declares ≥1 packet_sections entry, preparing a deterministic packet for fresh-eye reviewers"
+      "trigger": "when the repo's .agents/critique-adapter.yaml declares >=1 packet_sections entry, preparing a deterministic packet for fresh-eye reviewers"
     },
     "release-critique.md": {
       "engagement": "on-demand",
-      "rationale": "Routes to this target reference only when change type is release; shapes angle distribution, counterweight bins, and surface-lock inventory for release lock-in.",
+      "rationale": "Routes to this target reference only when change type is release; this scenario pins a decision, not a release.",
       "trigger": "when the pending change is a release surface about to commit (release critique, pre-release review, before cutting tag or bumping version)"
     },
     "rename-critique.md": {
       "engagement": "on-demand",
-      "rationale": "Routes to this target reference only when change type is rename/deletion; shapes angle distribution, counterweight bins, and first-reader probe for rename lock-in.",
+      "rationale": "Routes to this target reference only when change type is rename/deletion; this scenario pins a decision, not a rename.",
       "trigger": "when the pending change moves, renames, or removes a named concept across multiple sites (rename critique, deletion review, skill/directory/module rename)"
     },
     "spec-critique.md": {
       "engagement": "on-demand",
-      "rationale": "Routes to this target reference only when change type is spec/design; shapes angle distribution, counterweight bins, and coherence checks for spec lock-in.",
+      "rationale": "Routes to this target reference only when change type is spec/design; this scenario pins a decision lock-in, not a spec contract gating implementation.",
       "trigger": "when the pending change is a spec or design contract about to gate implementation (spec critique, spec premortem, pre-impl review)"
     }
   }

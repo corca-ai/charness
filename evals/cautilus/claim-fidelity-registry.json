@@ -25,7 +25,13 @@
     {
       "skill_id": "critique",
       "spec_path": "evals/cautilus/critique-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
+      "fan_out_fit": "yes — critique has two representative runs: the bare/autonomous self-activation path (this default fixture; deterministic RCF proves the path was followed, inference quality is the Cautilus-recommendation signal) and a pinned-target path (decision.spec.json)."
+    },
+    {
+      "skill_id": "critique",
+      "scenario_id": "decision",
+      "spec_path": "evals/cautilus/critique-claim-fidelity/decision.spec.json",
+      "fan_out_fit": "yes — pinned decision premortem makes premortem-decision.md unconditional, so the deterministic teeth (counterweight-triage + premortem-decision) carry the weight here, complementing the autonomous fixture."
     },
     {
       "skill_id": "debug",

@@ -1,13 +1,12 @@
 {
-  "_comment": "Claim-fidelity spec for the announcement skill: does a real `/charness:announcement` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: The Workflow routes through adapter-contract.md at bootstrap (step 2) to resolve message shape and delivery policy, and through draft-shape.md at step 4-5 to enforce audience tone and public-body reframing before drafting; both govern the core judgment in every representative run.",
+  "_comment": "Claim-fidelity spec for the announcement skill: does a real `/charness:announcement` run honor its own central claims, above all that it routes to its references at the point of need? The prompt pins a draft-only chat update so the run reaches the drafting/public-body phase without branching into delivery (which would otherwise stall on the step-1 draft-vs-deliver question and pull in delivery-seams.md). declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: draft-shape.md is the one hard matcher — step 4 says 'steer wording per references/draft-shape.md' and step 5 runs the public-body pass through it, an explicit point-of-need route a drafting run cannot skip. adapter-contract.md stays engage-always in the classification but is DEMOTED from RCF: the runtime resolves the adapter via resolve_adapter.py (reading the resolved YAML) and applies the step-4 policy enumeration inline, so a run with a present adapter need not open the human-facing contract explainer .md. This is the recurring 'script-resolved contract doc' shape (cf. achieve coordination.md): engage-always classification, not an unconditional always-open. Confirm/tighten at first live capture.",
   "skillId": "announcement",
   "skillDisplayName": "announcement",
   "evaluationId": "execution-announcement-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "announcement",
-  "prompt": "/charness:announcement",
+  "prompt": "/charness:announcement  최근 변경사항을 팀 채팅용 업데이트로 draft만 해줘 (배포 X)",
   "requiredCommandFragments": [
-    "adapter-contract.md",
     "draft-shape.md"
   ],
   "requiredSummaryFragments": [],
