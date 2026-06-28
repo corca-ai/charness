@@ -6,36 +6,26 @@
   runs chunked routing over handoff + open issues.
 - **Pinned next task: resume the per-skill claim-fidelity fixture review at
   `14/20 issue`.** Go skill-by-skill applying the calibration lenses
-  (methodology spec `## Per-Skill RCF Calibration Lenses`, now 7) AND the
+  (methodology spec `## Per-Skill RCF Calibration Lenses`, now 8) AND the
   `## Per-Skill Review Protocol` (also-fix-the-skill, north-star-over-prose-teeth,
   less-but-better) in order; carry edits through `impl`; run `critique` before each
   commit.
 
 ## Current State
 
-- **Schema evolved + skills 1-12 calibrated, committed.** Validator accepts
+- **Schema evolved + skills 1-13 calibrated, committed.** Validator accepts
   objective-carrying prompts (`startswith /charness:<skill>`) and multi-scenario
-  fixtures per skill (`(skill_id, scenario_id)`; default `spec.json`, branch
-  `<scenario>.spec.json`). Commits `427f473f` (schema+achieve+setup), `33c591dd`
-  (announcement/create-cli/create-skill/critique/debug), `4e99ff03` (find-skills),
-  `4aba39c1` (gather), `8fb030ca` (handoff), `43d066a9` (hitl), `974dae10` (hotl),
-  `168d856c` (ideation), `29260c26` (impl). 24 scenario specs validate.
-- **Method + lessons live in the methodology spec, not inline.** See the spec's
-  `## Per-Skill RCF Calibration Lenses` (now 7: lens 1 planner-ground-truth caught
-  debug, gather, AND handoff RCF inverted/over-broad vs their planners; lens 7
-  script-briefs-judge) and `## Per-Skill Review Protocol`. Skill fixes shipped with
-  the fixtures: find-skills `next_step`, gather provider-host redirect, and handoff's
-  chunker bug (plugin-namespaced `/charness:handoff` was bypassing chunked routing) —
-  each critique-checked. handoff also split into 3 intent scenarios (lens 4). hitl and
-  hotl were fixture-only (no planner; RCF via script-resolution): hitl → single
-  chunk-contract.md; hotl demoted adapter-contract.md (resolve_adapter.py-resolved, same
-  as hitl) → RCF [proof-rules.md, ledger-and-dispositions.md] + bare→pinned closeout (lens 2).
-  ideation shipped a skill fix: SKILL.md step 1 claimed concept-architecture.md as the
-  engage-always spine but inlined it without a point-of-need route (unsatisfiable floor) →
-  now routes 'per references/concept-architecture.md' + trimmed redundant inline (lens 7).
-  impl was fixture-only: over-broad RCF 5 → 1 (verification-ladder.md, the one doc whose
-  Lint Gate vocab + completion-report categories the closeout requires); the other four
-  stay engage-always-not-RCF (claimRole skill-inlined-context — SKILL.md inlines their gist).
+  fixtures (`(skill_id, scenario_id)`; default `spec.json`, branch `<scenario>.spec.json`).
+  Commits `427f473f`, `33c591dd`, `4e99ff03`, `4aba39c1`, `8fb030ca`, `43d066a9`,
+  `974dae10`, `168d856c`, `29260c26`, `bb715a88` (lens 8 + executable-subject re-pin).
+  24 scenario specs validate.
+- **Method lives in the methodology spec + each commit, not inline.** The 8 calibration
+  lenses and the Review Protocol are in the spec; per-skill rationale is in the commit
+  messages — do not replay them here. Skill fixes shipped: find-skills `next_step`, gather
+  provider-host redirect, handoff chunker bug, ideation point-of-need route; hitl/hotl/impl
+  were fixture-only. lens 8 (executable-subject) + the loop-step-6 critique check landed
+  after the operator caught impl/hotl/ideation prompts carrying a run SHAPE with no concrete
+  subject; debug stays a deliberate lens-5 capture-context non-claim.
 - **CEAL portability deleak done** (`007b6b0f`): `ceal` -> generic `acme` across
   the live portable surface; only 6 protected files retain `ceal` (domain-blind
   guard, `slack.ceal-dev` examples, frozen logs). Broader ceal-dev consumer-name
