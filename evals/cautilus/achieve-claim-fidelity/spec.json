@@ -1,15 +1,14 @@
 {
-  "_comment": "Claim-fidelity spec for the achieve skill: does a real `/charness:achieve` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These three references form the core contract: lifecycle.md governs the three-phase workflow and activation readiness (the central claim), goal-artifact.md defines the artifact shape and validation contract, and coordination.md establishes the find-skills routing and skill boundaries that are seeded into every active run.",
+  "_comment": "Claim-fidelity spec for the achieve skill: does a real `/charness:achieve` run honor its own central claims, above all that it routes to its references at the point of need? The prompt carries a representative multi-slice objective because achieve is a goal operator, not a task runner (SKILL.md guardrails): a bare `/charness:achieve` with no objective stalls at the interview and opens nothing. declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the narrow subset the SKILL.md explicitly routes to at the point of need — if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: the Workflow co-routes lifecycle.md (three-phase contract + activation readiness) and goal-artifact.md (artifact shape + save/validate contract) as 'the full contract' at the point of shaping, so a faithful shaping run opens both. coordination.md stays engage-always in the classification but is demoted from RCF: a minimal Before-phase draft can write the required `## Coordination Cues` section from the SKILL.md inline Coordination text + find-skills without opening the reference, so it is not an unconditional always-open. Confirm/tighten at first live capture.",
   "skillId": "achieve",
   "skillDisplayName": "achieve",
   "evaluationId": "execution-achieve-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "achieve",
-  "prompt": "/charness:achieve",
+  "prompt": "/charness:achieve  모든 repo 스크립트에 일관된 --json 출력 모드를 공유 헬퍼와 테스트로 추가하는 목표를 잡아줘",
   "requiredCommandFragments": [
     "lifecycle.md",
-    "goal-artifact.md",
-    "coordination.md"
+    "goal-artifact.md"
   ],
   "requiredSummaryFragments": [],
   "declaredReferences": [

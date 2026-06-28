@@ -1,13 +1,14 @@
 {
-  "_comment": "Claim-fidelity spec for the setup skill: does a real `/charness:setup` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: A representative greenfield run must consult these three core decision lenses: greenfield-flow for repo mode detection and minimum questions, agent-docs-policy for host instruction surface normalization, and default-surfaces for the scaffold definitions used in steps 1, 2, and 4 of the workflow.",
+  "_comment": "Claim-fidelity spec for the setup skill, NORMALIZATION scenario: does a real `/charness:setup` run on a partially-initialized repo honor its own routing? setup branches on detected repo mode (SKILL.md steps 1, 78-83) and greenfield-flow vs normalization-flow are mutually exclusive — so each branch is its own fixture, not one fixture that requires both (the prior single-fixture spec listed greenfield-flow.md in RCF, which a partial-repo run could never open). This is the in-repo-capturable branch: a mature repo (charness itself) detects PARTIAL/NORMALIZE, never greenfield. The prompt asks for a FULL normalization (not the narrow host-docs-only path in step 2) so steps 2 and 4 both run, making agent-docs-policy.md and default-surfaces.md unconditional. requiredCommandFragments rationale: a full normalization run must consult normalization-flow.md (repo-mode decision rules, step 1 partial path), agent-docs-policy.md (host instruction surface, step 2), and default-surfaces.md (the surface set realigned in step 4). Note: agent-docs-policy.md and default-surfaces.md are engage-always FOR THIS SCENARIO'S PROMPT — naming all four surfaces and asking for a full normalization forecloses the narrow host-docs-only sub-path (SKILL.md step 2, lines 88-93) that would otherwise skip step 4; a narrower normalization request would make them on-demand. Tighten at first live capture. thresholds omitted until a first baseline capture sets a runtime budget.",
   "skillId": "setup",
   "skillDisplayName": "setup",
-  "evaluationId": "execution-setup-claim-fidelity",
+  "scenarioId": "normalization",
+  "evaluationId": "execution-setup-normalization-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "setup",
-  "prompt": "/charness:setup",
+  "prompt": "/charness:setup  normalize this repo's full operating surface (README, AGENTS, roadmap, operator-acceptance) and realign any drifted boundaries",
   "requiredCommandFragments": [
-    "greenfield-flow.md",
+    "normalization-flow.md",
     "agent-docs-policy.md",
     "default-surfaces.md"
   ],
@@ -26,7 +27,8 @@
   "referenceEngagement": {
     "agent-docs-policy.md": {
       "engagement": "engage-always",
-      "rationale": "This reference owns the explicit repo-level host policy (AGENTS.md and CLAUDE.md normalization) that step 2 requires for stabilizing the host-facing instruction surface first."
+      "rationale": "This reference owns the explicit repo-level host policy (AGENTS.md and CLAUDE.md normalization) that step 2 requires for stabilizing the host-facing instruction surface first.",
+      "claimRole": "host-policy"
     },
     "bootstrap-seams.md": {
       "engagement": "on-demand",
@@ -35,7 +37,8 @@
     },
     "default-surfaces.md": {
       "engagement": "engage-always",
-      "rationale": "This reference defines all default operating surfaces (README, AGENTS, Roadmap, Operator Acceptance) that step 4 uses to scaffold or realign the basic durable surfaces."
+      "rationale": "This reference defines all default operating surfaces (README, AGENTS, Roadmap, Operator Acceptance) that step 4 realigns during a full normalization.",
+      "claimRole": "surface-set"
     },
     "github-actions-defaults.md": {
       "engagement": "on-demand",
@@ -43,9 +46,9 @@
       "trigger": "repo scaffolds or normalizes GitHub-hosted workflows and needs current documented majors for first-party JavaScript actions."
     },
     "greenfield-flow.md": {
-      "engagement": "engage-always",
-      "rationale": "In a greenfield representative run, this reference defines the minimum questions and expected surfaces that shape repo mode detection and initial surface scaffolding in step 1.",
-      "claimRole": "greenfield-path"
+      "engagement": "on-demand",
+      "rationale": "In the normalization scenario the repo already has a durable operating surface, so the greenfield scaffolding path is not taken; it is consulted only if mode detection reclassifies the repo as greenfield.",
+      "trigger": "repo mode detection finds little or no durable operating surface (GREENFIELD) rather than a partially-initialized one."
     },
     "normalization-flow.md": {
       "engagement": "engage-always",

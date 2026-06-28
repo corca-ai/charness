@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "description": "Per-skill Cautilus claim-fidelity specs: does a real /charness:<skill> run honor its own reference-routing claims. See charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md.",
+  "description": "Cautilus claim-fidelity specs: does a real /charness:<skill> run honor its own reference-routing claims. A skill may register multiple scenario fixtures (default scenario at spec.json; named branches like setup greenfield/normalization at <scenario>.spec.json with a scenario_id). See charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md.",
   "specs": [
     {
       "skill_id": "achieve",
@@ -94,8 +94,15 @@
     },
     {
       "skill_id": "setup",
-      "spec_path": "evals/cautilus/setup-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
+      "scenario_id": "greenfield",
+      "spec_path": "evals/cautilus/setup-claim-fidelity/greenfield.spec.json",
+      "fan_out_fit": "yes — setup branches greenfield vs normalization on detected repo mode (mutually exclusive flows), so each branch is its own claim-fidelity scenario rather than one over-broad fixture."
+    },
+    {
+      "skill_id": "setup",
+      "scenario_id": "normalization",
+      "spec_path": "evals/cautilus/setup-claim-fidelity/normalization.spec.json",
+      "fan_out_fit": "yes — normalization is the in-repo-capturable branch (a mature repo like charness detects PARTIAL/NORMALIZE, never greenfield); the greenfield branch needs a fresh-repo sandbox to capture."
     },
     {
       "skill_id": "spec",

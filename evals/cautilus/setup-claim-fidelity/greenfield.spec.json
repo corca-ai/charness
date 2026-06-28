@@ -1,0 +1,74 @@
+{
+  "_comment": "Claim-fidelity spec for the setup skill, GREENFIELD scenario: does a real `/charness:setup` run on a brand-new repo honor its own routing? setup branches on detected repo mode (SKILL.md steps 1, 78-83) and greenfield-flow vs normalization-flow are mutually exclusive, so this is the greenfield-branch fixture. CAPTURE CONTEXT (non-claim): this scenario is NOT capturable inside the mature charness repo — running `/charness:setup` here detects PARTIAL/NORMALIZE and never reaches greenfield-flow.md. A live capture requires running the slash command in a fresh/empty repo sandbox; until then this fixture is a static classification, not a captured run. requiredCommandFragments rationale: a greenfield run must consult greenfield-flow.md (minimum questions + expected surfaces, step 1 greenfield path), agent-docs-policy.md (host instruction surface created from scratch, step 2), and default-surfaces.md (the surface set scaffolded in step 4). thresholds omitted until a first baseline capture sets a runtime budget.",
+  "skillId": "setup",
+  "skillDisplayName": "setup",
+  "scenarioId": "greenfield",
+  "evaluationId": "execution-setup-greenfield-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "setup",
+  "prompt": "/charness:setup  bootstrap the initial operating surface for this brand-new empty repository from minimal ideation",
+  "requiredCommandFragments": [
+    "greenfield-flow.md",
+    "agent-docs-policy.md",
+    "default-surfaces.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "agent-docs-policy.md",
+    "bootstrap-seams.md",
+    "default-surfaces.md",
+    "github-actions-defaults.md",
+    "greenfield-flow.md",
+    "normalization-flow.md",
+    "operator-acceptance-synthesis.md",
+    "probe-surface.md",
+    "retro-memory-seam.md"
+  ],
+  "referenceEngagement": {
+    "agent-docs-policy.md": {
+      "engagement": "engage-always",
+      "rationale": "This reference owns the explicit repo-level host policy (AGENTS.md and CLAUDE.md normalization) that step 2 requires for stabilizing the host-facing instruction surface first, including the both-missing create-and-symlink case a greenfield repo hits.",
+      "claimRole": "host-policy"
+    },
+    "bootstrap-seams.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference covers optional adapter, policy, or runtime seams that setup may seed only when the repo explicitly uses those Charness features.",
+      "trigger": "repo uses optional Charness seams beyond default surfaces (worktree, T-events, usage episodes, bounded review delegation, skill routing, artifact policy, announcement workflows)."
+    },
+    "default-surfaces.md": {
+      "engagement": "engage-always",
+      "rationale": "This reference defines all default operating surfaces (README, AGENTS, Roadmap, Operator Acceptance) that step 4 uses to scaffold the basic durable surfaces for a greenfield repo.",
+      "claimRole": "surface-set"
+    },
+    "github-actions-defaults.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference provides specific GitHub Actions version guidance only when the representative run detects a repo using GitHub-hosted workflows; repos without Actions do not consult it.",
+      "trigger": "repo scaffolds or normalizes GitHub-hosted workflows and needs current documented majors for first-party JavaScript actions."
+    },
+    "greenfield-flow.md": {
+      "engagement": "engage-always",
+      "rationale": "In a greenfield representative run, this reference defines the minimum questions and expected surfaces that shape repo mode detection and initial surface scaffolding in step 1.",
+      "claimRole": "greenfield-path"
+    },
+    "normalization-flow.md": {
+      "engagement": "on-demand",
+      "rationale": "In the greenfield scenario no prior durable surface exists to realign, so the normalization path is not taken; it is consulted only if mode detection reclassifies the repo as partially initialized.",
+      "trigger": "repo mode detection finds some existing surface (PARTIAL/NORMALIZE) rather than a greenfield repo."
+    },
+    "operator-acceptance-synthesis.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference describes a synthesis approach for operator-acceptance.md when the repo already has functional checks to derive from, not for the default template scaffolding a greenfield repo needs.",
+      "trigger": "mature repo already has real functional checks and wants to derive operator-acceptance.md from existing command and takeover surface instead of inventing a parallel ritual."
+    },
+    "probe-surface.md": {
+      "engagement": "on-demand",
+      "rationale": "This narrow reference answers how to bootstrap a probe surface when the repo exposes an installable surface, which does not appear in every representative run.",
+      "trigger": "repo ships an installable CLI, plugin, package, or agent-facing integration surface that needs a small explicit probe surface for install and health semantics."
+    },
+    "retro-memory-seam.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference provides opt-in seeding of retro adapter and lessons file only when the repo explicitly requests durable retro memory, not a default surface.",
+      "trigger": "repo wants durable retrospective pickup between sessions instead of chat-only retros."
+    }
+  }
+}

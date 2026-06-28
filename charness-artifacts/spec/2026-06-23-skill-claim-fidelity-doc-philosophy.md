@@ -423,3 +423,40 @@ Not done here (still open): live `/charness:<skill>` captures + `cautilus
 evaluate observation` scoring per skill (ask-before-run, one at a time); the
 quality pilot's own #397 runtime-consultation proof (goal Slice 7); the
 support-skill tier.
+
+## Schema Evolution (2026-06-28): Multi-Scenario Fixtures And Objective Prompts
+
+The per-skill fixture review (handoff pinned task) surfaced two calibration
+facts the original "one bare-prompt fixture per skill" schema could not express,
+so the validator (`scripts/claim_fidelity_lib.py`) evolved:
+
+1. **Objective-carrying prompts.** A bare `/charness:<skill>` only reaches the
+   reference-routing phase for skills with a well-defined no-argument default
+   action (`quality` reviews this repo; `find-skills` self-activates). A skill
+   that needs a subject — an objective, a target file, a source URL — stalls at
+   the "what do you want?" interview and opens zero references, failing every
+   `requiredCommandFragments` for the wrong reason. The `prompt` field is now
+   validated as `startswith /charness:<skill>` at a word boundary, so a
+   representative objective can follow. The matcher inspects only file-open
+   events, so prompt wording does not affect scoring; the prompt's only job is to
+   drive the run into the routing phase.
+
+2. **Multiple scenario fixtures per skill.** A skill whose workflow branches into
+   mutually-exclusive flows cannot be honored by one fixture. `setup` detects
+   greenfield versus partial/normalize, and `greenfield-flow.md` /
+   `normalization-flow.md` are mutually exclusive (SKILL.md steps 1, 68-69), so
+   the prior single fixture — which listed `greenfield-flow.md` in RCF — false-
+   failed any partial-repo run. The registry now keys uniqueness on
+   `(skill_id, scenario_id)`: the default scenario keeps `spec.json` and
+   `execution-<skill>-claim-fidelity`; a named branch lives at
+   `<scenario>.spec.json` with a matching `scenarioId` field and
+   `execution-<skill>-<scenario>-claim-fidelity`. Coverage still requires every
+   public skill to register at least one scenario. Splitting is applied only
+   where the workflow genuinely branches — first application: `setup` →
+   `greenfield` + `normalization`; single-flow skills stay one default fixture.
+
+Capture-context non-claim: some scenarios need a repo STATE the prompt cannot
+force (setup's greenfield branch needs a fresh-repo sandbox; a mature repo such
+as charness always detects normalize). That constraint is recorded in the
+scenario spec's `_comment` as an explicit non-claim, not a new validated field
+(Floor-Addition Restraint: no new required schema for a one-off note).

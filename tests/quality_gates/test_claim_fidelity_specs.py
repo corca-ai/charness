@@ -24,28 +24,45 @@ def _od(rationale: str = "narrow", trigger: str = "when X") -> dict[str, str]:
     return {"engagement": "on-demand", "rationale": rationale, "trigger": trigger}
 
 
-def _scaffold_skill(repo: Path, skill: str, engagement: dict[str, dict], *, declared=None, rcf=None) -> dict:
-    """Write a public skill + its references (one file per engagement key) + spec.json. Returns a registry entry."""
+def _scaffold_skill(
+    repo: Path,
+    skill: str,
+    engagement: dict[str, dict],
+    *,
+    declared=None,
+    rcf=None,
+    scenario: str = "default",
+    prompt: str | None = None,
+) -> dict:
+    """Write a public skill + its references (one file per engagement key) + spec. Returns a registry entry."""
     declared = list(engagement) if declared is None else declared
     _write(repo / "skills" / "public" / skill / "SKILL.md", f"# {skill}\n")
     for ref in engagement:  # on-disk truth is the engagement keys
         _write(repo / "skills" / "public" / skill / "references" / ref, f"# {ref}\n")
     if rcf is None:
         rcf = [ref for ref, value in engagement.items() if value["engagement"] == "engage-always"][:1]
+    is_default = scenario == "default"
+    filename = "spec.json" if is_default else f"{scenario}.spec.json"
+    evaluation_id = f"execution-{skill}-claim-fidelity" if is_default else f"execution-{skill}-{scenario}-claim-fidelity"
     spec = {
         "skillId": skill,
         "skillDisplayName": skill,
-        "evaluationId": f"execution-{skill}-claim-fidelity",
+        "evaluationId": evaluation_id,
         "targetKind": "public_skill",
         "targetId": skill,
-        "prompt": f"/charness:{skill}",
+        "prompt": prompt if prompt is not None else f"/charness:{skill}",
         "requiredCommandFragments": rcf,
         "requiredSummaryFragments": [],
         "declaredReferences": declared,
         "referenceEngagement": engagement,
     }
-    _write(repo / "evals" / "cautilus" / f"{skill}-claim-fidelity" / "spec.json", json.dumps(spec) + "\n")
-    return {"skill_id": skill, "spec_path": f"evals/cautilus/{skill}-claim-fidelity/spec.json", "fan_out_fit": "no"}
+    if not is_default:
+        spec["scenarioId"] = scenario
+    _write(repo / "evals" / "cautilus" / f"{skill}-claim-fidelity" / filename, json.dumps(spec) + "\n")
+    entry = {"skill_id": skill, "spec_path": f"evals/cautilus/{skill}-claim-fidelity/{filename}", "fan_out_fit": "no"}
+    if not is_default:
+        entry["scenario_id"] = scenario
+    return entry
 
 
 def _write_registry(repo: Path, entries: list[dict]) -> None:
@@ -106,4 +123,38 @@ def test_uncovered_public_skill_rejected(tmp_path: Path) -> None:
     _scaffold_skill(tmp_path, "beta", {"c.md": _ea()}, rcf=["c.md"])
     _write_registry(tmp_path, [alpha])
     with pytest.raises(ValidationError, match="missing a claim-fidelity spec.*beta"):
+        validate_registry(tmp_path)
+
+
+def test_multiple_scenarios_per_skill_pass(tmp_path: Path) -> None:
+    # A skill may ship branch-specific fixtures whose RCF is mutually exclusive
+    # (setup's greenfield-flow vs normalization-flow): one fixture per branch.
+    refs = {"a.md": _ea(), "b.md": _ea(), "c.md": _od()}
+    green = _scaffold_skill(tmp_path, "setupish", dict(refs), rcf=["a.md"], scenario="greenfield")
+    norm = _scaffold_skill(tmp_path, "setupish", dict(refs), rcf=["b.md"], scenario="normalization")
+    _write_registry(tmp_path, [green, norm])
+    result = validate_registry(tmp_path)
+    pairs = {(entry["skill_id"], entry["scenario_id"]) for entry in result["results"]}
+    assert pairs == {("setupish", "greenfield"), ("setupish", "normalization")}
+
+
+def test_duplicate_scenario_rejected(tmp_path: Path) -> None:
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=["a.md"], scenario="greenfield")
+    _write_registry(tmp_path, [entry, dict(entry)])
+    with pytest.raises(ValidationError, match="duplicate skill/scenario .*alpha.*greenfield"):
+        validate_registry(tmp_path)
+
+
+def test_prompt_with_objective_passes(tmp_path: Path) -> None:
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=["a.md"], prompt="/charness:alpha add a --json mode")
+    _write_registry(tmp_path, [entry])
+    assert validate_registry(tmp_path)["results"][0]["skill_id"] == "alpha"
+
+
+def test_prompt_wrong_skill_rejected(tmp_path: Path) -> None:
+    # `/charness:alphabet` shares a prefix with skill `alpha` but is a different
+    # command: the word-boundary guard must reject it.
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=["a.md"], prompt="/charness:alphabet do X")
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="`prompt` must be"):
         validate_registry(tmp_path)

@@ -25,10 +25,11 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     result = validate_registry(repo_root)
     results = result["results"]
-    print(f"Validated claim-fidelity registry {REGISTRY_PATH} ({len(results)} per-skill specs).")
+    print(f"Validated claim-fidelity registry {REGISTRY_PATH} ({len(results)} scenario specs).")
     for entry in results:
+        label = entry["skill_id"] if entry["scenario_id"] == "default" else f"{entry['skill_id']}/{entry['scenario_id']}"
         if entry["undeclared_on_disk"]:
-            print(f"  advisory: `{entry['skill_id']}` has on-disk references not declared: {entry['undeclared_on_disk']}")
+            print(f"  advisory: `{label}` has on-disk references not declared: {entry['undeclared_on_disk']}")
     return 0
 
 
