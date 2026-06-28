@@ -5,7 +5,7 @@
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
 - **Pinned next task: resume the per-skill claim-fidelity fixture review at
-  `12/20 ideation`.** Go skill-by-skill applying the calibration lenses
+  `13/20 impl`.** Go skill-by-skill applying the calibration lenses
   (methodology spec `## Per-Skill RCF Calibration Lenses`, now 7) AND the
   `## Per-Skill Review Protocol` (also-fix-the-skill, north-star-over-prose-teeth,
   less-but-better) in order; carry edits through `impl`; run `critique` before each
@@ -13,13 +13,13 @@
 
 ## Current State
 
-- **Schema evolved + skills 1-11 calibrated, committed.** Validator accepts
+- **Schema evolved + skills 1-12 calibrated, committed.** Validator accepts
   objective-carrying prompts (`startswith /charness:<skill>`) and multi-scenario
   fixtures per skill (`(skill_id, scenario_id)`; default `spec.json`, branch
   `<scenario>.spec.json`). Commits `427f473f` (schema+achieve+setup), `33c591dd`
   (announcement/create-cli/create-skill/critique/debug), `4e99ff03` (find-skills),
-  `4aba39c1` (gather), `8fb030ca` (handoff), `43d066a9` (hitl), `974dae10` (hotl).
-  24 scenario specs validate.
+  `4aba39c1` (gather), `8fb030ca` (handoff), `43d066a9` (hitl), `974dae10` (hotl),
+  `168d856c` (ideation). 24 scenario specs validate.
 - **Method + lessons live in the methodology spec, not inline.** See the spec's
   `## Per-Skill RCF Calibration Lenses` (now 7: lens 1 planner-ground-truth caught
   debug, gather, AND handoff RCF inverted/over-broad vs their planners; lens 7
@@ -30,6 +30,9 @@
   hotl were fixture-only (no planner; RCF via script-resolution): hitl → single
   chunk-contract.md; hotl demoted adapter-contract.md (resolve_adapter.py-resolved, same
   as hitl) → RCF [proof-rules.md, ledger-and-dispositions.md] + bare→pinned closeout (lens 2).
+  ideation shipped a skill fix: SKILL.md step 1 claimed concept-architecture.md as the
+  engage-always spine but inlined it without a point-of-need route (unsatisfiable floor) →
+  now routes 'per references/concept-architecture.md' + trimmed redundant inline (lens 7).
 - **CEAL portability deleak done** (`007b6b0f`): `ceal` -> generic `acme` across
   the live portable surface; only 6 protected files retain `ceal` (domain-blind
   guard, `slack.ceal-dev` examples, frozen logs). Broader ceal-dev consumer-name
@@ -37,8 +40,8 @@
 
 ## Next Session
 
-1. **Resume at `12/20 ideation`**, then registry order, **skipping setup (already
-   split), quality (the pilot), find-skills + gather + handoff + hitl + hotl (done)**. For each skill: check
+1. **Resume at `13/20 impl`**, then registry order, **skipping setup (already
+   split), quality (the pilot), find-skills + gather + handoff + hitl + hotl + ideation (done)**. For each skill: check
    for a deterministic planner / required-reads script FIRST (lens 1), then
    bare-vs-pin (2), script-resolved demotions (3), multi-fixture splits (4), and
    script-briefs-judge (7) — and run the Review Protocol (fix the skill, not just
