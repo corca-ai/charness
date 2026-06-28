@@ -5,7 +5,7 @@
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
 - **Pinned next task: resume the per-skill claim-fidelity fixture review at
-  `13/20 impl`.** Go skill-by-skill applying the calibration lenses
+  `14/20 issue`.** Go skill-by-skill applying the calibration lenses
   (methodology spec `## Per-Skill RCF Calibration Lenses`, now 7) AND the
   `## Per-Skill Review Protocol` (also-fix-the-skill, north-star-over-prose-teeth,
   less-but-better) in order; carry edits through `impl`; run `critique` before each
@@ -19,7 +19,7 @@
   `<scenario>.spec.json`). Commits `427f473f` (schema+achieve+setup), `33c591dd`
   (announcement/create-cli/create-skill/critique/debug), `4e99ff03` (find-skills),
   `4aba39c1` (gather), `8fb030ca` (handoff), `43d066a9` (hitl), `974dae10` (hotl),
-  `168d856c` (ideation). 24 scenario specs validate.
+  `168d856c` (ideation), `29260c26` (impl). 24 scenario specs validate.
 - **Method + lessons live in the methodology spec, not inline.** See the spec's
   `## Per-Skill RCF Calibration Lenses` (now 7: lens 1 planner-ground-truth caught
   debug, gather, AND handoff RCF inverted/over-broad vs their planners; lens 7
@@ -33,6 +33,9 @@
   ideation shipped a skill fix: SKILL.md step 1 claimed concept-architecture.md as the
   engage-always spine but inlined it without a point-of-need route (unsatisfiable floor) →
   now routes 'per references/concept-architecture.md' + trimmed redundant inline (lens 7).
+  impl was fixture-only: over-broad RCF 5 → 1 (verification-ladder.md, the one doc whose
+  Lint Gate vocab + completion-report categories the closeout requires); the other four
+  stay engage-always-not-RCF (claimRole skill-inlined-context — SKILL.md inlines their gist).
 - **CEAL portability deleak done** (`007b6b0f`): `ceal` -> generic `acme` across
   the live portable surface; only 6 protected files retain `ceal` (domain-blind
   guard, `slack.ceal-dev` examples, frozen logs). Broader ceal-dev consumer-name
@@ -40,8 +43,8 @@
 
 ## Next Session
 
-1. **Resume at `13/20 impl`**, then registry order, **skipping setup (already
-   split), quality (the pilot), find-skills + gather + handoff + hitl + hotl + ideation (done)**. For each skill: check
+1. **Resume at `14/20 issue`**, then registry order, **skipping setup (already
+   split), quality (the pilot), find-skills + gather + handoff + hitl + hotl + ideation + impl (done)**. For each skill: check
    for a deterministic planner / required-reads script FIRST (lens 1), then
    bare-vs-pin (2), script-resolved demotions (3), multi-fixture splits (4), and
    script-briefs-judge (7) — and run the Review Protocol (fix the skill, not just
