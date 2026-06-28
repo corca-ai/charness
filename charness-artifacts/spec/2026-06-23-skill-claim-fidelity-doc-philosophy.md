@@ -524,6 +524,21 @@ The per-skill review sets each skill's `prompt` and `requiredCommandFragments`
    silently breaks executability. This lens caught impl/hotl/ideation prompts that
    passed an RCF-logic critique but were not executable (the critique brief had not
    asked the executability question — now loop step 6 requires it).
+9. **Planner-absent is a shape to test, not a fixed input (the live-capture
+   lesson).** Lens 1 derives RCF from a planner "if the skill ships one," and the
+   loop's step 1 lets a planner-absent skill derive RCF from "the SKILL.md workflow
+   + script-resolution analysis." That silently calibrates against a SHAPE GAP:
+   when a skill's central claim routes to a doc through a PASSIVE prose pointer
+   (not a deterministic brief), a capable run skips the doc and the static fixture
+   freezes the miss as passing. Before accepting a planner-absent skill's shape as
+   ground truth, ask the also-ask-better-shape question: should this skill HAVE a
+   planner? If its central claim is a point-of-need doc route, yes — give it one
+   (matching the planner family), anchor RCF to the planner's UNCONDITIONAL
+   required_reads (lens 1), and the floor becomes real instead of frozen-gap.
+   retro is the worked example: its `expert-lens.md` floor FAILED the first live
+   capture (the prose pointer was skipped, the Engelbart lens missed); extracting
+   `plan_retro_run.py` flipped it failed→proven (see
+   `## Live-Capture Lesson — retro (2026-06-29)`).
 
 ## Per-Skill Review Protocol (2026-06-28)
 
@@ -547,8 +562,9 @@ A per-skill review is not fixture-only. Apply all three, every skill:
 The per-skill loop (the cadence to resume in the same key):
 
 1. Read the fixture + SKILL.md + the deterministic planner/scripts as ground truth
-   (`plan_<skill>_run.py` / `*_lib.py`); a skill with no planner derives RCF from
-   the SKILL.md workflow + script-resolution analysis.
+   (`plan_<skill>_run.py` / `*_lib.py`); a skill with no planner FIRST applies
+   lens 9 (is planner-absence a shape defect to fix?) before deriving RCF from the
+   SKILL.md workflow + script-resolution analysis.
 2. Apply the lenses; derive RCF from the planner's UNCONDITIONAL, non-script-resolved
    reads only (the worst outcome is a false-fail).
 3. Present findings + a recommendation to the operator; on a material fork
@@ -565,3 +581,31 @@ The per-skill loop (the cadence to resume in the same key):
    prompt cannot fabricate (debug needs a real reproducible bug) is a recorded
    non-claim, not an executability defect — its `_comment` carries the non-claim.
 7. Commit source + mirror + fixture + tests together; bump the handoff pointer.
+
+## Live-Capture Lesson — retro (2026-06-29)
+
+The first live capture of the shipped sweep (retro, the cleanest single-floor
+skill) FAILED its static floor: a real `/charness:retro` filled the mandatory
+counterfactual from inlined prose and never opened `expert-lens.md`, missing the
+Engelbart system-improving lens that was the on-the-nose fit for self-improvement
+work. Root cause: retro was left planner-absent by the 6/23-24 planner-first
+sweep, so its routing was a passive pointer; the static calibration (loop step 1,
+"SKILL.md workflow + script-resolution") froze that gap into the fixture as
+passing. Two methodology changes (incremental):
+
+1. **also-ask-better-shape (lens 9).** Calibration measured fidelity-to-current-
+   shape and never asked whether the skill should have a better shape. A planner-
+   absent skill whose central claim is a doc route is a shape defect to FIX (give
+   it a planner, anchor RCF to its required_reads), not a fixed input to calibrate
+   against.
+
+2. **live-capture-before-assert.** A statically-calibrated behavioral RCF floor is
+   a HYPOTHESIS, not a verified floor, until one live capture (ask-before-run, one
+   at a time) proves the representative run actually opens it. The 19 remaining
+   un-captured floors are provisional; a miss is a skill-shape signal (re-pin /
+   re-classify / give-it-a-planner), never a matcher to soften.
+
+Proof: `charness-artifacts/cautilus/retro-claim-fidelity-2026-06-29-recapture/`
+(candidate `passed` vs baseline `failed`, A/B via comparison prepare); fix in
+`167cad5c`. Next planner-absent target: `hitl` (named by the re-capture's own
+Sibling Search; rollout deferred to its own session).
