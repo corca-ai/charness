@@ -511,14 +511,33 @@ The per-skill review sets each skill's `prompt` and `requiredCommandFragments`
 
 A per-skill review is not fixture-only. Apply all three, every skill:
 
-- **Fix the skill's own defect too.** The fixture review surfaces real skill
-  defects (find-skills routed on a ranking without surfacing the interpretation
-  question); fix them in the same pass, carried through `impl`.
+- **Fix the skill's own defect too — but do not manufacture one.** The fixture
+  review surfaces real skill defects (find-skills routed on a ranking without
+  surfacing the interpretation question; handoff's `/charness:handoff` bypassing
+  its own chunker); fix those in the same pass, carried through `impl`. When the
+  skill is genuinely sound (gather, hitl), say so plainly and ship fixture-only —
+  the protocol is fix-the-defect, not invent-a-change.
 - **North star over prose teeth.** Prefer making a deterministic surface brief the
   judge (a script that suggests the next move / answers-before-routing) over a
   SKILL.md sentence that hopes the agent remembers — the script briefing is
   stronger and unskippable at runtime. Teeth only where a wrong answer escapes.
 - **Less but better.** Run a subtraction pass — delete now-redundant code/prose
   (the static SKILL.md pointer the script's `next_step` made redundant; the
-  `recommendation_interpretation` artifact leak the critique caught). One source
-  of truth per fact.
+  `recommendation_interpretation` artifact leak the critique caught; gather's dead
+  `urlparse` host fallback). One source of truth per fact.
+
+The per-skill loop (the cadence to resume in the same key):
+
+1. Read the fixture + SKILL.md + the deterministic planner/scripts as ground truth
+   (`plan_<skill>_run.py` / `*_lib.py`); a skill with no planner derives RCF from
+   the SKILL.md workflow + script-resolution analysis.
+2. Apply the lenses; derive RCF from the planner's UNCONDITIONAL, non-script-resolved
+   reads only (the worst outcome is a false-fail).
+3. Present findings + a recommendation to the operator; on a material fork
+   (multi-fixture split, production-behavior skill fix) confirm scope before editing.
+4. Edit the fixture + ship the skill fix if a real defect exists; sync the plugin
+   mirror (`sync_root_plugin_manifests.py`); run the subtraction pass.
+5. Verify: `validate_claim_fidelity_specs.py` + the skill's own tests + dup-ratchet
+   / skill-ergonomics gates.
+6. Fresh-eye `critique` in a different agent context; fold in only concrete fixes.
+7. Commit source + mirror + fixture + tests together; bump the handoff pointer.
