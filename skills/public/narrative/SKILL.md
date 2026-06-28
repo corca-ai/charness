@@ -127,7 +127,8 @@ git status --short
      durable docs instead of leaving that memory in chat or handoff only
    - for first-touch truth surfaces, run success criteria review with focuses:
      intended reader action, avoided misread, claim proof, durable next step
-6. Derive the brief second.
+6. Derive the brief second per `references/brief-shape.md`, which owns the
+   audience-neutral discipline and the what-to-avoid rules.
    - keep it audience-neutral by default
    - prefer one self-contained compression layer that `announcement` can later
      adapt for a concrete audience, language, tone, or channel

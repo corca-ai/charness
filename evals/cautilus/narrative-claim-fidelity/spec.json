@@ -1,13 +1,12 @@
 {
-  "_comment": "Claim-fidelity spec for the narrative skill: does a real `/charness:narrative` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: source-map.md defines the freshness checks and alignment rules that govern step 2's mapping of the truth surface, and brief-shape.md defines the rules for step 6's derivation of an audience-neutral brief; together they provide the core lenses for the skill's primary function of aligning source-of-truth documents and deriving a compressed brief skeleton.",
+  "_comment": "Claim-fidelity spec for the narrative skill: does a real `/charness:narrative` run honor its central claim — route to its references at the point of need? narrative has no planner that emits required reads; its bootstrap scripts resolve the adapter (resolve_adapter.py / review_adapter.py) and map the source surface (map_sources.py emits the source_documents set + git freshness). RCF is derived from the SKILL.md workflow plus script-resolution analysis (lens 3/7). Two of the three formerly-engage-always docs are script-resolved and so are engage-always but NOT RCF floors: adapter-contract.md (resolve_adapter.py / review_adapter.py resolve the adapter; the run reads the resolved adapter, not the explainer) and source-map.md (map_sources.py resolves the source-document set + freshness; the run reads the script's output, and the alignment rules are inlined in SKILL.md step 5) — claimRole script-resolved-context, the same shape as hotl's adapter-contract.md. The single engage-always floor is brief-shape.md: it owns the audience-neutral discipline and the what-to-avoid rules (do not bake in one audience/channel, do not dump repo paths / decision-ids / stage-labels, do not replace source docs) that no script resolves and the adapter's brief_template does not supply (the adapter owns only the ordered skeleton). This calibration shipped a skill fix in the same pass: SKILL.md step 6 previously INLINED the brief Core Rule without routing to brief-shape.md at the point of need (the doc was only in the bottom References list, while the on-demand docs landing-rewrite-loop / cross-repo-issue-shaping / scenario-blocks WERE routed at their steps) — an unsatisfiable floor, the same defect ideation had. Step 6 now reads 'per references/brief-shape.md', making the floor real. The prompt is pinned to a representative truth-surface alignment that derives a brief (bare /charness:narrative needs a narrative goal/target, lens 2 + lens 8); charness ships a narrative adapter (.agents/narrative-adapter.yaml with source_documents + brief_template), so the run does not block at the adapter seam and reaches step 6 where brief-shape.md is forced. The prompt names neither the reference file nor the what-to-avoid rules (ungameable: the matcher scores file-opens, not prompt wording). declaredReferences is the full skill-local set (coverage); shared refs (agent-assessment-invariant.md, closeout-discipline.md, success-criteria-review.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds omitted until a baseline capture sets a budget.",
   "skillId": "narrative",
   "skillDisplayName": "narrative",
   "evaluationId": "execution-narrative-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "narrative",
-  "prompt": "/charness:narrative",
+  "prompt": "/charness:narrative 이 repo의 source-of-truth 문서(README·docs/control-plane 등 어댑터가 선언한 truth surface)를 현재 스토리에 맞게 정렬하고, 모순·stale 가정을 surface한 뒤, announcement가 나중에 각색할 수 있는 audience-neutral brief skeleton을 도출해줘.",
   "requiredCommandFragments": [
-    "source-map.md",
     "brief-shape.md"
   ],
   "requiredSummaryFragments": [],
@@ -22,30 +21,33 @@
   "referenceEngagement": {
     "adapter-contract.md": {
       "engagement": "engage-always",
-      "rationale": "Step 2 explicitly requires reviewing adapter fitness and understanding the adapter contract structure before trusting the declared source and mutable documents."
+      "rationale": "Step 2 reviews adapter fitness on every run, but resolve_adapter.py and review_adapter.py resolve the adapter (source set, mutable documents, brief_template, block/warn findings) — the run reads the resolved adapter output, not this explainer doc, so it is engage-always yet not an RCF floor (lens 3, script-resolved).",
+      "claimRole": "script-resolved-context"
     },
     "brief-shape.md": {
       "engagement": "engage-always",
-      "rationale": "Defines the rules for deriving an audience-neutral brief skeleton in step 6, specifying what to avoid and how the brief relates to downstream announcement work."
+      "rationale": "The single engage-always floor. Workflow step 6 now derives the brief 'per references/brief-shape.md'; the doc owns the audience-neutral discipline and the what-to-avoid rules (do not dump repo paths / decision-ids / stage-labels, do not replace source docs) that no script resolves and the adapter's brief_template does not supply. A representative run that derives a brief and never opens it skipped its own routing; the same-pass skill fix added the point-of-need route so this floor is real.",
+      "claimRole": "brief-discipline"
     },
     "cross-repo-issue-shaping.md": {
       "engagement": "on-demand",
-      "rationale": "Step 4 routes to this reference only for cross-repo issues, ensuring the writing order keeps why-what-how honest instead of leading with implementation.",
+      "rationale": "SKILL.md step 4 routes to this reference only for cross-repo issues, ensuring the writing order keeps why-what-how honest instead of leading with implementation.",
       "trigger": "The work is shaped as a cross-repo issue, proposal, or durable note that will be handed to another repo rather than solved only inside the current one."
     },
     "landing-rewrite-loop.md": {
       "engagement": "on-demand",
-      "rationale": "Step 4 explicitly routes to this reference only when rewriting a high-leverage first-touch surface, providing the detailed loop for landing-page specific work.",
+      "rationale": "SKILL.md step 4 explicitly routes to this reference only when rewriting a high-leverage first-touch surface, providing the detailed loop for landing-page specific work.",
       "trigger": "The target is a high-leverage first-touch surface (README, landing page, operator doc) requiring the full loop of comparables, intent inventory, claim audit, and compression metrics."
     },
     "scenario-blocks.md": {
       "engagement": "on-demand",
-      "rationale": "Step 5 routes to this reference only when adding scenario blocks for products with multiple use-case paths, using the relevant subset of slot templates.",
+      "rationale": "SKILL.md step 5 routes to this reference only when adding scenario blocks for products with multiple use-case paths, using the relevant subset of slot templates.",
       "trigger": "The repo has multiple first-class use cases or the adapter declares scenario_surfaces that need to stay visible in durable docs."
     },
     "source-map.md": {
       "engagement": "engage-always",
-      "rationale": "Defines the freshness-check and alignment rules that govern step 2's core mapping of the current truth surface and resolution of contradictions."
+      "rationale": "Step 2 maps the truth surface on every run, but map_sources.py resolves the source-document set, dirty paths, and git freshness, and SKILL.md step 5 inlines the alignment rules (rewrite contradictions at source, one durable narrative) — the run reads the script's output. The one rule this doc uniquely holds that neither the script emits nor SKILL.md inlines is the freshness interpretation 'remote-ahead does not force a stop; stop when local truth cannot be trusted', which is load-bearing only in the narrow remote-ahead case (charness is current), so this stays engage-always yet not an RCF floor (lens 3, script-resolved).",
+      "claimRole": "script-resolved-context"
     }
   }
 }
