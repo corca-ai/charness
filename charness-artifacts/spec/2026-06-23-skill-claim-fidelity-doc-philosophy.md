@@ -607,5 +607,15 @@ passing. Two methodology changes (incremental):
 
 Proof: `charness-artifacts/cautilus/retro-claim-fidelity-2026-06-29-recapture/`
 (candidate `passed` vs baseline `failed`, A/B via comparison prepare); fix in
-`167cad5c`. Next planner-absent target: `hitl` (named by the re-capture's own
-Sibling Search; rollout deferred to its own session).
+`167cad5c`.
+
+Next: continue live captures on the provisional floors. Only 6 of 20 public
+skills ship a `plan_*.py` planner (debug/gather/handoff/issue/quality/release);
+the other 14 derive RCF via script-resolution, several with planner-EQUIVALENT
+briefing scripts (find-skills' `list_capabilities.py`, hitl's
+`check_review_state.py`). So lens 9 applies PER-SKILL only where a live capture
+reveals the passive-pointer shape — NOT a blanket "planner-ize every
+planner-absent skill." `hitl` is a flagged candidate (script-resolution-derived
+RCF `43d066a9`; named by the re-capture's Sibling Search), but because it already
+ships briefing scripts, confirm its shape by capture before assuming the retro
+defect repeats. Rollout deferred to its own session.
