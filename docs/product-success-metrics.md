@@ -9,10 +9,10 @@ closed decision record rather than an open synthesis item.
 
 Source note: both issues came from the 2026-05-20 Daily Scrum Slack thread
 `slack://C05J5LTFSCU/1778805288.184149`. Neither the 2026-05-24 session nor
-the 2026-06-13 baseline review could re-fetch that private source (`ceal`
+the 2026-06-13 baseline review could re-fetch that private source (`acme`
 unavailable on the deciding hosts; no Slack web URL usable by the checked-in
 gather-slack wrapper). At the baseline review the maintainer explicitly
-accepted the ceal-captured GitHub issue body as the working source for this
+accepted the acme-captured GitHub issue body as the working source for this
 decision. Non-claim: the original Slack thread was never re-read; if a future
 re-read surfaces intent the GitHub capture missed, the numeric-target decision
 is the surface to revisit. Runtime capture activation for consumer repos

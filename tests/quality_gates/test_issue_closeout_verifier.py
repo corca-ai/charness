@@ -280,15 +280,15 @@ def test_issue_verify_closeout_function_rejects_open_expected_state(tmp_path: Pa
 def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    log = tmp_path / "ceal-log.json"
-    fake = bin_dir / "ceal"
+    log = tmp_path / "acme-log.json"
+    fake = bin_dir / "acme"
     fake.write_text(
         "\n".join(
             [
                 "#!/usr/bin/env python3",
                 "import json, os, sys",
                 "from pathlib import Path",
-                "log = Path(os.environ['CEAL_LOG'])",
+                "log = Path(os.environ['ACME_LOG'])",
                 "entries = json.loads(log.read_text()) if log.exists() else []",
                 "entries.append(sys.argv[1:])",
                 "log.write_text(json.dumps(entries))",
@@ -300,7 +300,7 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
@@ -349,7 +349,7 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
         env={
             **os.environ,
             "PATH": f"{bin_dir}:/usr/bin:/bin",
-            "CEAL_LOG": str(log),
+            "ACME_LOG": str(log),
             "COMMENT_BODY": body_text,
         },
     )
@@ -363,7 +363,7 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
 
 
 def test_issue_verify_closeout_rejects_adapter_view_without_target_placeholders(tmp_path: Path) -> None:
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")

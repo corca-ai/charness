@@ -415,7 +415,7 @@ def test_recommend_for_task_surfaces_gather_slack_for_slack_urls() -> None:
 def test_recommend_for_task_surfaces_named_validation_integration(tmp_path: Path) -> None:
     _write_cautilus_integration(tmp_path)
 
-    task = "Use Cautilus to validate that Ceal Slack write requests choose the portable ceal slack CLI"
+    task = "Use Cautilus to validate that Acme Slack write requests choose the portable acme slack CLI"
     payload = _run_list_capabilities(tmp_path, "--recommend-for-task", task)
 
     assert payload["tool_recommendation_query"] == {

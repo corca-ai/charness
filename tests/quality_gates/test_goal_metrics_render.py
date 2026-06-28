@@ -76,7 +76,7 @@ def test_render_block_is_provider_safe_and_records_results_not_commands() -> Non
     assert "final-quality: PASS @ abc1234 (tree-clean)" in block
     # the renderer never emits provider CLI verification command strings
     lowered = block.lower()
-    for provider_token in ("gh issue", "gh pr", "ceal github", "gh auth"):
+    for provider_token in ("gh issue", "gh pr", "acme github", "gh auth"):
         assert provider_token not in lowered
 
 

@@ -70,7 +70,7 @@ for a direct CLI under a worker runtime.
 In maintainer-local repos the default `direct-cli` preserves authenticated
 `gh` plus Slack/Notion support paths. In worker-runtime hosts that
 gate provider access behind a host-mediated capability surface (such as
-`ceal github`), the adapter declares the relevant sources as
+`acme github`), the adapter declares the relevant sources as
 `host-mediated` (or `none`) and the public `gather` skill stops teaching
 agents to reach for a direct CLI or token. The same skill body works
 across both host modes without baking host-specific identifiers into
@@ -84,7 +84,7 @@ shape from the write-action backend slots used by other skills (`issue`'s
 `issue_backend` and `release`'s `release_backend`), which are
 `{id, binary, commands}` descriptors that name the executable and the
 commands the skill is allowed to invoke. The same host capability — for
-example `ceal github` — can be declared in both shapes without drifting
+example `acme github` — can be declared in both shapes without drifting
 because each slot answers a different question: gather asks "which read
 path is reachable for this source?", while issue/release ask "which
 binary and commands run the write action?". Do not collapse them into one

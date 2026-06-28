@@ -14,12 +14,12 @@ acceptance class (`reliability`, attachment delivery).
 
 ## Why it exists
 
-Filed from `corca-ai/ceal` closeout misses where honest prose non-claims still
+Filed from `corca-ai/acme` closeout misses where honest prose non-claims still
 carried a `Close #…`: a Slack multi-image closeout whose acceptance class was
 attachment delivery but whose reached proof was local deterministic adapter
 simulation, and a long-body closeout that recorded provider-observed write/read
-but only `normalized_matched` (not exact-body) verification. Ceal added a
-Ceal-specific guard; the **portable** gap is that a closeout flow can contain
+but only `normalized_matched` (not exact-body) verification. Acme added a
+Acme-specific guard; the **portable** gap is that a closeout flow can contain
 honest non-claims and still publish unless the workflow requires a
 machine-checkable acceptance/proof/disposition ledger.
 

@@ -11,7 +11,7 @@ produced them.
 Provider safety is structural, not a filter: this renderer only emits measured
 counts, aggregated activity-proxy family labels, and result attestations. It has
 no field that carries a provider CLI invocation, so a closeout built from it
-cannot re-advertise ``gh``/``ceal github``/etc. command strings.
+cannot re-advertise ``gh``/``acme github``/etc. command strings.
 """
 from __future__ import annotations
 

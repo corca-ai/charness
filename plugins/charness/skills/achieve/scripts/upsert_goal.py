@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
         description="Scaffold a new achieve goal artifact, or update only the status of an existing one."
     )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root that owns charness-artifacts/goals/")
-    parser.add_argument("--slug", required=True, help="Short kebab-case goal slug (e.g. ceal-184-push-confidence)")
+    parser.add_argument("--slug", required=True, help="Short kebab-case goal slug (e.g. acme-184-push-confidence)")
     parser.add_argument("--title", required=True, help="Human-readable goal title shown in the artifact heading")
     parser.add_argument("--date", default=date_cls.today().isoformat(), help="Goal date prefix YYYY-MM-DD (default: today)")
     parser.add_argument(

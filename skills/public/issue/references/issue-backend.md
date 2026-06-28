@@ -4,7 +4,7 @@ The `issue` skill calls one of two backend shapes:
 
 - the default `gh` backend (`github-gh` integration, authenticated CLI)
 - a host-mediated backend that exposes GitHub through a runtime capability
-  (e.g. `ceal github issue create -R <repo> ...`)
+  (e.g. `acme github issue create -R <repo> ...`)
 
 Backend selection is adapter-driven. The skill body never assumes a specific
 binary is on PATH.
@@ -16,8 +16,8 @@ Set `issue_backend` in `.agents/issue-adapter.yaml`:
 ```yaml
 version: 1
 issue_backend:
-  id: ceal-github
-  binary: ceal
+  id: acme-github
+  binary: acme
   commands:
     create:
       - github
@@ -244,7 +244,7 @@ Adapter-supplied templates substitute:
 - `{number}` — issue number
 - `{title}` — issue title
 - `{body_file}` — path to a file containing the body
-- `{reason}` — host-required reason text (Ceal-style audit reason)
+- `{reason}` — host-required reason text (Acme-style audit reason)
 - `{json_fields}` — comma-separated json field list for `view`
 
 The placeholder set is the tested contract: adding a new placeholder requires

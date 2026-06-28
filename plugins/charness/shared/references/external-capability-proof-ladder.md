@@ -71,7 +71,7 @@ Closeout phrasing example:
 External capability: github.issue
 - surface: yes (skill, help, integration manifest)
 - worker_queued: yes (preflight returns selected_backend)
-- host_decision: yes (gh auth status, ceal capability resolved)
+- host_decision: yes (gh auth status, acme capability resolved)
 - provider_roundtrip: not run (no test target repo configured)
 - agent_choice: not run (deferred to fresh-agent dogfood)
 ```

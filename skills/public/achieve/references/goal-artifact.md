@@ -125,24 +125,24 @@ content and avoid timestamp-only churn. Resolve `$SKILL_DIR` per
 ```bash
 # Scaffold a new goal (status draft), or update only the status of an existing one.
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
-  --slug ceal-184-push-confidence --title "Ceal 184 push confidence" \
+  --slug acme-184-push-confidence --title "Acme 184 push confidence" \
   --goal-body "Make the accumulated local commits safe to push."
 
 # Append one slice report to the Slice Log.
 # Use --test-pressure when the slice adds or expands tests, to carry a cheap
 # duplicate-pressure sample forward instead of rediscovering the debt at closeout.
 python3 "$SKILL_DIR/scripts/append_slice_log.py" --repo-root . \
-  --slug ceal-184-push-confidence --date 2026-05-26 --name "Inventory local risk" \
+  --slug acme-184-push-confidence --date 2026-05-26 --name "Inventory local risk" \
   --objective "Map the full unpushed surface" --verification "git diff --stat origin/main..HEAD" \
   --test-pressure "adjacent duplicates 23.2% vs 22% gate; +2 runtime tests this slice"
 
 # Flip status as the run progresses (draft -> active -> blocked/complete).
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
-  --slug ceal-184-push-confidence --title "Ceal 184 push confidence" --status active
+  --slug acme-184-push-confidence --title "Acme 184 push confidence" --status active
 
 # Check required sections, status, and activation line before completion.
 python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . \
-  --slug ceal-184-push-confidence --date 2026-05-26
+  --slug acme-184-push-confidence --date 2026-05-26
 ```
 
 `upsert_goal.py` never overwrites an existing artifact body; on a second call it
@@ -350,6 +350,6 @@ command. The portable contract is a result triple — `gate` (id), `outcome`
 (`PASS`/`FAIL`/…), and `state_ref` (a host-provable exact state such as a commit
 SHA with a clean tree) — rendered by
 `scripts/goal_metrics_render_lib.render_broad_gate_attestation`. The structure
-has no `command` field by design, so a host (e.g. Ceal) can attest its own
+has no `command` field by design, so a host (e.g. Acme) can attest its own
 exact-state gate without weakening pushed-state proof and without leaking the
 provider CLI invocation into staged docs.

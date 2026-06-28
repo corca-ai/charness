@@ -53,7 +53,7 @@ def test_inventory_cli_side_effect_probes_flags_missing_mutation_contract(tmp_pa
             {
                 "commands": [
                     {
-                        "command": "node ./bin/ceal apply",
+                        "command": "node ./bin/acme apply",
                         "mutating": True,
                         "positional_args": ["instance"],
                     }
@@ -88,19 +88,19 @@ def test_inventory_cli_side_effect_probes_accepts_complete_contract(tmp_path: Pa
             {
                 "commands": [
                     {
-                        "command": "node ./bin/ceal apply",
+                        "command": "node ./bin/acme apply",
                         "mutating": True,
                         "positional_args": ["instance"],
-                        "help_probe": "node ./bin/ceal apply --help",
+                        "help_probe": "node ./bin/acme apply --help",
                         "option_like_positional_probes": [
-                            "node ./bin/ceal apply --help",
-                            "node ./bin/ceal apply --not-an-instance",
+                            "node ./bin/acme apply --help",
+                            "node ./bin/acme apply --not-an-instance",
                         ],
-                        "dry_run_probe": "node ./bin/ceal apply --dry-run demo",
-                        "side_effect_watch_paths": ["~/.ceal", "/etc/systemd/system"],
+                        "dry_run_probe": "node ./bin/acme apply --dry-run demo",
+                        "side_effect_watch_paths": ["~/.acme", "/etc/systemd/system"],
                     },
                     {
-                        "command": "node ./bin/ceal version",
+                        "command": "node ./bin/acme version",
                         "mutating": False,
                     },
                 ]

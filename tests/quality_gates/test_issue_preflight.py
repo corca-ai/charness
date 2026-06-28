@@ -81,13 +81,13 @@ def test_issue_preflight_non_json_reports_backend_config_error(
 def test_issue_preflight_resolves_adapter_backend_when_gh_absent(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "ceal"
+    fake = bin_dir / "acme"
     fake.write_text(
         "\n".join(
             [
                 "#!/usr/bin/env bash",
                 "if [[ \"$1\" == \"--version\" ]]; then",
-                "  echo 'ceal 0.0.1'",
+                "  echo 'acme 0.0.1'",
                 "  exit 0",
                 "fi",
                 "exit 0",
@@ -97,7 +97,7 @@ def test_issue_preflight_resolves_adapter_backend_when_gh_absent(tmp_path: Path)
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
 
     result = run_script(
         SCRIPT,
@@ -112,8 +112,8 @@ def test_issue_preflight_resolves_adapter_backend_when_gh_absent(tmp_path: Path)
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     backend = payload["selected_backend"]
-    assert backend["id"] == "ceal-github"
-    assert backend["binary"] == "ceal"
+    assert backend["id"] == "acme-github"
+    assert backend["binary"] == "acme"
     assert backend["found"] is True
     assert backend["commands"]["create"][0] == "github"
     assert "gh_found" not in payload
@@ -124,12 +124,12 @@ def test_issue_preflight_resolves_adapter_from_process_cwd_when_repo_root_omitte
 ) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "ceal"
+    fake = bin_dir / "acme"
     fake.write_text(
         "\n".join(
             [
                 "#!/usr/bin/env bash",
-                "if [[ \"$1\" == \"--version\" ]]; then echo 'ceal 0.0.1'; exit 0; fi",
+                "if [[ \"$1\" == \"--version\" ]]; then echo 'acme 0.0.1'; exit 0; fi",
                 "exit 0",
             ]
         )
@@ -137,7 +137,7 @@ def test_issue_preflight_resolves_adapter_from_process_cwd_when_repo_root_omitte
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
 
     result = run_script(
         str(ROOT / SCRIPT),
@@ -151,13 +151,13 @@ def test_issue_preflight_resolves_adapter_from_process_cwd_when_repo_root_omitte
     payload = json.loads(result.stdout)
     assert payload["adapter"]["found"] is True, payload
     assert payload["adapter"]["path"] == str(tmp_path / ".agents" / "issue-adapter.yaml")
-    assert payload["selected_backend"]["id"] == "ceal-github"
+    assert payload["selected_backend"]["id"] == "acme-github"
 
 
 def test_issue_preflight_reports_missing_backend_binary_with_explicit_error(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
 
     result = run_script(
         SCRIPT,
@@ -171,6 +171,6 @@ def test_issue_preflight_reports_missing_backend_binary_with_explicit_error(tmp_
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["ok"] is False
-    assert payload["selected_backend"]["id"] == "ceal-github"
+    assert payload["selected_backend"]["id"] == "acme-github"
     assert payload["selected_backend"]["found"] is False
-    assert "ceal" in payload["error"]
+    assert "acme" in payload["error"]

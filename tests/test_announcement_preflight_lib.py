@@ -15,14 +15,14 @@ def test_preflight_passes_when_no_sources_declared(tmp_path: Path) -> None:
 
 def test_preflight_blocks_when_draft_missing_and_sources_declared(tmp_path: Path) -> None:
     adapter_data = {
-        "in_progress_sources": [{"kind": "control_repo", "path": "/srv/ceal/control"}]
+        "in_progress_sources": [{"kind": "control_repo", "path": "/srv/acme/control"}]
     }
     payload = preflight_sources(adapter_data, tmp_path / "missing.md")
     assert payload["ok"] is False
     assert payload["delivery_blocked"] is True
     assert payload["draft_exists"] is False
     assert payload["surfaces"][0]["status"] == "unverified"
-    assert payload["surfaces"][0]["id"] == "control_repo:/srv/ceal/control"
+    assert payload["surfaces"][0]["id"] == "control_repo:/srv/acme/control"
 
 
 def test_preflight_blocks_when_section_absent(tmp_path: Path) -> None:
@@ -44,7 +44,7 @@ def test_preflight_marks_collected_or_unavailable_per_status_keyword(tmp_path: P
 
             ## Source surfaces
             - handoff:docs/handoff.md — collected: 12 commits since last record
-            - control_repo:/srv/ceal — unavailable: stale instance root
+            - control_repo:/srv/acme — unavailable: stale instance root
 
             ## Highlights
             - thing
@@ -56,7 +56,7 @@ def test_preflight_marks_collected_or_unavailable_per_status_keyword(tmp_path: P
     adapter_data = {
         "in_progress_sources": [
             {"kind": "handoff", "path": "docs/handoff.md"},
-            {"kind": "control_repo", "path": "/srv/ceal"},
+            {"kind": "control_repo", "path": "/srv/acme"},
         ]
     }
     payload = preflight_sources(adapter_data, draft)
@@ -74,7 +74,7 @@ def test_preflight_blocks_when_one_source_unrecorded(tmp_path: Path) -> None:
     adapter_data = {
         "in_progress_sources": [
             {"kind": "handoff", "path": "docs/handoff.md"},
-            {"kind": "control_repo", "path": "/srv/ceal"},
+            {"kind": "control_repo", "path": "/srv/acme"},
         ]
     }
     payload = preflight_sources(adapter_data, draft)

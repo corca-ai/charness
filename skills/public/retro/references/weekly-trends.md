@@ -52,7 +52,7 @@ direction E). Read it with
   direction exists to fix). A one-off (`watch`) waste item needs no issue yet.
 - **Cross-repo non-claim.** The miner mines *this* repo's local, gitignored
   stream only. Waste produced while running the skills in another repo (e.g.
-  ceal) lives in that repo's own stream; charness has no cross-repo telemetry
+  acme) lives in that repo's own stream; charness has no cross-repo telemetry
   visibility. State this in the weekly output rather than implying global reach.
 
 ## What Not To Copy

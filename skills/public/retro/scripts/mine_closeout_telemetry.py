@@ -14,7 +14,7 @@ back out (the Problem-4 prose-decay trap this spec exists to fix). "noticed in a
 retro" is not enough; recurring operational waste becomes tracked work.
 
 Honest scope: this mines THIS repo's local, gitignored stream only. Waste that
-happened while running the patched skills in another repo (e.g. ceal) needs that
+happened while running the patched skills in another repo (e.g. acme) needs that
 repo's own stream — charness has no cross-repo telemetry visibility.
 """
 from __future__ import annotations

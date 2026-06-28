@@ -20,13 +20,13 @@ def _load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-def ceal_episode() -> dict:
+def acme_episode() -> dict:
     return {
         "schema_version": 1,
         "event_type": "usage_episode",
         "timestamp": "2026-05-17T04:00:00Z",
-        "product_id": "ceal",
-        "episode_id": "ceal-episode-001",
+        "product_id": "acme",
+        "episode_id": "acme-episode-001",
         "actor_kind": "operator",
         "context_bucket": "slack_thread",
         "entry_point": "mention",
@@ -100,13 +100,13 @@ def test_adapter_example_validates_against_manifest_schema() -> None:
     )
 
 
-@pytest.mark.parametrize("record", [ceal_episode(), crill_episode()])
+@pytest.mark.parametrize("record", [acme_episode(), crill_episode()])
 def test_valid_usage_episode_records_pass(record: dict) -> None:
     jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
 
 
 def test_candidate_usage_episode_may_omit_t_link() -> None:
-    record = ceal_episode()
+    record = acme_episode()
     record["t_status"] = "candidate"
     record.pop("t_link")
 
@@ -114,7 +114,7 @@ def test_candidate_usage_episode_may_omit_t_link() -> None:
 
 
 def test_promoted_usage_episode_requires_t_link() -> None:
-    record = ceal_episode()
+    record = acme_episode()
     record["t_status"] = "promoted"
     record.pop("t_link")
 
@@ -125,11 +125,11 @@ def test_promoted_usage_episode_requires_t_link() -> None:
 def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
     context_ref = {
         "kind": "slack_thread",
-        "ref": "ceal-context-opaque-001",
+        "ref": "acme-context-opaque-001",
     }
-    first = ceal_episode()
-    second = ceal_episode()
-    second["episode_id"] = "ceal-episode-002"
+    first = acme_episode()
+    second = acme_episode()
+    second["episode_id"] = "acme-episode-002"
     first["context_ref"] = dict(context_ref)
     second["context_ref"] = dict(context_ref)
 
@@ -142,27 +142,27 @@ def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
 @pytest.mark.parametrize(
     "record",
     [
-        {**ceal_episode(), "agent_action": {}},
-        {**ceal_episode(), "t_status": "candidate", "t_link": None},
+        {**acme_episode(), "agent_action": {}},
+        {**acme_episode(), "t_status": "candidate", "t_link": None},
         {**crill_episode(), "t_status": "none", "t_link": {"kind": "x", "ref": "y"}},
         {
-            **ceal_episode(),
+            **acme_episode(),
             "first_value_ref": {
                 "kind": "github_issue",
                 "ref": "corca-ai/charness#171",
                 "body": "raw source content is not allowed",
             },
         },
-        {**ceal_episode(), "actor_kind": "customer"},
+        {**acme_episode(), "actor_kind": "customer"},
         {
-            **ceal_episode(),
+            **acme_episode(),
             "first_value_ref": {
                 "kind": "github_issue",
                 "ref": "line one\nline two",
             },
         },
         {
-            **ceal_episode(),
+            **acme_episode(),
             "first_value_ref": {
                 "kind": "github_issue",
                 "ref": "corca-ai/charness#171",
@@ -170,7 +170,7 @@ def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
             },
         },
         {
-            **ceal_episode(),
+            **acme_episode(),
             "first_value_ref": {
                 "kind": "github_issue",
                 "ref": "corca-ai/charness#171",
@@ -178,7 +178,7 @@ def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
             },
         },
         {
-            **ceal_episode(),
+            **acme_episode(),
             "first_value_ref": {
                 "kind": "github_issue",
                 "ref": "corca-ai/charness#171",
@@ -186,7 +186,7 @@ def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
             },
         },
         {
-            **ceal_episode(),
+            **acme_episode(),
             "first_value_ref": {
                 "kind": "github_issue",
                 "ref": "corca-ai/charness#171",
@@ -194,7 +194,7 @@ def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
             },
         },
         {
-            **ceal_episode(),
+            **acme_episode(),
             "first_value_ref": {
                 "kind": "github_issue",
                 "ref": "corca-ai/charness#171",

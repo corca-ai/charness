@@ -443,7 +443,7 @@ def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> 
 def test_skill_ergonomics_gate_skips_runtime_install_skills(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "packages" / "official-skills" / "ceal-native" / "skills" / "demo"
+    skill_dir = repo / "packages" / "official-skills" / "acme-native" / "skills" / "demo"
     references_dir = skill_dir / "references"
     references_dir.mkdir(parents=True)
     (repo / ".agents" / "quality-adapter.yaml").write_text(
@@ -453,9 +453,9 @@ def test_skill_ergonomics_gate_skips_runtime_install_skills(tmp_path: Path) -> N
                 "repo: testrepo",
                 "output_dir: charness-artifacts/quality",
                 "skill_ergonomics_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
+                "  - packages/official-skills/acme-native/skills",
                 "skill_ergonomics_runtime_install_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
+                "  - packages/official-skills/acme-native/skills",
                 "skill_ergonomics_gate_rules:",
                 "  - mode_option_pressure_terms",
             ]

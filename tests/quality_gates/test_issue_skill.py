@@ -153,11 +153,11 @@ def test_issue_resolve_invocation_treats_single_number_as_selector(tmp_path: Pat
 
 
 def test_issue_resolve_invocation_accepts_repo_plus_selector(tmp_path: Path) -> None:
-    result = run_script(SCRIPT, "resolve-invocation", "--repo-root", str(tmp_path), "--", "ceal", "120")
+    result = run_script(SCRIPT, "resolve-invocation", "--repo-root", str(tmp_path), "--", "acme", "120")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["target"]["full_name"] == "corca-ai/ceal"
+    assert payload["target"]["full_name"] == "corca-ai/acme"
     assert payload["selector"] == "120"
     assert payload["numbers"] == [120]
 
@@ -166,7 +166,7 @@ def test_issue_target_uses_adapter_default_repo_without_remote(tmp_path: Path) -
     adapter_dir = tmp_path / ".agents"
     adapter_dir.mkdir()
     (adapter_dir / "issue-adapter.yaml").write_text(
-        "\n".join(["version: 1", "default_org: corca-ai", "default_repo: ceal", "remote_name: origin", ""]),
+        "\n".join(["version: 1", "default_org: corca-ai", "default_repo: acme", "remote_name: origin", ""]),
         encoding="utf-8",
     )
 
@@ -174,7 +174,7 @@ def test_issue_target_uses_adapter_default_repo_without_remote(tmp_path: Path) -
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["target"]["full_name"] == "corca-ai/ceal"
+    assert payload["target"]["full_name"] == "corca-ai/acme"
     assert payload["target"]["source"] == "adapter-default-repo-default-org"
 
 
@@ -318,15 +318,15 @@ def test_issue_close_with_comment_surfaces_partial_state_when_close_fails(tmp_pa
 def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    log = tmp_path / "ceal-log.json"
-    fake = bin_dir / "ceal"
+    log = tmp_path / "acme-log.json"
+    fake = bin_dir / "acme"
     fake.write_text(
         "\n".join(
             [
                 "#!/usr/bin/env python3",
                 "import json, os, sys",
                 "from pathlib import Path",
-                "log = Path(os.environ['CEAL_LOG'])",
+                "log = Path(os.environ['ACME_LOG'])",
                 "entries = json.loads(log.read_text()) if log.exists() else []",
                 "entries.append(sys.argv[1:])",
                 "log.write_text(json.dumps(entries))",
@@ -337,7 +337,7 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
@@ -389,7 +389,7 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
         str(body),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "CEAL_LOG": str(log)},
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "ACME_LOG": str(log)},
     )
 
     assert result.returncode == 0, result.stderr
@@ -402,10 +402,10 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
 def test_issue_close_with_comment_requires_adapter_view_template(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "ceal"
+    fake = bin_dir / "acme"
     fake.write_text("#!/usr/bin/env sh\nexit 0\n", encoding="utf-8")
     fake.chmod(0o755)
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
@@ -454,15 +454,15 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
 ) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    log = tmp_path / "ceal-log.json"
-    fake = bin_dir / "ceal"
+    log = tmp_path / "acme-log.json"
+    fake = bin_dir / "acme"
     fake.write_text(
         "\n".join(
             [
                 "#!/usr/bin/env python3",
                 "import json, os, sys",
                 "from pathlib import Path",
-                "log = Path(os.environ['CEAL_LOG'])",
+                "log = Path(os.environ['ACME_LOG'])",
                 "entries = json.loads(log.read_text()) if log.exists() else []",
                 "entries.append(sys.argv[1:])",
                 "log.write_text(json.dumps(entries))",
@@ -473,7 +473,7 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
@@ -527,7 +527,7 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
         str(body),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "CEAL_LOG": str(log)},
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "ACME_LOG": str(log)},
     )
 
     assert result.returncode == 0, result.stderr
@@ -551,10 +551,10 @@ def test_issue_close_with_comment_rejects_adapter_template_with_unknown_placehol
 ) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "ceal"
+    fake = bin_dir / "acme"
     fake.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
     fake.chmod(0o755)
-    write_issue_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
@@ -742,7 +742,7 @@ def test_issue_skill_documents_backend_resolution() -> None:
     assert "selected backend comes from the adapter" in " ".join(skill_text.lower().split())
     assert "selected_backend" in skill_text
     assert "issue_backend" in backend_ref
-    assert "ceal" in backend_ref
+    assert "acme" in backend_ref
 
 
 def test_resolve_milestone_assigns_existing_match() -> None:

@@ -110,7 +110,7 @@ must record a `follow-up:` identifier so the deferred work cannot disappear
 into the artifact:
 
 - `follow-up: <issue-url>` — preferred. File via the `issue` skill's
-  adapter-resolved backend (`gh`, `ceal github`, or whatever the host
+  adapter-resolved backend (`gh`, `acme github`, or whatever the host
   configured); do not invent a parallel filing path. The new issue body links
   back to this debug artifact so reviewers can re-derive the invariant.
 - `follow-up: deferred <docs/handoff.md anchor>` — acceptable when the repo

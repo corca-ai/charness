@@ -37,22 +37,22 @@ def test_release_adapter_parses_custom_backend(tmp_path: Path) -> None:
                 "version: 1",
                 "repo: demo",
                 "release_backend:",
-                "  id: ceal-github",
-                "  binary: ceal",
+                "  id: acme-github",
+                "  binary: acme",
                 "  commands:",
                 "    auth_check:",
-                "      - ceal",
+                "      - acme",
                 "      - github",
                 "      - auth",
                 "      - status",
                 "    release_view:",
-                "      - ceal",
+                "      - acme",
                 "      - github",
                 "      - release",
                 "      - view",
                 "      - '{tag}'",
                 "    release_create:",
-                "      - ceal",
+                "      - acme",
                 "      - github",
                 "      - release",
                 "      - create",
@@ -69,9 +69,9 @@ def test_release_adapter_parses_custom_backend(tmp_path: Path) -> None:
 
     assert payload["valid"] is True
     backend = payload["data"]["release_backend"]
-    assert backend["id"] == "ceal-github"
-    assert backend["binary"] == "ceal"
-    assert backend["commands"]["release_view"] == ["ceal", "github", "release", "view", "{tag}"]
+    assert backend["id"] == "acme-github"
+    assert backend["binary"] == "acme"
+    assert backend["commands"]["release_view"] == ["acme", "github", "release", "view", "{tag}"]
 
 
 def test_release_adapter_preserves_fresh_checkout_probes(tmp_path: Path) -> None:
@@ -227,8 +227,8 @@ def test_release_adapter_warns_when_non_gh_backend_lacks_commands(tmp_path: Path
                 "version: 1",
                 "repo: demo",
                 "release_backend:",
-                "  id: ceal-github",
-                "  binary: ceal",
+                "  id: acme-github",
+                "  binary: acme",
                 "",
             ]
         ),
@@ -238,22 +238,22 @@ def test_release_adapter_warns_when_non_gh_backend_lacks_commands(tmp_path: Path
     payload = resolve.load_adapter(tmp_path)
 
     assert payload["valid"] is True
-    assert any("release_backend.id=ceal-github" in warning for warning in payload["warnings"])
+    assert any("release_backend.id=acme-github" in warning for warning in payload["warnings"])
 
 
 def test_backend_command_uses_template_when_provided() -> None:
     helpers = _load_release_module("publish_release_helpers")
     backend = {
-        "id": "ceal-github",
-        "binary": "ceal",
-        "commands": {"release_view": ["ceal", "github", "release", "view", "{tag}"]},
+        "id": "acme-github",
+        "binary": "acme",
+        "commands": {"release_view": ["acme", "github", "release", "view", "{tag}"]},
     }
 
     command = helpers.backend_command(
         backend, "release_view", ["gh", "release", "view", "{tag}"], tag="v1.2.3"
     )
 
-    assert command == ["ceal", "github", "release", "view", "v1.2.3"]
+    assert command == ["acme", "github", "release", "view", "v1.2.3"]
 
 
 def test_backend_command_falls_back_to_default_for_gh() -> None:
@@ -269,12 +269,12 @@ def test_backend_command_falls_back_to_default_for_gh() -> None:
 
 def test_backend_command_errors_on_non_gh_without_template() -> None:
     helpers = _load_release_module("publish_release_helpers")
-    backend = {"id": "ceal-github", "binary": "ceal", "commands": None}
+    backend = {"id": "acme-github", "binary": "acme", "commands": None}
 
     with pytest.raises(SystemExit) as exc:
         helpers.backend_command(backend, "release_create", ["gh", "release", "create"])
 
-    assert "ceal-github" in str(exc.value)
+    assert "acme-github" in str(exc.value)
     assert "release_create" in str(exc.value)
 
 
@@ -298,10 +298,10 @@ def test_backend_command_rejects_caller_sub_outside_op_allowlist() -> None:
 def test_backend_command_rejects_adapter_template_with_unknown_placeholder() -> None:
     helpers = _load_release_module("publish_release_helpers")
     backend = {
-        "id": "ceal-github",
-        "binary": "ceal",
+        "id": "acme-github",
+        "binary": "acme",
         "commands": {
-            "release_view": ["ceal", "release", "view", "{tag}", "--audit", "{audit_id}"],
+            "release_view": ["acme", "release", "view", "{tag}", "--audit", "{audit_id}"],
         },
     }
 

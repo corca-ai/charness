@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from tests.test_usage_episodes_schema import ceal_episode
+from tests.test_usage_episodes_schema import acme_episode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "validate_usage_episodes.py"
@@ -108,7 +108,7 @@ def test_validate_usage_episodes_accepts_valid_jsonl(tmp_path: Path) -> None:
     records = tmp_path / ".charness" / "usage-episodes"
     records.mkdir(parents=True)
     (records / "usage_episode.jsonl").write_text(
-        json.dumps(ceal_episode()) + "\n",
+        json.dumps(acme_episode()) + "\n",
         encoding="utf-8",
     )
 
@@ -132,7 +132,7 @@ def test_plugin_usage_episode_validator_smoke(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
     records = tmp_path / ".charness" / "usage-episodes"
     records.mkdir(parents=True)
-    (records / "usage_episode.jsonl").write_text(json.dumps(ceal_episode()) + "\n", encoding="utf-8")
+    (records / "usage_episode.jsonl").write_text(json.dumps(acme_episode()) + "\n", encoding="utf-8")
 
     valid = run_plugin_validator("--repo-root", str(tmp_path), "--json")
 
@@ -160,7 +160,7 @@ def test_validate_usage_episodes_rejects_bad_timestamp(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\n")
     records = tmp_path / ".charness" / "usage-episodes"
     records.mkdir(parents=True)
-    episode = ceal_episode()
+    episode = acme_episode()
     episode["timestamp"] = "not-a-date"
     (records / "usage_episode.jsonl").write_text(json.dumps(episode) + "\n", encoding="utf-8")
 
@@ -195,7 +195,7 @@ def test_validate_usage_episodes_reports_no_records_when_enabled_without_file(tm
 def test_validate_usage_episodes_rejects_records_path_outside_repo(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\n")
     outside = tmp_path.parent / "outside-usage-episode.jsonl"
-    outside.write_text(json.dumps(ceal_episode()) + "\n", encoding="utf-8")
+    outside.write_text(json.dumps(acme_episode()) + "\n", encoding="utf-8")
 
     result = run_validator("--repo-root", str(tmp_path), "--records-path", str(outside), "--json")
 

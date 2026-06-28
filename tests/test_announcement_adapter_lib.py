@@ -182,7 +182,7 @@ def test_in_progress_sources_validation_requires_path_for_kind_path(tmp_path: Pa
 def test_in_progress_sources_accepts_host_extensible_kind(tmp_path: Path) -> None:
     data = {
         "in_progress_sources": [
-            {"kind": "control_repo", "path": "/srv/ceal-prod/workspace/control"},
+            {"kind": "control_repo", "path": "/srv/acme-prod/workspace/control"},
             {"kind": "channel_automation", "summary": "Slack workspace events"},
         ]
     }

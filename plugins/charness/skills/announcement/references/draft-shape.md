@@ -32,7 +32,7 @@ and even there they should be tied to a human-visible outcome.
 ### user / 사용자
 
 - good: "메시지를 수정해서 명령을 다시 실행할 수 있습니다."
-- bad (commit paraphrase): "Slack edit-trigger fix routes through `worker-ceal-events-command` path."
+- bad (commit paraphrase): "Slack edit-trigger fix routes through `worker-edit-events-command` path."
 - good: "긴 답변이 채널에 안 들어가던 문제가 풀렸습니다."
 - bad (commit paraphrase): "msg_too_long branch falls back to chunked `chat.postMessage` path."
 
@@ -105,11 +105,11 @@ For the public body:
 Examples:
 
 - bad: "root-message opt-in reply intake"
-- good: "Ceal이 올린 질문에 사람이 답글을 달면, 그 답글을 다음 작업 입력으로 받을 수 있습니다."
+- good: "에이전트가 올린 질문에 사람이 답글을 달면, 그 답글을 다음 작업 입력으로 받을 수 있습니다."
 - bad: "source-bound thread context retrieval"
 - good: "Slack 링크를 보고 답할 때 실제 대화 내용을 먼저 확인합니다."
-- bad: "`$cig` short alias was added"
-- good: "Ceal에게 맡길 말이 아니라 사람들끼리 참고만 남기는 댓글은 `$ceal:ignore`로 표시할 수 있습니다. 짧게 쓰고 싶으면 `$cig`도 같은 뜻으로 동작합니다."
+- bad: "`/hn` short alias was added"
+- good: "에이전트가 처리하지 않고 사람들끼리 참고만 남기는 댓글은 `/human-note`로 표시할 수 있습니다. 짧게 쓰고 싶으면 `/hn`도 같은 뜻으로 동작합니다."
 
 ## Dual-Output Drafts
 

@@ -409,7 +409,7 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
 
 def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_root = repo / "packages" / "official-skills" / "ceal-native" / "skills"
+    skill_root = repo / "packages" / "official-skills" / "acme-native" / "skills"
     skill_dir = skill_root / "anniversary-roster-sync"
     skill_dir.mkdir(parents=True)
     (repo / ".agents").mkdir()
@@ -420,7 +420,7 @@ def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> 
                 "repo: repo",
                 "output_dir: charness-artifacts/quality",
                 "skill_ergonomics_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
+                "  - packages/official-skills/acme-native/skills",
                 "",
             ]
         ),
@@ -452,7 +452,7 @@ def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert [skill["skill_path"] for skill in payload["skills"]] == [
-        "packages/official-skills/ceal-native/skills/anniversary-roster-sync/SKILL.md"
+        "packages/official-skills/acme-native/skills/anniversary-roster-sync/SKILL.md"
     ]
 
 
@@ -678,7 +678,7 @@ def test_inventory_skill_ergonomics_skips_vendored_paths(tmp_path: Path) -> None
 
 def test_inventory_skill_ergonomics_runtime_install_accepts_skill_md_suffix(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "packages" / "official-skills" / "ceal-native" / "skills" / "demo"
+    skill_dir = repo / "packages" / "official-skills" / "acme-native" / "skills" / "demo"
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
         "\n".join(
@@ -704,9 +704,9 @@ def test_inventory_skill_ergonomics_runtime_install_accepts_skill_md_suffix(tmp_
                 "repo: repo",
                 "output_dir: charness-artifacts/quality",
                 "skill_ergonomics_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
+                "  - packages/official-skills/acme-native/skills",
                 "skill_ergonomics_runtime_install_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills/demo/SKILL.md",
+                "  - packages/official-skills/acme-native/skills/demo/SKILL.md",
                 "",
             ]
         ),
@@ -727,7 +727,7 @@ def test_inventory_skill_ergonomics_runtime_install_accepts_skill_md_suffix(tmp_
 
 def test_inventory_skill_ergonomics_runtime_install_skips_portable_helper_heuristic(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "packages" / "official-skills" / "ceal-native" / "skills" / "demo"
+    skill_dir = repo / "packages" / "official-skills" / "acme-native" / "skills" / "demo"
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
         "\n".join(
@@ -754,9 +754,9 @@ def test_inventory_skill_ergonomics_runtime_install_skips_portable_helper_heuris
                 "repo: repo",
                 "output_dir: charness-artifacts/quality",
                 "skill_ergonomics_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
+                "  - packages/official-skills/acme-native/skills",
                 "skill_ergonomics_runtime_install_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
+                "  - packages/official-skills/acme-native/skills",
                 "",
             ]
         ),

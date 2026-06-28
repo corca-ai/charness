@@ -209,7 +209,7 @@ def test_list_open_issues_uses_gh_default_template(src):
 def test_non_gh_backend_requires_command_template(src):
     with pytest.raises(RuntimeError, match="commands.list_open"):
         src.list_open_issues(
-            "x/y", backend={"id": "ceal", "binary": "ceal", "commands": None}, runner=lambda a: []
+            "x/y", backend={"id": "acme", "binary": "acme", "commands": None}, runner=lambda a: []
         )
 
 

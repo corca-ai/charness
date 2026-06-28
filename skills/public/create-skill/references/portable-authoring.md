@@ -280,7 +280,7 @@ caller-side closeout:
 This is the unifying root cause behind the structured-output validator failures:
 skills declared structured output the caller had to act on, but shipped no
 validator, so the caller re-classified prose on every pass (15 critique passes ×
-15 manual triages in the Ceal-session evidence). The fix each time was the same
+15 manual triages in the Acme-session evidence). The fix each time was the same
 intervention — a `scripts/validate_*_artifact.py` + a section-gated rule.
 
 Keep the validator opt-in and section-gated (fail only when the structured

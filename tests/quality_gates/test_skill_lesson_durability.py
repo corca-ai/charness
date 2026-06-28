@@ -1,3 +1,9 @@
+"""Durability guards for high-leverage lessons propagated into skill reference
+docs: each test asserts a specific learned rule still lives in the doc that owns
+it, so a future edit cannot silently drop the lesson. The guards check the
+abstract lesson (its heading and rule sentence), not illustrative example tokens,
+which are free to change."""
+
 from __future__ import annotations
 
 from .support import ROOT
@@ -38,8 +44,6 @@ def test_announcement_draft_shape_lists_affordance_and_alias_rewrite() -> None:
     assert "non-maintainer" in text
     assert "reader-visible affordances" in text
     assert "canonical behavior first" in text
-    assert "$ceal:ignore" in text
-    assert "$cig" in text
 
 
 def test_gather_source_priority_includes_official_url_before_websearch() -> None:

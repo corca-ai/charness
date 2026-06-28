@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from scripts.report_usage_episodes import NON_CLAIMS
-from tests.test_usage_episodes_schema import ceal_episode, crill_episode
+from tests.test_usage_episodes_schema import acme_episode, crill_episode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "report_usage_episodes.py"
@@ -116,7 +116,7 @@ def test_report_usage_episodes_reports_no_records(tmp_path: Path) -> None:
 
 def test_report_usage_episodes_aggregates_counts_sessions_and_gaps(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
-    first = ceal_episode()
+    first = acme_episode()
     first["session_id"] = "session-1"
     first["timestamp"] = "2026-05-17T04:00:00Z"
     second = crill_episode()
@@ -195,7 +195,7 @@ def test_report_usage_episodes_rejects_malformed_jsonl(tmp_path: Path) -> None:
 
 def test_plugin_usage_episode_report_smoke(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
-    write_records(tmp_path, [ceal_episode()])
+    write_records(tmp_path, [acme_episode()])
 
     result = run_plugin_report("--repo-root", str(tmp_path), "--json")
 

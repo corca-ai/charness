@@ -14,7 +14,7 @@ After every successful create, capture `{repo, number, url, state}` from the
 backend response (or, when the response shape is uncertain, re-read with
 `gh issue view --repo <full_name> <number> --json number,url,state` or the
 host-mediated equivalent — for example, the appropriate
-`ceal github issue view ...` invocation that returns `number`, `url`, and
+`acme github issue view ...` invocation that returns `number`, `url`, and
 `state`).
 
 The closeout report includes:
@@ -221,7 +221,7 @@ the release helper.
 `axis: external-source-provider`. Slack is one adapter instance, **not** the
 schema. The same contract covers Notion, Google Workspace, Drive files,
 browser-gathered pages, gathered artifacts, web URLs, and any external
-conversation source. Charness owns this invariant; adapters (e.g. a Ceal Slack
+conversation source. Charness owns this invariant; adapters (e.g. an Acme Slack
 gather) may satisfy it, but only when the issue points to the asset/source
 identity clearly enough for a fresh session.
 
