@@ -460,3 +460,36 @@ force (setup's greenfield branch needs a fresh-repo sandbox; a mature repo such
 as charness always detects normalize). That constraint is recorded in the
 scenario spec's `_comment` as an explicit non-claim, not a new validated field
 (Floor-Addition Restraint: no new required schema for a one-off note).
+
+## Per-Skill RCF Calibration Lenses (2026-06-28)
+
+The per-skill review sets each skill's `prompt` and `requiredCommandFragments`
+(RCF) by applying these lenses, in order:
+
+1. **Planner as ground truth.** If the skill ships a deterministic planner or
+   required-reads script (e.g. debug `plan_debug_run.py`), derive RCF from its
+   UNCONDITIONAL required reads, not from prose. debug's prior RCF was inverted:
+   it hard-matched the planner's on-demand reads (five-whys/detection-gap/
+   sibling-search) and omitted the unconditional `five-steps.md` + `debug-memory.md`.
+2. **Bare vs pin.** A bare `/charness:<skill>` reaches the reference-routing phase
+   only for self-activators with a no-argument default action (quality reviews
+   this repo; find-skills self-activates; critique autonomous-triggers). A skill
+   that needs a subject gets a representative objective pinned into the prompt
+   (the matcher inspects only file-open events, so wording cannot affect scoring).
+   Pinning a representative SHAPE also makes shape-conditional RCF refs
+   unconditional (create-cli multi-command CLI; create-skill external-tool skill).
+3. **Script-resolved contract doc.** A reference that only EXPLAINS a contract the
+   runtime resolves via a script (adapter-contract.md, resolved by
+   resolve_adapter.py) stays engage-always but is demoted from RCF — the run reads
+   the resolved output, not the explainer doc.
+4. **Conditional / mutually-exclusive flows split into multiple fixtures.** setup
+   (greenfield/normalization), critique (autonomous/decision): each branch is its
+   own scenario fixture with its own RCF.
+5. **Capture-context non-claim.** A scenario needing a repo STATE the prompt
+   cannot fabricate (setup greenfield needs a fresh repo; debug needs a real
+   reproducible bug) records that in the spec `_comment`; it is not faithfully
+   runnable against a clean charness repo.
+6. **Two-signal split for self-activators.** When an autonomous run's inferred
+   target is non-deterministic (critique default), deterministic RCF proves only
+   that the path was followed; inference QUALITY is the Cautilus-recommendation
+   signal, not a hard matcher.
