@@ -22,6 +22,13 @@
   `974dae10`, `168d856c`, `29260c26`, `bb715a88` (lens 8 + executable-subject re-pin),
   `88785945` (issue split), `429bf50e` (narrative), `7a550270` (release), `7fb51ac8` (retro),
   `c389d916` (spec). 25 scenario specs validate. No live captures run yet.
+- **Shipped in `v0.57.0`** (2026-06-28, minor): the sweep + de-leak + fixes published to
+  corca-ai/charness, distinct-channel verified (gh release isDraft:false, https-fetch 200);
+  `charness update` refreshed the installed plugin 0.56.9 -> 0.57.0. See the
+  [release critique](../charness-artifacts/critique/2026-06-28-release-claim-fidelity-sweep-critique.md).
+  One release-gate fix folded en route: the find-skills/narrative adapter-echo dup-ratchet
+  family was re-fingerprinted by the next_step add -> classified intentional in the
+  [dup-review overlay](../charness-artifacts/quality/dup-review.json).
 - **Method lives in the methodology spec + each commit, not inline.** The 8 calibration
   lenses and the Review Protocol are in the spec; per-skill rationale is in the commit
   messages — do not replay them here. Skill fixes shipped: find-skills `next_step`, gather
