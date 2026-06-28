@@ -1,0 +1,116 @@
+{
+  "_comment": "Claim-fidelity spec for the spec skill: does a real `/charness:spec` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: narrowed to the references SKILL.md explicitly routes the run to OPEN at the point of need (the shaping-rule docs cited at lines 41-42 and the evidence-durability cite at line 104); the other engage-always docs stay coverage-classified governing rubrics for their workflow steps, not hard must-open matchers.",
+  "skillId": "spec",
+  "skillDisplayName": "spec",
+  "evaluationId": "execution-spec-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "spec",
+  "prompt": "/charness:spec",
+  "requiredCommandFragments": [
+    "public-executable-contracts.md",
+    "sequence-discipline.md",
+    "design-lenses.md",
+    "evidence-durability.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "acceptance-checks.md",
+    "ambiguity-rules.md",
+    "contract-modes.md",
+    "design-lenses.md",
+    "document-seams.md",
+    "evidence-durability.md",
+    "executable-spec-cost.md",
+    "fixed-probe-defer.md",
+    "ideation-boundary.md",
+    "impl-loop.md",
+    "ingest-and-refine.md",
+    "public-executable-contracts.md",
+    "rejected-alternatives.md",
+    "sequence-discipline.md",
+    "success-criteria.md",
+    "taxonomy-axis-checkpoint.md"
+  ],
+  "referenceEngagement": {
+    "acceptance-checks.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Workflow step 5 states 'every important success criterion should imply at least one acceptance check' and references this doc for common types and the evidence-durability connection.",
+      "claimRole": "verification-bridge"
+    },
+    "ambiguity-rules.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Workflow step 3 routes here to decide when to ask follow-ups vs. choose defaults vs. defer; this gate shapes whether the spec adds clarification work in every representative run.",
+      "claimRole": "questioning-gate"
+    },
+    "contract-modes.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Contract Shaping section explicitly routes here to choose lightest contract shape before drafting, and guardrails reinforce not treating spec as mandatory upfront completeness without choosing the right mode first.",
+      "claimRole": "shaping-heuristic"
+    },
+    "design-lenses.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Contract Shaping section explicitly routes here to apply Beck/Ousterhout moves when deciding slice size and contract boundary clarity in a representative run.",
+      "claimRole": "shaping-lens"
+    },
+    "document-seams.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Guardrails state 'Keep host-specific file locations or template choices outside the core skill body' and this doc provides the canonical-artifact and no-duplication rules that apply in every run.",
+      "claimRole": "portability-rule"
+    },
+    "evidence-durability.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Workflow step 5 routes here for spec proof linkage and the reproducibility contract; cited proof must be checked-in durable artifacts in a representative run.",
+      "claimRole": "proof-integrity"
+    },
+    "executable-spec-cost.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md Contract Shaping mentions 'Bias Toward Executable Checks' mode for repos that already treat executable checks as contract artifacts; this doc answers the cost/duplication questions in that mode only.",
+      "trigger": "When the repo already uses executable specs like specdown and the spec writer is deciding how much coverage to include in acceptance checks."
+    },
+    "fixed-probe-defer.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Workflow step 2 names this as 'the core discipline for spec' and every representative run must classify remaining uncertainty into Fixed Decisions, Probe Questions, and Deferred Decisions.",
+      "claimRole": "core-discipline"
+    },
+    "ideation-boundary.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Bootstrap section and Guardrails both route here; spec must inherit stable concept from ideation or send work back; this frames when a run is even appropriate.",
+      "claimRole": "upstream-gate"
+    },
+    "impl-loop.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Workflow step 6 and Bootstrap section both route here: if implementation discovers facts that change scope/behavior/acceptance, update the canonical spec; this is the core discipline for keeping spec alive.",
+      "claimRole": "sync-rule"
+    },
+    "ingest-and-refine.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Workflow step 1 routes here to identify source artifact, restate stable idea, and separate decided from ambiguous; this frames the entire spec refinement process in a representative run.",
+      "claimRole": "opening-move"
+    },
+    "public-executable-contracts.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Contract Shaping section calls this out explicitly when repo already uses executable checks; the boundary between public contract and maintenance lint shapes the spec surface in those runs.",
+      "claimRole": "executable-boundary"
+    },
+    "rejected-alternatives.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md Output Shape includes optional 'Deliberately Not Doing' section; this is a narrower gate for design-shaping contracts where future re-litigation risk is material.",
+      "trigger": "When the spec involves deleting/renaming an established surface, choosing one canonical implementation, or declining a compatibility path that future maintainers are likely to reopen."
+    },
+    "sequence-discipline.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Contract Shaping section lists this alongside public-executable-contracts, and Workflow step 2 emphasizes ordering Fixed/Probe/Deferred by dependency, not prose convenience.",
+      "claimRole": "decision-ordering"
+    },
+    "success-criteria.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md Workflow step 5 establishes that success criteria are 'the heart of the spec' and every run must sharpen criteria until observable, testable, and tied to user value.",
+      "claimRole": "acceptance-shaping"
+    },
+    "taxonomy-axis-checkpoint.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md Contract Shaping section explicitly states 'Before adding public kind/strategy/profile/target vocabulary, run this reference'; narrower gate for vocabulary-heavy decisions.",
+      "trigger": "When Contract Shaping step considers adding a new user-facing enum, mode, kind, strategy, or profile to the spec contract."
+    }
+  }
+}

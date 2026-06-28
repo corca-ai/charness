@@ -63,3 +63,27 @@ python3 scripts/run_evals.py
 
 The quality runner should call this script so eval drift becomes part of the
 normal repo bar.
+
+## Per-Skill Claim-Fidelity Specs
+
+`evals/cautilus/<skill>-claim-fidelity/spec.json` extends the quality
+claim-fidelity harness to every public skill: each spec asks whether a real
+`/charness:<skill>` run honors its own reference routing. The registry
+[`cautilus/claim-fidelity-registry.json`](cautilus/claim-fidelity-registry.json)
+lists all of them, and `scripts/validate_claim_fidelity_specs.py` (gate
+`validate-claim-fidelity-specs`) keeps them honest:
+
+- `declaredReferences` must be the skill's own `references/*.md` basenames.
+- every declared reference carries a `referenceEngagement` entry on the
+  `engage-always` / `on-demand` / `gate-sufficient` axis with a rationale;
+  `on-demand` records a `trigger`, `gate-sufficient` names a `gate`.
+- `requiredCommandFragments` (the docs a run must open to follow its own
+  routing) must be `engage-always` declared references.
+
+The axis and authoring rules are the locked methodology contract:
+[`skill-claim-fidelity-doc-philosophy`](../charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md).
+These specs are authored assets; the live capture plus cautilus observation
+scoring stay eval-only and ask-before-run per
+[`cautilus-on-demand`](../skills/public/quality/references/cautilus-on-demand.md).
+`thresholds` (runtime budget) are added per skill only after a first baseline
+capture, like the quality pilot.

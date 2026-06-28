@@ -1,0 +1,69 @@
+{
+  "_comment": "Claim-fidelity spec for the create-skill skill: does a real `/charness:create-skill` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These five references form the core authoring contract that every representative create-skill run must consult: classification (portable-authoring.md), adapter topology (adapter-contract.md, adapter-pattern.md), and dependency ownership (integration-seams.md, runtime-capabilities.md) are all blocking decisions before the skill is edited or verified.",
+  "skillId": "create-skill",
+  "skillDisplayName": "create-skill",
+  "evaluationId": "execution-create-skill-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "create-skill",
+  "prompt": "/charness:create-skill",
+  "requiredCommandFragments": [
+    "portable-authoring.md",
+    "adapter-contract.md",
+    "adapter-pattern.md",
+    "integration-seams.md",
+    "runtime-capabilities.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "adapter-pattern.md",
+    "binary-preflight.md",
+    "deployable-skill-packaging.md",
+    "integration-seams.md",
+    "portable-authoring.md",
+    "preset-conventions.md",
+    "runtime-capabilities.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 4 (Decide portability seams) explicitly teaches topology vocabulary (implementation identity, placement, trigger surface, alias, fork signals) that adapter-contract.md defines and that resolve_adapter.py consumes in bootstrap; the contract determines whether shared implementation vs intentional fork decisions can be expressed.",
+      "claimRole": "adapter vocabulary"
+    },
+    "adapter-pattern.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 4 (Decide portability seams) routes to this directly ('use the adapter's topology vocabulary'); Section 4 teaches when to use adapters, shared core fields, and search order — all blocking decisions for any skill touching repo-local defaults or topology.",
+      "claimRole": "seam strategy"
+    },
+    "binary-preflight.md": {
+      "engagement": "on-demand",
+      "rationale": "Only applies when the bootstrap code block in SKILL.md calls tools beyond sh/git/python3/sed/find/awk/grep; a representative run creating a skill with baseline-only tools would skip this.",
+      "trigger": "when Step 1 (Bootstrap) or Step 7 (Verify) discovers that the skill's bootstrap calls a non-baseline binary outside CHARNESS_BASELINE"
+    },
+    "deployable-skill-packaging.md": {
+      "engagement": "on-demand",
+      "rationale": "Only consulted when the scope includes downstream plugin materialization, install/update CLIs, or host-visible packaging contracts; a representative run creating a standalone portable skill would not need this.",
+      "trigger": "when the skill is 'meant to ship through a Claude or Codex plugin bundle' or Step 5 (Decide dependency ownership) involves plugin packaging lifecycle"
+    },
+    "integration-seams.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 5 (Decide dependency ownership honestly) routes directly and teaches external tool vs internal support rules, ownership boundaries, and when to use manifests vs skill bodies; the representative run must decide whether a dependency is harness-owned, externally-owned, or a thin wrapper.",
+      "claimRole": "dependency honesty"
+    },
+    "portable-authoring.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 1 (artifact classification) routes directly to the classifier table; Rules section cites three named rules ('Named Anchor Rule', 'Option Minimalism', 'Closeout Schema Rule'); Step 7 Verification gates on 'Closeout Schema Rule'; and the entire decision spine (portable vs host-specific, adapter fallback, helper scripts, cross-skill propagation) depends on this contract.",
+      "claimRole": "authoring contract"
+    },
+    "preset-conventions.md": {
+      "engagement": "on-demand",
+      "rationale": "Presets are consulted only when the skill or repo decision involves opt-in default bundles; a representative run creating a skill without preset customization would not need this.",
+      "trigger": "when Step 2 (Write capability brief) identifies optional preset handling or Step 5 (Decide dependency ownership) needs to decide preset vs adapter vs integration boundary"
+    },
+    "runtime-capabilities.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 5 routes here for 'Preferred Access Order' (grant-first, authenticated binary, env fallback); the design rule prohibits raw secret handling in skill bodies and moves capability requirements to manifests — core to whether a skill is portable across isolated and local hosts.",
+      "claimRole": "isolated runtime model"
+    }
+  }
+}

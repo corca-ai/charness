@@ -1,0 +1,70 @@
+{
+  "_comment": "Claim-fidelity spec for the retro skill: does a real `/charness:retro` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: the engage-always references retro's workflow routes the run to open (mode-guide for mode selection, adapter-contract for adapter policy, section-guide for section structure, expert-lens for the mandatory counterfactual); the shared bootstrap-resolution.md is engage-always for the run but lives under skills/shared and is out of scope for this per-skill spec.",
+  "skillId": "retro",
+  "skillDisplayName": "retro",
+  "evaluationId": "execution-retro-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "retro",
+  "prompt": "/charness:retro",
+  "requiredCommandFragments": [
+    "mode-guide.md",
+    "adapter-contract.md",
+    "section-guide.md",
+    "expert-lens.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "expert-lens.md",
+    "mode-guide.md",
+    "phase-aware-efficiency.md",
+    "prepare-packet.md",
+    "section-guide.md",
+    "trigger-and-persistence.md",
+    "waste-sibling-scan.md",
+    "weekly-trends.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "The bootstrap section (SKILL.md lines 36-44) governs adapter policy and repair, and step 2 relies on adapter fields for evidence paths and metrics; the contract is consulted to validate adapter structure before proceeding."
+    },
+    "expert-lens.md": {
+      "engagement": "engage-always",
+      "rationale": "The Expert Counterfactual Rule (SKILL.md lines 148-154) mandates 'every retro includes at least one counterfactual lens' and routes to this reference to select named experts or direct lenses, making it governing for output completeness."
+    },
+    "mode-guide.md": {
+      "engagement": "engage-always",
+      "rationale": "The workflow's step 1 (SKILL.md lines 49-55) routes directly here to select session vs weekly mode, determining the entire evidence-gathering and output shape for a representative run."
+    },
+    "phase-aware-efficiency.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 3 (SKILL.md line 86) conditionally routes here only 'for token, tool-call, broad exploration, or efficiency claims'; it applies the phase check to avoid mislabeling broad exploration as waste, but is not needed in retros with no such claims.",
+      "trigger": "When a retro discusses token pressure, tool-call volume, repeated file reads, broad exploration, or efficiency claims during waste analysis."
+    },
+    "prepare-packet.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 2 (SKILL.md line 72) routes here only 'if the adapter declares packet_sections', preventing rediscovery of changed surfaces after work has moved on; repos without packet_sections do not read this.",
+      "trigger": "When the retro-adapter declares packet_sections and the retro needs context on changed surfaces or deferred work before turning a slice into lessons."
+    },
+    "section-guide.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 3 (SKILL.md lines 73-86) routes to this guide to structure the core retro sections (Context, Waste, Critical Decisions, etc.), shaping the decision frame for judgment and output across every representative run."
+    },
+    "trigger-and-persistence.md": {
+      "engagement": "engage-always",
+      "rationale": "Line 112 in SKILL.md mandates 'never stop without stating Persisted: yes: <path> or Persisted: no: <reason>', and this reference governs both the auto-trigger rule (optional) and the persistence statement requirement (mandatory) that must appear in every output.",
+      "claimRole": "persistence"
+    },
+    "waste-sibling-scan.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 4 (SKILL.md lines 93-97) conditionally routes here when 'a lesson names a transferable waste pattern', adding an opt-in Sibling Search section; narrowly local waste uses the short-circuit instead.",
+      "trigger": "when a lesson names a transferable waste pattern in step 4 (SKILL.md lines 93-97)"
+    },
+    "weekly-trends.md": {
+      "engagement": "on-demand",
+      "rationale": "Applicable only in weekly mode (SKILL.md lines 79, 123) for the Trends vs Last Retro section and closeout-telemetry mining; session retros do not consult this reference.",
+      "trigger": "When the mode is weekly and the retro needs to compare against the last durable weekly retro or mine closeout-telemetry trends."
+    }
+  }
+}

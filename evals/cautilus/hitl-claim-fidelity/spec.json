@@ -1,0 +1,50 @@
+{
+  "_comment": "Claim-fidelity spec for the hitl skill: does a real `/charness:hitl` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These four references form the core workflow lens: adapter-contract gates bootstrap and scope, chunk-contract governs the presentation contract at step 5, state-model controls resumability and persistence at steps 3 and 7, and rule-propagation shapes chunk judgment at step 6—together they cover the skeleton of a representative hitl review session.",
+  "skillId": "hitl",
+  "skillDisplayName": "hitl",
+  "evaluationId": "execution-hitl-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "hitl",
+  "prompt": "/charness:hitl",
+  "requiredCommandFragments": [
+    "adapter-contract.md",
+    "chunk-contract.md",
+    "state-model.md",
+    "rule-propagation.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "chunk-contract.md",
+    "report-mode.md",
+    "rule-propagation.md",
+    "state-model.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "Bootstrap step explicitly resolves adapter first (lines 26-27), and steps 1-2 determine review scope and apply mode from adapter config, making it foundational to every representative run.",
+      "claimRole": "bootstrap-gate"
+    },
+    "chunk-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 5 explicitly routes to chunk-contract.md for bounded chunk presentation, and this contract governs the minimum material required for human judgment in every chunk presented during the representative run.",
+      "claimRole": "presentation-invariant"
+    },
+    "report-mode.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 10 conditionally routes to report-mode.md only for generated reports; a typical representative run may be a code diff or document review without a report packet.",
+      "trigger": "when the input is a generated report packet with structured items and decision cards, rather than a branch diff or document review"
+    },
+    "rule-propagation.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 6 explicitly routes to rule-propagation for applying stable rules across remaining chunks and activating pre-edit constraints, which appears in any representative run where the user provides guidance.",
+      "claimRole": "rule-engine"
+    },
+    "state-model.md": {
+      "engagement": "engage-always",
+      "rationale": "Steps 3 and 7 explicitly depend on state-model.md for resumable state layout, cursor tracking, and rule management, making it load-bearing for every accept-chunk transition and the durable artifact sync that closes the representative run.",
+      "claimRole": "persistence-contract"
+    }
+  }
+}

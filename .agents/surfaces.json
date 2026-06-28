@@ -175,6 +175,23 @@
       ]
     },
     {
+      "surface_id": "claim-fidelity-specs",
+      "description": "Per-skill Cautilus claim-fidelity specs and registry: each public skill's reference-engagement classification proving a real /charness:<skill> run honors its own reference routing.",
+      "source_paths": [
+        "evals/cautilus/claim-fidelity-registry.json",
+        "evals/cautilus/*-claim-fidelity/**"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate_claim_fidelity_specs.py --repo-root ."
+      ],
+      "notes": [
+        "declaredReferences mirrors each skill's references/ dir; referenceEngagement classifies each on the engage-always/on-demand/gate-sufficient axis (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md).",
+        "Specs are authored assets; live capture plus cautilus scoring stay eval-only and ask-before-run per skills/public/quality/references/cautilus-on-demand.md."
+      ]
+    },
+    {
       "surface_id": "skill-packages",
       "description": "Public and support skill packages plus their helper scripts.",
       "source_paths": [

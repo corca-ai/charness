@@ -1,0 +1,71 @@
+{
+  "_comment": "Claim-fidelity spec for the setup skill: does a real `/charness:setup` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: A representative greenfield run must consult these three core decision lenses: greenfield-flow for repo mode detection and minimum questions, agent-docs-policy for host instruction surface normalization, and default-surfaces for the scaffold definitions used in steps 1, 2, and 4 of the workflow.",
+  "skillId": "setup",
+  "skillDisplayName": "setup",
+  "evaluationId": "execution-setup-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "setup",
+  "prompt": "/charness:setup",
+  "requiredCommandFragments": [
+    "greenfield-flow.md",
+    "agent-docs-policy.md",
+    "default-surfaces.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "agent-docs-policy.md",
+    "bootstrap-seams.md",
+    "default-surfaces.md",
+    "github-actions-defaults.md",
+    "greenfield-flow.md",
+    "normalization-flow.md",
+    "operator-acceptance-synthesis.md",
+    "probe-surface.md",
+    "retro-memory-seam.md"
+  ],
+  "referenceEngagement": {
+    "agent-docs-policy.md": {
+      "engagement": "engage-always",
+      "rationale": "This reference owns the explicit repo-level host policy (AGENTS.md and CLAUDE.md normalization) that step 2 requires for stabilizing the host-facing instruction surface first."
+    },
+    "bootstrap-seams.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference covers optional adapter, policy, or runtime seams that setup may seed only when the repo explicitly uses those Charness features.",
+      "trigger": "repo uses optional Charness seams beyond default surfaces (worktree, T-events, usage episodes, bounded review delegation, skill routing, artifact policy, announcement workflows)."
+    },
+    "default-surfaces.md": {
+      "engagement": "engage-always",
+      "rationale": "This reference defines all default operating surfaces (README, AGENTS, Roadmap, Operator Acceptance) that step 4 uses to scaffold or realign the basic durable surfaces."
+    },
+    "github-actions-defaults.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference provides specific GitHub Actions version guidance only when the representative run detects a repo using GitHub-hosted workflows; repos without Actions do not consult it.",
+      "trigger": "repo scaffolds or normalizes GitHub-hosted workflows and needs current documented majors for first-party JavaScript actions."
+    },
+    "greenfield-flow.md": {
+      "engagement": "engage-always",
+      "rationale": "In a greenfield representative run, this reference defines the minimum questions and expected surfaces that shape repo mode detection and initial surface scaffolding in step 1.",
+      "claimRole": "greenfield-path"
+    },
+    "normalization-flow.md": {
+      "engagement": "engage-always",
+      "rationale": "For partially-initialized repos, this reference defines the normalization checks and decision rules that determine whether to scaffold, repair, or realign surfaces in step 1.",
+      "claimRole": "partial-path"
+    },
+    "operator-acceptance-synthesis.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference describes a synthesis approach for operator-acceptance.md when the repo already has functional checks to derive from, not for the default template scaffolding.",
+      "trigger": "mature repo already has real functional checks and wants to derive operator-acceptance.md from existing command and takeover surface instead of inventing a parallel ritual."
+    },
+    "probe-surface.md": {
+      "engagement": "on-demand",
+      "rationale": "This narrow reference answers how to bootstrap a probe surface when the repo exposes an installable surface, which does not appear in every representative run.",
+      "trigger": "repo ships an installable CLI, plugin, package, or agent-facing integration surface that needs a small explicit probe surface for install and health semantics."
+    },
+    "retro-memory-seam.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference provides opt-in seeding of retro adapter and lessons file only when the repo explicitly requests durable retro memory, not a default surface.",
+      "trigger": "repo wants durable retrospective pickup between sessions instead of chat-only retros."
+    }
+  }
+}

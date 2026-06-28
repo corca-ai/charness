@@ -147,6 +147,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-cautilus-proof", "validate_cautilus_proof.py"),
     ("validate-cautilus-diagnostics", "validate_cautilus_diagnostics.py"),
     ("validate-cautilus-call-provenance", "validate_cautilus_call_provenance.py"),
+    ("validate-claim-fidelity-specs", "validate_claim_fidelity_specs.py"),
     ("validate-profiles", "validate_profiles.py"),
     ("validate-presets", "validate_presets.py"),
     ("validate-adapters", "validate_adapters.py"),

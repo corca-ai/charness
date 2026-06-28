@@ -1,0 +1,85 @@
+{
+  "_comment": "Claim-fidelity spec for the debug skill: does a real `/charness:debug` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These three reference docs own the RCA method (step 4: enumerate causes via causal chain), prevention-gap decision frame (step 6a: classify which gate failed and smallest change to fire it), and pattern-abstraction lens (step 6b: four-axis scan for siblings), all explicitly routed in the representative run.",
+  "skillId": "debug",
+  "skillDisplayName": "debug",
+  "evaluationId": "execution-debug-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "debug",
+  "prompt": "/charness:debug",
+  "requiredCommandFragments": [
+    "five-whys-causal-chain.md",
+    "detection-gap.md",
+    "sibling-search.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "anti-patterns.md",
+    "debug-memory.md",
+    "detection-gap.md",
+    "disconfirmer-first.md",
+    "document-seams.md",
+    "five-steps.md",
+    "five-whys-causal-chain.md",
+    "invariant-first-review.md",
+    "named-target-verification.md",
+    "sibling-search.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "Owns artifact location, validator contract, and adapter field definitions; consulted only when setting up or troubleshooting the durable-artifact surface.",
+      "trigger": "when customizing artifact location, understanding validator schema, or resolving repo-specific debug-adapter.yaml overrides"
+    },
+    "anti-patterns.md": {
+      "engagement": "on-demand",
+      "rationale": "Listed in guardrails section (line 160) as a checkpoint reference rather than a procedurally-routed step; useful for pre-work hygiene checks but not part of the representative five-step workflow.",
+      "trigger": "when the operator risks common debugging failures (fixing before defining behavior, paraphrasing the exact error, jumping to first cause, or abandoning the artifact)"
+    },
+    "debug-memory.md": {
+      "engagement": "on-demand",
+      "rationale": "Explains motivational context (future sessions, pattern visibility, prevention legibility) but is not a procedural reference consulted during diagnosis.",
+      "trigger": "when deciding why the artifact should be maintained or understanding the codebase-memory philosophy"
+    },
+    "detection-gap.md": {
+      "engagement": "engage-always",
+      "rationale": "Explicitly routed at step 6 (line 104-105) to walk existing detection surfaces and classify the gap; owns the enumeration and smallest-change logic for determining prevention moves.",
+      "claimRole": "prevention decision frame"
+    },
+    "disconfirmer-first.md": {
+      "engagement": "on-demand",
+      "rationale": "Explicitly routed at line 83 as a conditional falsifier for named claim types; only engaged when those specific claim shapes appear in the hypothesis.",
+      "trigger": "step 2 when the debug involves absence, attribution, liveness, or frequency claims"
+    },
+    "document-seams.md": {
+      "engagement": "on-demand",
+      "rationale": "Guidance on using existing repo surfaces (incident note, debug-note directory, troubleshooting doc) vs. default; works in tandem with adapter-contract.md for setup decisions.",
+      "trigger": "when establishing artifact location or choosing between repo's existing troubleshooting surface and charness-artifacts/ default"
+    },
+    "five-steps.md": {
+      "engagement": "engage-always",
+      "rationale": "The entire SKILL.md workflow (lines 66-128) is organized around these five disciplined steps; no diagnostic run can skip the framework without risking the anti-pattern of 'skipping a step and calling intuition a diagnosis.'",
+      "claimRole": "workflow structure"
+    },
+    "five-whys-causal-chain.md": {
+      "engagement": "engage-always",
+      "rationale": "Explicitly routed at step 4 (line 93) to walk from reported symptom to structural cause; owns the causal-chain heuristics and common-bottoms check that shape all root-cause reasoning.",
+      "claimRole": "RCA method"
+    },
+    "invariant-first-review.md": {
+      "engagement": "on-demand",
+      "rationale": "Explicitly routed at line 100-102 as a conditional substrate for producer-to-consumer invariant proof; sits before sibling-search for a specific bug class but not all bugs.",
+      "trigger": "step 6 when the bug involves workflow-boundary bugs, propagated diagnostics, or readiness decisions"
+    },
+    "named-target-verification.md": {
+      "engagement": "on-demand",
+      "rationale": "Explicitly routed at line 83 for operator-framed hypotheses; prevents silent target mismatches but only applies when the slice references a named target.",
+      "trigger": "step 2 when the debug involves operator-supplied target names (instance, service, branch, ref, env-var, channel, room, workspace)"
+    },
+    "sibling-search.md": {
+      "engagement": "engage-always",
+      "rationale": "Explicitly routed at step 6 (line 106-107) for the four-axis sibling scan; owns the mental-model abstraction rule, proof-level separation, and follow-up identifier rules that prevent cost-export to the next session.",
+      "claimRole": "pattern-abstraction lens"
+    }
+  }
+}

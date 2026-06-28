@@ -1,0 +1,64 @@
+{
+  "_comment": "Claim-fidelity spec for the release skill: does a real `/charness:release` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These five references form the core decision frame for the release skill: adapter seams (adapter-contract.md), version governance (version-policy.md), critique gating (critique-boundary.md), public verification (publication-boundary.md), and operator refresh (install-refresh.md). SKILL.md routes through all five in the representative run before mutation, tag, or publish completion.",
+  "skillId": "release",
+  "skillDisplayName": "release",
+  "evaluationId": "execution-release-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "release",
+  "prompt": "/charness:release",
+  "requiredCommandFragments": [
+    "version-policy.md",
+    "adapter-contract.md",
+    "critique-boundary.md",
+    "publication-boundary.md",
+    "install-refresh.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "critique-boundary.md",
+    "index.md",
+    "install-refresh.md",
+    "install-surface.md",
+    "publication-boundary.md",
+    "real-host-proof.md",
+    "version-policy.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "The planner and bootstrap scripts depend on understanding the adapter schema, defaults, and repo-specific seams; every representative run must consult this to interpret adapter configuration before mutation."
+    },
+    "critique-boundary.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 4 explicitly routes to this reference to apply the artifact/blocked-host rule for critique proof; the representative run gates task-completing mutation on this boundary."
+    },
+    "index.md": {
+      "engagement": "on-demand",
+      "rationale": "The file itself states 'Use this index when browsing the package manually. The run planner owns progressive disclosure during normal operation'; the planner handles reference routing for the representative run.",
+      "trigger": "when operator manually browses the release references without running the planner"
+    },
+    "install-refresh.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 6 and workflow output require operator update instructions and maintainer install refresh; the representative run must consult this for complete release closeout."
+    },
+    "install-surface.md": {
+      "engagement": "on-demand",
+      "rationale": "This file is explicitly a compatibility pointer that redirects readers to publication-boundary.md, install-refresh.md, and real-host-proof.md; new runs use the concept-specific files instead.",
+      "trigger": "when maintainer consults legacy documentation or older release records that reference install-surface concepts"
+    },
+    "publication-boundary.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 7 explicitly routes to this reference to judge public release surface verified status and open risks; the representative run must consult this to distinguish tag-push from actual public verification."
+    },
+    "real-host-proof.md": {
+      "engagement": "on-demand",
+      "rationale": "The reference documents host-proof triggers that apply only when the release touches install/tool/cache seams; not all representative runs need this gate.",
+      "trigger": "when the adapter declares real_host_required_surfaces or real_host_required_path_globs that apply to the current release slice"
+    },
+    "version-policy.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 5 explicitly routes through version-policy to choose patch/minor/major bump level; the representative run always needs this lens for honest bump selection."
+    }
+  }
+}

@@ -223,7 +223,10 @@ classification:
   gate-sufficient candidate and a distinct value/routing review is scheduled.
 - Whether the full all-skills fan-out should be one goal or a batch of smaller
   skill-family goals. Reopen trigger: after the 1-2 skill fan-out sample records
-  whether the method fits both sampled execution shapes.
+  whether the method fits both sampled execution shapes. Resolved 2026-06-28 for
+  the public tier: a single-pass public fan-out (operator-directed, skipping the
+  1-2 skill sample) — see `## Full Public Fan-Out (2026-06-28)`. Support-tier
+  batching stays open.
 
 ## Non-Goals
 
@@ -372,3 +375,51 @@ later slice updates it with implementation-discovered facts.
 Classify the quality skill's 39 declared references, probe the observation
 builder's accepted `spec.json` shape, and add the engagement tags in the
 least-disruptive compatible form.
+
+## Full Public Fan-Out (2026-06-28)
+
+The deferred "full all-skills fan-out" decision is taken for the public tier at
+operator direction: all 19 remaining public skills now ship a claim-fidelity
+`spec.json` beside the quality pilot, authored in one pass (a parallel
+per-skill classification fan-out) as static assets. No live captures were run —
+the eval-only/ask-before-run contract is unchanged, and a single-scenario
+sample was deliberately skipped in favor of the full pass.
+
+What shipped:
+
+- `evals/cautilus/<skill>-claim-fidelity/spec.json` for every public skill,
+  each with `declaredReferences` mirroring the skill's `references/` dir and a
+  full `referenceEngagement` classification on the three-way axis (every
+  `on-demand` records a trigger; `gate-sufficient` names a gate).
+- `evals/cautilus/claim-fidelity-registry.json` indexing all 20 specs with a
+  per-skill `fan_out_fit` note (SC5 fan-out disposition).
+- `scripts/claim_fidelity_lib.py` + `scripts/validate_claim_fidelity_specs.py`,
+  wired as the `validate-claim-fidelity-specs` standing gate (run-quality.sh +
+  `tests/quality_gates/support.py`) and surfaced as `claim-fidelity-specs` in
+  `.agents/surfaces.json`, with `tests/quality_gates/test_claim_fidelity_specs.py`.
+
+Scope held to the contract:
+
+- A per-skill spec covers only that skill's OWN `references/` dir. Shared
+  references (`skills/shared/references/**`) are out of scope even when
+  engage-always for the run (e.g. retro's `bootstrap-resolution.md`): the
+  classifier dropped them from `declaredReferences`/`requiredCommandFragments`.
+  This is a known limitation, recorded so a later slice can decide whether
+  shared-ref coverage deserves its own axis.
+- `thresholds` stay unset until a per-skill baseline capture sets a runtime
+  budget, exactly as the quality pilot set `max_duration_ms` from a real run.
+- `requiredCommandFragments` is the methodology's "if the run never opens this,
+  it did not follow its own routing" signal, restricted to engage-always
+  references the SKILL.md routes to at the point of need. It is the narrow
+  hard-matcher subset, not the whole engage-always set (the quality pilot
+  enforces 1 of 9). Where the fan-out initially set RCF to the full engage-always
+  set, that is a calibration ceiling, not a floor: each skill's first live
+  capture (ask-before-run) is where RCF gets tightened to what the run must
+  actually open, exactly as the quality pilot derived its matcher from a run.
+  `spec` was tightened during the closeout critique (13 -> 4) as the clearest
+  over-claim.
+
+Not done here (still open): live `/charness:<skill>` captures + `cautilus
+evaluate observation` scoring per skill (ask-before-run, one at a time); the
+quality pilot's own #397 runtime-consultation proof (goal Slice 7); the
+support-skill tier.

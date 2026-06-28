@@ -234,6 +234,22 @@ RESOLVED — all three items below were discussed with the operator during shapi
 - Lessons carried forward: Quality's essence is report-first judgment, not gate execution alone; skill-specific refs are engage-always only when the repo actually authors skill packages.
 - Metrics: Planner output on this repo: skills_in_scope=true, 9 required primer refs, 27 on-demand triggers.
 
+### Slice 8: Full public-skill claim-fidelity fan-out
+
+- Objective: Author a quality-style claim-fidelity `spec.json` for every public skill so each skill's reference-routing intent becomes checkable, with a registry and a standing validator gate.
+- Why this approach: Operator directed the full public fan-out now (taking the deferred "all-skills fan-out" decision) instead of the planned 1-2 skill sample; specs stay static authored assets because live capture + cautilus scoring are eval-only/ask-before-run.
+- Run ahead of Slice 7: this expansion proceeds in parallel with the still-open #397 quality runtime-consultation proof; it does not close #397.
+- Commits: pending
+- What changed: 19 new `evals/cautilus/<skill>-claim-fidelity/spec.json` (declaredReferences mirrored from each `references/` dir + full three-way `referenceEngagement` classification), `evals/cautilus/claim-fidelity-registry.json` (20 entries incl. quality, with `fan_out_fit`), `scripts/claim_fidelity_lib.py` + `scripts/validate_claim_fidelity_specs.py` wired as `validate-claim-fidelity-specs` (run-quality.sh + support.py) and `claim-fidelity-specs` surface in `.agents/surfaces.json`, `tests/quality_gates/test_claim_fidelity_specs.py`, methodology spec `## Full Public Fan-Out` section, `evals/README.md` section.
+- How authored: parallel per-skill classification fan-out (one agent per skill reading SKILL.md + every reference); a one-shot generator derived declaredReferences from the filesystem (ground truth) and attached classifications, dropping hallucinated/shared-ref entries.
+- Alternatives rejected: hand-transcribing 19 specs (error-prone); a 1-2 skill sample first (operator chose full pass); including shared `skills/shared/references/**` per skill (kept per-skill specs scoped to own `references/`).
+- Targeted verification: `validate_claim_fidelity_specs.py` validates 20 specs (quality `index.md` advisory only); builder parses a new spec into a `cautilus.skill_evaluation_inputs.v1` packet; `test_claim_fidelity_specs.py` (7) passes; `test_quality_runner.py` gate/stub consistency (34) passes; `validate_surfaces.py` passes.
+- Test duplication pressure: one focused test module reusing tmp-repo scaffolding; negative cases (phantom ref, on-demand-without-trigger, gate-sufficient-without-gate, RCF-not-engage-always, uncovered skill) plus a live-registry coverage smoke.
+- Critique: pending — fresh-eye subagent at slice boundary.
+- Off-goal findings: shared-ref-per-skill coverage is a known gap recorded in the methodology spec for a later axis decision; per-skill `thresholds` need a baseline capture before they mean anything.
+- Lessons carried forward: declaredReferences must be filesystem-derived, not agent-asserted; the three-way axis fit all 19 public skills cleanly (`fits poorly: no` across the board).
+- Metrics: 20 specs registered (19 new + quality); ~160 references classified across 19 skills; fan-out completed in ~84s / 19 agents.
+
 ## Context Sources
 
 - Source: handoff entry #1 (START HERE — skill claim-fidelity + doc-philosophy across ALL skills (public + support)) — see [docs/handoff.md](../../docs/handoff.md).

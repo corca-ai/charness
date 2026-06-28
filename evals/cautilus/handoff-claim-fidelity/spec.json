@@ -1,0 +1,58 @@
+{
+  "_comment": "Claim-fidelity spec for the handoff skill: does a real `/charness:handoff` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These five docs form the core decision rubrics: adapter-contract identifies the artifact location, continuation-sequence and state-selection govern the rewriting logic, spill-targets determines what stays versus what moves elsewhere, and workflow-trigger ensures clarity on the next workflow.",
+  "skillId": "handoff",
+  "skillDisplayName": "handoff",
+  "evaluationId": "execution-handoff-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "handoff",
+  "prompt": "/charness:handoff",
+  "requiredCommandFragments": [
+    "adapter-contract.md",
+    "continuation-sequence.md",
+    "state-selection.md",
+    "spill-targets.md",
+    "workflow-trigger.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "chunked-routing.md",
+    "continuation-sequence.md",
+    "document-seams.md",
+    "spill-targets.md",
+    "state-selection.md",
+    "workflow-trigger.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "The skill's workflow step 3 explicitly routes through this to identify the canonical handoff artifact location before proceeding."
+    },
+    "chunked-routing.md": {
+      "engagement": "on-demand",
+      "rationale": "Chunked routing is a conditional workflow phase that fires only when no explicit task directive exists; a representative run with a named next task bypasses the chunker entirely.",
+      "trigger": "User invokes handoff with no explicit task directive and a handoff signal is present"
+    },
+    "continuation-sequence.md": {
+      "engagement": "engage-always",
+      "rationale": "The skill's workflow steps 2, 4, and guardrails section explicitly route through this to determine continuation order and dependency sequencing for the next moves."
+    },
+    "document-seams.md": {
+      "engagement": "on-demand",
+      "rationale": "This doc addresses portability decisions when a repo already uses a checked-in handoff surface; adapter-contract handles the default path in most representative runs.",
+      "trigger": "Repo has a pre-existing checked-in handoff surface that should override the default location"
+    },
+    "spill-targets.md": {
+      "engagement": "engage-always",
+      "rationale": "The skill's guardrails section and workflow step 4 explicitly consult this to determine what detail moves to owning artifacts versus what stays in the handoff."
+    },
+    "state-selection.md": {
+      "engagement": "engage-always",
+      "rationale": "The skill's workflow step 4 and guardrails section explicitly route through this as the governing rubric for keeping only facts that change the next action."
+    },
+    "workflow-trigger.md": {
+      "engagement": "engage-always",
+      "rationale": "The skill's workflow step 5 explicitly consults this to ensure the next workflow or skill is named directly, not inferred."
+    }
+  }
+}

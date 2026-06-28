@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "description": "Per-skill Cautilus claim-fidelity specs: does a real /charness:<skill> run honor its own reference-routing claims. See charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md.",
+  "specs": [
+    {
+      "skill_id": "achieve",
+      "spec_path": "evals/cautilus/achieve-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "announcement",
+      "spec_path": "evals/cautilus/announcement-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "create-cli",
+      "spec_path": "evals/cautilus/create-cli-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "create-skill",
+      "spec_path": "evals/cautilus/create-skill-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "critique",
+      "spec_path": "evals/cautilus/critique-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "debug",
+      "spec_path": "evals/cautilus/debug-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "find-skills",
+      "spec_path": "evals/cautilus/find-skills-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "gather",
+      "spec_path": "evals/cautilus/gather-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "handoff",
+      "spec_path": "evals/cautilus/handoff-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "hitl",
+      "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "hotl",
+      "spec_path": "evals/cautilus/hotl-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "ideation",
+      "spec_path": "evals/cautilus/ideation-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "impl",
+      "spec_path": "evals/cautilus/impl-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "issue",
+      "spec_path": "evals/cautilus/issue-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "narrative",
+      "spec_path": "evals/cautilus/narrative-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "quality",
+      "spec_path": "evals/cautilus/quality-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "release",
+      "spec_path": "evals/cautilus/release-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "retro",
+      "spec_path": "evals/cautilus/retro-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "setup",
+      "spec_path": "evals/cautilus/setup-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    },
+    {
+      "skill_id": "spec",
+      "spec_path": "evals/cautilus/spec-claim-fidelity/spec.json",
+      "fan_out_fit": "no"
+    }
+  ]
+}

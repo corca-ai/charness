@@ -1,0 +1,51 @@
+{
+  "_comment": "Claim-fidelity spec for the narrative skill: does a real `/charness:narrative` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: source-map.md defines the freshness checks and alignment rules that govern step 2's mapping of the truth surface, and brief-shape.md defines the rules for step 6's derivation of an audience-neutral brief; together they provide the core lenses for the skill's primary function of aligning source-of-truth documents and deriving a compressed brief skeleton.",
+  "skillId": "narrative",
+  "skillDisplayName": "narrative",
+  "evaluationId": "execution-narrative-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "narrative",
+  "prompt": "/charness:narrative",
+  "requiredCommandFragments": [
+    "source-map.md",
+    "brief-shape.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "brief-shape.md",
+    "cross-repo-issue-shaping.md",
+    "landing-rewrite-loop.md",
+    "scenario-blocks.md",
+    "source-map.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 2 explicitly requires reviewing adapter fitness and understanding the adapter contract structure before trusting the declared source and mutable documents."
+    },
+    "brief-shape.md": {
+      "engagement": "engage-always",
+      "rationale": "Defines the rules for deriving an audience-neutral brief skeleton in step 6, specifying what to avoid and how the brief relates to downstream announcement work."
+    },
+    "cross-repo-issue-shaping.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 4 routes to this reference only for cross-repo issues, ensuring the writing order keeps why-what-how honest instead of leading with implementation.",
+      "trigger": "The work is shaped as a cross-repo issue, proposal, or durable note that will be handed to another repo rather than solved only inside the current one."
+    },
+    "landing-rewrite-loop.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 4 explicitly routes to this reference only when rewriting a high-leverage first-touch surface, providing the detailed loop for landing-page specific work.",
+      "trigger": "The target is a high-leverage first-touch surface (README, landing page, operator doc) requiring the full loop of comparables, intent inventory, claim audit, and compression metrics."
+    },
+    "scenario-blocks.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 5 routes to this reference only when adding scenario blocks for products with multiple use-case paths, using the relevant subset of slot templates.",
+      "trigger": "The repo has multiple first-class use cases or the adapter declares scenario_surfaces that need to stay visible in durable docs."
+    },
+    "source-map.md": {
+      "engagement": "engage-always",
+      "rationale": "Defines the freshness-check and alignment rules that govern step 2's core mapping of the current truth surface and resolution of contradictions."
+    }
+  }
+}

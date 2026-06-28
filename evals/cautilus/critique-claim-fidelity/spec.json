@@ -1,0 +1,88 @@
+{
+  "_comment": "Claim-fidelity spec for the critique skill: does a real `/charness:critique` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: Every representative run triages concerns into the four bins using this reference (Workflow step 5, line 125: \"triage each concern using `references/counterweight-triage.md`\").",
+  "skillId": "critique",
+  "skillDisplayName": "critique",
+  "evaluationId": "execution-critique-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "critique",
+  "prompt": "/charness:critique",
+  "requiredCommandFragments": [
+    "counterweight-triage.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "angle-selection.md",
+    "autonomous-trigger.md",
+    "cadence.md",
+    "code-critique.md",
+    "confirmed-input-over-anchoring.md",
+    "counterweight-triage.md",
+    "premortem-decision.md",
+    "prepare-packet.md",
+    "release-critique.md",
+    "rename-critique.md",
+    "spec-critique.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "Documents optional adapter configuration; consulted only when the repo declares .agents/critique-adapter.yaml or needs to configure packet sections.",
+      "trigger": "when configuring critique adapter behavior, setting reviewer tiers, or understanding adapter lookup order and field semantics"
+    },
+    "angle-selection.md": {
+      "engagement": "on-demand",
+      "rationale": "Provides background on the five anchors and angle selection principles; the target reference's Anchor Angle Distribution is primary, this is supplementary.",
+      "trigger": "when understanding the anchor lineup, selecting contrasting angles, or reviewing angle weighting for non-standard change surfaces"
+    },
+    "autonomous-trigger.md": {
+      "engagement": "on-demand",
+      "rationale": "Scans repo state to infer a bounded target when the caller has not supplied one; enables autonomous critique without requiring upfront source summarization.",
+      "trigger": "when critique is invoked with no pending-change artifact, diff summary, PR, spec, or release note supplied"
+    },
+    "cadence.md": {
+      "engagement": "on-demand",
+      "rationale": "Governs escalation ladder and review-unit scoping before critique is invoked; consulted by parent workflows, not by the representative run itself.",
+      "trigger": "when deciding whether to invoke standalone critique or use inline critique, or when defining review unit boundaries for task-completing work"
+    },
+    "code-critique.md": {
+      "engagement": "on-demand",
+      "rationale": "Routes to this target reference only when change type is code/diff; shapes angle distribution and counterweight bins for code review.",
+      "trigger": "when the pending change is concrete code under review (code critique, PR critique, commit critique, pre-merge review)"
+    },
+    "confirmed-input-over-anchoring.md": {
+      "engagement": "on-demand",
+      "rationale": "Provides an optional angle lens for specialized anti-anchoring review; consulted only when the condition (confirmed input + system variance) is present.",
+      "trigger": "when a pending change locks a value from user confirmation, issue framing, or prior session memory, and the repo varies on a known axis"
+    },
+    "counterweight-triage.md": {
+      "engagement": "engage-always",
+      "rationale": "Every representative run triages concerns into the four bins (Act Before Ship, Bundle Anyway, Over-Worry, Valid but Defer) using this reference (Workflow step 5)."
+    },
+    "premortem-decision.md": {
+      "engagement": "on-demand",
+      "rationale": "Routes to this target reference only when change type is a decision; shapes angle distribution and counterweight bins for that specific change class.",
+      "trigger": "when the pending change is a decision lock-in without committed code, release, or rename (decision premortem, design lock-in, workflow contract change)"
+    },
+    "prepare-packet.md": {
+      "engagement": "on-demand",
+      "rationale": "Conditional mechanism fired by adapter configuration; when adapter declares sections, bootstrap runs the prepare runner before spawning reviewers.",
+      "trigger": "when the repo's .agents/critique-adapter.yaml declares ≥1 packet_sections entry, preparing a deterministic packet for fresh-eye reviewers"
+    },
+    "release-critique.md": {
+      "engagement": "on-demand",
+      "rationale": "Routes to this target reference only when change type is release; shapes angle distribution, counterweight bins, and surface-lock inventory for release lock-in.",
+      "trigger": "when the pending change is a release surface about to commit (release critique, pre-release review, before cutting tag or bumping version)"
+    },
+    "rename-critique.md": {
+      "engagement": "on-demand",
+      "rationale": "Routes to this target reference only when change type is rename/deletion; shapes angle distribution, counterweight bins, and first-reader probe for rename lock-in.",
+      "trigger": "when the pending change moves, renames, or removes a named concept across multiple sites (rename critique, deletion review, skill/directory/module rename)"
+    },
+    "spec-critique.md": {
+      "engagement": "on-demand",
+      "rationale": "Routes to this target reference only when change type is spec/design; shapes angle distribution, counterweight bins, and coherence checks for spec lock-in.",
+      "trigger": "when the pending change is a spec or design contract about to gate implementation (spec critique, spec premortem, pre-impl review)"
+    }
+  }
+}

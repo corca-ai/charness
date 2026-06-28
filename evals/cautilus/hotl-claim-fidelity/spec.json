@@ -1,0 +1,34 @@
+{
+  "_comment": "Claim-fidelity spec for the hotl skill: does a real `/charness:hotl` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: The skill's workflow routes through adapter resolution (adapter-contract), proof validation (proof-rules), and ledger disposition (ledger-and-dispositions) at the point of need for every representative HOTL run.",
+  "skillId": "hotl",
+  "skillDisplayName": "hotl",
+  "evaluationId": "execution-hotl-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "hotl",
+  "prompt": "/charness:hotl",
+  "requiredCommandFragments": [
+    "adapter-contract.md",
+    "proof-rules.md",
+    "ledger-and-dispositions.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "ledger-and-dispositions.md",
+    "proof-rules.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "The skill's core workflow (Bootstrap and steps 1-4) requires resolving and understanding the adapter contract to discover repo-owned proof surfaces, commands, and ledger paths — this doc governs the adapter semantics."
+    },
+    "ledger-and-dispositions.md": {
+      "engagement": "engage-always",
+      "rationale": "Step 5 of the workflow explicitly routes to this doc: 'Update the ledger and close out per references/ledger-and-dispositions.md' — it provides the status vocabulary, field semantics, and adjudication rules that shape every run's final disposition."
+    },
+    "proof-rules.md": {
+      "engagement": "engage-always",
+      "rationale": "The Proof Rules section explicitly states 'Apply references/proof-rules.md; the load-bearing rules' — this is the governing interpretation rubric for what counts as valid proof vs false-proof patterns in step 3-4 of any representative run."
+    }
+  }
+}

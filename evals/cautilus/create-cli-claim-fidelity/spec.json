@@ -1,0 +1,80 @@
+{
+  "_comment": "Claim-fidelity spec for the create-cli skill: does a real `/charness:create-cli` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These four docs form the governing lens for the representative run: intent-first-grammar.md sets the user-journey verb/object frame, command-surface.md shapes the surface including prep/execute decisions, command-conventions.md locks lifecycle invariants, and quality-gates.md selects proof axes. External-capability-clis.md is conditionally routed but not required for a representative single-command CLI.",
+  "skillId": "create-cli",
+  "skillDisplayName": "create-cli",
+  "evaluationId": "execution-create-cli-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "create-cli",
+  "prompt": "/charness:create-cli",
+  "requiredCommandFragments": [
+    "intent-first-grammar.md",
+    "command-surface.md",
+    "command-conventions.md",
+    "quality-gates.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "case-studies.md",
+    "code-shape.md",
+    "command-conventions.md",
+    "command-surface.md",
+    "external-capability-clis.md",
+    "install-update.md",
+    "intent-first-grammar.md",
+    "machine-readable-state.md",
+    "quality-gates.md",
+    "version-provenance.md"
+  ],
+  "referenceEngagement": {
+    "case-studies.md": {
+      "engagement": "on-demand",
+      "rationale": "Not routed by SKILL.md workflow; useful for design context but not required for the ordinary representative run to decide cleanly.",
+      "trigger": "when comparing design choices with nearby repos (charness, agent-browser, cautilus) or needing real examples"
+    },
+    "code-shape.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 5 says 'keep implementation boring' but does not explicitly route; consulted for hygiene review of parser/handler shape.",
+      "trigger": "when implementation structure review is needed or the code shows smell (copied handlers, giant functions, hidden state)"
+    },
+    "command-conventions.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 2 explicitly routes here for canonical lifecycle verbs (init, doctor, update, etc.) that govern the surface.",
+      "claimRole": "baseline-invariants"
+    },
+    "command-surface.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 2 explicitly routes here for prep/execute split decision and multi-command surface design, core to the representative run.",
+      "claimRole": "surface-design-frame"
+    },
+    "external-capability-clis.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md step 2 routes conditionally: 'if the CLI lets agents interact with an external system, define the external capability boundary separately; see references/external-capability-clis.md'.",
+      "trigger": "when the CLI reads from or writes to a third-party system like Notion, Linear, GitHub, or Slack"
+    },
+    "install-update.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 4 covers distribution contract but does not explicitly route; consulted only when install/update surfaces are in scope.",
+      "trigger": "when the CLI owns install, update, reset, or lifecycle state mutations"
+    },
+    "intent-first-grammar.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 2 explicitly routes to this doc to pick journey verbs first and ensure user-facing grammar before locking command names.",
+      "claimRole": "command-naming-lens"
+    },
+    "machine-readable-state.md": {
+      "engagement": "on-demand",
+      "rationale": "Step 2 mentions --json and step 3 requires structured outputs from mutations, but the doc is consulted only when agent-readable state matters.",
+      "trigger": "when agents consume structured output or the CLI mutates install/support state that later agents must read"
+    },
+    "quality-gates.md": {
+      "engagement": "engage-always",
+      "rationale": "SKILL.md step 6 explicitly routes to this doc to choose proof axes and cover gate families before the slice closes.",
+      "claimRole": "gate-design-rubric"
+    },
+    "version-provenance.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md line 104 mentions recording version provenance and defining cached latest-version checks, but only when the product owns version state.",
+      "trigger": "when update guidance depends on install channel or the CLI needs version-tracking contract"
+    }
+  }
+}

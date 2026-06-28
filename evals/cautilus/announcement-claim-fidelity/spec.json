@@ -1,0 +1,48 @@
+{
+  "_comment": "Claim-fidelity spec for the announcement skill: does a real `/charness:announcement` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: The Workflow routes through adapter-contract.md at bootstrap (step 2) to resolve message shape and delivery policy, and through draft-shape.md at step 4-5 to enforce audience tone and public-body reframing before drafting; both govern the core judgment in every representative run.",
+  "skillId": "announcement",
+  "skillDisplayName": "announcement",
+  "evaluationId": "execution-announcement-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "announcement",
+  "prompt": "/charness:announcement",
+  "requiredCommandFragments": [
+    "adapter-contract.md",
+    "draft-shape.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "audience-policy.md",
+    "delivery-seams.md",
+    "draft-shape.md",
+    "large-window-fanout.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "The Workflow step 2 explicitly consults the adapter to resolve drafting context; step 4 applies adapter policy (sections, audience_tags, omission_lenses, in_progress_sources, outputs); adapter shape governs the entire representative run from first bootstrap call through final recording.",
+      "claimRole": "bootstrap & policy foundation"
+    },
+    "audience-policy.md": {
+      "engagement": "on-demand",
+      "rationale": "Workflow step 4 applies 'audience tags when configured' and step 3 recovers 'audience value'; this doc answers how to handle unset vs. explicit-empty vs. configured tags, which is a narrower condition than the representative run's ordinary audience reframing in draft-shape.md.",
+      "trigger": "adapter declares audience_tags in audience-policy decision"
+    },
+    "delivery-seams.md": {
+      "engagement": "on-demand",
+      "rationale": "Workflow step 7 consults this only when delivery is requested ('if the user wants delivery, resolve the backend seam only then'); covers format conversion, message_size_limit splitting, and chaining outputs via delivery_handle — not needed for draft-only runs.",
+      "trigger": "user explicitly requests delivery (not draft-only)"
+    },
+    "draft-shape.md": {
+      "engagement": "engage-always",
+      "rationale": "Workflow step 4 says 'steer wording per references/draft-shape.md'; step 5 runs 'a public-body pass before writing' using this doc to distinguish chat_update vs. release_notes and enforce audience-tagged reframing; step 6 uses Dual-Output Drafts to label outputs by delivery_role.",
+      "claimRole": "audience-tone & public-body lens"
+    },
+    "large-window-fanout.md": {
+      "engagement": "on-demand",
+      "rationale": "Workflow step 2 says 'consider fanning out triage per references/large-window-fanout.md' only when 'the commit window is large or spans more than one source' — a conditional optimization for specific commit-collection shapes, not the ordinary representative run.",
+      "trigger": "commit window is large or spans multiple sources/outputs with non-overlapping audiences"
+    }
+  }
+}

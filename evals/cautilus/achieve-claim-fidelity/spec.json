@@ -1,0 +1,49 @@
+{
+  "_comment": "Claim-fidelity spec for the achieve skill: does a real `/charness:achieve` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: These three references form the core contract: lifecycle.md governs the three-phase workflow and activation readiness (the central claim), goal-artifact.md defines the artifact shape and validation contract, and coordination.md establishes the find-skills routing and skill boundaries that are seeded into every active run.",
+  "skillId": "achieve",
+  "skillDisplayName": "achieve",
+  "evaluationId": "execution-achieve-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "achieve",
+  "prompt": "/charness:achieve",
+  "requiredCommandFragments": [
+    "lifecycle.md",
+    "goal-artifact.md",
+    "coordination.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "coordination.md",
+    "goal-artifact.md",
+    "index.md",
+    "lifecycle.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "Consulted only at closeout when the goal's adapter policy must be resolved for publication defaults, issue-closeout carrier, and Auto-Retro disposition floors; not needed for Before-phase shaping or simple local-only goals.",
+      "trigger": "when the goal resolves tracked issues, touches release surfaces, or needs to determine closeout publication defaults at the After-phase evidence gate"
+    },
+    "coordination.md": {
+      "engagement": "engage-always",
+      "rationale": "Required for understanding how achieve coordinates with existing skills and for the find-skills routing cues that must be seeded during active runs, as the lifecycle section (317-328) makes coordination routing a core workflow step.",
+      "claimRole": "coordination-framework"
+    },
+    "goal-artifact.md": {
+      "engagement": "engage-always",
+      "rationale": "Explicitly referenced alongside lifecycle.md for the artifact shape and helper scripts required to save and validate goals, forming the structural contract every run must follow to save a reviewable artifact.",
+      "claimRole": "artifact-contract"
+    },
+    "index.md": {
+      "engagement": "on-demand",
+      "rationale": "A navigation index that points to the four references rather than providing substantive content; a representative run consults the actual references directly, not this index.",
+      "trigger": "when the user asks for a consolidated overview of all achieve reference documents"
+    },
+    "lifecycle.md": {
+      "engagement": "engage-always",
+      "rationale": "The skill's own Workflow section explicitly routes to lifecycle.md for the full contract on Before/During/After phases and activation readiness, which shapes every representative run's shaping and activation decisions.",
+      "claimRole": "phase-contract"
+    }
+  }
+}

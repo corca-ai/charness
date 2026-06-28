@@ -1,0 +1,71 @@
+{
+  "_comment": "Claim-fidelity spec for the ideation skill: does a real `/charness:ideation` run honor its own central claims, above all that it routes to its references at the point of need? declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis from the locked methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). requiredCommandFragments are the engage-always references SKILL.md routes to in a representative run: if the run never opens one, it did not follow its own routing. thresholds are intentionally omitted until a first baseline capture sets a per-skill runtime budget. requiredCommandFragments rationale: Concept-architecture.md is the only engage-always reference because it defines the main loop and document discipline that governs every representative ideation run, enabling the skill's core claim to 'maintain a living world model' across the conversation lifecycle.",
+  "skillId": "ideation",
+  "skillDisplayName": "ideation",
+  "evaluationId": "execution-ideation-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "ideation",
+  "prompt": "/charness:ideation",
+  "requiredCommandFragments": [
+    "concept-architecture.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "agent-human-lens.md",
+    "concept-architecture.md",
+    "decision-question-response.md",
+    "effectuation.md",
+    "sequence-discipline.md",
+    "spec-boundary.md",
+    "structured-questions.md",
+    "truth-and-edge.md",
+    "world-modeling.md"
+  ],
+  "referenceEngagement": {
+    "agent-human-lens.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md lists 'agent-human lens' as one optional lens in Workflow step 2, selected when 'agents, APIs, CLI, and interface choices' are first-class design constraints for that particular concept.",
+      "trigger": "when the concept includes agent-native surfaces, CLI/API/skill design decisions, or interface quality concerns"
+    },
+    "concept-architecture.md": {
+      "engagement": "engage-always",
+      "rationale": "The SKILL.md Workflow step 1 explicitly states 'Establish a living concept model' and the skill's core mechanism depends on maintaining a durable world model across turns; this reference defines the main loop and document discipline that governs the entire representative run.",
+      "claimRole": "living-model"
+    },
+    "decision-question-response.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md lines 25-29 explicitly route this: 'When the user asks a design or workflow decision-shaped question... answer with a decision frame'; this is a conditional pattern match, not a universal part of the workflow.",
+      "trigger": "when the user asks a decision-shaped question such as 'what do we need to decide?', 'which direction is better?', or 'what decision issues are open?'"
+    },
+    "effectuation.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md explicitly gates this: 'when uncertainty is high and the next move should start from available means, affordable loss, or early stakeholder commitment, borrow Saras Sarasvathy-style effectuation'.",
+      "trigger": "when the user's concept is highly uncertain and the next move should start from available means, affordable loss, or early stakeholder commitment"
+    },
+    "sequence-discipline.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md applies this conditionally for Workflow step 3 to resolve upstream questions; the reference guides decision ordering but is not invoked for every ideation.",
+      "trigger": "when the concept has multiple interdependent decisions or when resolving the upstream question would materially change the rest of the design"
+    },
+    "spec-boundary.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md Workflow step 6 asks 'whether the work should stay in ideation, move to spec, or run a quick validation loop first'; this reference provides the handoff decision criteria.",
+      "trigger": "at the end of ideation when deciding whether the concept is ready to move to spec, stay in ideation, or run validation first"
+    },
+    "structured-questions.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md lines 152-156 present this as opt-in: 'When the open questions are ones a downstream skill must act on, emit an opt-in Structured Questions section'; prose-only output stays valid.",
+      "trigger": "when the ideation concludes with open questions that downstream skills (spec or impl) must act on, requiring machine-legible handoff format"
+    },
+    "truth-and-edge.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md presents truth and edge as optional shaping lenses chosen when the question fits; the skill asks to 'test demand/status quo/wedge/moat early' but only as one of many lenses depending on the concept's shape.",
+      "trigger": "when the concept involves demand validation, competitive positioning, or requires assessment of customer pain and wedge/moat hypotheses"
+    },
+    "world-modeling.md": {
+      "engagement": "on-demand",
+      "rationale": "SKILL.md uses this conditionally: 'when the concept is really a system of actors, feedback loops, or leverage points'; the reference itself says 'do not force the split for a simple idea'.",
+      "trigger": "when the concept involves systems, workflows with multiple stages, or when entity/stage separation would clarify contradictions"
+    }
+  }
+}
