@@ -72,6 +72,13 @@
     },
     {
       "class": "intentional",
+      "id": "70422ea9c8108297",
+      "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape — a shared echo helper would couple unrelated skill adapter libs for negligible value",
+      "reviewed_at": "2026-06-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7364bba46c46e120",
       "note": "single-line fallback/provenance expression family rotated after HITL scratchpad template extraction; not meaningful extractable duplication",
       "reviewed_at": "2026-06-27",
