@@ -406,8 +406,14 @@ Scope held to the contract:
   classifier dropped them from `declaredReferences`/`requiredCommandFragments`.
   This is a known limitation, recorded so a later slice can decide whether
   shared-ref coverage deserves its own axis.
-- `thresholds` stay unset until a per-skill baseline capture sets a runtime
-  budget, exactly as the quality pilot set `max_duration_ms` from a real run.
+- `max_duration_ms` is derived per-skill from that skill's own PASSING capture
+  with ~2x headroom — the retro model (193700ms passing re-capture -> 420000) —
+  NOT a shared cap (decided 2026-06-29, resolving the handoff Discuss). This
+  follows live-capture-before-assert: a threshold without a real passing run is a
+  hypothesis, so `thresholds` stay unset until a passing baseline exists. quality's
+  600000 is a provisional reasoned bar (its 2026-06-22 baseline run FAILED, 0/39
+  refs, so there is no passing run to derive from yet) and must be re-derived from
+  a passing quality capture during the item-3 rollout.
 - `requiredCommandFragments` is the methodology's "if the run never opens this,
   it did not follow its own routing" signal, restricted to engage-always
   references the SKILL.md routes to at the point of need. It is the narrow

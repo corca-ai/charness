@@ -31,13 +31,15 @@
    `build_linear_envelope`, never fabricated branches). Add a branch fixture only
    where a single prompt can't honestly evaluate the skill.
 2. Secondary: support-skill tier; quality pilot #397 runtime proof. Each new
-   floor stays a live-capture HYPOTHESIS until one capture proves it.
+   floor stays a live-capture HYPOTHESIS until one capture proves it. Re-derive
+   quality's `max_duration_ms` (now a provisional 600000) from its first PASSING
+   capture per the threshold decision below.
 
 ## Discuss
 
-- Threshold policy: retro set `max_duration_ms` from its own pass baseline
-  (420000); the quality pilot used the 600000 cap. Per-skill-from-real-run vs a
-  shared cap.
+- Threshold policy — RESOLVED 2026-06-29: `max_duration_ms` is set per-skill from
+  that skill's own PASSING capture (~2x headroom, the retro model), not a shared
+  cap. Recorded in the [methodology spec](../charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md).
 
 ## References
 
