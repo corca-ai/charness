@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "quality",
+  "skillDisplayName": "quality",
+  "evaluations": [
+    {
+      "evaluationId": "execution-quality-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "quality",
+      "displayName": "quality",
+      "evaluationKind": "execution",
+      "prompt": "/charness:quality",
+      "startedAt": "2026-06-29T12:50:30.412Z",
+      "invoked": true,
+      "summary": "Execution of /quality: 14379285 total tokens (191851 output, 13561806 cache-read), 1199362ms wall. Tool profile: Bash=62 Read=20 Skill=1 Edit=1 Agent=1. All declared claims met. Reference coverage: 10/39 declared references opened (missing: adapter-contract.md, adapter-gate-review.md, agent-production-runtime.md, behavior-testing.md, bootstrap-escalations.md, bootstrap-posture.md, boundary-bypass-ratchet.md, brittle-source-guards.md, cautilus-on-demand.md, ci-recoverable-gate-triage.md, cli-ergonomics-smells.md, coverage-floor-policy.md, dual-implementation-parity.md, entrypoint-docs-ergonomics.md, executable-spec-economics.md, installable-cli-probes.md, lint-ignore-discipline.md, mutation-testing.md, prompt-asset-policy.md, public-spec-layering.md, quality-signal-scorecard.md, security-npm.md, security-overview.md, security-pnpm.md, security-uv.md, standing-doc-provenance.md, standing-gate-verbosity.md, testability-and-selection.md, unit-test-quality.md). Waste smells: 1 (duplicate_read).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 14379285,
+        "output_tokens": 191851,
+        "tool_count": 85,
+        "waste_smell_count": 1,
+        "duration_ms": 1199362
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 600000
+      }
+    }
+  ]
+}

@@ -14,6 +14,7 @@ import {
 	collectToolTrace,
 	detectWaste,
 	durationMs,
+	expandForLoopReadCommands,
 	finalAssistantText,
 	listSessionTreeJsonl,
 	parseEventsFromFiles,
@@ -133,6 +134,103 @@ test("parseReadCommandBasenames ignores piped-stdin readers and redirect targets
 test("parseReadCommandBasenames ignores non-read commands", () => {
 	assert.equal(parseReadCommandBasenames("python3 scripts/plan_retro_run.py --repo-root .").size, 0);
 	assert.equal(parseReadCommandBasenames("git log --oneline -30").size, 0);
+});
+
+test("expandForLoopReadCommands expands a literal primer-batch loop into per-file reads", () => {
+	// The 2026-06-29 quality capture's actual batch-read shape: a `for` loop over a
+	// literal primer list catting `references/$f.md`. The assembled paths only exist
+	// after shell expansion, so a non-expanding matcher false-negatives the batch.
+	const cmd =
+		'for f in quality-lenses gate-classification skill-quality; do echo "## references/$f.md ##"; cat "references/$f.md"; echo; done 2>&1 | head -560';
+	const expanded = expandForLoopReadCommands(cmd);
+	// Only the `cat` body is emitted (echo is not a read), one per literal token.
+	assert.deepEqual(expanded.sort(), [
+		"cat references/gate-classification.md",
+		"cat references/quality-lenses.md",
+		"cat references/skill-quality.md",
+	]);
+	const names = new Set();
+	for (const c of expanded) {
+		for (const n of parseReadCommandBasenames(c)) {
+			names.add(n);
+		}
+	}
+	assert.ok(names.has("quality-lenses.md"));
+	assert.ok(names.has("skill-quality.md"));
+});
+
+test("expandForLoopReadCommands handles ${VAR}, leaves non-literal lists and non-read bodies alone", () => {
+	assert.deepEqual(expandForLoopReadCommands('for f in a b; do head -n 5 "docs/${f}.md"; done'), [
+		"head -n 5 docs/a.md",
+		"head -n 5 docs/b.md",
+	]);
+	// A glob/command-substitution list is not statically expandable.
+	assert.deepEqual(expandForLoopReadCommands('for f in *.md; do cat "$f"; done'), []);
+	assert.deepEqual(expandForLoopReadCommands('for f in $(ls); do cat "$f"; done'), []);
+	// A non-read body emits nothing (no false floor match from an echo).
+	assert.deepEqual(expandForLoopReadCommands('for f in a b; do echo "$f.md"; done'), []);
+	// A non-loop command is untouched.
+	assert.deepEqual(expandForLoopReadCommands("cat references/quality-lenses.md"), []);
+});
+
+test("expandForLoopReadCommands keeps coverage sharp: grep pattern in a loop body is dropped", () => {
+	// The expanded read still routes through parseReadCommandBasenames, so a
+	// reference NAMED in a loop's grep pattern is not miscounted as opened.
+	const expanded = expandForLoopReadCommands('for f in expert-lens.md chunk-contract.md; do grep "$f" SKILL.md; done');
+	const names = new Set();
+	for (const c of expanded) {
+		for (const n of parseReadCommandBasenames(c)) {
+			names.add(n);
+		}
+	}
+	assert.ok(!names.has("expert-lens.md"));
+	assert.ok(!names.has("chunk-contract.md"));
+	assert.ok(names.has("SKILL.md"));
+});
+
+test("collectOpenedBasenames and the floor see a reference read via a for-loop", () => {
+	const events = [
+		assistantToolUse([
+			{
+				name: "Bash",
+				input: {
+					command:
+						'for f in quality-lenses gate-classification; do cat "references/$f.md"; done',
+				},
+			},
+		]),
+	];
+	const opened = collectOpenedBasenames(events);
+	assert.ok(opened.has("quality-lenses.md"));
+	assert.ok(opened.has("gate-classification.md"));
+	// The floor substring-matches the command log, which now carries the expansion.
+	assert.match(collectCommandLog(events), /references\/quality-lenses\.md/);
+});
+
+test("buildExecutionObservation passes when the required fragment is read via a for-loop", () => {
+	const spec = {
+		skillId: "quality",
+		evaluationId: "execution-quality-claim-fidelity",
+		targetId: "quality",
+		prompt: "/charness:quality",
+		requiredCommandFragments: ["quality-lenses.md"],
+		declaredReferences: ["quality-lenses.md", "gate-classification.md", "unread.md"],
+	};
+	const events = [
+		assistantToolUse([
+			{
+				name: "Bash",
+				input: {
+					command:
+						'for f in quality-lenses gate-classification; do cat "references/$f.md"; done',
+				},
+			},
+		]),
+	];
+	const { report } = buildExecutionObservation({ spec, events });
+	assert.equal(report.outcome, "passed");
+	assert.equal(report.coverage.covered, 2);
+	assert.deepEqual(report.coverage.missingRefs, ["unread.md"]);
 });
 
 test("collectOpenedBasenames counts Bash sed reads alongside Read tool-calls", () => {

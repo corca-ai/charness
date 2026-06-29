@@ -133,6 +133,20 @@ export function collectCommandLog(events) {
 					parts.push(value.filter((entry) => typeof entry === "string").join(" "));
 				}
 			}
+			// Recover for-loop batch reads: the assembled path exists only after
+			// shell expansion, so append the expanded read commands so a primer set
+			// read via `for f in ...; do cat "ref/$f.md"; done` is visible to the
+			// fragment matcher, not a false-negative. The raw command text is already
+			// pushed above, so the synthetic reads only ADD the contiguous path the
+			// shell would have assembled. Only read-command bodies are expanded (an
+			// `echo "$f.md"` is skipped) — that keeps the sharp COVERAGE metric honest
+			// (an echo is not a read), the same reason expansion routes through
+			// parseReadCommandBasenames in collectOpenedBasenames.
+			if (typeof input.command === "string") {
+				for (const cmd of expandForLoopReadCommands(input.command)) {
+					parts.push(cmd);
+				}
+			}
 		}
 	}
 	return parts.join("\n");
@@ -425,6 +439,76 @@ export function parseReadCommandBasenames(command) {
 	return found;
 }
 
+const LOOP_VAR_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+// A `for` list token is statically expandable only when it has no shell
+// construct the analyzer cannot resolve: no nested $var, command substitution,
+// glob, brace/seq, or subshell. A non-literal list is left unexpanded.
+function isLiteralLoopToken(token) {
+	return token.length > 0 && !/[$*?`{}()[\]]/.test(token);
+}
+
+// Replace $VAR and ${VAR} (whole-name only) in one token with the literal value.
+// varName is validated against LOOP_VAR_RE, so it is safe to inject into a regex.
+function substituteLoopVar(token, varName, value) {
+	return token
+		.replace(new RegExp(`\\$\\{${varName}\\}`, "g"), value)
+		.replace(new RegExp(`\\$${varName}(?![A-Za-z0-9_])`, "g"), value);
+}
+
+// Expand `for VAR in TOK1 TOK2 ...; do BODY; done` over a LITERAL token list into
+// the concrete read commands (cat/sed/head/...) each iteration actually runs,
+// substituting each token for $VAR/${VAR} in the body's read commands. An agent
+// that batch-reads its primer set with one for-loop genuinely opens every file,
+// but the assembled path exists only after shell expansion — which the static
+// command log never captures — so a non-expanding matcher false-negatives the
+// whole batch (e.g. `for f in quality-lenses ...; do cat "references/$f.md"; done`
+// reads quality-lenses.md yet the literal "quality-lenses.md" never appears).
+// This recovers those reads. Only literal for-lists are expanded (no globs, seqs,
+// or command substitution) and only read-command bodies are emitted (an
+// `echo "$f.md"` is not a read), so it mirrors a deterministic shell expansion and
+// never invents a read the run did not perform.
+export function expandForLoopReadCommands(command) {
+	const simples = tokenizeShellish(command);
+	const expanded = new Set();
+	for (let i = 0; i < simples.length; i += 1) {
+		const head = simples[i];
+		if (head.length < 4 || head[0] !== "for" || head[2] !== "in") {
+			continue;
+		}
+		const varName = head[1];
+		if (!LOOP_VAR_RE.test(varName)) {
+			continue;
+		}
+		const values = head.slice(3);
+		if (values.length === 0 || !values.every(isLiteralLoopToken)) {
+			continue;
+		}
+		for (let j = i + 1; j < simples.length; j += 1) {
+			let body = simples[j];
+			if (body.length === 0) {
+				continue;
+			}
+			if (body[0] === "do") {
+				body = body.slice(1); // the first body simple carries the `do` keyword
+			}
+			if (body.length === 0) {
+				continue;
+			}
+			if (body[0] === "done") {
+				break;
+			}
+			if (!READ_COMMANDS.has(basename(body[0]))) {
+				continue;
+			}
+			for (const value of values) {
+				expanded.add(body.map((tok) => substituteLoopVar(tok, varName, value)).join(" "));
+			}
+		}
+	}
+	return [...expanded];
+}
+
 // Basenames of every file opened anywhere in the tree, via a path-bearing tool
 // call (Read/Edit/Write) OR a shell read command (Bash). Powers the
 // declared-reference coverage report.
@@ -442,6 +526,11 @@ export function collectOpenedBasenames(events) {
 			if (typeof input.command === "string" && input.command.trim()) {
 				for (const name of parseReadCommandBasenames(input.command)) {
 					names.add(name);
+				}
+				for (const cmd of expandForLoopReadCommands(input.command)) {
+					for (const name of parseReadCommandBasenames(cmd)) {
+						names.add(name);
+					}
 				}
 			}
 		}

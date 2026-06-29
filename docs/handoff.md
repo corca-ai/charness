@@ -11,10 +11,15 @@
 
 ## Current State
 
-- **Correctness:** planner-uniformity items 1 (matcher) + 2 (canonical envelope
-  `charness.run_plan_envelope.v1`, all 7 planners) LANDED. Live captures PROVEN
-  **2/20**: retro (planner-fixed) + hitl (no planner needed). 18 floors stay
-  HYPOTHESES until each gets one capture. [planner-uniformity spec](../charness-artifacts/spec/2026-06-29-skill-planner-uniformity.md).
+- **Correctness:** planner-uniformity items 1 (matcher) + 2 (canonical envelope,
+  all 7 planners) LANDED. Live captures PROVEN **3/20**: retro + hitl + **quality**
+  (n=2; cautilus skill_task_fidelity PASS, degraded only on runtime_budget). ~16
+  floors stay HYPOTHESES. The quality capture surfaced + fixed a matcher
+  false-negative on for-loop batch reads (`expandForLoopReadCommands`; sharpening,
+  not softening — fresh-eye + critique SOUND); its `max_duration_ms` stays
+  provisional 600000 (captures hit the cap on a red dup-ratchet + git-hook
+  rabbit-hole; not re-derived).
+  [spec](../charness-artifacts/spec/2026-06-29-skill-planner-uniformity.md) · [quality finding](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-29/finding.md) · [critique](../charness-artifacts/critique/2026-06-29-matcher-for-loop-expansion-critique.md)
 - **Efficiency — outcome grader: COMPLETE + LIVE-PROVEN (this session).** Auto-grade is now
   WIRED into the A/B harness ([skill_outcome_wiring.py](../scripts/skill_outcome_wiring.py)):
   `run_ab` grades each preserved bundle and folds a per-arm Outcome-grade section into
@@ -34,8 +39,9 @@
    the 18 hypothesis-floor skills, one at a time. A miss = skill-shape signal
    (re-pin / re-classify / give-a-planner), never soften the matcher; do NOT
    planner-ize mechanically. `--justification-log` is the override past
-   `next_action: none`; mirror the hitl/retro path. Re-derive quality's provisional
-   `max_duration_ms` (600000) from its first PASSING capture. NOTE: the outcome-grade
+   `next_action: none`; mirror the hitl/retro/quality path. (quality DONE this
+   session — floor proven, `max_duration_ms` stays provisional, see Current State.)
+   NOTE: the outcome-grade
    surface is now live, so a captured skill can also get an outcome assertion set
    (only hitl has one) — add per-eval sets here as you capture, not speculatively.
 2. **Light doctrine (from ponytail, cheap):** a `floor-addition-restraint:` ledger

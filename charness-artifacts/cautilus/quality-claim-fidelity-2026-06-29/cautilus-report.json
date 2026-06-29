@@ -1,0 +1,149 @@
+{
+  "comparisonSummary": {
+    "betterThanBaseline": 0,
+    "evaluationsWithBaseline": 0,
+    "sameAsBaseline": 0,
+    "worseThanBaseline": 0
+  },
+  "evaluatedAt": "2026-06-29T13:13:59.683261538Z",
+  "evaluationCounts": {
+    "blocked": 0,
+    "degraded": 1,
+    "execution": 1,
+    "failed": 0,
+    "passed": 0,
+    "total": 1,
+    "trigger": 0,
+    "unstable": 0
+  },
+  "evaluationRuns": [
+    {
+      "displayName": "quality",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-quality-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          },
+          {
+            "id": "runtime_budget_respect",
+            "summary": "Stay within the declared runtime or token budget when one is provided."
+          }
+        ],
+        "summary": "quality should complete the intended task cleanly once the skill is invoked."
+      },
+      "metrics": {
+        "duration_ms": 899315,
+        "total_tokens": 9655114
+      },
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "degraded",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-29T12:13:33.767Z",
+      "status": "degraded",
+      "summary": "Execution of /quality: 9655114 total tokens (104942 output, 9165025 cache-read), 899315ms wall. Tool profile: Bash=62 Skill=1 Read=1 Agent=1. All declared claims met. Reference coverage: 10/39 declared references opened (missing: adapter-contract.md, adapter-gate-review.md, agent-production-runtime.md, behavior-testing.md, bootstrap-escalations.md, bootstrap-posture.md, boundary-bypass-ratchet.md, brittle-source-guards.md, cautilus-on-demand.md, ci-recoverable-gate-triage.md, cli-ergonomics-smells.md, coverage-floor-policy.md, dual-implementation-parity.md, entrypoint-docs-ergonomics.md, executable-spec-economics.md, installable-cli-probes.md, lint-ignore-discipline.md, mutation-testing.md, prompt-asset-policy.md, public-spec-layering.md, quality-signal-scorecard.md, security-npm.md, security-overview.md, security-pnpm.md, security-uv.md, standing-doc-provenance.md, standing-gate-verbosity.md, testability-and-selection.md, unit-test-quality.md). Runtime budgets were exceeded for duration_ms=899315 \u003e 600000.",
+      "surface": "execution_quality",
+      "targetId": "quality",
+      "targetKind": "public_skill"
+    }
+  ],
+  "evaluations": [
+    {
+      "displayName": "quality",
+      "evaluationId": "execution-quality-claim-fidelity",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-quality-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          },
+          {
+            "id": "runtime_budget_respect",
+            "summary": "Stay within the declared runtime or token budget when one is provided."
+          }
+        ],
+        "summary": "quality should complete the intended task cleanly once the skill is invoked."
+      },
+      "invoked": true,
+      "metrics": {
+        "duration_ms": 899315,
+        "total_tokens": 9655114
+      },
+      "prompt": "/charness:quality",
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "degraded",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-29T12:13:33.767Z",
+      "status": "degraded",
+      "summary": "Execution of /quality: 9655114 total tokens (104942 output, 9165025 cache-read), 899315ms wall. Tool profile: Bash=62 Skill=1 Read=1 Agent=1. All declared claims met. Reference coverage: 10/39 declared references opened (missing: adapter-contract.md, adapter-gate-review.md, agent-production-runtime.md, behavior-testing.md, bootstrap-escalations.md, bootstrap-posture.md, boundary-bypass-ratchet.md, brittle-source-guards.md, cautilus-on-demand.md, ci-recoverable-gate-triage.md, cli-ergonomics-smells.md, coverage-floor-policy.md, dual-implementation-parity.md, entrypoint-docs-ergonomics.md, executable-spec-economics.md, installable-cli-probes.md, lint-ignore-discipline.md, mutation-testing.md, prompt-asset-policy.md, public-spec-layering.md, quality-signal-scorecard.md, security-npm.md, security-overview.md, security-pnpm.md, security-uv.md, standing-doc-provenance.md, standing-gate-verbosity.md, testability-and-selection.md, unit-test-quality.md). Runtime budgets were exceeded for duration_ms=899315 \u003e 600000.",
+      "surface": "execution_quality",
+      "targetId": "quality",
+      "targetKind": "public_skill",
+      "thresholdFindings": [
+        {
+          "actual": 899315,
+          "limit": 600000,
+          "metric": "duration_ms"
+        }
+      ],
+      "thresholds": {
+        "max_duration_ms": 600000
+      }
+    }
+  ],
+  "recommendation": "defer",
+  "samplingSummary": {
+    "evaluationsWithSampling": 1,
+    "overallConsensusRate": 1,
+    "overallInvocationRate": 1,
+    "overallPassRate": 1,
+    "totalConsensusSamples": 1,
+    "totalInvocations": 1,
+    "totalPassingSamples": 1,
+    "totalSamples": 1,
+    "unstableEvaluations": 0
+  },
+  "schemaVersion": "cautilus.skill_evaluation_summary.v1",
+  "skillDisplayName": "quality",
+  "skillId": "quality"
+}
