@@ -71,6 +71,7 @@ DETERMINISTIC_CHECK_TYPES = (
     "trace_tool_used",
     "output_file_exists",
     "output_file_contains",
+    "output_glob",
     "transcript_contains",
 )
 
@@ -134,6 +135,8 @@ def _validate_check(check: object, where: str) -> list[str]:
         problems.append(f"{where}.check.path must be a string for {ctype}")
     if ctype == "trace_tool_used" and not isinstance(check.get("name"), str):
         problems.append(f"{where}.check.name must be a string for trace_tool_used")
+    if ctype == "output_glob" and not isinstance(check.get("pattern"), str):
+        problems.append(f"{where}.check.pattern must be a string for output_glob")
     return problems
 
 
@@ -274,6 +277,12 @@ def _eval_check(check: dict, bundle: Bundle) -> tuple[str, str]:
         text = target.read_text(encoding="utf-8", errors="replace")
         hit = _matches(text, check["value"], regex)
         return (PASS if hit else FAIL, f"output {check['path']} {'matched' if hit else 'lacked'} {check['value']!r}")
+    if ctype == "output_glob":
+        if bundle.outputs_dir is None:
+            return FAIL, "no outputs/ dir in bundle (output preservation not yet wired)"
+        matches = [p for p in bundle.outputs_dir.rglob(check["pattern"]) if p.is_file()]
+        return (PASS, f"{len(matches)} output(s) match {check['pattern']!r}") if matches \
+            else (FAIL, f"no output matches {check['pattern']!r} under outputs/")
     if ctype == "transcript_contains":
         if not bundle.transcript:
             return FAIL, "no transcript.txt in bundle"

@@ -18,10 +18,11 @@
       "weight": 2
     },
     {
+      "_comment": "Recursive glob: hitl writes the queue under a session-id path (.charness/hitl/runtime/<sess>/queue.json), so a root-level output_file_exists would structurally false-fail; output_glob matches it at any depth.",
       "id": "materialized-queue",
       "kind": "deterministic",
       "statement": "The run materialized the resumable review queue (queue.json) so the bounded loop is chunked and resumable, not a one-shot answer.",
-      "check": {"type": "output_file_exists", "path": "queue.json"},
+      "check": {"type": "output_glob", "pattern": "**/queue.json"},
       "weight": 1
     },
     {

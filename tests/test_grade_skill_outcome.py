@@ -181,6 +181,21 @@ def test_output_file_checks(tmp_path: Path) -> None:
     assert g.eval_deterministic({"type": "output_file_contains", "path": "result.md", "value": "nope"}, bundle)[0] == g.FAIL
 
 
+def test_output_glob_matches_nested(tmp_path: Path) -> None:
+    d = _make_bundle(tmp_path, output="x")  # creates outputs/result.md
+    nested = d / "outputs" / ".charness" / "hitl" / "runtime" / "sess1"
+    nested.mkdir(parents=True)
+    (nested / "queue.json").write_text("{}", encoding="utf-8")
+    bundle = g.load_bundle(d)
+    v, e = g.eval_deterministic({"type": "output_glob", "pattern": "**/queue.json"}, bundle)
+    assert v == g.PASS and "1 output" in e
+    assert g.eval_deterministic({"type": "output_glob", "pattern": "**/missing.json"}, bundle)[0] == g.FAIL
+    # validation: pattern required
+    bad = {"evalId": "x", "assertions": [
+        {"id": "a", "kind": "deterministic", "statement": "s", "check": {"type": "output_glob"}}]}
+    assert any("pattern must be a string" in err for err in g.validate_assertion_set(bad))
+
+
 def test_output_checks_without_outputs_dir_fail_with_evidence(tmp_path: Path) -> None:
     bundle = g.load_bundle(_make_bundle(tmp_path))  # no outputs/
     verdict, evidence = g.eval_deterministic({"type": "output_file_exists", "path": "x"}, bundle)
