@@ -58,14 +58,19 @@ return ENVELOPE.build_envelope(
 )
 ```
 
-## Linear Skills
+## Linear Skills vs No Planner
 
-A skill with no real branching briefing decision uses
-`ENVELOPE.build_linear_envelope(...)`: `required_reads` + one fixed
-`next_action` + (optionally empty) `gate_packets`, and NO fabricated
-mode/branch fields. Do not cargo-cult branches a skill does not have
-(Floor-Addition Restraint); a planner on a skill with no briefing decision is
-boilerplate that adds concepts.
+Ship a planner ONLY when the skill has a real plan/briefing decision. Not every
+skill needs one — there are three tiers, not two:
+
+- **Real branching decision** → a full planner that emits the canonical envelope.
+- **Linear briefing** (a fixed "read these first, then do X" with no real
+  branches) → `ENVELOPE.build_linear_envelope(...)`: `required_reads` + one fixed
+  `next_action` + (optionally empty) `gate_packets`, and NO fabricated mode/branch
+  fields. Do not cargo-cult branches a skill does not have.
+- **No briefing decision at all** → ship NO planner. A planner on a skill with no
+  real decision is boilerplate that only adds concepts (Floor-Addition Restraint).
+  Do not planner-ize skills mechanically; the rollout is capture-driven.
 
 ## Why A Validator, Not A New Floor
 
