@@ -116,6 +116,26 @@ def next_action(kind: str, **extra: Any) -> dict[str, Any]:
     return {"kind": kind, **extra}
 
 
+def adapter_echo(adapter: dict[str, Any]) -> dict[str, Any]:
+    """Canonical full adapter-state echo for an envelope's ``adapter`` field.
+
+    The valid/found/path/output_dir/warnings/errors summary that the full-state
+    planners (debug, retro) surface verbatim. Planners that need a reduced or
+    differently-typed echo (release omits output_dir, handoff uses bool casts) build
+    their own dict — this is the shared FULL shape only. Lives here because every
+    planner already hard-depends on this module (loaded by relative path), so
+    sharing it adds no coupling that portability did not already carry.
+    """
+    return {
+        "valid": adapter.get("valid"),
+        "found": adapter.get("found"),
+        "path": adapter.get("path"),
+        "output_dir": str(adapter["data"]["output_dir"]),
+        "warnings": adapter.get("warnings", []),
+        "errors": adapter.get("errors", []),
+    }
+
+
 def build_envelope(
     *,
     schema_version: str,

@@ -310,13 +310,6 @@
   },
   {
    "class": "intentional",
-   "id": "fae23ead5b06d3bc",
-   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
-   "reviewed_at": "2026-06-30",
-   "surface": "code"
-  },
-  {
-   "class": "intentional",
    "id": "13741926e48b3ac1",
    "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
    "reviewed_at": "2026-06-27",

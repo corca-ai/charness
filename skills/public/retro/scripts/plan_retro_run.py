@@ -286,14 +286,7 @@ def build_plan(
         work_class=work_class,
         work_paths_source=work_paths_source,
         lens_brief=lens_brief,
-        adapter={
-            "valid": adapter.get("valid"),
-            "found": adapter.get("found"),
-            "path": adapter.get("path"),
-            "output_dir": str(adapter["data"]["output_dir"]),
-            "warnings": adapter.get("warnings", []),
-            "errors": adapter.get("errors", []),
-        },
+        adapter=ENVELOPE.adapter_echo(adapter),
         artifact=artifact,
         on_demand_reads=_on_demand_reads(),
         phase_barriers=[
