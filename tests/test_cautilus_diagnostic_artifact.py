@@ -11,6 +11,7 @@ from .cautilus_artifact_support import (
     seed_repo,
     write_diagnostic_finding,
     write_summary_evidence,
+    write_trace_digest,
 )
 from .charness_cli.support import ROOT
 
@@ -268,6 +269,34 @@ def test_validate_cautilus_diagnostics_rejects_oversized_finding(tmp_path: Path)
 
     assert result.returncode == 1
     assert "should stay concise" in result.stderr
+
+
+def test_validate_cautilus_diagnostics_accepts_valid_trace_digest(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, None)
+    bundle = repo / "charness-artifacts" / "cautilus" / "demo-diagnostic"
+    bundle.mkdir()
+    write_diagnostic_finding(bundle)
+    write_summary_evidence(bundle)
+    write_trace_digest(bundle)
+
+    result = run_diagnostic_validator(repo, "charness-artifacts/cautilus/demo-diagnostic/trace-digest.jsonl")
+
+    assert result.returncode == 0, result.stderr
+    assert "validated 1 cautilus diagnostic bundle" in result.stdout
+
+
+def test_validate_cautilus_diagnostics_rejects_malformed_trace_digest(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, None)
+    bundle = repo / "charness-artifacts" / "cautilus" / "demo-diagnostic"
+    bundle.mkdir()
+    write_diagnostic_finding(bundle)
+    write_summary_evidence(bundle)
+    (bundle / "trace-digest.jsonl").write_text('{"step": 1}\n', encoding="utf-8")
+
+    result = run_diagnostic_validator(repo, "charness-artifacts/cautilus/demo-diagnostic/finding.md")
+
+    assert result.returncode == 1
+    assert "must be an object with a string `name`" in result.stderr
 
 
 def test_run_quality_uses_all_cautilus_diagnostics_mode() -> None:

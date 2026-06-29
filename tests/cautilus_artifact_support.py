@@ -85,6 +85,17 @@ def write_summary_evidence(bundle: Path, payload: object | None = None) -> None:
     (bundle / "summary.v1.json").write_text(json.dumps(payload), encoding="utf-8")
 
 
+def write_trace_digest(bundle: Path, records: list[dict] | None = None) -> None:
+    if records is None:
+        records = [
+            {"step": 1, "track": "parent", "name": "Read", "args": "doc.md", "out_chars": 12, "wall_ms": None},
+            {"step": 2, "track": "parent", "name": "Bash", "args": "ls", "out_chars": 4, "wall_ms": 100},
+        ]
+    (bundle / "trace-digest.jsonl").write_text(
+        "".join(json.dumps(record) + "\n" for record in records), encoding="utf-8"
+    )
+
+
 def run_diagnostic_validator(repo: Path, *paths: str, all_bundles: bool = False):
     args = ["--repo-root", str(repo)]
     if all_bundles:

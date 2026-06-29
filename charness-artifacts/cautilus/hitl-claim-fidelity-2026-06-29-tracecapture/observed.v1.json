@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "hitl",
+  "skillDisplayName": "hitl",
+  "evaluations": [
+    {
+      "evaluationId": "execution-hitl-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "hitl",
+      "displayName": "hitl",
+      "evaluationKind": "execution",
+      "prompt": "/charness:hitl docs/operator-acceptance.md 를 bounded human-in-the-loop로 청크 단위로 함께 검토하자 — 각 청크마다 원문 발췌 + Agent Assessment + 비구속 Recommended Disposition을 제시하고, 내가 승인한 뒤에만 다음 청크로 진행해줘.",
+      "startedAt": "2026-06-29T03:11:41.148Z",
+      "invoked": true,
+      "summary": "Execution of /hitl: 1476451 total tokens (24783 output, 1334273 cache-read), 136660ms wall. Tool profile: Bash=9 Read=6 Edit=3 Skill=1 Write=1. All declared claims met. Reference coverage: 1/5 declared references opened (missing: adapter-contract.md, report-mode.md, rule-propagation.md, state-model.md). Waste smells: 1 (repeated_edit).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 1476451,
+        "duration_ms": 136660
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 240000
+      }
+    }
+  ]
+}

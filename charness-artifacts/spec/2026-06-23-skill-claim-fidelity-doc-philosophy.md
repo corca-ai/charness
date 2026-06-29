@@ -625,3 +625,54 @@ planner-absent skill." `hitl` is a flagged candidate (script-resolution-derived
 RCF `43d066a9`; named by the re-capture's Sibling Search), but because it already
 ships briefing scripts, confirm its shape by capture before assuming the retro
 defect repeats. Rollout deferred to its own session.
+
+## Efficiency Trace — Durable Per-Call Material + Waste Lens (2026-06-29)
+
+The hitl capture exposed a second gap, separate from claim fidelity: the capture
+proves a CORRECTNESS floor (did the run open the briefed doc) but says nothing
+about efficiency, and the raw material to judge efficiency by intelligent review
+("this step was wasteful") was thrown away. `capture-skill-run.sh` writes the full
+transcript to an ephemeral `--out-dir`; `cautilus evaluate observation` only sees
+our distilled packet (counts + aggregate metrics); and the durable bundle kept
+only summaries. So when the `/tmp` capture dir was deleted, the per-call material
+was gone — there is nothing to review after the fact. (Confirmed: the run used an
+isolated `CLAUDE_CONFIG_DIR` under the out-dir, so `~/.claude` has no copy.)
+
+Ownership: this is OUR runner, not cautilus. cautilus never sees the transcript,
+already records duration/tokens, and already has the coarse `runtime_budget_respect`
+degrade; the richer "intelligent judgment" lens belongs host-side (and cautilus's
+optimize/review-learning surfaces are disabled by repo policy anyway). Contract:
+
+1. **Durable per-call trace.** `build-skill-execution-observation.mjs` emits
+   `trace-digest.jsonl` into the bundle (default next to `--output`): one record
+   per tool call — `{step, track, name, args(digest), out_chars, msg_out_tokens,
+   msg_cache_read, msg_tool_count, wall_ms}`. It stores a DIGEST, not the raw
+   transcript (lighter; no secret-bearing tool outputs land in the committed
+   bundle). Run `--output` INTO the durable bundle so it survives capture cleanup.
+2. **Deterministic waste lens (advisory, NOT a gate).** build runs smells over the
+   trace — `duplicate_read`, `repeated_edit` (≥3 same file), `repeated_bash`
+   (identical cmd ≥2), `large_output` (>50k chars) — prints them + a paste-ready
+   `## Efficiency` finding block, and adds a `Waste smells:` clause to the observed
+   summary. Outcome stays claim-matcher-only; a smell is a candidate for an
+   intelligent review to confirm or dismiss, never a verdict.
+3. **Validator recognizes it.** `validate_cautilus_diagnostics.py` validates
+   `trace-digest.jsonl` shape WHEN PRESENT (well-formed jsonl, each record an
+   object with a string `name`). Not yet required (FAR): `--all` has a pre-existing
+   finding.md gap in older bundles (the retro capture bundles use PROOF.md);
+   promote to required once `--all` is green and every capture bundle ships a digest.
+
+Residual leak caveat: the digest stores tool OUTPUT only as a char count
+(`out_chars`), so no tool output text lands in the committed bundle. But `args` is
+a truncated copy of the tool input, so a Bash command carrying an inline secret
+would land there. Captures run a representative skill prompt, not secret-bearing
+commands; still, treat `args` as input-derived, not output-safe.
+
+Pre-existing gap recorded (NOT fixed here): `--all` mode fails today on
+`retro-claim-fidelity-2026-06-29` and `retro-claim-fidelity-2026-06-29-recapture`
+(machine evidence without a `finding.md`; the retro captures use `PROOF.md`).
+`skill-experiment-*` bundles are excluded from `--all` by design. Migrating the
+retro bundles to the canonical `finding.md` is its own slice.
+
+Open (Fix 3, deferred): an agent efficiency-review pass that reads the digest +
+smells and writes a confirmed/dismissed `## Efficiency` narrative — the "intelligent
+review" on top of the deterministic lens.

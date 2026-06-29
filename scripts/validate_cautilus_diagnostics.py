@@ -193,10 +193,35 @@ def _validate_finding(bundle_abs: Path) -> None:
         )
 
 
+def _validate_trace_digest(bundle_abs: Path) -> None:
+    # Per-tool-call efficiency trace emitted by build-skill-execution-observation.mjs.
+    # Validated WHEN PRESENT, not required: build now always writes it next to
+    # --output, but `--all` currently has a pre-existing finding.md gap in older
+    # bundles (the retro capture bundles use PROOF.md), so requiring a digest here
+    # would pile onto an already-red --all.
+    # floor-addition-restraint: promote to required once --all is green and every
+    # capture bundle ships a digest (recorded gap: the 2026-06-29 hitl capture lost
+    # its transcript because only count-level summaries were retained).
+    path = bundle_abs / "trace-digest.jsonl"
+    if not path.is_file():
+        return
+    lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not lines:
+        raise ValidationError(f"`{path}` must contain at least one tool-call record")
+    for index, line in enumerate(lines):
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise ValidationError(f"`{path}` line {index + 1} is not valid JSON: {exc}") from exc
+        if not isinstance(record, dict) or not isinstance(record.get("name"), str):
+            raise ValidationError(f"`{path}` line {index + 1} must be an object with a string `name`")
+
+
 def validate_bundle(repo_root: Path, bundle_dir: Path) -> None:
     bundle_abs = repo_root / bundle_dir
     _validate_finding(bundle_abs)
     _validate_machine_evidence(bundle_abs)
+    _validate_trace_digest(bundle_abs)
 
 
 def validate_cautilus_diagnostics(repo_root: Path, changed_paths: list[str], *, all_bundles: bool = False) -> str:

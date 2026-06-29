@@ -10,6 +10,9 @@ import {
 	collectCommandLog,
 	collectOpenedBasenames,
 	collectToolProfile,
+	collectToolResultSizes,
+	collectToolTrace,
+	detectWaste,
 	durationMs,
 	finalAssistantText,
 	listSessionTreeJsonl,
@@ -29,7 +32,19 @@ function assistantToolUse(blocks, { isSidechain = false, usage = null, timestamp
 		message: {
 			role: "assistant",
 			...(usage ? { usage } : {}),
-			content: blocks.map((b) => ({ type: "tool_use", id: "t", name: b.name, input: b.input })),
+			content: blocks.map((b) => ({ type: "tool_use", id: b.id ?? "t", name: b.name, input: b.input })),
+		},
+	};
+}
+
+// A user-track event carrying tool_result blocks (the output fed back to the
+// model). collectToolResultSizes matches these to tool_use by id.
+function userToolResult(results) {
+	return {
+		type: "user",
+		message: {
+			role: "user",
+			content: results.map((r) => ({ type: "tool_result", tool_use_id: r.id, content: r.content })),
 		},
 	};
 }
@@ -221,6 +236,84 @@ test("buildExecutionObservation rejects an incomplete spec", () => {
 	assert.throws(() => buildExecutionObservation({ spec: { skillId: "q" }, events: [] }), /must be a non-empty string/);
 });
 
+test("collectToolResultSizes maps tool_use_id to result char length across string and array content", () => {
+	const events = [
+		userToolResult([{ id: "a", content: "hello" }]),
+		userToolResult([{ id: "b", content: [{ type: "text", text: "ab" }, { type: "text", text: "cd" }] }]),
+	];
+	const sizes = collectToolResultSizes(events);
+	assert.equal(sizes.get("a"), 5);
+	assert.equal(sizes.get("b"), 4);
+});
+
+test("collectToolTrace emits one ordered record per call with usage, result size, and wall gap", () => {
+	const events = [
+		assistantToolUse([{ id: "r1", name: "Read", input: { file_path: "/x/doc.md" } }], {
+			usage: { output_tokens: 10, cache_read_input_tokens: 100 },
+			timestamp: "2026-06-29T00:00:00.000Z",
+		}),
+		userToolResult([{ id: "r1", content: "x".repeat(42) }]),
+		assistantToolUse(
+			[{ id: "b1", name: "Bash", input: { command: "ls" } }, { id: "b2", name: "Bash", input: { command: "pwd" } }],
+			{ usage: { output_tokens: 4 }, timestamp: "2026-06-29T00:00:05.000Z", isSidechain: true },
+		),
+	];
+	const trace = collectToolTrace(events);
+	assert.equal(trace.length, 3);
+	assert.deepEqual(trace.map((r) => r.step), [1, 2, 3]);
+	assert.equal(trace[0].name, "Read");
+	assert.equal(trace[0].out_chars, 42);
+	assert.equal(trace[0].msg_out_tokens, 10);
+	assert.equal(trace[0].wall_ms, null); // first message has no prior
+	assert.equal(trace[1].track, "sub");
+	assert.equal(trace[1].msg_tool_count, 2);
+	assert.equal(trace[1].wall_ms, 5000); // first call of the second message carries the gap
+	assert.equal(trace[2].wall_ms, 0); // sibling call in the same message does not double-count
+});
+
+test("detectWaste flags duplicate reads, repeated edits, repeated bash, and large outputs", () => {
+	const events = [
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/state.yaml" } }]),
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/state.yaml" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/s.yaml" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/s.yaml" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/s.yaml" } }]),
+		assistantToolUse([{ name: "Bash", input: { command: "git status" } }]),
+		assistantToolUse([{ name: "Bash", input: { command: "git status" } }]),
+	];
+	const trace = [{ step: 1, name: "Read", out_chars: 60000 }];
+	const flags = detectWaste(events, { trace });
+	const kinds = flags.map((f) => f.kind).sort();
+	assert.deepEqual(kinds, ["duplicate_read", "large_output", "repeated_bash", "repeated_edit"]);
+	assert.equal(flags.find((f) => f.kind === "repeated_edit").count, 3);
+	// two edits is normal, not a smell
+	assert.equal(detectWaste([
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/s.yaml" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/s.yaml" } }]),
+	]).length, 0);
+});
+
+test("buildExecutionObservation surfaces a waste-smell clause and trace in the report", () => {
+	const spec = {
+		skillId: "hitl",
+		evaluationId: "execution-hitl",
+		targetId: "hitl",
+		prompt: "/charness:hitl",
+		requiredCommandFragments: [],
+		declaredReferences: [],
+	};
+	const events = [
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/state.yaml" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/state.yaml" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/state.yaml" } }]),
+	];
+	const { packet, report } = buildExecutionObservation({ spec, events });
+	assert.equal(report.waste.length, 1);
+	assert.equal(report.waste[0].kind, "repeated_edit");
+	assert.equal(report.trace.length, 3);
+	assert.match(packet.evaluations[0].summary, /Waste smells: 1 \(repeated_edit\)/);
+});
+
 test("parseEventsFromFiles and listSessionTreeJsonl read a parent + subagents tree, and runCli emits a packet", () => {
 	const root = mkdtempSync(join(tmpdir(), "charness-skilltree-"));
 	const sub = join(root, "sess", "subagents");
@@ -257,4 +350,12 @@ test("parseEventsFromFiles and listSessionTreeJsonl read a parent + subagents tr
 	const packet = JSON.parse(readFileSync(outPath, "utf-8"));
 	assert.equal(packet.schemaVersion, SKILL_EVALUATION_INPUTS_SCHEMA);
 	assert.equal(packet.evaluations[0].outcome, "passed");
+
+	// The CLI writes a durable trace digest next to --output by default.
+	const digestPath = join(root, "trace-digest.jsonl");
+	const digestLines = readFileSync(digestPath, "utf-8").trim().split("\n").filter(Boolean);
+	assert.equal(digestLines.length, 2); // one Bash (parent) + one Read (subagent)
+	const records = digestLines.map((line) => JSON.parse(line));
+	assert.ok(records.every((r) => typeof r.name === "string" && typeof r.step === "number"));
+	assert.deepEqual(records.map((r) => r.name).sort(), ["Bash", "Read"]);
 });

@@ -23,7 +23,7 @@
 // left to cautilus's threshold degrade so the two signals stay separable.
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import process from "node:process";
 
 import { SKILL_EVALUATION_INPUTS_SCHEMA } from "./contract-versions.mjs";
@@ -150,6 +150,158 @@ export function collectToolProfile(events) {
 		}
 	}
 	return profile;
+}
+
+// --- Efficiency trace (per-tool-call digest + deterministic waste lens) ---------
+// The claim matcher reduces a run to pass/fail + coverage, which throws away the
+// per-call material an intelligent efficiency review needs ("this step was
+// wasteful"). The 2026-06-29 hitl capture proved the gap concretely: its full
+// transcript lived only in the ephemeral capture dir and was deleted, leaving
+// only count-level summaries. So build also emits a durable per-call trace digest
+// into the bundle and runs a deterministic, advisory waste lens over it.
+
+// floor-addition-restraint: these are SMELL thresholds for a NON-blocking advisory
+// lens (printed + recorded, never a pass/fail gate), tuned to the real 2026-06-29
+// hitl shape (state.yaml edited 3x). Two edits / one large read are normal; do not
+// lower without a recorded recurrence.
+const EDIT_REPEAT_SMELL = 3; // 3+ edits to ONE file = batch-into-one candidate
+const BASH_REPEAT_SMELL = 2; // identical command run 2+ times = redundant run
+const LARGE_OUTPUT_CHARS = 50000; // one tool result over ~50k chars = context-bloat candidate
+const ARGS_DIGEST_MAX = 160;
+
+// tool_use_id -> char length of the tool_result fed back. Powers the large_output
+// smell and the per-call out_chars field.
+export function collectToolResultSizes(events) {
+	const sizes = new Map();
+	for (const event of events) {
+		const message = event && typeof event === "object" ? (event.message ?? event) : null;
+		const content = Array.isArray(message?.content) ? message.content : [];
+		for (const block of content) {
+			if (!block || block.type !== "tool_result" || !block.tool_use_id) {
+				continue;
+			}
+			const raw = block.content;
+			let text = "";
+			if (typeof raw === "string") {
+				text = raw;
+			} else if (Array.isArray(raw)) {
+				text = raw
+					.map((part) => (typeof part === "string" ? part : part && typeof part.text === "string" ? part.text : ""))
+					.join("");
+			}
+			sizes.set(block.tool_use_id, text.length);
+		}
+	}
+	return sizes;
+}
+
+function digestArgs(input) {
+	const raw =
+		input.file_path ?? input.notebook_path ?? input.command ?? input.path ?? input.pattern ?? input.skill ?? input.description ?? "";
+	const flat = String(raw).replace(/\s+/g, " ").trim();
+	return flat.length > ARGS_DIGEST_MAX ? `${flat.slice(0, ARGS_DIGEST_MAX)}…` : flat;
+}
+
+// One record per tool call, in chronological emit order: name, an args digest, the
+// result size, the emitting assistant message's usage (shared across its tool
+// calls — msg_tool_count makes that explicit), and the wall gap to the previous
+// tool-emitting message. This is the durable material for a later efficiency
+// review; it stores a digest, NOT the raw transcript (lighter, and no
+// secret-bearing tool outputs land in the committed bundle).
+export function collectToolTrace(events, { resultSizes = null } = {}) {
+	const sizes = resultSizes ?? collectToolResultSizes(events);
+	const records = [];
+	let step = 0;
+	let prevTs = null;
+	for (const event of events) {
+		if (!event || event.type !== "assistant") {
+			continue;
+		}
+		const message = event.message ?? {};
+		const content = Array.isArray(message.content) ? message.content : [];
+		const toolUses = content.filter((block) => block && block.type === "tool_use");
+		if (toolUses.length === 0) {
+			continue;
+		}
+		const usage = message.usage && typeof message.usage === "object" ? message.usage : {};
+		const ts = typeof event.timestamp === "string" ? Date.parse(event.timestamp) : NaN;
+		let gap = null;
+		if (!Number.isNaN(ts)) {
+			gap = prevTs === null ? null : ts - prevTs;
+			prevTs = ts;
+		}
+		toolUses.forEach((block, indexInMsg) => {
+			step += 1;
+			const id = block.id;
+			records.push({
+				step,
+				track: event.isSidechain ? "sub" : "parent",
+				name: String(block.name ?? "unknown"),
+				args: digestArgs(block.input ?? {}),
+				out_chars: id !== undefined && sizes.has(id) ? sizes.get(id) : null,
+				msg_out_tokens: Number(usage.output_tokens) || 0,
+				msg_cache_read: Number(usage.cache_read_input_tokens) || 0,
+				msg_tool_count: toolUses.length,
+				// Attribute the wall gap to the FIRST call of the message only, so a sum
+				// over records approximates total tool wall without double-counting.
+				wall_ms: indexInMsg === 0 ? gap : 0,
+			});
+		});
+	}
+	return records;
+}
+
+// Deterministic, advisory "this was inefficient" smells. NOT a pass/fail gate —
+// the outcome stays claim-matcher-only. Each flag is a candidate for an
+// intelligent review to confirm or dismiss, never a verdict on its own.
+export function detectWaste(events, { trace = null } = {}) {
+	const reads = new Map();
+	const edits = new Map();
+	const bash = new Map();
+	for (const event of events) {
+		for (const block of toolUseBlocks(event)) {
+			const name = String(block.name ?? "");
+			const input = block.input ?? {};
+			const path =
+				typeof input.file_path === "string" ? input.file_path : typeof input.notebook_path === "string" ? input.notebook_path : null;
+			if (name === "Read" && path) {
+				reads.set(path, (reads.get(path) ?? 0) + 1);
+			} else if ((name === "Edit" || name === "Write" || name === "NotebookEdit") && path) {
+				edits.set(path, (edits.get(path) ?? 0) + 1);
+			} else if (name === "Bash" && typeof input.command === "string" && input.command.trim()) {
+				const cmd = input.command.trim();
+				bash.set(cmd, (bash.get(cmd) ?? 0) + 1);
+			}
+		}
+	}
+	const flags = [];
+	for (const [path, count] of reads) {
+		if (count > 1) {
+			flags.push({ kind: "duplicate_read", count, detail: `${basename(path)} read ${count}x`, path });
+		}
+	}
+	for (const [path, count] of edits) {
+		if (count >= EDIT_REPEAT_SMELL) {
+			flags.push({ kind: "repeated_edit", count, detail: `${basename(path)} edited ${count}x (batch into one?)`, path });
+		}
+	}
+	for (const [cmd, count] of bash) {
+		if (count >= BASH_REPEAT_SMELL) {
+			const short = cmd.length > 60 ? `${cmd.slice(0, 60)}…` : cmd;
+			flags.push({ kind: "repeated_bash", count, detail: `\`${short}\` run ${count}x` });
+		}
+	}
+	for (const record of trace ?? []) {
+		if (typeof record.out_chars === "number" && record.out_chars > LARGE_OUTPUT_CHARS) {
+			flags.push({
+				kind: "large_output",
+				count: record.out_chars,
+				detail: `step ${record.step} ${record.name} → ${record.out_chars} chars`,
+				step: record.step,
+			});
+		}
+	}
+	return flags;
 }
 
 // Split a shell command line into simple commands (each an array of tokens),
@@ -402,6 +554,9 @@ export function buildExecutionObservation({ spec, events } = {}) {
 	const duration = durationMs(events);
 	const startedAt = earliestTimestamp(events);
 	const toolProfile = collectToolProfile(events);
+	const resultSizes = collectToolResultSizes(events);
+	const trace = collectToolTrace(events, { resultSizes });
+	const waste = detectWaste(events, { trace });
 	const profileLine = Object.entries(toolProfile)
 		.sort((a, b) => b[1] - a[1])
 		.map(([name, count]) => `${name}=${count}`)
@@ -424,12 +579,15 @@ export function buildExecutionObservation({ spec, events } = {}) {
 	const claimPart = findings.length > 0
 		? ` Claim failures: ${findings.join("; ")}.`
 		: " All declared claims met.";
+	const wastePart = waste.length > 0
+		? ` Waste smells: ${waste.length} (${[...new Set(waste.map((flag) => flag.kind))].join(", ")}).`
+		: "";
 	const summary =
 		`Execution of /${spec.targetId}: ${tokens.total} total tokens ` +
 		`(${tokens.output} output, ${tokens.cacheRead} cache-read)` +
 		`${duration !== null ? `, ${duration}ms wall` : ""}.` +
 		`${profileLine ? ` Tool profile: ${profileLine}.` : ""}` +
-		`${claimPart}${coveragePart}`;
+		`${claimPart}${coveragePart}${wastePart}`;
 
 	const metrics = { total_tokens: tokens.total };
 	if (duration !== null) {
@@ -477,6 +635,8 @@ export function buildExecutionObservation({ spec, events } = {}) {
 			metrics,
 			tokens,
 			toolProfile,
+			trace,
+			waste,
 		},
 	};
 }
@@ -489,7 +649,7 @@ const USAGE = `Usage:
   node ./scripts/agent-runtime/build-skill-execution-observation.mjs \\
     --session-tree <projDir-or-session.jsonl> \\
     --spec <spec.json> \\
-    [--output <observed.v1.json>]
+    [--output <observed.v1.json>] [--trace-digest <trace-digest.jsonl>]
 
 Reads every *.jsonl under the session tree (parent + subagents), applies the
 spec's claim matchers (requiredCommandFragments / requiredSummaryFragments) over
@@ -497,10 +657,15 @@ the full-tree command log + final summary, reports declared-reference coverage,
 and emits a cautilus.skill_evaluation_inputs.v1 observed packet for
 \`cautilus evaluate observation\`. A human-readable claim/coverage line is printed
 to stderr.
+
+It also writes a per-tool-call efficiency trace (\`trace-digest.jsonl\`, default
+next to --output) and runs a deterministic, advisory waste lens, printing any
+smells plus a paste-ready \`## Efficiency\` finding block to stderr. Run --output
+INTO the durable bundle dir so the trace survives the ephemeral capture cleanup.
 `;
 
 export function runCli(argv, { readFile = readJson } = {}) {
-	const options = { sessionTree: null, spec: null, output: null };
+	const options = { sessionTree: null, spec: null, output: null, traceDigest: null };
 	for (let index = 0; index < argv.length; index += 1) {
 		const arg = argv[index];
 		if (arg === "-h" || arg === "--help") {
@@ -514,6 +679,8 @@ export function runCli(argv, { readFile = readJson } = {}) {
 			options.spec = value;
 		} else if (arg === "--output") {
 			options.output = value;
+		} else if (arg === "--trace-digest") {
+			options.traceDigest = value;
 		} else {
 			throw new Error(`Unknown argument: ${arg}`);
 		}
@@ -541,6 +708,16 @@ export function runCli(argv, { readFile = readJson } = {}) {
 	} else {
 		process.stdout.write(serialized);
 	}
+
+	// Durable per-call trace digest: defaults next to --output so it lands in the
+	// same (durable) bundle dir, surviving the ephemeral capture cleanup.
+	const traceDigestPath =
+		options.traceDigest ?? (options.output ? join(dirname(options.output), "trace-digest.jsonl") : null);
+	if (traceDigestPath) {
+		const lines = report.trace.map((record) => JSON.stringify(record)).join("\n");
+		writeFileSync(traceDigestPath, lines.length ? `${lines}\n` : "");
+	}
+
 	process.stderr.write(
 		`outcome=${report.outcome} | jsonl files=${files.length} | ` +
 			`coverage=${report.coverage.covered}/${report.coverage.declared} | ` +
@@ -550,6 +727,20 @@ export function runCli(argv, { readFile = readJson } = {}) {
 	);
 	if (report.findings.length > 0) {
 		process.stderr.write(`claim failures: ${report.findings.join("; ")}\n`);
+	}
+
+	// Advisory efficiency lens: print smells + a paste-ready finding.md block.
+	if (report.waste.length > 0) {
+		process.stderr.write(`waste smells (${report.waste.length}): ${report.waste.map((flag) => flag.detail).join("; ")}\n`);
+		process.stderr.write("--- paste-ready finding.md block ---\n");
+		process.stderr.write("## Efficiency\n\n");
+		process.stderr.write(`- trace: \`trace-digest.jsonl\` (${report.trace.length} tool calls)\n`);
+		for (const flag of report.waste) {
+			process.stderr.write(`- waste smell (${flag.kind}): ${flag.detail} — confirm or dismiss on review\n`);
+		}
+		process.stderr.write("--- end block ---\n");
+	} else {
+		process.stderr.write(`waste smells: none (${report.trace.length} tool calls traced)\n`);
 	}
 	return 0;
 }
