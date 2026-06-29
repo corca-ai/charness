@@ -724,3 +724,46 @@ Deferred (rationale): an audited LLM judge (over-build / completeness, ponytail-
 is the expensive, subjective part; the deterministic skeleton ships and is proven
 first. A live n>1 matrix is a real token spend (n×arms real `claude -p` runs), so
 it is ask-before-run — build + `--selftest` are free; the matrix is operator-approved.
+
+## Evaluation Ownership + the Outcome Gap (2026-06-29)
+
+Established this session (skill-creator comparison + cautilus re-audit; supersedes
+the loose "we only do claim-fidelity" framing):
+
+- **Both current cautilus modes score ROUTING/coverage, not verified outcome.**
+  claim-fidelity = reference-fragment match (process); `skill-experiment` = a 2-arm
+  source-coverage delta + a deliberately-neutral phrase rubric (see
+  `charness-artifacts/cautilus/skill-experiment-2026-06-22/report.json`:
+  `source_coverage_delta`, `rubric_match` on trivial phrases, `promotion_recommendation`
+  from the coverage delta). Neither GRADES the produced artifact for correctness with
+  discriminating assertions + cited evidence. "did it accomplish the work in this repo"
+  is currently a routing PROXY — this is the gap to close (skill-creator's grader is
+  the missing layer).
+- **`skill-experiment` IS our clean 2-arm A/B** (baseline ref vs variant ref =
+  variant-A-vs-B), captured top-level. Routing / project CLAUDE.md cancels across the
+  two arms, so there is no baseline contamination here — contamination only bites the
+  skill-vs-nothing mode (the 2026-06-29 efficiency run).
+- **Execution model: top-level `claude -p` capture is correct; do NOT adopt
+  skill-creator's subagent executor.** skill-creator spawns the executor as a subagent,
+  so a skill that itself spawns subagents cannot do its real work (subagents can't spawn
+  subagents) — and skill-creator does not address this. Our `capture-skill-run.sh` and
+  `run-local-eval-test.mjs` run the skill top-level (`spawnSync`), so spawn-heavy skills
+  work. Borrow skill-creator's GRADING pattern (execution-agnostic), not its execution model.
+- **Efficiency must be paired with outcome.** A leaner token/time number can just mean
+  the variant did LESS; skill-creator pairs LOC/cost with a completeness judge to catch
+  "less code that does less." An efficiency verdict is trustworthy only alongside an
+  outcome check.
+
+Ownership split for the missing outcome layer:
+
+- **cautilus (minimal / mostly optional):** already records duration/tokens +
+  `runtime_budget_respect` degrade, so EFFICIENCY needs no cautilus change. For outcome to
+  influence cautilus's recommendation, extend the input schema to carry an
+  outcome/assertions dimension and weigh it — OPTIONAL; if outcome stays a host-side
+  overlay, cautilus needs nothing. cautilus must NOT host the LLM judge (deterministic
+  scorer; LLM/agent surfaces are disabled by repo policy).
+- **charness (the real work):** (1) capture produced OUTPUTS, not just transcripts, so a
+  judge can read the actual artifacts; (2) per-eval discriminating assertion sets (data);
+  (3) a host-side grader subagent (LLM judge over transcript + outputs → per-assertion
+  PASS/FAIL + evidence + pass_rate), self-tested known-good-vs-known-bad before spend;
+  (4) wire the verdict into the bundle/report (+ optionally the observed packet).

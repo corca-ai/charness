@@ -30,8 +30,9 @@
    auto-routes a plain prompt to the skill). Remaining: (a) **re-run clean** —
    variant-A-vs-B (same skill, two refs; routing cancels) OR build a routing-neutral
    baseline (`--setting-sources project,local` / outside the charness repo). (b) **add
-   the audited LLM judge** (over-build/completeness, ponytail-style, self-tested),
-   deferred this session. Schema: the `run_skill_efficiency_ab.py` docstring.
+   the outcome layer** — evidence-based grader (skill-creator pattern: assertions + LLM
+   judge over transcript+outputs, host-side); also what makes efficiency numbers
+   trustworthy. cautilus-vs-here split + outcome-gap: methodology spec.
 2. **Correctness sweep (item 3, continue, ask-before-run):** capture the next of
    the 18 hypothesis-floor skills, one at a time. A miss = skill-shape signal
    (re-pin / re-classify / give-a-planner), never soften the matcher; do NOT
