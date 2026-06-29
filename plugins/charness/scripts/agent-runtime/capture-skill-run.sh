@@ -10,9 +10,10 @@ set -euo pipefail
 # is the #258 hazard. This builds a throwaway worktree at the requested ref + a
 # per-run CLAUDE_CONFIG_DIR whose marketplace points at that worktree, so the
 # slash command resolves to exactly the ref under test without touching the shared
-# install. It also pins core.hooksPath to the worktree's own .githooks (a worktree
-# otherwise inherits the main clone's absolute hooksPath and the maintainer-setup
-# gate derails the run).
+# install. It also neutralizes core.hooksPath to an empty dir for the captured
+# subprocess (a worktree otherwise inherits the main clone's absolute hooksPath and
+# the maintainer-setup gate derails the run; an empty dir also keeps charness's dev
+# hooks from firing on the skill's own internal git ops). See the inline note below.
 #
 # This is an on-demand maintainer tool; it runs a real `claude -p` with full tools
 # (a real user's permissive setup), so run it only against a trusted checkout.
@@ -54,11 +55,22 @@ rm -rf "$wt" "$cfg" 2>/dev/null || true
 git -C "$repo_root" worktree remove --force "$wt" 2>/dev/null || true
 
 git -C "$repo_root" worktree add --detach "$wt" "$ref" >/dev/null
-# Point hooks at the worktree's own .githooks ONLY for the captured subprocess.
+# Neutralize git hooks for the captured subprocess: point core.hooksPath at an
+# EMPTY dir. A worktree otherwise inherits the main clone's absolute hooksPath and
+# the maintainer-setup gate derails the run; pinning the worktree's own .githooks
+# avoids that, but then every internal git op the skill runs (a quality_gates test
+# that commits, an enforcement probe) fires charness's full dev hook suite, which
+# the captured skill burns turns investigating and working around — the 2026-06-29
+# quality capture spent ~9 Bash calls probing core.hooksPath and re-running pytest
+# under empty hooks. A real installed-plugin user does not run charness's maintainer
+# hooks at all, so an empty hooks dir is both quieter AND more faithful; the worktree's
+# .githooks files stay on disk and readable for any operability-lens inspection.
 # Do NOT `git config` it: a worktree shares .git/config, so that would pollute the
 # main repo's core.hooksPath (and silently disable its hooks). GIT_CONFIG_* env is
 # process-scoped and writes no file.
-hooks_env=("GIT_CONFIG_COUNT=1" "GIT_CONFIG_KEY_0=core.hooksPath" "GIT_CONFIG_VALUE_0=$wt/.githooks")
+empty_hooks="$out_dir/empty-hooks"
+mkdir -p "$empty_hooks"
+hooks_env=("GIT_CONFIG_COUNT=1" "GIT_CONFIG_KEY_0=core.hooksPath" "GIT_CONFIG_VALUE_0=$empty_hooks")
 
 mkdir -p "$cfg/plugins"
 cp "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.credentials.json" "$cfg/"

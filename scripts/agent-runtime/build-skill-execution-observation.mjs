@@ -110,10 +110,16 @@ export function parseEventsFromFiles(files, { readText = (p) => readFileSync(p, 
 	return events;
 }
 
-function toolUseBlocks(event) {
+// The content array of an event's message (a session event sometimes IS the
+// message). Shared by the tool_use and tool_result collectors so the
+// message/content unwrap lives in one place.
+function eventContent(event) {
 	const message = event && typeof event === "object" ? (event.message ?? event) : null;
-	const content = Array.isArray(message?.content) ? message.content : [];
-	return content.filter((block) => block && typeof block === "object" && block.type === "tool_use");
+	return Array.isArray(message?.content) ? message.content : [];
+}
+
+function toolUseBlocks(event) {
+	return eventContent(event).filter((block) => block && typeof block === "object" && block.type === "tool_use");
 }
 
 // One newline-joined string of every tool-call input value across the tree:
@@ -188,9 +194,7 @@ const ARGS_DIGEST_MAX = 160;
 export function collectToolResultSizes(events) {
 	const sizes = new Map();
 	for (const event of events) {
-		const message = event && typeof event === "object" ? (event.message ?? event) : null;
-		const content = Array.isArray(message?.content) ? message.content : [];
-		for (const block of content) {
+		for (const block of eventContent(event)) {
 			if (!block || block.type !== "tool_result" || !block.tool_use_id) {
 				continue;
 			}

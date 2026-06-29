@@ -104,6 +104,9 @@ budget IS achievable when a run does not rabbit-hole on a red gate. Therefore:
   correctness proof.
 - Capture-sandbox git-hook friction (the run probing pinned `core.hooksPath`)
   recurred in both captures; a quieter hooks posture in `capture-skill-run.sh`
-  could reduce non-skill time. Deferred efficiency follow-up.
+  could reduce non-skill time. RESOLVED 2026-06-30: `capture-skill-run.sh` now
+  neutralizes `core.hooksPath` to an empty dir. The red `dup-ratchet` gate that
+  dominated both rabbit-holes was also resolved the same day (extraction + honest
+  intentional classifications). See `charness-artifacts/critique/2026-06-30-capture-hooks-and-dup-ratchet-critique.md`.
 - Stale `run_js_mutation.py` mutant-budget weight for this .mjs (breaks no gate);
   fold into the next mutation-budget refresh.

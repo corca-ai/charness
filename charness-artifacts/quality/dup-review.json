@@ -1,238 +1,371 @@
 {
-  "entries": [
-    {
-      "class": "intentional",
-      "id": "0bf9383d0dc43dd0",
-      "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "18cd4c2abe1fdf16",
-      "note": "portable-path helper family rotated after HITL scratchpad template extraction; helpers intentionally stay local because fallback behavior differs by surface and shared import coupling would exceed the value",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1a4b30122c73d88c",
-      "note": "small render-table comprehension family rotated after HITL report template extraction; extracting a shared HTML row helper would add coupling for little behavioral value",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1b0f3a98b7e27735",
-      "note": "planner `_relative_script_command` helper boilerplate repeated across portable skill-local planners; a shared helper would be premature for this slice",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "28c300e28655858f",
-      "note": "2-line fnmatch matches_any helper family rotated after prompt-bulk helper cleanup; keep portable skill scripts directly executable instead of adding shared import coupling for a trivial predicate",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2f94603668e95f1d",
-      "note": "planner required-read assembly boilerplate mirrors handoff/debug planner payload shape intentionally for agent-facing consistency",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2f9f8d94c71ab8e6",
-      "note": "repo-root sys.path bootstrap shim introduced by focused mutation coverage suggester; top-level scripts keep local import bootstraps for direct execution",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3a8927a6084aa3b4",
-      "note": "auto-seeded: portable per-skill copy",
-      "reviewed_at": "2026-06-19",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "65232e9696c9f36c",
-      "note": "gather Google Workspace and Slack advice helpers intentionally share the adapter-mode payload dispatch contract while keeping provider-specific payload text separate and directly executable",
-      "reviewed_at": "2026-06-26",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "6d4ecce936901269",
-      "note": "single-line None guard family rotated after setup worktree template extraction; not meaningful extractable duplication",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "70422ea9c8108297",
-      "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape — a shared echo helper would couple unrelated skill adapter libs for negligible value",
-      "reviewed_at": "2026-06-28",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7364bba46c46e120",
-      "note": "single-line fallback/provenance expression family rotated after HITL scratchpad template extraction; not meaningful extractable duplication",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "76c8498479248bdf",
-      "note": "HITL review-state item dictionaries share field names by contract; extraction would hide the explicit state payload shape more than it reduces duplication",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "83823ba070c5e82e",
-      "note": "planner packet helper boilerplate mirrors handoff/debug planner payload shape intentionally for agent-facing consistency",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8530d3a9dd0d45bf",
-      "note": "git config subprocess helper family rotated after setup worktree template extraction; root worktree doctor and portable setup seed script keep local helper ownership to preserve direct execution boundaries",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8a6bfb0421af43d9",
-      "note": "support/web-fetch scripts keep module-local SCRIPT_DIR sys.path bootstrap so each helper stays directly executable in source and exported plugin layouts",
-      "reviewed_at": "2026-06-26",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "a0af46a5c9d5b031",
-      "note": "standalone mutation CLI path resolver helpers; extracting this two-line helper adds import/bootstrap coupling for little value",
-      "reviewed_at": "2026-06-25",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "a14a409dcf9b1d42",
-      "note": "package.json reader helper family rotated after setup worktree template extraction; setup and impl skill scripts keep small local readers so each script stays portable and directly executable",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "a8afe3ef65e51fe5",
-      "note": "low-value git subprocess error-handling family rotated after setup worktree template extraction; extracting it would add cross-surface coupling for no behavior gain",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "b1a6ddbc0339c265",
-      "note": "issue_tool adapter/backend command wrappers share error-report shape intentionally while preserving separate call contracts",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "b20debc6448a6eca",
-      "note": "UTC timestamp helper family rotated after HITL scratchpad template extraction; low-value local now/UTC helpers stay directly executable across repo and skill scripts",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c06b074e02d57e64",
-      "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c21148619f0a2aaa",
-      "note": "common empty-input guard family rotated after staged_commit_gate_plan line shift; low-value guard boilerplate, not new extractable duplication",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c4a221def0727d82",
-      "note": "import/bootstrap boilerplate family rotated after HITL scratchpad template extraction; portable skill scripts keep local runtime bootstrap/import setup for direct execution",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c5bfa14552b20a72",
-      "note": "standalone JS mutation runner keeps a local stable hash helper to avoid script/package import bootstrap churn for a two-line deterministic sampler primitive",
-      "reviewed_at": "2026-06-25",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "dffd8936ac6b9409",
-      "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
-      "reviewed_at": "2026-06-26",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "eef12b695d8d095c",
-      "note": "portable path-provenance helper family rotated after HITL scratchpad template extraction; small local helpers preserve directly executable skill scripts",
-      "reviewed_at": "2026-06-27",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "f24d1fcc596bbfee",
-      "note": "low-value missing-file guard shape rotated by the new debug planner; not extractable duplication",
-      "reviewed_at": "2026-06-24",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "13741926e48b3ac1",
-      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "40a4e156b1efd17f",
-      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "b56c1479ef7c3d0e",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "c4b45fc90f69c007",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "e89e772efc0ba634",
-      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
-      "reviewed_at": "2026-06-24",
-      "surface": "doc"
-    }
-  ],
-  "fixable_ceiling": 0,
-  "note": "Reviewed fixable-duplication overlay (item 5). Keyed by family identity (code: offset/path-independent content fingerprint; doc: family_signature). Stores only explicitly-classified families; an unlisted family defaults to 'unreviewed'. fixable_ceiling (count of 'fixable') is one-way and only decreases via a deliberate re-review. nose-baseline.json / doc-nose-baseline.json own drift detection; this overlay owns fixable classification.",
-  "schemaVersion": "charness.quality.dup_review.v1"
+ "entries": [
+  {
+   "class": "intentional",
+   "id": "0bf9383d0dc43dd0",
+   "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "0ecd8e278c5081cc",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "1029aa052afa65f5",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "18cd4c2abe1fdf16",
+   "note": "portable-path helper family rotated after HITL scratchpad template extraction; helpers intentionally stay local because fallback behavior differs by surface and shared import coupling would exceed the value",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "1a4b30122c73d88c",
+   "note": "small render-table comprehension family rotated after HITL report template extraction; extracting a shared HTML row helper would add coupling for little behavioral value",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "1b0f3a98b7e27735",
+   "note": "planner `_relative_script_command` helper boilerplate repeated across portable skill-local planners; a shared helper would be premature for this slice",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "1f57501b4fbdf89e",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "28c300e28655858f",
+   "note": "2-line fnmatch matches_any helper family rotated after prompt-bulk helper cleanup; keep portable skill scripts directly executable instead of adding shared import coupling for a trivial predicate",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "2f94603668e95f1d",
+   "note": "planner required-read assembly boilerplate mirrors handoff/debug planner payload shape intentionally for agent-facing consistency",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "2f9f8d94c71ab8e6",
+   "note": "repo-root sys.path bootstrap shim introduced by focused mutation coverage suggester; top-level scripts keep local import bootstraps for direct execution",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "32e88920045bd981",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "39bf16e0a83754e5",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "3a8927a6084aa3b4",
+   "note": "auto-seeded: portable per-skill copy",
+   "reviewed_at": "2026-06-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "43f0e8388ed3cbf8",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "4d48990d9c988285",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "65232e9696c9f36c",
+   "note": "gather Google Workspace and Slack advice helpers intentionally share the adapter-mode payload dispatch contract while keeping provider-specific payload text separate and directly executable",
+   "reviewed_at": "2026-06-26",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "6d4ecce936901269",
+   "note": "single-line None guard family rotated after setup worktree template extraction; not meaningful extractable duplication",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "70422ea9c8108297",
+   "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape \u2014 a shared echo helper would couple unrelated skill adapter libs for negligible value",
+   "reviewed_at": "2026-06-28",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "735b7b6c795ca25c",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "7364bba46c46e120",
+   "note": "single-line fallback/provenance expression family rotated after HITL scratchpad template extraction; not meaningful extractable duplication",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "76c8498479248bdf",
+   "note": "HITL review-state item dictionaries share field names by contract; extraction would hide the explicit state payload shape more than it reduces duplication",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "83823ba070c5e82e",
+   "note": "planner packet helper boilerplate mirrors handoff/debug planner payload shape intentionally for agent-facing consistency",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "8530d3a9dd0d45bf",
+   "note": "git config subprocess helper family rotated after setup worktree template extraction; root worktree doctor and portable setup seed script keep local helper ownership to preserve direct execution boundaries",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "8a6bfb0421af43d9",
+   "note": "support/web-fetch scripts keep module-local SCRIPT_DIR sys.path bootstrap so each helper stays directly executable in source and exported plugin layouts",
+   "reviewed_at": "2026-06-26",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "94430c601c303b84",
+   "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom \u2014 intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "9b670abd42472fb9",
+   "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom \u2014 intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "a0af46a5c9d5b031",
+   "note": "standalone mutation CLI path resolver helpers; extracting this two-line helper adds import/bootstrap coupling for little value",
+   "reviewed_at": "2026-06-25",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "a14a409dcf9b1d42",
+   "note": "package.json reader helper family rotated after setup worktree template extraction; setup and impl skill scripts keep small local readers so each script stays portable and directly executable",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "a8afe3ef65e51fe5",
+   "note": "low-value git subprocess error-handling family rotated after setup worktree template extraction; extracting it would add cross-surface coupling for no behavior gain",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "aed521d9d4958492",
+   "note": "argv-parse + stderr-summary scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation, extract-skill-experiment-input); each is independently executable by design, so a shared arg-parser would couple them \u2014 intentional; revisit if a 3rd consumer appears",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "b01eea3857c9c9a6",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "b1a6ddbc0339c265",
+   "note": "issue_tool adapter/backend command wrappers share error-report shape intentionally while preserving separate call contracts",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "b20debc6448a6eca",
+   "note": "UTC timestamp helper family rotated after HITL scratchpad template extraction; low-value local now/UTC helpers stay directly executable across repo and skill scripts",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "b84a05853c8b2d2a",
+   "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants \u2014 a util module would couple them for little value; intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "c06b074e02d57e64",
+   "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "c21148619f0a2aaa",
+   "note": "common empty-input guard family rotated after staged_commit_gate_plan line shift; low-value guard boilerplate, not new extractable duplication",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "c4a221def0727d82",
+   "note": "import/bootstrap boilerplate family rotated after HITL scratchpad template extraction; portable skill scripts keep local runtime bootstrap/import setup for direct execution",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "c5bfa14552b20a72",
+   "note": "standalone JS mutation runner keeps a local stable hash helper to avoid script/package import bootstrap churn for a two-line deterministic sampler primitive",
+   "reviewed_at": "2026-06-25",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "dffd8936ac6b9409",
+   "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
+   "reviewed_at": "2026-06-26",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "ebacfcba20062a86",
+   "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom \u2014 intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "ec6d6f6b68237283",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "eef12b695d8d095c",
+   "note": "portable path-provenance helper family rotated after HITL scratchpad template extraction; small local helpers preserve directly executable skill scripts",
+   "reviewed_at": "2026-06-27",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "f24d1fcc596bbfee",
+   "note": "low-value missing-file guard shape rotated by the new debug planner; not extractable duplication",
+   "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "f354445e11942f4a",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "fae23ead5b06d3bc",
+   "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
+   "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "13741926e48b3ac1",
+   "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
+   "reviewed_at": "2026-06-27",
+   "surface": "doc"
+  },
+  {
+   "class": "intentional",
+   "id": "322d067a80402fbc",
+   "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+   "reviewed_at": "2026-06-30",
+   "surface": "doc"
+  },
+  {
+   "class": "intentional",
+   "id": "40a4e156b1efd17f",
+   "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
+   "reviewed_at": "2026-06-27",
+   "surface": "doc"
+  },
+  {
+   "class": "intentional",
+   "id": "aca9e00fc6c5c3ae",
+   "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+   "reviewed_at": "2026-06-30",
+   "surface": "doc"
+  },
+  {
+   "class": "intentional",
+   "id": "b56c1479ef7c3d0e",
+   "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
+   "reviewed_at": "2026-06-27",
+   "surface": "doc"
+  },
+  {
+   "class": "intentional",
+   "id": "c4b45fc90f69c007",
+   "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
+   "reviewed_at": "2026-06-27",
+   "surface": "doc"
+  },
+  {
+   "class": "intentional",
+   "id": "e89e772efc0ba634",
+   "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
+   "reviewed_at": "2026-06-24",
+   "surface": "doc"
+  }
+ ],
+ "fixable_ceiling": 0,
+ "note": "Reviewed fixable-duplication overlay (item 5). Keyed by family identity (code: offset/path-independent content fingerprint; doc: family_signature). Stores only explicitly-classified families; an unlisted family defaults to 'unreviewed'. fixable_ceiling (count of 'fixable') is one-way and only decreases via a deliberate re-review. nose-baseline.json / doc-nose-baseline.json own drift detection; this overlay owns fixable classification.",
+ "schemaVersion": "charness.quality.dup_review.v1"
 }
