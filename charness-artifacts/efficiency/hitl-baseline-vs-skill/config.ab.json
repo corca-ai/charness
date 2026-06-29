@@ -1,0 +1,10 @@
+{
+  "_comment": "First live A/B: hitl baseline-vs-skill at HEAD. Both arms run the same bounded-review task in the same charness worktree; the only difference is the /charness:hitl invocation, so ambient repo context is held constant and the delta is the explicit skill invocation's effect. Caveat checked post-run: baseline must NOT auto-invoke hitl machinery (ponytail contamination).",
+  "name": "hitl-baseline-vs-skill",
+  "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
+  "runs": 3,
+  "arms": [
+    {"name": "baseline", "ref": "HEAD", "invocation": "docs/operator-acceptance.md 를 bounded human-in-the-loop로 청크 단위로 함께 검토하자 — 각 청크마다 원문 발췌 + Agent Assessment + 비구속 Recommended Disposition을 제시하고, 내가 승인한 뒤에만 다음 청크로 진행해줘."},
+    {"name": "skill", "ref": "HEAD"}
+  ]
+}

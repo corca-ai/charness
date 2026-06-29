@@ -495,6 +495,22 @@
       ]
     },
     {
+      "surface_id": "efficiency-ab-bundles",
+      "description": "Efficiency A/B harness result bundles: advisory process+output comparison (never gates). config + report + results + per-run observed packets and trace digests.",
+      "source_paths": [
+        "charness-artifacts/efficiency/**"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for path in charness-artifacts/efficiency/*/*.json charness-artifacts/efficiency/*/preserved/*/*.json; do [ -e \"$path\" ] && { python3 -m json.tool \"$path\" >/dev/null || exit $?; }; done"
+      ],
+      "notes": [
+        "Produced by scripts/run_skill_efficiency_ab.py --run; advisory measurement, not pass/fail. No validator gates these (unlike charness-artifacts/cautilus/ diagnostic bundles); finding.md/report.md get repo-markdown lint and this checks the JSON parses.",
+        "config.ab.json is the run input; report.md/results.json are generated; preserved/*/ holds per-run observed.v1.json + trace-digest.jsonl."
+      ]
+    },
+    {
       "surface_id": "cautilus-chatbot-proposals",
       "description": "Checked-in long-context chatbot proposal packets and their current-pointer artifacts.",
       "source_paths": [

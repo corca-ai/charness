@@ -1,0 +1,187 @@
+{
+  "config": {
+    "_comment": "First live A/B: hitl baseline-vs-skill at HEAD. Both arms run the same bounded-review task in the same charness worktree; the only difference is the /charness:hitl invocation, so ambient repo context is held constant and the delta is the explicit skill invocation's effect. Caveat checked post-run: baseline must NOT auto-invoke hitl machinery (ponytail contamination).",
+    "name": "hitl-baseline-vs-skill",
+    "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
+    "runs": 3,
+    "arms": [
+      {
+        "name": "baseline",
+        "ref": "HEAD",
+        "invocation": "docs/operator-acceptance.md \ub97c bounded human-in-the-loop\ub85c \uccad\ud06c \ub2e8\uc704\ub85c \ud568\uaed8 \uac80\ud1a0\ud558\uc790 \u2014 \uac01 \uccad\ud06c\ub9c8\ub2e4 \uc6d0\ubb38 \ubc1c\ucdcc + Agent Assessment + \ube44\uad6c\uc18d Recommended Disposition\uc744 \uc81c\uc2dc\ud558\uace0, \ub0b4\uac00 \uc2b9\uc778\ud55c \ub4a4\uc5d0\ub9cc \ub2e4\uc74c \uccad\ud06c\ub85c \uc9c4\ud589\ud574\uc918."
+      },
+      {
+        "name": "skill",
+        "ref": "HEAD"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "arm": "baseline",
+      "ref": "HEAD",
+      "run": 0,
+      "total_tokens": 716805,
+      "output_tokens": 10849,
+      "tool_count": 8,
+      "waste_smell_count": 0,
+      "duration_ms": 85022,
+      "outcome": "failed",
+      "output_lines": 0
+    },
+    {
+      "arm": "baseline",
+      "ref": "HEAD",
+      "run": 1,
+      "total_tokens": 895914,
+      "output_tokens": 15367,
+      "tool_count": 11,
+      "waste_smell_count": 0,
+      "duration_ms": 93296,
+      "outcome": "failed",
+      "output_lines": 0
+    },
+    {
+      "arm": "baseline",
+      "ref": "HEAD",
+      "run": 2,
+      "total_tokens": 842946,
+      "output_tokens": 13694,
+      "tool_count": 9,
+      "waste_smell_count": 0,
+      "duration_ms": 92892,
+      "outcome": "failed",
+      "output_lines": 0
+    },
+    {
+      "arm": "skill",
+      "ref": "HEAD",
+      "run": 0,
+      "total_tokens": 613395,
+      "output_tokens": 13488,
+      "tool_count": 7,
+      "waste_smell_count": 0,
+      "duration_ms": 95612,
+      "outcome": "passed",
+      "output_lines": 0
+    },
+    {
+      "arm": "skill",
+      "ref": "HEAD",
+      "run": 1,
+      "total_tokens": 1037356,
+      "output_tokens": 24851,
+      "tool_count": 11,
+      "waste_smell_count": 0,
+      "duration_ms": 125962,
+      "outcome": "passed",
+      "output_lines": 0
+    },
+    {
+      "arm": "skill",
+      "ref": "HEAD",
+      "run": 2,
+      "total_tokens": 895554,
+      "output_tokens": 17315,
+      "tool_count": 10,
+      "waste_smell_count": 0,
+      "duration_ms": 111992,
+      "outcome": "failed",
+      "output_lines": 0
+    }
+  ],
+  "aggregate": {
+    "baseline": {
+      "n": 3,
+      "pass_rate": 0.0,
+      "total_tokens": {
+        "mean": 818555,
+        "median": 842946,
+        "min": 716805,
+        "max": 895914,
+        "n": 3
+      },
+      "output_tokens": {
+        "mean": 13303.3,
+        "median": 13694,
+        "min": 10849,
+        "max": 15367,
+        "n": 3
+      },
+      "duration_ms": {
+        "mean": 90403.3,
+        "median": 92892,
+        "min": 85022,
+        "max": 93296,
+        "n": 3
+      },
+      "tool_count": {
+        "mean": 9.3,
+        "median": 9,
+        "min": 8,
+        "max": 11,
+        "n": 3
+      },
+      "waste_smell_count": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "output_lines": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      }
+    },
+    "skill": {
+      "n": 3,
+      "pass_rate": 0.667,
+      "total_tokens": {
+        "mean": 848768.3,
+        "median": 895554,
+        "min": 613395,
+        "max": 1037356,
+        "n": 3
+      },
+      "output_tokens": {
+        "mean": 18551.3,
+        "median": 17315,
+        "min": 13488,
+        "max": 24851,
+        "n": 3
+      },
+      "duration_ms": {
+        "mean": 111188.7,
+        "median": 111992,
+        "min": 95612,
+        "max": 125962,
+        "n": 3
+      },
+      "tool_count": {
+        "mean": 9.3,
+        "median": 10,
+        "min": 7,
+        "max": 11,
+        "n": 3
+      },
+      "waste_smell_count": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "output_lines": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      }
+    }
+  }
+}

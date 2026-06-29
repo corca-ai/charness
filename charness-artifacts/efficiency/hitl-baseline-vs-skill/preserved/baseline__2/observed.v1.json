@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "hitl",
+  "skillDisplayName": "hitl",
+  "evaluations": [
+    {
+      "evaluationId": "execution-hitl-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "hitl",
+      "displayName": "hitl",
+      "evaluationKind": "execution",
+      "prompt": "/charness:hitl docs/operator-acceptance.md 를 bounded human-in-the-loop로 청크 단위로 함께 검토하자 — 각 청크마다 원문 발췌 + Agent Assessment + 비구속 Recommended Disposition을 제시하고, 내가 승인한 뒤에만 다음 청크로 진행해줘.",
+      "startedAt": "2026-06-29T05:46:27.664Z",
+      "invoked": true,
+      "summary": "Execution of /hitl: 842946 total tokens (13694 output, 746460 cache-read), 92892ms wall. Tool profile: Bash=6 Skill=2 Read=1. Claim failures: command log missing required fragment: chunk-contract.md. Reference coverage: 0/5 declared references opened (missing: adapter-contract.md, chunk-contract.md, report-mode.md, rule-propagation.md, state-model.md).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 842946,
+        "output_tokens": 13694,
+        "tool_count": 9,
+        "waste_smell_count": 0,
+        "duration_ms": 92892
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 240000
+      }
+    }
+  ]
+}

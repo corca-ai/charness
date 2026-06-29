@@ -176,7 +176,7 @@ def build_report(config: dict, agg_by_arm: dict) -> str:
         f"- n={config.get('runs')} per arm — read the [min–max] range, not just the mean; small-n means overlap is common.",
         "- output_lines is best-effort (added lines in the worktree vs the ref; excludes any in-run commits).",
         "- No LLM judge yet (over-build / completeness deferred) — these are process + size metrics only.",
-        "- Arms are isolated per-ref worktrees; a delta is the ref difference, not cross-contamination.",
+        "- Cross-ref arms hold project CLAUDE.md / find-skills routing constant, so a delta is the ref difference. A same-ref 'baseline' plain prompt still runs in the charness worktree and can auto-route to the skill (CONTAMINATION) — verify via each arm's Skill/tool trace before trusting a baseline-vs-skill delta.",
         "",
     ]
     return "\n".join(lines)
@@ -209,7 +209,7 @@ def _git_added_lines(worktree: Path) -> int | None:
         try:
             with open(path, "rb") as handle:
                 added += sum(1 for _ in handle)
-        except OSError:
+        except OSError:  # pragma: no cover - unreadable/vanished untracked file
             continue
     return added
 
@@ -445,5 +445,5 @@ def main(argv: list[str] | None = None) -> int:
     parser.error("one of --selftest or --run is required")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - CLI entrypoint
     raise SystemExit(main())

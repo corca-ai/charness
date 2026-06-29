@@ -690,11 +690,19 @@ turns anecdotes into n>1 comparisons. Modeled on `../ponytail/benchmarks/`. Cont
 
 1. **Arms = isolated per-ref captures.** An arm is a labeled git ref (+ optional
    invocation override). The runner captures n real `claude -p` runs per arm via
-   `capture-skill-run.sh` — each in a throwaway worktree + isolated
-   `CLAUDE_CONFIG_DIR`, so arms cannot cross-contaminate (ponytail shipped a wrong
-   ~4% result from a baseline-contamination bug; our per-ref isolation forecloses
-   it). This subsumes baseline-vs-skill and variant-A-vs-B (a ref before a fix vs
-   after — the highest-value charness A/B: it proves a skill fix's efficiency effect).
+   `capture-skill-run.sh` — each in its own throwaway worktree + isolated
+   `CLAUDE_CONFIG_DIR`, so the captures do not collide. **The clean mode is
+   variant-A-vs-B** (same skill, two refs — the highest-value charness A/B: it
+   proves a skill fix's efficiency effect, and project CLAUDE.md / find-skills
+   routing is identical in both arms so it cancels). **baseline-vs-skill is
+   contaminated in this harness** and the first live run (2026-06-29,
+   `charness-artifacts/efficiency/hitl-baseline-vs-skill/`) proved it: a plain-prompt
+   "baseline" runs in the charness worktree, reads the project CLAUDE.md ("call
+   find-skills, route to the skill"), and auto-invokes the skill — both arms ran
+   hitl (ponytail's exact baseline-contamination bug, caught on run one). A TRUE
+   no-skill baseline needs routing neutralization (ponytail's `--setting-sources
+   project,local` + no plugin, running outside the charness repo, or stripping the
+   project CLAUDE.md) — a tracked follow-up, not yet built.
 2. **n>1 with mean/range, never a single number.** Per metric the report prints
    `mean [min–max]` and deltas vs the first arm; small-n overlap is visible, not
    hidden. Metrics from the observed packet (`total_tokens`, `output_tokens`,
