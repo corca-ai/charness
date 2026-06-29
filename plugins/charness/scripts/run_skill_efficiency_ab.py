@@ -5,40 +5,34 @@ comparisons with mean/range across isolated arms.
 
 This is the EFFICIENCY axis (process + output waste), kept strictly separate from
 the correctness axis (claim-fidelity pass/fail). Efficiency here is ADVISORY: this
-runner never gates commit and emits no pass/fail verdict on a skill — it measures
-and compares, and a human reads the comparison. The correctness floor stays owned
-by the claim matcher in build-skill-execution-observation.mjs + cautilus.
+runner never gates commit and emits no pass/fail verdict — it measures and compares.
+The correctness floor stays owned by the claim matcher in
+build-skill-execution-observation.mjs + cautilus. floor-addition-restraint: advisory.
 
-What it does (`--run <config>`):
-  for each arm, n times: capture one real isolated `claude -p` run at the arm's
-  git ref (capture-skill-run.sh — throwaway worktree + isolated CLAUDE_CONFIG_DIR,
-  so arms can't cross-contaminate, the ponytail baseline-contamination lesson),
-  build the observed packet (build-skill-execution-observation.mjs), and read its
-  per-run metrics. Then aggregate mean/min/max/median per arm and emit a side-by-side
-  comparison report + raw results.json. Each run also preserves its PRODUCED outputs
-  (the changed file set, bounded) and an assistant-text transcript into the bundle, so
-  the outcome grader (grade_skill_outcome.py) can read the real artifacts the run made.
+What it does (`--run <config>`): for each arm, n times, capture one real isolated
+`claude -p` run at the arm's git ref (capture-skill-run.sh — throwaway worktree +
+isolated CLAUDE_CONFIG_DIR, so arms can't cross-contaminate, the ponytail
+baseline-contamination lesson), build the observed packet
+(build-skill-execution-observation.mjs), and read its per-run metrics. Aggregate
+mean/min/max/median per arm and emit a side-by-side report + raw results.json. Each
+run preserves its PRODUCED outputs (the changed file set, bounded) and an
+assistant-text transcript into the bundle.
 
-An "arm" is a labeled git ref (+ optional invocation override). This subsumes
+An "arm" is a labeled git ref (+ optional invocation override): subsumes
 baseline-vs-skill (one ref without the skill, one with) and variant-A-vs-B (a ref
-before a fix vs after) — the highest-value charness A/B, since it proves a skill
-fix's efficiency effect.
+before a fix vs after) — the highest-value charness A/B, proving a fix's effect.
 
-Self-tested instruments (`--selftest`, offline, no API): before trusting any live
-comparison, prove the metric extractor ranks a known-WASTEFUL run worse than a
-known-LEAN one (more tokens, more tool calls, more waste smells). If it does not,
-the harness refuses — a comparison you can't trust is worse than none. Mirrors
-ponytail's `run.py --selftest`.
+Outcome grade (skill_outcome_wiring.py): when the eval ships an outcome-assertions.json
+the harness auto-grades each preserved bundle and folds the per-arm grade into the
+report — an efficiency number is trustworthy only alongside an outcome check, since a
+leaner number can just mean an arm did LESS. Judge-kind assertions need `--judge-cmd`
+(ask-before-run spend); deterministic checks grade for free.
 
-Metrics per run (all from the observed packet; output_lines from the worktree):
-  total_tokens, output_tokens, duration_ms, tool_count, waste_smell_count,
-  output_lines (added lines in the worktree vs the ref, best-effort — the LOC-side
-  metric; excludes any in-run commits).
-
-NOT in this slice (deferred with rationale): an audited LLM judge (over-build /
-completeness). The deterministic skeleton ships and is proven first; the judge is
-the expensive, subjective part and is a clean follow-up. floor-addition-restraint:
-this whole tool is advisory, never a blocking floor.
+Self-tested instruments (`--selftest`, offline, no API): prove the extractor ranks a
+known-WASTEFUL run worse than a known-LEAN one before trusting any comparison; the
+harness refuses otherwise (mirrors ponytail's `run.py --selftest`). Metrics per run:
+total_tokens, output_tokens, duration_ms, tool_count, waste_smell_count, output_lines
+(added worktree lines vs the ref, best-effort; excludes in-run commits).
 
 Config schema (JSON):
   {"name": "<label>", "spec_path": "evals/cautilus/<skill>-claim-fidelity/spec.json",
@@ -58,6 +52,9 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+import grade_skill_outcome
+import skill_outcome_wiring as outcome
 
 from runtime_bootstrap import repo_root_from_script
 
@@ -141,8 +138,9 @@ def _fmt_scalar(value: object) -> str:
     return "n/a" if value is None else str(value)
 
 
-def build_report(config: dict, agg_by_arm: dict) -> str:
-    """Markdown comparison: per-arm mean [min–max] table + deltas vs the first arm."""
+def build_report(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = None) -> str:
+    """Markdown comparison: per-arm mean [min–max] table + deltas vs the first arm,
+    plus the advisory outcome-grade section when an eval has an assertion set."""
     arms = list(agg_by_arm.keys())
     lines = [
         f"# Efficiency A/B — {config.get('name', 'unnamed')}",
@@ -171,6 +169,9 @@ def build_report(config: dict, agg_by_arm: dict) -> str:
                 delta = relative_deltas(agg_by_arm[baseline], agg_by_arm[arm]).get(key)
                 cells.append("n/a" if delta is None else f"{delta:+g}%")
             lines.append(f"| {key} | " + " | ".join(cells) + " |")
+    section = outcome.render_outcome_section(outcome_by_arm) if outcome_by_arm else ""
+    if section:
+        lines.append(section)
     lines += [
         "",
         "## Honest caveats",
@@ -216,10 +217,13 @@ def _git_added_lines(worktree: Path) -> int | None:
     return added
 
 
-def _changed_files(worktree: Path) -> list[str]:
+def _changed_files(worktree: Path, include_ignored: bool = False) -> list[str]:
     """Paths the run added or modified vs its checked-out ref (tracked ACMR +
     untracked). The set of files a charness skill actually PRODUCED — the outcome
-    grader's artifact evidence — not the whole repo checkout."""
+    grader's artifact evidence — not the whole repo checkout. When include_ignored is
+    set, gitignored runtime outputs are also listed (for a skill whose meaningful
+    product is gitignored runtime state, e.g. hitl's queue); off by default so the
+    committed bundle stays clean."""
     try:
         tracked = subprocess.run(
             ["git", "-C", str(worktree), "diff", "--name-only", "--diff-filter=ACMR", "HEAD"],
@@ -227,20 +231,22 @@ def _changed_files(worktree: Path) -> list[str]:
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
-    others = subprocess.run(
-        ["git", "-C", str(worktree), "ls-files", "--others", "--exclude-standard"],
-        capture_output=True, text=True, check=False,
-    ).stdout
+    others_cmd = ["git", "-C", str(worktree), "ls-files", "--others"]
+    if not include_ignored:
+        others_cmd.append("--exclude-standard")
+    others = subprocess.run(others_cmd, capture_output=True, text=True, check=False).stdout
     return sorted({p for p in tracked.splitlines() + others.splitlines() if p.strip()})
 
 
-def preserve_outputs(worktree: Path, outputs_dir: Path, max_bytes: int = 65536) -> dict:
+def preserve_outputs(worktree: Path, outputs_dir: Path, max_bytes: int = 65536,
+                     include_ignored: bool = False) -> dict:
     """Copy the run's PRODUCED files (only the changed set, never the whole tree)
     into the durable bundle so the outcome grader can read the actual artifacts.
     Files over max_bytes are omitted-with-reason (the bundle is committed; a giant
-    blob does not belong there). Writes an outputs-manifest.json and returns it."""
+    blob does not belong there). include_ignored also captures gitignored runtime
+    outputs. Writes an outputs-manifest.json and returns it."""
     manifest: dict = {"copied": [], "omitted": []}
-    for rel in _changed_files(worktree):
+    for rel in _changed_files(worktree, include_ignored):
         src = worktree / rel
         if not src.is_file():
             continue
@@ -338,17 +344,22 @@ def _cleanup_run(repo_root: Path, out_dir: Path) -> None:
     shutil.rmtree(out_dir, ignore_errors=True)
 
 
-def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, keep_runs: bool) -> dict:
+def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, keep_runs: bool,
+           judge_fn=None, keep_untracked: bool = False) -> dict:
     runs = int(config.get("runs", 4))
     default_spec = config.get("spec_path")
     raw_runs: list[dict] = []
     agg_by_arm: dict = {}
+    outcome_by_arm: dict = {}
+    gate = outcome.GraderGate()
     results_dir.mkdir(parents=True, exist_ok=True)
     for arm in config["arms"]:
         spec_path = repo_root / (arm.get("spec_path") or default_spec)
         spec = json.loads(spec_path.read_text(encoding="utf-8"))
         invocation = arm.get("invocation") or spec["prompt"]
+        assertion_set = outcome.resolve_assertion_set(spec_path)
         arm_runs: list[dict] = []
+        preserved_dirs: list[Path] = []
         for index in range(runs):
             out_dir = results_dir / "work" / f"{arm['name']}__{index}"
             print(f"[{arm['name']}] run {index + 1}/{runs} @ {arm['ref']}", file=sys.stderr)
@@ -367,7 +378,8 @@ def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, k
                 # so output_file_* assertions and the LLM judge can read real artifacts.
                 worktree = out_dir / "worktree"
                 if worktree.is_dir():
-                    preserve_outputs(worktree, preserve / "outputs")
+                    preserve_outputs(worktree, preserve / "outputs", include_ignored=keep_untracked)
+                preserved_dirs.append(preserve)
             except (subprocess.CalledProcessError, RuntimeError) as exc:
                 # One flaky capture must not nuke a multi-run matrix or leak its
                 # worktree; log, drop the data point, and let aggregate cope with n-1.
@@ -376,13 +388,22 @@ def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, k
                 if not keep_runs:
                     _cleanup_run(repo_root, out_dir)
         agg_by_arm[arm["name"]] = aggregate_metrics(arm_runs)
-    report = build_report(config, agg_by_arm)
+        # Outcome grade: decoupled from capture so a grade error never drops a data
+        # point. Skipped-with-reason when the eval has no assertion set (most today).
+        arm_outcomes = outcome.grade_arm(preserved_dirs, assertion_set, judge_fn, gate)
+        # attempted = bundles grading actually ran on (set present + grader trusted), so
+        # aggregate_arm can distinguish grade-failures from a wholesale skip. gate.ok()
+        # is memoized, so this re-check is free.
+        attempted = len(preserved_dirs) if (assertion_set is not None and gate.ok()) else 0
+        outcome_by_arm[arm["name"]] = outcome.aggregate_arm(arm_outcomes, assertion_set, attempted)
+    report = build_report(config, agg_by_arm, outcome_by_arm)
     (results_dir / "results.json").write_text(
-        json.dumps({"config": config, "runs": raw_runs, "aggregate": agg_by_arm}, indent=2) + "\n",
+        json.dumps({"config": config, "runs": raw_runs, "aggregate": agg_by_arm,
+                    "outcome": outcome_by_arm}, indent=2) + "\n",
         encoding="utf-8",
     )
     (results_dir / "report.md").write_text(report + "\n", encoding="utf-8")
-    return {"aggregate": agg_by_arm, "report": report, "runs": raw_runs}
+    return {"aggregate": agg_by_arm, "outcome": outcome_by_arm, "report": report, "runs": raw_runs}
 
 
 # --- self-test: synthetic lean vs wasteful trees, real extractor ----------------
@@ -494,6 +515,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out-dir", type=Path, help="Results dir for --run (default: charness-artifacts/efficiency/<name>).")
     parser.add_argument("--timeout-sec", type=int, default=1200, help="Per-capture timeout.")
     parser.add_argument("--keep-runs", action="store_true", help="Keep each run's worktree/config instead of cleaning up.")
+    parser.add_argument("--keep-untracked-outputs", action="store_true",
+                        help="Also preserve gitignored runtime outputs into each bundle (for a skill whose "
+                             "meaningful product is gitignored runtime state, e.g. hitl's queue); off by default "
+                             "so the committed bundle stays clean. Bounded by the per-file size cap.")
+    parser.add_argument("--judge-cmd", type=str, default=None,
+                        help="Shell command for the live OUTCOME judge (ask-before-run SPEND), forwarded to the "
+                             "outcome grader; omit to SKIP judge-kind assertions (free, offline).")
+    parser.add_argument("--judge-timeout-sec", type=int, default=300,
+                        help="Per-assertion timeout for the live judge command (default 300s).")
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
 
@@ -510,8 +540,10 @@ def main(argv: list[str] | None = None) -> int:
             return code
         config = json.loads(args.run.read_text(encoding="utf-8"))
         results_dir = args.out_dir or (repo_root / "charness-artifacts" / "efficiency" / config.get("name", "ab"))
-        outcome = run_ab(repo_root, config, results_dir.resolve(), args.timeout_sec, args.keep_runs)
-        print(outcome["report"])
+        judge_fn = grade_skill_outcome.judge_via_command(args.judge_cmd, args.judge_timeout_sec) if args.judge_cmd else None
+        ab_result = run_ab(repo_root, config, results_dir.resolve(), args.timeout_sec, args.keep_runs,
+                           judge_fn, args.keep_untracked_outputs)
+        print(ab_result["report"])
         print(f"\nresults: {results_dir}", file=sys.stderr)
         return 0
     parser.error("one of --selftest or --run is required")

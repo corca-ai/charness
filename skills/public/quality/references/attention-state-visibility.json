@@ -134,6 +134,12 @@
       "evidence_terms": ["judge not run", "skipped"],
       "rationale": "The outcome grader marks a judge-kind assertion `skipped` when no live judge ran (no --judge-cmd; the live LLM judge is an ask-before-run token spend). The skip carries explicit `judge not run` evidence, is excluded from the weighted pass_rate denominator, and is counted separately in the report payload (`skipped N`), so a deferred subjective assertion cannot read as a clean outcome pass; deterministic checks still grade and an invalid grader fails the self-test gate (exit 1)."
     },
+    "scripts/skill_outcome_wiring.py": {
+      "states": ["skipped"],
+      "visibility": ["explicit_skip_summary", "terminal_payload"],
+      "evidence_terms": ["judge skipped", "skipped"],
+      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json — skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
+    },
     "scripts/filter_cosmic_ray_mutants.py": {
       "states": ["skipped"],
       "visibility": ["operator_summary", "metric_or_trace"],

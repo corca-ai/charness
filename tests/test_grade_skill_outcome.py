@@ -73,6 +73,22 @@ def test_validate_check_requires_fields() -> None:
     assert "check.name must be a string" in errors
 
 
+def test_validate_rejects_malformed_regex() -> None:
+    # A `regex: true` value that does not compile is caught at the authoring boundary,
+    # so it cannot reach grade() and raise re.error mid-run.
+    bad = {"evalId": "x", "assertions": [
+        {"id": "a", "kind": "deterministic", "statement": "s",
+         "check": {"type": "summary_contains", "value": "(", "regex": True}}]}
+    assert any("invalid regex" in e for e in g.validate_assertion_set(bad))
+
+
+def test_validate_accepts_valid_regex() -> None:
+    ok = {"evalId": "x", "assertions": [
+        {"id": "a", "kind": "deterministic", "statement": "s",
+         "check": {"type": "summary_contains", "value": r"\d+ tokens", "regex": True}}]}
+    assert g.validate_assertion_set(ok) == []
+
+
 def test_load_assertion_set_raises_on_invalid(tmp_path: Path) -> None:
     p = tmp_path / "a.json"
     p.write_text(json.dumps({"evalId": "x", "assertions": []}), encoding="utf-8")

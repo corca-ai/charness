@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-28T21:14:52Z",
+  "generated_at": "2026-06-29T09:00:51Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -121,6 +121,7 @@
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/create-skill/SKILL.md",
           "skills/shared/references/generative-sequence.md",
+          "skills/shared/references/run-plan-envelope.md",
           "skills/public/create-skill/references/portable-authoring.md",
           "skills/public/create-skill/references/adapter-contract.md",
           "skills/public/create-skill/references/adapter-pattern.md",
@@ -552,6 +553,7 @@
         ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/public/retro/references/expert-lens.md",
           "skills/public/retro/references/adapter-contract.md",
           "skills/public/retro/references/phase-aware-efficiency.md",
           "skills/public/retro/references/prepare-packet.md",
@@ -559,7 +561,6 @@
           "skills/shared/references/retro-issue-destination-split.md",
           "skills/shared/references/rca-ledger-append.md",
           "skills/public/retro/references/trigger-and-persistence.md",
-          "skills/public/retro/references/expert-lens.md",
           "skills/public/retro/references/mode-guide.md",
           "skills/public/retro/references/section-guide.md",
           "skills/public/retro/references/weekly-trends.md",

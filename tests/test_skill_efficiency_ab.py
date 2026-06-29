@@ -77,6 +77,19 @@ def test_build_report_contents() -> None:
     assert "No LLM judge yet" in report
 
 
+def test_build_report_folds_outcome_section_when_present() -> None:
+    config = {"name": "demo", "runs": 1}
+    agg = {"a": ab.aggregate_metrics([{"outcome": "passed", "total_tokens": 100}])}
+    outcome_by_arm = {"a": {"eval_id": "demo", "runs_graded": 1, "skipped": 0, "errors": 0,
+                            "pass_rate": {"mean": 1.0, "min": 1.0, "max": 1.0, "n": 1}}}
+    # Without an outcome map the report has no outcome section (back-compat default).
+    assert "Outcome grade" not in ab.build_report(config, agg)
+    # With one, the advisory section is folded in before the honest caveats.
+    report = ab.build_report(config, agg, outcome_by_arm)
+    assert "## Outcome grade (advisory)" in report
+    assert report.index("Outcome grade") < report.index("Honest caveats")
+
+
 def test_parse_session_tree() -> None:
     assert ab._parse_session_tree("noise\nSESSION_TREE=/a/b/c\ntail") == "/a/b/c"
     assert ab._parse_session_tree("no marker here") is None
@@ -288,6 +301,33 @@ def test_run_ab_skips_failed_preserves_and_cleans(tmp_path: Path, monkeypatch: p
     assert (tmp_path / "res" / "results.json").is_file()
     assert (tmp_path / "res" / "preserved" / "a__0" / "observed.v1.json").is_file()  # preserve-copy ran
     assert len(cleaned) == 2  # cleanup ran for both runs (success + skipped)
+
+
+def test_run_ab_auto_grades_when_assertion_set_present(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A sibling outcome-assertions.json next to the spec makes run_ab auto-grade each
+    # preserved bundle and fold the per-arm outcome into results + the report.
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "P"}), encoding="utf-8")
+    (tmp_path / "outcome-assertions.json").write_text(json.dumps({"evalId": "demo", "assertions": [
+        {"id": "ran", "kind": "deterministic", "statement": "s",
+         "check": {"type": "summary_contains", "value": "/hitl"}}]}), encoding="utf-8")
+    config = {"name": "t", "spec_path": "spec.json", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}
+    monkeypatch.setattr(ab, "_cleanup_run", lambda _repo, _out: None)
+
+    def fake_run_one(_repo, _ref, _inv, _spec, out_dir, _timeout):
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "observed.v1.json").write_text(
+            json.dumps({"evaluations": [{"summary": "Execution of /hitl", "outcome": "passed", "metrics": {}}]}),
+            encoding="utf-8")
+        return {"outcome": "passed", "total_tokens": 100, "tool_count": 4, "output_lines": 1}
+
+    monkeypatch.setattr(ab, "run_one", fake_run_one)
+    out = ab.run_ab(tmp_path, config, tmp_path / "res", 600, keep_runs=True)
+    assert out["outcome"]["a"]["eval_id"] == "demo"
+    assert out["outcome"]["a"]["pass_rate"]["mean"] == 1.0  # summary contained /hitl
+    assert "## Outcome grade (advisory)" in out["report"]
+    saved = json.loads((tmp_path / "res" / "results.json").read_text(encoding="utf-8"))
+    assert saved["outcome"]["a"]["eval_id"] == "demo"  # outcome persisted to results.json
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is required to run the real metric extractor")

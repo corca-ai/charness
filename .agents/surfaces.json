@@ -184,11 +184,13 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_claim_fidelity_specs.py --repo-root ."
+        "python3 scripts/validate_claim_fidelity_specs.py --repo-root .",
+        "python3 scripts/validate_outcome_assertions.py --repo-root ."
       ],
       "notes": [
         "declaredReferences mirrors each skill's references/ dir; referenceEngagement classifies each on the engage-always/on-demand/gate-sufficient axis (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md).",
-        "Specs are authored assets; live capture plus cautilus scoring stay eval-only and ask-before-run per skills/public/quality/references/cautilus-on-demand.md."
+        "Specs are authored assets; live capture plus cautilus scoring stay eval-only and ask-before-run per skills/public/quality/references/cautilus-on-demand.md.",
+        "outcome-assertions.json sets (the A/B harness's OUTCOME grade data, scored by scripts/grade_skill_outcome.py) are validated by scripts/validate_outcome_assertions.py against the grader's own schema; validate_claim_fidelity_specs.py only indexes the *.spec.json."
       ]
     },
     {

@@ -131,6 +131,13 @@ def _validate_check(check: object, where: str) -> list[str]:
         problems.append(f"{where}.check.negate must be a boolean")
     if ctype in needs_value and not isinstance(check.get("value"), str):
         problems.append(f"{where}.check.value must be a string for {ctype}")
+    elif check.get("regex") and ctype in needs_value:
+        # A `regex: true` value is compiled at grade time; catch a malformed pattern
+        # at the authoring boundary instead of crashing a live grade mid-run.
+        try:
+            re.compile(check["value"])
+        except re.error as exc:
+            problems.append(f"{where}.check.value is an invalid regex: {exc}")
     if ctype in needs_path and not isinstance(check.get("path"), str):
         problems.append(f"{where}.check.path must be a string for {ctype}")
     if ctype == "trace_tool_used" and not isinstance(check.get("name"), str):
