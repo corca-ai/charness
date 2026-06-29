@@ -314,6 +314,27 @@ test("buildExecutionObservation surfaces a waste-smell clause and trace in the r
 	assert.match(packet.evaluations[0].summary, /Waste smells: 1 \(repeated_edit\)/);
 });
 
+test("buildExecutionObservation surfaces additive efficiency metrics (output/tool_count/waste)", () => {
+	const spec = {
+		skillId: "hitl",
+		evaluationId: "execution-hitl",
+		targetId: "hitl",
+		prompt: "/charness:hitl",
+		requiredCommandFragments: [],
+		declaredReferences: [],
+	};
+	const events = [
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/state.yaml" } }], { usage: { output_tokens: 7 } }),
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/state.yaml" } }], { usage: { output_tokens: 5 } }),
+		assistantToolUse([{ name: "Bash", input: { command: "ls" } }], { usage: { output_tokens: 3 } }),
+	];
+	const { packet } = buildExecutionObservation({ spec, events });
+	const m = packet.evaluations[0].metrics;
+	assert.equal(m.tool_count, 3);
+	assert.equal(m.output_tokens, 15);
+	assert.equal(m.waste_smell_count, 1); // state.yaml read twice -> one duplicate_read smell
+});
+
 test("parseEventsFromFiles and listSessionTreeJsonl read a parent + subagents tree, and runCli emits a packet", () => {
 	const root = mkdtempSync(join(tmpdir(), "charness-skilltree-"));
 	const sub = join(root, "sess", "subagents");

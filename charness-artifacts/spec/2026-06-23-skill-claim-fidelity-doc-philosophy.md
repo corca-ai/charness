@@ -680,3 +680,39 @@ floor would gate only NEW captures; defer until that is decided).
 Open (Fix 3, deferred): an agent efficiency-review pass that reads the digest +
 smells and writes a confirmed/dismissed `## Efficiency` narrative — the "intelligent
 review" on top of the deterministic lens.
+
+## Efficiency A/B Harness — n>1 Comparison (2026-06-29)
+
+The trace lens above measures ONE run; the hitl re-capture proved n=1 variance is
+large (13 vs 20 tool calls on the same skill+prompt), so a single capture is a
+directional anecdote, not an efficiency verdict. `scripts/run_skill_efficiency_ab.py`
+turns anecdotes into n>1 comparisons. Modeled on `../ponytail/benchmarks/`. Contract:
+
+1. **Arms = isolated per-ref captures.** An arm is a labeled git ref (+ optional
+   invocation override). The runner captures n real `claude -p` runs per arm via
+   `capture-skill-run.sh` — each in a throwaway worktree + isolated
+   `CLAUDE_CONFIG_DIR`, so arms cannot cross-contaminate (ponytail shipped a wrong
+   ~4% result from a baseline-contamination bug; our per-ref isolation forecloses
+   it). This subsumes baseline-vs-skill and variant-A-vs-B (a ref before a fix vs
+   after — the highest-value charness A/B: it proves a skill fix's efficiency effect).
+2. **n>1 with mean/range, never a single number.** Per metric the report prints
+   `mean [min–max]` and deltas vs the first arm; small-n overlap is visible, not
+   hidden. Metrics from the observed packet (`total_tokens`, `output_tokens`,
+   `duration_ms`, `tool_count`, `waste_smell_count`) plus an output-side
+   `output_lines` (added lines in the worktree vs the ref — the LOC analog, since a
+   charness skill's "output" is an artifact, not code).
+3. **Self-tested instruments before any spend.** `--selftest` (offline, no API)
+   runs the real extractor over a synthetic lean tree and a synthetic wasteful tree
+   and REFUSES unless wasteful ranks worse on every metric — a comparison you can't
+   trust is worse than none (ponytail's `--selftest` discipline). `tool_count` and
+   `waste_smell_count` are surfaced in the observed packet's `metrics` so the runner
+   reads one canonical per-run file instead of re-deriving waste logic.
+4. **Advisory, never a gate.** This harness emits no pass/fail verdict on a skill
+   and gates no commit; it measures and compares, and a human reads it. The
+   correctness floor stays owned by the claim matcher + cautilus. floor-addition-restraint:
+   no blocking floor added.
+
+Deferred (rationale): an audited LLM judge (over-build / completeness, ponytail-style)
+is the expensive, subjective part; the deterministic skeleton ships and is proven
+first. A live n>1 matrix is a real token spend (n×arms real `claude -p` runs), so
+it is ask-before-run — build + `--selftest` are free; the matrix is operator-approved.

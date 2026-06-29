@@ -589,7 +589,17 @@ export function buildExecutionObservation({ spec, events } = {}) {
 		`${profileLine ? ` Tool profile: ${profileLine}.` : ""}` +
 		`${claimPart}${coveragePart}${wastePart}`;
 
-	const metrics = { total_tokens: tokens.total };
+	// metrics carries the headline budget numbers (cautilus applies its
+	// max_total_tokens/max_duration_ms thresholds against total_tokens/duration_ms)
+	// plus additive efficiency fields the A/B harness aggregates across runs. These
+	// are advisory measurements, not pass/fail floors; surfacing them here lets the
+	// A/B runner read one canonical per-run file instead of re-deriving waste logic.
+	const metrics = {
+		total_tokens: tokens.total,
+		output_tokens: tokens.output,
+		tool_count: trace.length,
+		waste_smell_count: waste.length,
+	};
 	if (duration !== null) {
 		metrics.duration_ms = duration;
 	}

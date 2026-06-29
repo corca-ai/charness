@@ -299,6 +299,35 @@ def test_validate_cautilus_diagnostics_rejects_malformed_trace_digest(tmp_path: 
     assert "must be an object with a string `name`" in result.stderr
 
 
+def test_validate_cautilus_diagnostics_rejects_empty_trace_digest(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, None)
+    bundle = repo / "charness-artifacts" / "cautilus" / "demo-diagnostic"
+    bundle.mkdir()
+    write_diagnostic_finding(bundle)
+    write_summary_evidence(bundle)
+    # A digest file present but carrying only blank lines is a no-record digest.
+    (bundle / "trace-digest.jsonl").write_text("\n  \n", encoding="utf-8")
+
+    result = run_diagnostic_validator(repo, "charness-artifacts/cautilus/demo-diagnostic/finding.md")
+
+    assert result.returncode == 1
+    assert "must contain at least one tool-call record" in result.stderr
+
+
+def test_validate_cautilus_diagnostics_rejects_non_json_trace_digest_line(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, None)
+    bundle = repo / "charness-artifacts" / "cautilus" / "demo-diagnostic"
+    bundle.mkdir()
+    write_diagnostic_finding(bundle)
+    write_summary_evidence(bundle)
+    (bundle / "trace-digest.jsonl").write_text("not json at all\n", encoding="utf-8")
+
+    result = run_diagnostic_validator(repo, "charness-artifacts/cautilus/demo-diagnostic/finding.md")
+
+    assert result.returncode == 1
+    assert "is not valid JSON" in result.stderr
+
+
 def test_run_quality_uses_all_cautilus_diagnostics_mode() -> None:
     run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
 
