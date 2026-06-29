@@ -41,7 +41,7 @@ def test_quality_run_plan_excludes_skill_refs_when_repo_has_no_skills(tmp_path: 
 
     plan = _run_plan(repo)
 
-    assert plan["next_action"] == "read_primer_refs"
+    assert plan["next_action"]["kind"] == "read_primer_refs"
     assert plan["gate_plan"] == "report_first"
     assert plan["skills_in_scope"] is False
     refs = plan["required_primer_refs"]
@@ -211,7 +211,7 @@ def test_quality_run_plan_reports_gate_packet_cost_and_trust(tmp_path: Path) -> 
 def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> None:
     text = PLAN.format_human(
         {
-            "next_action": "read_primer_refs",
+            "next_action": {"kind": "read_primer_refs"},
             "skills_in_scope": False,
             "skill_scope_reason": "no skills found",
             "gate_plan": "report_first",

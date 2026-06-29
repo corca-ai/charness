@@ -635,7 +635,7 @@ def test_issue_plan_resolve_exposes_backend_refs_and_classification_actions(tmp_
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["next_action"] == "read_selected_issues_with_comments_then_classify"
+    assert payload["next_action"]["kind"] == "read_selected_issues_with_comments_then_classify"
     assert payload["selected_backend"]["id"] == "gh"
     assert "auth_status" not in payload["selected_backend"]
     required_paths = {ref["path"] for ref in payload["required_reads"]}
@@ -664,7 +664,7 @@ def test_issue_plan_resolve_without_selector_selects_github_next_action(tmp_path
     payload = json.loads(result.stdout)
     assert payload["numbers"] is None
     assert payload["selector_source"] == "github-newest-open"
-    assert payload["next_action"] == "select_newest_open_issue_from_github_then_read"
+    assert payload["next_action"]["kind"] == "select_newest_open_issue_from_github_then_read"
 
 
 def test_issue_plan_reports_invalid_adapter_before_planning(tmp_path: Path) -> None:
@@ -685,7 +685,7 @@ def test_issue_plan_reports_invalid_adapter_before_planning(tmp_path: Path) -> N
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["ok"] is False
-    assert payload["next_action"] == "repair_issue_adapter"
+    assert payload["next_action"]["kind"] == "repair_issue_adapter"
 
 
 def test_issue_plan_reports_invalid_resolve_invocation_flag(tmp_path: Path) -> None:

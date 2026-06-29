@@ -43,6 +43,9 @@ gate_packets = _planner_packets.gate_packets
 publish_packets = _planner_packets.publish_packets
 next_action = _planner_packets.next_action
 release_plan_target_version = _publish_plan.target_version
+ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -170,49 +173,49 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         target_version=target_version,
         update_blocker=update_blocker,
     )
-    return {
-        "schema_version": "release.run_plan.v1",
-        "repo_root": str(repo_root),
-        "mode": "publish-current" if args.publish_current else "bump-and-publish" if target_version else "inspect",
-        "branch": branch,
-        "remote": args.remote,
-        "adapter": {
+    return ENVELOPE.build_envelope(
+        schema_version="release.run_plan.v1",
+        required_reads=required_reads(args, adapter),
+        next_action=planned_next_action,
+        gate_packets=gate_packets(real_host_scope),
+        repo_root=str(repo_root),
+        mode="publish-current" if args.publish_current else "bump-and-publish" if target_version else "inspect",
+        branch=branch,
+        remote=args.remote,
+        adapter={
             "found": adapter.get("found"),
             "valid": adapter.get("valid"),
             "path": adapter.get("path"),
             "warnings": adapter.get("warnings", []),
             "errors": adapter.get("errors", []),
         },
-        "release_state": release_payload or {"status": "blocked", "error": release_error},
-        "target": {
+        release_state=release_payload or {"status": "blocked", "error": release_error},
+        target={
             "current_version": current_version,
             "target_version": target_version,
             "previous_version": previous_version,
             "selector": _target_selector(args),
             "tag_name": f"v{target_version}" if target_version else None,
         },
-        "required_reads": required_reads(args, adapter),
-        "gate_packets": gate_packets(real_host_scope),
-        "evidence_packets": {
+        evidence_packets={
             "fresh_checkout": build_fresh_checkout_payload(repo_root, run_probes=False),
             "real_host": real_host_payload,
             "requested_review": review_payload,
         },
-        "publish_packets": publish_packets(
+        publish_packets=publish_packets(
             args,
             target_version=target_version,
             next_action_kind=planned_next_action["kind"],
         ),
-        "blockers": [item for item in (update_blocker,) if item],
-        "next_action": planned_next_action,
-        "phase_barriers": [
+        blockers=[item for item in (update_blocker,) if item],
+        phase_barriers=[
             "Read required_reads before release mutation.",
             "Run report-first gate_packets before broad release work.",
             "Run publish-dry-run before publish-execute.",
             "Do not parallelize sync/export/bump/install/update/git mutation with validators.",
             "Treat public release verification and issue closeout as irreversible-boundary evidence, not terminal green.",
         ],
-    }
+    )
 
 
 def main() -> int:

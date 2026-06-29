@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+import runpy
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+_ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 
 REFERENCE_SUMMARY = {
     "references/resolve-flow.md": "resolve sequencing, GitHub source-of-truth selection, and read-before-design",
@@ -36,13 +42,12 @@ def _adapter_summary(adapter: dict[str, Any]) -> dict[str, Any]:
 
 
 def _preflight_gate(preflight: dict[str, Any]) -> dict[str, str]:
-    return {
-        "id": "preflight",
-        "status": "pass" if preflight.get("ok") else "fail",
-        "trust_model": "deterministic backend/auth readiness; trust failures, inspect warnings",
-        "cost_tier": "cheap",
-        "parallel_group": "adapter-readiness",
-    }
+    return _ENVELOPE.gate_packet(
+        "preflight",
+        "deterministic backend/auth readiness; trust failures, inspect warnings",
+        status="pass" if preflight.get("ok") else "fail",
+        parallel_group="adapter-readiness",
+    )
 
 
 def _brief_action() -> dict[str, Any]:
@@ -54,48 +59,42 @@ def _brief_action() -> dict[str, Any]:
 
 
 def _ref(path: str, trigger: str, role: str) -> dict[str, str]:
-    return {
-        "path": path,
-        "role": role,
-        "trigger": trigger,
-        "why": REFERENCE_SUMMARY[path],
-    }
+    return _ENVELOPE.read(path, REFERENCE_SUMMARY[path], role=role, trigger=trigger)
 
 
 def build_new_plan(repo_root: Path, target: dict[str, Any], adapter: dict[str, Any], preflight: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "schema_version": "issue.run_plan.v1",
-        "intent": "new",
-        "repo_root": str(repo_root),
-        "target": target,
-        "adapter": _adapter_summary(adapter),
-        "selected_backend": _backend_summary(preflight),
-        "backend_ready": bool(preflight.get("ok")),
-        "required_reads": [
+    return _ENVELOPE.build_envelope(
+        schema_version="issue.run_plan.v1",
+        required_reads=[
             _ref("references/issue-shaping.md", "before drafting the issue body", "engage-always"),
             _ref("references/issue-backend.md", "before create, labels, milestones, or backend mutation", "engage-always"),
             _ref("references/closeout-discipline.md", "before reporting the created issue", "engage-always"),
         ],
-        "on_demand_reads": [
+        next_action=_ENVELOPE.next_action("draft_problem_first_body_file_then_create"),
+        gate_packets=[
+            _preflight_gate(preflight),
+            _ENVELOPE.gate_packet(
+                "source-preservation",
+                "presence/form gate only; model still judges whether preservation is adequate",
+                command="issue_tool.py check-source-preservation --body-file <body>",
+                parallel_group="draft-checks",
+            ),
+        ],
+        intent="new",
+        repo_root=str(repo_root),
+        target=target,
+        adapter=_adapter_summary(adapter),
+        selected_backend=_backend_summary(preflight),
+        backend_ready=bool(preflight.get("ok")),
+        on_demand_reads=[
             _ref("references/issue-shaping.md", "when the issue originated in an external source or gathered artifact", "source-preservation")
         ],
-        "gate_packets": [
-            _preflight_gate(preflight),
-            {
-                "id": "source-preservation",
-                "command": "issue_tool.py check-source-preservation --body-file <body>",
-                "trust_model": "presence/form gate only; model still judges whether preservation is adequate",
-                "cost_tier": "cheap",
-                "parallel_group": "draft-checks",
-            },
-        ],
-        "next_action": "draft_problem_first_body_file_then_create",
-        "phase_barriers": [
+        phase_barriers=[
             "Do not create from inline shell-quoted body text.",
             "Fetch labels/milestones through the selected backend before assigning them.",
             "Render closeout only from the verified create ledger.",
         ],
-    }
+    )
 
 
 def build_resolve_plan(
@@ -106,26 +105,50 @@ def build_resolve_plan(
     numbers = invocation.get("numbers")
     selector_source = invocation.get("selector_source")
     if numbers is None:
-        next_action = "select_newest_open_issue_from_github_then_read"
+        next_action = _ENVELOPE.next_action("select_newest_open_issue_from_github_then_read")
     else:
-        next_action = "read_selected_issues_with_comments_then_classify"
-    return {
-        "schema_version": "issue.run_plan.v1",
-        "intent": "resolve",
-        "repo_root": str(repo_root),
-        "target": invocation.get("target"),
-        "selector": invocation.get("selector"),
-        "numbers": numbers,
-        "selector_source": selector_source,
-        "brief_pause": invocation.get("brief_pause"),
-        "selected_backend": _backend_summary(preflight),
-        "backend_ready": bool(preflight.get("ok")),
-        "required_reads": [
+        next_action = _ENVELOPE.next_action("read_selected_issues_with_comments_then_classify")
+    return _ENVELOPE.build_envelope(
+        schema_version="issue.run_plan.v1",
+        required_reads=[
             _ref("references/resolve-flow.md", "before selecting or ordering issues", "engage-always"),
             _ref("references/issue-backend.md", "before backend read, carrier validation, or close", "engage-always"),
             _ref("references/closeout-discipline.md", "before publishing or verifying a closeout carrier", "engage-always"),
         ],
-        "on_demand_reads": [
+        next_action=next_action,
+        gate_packets=[
+            _preflight_gate(preflight),
+            _ENVELOPE.gate_packet(
+                "issue-read",
+                "deterministic backend read; require comments_read=true before design",
+                cost_tier="network",
+                command="issue_tool.py read --repo <org/repo> --number <n>",
+                parallel_group="issue-read",
+            ),
+            _ENVELOPE.gate_packet(
+                "closeout-draft",
+                "presence/form gate; does not prove behavior or final GitHub state",
+                command="issue_tool.py validate-closeout-draft ...",
+                parallel_group="carrier-checks",
+            ),
+            _ENVELOPE.gate_packet(
+                "closeout-verify",
+                "tracker/carrier verification only; pair with distinct behavior verdict",
+                cost_tier="network",
+                command="issue_tool.py verify-closeout ... --expect-state CLOSED",
+                parallel_group="final-readback",
+            ),
+        ],
+        intent="resolve",
+        repo_root=str(repo_root),
+        target=invocation.get("target"),
+        selector=invocation.get("selector"),
+        numbers=numbers,
+        selector_source=selector_source,
+        brief_pause=invocation.get("brief_pause"),
+        selected_backend=_backend_summary(preflight),
+        backend_ready=bool(preflight.get("ok")),
+        on_demand_reads=[
             _ref("references/causal-review.md", "classification is bug or likely bug", "classification:bug"),
             _ref(
                 "../../shared/references/fresh-eye-subagent-review.md",
@@ -139,31 +162,7 @@ def build_resolve_plan(
             ),
             _ref("references/issue-shaping.md", "resolution discovers a sibling that should become a new issue", "sibling-filing"),
         ],
-        "gate_packets": [
-            _preflight_gate(preflight),
-            {
-                "id": "issue-read",
-                "command": "issue_tool.py read --repo <org/repo> --number <n>",
-                "trust_model": "deterministic backend read; require comments_read=true before design",
-                "cost_tier": "network",
-                "parallel_group": "issue-read",
-            },
-            {
-                "id": "closeout-draft",
-                "command": "issue_tool.py validate-closeout-draft ...",
-                "trust_model": "presence/form gate; does not prove behavior or final GitHub state",
-                "cost_tier": "cheap",
-                "parallel_group": "carrier-checks",
-            },
-            {
-                "id": "closeout-verify",
-                "command": "issue_tool.py verify-closeout ... --expect-state CLOSED",
-                "trust_model": "tracker/carrier verification only; pair with distinct behavior verdict",
-                "cost_tier": "network",
-                "parallel_group": "final-readback",
-            },
-        ],
-        "classification_actions": {
+        classification_actions={
             "bug": {
                 "action_id": "causal_review_before_design",
                 "fresh_eye_required": True,
@@ -184,14 +183,13 @@ def build_resolve_plan(
                 "classification_may_change": True,
             },
         },
-        "next_action": next_action,
-        "phase_barriers": [
+        phase_barriers=[
             "GitHub issue state is the source of truth for selection and freshness.",
             "Do not design before each selected issue has comments_read=true.",
             "Do not close before the fix carrier is published and verified through GitHub readback.",
             "Do not report CLOSED as behavior proof; render the distinct behavior verdict or typed disposition.",
         ],
-    }
+    )
 
 
 def command_plan(
@@ -209,7 +207,7 @@ def command_plan(
     resolved = resolve_backend(repo_root)
     preflight = backend_module.build_preflight_payload(resolved)
     if not adapter["valid"]:
-        emit({"ok": False, "adapter": adapter, "next_action": "repair_issue_adapter"})
+        emit({"ok": False, "adapter": adapter, "next_action": _ENVELOPE.next_action("repair_issue_adapter")})
         return 1
     try:
         if args.intent == "new":

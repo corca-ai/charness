@@ -1,15 +1,22 @@
 from __future__ import annotations
 
+import runpy
 import shlex
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+_ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 
 
 def read_packet(path: str, why: str) -> dict[str, str]:
-    return {"path": path, "why": why}
+    return _ENVELOPE.read(path, why)
 
 
 def action(kind: str, reason: str) -> dict[str, str]:
-    return {"kind": kind, "reason": reason}
+    return _ENVELOPE.next_action(kind, reason=reason)
 
 
 def first_matching_action(checks: list[tuple[bool, str, str]]) -> dict[str, str] | None:
@@ -65,14 +72,14 @@ def gate_packet(
     trust_model: str,
     run_when: str,
 ) -> dict[str, str]:
-    return {
-        "id": gate_id,
-        "command": command,
-        "purpose": purpose,
-        "cost_tier": "cheap",
-        "trust_model": trust_model,
-        "run_when": run_when,
-    }
+    return _ENVELOPE.gate_packet(
+        gate_id,
+        trust_model,
+        cost_tier="cheap",
+        command=command,
+        purpose=purpose,
+        run_when=run_when,
+    )
 
 
 def command_text(parts: list[str]) -> str:

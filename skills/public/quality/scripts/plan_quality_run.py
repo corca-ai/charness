@@ -5,11 +5,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "references" / "catalog.yaml"
+ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 
 
 def _load_yaml_file(path: Path) -> dict[str, Any]:
@@ -216,30 +221,30 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
             2,
             "Answer structural_review_packet before broad recommendations; separate target findings from ambient repo gate failures.",
         )
-    return {
-        "schema_version": "quality.run_plan.v2",
-        "repo_root": str(repo_root),
-        "skills_in_scope": skills_in_scope,
-        "skill_scope_reason": (
+    return ENVELOPE.build_envelope(
+        schema_version="quality.run_plan.v2",
+        required_reads=required_reads,
+        next_action=ENVELOPE.next_action("read_primer_refs"),
+        gate_packets=gates,
+        repo_root=str(repo_root),
+        skills_in_scope=skills_in_scope,
+        skill_scope_reason=(
             f"found {len(skills)} checked-in skill package(s)" if skills else "no skills/public or skills/support SKILL.md files found"
         ),
-        "sample_skill_paths": skills[:8],
-        "required_reads": required_reads,
-        "required_primer_refs": required_refs,
-        "structural_review_packet": structural_packet,
-        "gate_plan": "report_first",
-        "gate_packets": gates,
-        "next_action": "read_primer_refs",
-        "phase_barriers": phase_barriers,
-        "on_demand_reads": on_demand_reads,
-        "on_demand_trigger_map": on_demand_trigger_map,
-    }
+        sample_skill_paths=skills[:8],
+        required_primer_refs=required_refs,
+        structural_review_packet=structural_packet,
+        gate_plan="report_first",
+        phase_barriers=phase_barriers,
+        on_demand_reads=on_demand_reads,
+        on_demand_trigger_map=on_demand_trigger_map,
+    )
 
 
 def format_human(plan: dict[str, Any]) -> str:
     lines = [
         "Quality run plan:",
-        f"- next_action: {plan['next_action']}",
+        f"- next_action: {plan['next_action']['kind']}",
         f"- skills_in_scope: {str(plan['skills_in_scope']).lower()} ({plan['skill_scope_reason']})",
         f"- gate_plan: {plan['gate_plan']}",
         "- required_reads:",

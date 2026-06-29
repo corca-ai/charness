@@ -30,7 +30,7 @@ matches its trigger. Treat `gate_packets` as evidence packets: trust
 deterministic failures, but keep judgment for behavior verdicts, source
 preservation quality, and whether a causal claim over-reaches.
 
-The planner's `next_action` is the next move. If `backend_ready` is false,
+The planner's `next_action.kind` is the next move. If `backend_ready` is false,
 repair or surface the adapter/backend problem before reading, creating, or
 closing anything.
 

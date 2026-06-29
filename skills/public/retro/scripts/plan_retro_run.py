@@ -60,14 +60,16 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 scaffold_retro_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_retro_artifact")
 surfaces_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.surfaces_lib")
+ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 
 
 def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
-    return {"path": path, "kind": kind, "base": base, "why": why}
+    return ENVELOPE.read(path, why, kind=kind, base=base)
 
 
-def _packet(packet_id: str, trust_model: str, *, cost_tier: str = "cheap", **extra: Any) -> dict[str, Any]:
-    return {"id": packet_id, "trust_model": trust_model, "cost_tier": cost_tier, **extra}
+_packet = ENVELOPE.gate_packet
 
 
 def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict[str, Any]:
@@ -270,16 +272,21 @@ def build_plan(
     work_paths, work_paths_source = _work_paths(repo_root, changed_paths)
     work_class = _classify_work_class(work_paths)
     lens_brief = _lens_brief(work_class)
-    return {
-        "schema_version": "retro.run_plan.v1",
-        "ok": bool(adapter.get("valid")),
-        "repo_root": str(repo_root),
-        "mode": mode,
-        "mode_reason": mode_reason,
-        "work_class": work_class,
-        "work_paths_source": work_paths_source,
-        "lens_brief": lens_brief,
-        "adapter": {
+    return ENVELOPE.build_envelope(
+        schema_version="retro.run_plan.v1",
+        required_reads=_required_reads(
+            repo_root=repo_root, adapter=adapter, artifact=artifact, mode=mode, lens_brief=lens_brief
+        ),
+        next_action=_next_action(artifact),
+        gate_packets=_gate_packets(repo_root, adapter, scaffold),
+        ok=bool(adapter.get("valid")),
+        repo_root=str(repo_root),
+        mode=mode,
+        mode_reason=mode_reason,
+        work_class=work_class,
+        work_paths_source=work_paths_source,
+        lens_brief=lens_brief,
+        adapter={
             "valid": adapter.get("valid"),
             "found": adapter.get("found"),
             "path": adapter.get("path"),
@@ -287,19 +294,14 @@ def build_plan(
             "warnings": adapter.get("warnings", []),
             "errors": adapter.get("errors", []),
         },
-        "artifact": artifact,
-        "required_reads": _required_reads(
-            repo_root=repo_root, adapter=adapter, artifact=artifact, mode=mode, lens_brief=lens_brief
-        ),
-        "on_demand_reads": _on_demand_reads(),
-        "gate_packets": _gate_packets(repo_root, adapter, scaffold),
-        "next_action": _next_action(artifact),
-        "phase_barriers": [
+        artifact=artifact,
+        on_demand_reads=_on_demand_reads(),
+        phase_barriers=[
             "Open required_reads (esp. expert-lens.md for the briefed lens) before writing the retro.",
             "Treat gate_packets as cheap deterministic evidence: trust them for shape, not for judgment.",
             "Never close without a Persisted: yes/no line.",
         ],
-    }
+    )
 
 
 def main() -> int:

@@ -106,6 +106,8 @@ canonical adapter when the repo should own topology terms.
    - move schemas, examples, and theory into `references/`
    - add scripts for repeated bootstrap, adapter resolution, artifact upsert,
      or recovery behavior that would otherwise become prose-only ritual
+   - a skill with any briefing decision ships a deterministic planner emitting the
+     canonical run-plan envelope (`../../shared/references/run-plan-envelope.md`); linear skills use its minimal emitter, never fabricated branches
 7. Verify before stopping.
    - cold-start test from repo root
    - for public-skill changes, run one realistic consumer prompt instead of
@@ -180,6 +182,7 @@ canonical adapter when the repo should own topology terms.
 - `references/binary-preflight.md`
 - `../create-cli/SKILL.md`
 - `../../shared/references/binary-preflight.md`
+- `../../shared/references/run-plan-envelope.md`
 - `../../shared/references/source-bound-records.md`
 - `../../shared/references/prescribed-path-self-test.md`
 - `../../shared/references/success-criteria-review.md`

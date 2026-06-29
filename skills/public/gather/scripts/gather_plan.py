@@ -7,10 +7,14 @@ import json
 import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.parse import urlparse
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORT_WEB_FETCH = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "route_public_fetch.py"
+ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(SCRIPT_DIR.parents[2] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 EXACT_SOURCE_CONTRACTS = {
     "twitter-syndication": {
         "required": True,
@@ -100,23 +104,25 @@ def _exact_source_contract(route_id: str) -> dict[str, object]:
 
 def _required_reads(route_id: str) -> list[dict[str, str]]:
     reads = [
-        {
-            "path": "references/source-priority.md",
-            "trigger": "before widening from a named source into search or adjacent material",
-            "why": "keeps primary-source and source-identity decisions explicit",
-        },
-        {
-            "path": "references/capability-contract.md",
-            "trigger": "before interpreting provider access, degradation, or blocked results",
-            "why": "defines access modes, trace preservation, and clean-stop behavior",
-        },
+        ENVELOPE.read(
+            "references/source-priority.md",
+            "keeps primary-source and source-identity decisions explicit",
+            trigger="before widening from a named source into search or adjacent material",
+        ),
+        ENVELOPE.read(
+            "references/capability-contract.md",
+            "defines access modes, trace preservation, and clean-stop behavior",
+            trigger="before interpreting provider access, degradation, or blocked results",
+        ),
     ]
     if route_id in {"twitter-syndication", "reddit-feed"}:
-        reads.append({
-            "path": "../../support/web-fetch/references/routing-table.md",
-            "trigger": "when a public URL routes through support/web-fetch domain tactics",
-            "why": "names route ownership and source-specific fallback order without bloating gather core",
-        })
+        reads.append(
+            ENVELOPE.read(
+                "../../support/web-fetch/references/routing-table.md",
+                "names route ownership and source-specific fallback order without bloating gather core",
+                trigger="when a public URL routes through support/web-fetch domain tactics",
+            )
+        )
     return reads
 
 
@@ -140,55 +146,56 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
     ]
     redirect = _provider_redirect(route.get("normalized_host"))
     if redirect is not None:
-        next_action: dict[str, object] = {
-            "command": ["python3", redirect["adviser"], "--repo-root", str(repo_root)],
-            "redirect": (
+        next_action = ENVELOPE.next_action(
+            "redirect_to_provider_adviser",
+            command=["python3", redirect["adviser"], "--repo-root", str(repo_root)],
+            redirect=(
                 f"{redirect['source']} source: gather_plan.py only plans the public-URL fetch route, so "
                 f"run the named adviser and follow the provider path instead. {redirect['why']}"
             ),
-            "stop_when": "the adviser reports the provider mode is none/unavailable and no honest fallback (operator export or labeled browser-mediated) remains",
-        }
+            stop_when="the adviser reports the provider mode is none/unavailable and no honest fallback (operator export or labeled browser-mediated) remains",
+        )
     else:
-        next_action = {
-            "command": command,
-            "execute_flag": "--execute writes the durable record when acquisition succeeds, when a route explicitly allows an honest partial record, or when an exact-source route reaches a terminal identity verdict",
-            "stop_when": "typed blocked, unsupported, missing capability, or exact-source unavailable result answers the acquisition boundary",
-        }
-    return {
-        "schema_version": "gather.run_plan.v1",
-        "ok": bool(adapter.get("valid")),
-        "repo_root": str(repo_root),
-        "source": {
+        next_action = ENVELOPE.next_action(
+            "fetch_public_url",
+            command=command,
+            execute_flag="--execute writes the durable record when acquisition succeeds, when a route explicitly allows an honest partial record, or when an exact-source route reaches a terminal identity verdict",
+            stop_when="typed blocked, unsupported, missing capability, or exact-source unavailable result answers the acquisition boundary",
+        )
+    return ENVELOPE.build_envelope(
+        schema_version="gather.run_plan.v1",
+        required_reads=_required_reads(route_id),
+        next_action=next_action,
+        gate_packets=[
+            ENVELOPE.gate_packet(
+                "adapter-readiness",
+                "deterministic adapter parser; trust failures",
+                status="pass" if adapter.get("valid") else "fail",
+            ),
+            ENVELOPE.gate_packet(
+                "acquisition-trace",
+                "deterministic route trace; agent judges whether the typed verdict answers the user",
+                cost_tier="route-dependent",
+                command="gather_public_url.py emits acquisition attempts, selected attempt, source_identity, and write_record",
+            ),
+        ],
+        ok=bool(adapter.get("valid")),
+        repo_root=str(repo_root),
+        source={
             "kind": _source_kind(url),
             "url": url,
             "host": route.get("normalized_host"),
         },
-        "adapter": {
+        adapter={
             "valid": adapter.get("valid"),
             "path": adapter.get("path"),
             "output_dir": adapter.get("data", {}).get("output_dir"),
             "provider_modes": adapter.get("data", {}).get("gather_provider"),
         },
-        "route": route,
-        "exact_source": _exact_source_contract(route_id),
-        "required_reads": _required_reads(route_id),
-        "gate_packets": [
-            {
-                "id": "adapter-readiness",
-                "status": "pass" if adapter.get("valid") else "fail",
-                "trust_model": "deterministic adapter parser; trust failures",
-                "cost_tier": "cheap",
-            },
-            {
-                "id": "acquisition-trace",
-                "command": "gather_public_url.py emits acquisition attempts, selected attempt, source_identity, and write_record",
-                "trust_model": "deterministic route trace; agent judges whether the typed verdict answers the user",
-                "cost_tier": "route-dependent",
-            },
-        ],
-        "source_owner": redirect,
-        "next_action": next_action,
-    }
+        route=route,
+        exact_source=_exact_source_contract(route_id),
+        source_owner=redirect,
+    )
 
 
 def main() -> int:

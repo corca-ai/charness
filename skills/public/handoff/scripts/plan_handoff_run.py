@@ -52,6 +52,9 @@ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapt
 chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(
     __file__, "chunked_routing_lib"
 )
+ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 
 
 def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict[str, Any]:
@@ -65,7 +68,7 @@ def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict
 
 
 def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
-    return {"path": path, "kind": kind, "base": base, "why": why}
+    return ENVELOPE.read(path, why, kind=kind, base=base)
 
 
 def _packet(
@@ -75,12 +78,7 @@ def _packet(
     *,
     cost_tier: str = "cheap",
 ) -> dict[str, Any]:
-    return {
-        "id": packet_id,
-        "trust_model": trust_model,
-        "cost_tier": cost_tier,
-        **gate,
-    }
+    return ENVELOPE.gate_packet(packet_id, trust_model, cost_tier=cost_tier, **gate)
 
 
 def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any]:
@@ -284,41 +282,41 @@ def build_plan(
         chunked_routing=should_chunk,
     )
     artifact_path = str(artifact["path"])
-    return {
-        "schema_version": "handoff.run_plan.v1",
-        "repo_root": str(repo_root),
-        "adapter": {
+    return ENVELOPE.build_envelope(
+        schema_version="handoff.run_plan.v1",
+        required_reads=_required_reads(
+            artifact=artifact,
+            intent=resolved_intent,
+            adapter=adapter,
+        ),
+        next_action=_next_action(
+            artifact=artifact,
+            intent=resolved_intent,
+            artifact_path=artifact_path,
+        ),
+        gate_packets=_gate_packets(repo_root, artifact_path),
+        repo_root=str(repo_root),
+        adapter={
             "artifact_path": artifact_path,
             "found": bool(adapter.get("found")),
             "valid": bool(adapter.get("valid")),
             "warnings": adapter.get("warnings", []),
             "errors": adapter.get("errors", []),
         },
-        "artifact": artifact,
-        "intent": {
+        artifact=artifact,
+        intent={
             **resolved_intent,
             "chunked_routing": {
                 "should_run": should_chunk,
                 "invoked_directly": invoked_directly,
             },
         },
-        "required_reads": _required_reads(
-            artifact=artifact,
-            intent=resolved_intent,
-            adapter=adapter,
-        ),
-        "gate_packets": _gate_packets(repo_root, artifact_path),
-        "next_action": _next_action(
-            artifact=artifact,
-            intent=resolved_intent,
-            artifact_path=artifact_path,
-        ),
-        "phase_barriers": [
+        phase_barriers=[
             "Read required_reads before opening broader docs or editing the artifact.",
             "Treat gate_packets as evidence packets: cheap deterministic gates can be trusted for shape, not for judgment.",
             "For chunked routing, write only at the end; for refresh, keep only facts that change the next action.",
         ],
-    }
+    )
 
 
 def main() -> None:

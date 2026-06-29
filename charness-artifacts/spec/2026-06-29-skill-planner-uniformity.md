@@ -32,14 +32,19 @@ capable judge via a deterministic surface) uniformly across the skill set.
    miss; the PASSED re-capture held at 4/9 (it read via the Read tool, no
    regression). The floor (`requiredCommandFragments`) is unaffected by design.
 
-2. **Planner envelope unification BEFORE any rollout.** The existing 6 planners
-   (debug/gather/handoff/issue/quality/release) have divergent schemas; adding 14
-   more bespoke ones multiplies concepts instead of reducing them. So: unify the 6
-   + retro into ONE canonical envelope + shared lib; minimal common vocabulary =
-   `{required_reads, next_action, gate_packets}` (skill-specific fields stay
-   extensions). Linear skills get a minimal required_reads emitter — no fake
-   branches (Floor-Addition Restraint). Once the envelope is fixed, bake "a new
-   skill ships a planner" into `create-skill` as the well-formedness standard.
+2. **Planner envelope unification BEFORE any rollout.** — LANDED (2026-06-29).
+   The existing 6 planners (debug/gather/handoff/issue/quality/release) had
+   divergent schemas; adding 14 more bespoke ones multiplies concepts instead of
+   reducing them. Shipped: ONE canonical envelope `charness.run_plan_envelope.v1`
+   with shared builders + `build_envelope` validator in
+   `skills/shared/scripts/run_plan_envelope.py` (contract:
+   `skills/shared/references/run-plan-envelope.md`); all 7 planners (the 6 + retro)
+   migrated to it. Minimal common vocabulary = `{required_reads, next_action,
+   gate_packets}` (skill-specific fields stay extensions); `next_action` is now
+   ALWAYS a dict carrying `kind` (was a bare string in quality/issue), per-skill
+   `schema_version` unchanged. Linear skills use `build_linear_envelope` — no fake
+   branches (Floor-Addition Restraint). The "a new skill ships a planner"
+   well-formedness standard is baked into `create-skill`.
 
 3. **More fixtures ONLY where the default prompt can't evaluate the skill.** Add a
    scenario fixture only when a single representative/bare prompt cannot honestly

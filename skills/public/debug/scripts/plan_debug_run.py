@@ -33,25 +33,16 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 scaffold_debug_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_debug_artifact")
 risk_interrupt_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.risk_interrupt_lib")
+ENVELOPE = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+)
 
 
 def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
-    return {"path": path, "kind": kind, "base": base, "why": why}
+    return ENVELOPE.read(path, why, kind=kind, base=base)
 
 
-def _packet(
-    packet_id: str,
-    trust_model: str,
-    *,
-    cost_tier: str = "cheap",
-    **extra: Any,
-) -> dict[str, Any]:
-    return {
-        "id": packet_id,
-        "trust_model": trust_model,
-        "cost_tier": cost_tier,
-        **extra,
-    }
+_packet = ENVELOPE.gate_packet
 
 
 def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict[str, Any]:
@@ -317,12 +308,15 @@ def build_plan(repo_root: Path) -> dict[str, Any]:
         mode = "fresh-investigation-with-prior-memory"
     else:
         mode = "fresh-investigation"
-    return {
-        "schema_version": "debug.run_plan.v1",
-        "ok": bool(adapter.get("valid")),
-        "repo_root": str(repo_root),
-        "mode": mode,
-        "adapter": {
+    return ENVELOPE.build_envelope(
+        schema_version="debug.run_plan.v1",
+        required_reads=_required_reads(adapter=adapter, artifact=artifact, prior_incidents=prior_incidents),
+        next_action=_next_action(artifact),
+        gate_packets=_gate_packets(repo_root, adapter, scaffold),
+        ok=bool(adapter.get("valid")),
+        repo_root=str(repo_root),
+        mode=mode,
+        adapter={
             "valid": adapter.get("valid"),
             "found": adapter.get("found"),
             "path": adapter.get("path"),
@@ -330,14 +324,11 @@ def build_plan(repo_root: Path) -> dict[str, Any]:
             "warnings": adapter.get("warnings", []),
             "errors": adapter.get("errors", []),
         },
-        "artifact": artifact,
-        "scaffold": scaffold_summary,
-        "prior_incidents": prior_incidents,
-        "required_reads": _required_reads(adapter=adapter, artifact=artifact, prior_incidents=prior_incidents),
-        "on_demand_reads": _on_demand_reads(),
-        "gate_packets": _gate_packets(repo_root, adapter, scaffold),
-        "next_action": _next_action(artifact),
-    }
+        artifact=artifact,
+        scaffold=scaffold_summary,
+        prior_incidents=prior_incidents,
+        on_demand_reads=_on_demand_reads(),
+    )
 
 
 def main() -> int:
