@@ -65,7 +65,7 @@ statically in `v0.57.0`. It empirically tests retro's single asserted floor.
   separate from the floor verdict; logged as a follow-up observation, not acted on
   here.
 
-## Disposition (operator-decided 2026-06-29)
+## Verdict (operator disposition, decided 2026-06-29)
 
 The operator rejected both "re-classify the fixture down" and "re-pin the prompt"
 and reframed the miss as a **skill-shape defect**: a good skill briefs the judge

@@ -667,11 +667,15 @@ a truncated copy of the tool input, so a Bash command carrying an inline secret
 would land there. Captures run a representative skill prompt, not secret-bearing
 commands; still, treat `args` as input-derived, not output-safe.
 
-Pre-existing gap recorded (NOT fixed here): `--all` mode fails today on
-`retro-claim-fidelity-2026-06-29` and `retro-claim-fidelity-2026-06-29-recapture`
-(machine evidence without a `finding.md`; the retro captures use `PROOF.md`).
-`skill-experiment-*` bundles are excluded from `--all` by design. Migrating the
-retro bundles to the canonical `finding.md` is its own slice.
+Pre-existing `--all` gap RESOLVED 2026-06-29: the two retro bundles
+(`retro-claim-fidelity-2026-06-29` + `-recapture`) carried machine evidence with a
+`PROOF.md` instead of the canonical `finding.md`, so `--all` was red. Renamed both
+to `finding.md` (the first-capture's `## Disposition` header now carries a
+`## Verdict` marker); `--all` now validates 7 bundles green. `skill-experiment-*`
+bundles remain excluded from `--all` by design. Now that `--all` is green, the
+trace-digest floor MAY be promoted to required once every capture bundle ships a
+digest (the retro bundles cannot — their transcripts are gone — so a required
+floor would gate only NEW captures; defer until that is decided).
 
 Open (Fix 3, deferred): an agent efficiency-review pass that reads the digest +
 smells and writes a confirmed/dismissed `## Efficiency` narrative — the "intelligent
