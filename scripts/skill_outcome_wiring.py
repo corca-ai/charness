@@ -37,6 +37,19 @@ import grade_skill_outcome
 _GRADE_FAULTS = (OSError, ValueError, KeyError, json.JSONDecodeError, re.error)
 
 
+def is_binary_file(path: Path, sniff: int = 8192) -> bool:
+    """A file is treated as binary if its first chunk carries a NUL byte. Such a file
+    (e.g. a __pycache__ .pyc swept in by --keep-untracked-outputs) is not useful grading
+    evidence, bloats the committed bundle, and — load-bearing — a NUL in an output excerpt
+    propagates into the judge prompt and crashes a judge that passes it as a subprocess
+    argument (`embedded null byte`). preserve_outputs drops these from the bundle."""
+    try:
+        with open(path, "rb") as handle:
+            return b"\x00" in handle.read(sniff)
+    except OSError:  # pragma: no cover - unreadable/vanished file
+        return False
+
+
 def resolve_assertion_set(spec_path: Path | str) -> dict | None:
     """The per-eval outcome assertion set is the sibling `outcome-assertions.json` next
     to the spec. Absent (most evals today) -> None: outcome grading is skipped for that

@@ -182,7 +182,11 @@ class Bundle:
         excerpts = self._output_excerpts()
         if excerpts:
             parts.append("PRODUCED OUTPUTS (truncated):\n" + excerpts)
-        return "\n\n".join(parts)
+        # Strip NUL bytes: a binary output excerpt (valid UTF-8 U+0000 survives errors=
+        # "replace") would otherwise reach a judge that passes the context as a subprocess
+        # argument and crash it with `embedded null byte`. Defensive — preserve_outputs
+        # already drops binary files, but a tracked binary output could still carry one.
+        return "\n\n".join(parts).replace("\x00", "")
 
     def _output_excerpts(self, max_files: int = 20, per_file: int = 500) -> str:
         if self.outputs_dir is None:

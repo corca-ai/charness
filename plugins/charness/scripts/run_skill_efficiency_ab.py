@@ -254,6 +254,9 @@ def preserve_outputs(worktree: Path, outputs_dir: Path, max_bytes: int = 65536,
         if size > max_bytes:
             manifest["omitted"].append({"path": rel, "reason": f"size {size} > {max_bytes}"})
             continue
+        if outcome.is_binary_file(src):
+            manifest["omitted"].append({"path": rel, "reason": "binary (NUL byte)"})
+            continue
         dst = outputs_dir / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(src, dst)

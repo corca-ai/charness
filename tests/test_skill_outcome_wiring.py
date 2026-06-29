@@ -16,6 +16,19 @@ if str(ROOT / "scripts") not in sys.path:
 w = load_script_module("skill_outcome_wiring_under_test", ROOT / "scripts" / "skill_outcome_wiring.py")
 
 
+# --- binary detection -----------------------------------------------------------
+
+
+def test_is_binary_file_detects_nul(tmp_path: Path) -> None:
+    binary = tmp_path / "mod.pyc"
+    binary.write_bytes(b"\xed\x00\x00\x00code")  # NUL byte -> binary
+    text = tmp_path / "queue.json"
+    text.write_text('{"ok": true}\n', encoding="utf-8")
+    assert w.is_binary_file(binary) is True
+    assert w.is_binary_file(text) is False
+    assert w.is_binary_file(tmp_path / "missing") is False  # unreadable -> not fatal
+
+
 # --- assertion set resolution ---------------------------------------------------
 
 

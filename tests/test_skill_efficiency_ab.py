@@ -162,6 +162,27 @@ def test_preserve_outputs_copies_changed_with_size_cap(tmp_path: Path) -> None:
     assert json.loads((out / "outputs-manifest.json").read_text(encoding="utf-8"))["copied"] == ["sub/small.md"]
 
 
+def test_preserve_outputs_skips_binary_files(tmp_path: Path) -> None:
+    # A binary file (NUL byte) — e.g. a __pycache__ .pyc swept in by
+    # --keep-untracked-outputs — is omitted from the bundle: it is not grading
+    # evidence and its NUL would crash the judge subprocess.
+    repo = tmp_path / "wt"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    (repo / "seed.txt").write_text("s\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    (repo / "queue.json").write_text('{"ok": true}\n', encoding="utf-8")  # text -> kept
+    (repo / "mod.pyc").write_bytes(b"\xed\x00\x00code")  # binary -> omitted
+    out = tmp_path / "preserved" / "outputs"
+    manifest = ab.preserve_outputs(repo, out)
+    assert manifest["copied"] == ["queue.json"]
+    assert any(o["path"] == "mod.pyc" and "binary" in o["reason"] for o in manifest["omitted"])
+    assert not (out / "mod.pyc").exists()
+
+
 def test_write_transcript_keeps_assistant_text_only(tmp_path: Path) -> None:
     tree = tmp_path / "tree"
     tree.mkdir()

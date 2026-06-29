@@ -144,6 +144,16 @@ def test_judge_context_includes_transcript_and_outputs(tmp_path: Path) -> None:
     assert "outputs-manifest" not in g.load_bundle(d).judge_context
 
 
+def test_judge_context_strips_nul_bytes(tmp_path: Path) -> None:
+    # A NUL byte in an output excerpt (a binary file read with errors="replace" keeps
+    # U+0000) must not survive into judge_context, or it crashes a judge that passes the
+    # context as a subprocess argument (`embedded null byte`).
+    d = _make_bundle(tmp_path, summary="ok", output="before\x00after")
+    ctx = g.load_bundle(d).judge_context
+    assert "\x00" not in ctx
+    assert "before" in ctx and "after" in ctx  # surrounding text preserved
+
+
 def test_load_bundle_missing_observed_raises(tmp_path: Path) -> None:
     (tmp_path / "empty").mkdir()
     with pytest.raises(FileNotFoundError, match="observed.v1.json"):
