@@ -128,6 +128,12 @@
       "evidence_terms": ["doctor_status", "disabled"],
       "rationale": "Doctor library exposes disabled and skipped healthcheck states with next steps."
     },
+    "scripts/grade_skill_outcome.py": {
+      "states": ["skipped"],
+      "visibility": ["explicit_skip_summary", "terminal_payload"],
+      "evidence_terms": ["judge not run", "skipped"],
+      "rationale": "The outcome grader marks a judge-kind assertion `skipped` when no live judge ran (no --judge-cmd; the live LLM judge is an ask-before-run token spend). The skip carries explicit `judge not run` evidence, is excluded from the weighted pass_rate denominator, and is counted separately in the report payload (`skipped N`), so a deferred subjective assertion cannot read as a clean outcome pass; deterministic checks still grade and an invalid grader fails the self-test gate (exit 1)."
+    },
     "scripts/filter_cosmic_ray_mutants.py": {
       "states": ["skipped"],
       "visibility": ["operator_summary", "metric_or_trace"],

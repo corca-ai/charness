@@ -25,14 +25,14 @@
 
 ## Next Session
 
-1. **Efficiency A/B — re-run CLEAN + add the judge.** Harness + first live run
-   landed; the run proved baseline-vs-skill is contaminated (project CLAUDE.md
-   auto-routes a plain prompt to the skill). Remaining: (a) **re-run clean** —
-   variant-A-vs-B (same skill, two refs; routing cancels) OR build a routing-neutral
-   baseline (`--setting-sources project,local` / outside the charness repo). (b) **add
-   the outcome layer** — evidence-based grader (skill-creator pattern: assertions + LLM
-   judge over transcript+outputs, host-side); also what makes efficiency numbers
-   trustworthy. cautilus-vs-here split + outcome-gap: methodology spec.
+1. **Efficiency A/B — (b) outcome-grader skeleton LANDED; live judge + (a) clean re-run remain.**
+   [grade_skill_outcome.py](../scripts/grade_skill_outcome.py) grades a capture's OUTCOME vs a
+   per-eval assertion set (deterministic + judge-kind) → PASS/FAIL + evidence + weighted pass_rate,
+   behind an offline `--selftest` gate. First set
+   [hitl outcome-assertions.json](../evals/cautilus/hitl-claim-fidelity/outcome-assertions.json)
+   discriminates on both real hitl arms (no spend): skill 0.75 vs baseline 0.25. Remaining (b): live
+   judge (`--judge-cmd`, ask-before-run) + capture OUTPUT preservation + A/B report wiring; (a) clean
+   variant-A-vs-B (retro pre/post planner; routing cancels). Lesson + gap: methodology spec.
 2. **Correctness sweep (item 3, continue, ask-before-run):** capture the next of
    the 18 hypothesis-floor skills, one at a time. A miss = skill-shape signal
    (re-pin / re-classify / give-a-planner), never soften the matcher; do NOT

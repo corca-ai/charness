@@ -1,0 +1,46 @@
+{
+  "_comment": "OUTCOME assertion set for the hitl skill (companion to spec.json, which scores ROUTING/coverage). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle. Deterministic assertions grade offline (no spend); judge-kind assertions need the live judge (--judge-cmd, ask-before-run) and are SKIPPED otherwise. Honest discriminating assertions for a FAITHFUL bounded human-in-the-loop chunked review of the pinned target: not reverse-engineered to any one capture, so a contaminated/stalled run legitimately scores low. output_file_exists assertions resolve against a bundle outputs/ dir; capture-side output preservation is a tracked follow-up, so today they fail with that evidence rather than passing.",
+  "evalId": "hitl-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-hitl",
+      "kind": "deterministic",
+      "statement": "The captured run actually executed the hitl skill (sanity floor before grading the work).",
+      "check": {"type": "summary_contains", "value": "Execution of /hitl"},
+      "weight": 1
+    },
+    {
+      "_comment": "Reads the AUTHORITATIVE cross-tool claim-matcher verdict in the observed summary, NOT a trace grep: build-skill-execution-observation.mjs detects the chunk-contract.md open across ANY tool (Read, or a `sed`/`cat` Bash open), and the trace-digest args truncate (~160 chars), so a `trace_tool_used name=Read` check false-negatives a faithful sed-open. PASS iff the matcher did NOT report chunk-contract.md as a missing required fragment.",
+      "id": "opened-chunk-contract",
+      "kind": "deterministic",
+      "statement": "The run engaged references/chunk-contract.md — the presentation invariant SKILL.md step 5 routes every bounded chunk through (matcher-verified across any tool, incl. shell opens).",
+      "check": {"type": "summary_contains", "value": "missing required fragment: chunk-contract.md", "negate": true},
+      "weight": 2
+    },
+    {
+      "id": "materialized-queue",
+      "kind": "deterministic",
+      "statement": "The run materialized the resumable review queue (queue.json) so the bounded loop is chunked and resumable, not a one-shot answer.",
+      "check": {"type": "output_file_exists", "path": "queue.json"},
+      "weight": 1
+    },
+    {
+      "id": "chunk-shape",
+      "kind": "judge",
+      "statement": "Each presented chunk carried an original-material excerpt, an Agent Assessment, and a Recommended Disposition — the chunk-contract presentation shape, not a flat summary.",
+      "weight": 2
+    },
+    {
+      "id": "non-binding-disposition",
+      "kind": "judge",
+      "statement": "Each Recommended Disposition was framed as non-binding (the human decides), not executed as an action the agent already took.",
+      "weight": 2
+    },
+    {
+      "id": "stop-for-approval",
+      "kind": "judge",
+      "statement": "The run paused for the human's approval before advancing to the next chunk (the human-in-the-loop gate), rather than auto-advancing through all chunks.",
+      "weight": 1
+    }
+  ]
+}

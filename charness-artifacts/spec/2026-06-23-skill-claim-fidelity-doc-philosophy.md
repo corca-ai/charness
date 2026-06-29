@@ -767,3 +767,42 @@ Ownership split for the missing outcome layer:
   (3) a host-side grader subagent (LLM judge over transcript + outputs → per-assertion
   PASS/FAIL + evidence + pass_rate), self-tested known-good-vs-known-bad before spend;
   (4) wire the verdict into the bundle/report (+ optionally the observed packet).
+
+### Outcome Grader — skeleton landed (2026-06-29)
+
+Parts (2) + (3)-skeleton shipped offline, mirroring how the A/B harness landed
+(deterministic core + `--selftest` gate first; live spend deferred):
+
+- `scripts/grade_skill_outcome.py` grades a captured run's evidence bundle (the
+  `preserved/<arm>__<n>/` shape: `observed.v1.json` + `trace-digest.jsonl` + optional
+  `outputs/`) against a per-eval assertion set → per-assertion PASS/FAIL + cited
+  evidence + a weighted `pass_rate` over SCORED rows only (skipped/error excluded).
+  Deterministic checks (`summary_contains`, `trace_tool_used`, `output_file_exists`/
+  `_contains`, `transcript_contains`) grade offline; judge-kind assertions route to an
+  injectable judge seam (`judge_via_command`, the portable `--judge-cmd` adapter) and
+  are SKIPPED with explicit evidence unless the live judge runs (ask-before-run spend).
+- `--selftest` (offline, no API) refuses unless the grader ranks a synthetic known-GOOD
+  output strictly above a known-BAD one; `--grade` gates on it (fail-closed, like the
+  A/B matrix). Advisory only — no commit gate, no new blocking floor (floor-addition-restraint).
+- First per-eval data: `evals/cautilus/hitl-claim-fidelity/outcome-assertions.json`
+  (honest discriminating assertions, not reverse-engineered to a capture). Executed
+  on BOTH real preserved hitl arms (deterministic-only, no spend): it discriminates —
+  the skill arm (which opened `chunk-contract.md` via a `sed` Bash open) scores 0.75
+  with `opened-chunk-contract` PASS, while the contaminated baseline (never opened)
+  scores 0.25 with that assertion FAIL.
+- Honesty lesson (fresh-eye critique caught it pre-ship): the v1 `opened-chunk-contract`
+  used a `trace_tool_used name=Read args_contains chunk-contract.md` grep, which
+  FALSE-NEGATIVED the skill arm — the run opened the ref via `sed` (invisible to a
+  Read-name match) and the trace digest truncates `args` (~160 chars), the exact trap
+  the prior `hitl-baseline-vs-skill/finding.md` already flagged. Fixed to read the
+  AUTHORITATIVE cross-tool claim-matcher verdict in the observed summary (a small
+  general `negate` check option: PASS iff the matcher did not report the fragment
+  missing) — tool-agnostic and truncation-immune. The original draft narrated the
+  false-negative as a true catch; that over-claim is corrected here.
+
+Still deferred (next slices): (1) capture-side OUTPUT preservation in
+`run_skill_efficiency_ab.py` so `output_file_*` assertions have artifacts to grade
+(today they fail with that evidence); (3)-live the actual LLM-judge `--judge-cmd`
+invocation (real `claude -p` spend, ask-before-run); (4) wiring the grade into the
+A/B bundle/report. The `outcome-assertions.json` data has no durable validator surface
+yet beyond a conformance unit test — a candidate follow-up surface, not added now.
