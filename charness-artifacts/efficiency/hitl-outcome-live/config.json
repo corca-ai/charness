@@ -1,0 +1,7 @@
+{
+  "_comment": "Slice B 3-live: single fresh hitl capture (n=1) at HEAD with the new output+transcript preservation, to feed the LIVE LLM judge (outcome-gap part 3-live). Not an A/B comparison — one arm, for the outcome-grader demonstration. Real claude -p spend (ask-before-run).",
+  "name": "hitl-outcome-live",
+  "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
+  "runs": 1,
+  "arms": [{"name": "hitl", "ref": "HEAD"}]
+}

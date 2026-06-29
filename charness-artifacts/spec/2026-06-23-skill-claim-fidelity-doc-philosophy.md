@@ -835,6 +835,25 @@ runnable (the actual invocation is the ask-before-run spend, Slice B):
   `outputs/` + `transcript.txt`. The only remaining live piece is swapping the stub for
   the real `claude -p` adapter — Slice B.
 
-Still deferred after Slice A: (3)-live the real `claude -p` judge run over a freshly
-captured bundle (Slice B, ask-before-run spend); (4) wiring the grade into the A/B
-bundle/report; the `outcome-assertions.json` durable validator surface.
+### Outcome Grader — 3-live PROVEN (2026-06-29, Slice B)
+
+The live LLM judge ran end-to-end over a freshly captured bundle (an explicitly
+approved `claude -p` spend). One fresh `/charness:hitl` capture (n=1, 1.07M tokens,
+preservation on) → graded with `--judge-cmd "python3 scripts/outcome_judge_cmd.py"`.
+Result 5/6 (`pass_rate 0.889`): all three judge-kind assertions got evidence-cited PASS
+verdicts that quoted specific transcript strings (chunk-shape cited the excerpt + Agent
+Assessment + Recommended Disposition; non-binding cited "display-only, non-binding"; stop-
+for-approval cited "awaiting your decision on c1 before advancing to c2"). The judge read
+the actual produced work, not a routing proxy. Bundle + finding:
+`charness-artifacts/efficiency/hitl-outcome-live/` (`finding.md`, `outcome-grade.md`).
+
+Honest finding from the run: `materialized-queue` FAILED correctly — hitl's queue lives
+under the gitignored `.charness/hitl/runtime/` (`.gitignore:20`), and `preserve_outputs`
+excludes gitignored paths, so for a skill whose output is gitignored runtime state the
+TRANSCRIPT (not `outputs/`) is the judge's evidence. A skill producing tracked artifacts
+would populate `outputs/` and exercise the `output_*` checks. The judge is an LLM
+(non-deterministic), so the layer stays advisory + paired with the `--selftest` gate.
+
+Still deferred: (4) wiring the grade into the A/B bundle/report; the
+`outcome-assertions.json` durable validator surface; a `--keep-untracked-outputs` option
+for skills whose meaningful output is gitignored runtime state.

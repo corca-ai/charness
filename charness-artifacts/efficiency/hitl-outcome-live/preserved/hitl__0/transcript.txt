@@ -1,0 +1,87 @@
+I'll start with the session-start routing (find-skills), then bootstrap the HITL review loop.
+
+I'll run the find-skills bootstrap to confirm routing, then bootstrap the HITL loop.
+
+Adapter resolved (`require_explicit_apply: true`, chunk target ~100 lines). Let me check worktree readiness, bootstrap the review session, and read the target.
+
+Worktree is `pass`, session bootstrapped (`hitl-20260629-084508`), target is 198 lines. Let me read the target and the chunk contract.
+
+Target read. The doc is 198 lines with clean section seams. Let me check the bootstrapped state files' format so I record durable state correctly.
+
+Bootstrap defaulted to `git-diff`/`main`, but our target is a single file. Let me correct the target in state and seed the chunk queue, then record review criteria.
+
+Now I'll record the proposed default review criteria in the scratchpad, then present Chunk 1.
+
+Let me verify the file/script references in Chunk 1 exist (grounding the accuracy assessment).
+
+Setup complete. Here's the review frame and the first chunk.
+
+---
+
+## HITL Review — `docs/operator-acceptance.md`
+
+**Review Goal:** Bounded, resumable, chunk-by-chunk human review of `docs/operator-acceptance.md`. Each chunk: direct excerpt → Agent Assessment → non-binding Recommended Disposition → your decision. I advance only after your explicit approval.
+
+**Judgment Capability (why human, not automation):** Whether each acceptance bar still reflects the *intended* operator contract — and which staleness is real drift vs. deliberate — needs your product judgment; automation can only flag mismatches.
+
+**Target:** `docs/operator-acceptance.md` (198 lines, whole-file, read-only until Apply Phase; `require_explicit_apply: true`).
+
+**Queue:** c1 (1-27) · c2 (29-47) · c3 (49-78) · c4 (80-141) · c5 (143-161) · c6 (163-188) · c7 (190-198) → then full-target review.
+
+**Proposed review criteria** (confirm/amend — becomes a rule applied to every chunk): **C1** accuracy of paths/commands · **C2** actionable acceptance bars · **C3** clarity · **C4** north-star alignment at irreversible boundaries · **C5** cross-doc consistency.
+
+---
+
+### Current Chunk: c1 — Intro + Shared Start + Progressive Operator Path (lines 1-27)
+
+**Original Material:**
+
+```md
+# Operator Acceptance
+
+This document translates the remaining roadmap into operator-owned acceptance runs.
+Use it when you want to take over one roadmap item directly instead of asking an agent to discover the whole repo state again.
+Each item names the ownership seam, read-first surfaces, and acceptance bar. Restate that material in your own prompt instead of copying another embedded prompt block into chat.
+
+## Shared Start
+
+Run these first at the repo root:
+
+<bash>
+git status --short
+sed -n '1,220p' docs/handoff.md
+sed -n '1,260p' docs/roadmap.md 2>/dev/null || true
+./scripts/run-quality.sh
+</bash>
+
+If the work touches evaluator, integrations, or packaging, also read:
+
+<bash>
+sed -n '1,220p' docs/control-plane.md
+sed -n '1,220p' docs/public-skill-validation.md
+</bash>
+
+## Progressive Operator Path
+
+See [docs/operator-progressive-path.md](./operator-progressive-path.md) for the per-horizon operator capability map (Day 1, Week 8, Month 6).
+```
+
+**Related Context:** This is the doc's framing + the shared bootstrap every item depends on. I verified the referenced paths:
+- `docs/handoff.md` ✅, `scripts/run-quality.sh` ✅, `docs/control-plane.md` ✅, `docs/public-skill-validation.md` ✅, `docs/operator-progressive-path.md` ✅
+- **`docs/roadmap.md` ❌ does not exist.** It's invoked with a `2>/dev/null || true` guard, so it fails silently — but line 3 also claims the doc "translates the remaining roadmap," and the Shared Start tells operators to read a roadmap that isn't there.
+
+**Agent Assessment (against C1–C5):**
+- **C1 (accuracy):** One real defect. `docs/roadmap.md` is missing. The guarded `sed` won't error, but it's a dead read and the "translates the remaining roadmap" framing points at a non-existent source of truth. Either the roadmap moved (→ fix the reference) or it was retired (→ reframe line 3).
+- **C2/C3:** Strong. Shared Start is concrete and copy-runnable; the "restate in your own prompt" guidance is a good anti-pattern guard.
+- **C4:** N/A for this chunk (no irreversible boundary).
+- **C5:** Consistent with the doc-set's "read-first surfaces" idiom.
+
+**Recommended Disposition (display-only, non-binding):** `revise` — minimal fix to the `docs/roadmap.md` reference (repoint or drop + reword line 3). Everything else accept as-is.
+
+**Decision Needed:**
+1. Confirm or amend the **proposed review criteria** (C1–C5) so I can lock them as a rule for all chunks.
+2. For c1: **accept as-is**, or **revise** the `roadmap.md` reference? If revise, do you know where the roadmap went, or should line 3 be reworded to drop the dependency?
+
+*(No edits will be made now — the Apply Phase happens only after all chunks are accepted and you give an explicit apply instruction.)*
+
+**Active Rules Applied:** none yet (criteria pending your confirmation). **Target/Cursor Checked:** c1 = lines 1-27, verified against current file. **Next State:** awaiting your decision on c1 before advancing to c2.

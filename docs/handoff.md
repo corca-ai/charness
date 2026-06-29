@@ -25,14 +25,14 @@
 
 ## Next Session
 
-1. **Efficiency A/B — (b) outcome-grader skeleton LANDED; live judge + (a) clean re-run remain.**
-   [grade_skill_outcome.py](../scripts/grade_skill_outcome.py) grades a capture's OUTCOME vs a
-   per-eval assertion set (deterministic + judge-kind) → PASS/FAIL + evidence + weighted pass_rate,
-   behind an offline `--selftest` gate. First set
-   [hitl outcome-assertions.json](../evals/cautilus/hitl-claim-fidelity/outcome-assertions.json)
-   discriminates on both real hitl arms (no spend): skill 0.75 vs baseline 0.25. Remaining (b): live
-   judge (`--judge-cmd`, ask-before-run) + capture OUTPUT preservation + A/B report wiring; (a) clean
-   variant-A-vs-B (retro pre/post planner; routing cancels). Lesson + gap: methodology spec.
+1. **Efficiency A/B — (b) outcome grader through 3-live PROVEN; (4) report wiring + (a) clean re-run remain.**
+   [grade_skill_outcome.py](../scripts/grade_skill_outcome.py) grades a capture's OUTCOME vs a per-eval
+   assertion set (deterministic + judge-kind) → PASS/FAIL + evidence + weighted pass_rate, behind an offline
+   `--selftest` gate. Output+transcript preservation LANDED; the live `claude -p` judge ran end-to-end on a
+   fresh hitl capture — 5/6, all 3 judge-kind PASS with cited evidence
+   ([finding](../charness-artifacts/efficiency/hitl-outcome-live/finding.md)). Remaining (b): (4) wire the
+   grade into the A/B bundle/report (+ `--keep-untracked-outputs` for gitignored-runtime skills); (a) clean
+   variant-A-vs-B (retro pre/post planner; routing cancels). Gap: methodology spec.
 2. **Correctness sweep (item 3, continue, ask-before-run):** capture the next of
    the 18 hypothesis-floor skills, one at a time. A miss = skill-shape signal
    (re-pin / re-classify / give-a-planner), never soften the matcher; do NOT
