@@ -1,0 +1,91 @@
+{
+  "config": {
+    "_comment": "hitl end-to-end through the WIRED A/B harness (commit f7e5ec73): n=1 fresh /charness:hitl capture @HEAD with --judge-cmd (live claude -p judge) + --keep-untracked-outputs so the gitignored queue is preserved and the materialized-queue output_glob assertion can grade. Proves item (4) LIVE \u2014 the auto-graded Outcome-grade section now appears in report.md automatically, no separate grade_skill_outcome.py call. Real claude -p spend (user-authorized).",
+    "name": "hitl-outcome-wired",
+    "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
+    "runs": 1,
+    "arms": [
+      {
+        "name": "hitl",
+        "ref": "HEAD"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "arm": "hitl",
+      "ref": "HEAD",
+      "run": 0,
+      "total_tokens": 423392,
+      "output_tokens": 13523,
+      "tool_count": 5,
+      "waste_smell_count": 0,
+      "duration_ms": 66033,
+      "outcome": "failed",
+      "output_lines": 0
+    }
+  ],
+  "aggregate": {
+    "hitl": {
+      "n": 1,
+      "pass_rate": 0.0,
+      "total_tokens": {
+        "mean": 423392,
+        "median": 423392,
+        "min": 423392,
+        "max": 423392,
+        "n": 1
+      },
+      "output_tokens": {
+        "mean": 13523,
+        "median": 13523,
+        "min": 13523,
+        "max": 13523,
+        "n": 1
+      },
+      "duration_ms": {
+        "mean": 66033,
+        "median": 66033,
+        "min": 66033,
+        "max": 66033,
+        "n": 1
+      },
+      "tool_count": {
+        "mean": 5,
+        "median": 5,
+        "min": 5,
+        "max": 5,
+        "n": 1
+      },
+      "waste_smell_count": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 1
+      },
+      "output_lines": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 1
+      }
+    }
+  },
+  "outcome": {
+    "hitl": {
+      "eval_id": "hitl-claim-fidelity",
+      "runs_graded": 1,
+      "grade_failed": 0,
+      "pass_rate": {
+        "mean": 0.778,
+        "min": 0.778,
+        "max": 0.778,
+        "n": 1
+      },
+      "skipped": 0,
+      "errors": 0
+    }
+  }
+}

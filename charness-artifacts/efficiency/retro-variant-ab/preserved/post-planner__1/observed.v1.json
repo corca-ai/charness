@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "retro",
+  "skillDisplayName": "retro",
+  "evaluations": [
+    {
+      "evaluationId": "execution-retro-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "retro",
+      "displayName": "retro",
+      "evaluationKind": "execution",
+      "prompt": "/charness:retro 방금 끝낸 claim-fidelity 픽스처 보정 작업을 session retro로 review해줘 — Context·Waste·Critical Decisions를 정리하고, 다음 세션을 바꿀 counterfactual lens(named expert 또는 direct) 최소 하나와 workflow/capability/memory별 Next Improvements를 도출한 뒤, durable home이 있으면 persist해줘.",
+      "startedAt": "2026-06-29T11:00:35.186Z",
+      "invoked": true,
+      "summary": "Execution of /retro: 2044061 total tokens (43564 output, 1847301 cache-read), 244724ms wall. Tool profile: Bash=13 Read=4 Skill=1 Write=1. All declared claims met. Reference coverage: 2/9 declared references opened (missing: adapter-contract.md, mode-guide.md, phase-aware-efficiency.md, prepare-packet.md, section-guide.md, trigger-and-persistence.md, weekly-trends.md).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 2044061,
+        "output_tokens": 43564,
+        "tool_count": 19,
+        "waste_smell_count": 0,
+        "duration_ms": 244724
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 420000
+      }
+    }
+  ]
+}

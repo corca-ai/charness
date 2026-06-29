@@ -1,0 +1,21 @@
+I'll start by honoring the session-start routing contract and gathering retro evidence in parallel.
+
+find-skills confirms this session opened on an explicit `/charness:retro` invocation — the routed workflow is retro itself. Driving it now. Let me run the retro bootstrap and inspect the just-finished work.
+
+The just-finished work is commit `a7e49790` — the first live capture of the claim-fidelity sweep. Let me read the proof artifacts and prepare the retro packet.
+
+I now have a full picture. Let me verify a few specifics for the sibling scan and persistence path (planner-absent skill set, RCA ledger existence, recent-lessons state).
+
+I have the full picture. Key correction to the proof's framing: **7 skills are planner-absent** (retro, hitl, ideation, impl, spec, critique, setup), not just retro+hitl. RCA ledger exists. Let me check the persist + RCA-append interfaces, then write.
+
+Let me read the sibling-scan and issue-destination references so I format those sections to contract (the validator is section-gated).
+
+I have everything needed. Writing the retro artifact now.
+
+Persisted. Now validate the artifact (sibling-followup grammar is gated), append the RCA event, and confirm.
+
+The validator wants a proper `Persisted:` line. Let me fix it in the persisted artifact.
+
+Validator green, RCA event appended. Now commit the durable retro state.
+
+Digest refreshed correctly. Committing all durable retro state together.

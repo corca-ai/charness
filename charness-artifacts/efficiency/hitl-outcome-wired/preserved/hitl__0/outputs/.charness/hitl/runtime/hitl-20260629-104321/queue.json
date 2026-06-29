@@ -1,0 +1,13 @@
+{
+  "target": "docs/operator-acceptance.md",
+  "total_lines": 198,
+  "chunks": [
+    {"id": "c1", "title": "Intro + Shared Start", "lines": "1-23", "status": "pending"},
+    {"id": "c2", "title": "Progressive Path + Item 1 (Deferred Decisions)", "lines": "25-47", "status": "pending"},
+    {"id": "c3", "title": "Item 2 (Wire cautilus)", "lines": "49-78", "status": "pending"},
+    {"id": "c4", "title": "Item 3 (Managed CLI Install Experiments)", "lines": "80-141", "status": "pending"},
+    {"id": "c5", "title": "Item 4 (Raise create-skill/spec gates)", "lines": "143-161", "status": "pending"},
+    {"id": "c6", "title": "Item 5 (Adapter Requirements per skill)", "lines": "163-188", "status": "pending"},
+    {"id": "c7", "title": "Closeout Rule", "lines": "190-198", "status": "pending"}
+  ]
+}

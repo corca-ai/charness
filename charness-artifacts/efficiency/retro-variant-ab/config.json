@@ -1,0 +1,10 @@
+{
+  "_comment": "(a) clean variant-A-vs-B EFFICIENCY re-run: /charness:retro before vs after the plan_retro_run.py planner extraction (commit 167cad5c; pre = 167cad5c~1 = a7e49790). Both arms run the same /charness:retro prompt, so find-skills auto-routing is constant and the delta is the planner-extraction effect (routing contamination cancels). retro ships no outcome-assertions.json, so the Outcome-grade section reports 'skipped — no assertion set'; this run proves the EFFICIENCY axis, not the outcome wiring. n=2/arm. Real claude -p spend (user-authorized).",
+  "name": "retro-variant-ab",
+  "spec_path": "evals/cautilus/retro-claim-fidelity/spec.json",
+  "runs": 2,
+  "arms": [
+    {"name": "pre-planner", "ref": "167cad5c~1"},
+    {"name": "post-planner", "ref": "167cad5c"}
+  ]
+}

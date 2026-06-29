@@ -1,0 +1,180 @@
+{
+  "config": {
+    "_comment": "(a) clean variant-A-vs-B EFFICIENCY re-run: /charness:retro before vs after the plan_retro_run.py planner extraction (commit 167cad5c; pre = 167cad5c~1 = a7e49790). Both arms run the same /charness:retro prompt, so find-skills auto-routing is constant and the delta is the planner-extraction effect (routing contamination cancels). retro ships no outcome-assertions.json, so the Outcome-grade section reports 'skipped \u2014 no assertion set'; this run proves the EFFICIENCY axis, not the outcome wiring. n=2/arm. Real claude -p spend (user-authorized).",
+    "name": "retro-variant-ab",
+    "spec_path": "evals/cautilus/retro-claim-fidelity/spec.json",
+    "runs": 2,
+    "arms": [
+      {
+        "name": "pre-planner",
+        "ref": "167cad5c~1"
+      },
+      {
+        "name": "post-planner",
+        "ref": "167cad5c"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "arm": "pre-planner",
+      "ref": "167cad5c~1",
+      "run": 0,
+      "total_tokens": 2309767,
+      "output_tokens": 56969,
+      "tool_count": 22,
+      "waste_smell_count": 0,
+      "duration_ms": 326009,
+      "outcome": "passed",
+      "output_lines": 0
+    },
+    {
+      "arm": "pre-planner",
+      "ref": "167cad5c~1",
+      "run": 1,
+      "total_tokens": 2546222,
+      "output_tokens": 51770,
+      "tool_count": 28,
+      "waste_smell_count": 0,
+      "duration_ms": 286587,
+      "outcome": "passed",
+      "output_lines": 0
+    },
+    {
+      "arm": "post-planner",
+      "ref": "167cad5c",
+      "run": 0,
+      "total_tokens": 2090611,
+      "output_tokens": 52089,
+      "tool_count": 20,
+      "waste_smell_count": 0,
+      "duration_ms": 235442,
+      "outcome": "passed",
+      "output_lines": 0
+    },
+    {
+      "arm": "post-planner",
+      "ref": "167cad5c",
+      "run": 1,
+      "total_tokens": 2044061,
+      "output_tokens": 43564,
+      "tool_count": 19,
+      "waste_smell_count": 0,
+      "duration_ms": 244724,
+      "outcome": "passed",
+      "output_lines": 0
+    }
+  ],
+  "aggregate": {
+    "pre-planner": {
+      "n": 2,
+      "pass_rate": 1.0,
+      "total_tokens": {
+        "mean": 2427994.5,
+        "median": 2427994.5,
+        "min": 2309767,
+        "max": 2546222,
+        "n": 2
+      },
+      "output_tokens": {
+        "mean": 54369.5,
+        "median": 54369.5,
+        "min": 51770,
+        "max": 56969,
+        "n": 2
+      },
+      "duration_ms": {
+        "mean": 306298,
+        "median": 306298.0,
+        "min": 286587,
+        "max": 326009,
+        "n": 2
+      },
+      "tool_count": {
+        "mean": 25,
+        "median": 25.0,
+        "min": 22,
+        "max": 28,
+        "n": 2
+      },
+      "waste_smell_count": {
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "max": 0,
+        "n": 2
+      },
+      "output_lines": {
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "max": 0,
+        "n": 2
+      }
+    },
+    "post-planner": {
+      "n": 2,
+      "pass_rate": 1.0,
+      "total_tokens": {
+        "mean": 2067336,
+        "median": 2067336.0,
+        "min": 2044061,
+        "max": 2090611,
+        "n": 2
+      },
+      "output_tokens": {
+        "mean": 47826.5,
+        "median": 47826.5,
+        "min": 43564,
+        "max": 52089,
+        "n": 2
+      },
+      "duration_ms": {
+        "mean": 240083,
+        "median": 240083.0,
+        "min": 235442,
+        "max": 244724,
+        "n": 2
+      },
+      "tool_count": {
+        "mean": 19.5,
+        "median": 19.5,
+        "min": 19,
+        "max": 20,
+        "n": 2
+      },
+      "waste_smell_count": {
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "max": 0,
+        "n": 2
+      },
+      "output_lines": {
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "max": 0,
+        "n": 2
+      }
+    }
+  },
+  "outcome": {
+    "pre-planner": {
+      "eval_id": null,
+      "runs_graded": 0,
+      "grade_failed": 0,
+      "pass_rate": null,
+      "skipped": 0,
+      "errors": 0
+    },
+    "post-planner": {
+      "eval_id": null,
+      "runs_graded": 0,
+      "grade_failed": 0,
+      "pass_rate": null,
+      "skipped": 0,
+      "errors": 0
+    }
+  }
+}

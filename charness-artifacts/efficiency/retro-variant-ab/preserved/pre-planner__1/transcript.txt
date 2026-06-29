@@ -1,0 +1,23 @@
+I'll start with the retro bootstrap to gather context on the claim-fidelity fixture work.
+
+Adapter resolves (session mode, output_dir = `charness-artifacts/retro`). Let me gather evidence on the claim-fidelity fixture work.
+
+Working tree is clean — the work is committed. The newest commit `a7e49790` (cautilus first live capture → planner fix) looks like the fixture-correction work. Let me inspect it and the surrounding context.
+
+The work just finished is the live-capture session (commit `a7e49790`): first live capture of the claim-fidelity sweep, which found the asserted floor failed and drove a planner-fix decision. Let me check existing retro artifacts and recent-lessons to avoid duplication and ground the retro.
+
+I have strong evidence. Let me check the persist helper interface and whether the RCA ledger exists before writing.
+
+Let me read the sibling-scan and expert-lens references to follow their taxonomy, plus confirm the planner-absent sibling set.
+
+Now I have a precise picture. Let me scaffold the retro artifact to get the canonical template.
+
+I have everything needed. Let me write the retro artifact body.
+
+Now persist via the helper:
+
+Persisted and summary refreshed. Now validate the artifact (sibling-search grammar is gated) and append the RCA event:
+
+Now append the RCA event. This is a `weak_proof` finding (a shipped floor claim that the first empirical test refuted); the durable fix is deferred, so per the tie-break I record it un-converted.
+
+All durable artifacts are in place. Per the operating contract, retro artifacts are repo state — let me commit them.

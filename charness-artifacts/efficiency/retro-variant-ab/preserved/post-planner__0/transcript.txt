@@ -1,0 +1,27 @@
+I'll start by honoring the session-start routing and the retro bootstrap in parallel, while gathering evidence about the work just finished.
+
+find-skills confirms this routes to the retro skill (already active). Let me run the retro bootstrap — planner, scaffold, and evidence probes in parallel.
+
+Planner says: mode=session, lens=Engelbart (system-improving-itself). Let me read the required/lens reads and scaffold the artifact, plus pull the claim-fidelity/cautilus evidence.
+
+Let me read the cautilus proof evidence and the existing recent-lessons summary to understand the fixture-correction work precisely.
+
+I have the full picture. Let me verify the current completion state (re-capture, methodology change, tests, handoff freshness) before writing — these determine the Waste and Critical Decisions sections.
+
+Now the picture is complete. Key findings:
+- Capture ran → floor **failed** (real signal); planner `plan_retro_run.py` extracted + 7 tests green.
+- **Open:** re-capture (failed→proven) not done, methodology change not done, hitl still planner-absent, handoff stale ("no live captures have run").
+
+The waste I'll name (static-calibration blessing a defective shape) is transferable → I need the sibling-scan reference and the section-guide for claim tags.
+
+I have complete evidence. Writing the durable retro artifact now, then persisting via the helper.
+
+Now persist via the helper (validates + refreshes the recent-lessons digest), and run the shape validator.
+
+Persisted and digest refreshed. Let me check the RCA ledger (the skill says append one RCA event when the repo maintains it) and then commit the durable artifacts.
+
+The repo maintains the RCA ledger. Let me read the append reference and the ledger format, then append one event.
+
+This is a `weak_proof` RCA event (static fidelity-to-shape calibration asserted a floor the real run didn't honor; class not yet converted — methodology change pending). Recording it `--source retro`, not converted (tie-break + class still open), then committing all durable state together.
+
+Now commit the durable retro state (artifact, refreshed digest, selection index, RCA ledger) together.

@@ -1,0 +1,83 @@
+I'll start by following the session-start routing (find-skills once), then bootstrap the HITL review loop. Let me run these in parallel.
+
+Routing confirms: the user named `hitl` directly, the adapter resolved cleanly (`require_explicit_apply: true`, chunk target 100 lines), and worktree doctor passes. Let me bootstrap the review state and read the target.
+
+Bootstrap is complete. Target is 198 lines; adapter chunk target is 100 lines, but this doc has clean structural seams (one acceptance item each), so I'll chunk along those rather than mechanically at 100 lines. Let me record the chunk queue as durable state.
+
+State queue is recorded. The pre-edit gate is (correctly) blocked — it stays blocked until I record a cursor check, which I'll do at each advance. Since this is a review/judgment loop, I won't touch the target file unless you explicitly ask (and `require_explicit_apply: true` enforces that anyway).
+
+Here's the framing and the first chunk.
+
+---
+
+## Review Goal
+Bounded, resumable human-in-the-loop pass over `docs/operator-acceptance.md`. Per chunk I give you: **direct excerpt → Agent Assessment → non-binding Recommended Disposition → the decision I need from you**, then pause until you approve before advancing.
+
+## Judgment Capability (what needs *you*, not automation)
+You hold the ground truth on **whether each acceptance item still reflects the real remaining roadmap** — which items are done, stale, or mis-scoped. I can flag internal inconsistency, broken references, and clarity issues, but I can't authoritatively decide "this item is obsolete" without your call.
+
+## Target
+`docs/operator-acceptance.md` — 198 lines, 7 chunks (intro, 5 acceptance items, closeout rule).
+
+## Default review lens (propose — tell me to change/add)
+1. **Accuracy/staleness** — does the item still describe real remaining work?
+2. **Internal consistency** — do referenced paths/commands exist and match repo reality?
+3. **Operator usability** — can an operator act from this without re-discovering repo state?
+
+If you want a different or narrower lens (e.g. "only check for stale items"), say so now and I'll record it as a rule applied to every remaining chunk.
+
+---
+
+## Current Chunk: c1 — Intro + Shared Start (lines 1–23)
+
+### Original Material
+<md>
+\# Operator Acceptance
+
+This document translates the remaining roadmap into operator-owned acceptance runs.
+Use it when you want to take over one roadmap item directly instead of asking an agent to discover the whole repo state again.
+Each item names the ownership seam, read-first surfaces, and acceptance bar. Restate that material in your own prompt instead of copying another embedded prompt block into chat.
+
+\## Shared Start
+
+Run these first at the repo root:
+
+<bash>
+git status --short
+sed -n '1,220p' docs/handoff.md
+sed -n '1,260p' docs/roadmap.md 2>/dev/null || true
+./scripts/run-quality.sh
+</bash>
+
+If the work touches evaluator, integrations, or packaging, also read:
+
+<bash>
+sed -n '1,220p' docs/control-plane.md
+sed -n '1,220p' docs/public-skill-validation.md
+</bash>
+</md>
+
+### Related Context
+This is the doc's preamble + the common bootstrap every item assumes. It sets the "restate, don't copy embedded prompts" contract — consistent with CLAUDE.md's narrative-announcement boundary and "prefer validators over prose rituals."
+
+### Agent Assessment
+- **Accuracy/usability:** Clear and self-consistent. The "restate in your own prompt" instruction (line 5) is a deliberate guardrail and matches repo conventions — good.
+- **Consistency — one thing to verify:** Line 14 reads `docs/roadmap.md 2>/dev/null || true` (soft-fails if absent), while lines 13/21/22 read other docs with no fallback. That asymmetry implies `docs/roadmap.md` may not reliably exist. Worth confirming the roadmap doc is actually present; if it's gone, the "translates the remaining roadmap" framing in line 3 is slightly orphaned. *(I have not yet checked the filesystem for `docs/roadmap.md` — flagging, not asserting.)*
+- **No broken refs otherwise:** `docs/handoff.md`, `docs/control-plane.md`, `docs/public-skill-validation.md`, `./scripts/run-quality.sh` are all referenced elsewhere in CLAUDE.md as real surfaces.
+
+### Recommended Disposition (display-only, non-binding)
+**Accept as-is**, with one optional follow-up: confirm `docs/roadmap.md` exists; if it doesn't, either restore it or soften line 3's "remaining roadmap" wording. No change needed to the chunk text itself.
+
+### Decision Needed
+1. Approve chunk c1 as-is, or request a change?
+2. Do you accept the **default 3-point review lens** above, or want to set a different rule for the rest of the run?
+3. Want me to verify `docs/roadmap.md`'s existence now (read-only), or defer?
+
+### Active Rules Applied
+None yet (no rules accepted; awaiting your lens decision).
+
+### Target/Cursor Checked
+Queue loaded: target `docs/operator-acceptance.md`, chunk `c1` (lines 1–23), 7 chunks total. No edits proposed (review-only; `require_explicit_apply: true`).
+
+### Next State
+Awaiting your approval of c1 + lens decision. On approval I'll record c1 accepted, advance cursor to c2, and (if you said yes) check `docs/roadmap.md`.

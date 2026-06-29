@@ -1,0 +1,50 @@
+{
+  "copied": [
+    ".charness/hitl/runtime/hitl-20260629-104321/events.log",
+    ".charness/hitl/runtime/hitl-20260629-104321/fix-queue.yaml",
+    ".charness/hitl/runtime/hitl-20260629-104321/hitl-scratchpad.md",
+    ".charness/hitl/runtime/hitl-20260629-104321/queue.json",
+    ".charness/hitl/runtime/hitl-20260629-104321/rules.yaml",
+    ".charness/hitl/runtime/hitl-20260629-104321/state.yaml",
+    ".charness/usage-episodes/sessions/b939ff0509c4441eb872f44325c5d781/start.json",
+    ".charness/usage-episodes/sessions/current"
+  ],
+  "omitted": [
+    {
+      "path": "plugins/charness/scripts/__pycache__/__init__.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/scripts/__pycache__/adapter_lib.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/scripts/__pycache__/artifact_naming_lib.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/scripts/__pycache__/hitl_review_artifact_lib.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/scripts/__pycache__/runtime_bootstrap.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/scripts/__pycache__/script_timeout.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/scripts/__pycache__/simple_skill_adapter_lib.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/scripts/__pycache__/skill_runtime_bootstrap.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    },
+    {
+      "path": "plugins/charness/skills/hitl/scripts/__pycache__/resolve_adapter.cpython-310.pyc",
+      "reason": "binary (NUL byte)"
+    }
+  ]
+}

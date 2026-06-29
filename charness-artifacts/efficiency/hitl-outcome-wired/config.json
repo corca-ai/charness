@@ -1,0 +1,7 @@
+{
+  "_comment": "hitl end-to-end through the WIRED A/B harness (commit f7e5ec73): n=1 fresh /charness:hitl capture @HEAD with --judge-cmd (live claude -p judge) + --keep-untracked-outputs so the gitignored queue is preserved and the materialized-queue output_glob assertion can grade. Proves item (4) LIVE — the auto-graded Outcome-grade section now appears in report.md automatically, no separate grade_skill_outcome.py call. Real claude -p spend (user-authorized).",
+  "name": "hitl-outcome-wired",
+  "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
+  "runs": 1,
+  "arms": [{"name": "hitl", "ref": "HEAD"}]
+}

@@ -1,0 +1,23 @@
+I'll start by following the repo contract: invoke find-skills once for routing, then run the retro bootstrap.
+
+Routing is clear — this is an explicit `retro` request. Let me bootstrap the retro skill per its contract.
+
+Now let me gather evidence on the claim-fidelity fixture work and read the required materials in parallel.
+
+Working tree is clean — the claim-fidelity fixture work is committed. Let me read the memory state, the expert-lens reference, and inspect the actual fixture calibrations.
+
+Now let me inspect the actual fixture calibration work to ground the retro in concrete evidence.
+
+This is richly meta: the retro fixture's `prompt` is *exactly* the prompt I was just given — so this very run is a live validation of the `retro` fixture's calibration. Let me confirm the sweep scope and scaffold the artifact.
+
+I have rich, concrete evidence. One note: this retro run is itself the first organic live capture of the `retro` fixture (it opened only `expert-lens.md`, not the inlined `mode-guide`/`section-guide`/`adapter-contract`), which empirically confirms the RCF 4→1 calibration. Since I'll name a transferable waste pattern, let me read the Sibling Search grammar so the artifact passes the section-gated validator.
+
+Now I'll write the retro artifact. Let me check whether the scaffold already wrote the file, then compose the full content.
+
+I'll compose the retro body to a temp file, then persist it through the canonical helper (which also refreshes the digest).
+
+Persisted. Now validate the artifact shape (including the section-gated Sibling Search grammar).
+
+Validator passes. Per the operating contract, meaningful `charness-artifacts/` changes are committed with the work. Let me verify the digest refresh picked up this session, then commit.
+
+The digest refreshed correctly from the durable artifact. Now commit this task-completing repo work.

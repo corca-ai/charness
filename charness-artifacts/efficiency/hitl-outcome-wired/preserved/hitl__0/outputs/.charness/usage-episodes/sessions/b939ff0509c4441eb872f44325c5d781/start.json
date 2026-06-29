@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "session_id": "b939ff0509c4441eb872f44325c5d781",
+  "hook_event_name": "SessionStart",
+  "cwd": "/home/hwidong/codes/charness/charness-artifacts/efficiency/hitl-outcome-wired/work/hitl__0/worktree",
+  "model": null,
+  "host": "claude",
+  "timestamp": "2026-06-29T10:43:03Z"
+}
