@@ -6,14 +6,14 @@
   runs chunked routing over handoff + open issues.
 - **Pinned next task: the skill-planner-uniformity program (locked intent) —
   [spec](../charness-artifacts/spec/2026-06-29-skill-planner-uniformity.md).**
-  Sequence: **(1)** fix the matcher to count Bash file reads, not just Read
-  tool-calls (`collectOpenedBasenames` in `build-skill-execution-observation.mjs`);
-  **(2)** unify the 6 existing planners + retro into ONE canonical envelope +
-  shared lib + minimal vocab (`required_reads`/`next_action`/`gate_packets`) BEFORE
-  any rollout; **(3)** capture-prioritized rollout (capture `hitl` first; add a
-  branch fixture only where the default prompt can't evaluate the skill). **Start
-  with (1)** — it is the measurement instrument. Guardrail: envelope before more
-  planners; do not planner-ize 14 skills mechanically.
+  Sequence: **(1) LANDED** — the matcher now counts Bash file reads
+  (`parseReadCommandBasenames` in `build-skill-execution-observation.mjs`);
+  **(2) START HERE** unify the 6 existing planners + retro into ONE canonical
+  envelope + shared lib + minimal vocab (`required_reads`/`next_action`/
+  `gate_packets`) BEFORE any rollout; **(3)** capture-prioritized rollout (capture
+  `hitl` first; add a branch fixture only where the default prompt can't evaluate
+  the skill). Guardrail: envelope before more planners; do not planner-ize 14
+  skills mechanically.
 
 ## Current State
 
@@ -34,13 +34,16 @@
 
 ## Next Session
 
-1. **Matcher fix** (item 1): teach `collectOpenedBasenames` to count Bash file
-   reads via a read-command parser (`cat|sed|head|tail|less|rg|grep|awk` + path),
-   avoiding over-count; re-tally the two retro captures to verify. Floor matcher
-   unaffected.
-2. **Planner envelope unification** (item 2, the real structural work): one
-   canonical envelope + shared lib + minimal vocab across the 6 planners + retro;
-   linear skills get a minimal required_reads emitter; then bake into `create-skill`.
+1. ~~Matcher fix (item 1)~~ **LANDED**: `parseReadCommandBasenames` counts Bash
+   `cat|sed|head|tail|less|nl|rg|grep|awk` reads toward coverage, dropping
+   grep/rg/awk/sed pattern operands (named-in-pattern != opened). Re-tally verified:
+   failed capture 0/9 → 1/9 (`expert-lens.md` still missing, outcome still failed),
+   passed re-capture 4/9 unchanged. Floor unaffected.
+2. **Planner envelope unification** (item 2, the real structural work — START
+   HERE): one canonical envelope, shared lib, and minimal vocab across all 7
+   planners (the 6 existing plus retro); linear skills get a minimal required_reads
+   emitter; then bake into `create-skill`. First read all 7 plan_*.py to map the
+   divergent schemas.
 3. **Capture-prioritized rollout** (item 3): capture `hitl` first (ask-before-run,
    one at a time); fix with the unified planner only if a passive-pointer shape is
    confirmed; add a branch fixture only where a single prompt can't evaluate the

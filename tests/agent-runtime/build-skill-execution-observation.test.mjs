@@ -14,6 +14,7 @@ import {
 	finalAssistantText,
 	listSessionTreeJsonl,
 	parseEventsFromFiles,
+	parseReadCommandBasenames,
 	runCli,
 	sumTokens,
 } from "../../scripts/agent-runtime/build-skill-execution-observation.mjs";
@@ -67,6 +68,68 @@ test("collectOpenedBasenames returns basenames including subagent reads", () => 
 		assistantToolUse([{ name: "Bash", input: { command: "echo hi" } }]),
 	];
 	assert.ok(collectOpenedBasenames(events).has("operability-signals.md"));
+});
+
+test("parseReadCommandBasenames counts sed/cat/head/tail/less file operands", () => {
+	assert.deepEqual([...parseReadCommandBasenames("sed -n '1,120p' docs/handoff.md")], ["handoff.md"]);
+	assert.deepEqual([...parseReadCommandBasenames("cat skills/a/x.md skills/b/y.md")].sort(), ["x.md", "y.md"]);
+	assert.ok(parseReadCommandBasenames("head -n 30 docs/conventions/operating-contract.md").has("operating-contract.md"));
+	assert.ok(parseReadCommandBasenames("less plugins/charness/skills/retro/references/expert-lens.md").has("expert-lens.md"));
+});
+
+test("parseReadCommandBasenames drops the grep/rg/awk pattern operand, counts the file", () => {
+	// A reference NAMED in a search pattern must not masquerade as opened. The file
+	// operand (SKILL.md) is the only real read here.
+	const found = parseReadCommandBasenames('grep -n "expert-lens.md" skills/public/retro/SKILL.md');
+	assert.ok(found.has("SKILL.md"));
+	assert.ok(!found.has("expert-lens.md"), "named-in-pattern must not count as opened");
+	const rgFound = parseReadCommandBasenames("rg 'mode-guide.md' references/section-guide.md");
+	assert.ok(rgFound.has("section-guide.md"));
+	assert.ok(!rgFound.has("mode-guide.md"));
+});
+
+test("parseReadCommandBasenames keeps the pattern dropped when an arity flag precedes it", () => {
+	// `-m 5` / `-A 3` consume a value token; the pattern (a .md ref name) must NOT
+	// slide into the file slot and over-count. This is the shape the naive
+	// drop-first-operand parser got wrong.
+	for (const cmd of [
+		"grep -m 5 expert-lens.md skills/public/retro/SKILL.md",
+		"grep -A 3 expert-lens.md skills/public/retro/SKILL.md",
+		"grep -B 2 -C 2 expert-lens.md skills/public/retro/SKILL.md",
+	]) {
+		const found = parseReadCommandBasenames(cmd);
+		assert.ok(found.has("SKILL.md"), `${cmd} should count the file`);
+		assert.ok(!found.has("expert-lens.md"), `${cmd} must not count the pattern`);
+	}
+	// `-e PATTERN` supplies the pattern via the flag; the positional operand is then
+	// a file, not a second pattern to drop.
+	const eFound = parseReadCommandBasenames("grep -e expert-lens.md skills/public/retro/SKILL.md");
+	assert.ok(eFound.has("SKILL.md"));
+	assert.ok(!eFound.has("expert-lens.md"));
+});
+
+test("parseReadCommandBasenames ignores piped-stdin readers and redirect targets", () => {
+	// `head` reads stdin (no file operand); `> out.md` is a write target, not a read.
+	assert.equal(parseReadCommandBasenames("git show 29260c26 --stat | head -30").size, 0);
+	assert.ok(!parseReadCommandBasenames("cat docs/handoff.md > /tmp/out.md").has("out.md"));
+	assert.ok(parseReadCommandBasenames("cat docs/handoff.md > /tmp/out.md").has("handoff.md"));
+});
+
+test("parseReadCommandBasenames ignores non-read commands", () => {
+	assert.equal(parseReadCommandBasenames("python3 scripts/plan_retro_run.py --repo-root .").size, 0);
+	assert.equal(parseReadCommandBasenames("git log --oneline -30").size, 0);
+});
+
+test("collectOpenedBasenames counts Bash sed reads alongside Read tool-calls", () => {
+	const events = [
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/references/expert-lens.md" } }]),
+		assistantToolUse([
+			{ name: "Bash", input: { command: "sed -n '1,80p' plugins/charness/skills/retro/references/waste-sibling-scan.md" } },
+		]),
+	];
+	const opened = collectOpenedBasenames(events);
+	assert.ok(opened.has("expert-lens.md"));
+	assert.ok(opened.has("waste-sibling-scan.md"));
 });
 
 test("sumTokens aggregates assistant usage across the tree", () => {

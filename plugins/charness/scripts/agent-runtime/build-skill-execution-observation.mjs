@@ -33,6 +33,32 @@ import { SKILL_EVALUATION_INPUTS_SCHEMA } from "./contract-versions.mjs";
 // input value regardless of key.
 const FILE_PATH_KEYS = ["file_path", "notebook_path"];
 
+// Shell commands whose file operands count as a "read" for the coverage report.
+// A real run routes to a reference as often via `sed -n` / `cat` / `rg` as via the
+// Read tool, so coverage that counts only FILE_PATH_KEYS under-reports (the retro
+// captures missed sed-read references this way). The floor matcher
+// (requiredCommandFragments) is unaffected — it already substring-matches the full
+// command log; this only sharpens the secondary coverage metric.
+const READ_COMMANDS = new Set(["cat", "sed", "head", "tail", "less", "nl", "rg", "grep", "awk"]);
+// Read commands whose FIRST non-flag operand is a script/pattern, NOT a file. We
+// drop that operand so `grep "expert-lens.md" SKILL.md` counts SKILL.md and never
+// the named-but-unopened pattern — coverage must not inherit the floor matcher's
+// "named anywhere in the command log" blur.
+const PATTERN_FIRST_COMMANDS = new Set(["sed", "rg", "grep", "awk"]);
+// grep/rg/sed/awk flags that consume a SEPARATE following token as their value.
+// Without this, `grep -m 5 PATTERN file` mis-slots: `5` is eaten as the pattern,
+// so the real PATTERN (e.g. a `.md` reference name) falls into the file slot and
+// over-counts. Attached forms (`-m5`, `-A3`, `--context=3`) are single
+// `-`-prefixed tokens and need no entry. Pattern-supplying flags (`-e`/`-f` and
+// long forms) ALSO mean the pattern came from the flag, so no positional operand
+// should be dropped as the pattern afterward.
+const PATTERN_SUPPLYING_FLAGS = new Set(["-e", "-f", "--regexp", "--file"]);
+const VALUE_FLAGS = new Set([
+	"-m", "-A", "-B", "-C", "-d", "-g", "-t",
+	"--max-count", "--after-context", "--before-context", "--context", "--glob", "--type",
+	...PATTERN_SUPPLYING_FLAGS,
+]);
+
 export function listSessionTreeJsonl(root) {
 	const out = [];
 	const walk = (dir) => {
@@ -126,8 +152,130 @@ export function collectToolProfile(events) {
 	return profile;
 }
 
-// Basenames of every file opened via a path-bearing tool call, anywhere in the
-// tree. Powers the declared-reference coverage report.
+// Split a shell command line into simple commands (each an array of tokens),
+// respecting single/double quotes and breaking on unquoted separators, pipes, and
+// redirections. Breaking on `|`/`<`/`>` is deliberate: a piped-stdin reader
+// (`git show X | head -30`) and a redirect target (`> out.md`) must NOT look like a
+// file the read command opened. This is a deliberately small shell-ish tokenizer,
+// not a full parser — enough to find file operands of read commands.
+function tokenizeShellish(command) {
+	const simples = [];
+	let current = [];
+	let token = "";
+	let hasToken = false;
+	let quote = null;
+	const pushToken = () => {
+		if (hasToken) {
+			current.push(token);
+			token = "";
+			hasToken = false;
+		}
+	};
+	const pushSimple = () => {
+		pushToken();
+		if (current.length) {
+			simples.push(current);
+			current = [];
+		}
+	};
+	const text = String(command);
+	for (let index = 0; index < text.length; index += 1) {
+		const ch = text[index];
+		if (quote) {
+			if (ch === quote) {
+				quote = null;
+			} else {
+				token += ch;
+				hasToken = true;
+			}
+			continue;
+		}
+		if (ch === "'" || ch === '"') {
+			quote = ch;
+			hasToken = true;
+			continue;
+		}
+		if (ch === " " || ch === "\t" || ch === "\r") {
+			pushToken();
+			continue;
+		}
+		if ("\n;|&<>()`".includes(ch)) {
+			pushSimple();
+			continue;
+		}
+		if (ch === "\\") {
+			const next = text[index + 1];
+			if (next === "\n") {
+				pushToken();
+				index += 1;
+				continue;
+			}
+			if (next !== undefined) {
+				token += next;
+				hasToken = true;
+				index += 1;
+				continue;
+			}
+			continue;
+		}
+		token += ch;
+		hasToken = true;
+	}
+	pushSimple();
+	return simples;
+}
+
+// A token is a file operand only if it is not a flag and looks like a path:
+// either it contains a `/` or it ends in a short extension. This excludes flags
+// (`-n`), numeric flag values (`30` from `head -n 30`), and sed scripts
+// (`'1,120p'`) without per-tool flag-arity bookkeeping.
+function looksLikePath(token) {
+	if (!token || token.startsWith("-")) {
+		return false;
+	}
+	return token.includes("/") || /\.[A-Za-z0-9]{1,8}$/.test(token);
+}
+
+// Basenames of files a shell read command (cat/sed/head/tail/less/rg/grep/awk)
+// opens. Pattern/script operands of grep/rg/awk/sed are dropped so a reference
+// named in a search pattern is never miscounted as opened.
+export function parseReadCommandBasenames(command) {
+	const found = new Set();
+	for (const tokens of tokenizeShellish(command)) {
+		if (tokens.length === 0) {
+			continue;
+		}
+		const name = basename(tokens[0]);
+		if (!READ_COMMANDS.has(name)) {
+			continue;
+		}
+		let patternDropped = !PATTERN_FIRST_COMMANDS.has(name);
+		for (let index = 1; index < tokens.length; index += 1) {
+			const tok = tokens[index];
+			if (tok.startsWith("-")) {
+				if (VALUE_FLAGS.has(tok)) {
+					index += 1; // consume the flag's separate value token
+				}
+				if (PATTERN_SUPPLYING_FLAGS.has(tok)) {
+					patternDropped = true; // pattern came from the flag; positional operands are files
+				}
+				continue;
+			}
+			if (!patternDropped) {
+				patternDropped = true; // the first positional operand is the script/pattern
+				continue;
+			}
+			if (looksLikePath(tok)) {
+				found.add(basename(tok));
+			}
+		}
+	}
+	return found;
+}
+
+// Basenames of every file opened anywhere in the tree, via a path-bearing tool
+// call (Read/Edit/Write) OR a shell read command (Bash). Powers the
+// declared-reference coverage report.
 export function collectOpenedBasenames(events) {
 	const names = new Set();
 	for (const event of events) {
@@ -137,6 +285,11 @@ export function collectOpenedBasenames(events) {
 				const value = input[key];
 				if (typeof value === "string" && value.trim()) {
 					names.add(basename(value.trim()));
+				}
+			}
+			if (typeof input.command === "string" && input.command.trim()) {
+				for (const name of parseReadCommandBasenames(input.command)) {
+					names.add(name);
 				}
 			}
 		}

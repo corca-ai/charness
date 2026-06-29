@@ -15,14 +15,22 @@ capable judge via a deterministic surface) uniformly across the skill set.
 
 ## Locked Intent (3 items, scoped)
 
-1. **Matcher: count file reads, not just Read tool-calls.**
-   `build-skill-execution-observation.mjs` `collectOpenedBasenames` counts only
+1. **Matcher: count file reads, not just Read tool-calls.** — LANDED (2026-06-29).
+   `build-skill-execution-observation.mjs` `collectOpenedBasenames` counted only
    `file_path`/`notebook_path` keys, missing Bash `sed`/`cat`/`head` reads, so
-   coverage under-reports (retro 0/9 and 4/9 were undercounts). Fix: a read-command
-   parser (`cat|sed|head|tail|less|rg|grep|awk` + path) feeding coverage; avoid
-   over-count (do NOT substring-match the whole command log — that blurs into the
-   floor matcher). The floor (`requiredCommandFragments`) is unaffected; this only
-   sharpens the secondary coverage metric that drives capture readout.
+   coverage under-reported. Fix shipped: `parseReadCommandBasenames` parses
+   `cat|sed|head|tail|less|nl|rg|grep|awk` + path operands, dropping the
+   pattern/script operand of grep/rg/awk/sed so a reference NAMED in a search
+   pattern never miscounts as opened (coverage must not inherit the floor matcher's
+   "named anywhere in the command log" blur). A live re-tally over the surviving
+   raw capture trees (`/tmp/charness-retro-*`, ephemeral — the committed
+   `observed.v1.json` packets still record the pre-fix 0/9 and 4/9, so the figures
+   below are a re-tally observation, not re-derivable from committed artifacts)
+   verified the property: the FAILED capture rose 0/9 → 1/9 (recovered its
+   `sed`-read of `waste-sibling-scan.md`) yet `expert-lens.md` stayed missing and
+   the outcome stayed `failed` — a sharper metric does not rescue a real floor
+   miss; the PASSED re-capture held at 4/9 (it read via the Read tool, no
+   regression). The floor (`requiredCommandFragments`) is unaffected by design.
 
 2. **Planner envelope unification BEFORE any rollout.** The existing 6 planners
    (debug/gather/handoff/issue/quality/release) have divergent schemas; adding 14
