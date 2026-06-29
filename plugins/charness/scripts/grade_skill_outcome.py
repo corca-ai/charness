@@ -161,10 +161,32 @@ class Bundle:
 
     @property
     def judge_context(self) -> str:
-        """The text a judge sees: the observed summary plus a compact trace
-        rendering. Bounded so a huge trace cannot blow the judge prompt."""
+        """The text a judge sees: the observed summary, a compact trace rendering,
+        the assistant transcript (what the run PRESENTED), and excerpts of the
+        produced output files (what it MADE). Every section is bounded so a huge run
+        cannot blow the judge prompt — the judge grades the work, not the whole log."""
         lines = [f"{r.get('name')}: {r.get('args', '')}" for r in self.trace[:80]]
-        return f"SUMMARY:\n{self.summary}\n\nTRACE:\n" + "\n".join(lines)
+        parts = [f"SUMMARY:\n{self.summary}", "TRACE:\n" + "\n".join(lines)]
+        if self.transcript:
+            parts.append("TRANSCRIPT (assistant text, truncated):\n" + self.transcript[:8000])
+        excerpts = self._output_excerpts()
+        if excerpts:
+            parts.append("PRODUCED OUTPUTS (truncated):\n" + excerpts)
+        return "\n\n".join(parts)
+
+    def _output_excerpts(self, max_files: int = 20, per_file: int = 500) -> str:
+        if self.outputs_dir is None:
+            return ""
+        blocks: list[str] = []
+        for path in sorted(self.outputs_dir.rglob("*")):
+            if not path.is_file() or path.name == "outputs-manifest.json":
+                continue
+            rel = path.relative_to(self.outputs_dir)
+            excerpt = path.read_text(encoding="utf-8", errors="replace")[:per_file]
+            blocks.append(f"--- {rel} ---\n{excerpt}")
+            if len(blocks) >= max_files:
+                break
+        return "\n".join(blocks)
 
 
 def load_bundle(bundle_dir: Path) -> Bundle:
@@ -331,8 +353,9 @@ def build_report(result: dict) -> str:
         "unless a live judge (`--judge-cmd`, ask-before-run spend) ran.",
         "- `trace_tool_used` args matching is best-effort: the trace digest truncates "
         "`args` (~160 chars), so a long command can undercount.",
-        "- `output_file_*` checks need a bundle `outputs/` dir; capture-side output "
-        "preservation is a tracked follow-up, so these fail with that evidence today.",
+        "- `output_file_*` checks resolve against the bundle `outputs/` dir, which the "
+        "A/B runner now preserves; a bundle captured before that (no `outputs/`) fails "
+        "those checks with that explicit evidence.",
         "",
     ]
     return "\n".join(lines)

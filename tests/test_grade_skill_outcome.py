@@ -116,6 +116,18 @@ def test_load_bundle_reads_sources(tmp_path: Path) -> None:
     assert "Read: x" in bundle.judge_context and "hello" in bundle.judge_context
 
 
+def test_judge_context_includes_transcript_and_outputs(tmp_path: Path) -> None:
+    d = _make_bundle(tmp_path, summary="S", trace=[{"name": "Read", "args": "x"}],
+                     output="the produced artifact", transcript="chunk 1 was presented")
+    ctx = g.load_bundle(d).judge_context
+    assert "SUMMARY:" in ctx and "TRACE:" in ctx
+    assert "chunk 1 was presented" in ctx  # transcript: what the run presented
+    assert "the produced artifact" in ctx and "result.md" in ctx  # output excerpt + filename
+    # the outputs manifest itself is not dumped as an excerpt
+    (d / "outputs" / "outputs-manifest.json").write_text('{"copied":[]}', encoding="utf-8")
+    assert "outputs-manifest" not in g.load_bundle(d).judge_context
+
+
 def test_load_bundle_missing_observed_raises(tmp_path: Path) -> None:
     (tmp_path / "empty").mkdir()
     with pytest.raises(FileNotFoundError, match="observed.v1.json"):

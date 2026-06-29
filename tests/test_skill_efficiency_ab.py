@@ -112,6 +112,63 @@ def test_git_added_lines_counts_tracked_diff_and_untracked(tmp_path: Path) -> No
     assert ab._git_added_lines(tmp_path / "nope") is None
 
 
+def test_changed_files_lists_added_and_modified_not_deleted(tmp_path: Path) -> None:
+    repo = tmp_path / "wt"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    (repo / "keep.txt").write_text("base\n", encoding="utf-8")
+    (repo / "gone.txt").write_text("bye\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    (repo / "keep.txt").write_text("base\nmore\n", encoding="utf-8")  # modified
+    (repo / "new.txt").write_text("x\n", encoding="utf-8")  # untracked add
+    (repo / "gone.txt").unlink()  # deletion -> excluded
+    assert ab._changed_files(repo) == ["keep.txt", "new.txt"]
+    assert ab._changed_files(tmp_path / "nope") == []  # non-git dir -> empty, not crash
+
+
+def test_preserve_outputs_copies_changed_with_size_cap(tmp_path: Path) -> None:
+    repo = tmp_path / "wt"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    (repo / "seed.txt").write_text("s\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    (repo / "sub").mkdir()
+    (repo / "sub" / "small.md").write_text("hello\n", encoding="utf-8")
+    (repo / "big.bin").write_text("z" * 200, encoding="utf-8")
+    out = tmp_path / "preserved" / "outputs"
+    manifest = ab.preserve_outputs(repo, out, max_bytes=50)
+    assert manifest["copied"] == ["sub/small.md"]  # under cap, dir structure preserved
+    assert (out / "sub" / "small.md").read_text(encoding="utf-8") == "hello\n"
+    assert manifest["omitted"][0]["path"] == "big.bin" and "size 200" in manifest["omitted"][0]["reason"]
+    assert json.loads((out / "outputs-manifest.json").read_text(encoding="utf-8"))["copied"] == ["sub/small.md"]
+
+
+def test_write_transcript_keeps_assistant_text_only(tmp_path: Path) -> None:
+    tree = tmp_path / "tree"
+    tree.mkdir()
+    events = [
+        {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "chunk 1 assessment"}]}},
+        {"type": "assistant", "message": {"role": "assistant", "content": [
+            {"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": "secret --token=ABC"}}]}},  # no text -> dropped
+        {"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "t1", "content": "SECRET_OUTPUT"}]}},  # tool_result -> dropped
+        {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "Recommended Disposition: accept"}]}},
+        "{ malformed",  # tolerated
+    ]
+    (tree / "session.jsonl").write_text(
+        "".join((e if isinstance(e, str) else json.dumps(e)) + "\n" for e in events), encoding="utf-8")
+    dest = tmp_path / "transcript.txt"
+    ab._write_transcript(tree, dest)
+    text = dest.read_text(encoding="utf-8")
+    assert "chunk 1 assessment" in text and "Recommended Disposition: accept" in text
+    assert "SECRET_OUTPUT" not in text and "secret --token" not in text  # secret-safe: no tool contents
+
+
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is required to run the real metric extractor")
 def test_selftest_ranks_wasteful_worse() -> None:
     # The instruments' own gate: extractor must rank the synthetic wasteful tree

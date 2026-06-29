@@ -15,7 +15,9 @@ What it does (`--run <config>`):
   so arms can't cross-contaminate, the ponytail baseline-contamination lesson),
   build the observed packet (build-skill-execution-observation.mjs), and read its
   per-run metrics. Then aggregate mean/min/max/median per arm and emit a side-by-side
-  comparison report + raw results.json.
+  comparison report + raw results.json. Each run also preserves its PRODUCED outputs
+  (the changed file set, bounded) and an assistant-text transcript into the bundle, so
+  the outcome grader (grade_skill_outcome.py) can read the real artifacts the run made.
 
 An "arm" is a labeled git ref (+ optional invocation override). This subsumes
 baseline-vs-skill (one ref without the skill, one with) and variant-A-vs-B (a ref
@@ -214,6 +216,70 @@ def _git_added_lines(worktree: Path) -> int | None:
     return added
 
 
+def _changed_files(worktree: Path) -> list[str]:
+    """Paths the run added or modified vs its checked-out ref (tracked ACMR +
+    untracked). The set of files a charness skill actually PRODUCED — the outcome
+    grader's artifact evidence — not the whole repo checkout."""
+    try:
+        tracked = subprocess.run(
+            ["git", "-C", str(worktree), "diff", "--name-only", "--diff-filter=ACMR", "HEAD"],
+            capture_output=True, text=True, check=True,
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return []
+    others = subprocess.run(
+        ["git", "-C", str(worktree), "ls-files", "--others", "--exclude-standard"],
+        capture_output=True, text=True, check=False,
+    ).stdout
+    return sorted({p for p in tracked.splitlines() + others.splitlines() if p.strip()})
+
+
+def preserve_outputs(worktree: Path, outputs_dir: Path, max_bytes: int = 65536) -> dict:
+    """Copy the run's PRODUCED files (only the changed set, never the whole tree)
+    into the durable bundle so the outcome grader can read the actual artifacts.
+    Files over max_bytes are omitted-with-reason (the bundle is committed; a giant
+    blob does not belong there). Writes an outputs-manifest.json and returns it."""
+    manifest: dict = {"copied": [], "omitted": []}
+    for rel in _changed_files(worktree):
+        src = worktree / rel
+        if not src.is_file():
+            continue
+        size = src.stat().st_size
+        if size > max_bytes:
+            manifest["omitted"].append({"path": rel, "reason": f"size {size} > {max_bytes}"})
+            continue
+        dst = outputs_dir / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(src, dst)
+        manifest["copied"].append(rel)
+    outputs_dir.mkdir(parents=True, exist_ok=True)
+    (outputs_dir / "outputs-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    return manifest
+
+
+def _write_transcript(tree_dir: Path, dest: Path, max_chars: int = 20000) -> None:
+    """Render the assistant TEXT turns from the captured session tree into dest.
+    Deliberately excludes tool_result contents (no tool-output secrets land in the
+    committed bundle) — it is the judge's primary evidence of what the run PRESENTED,
+    which for a skill like hitl lives in the assistant text, not the file outputs."""
+    parts: list[str] = []
+    for jsonl in sorted(Path(tree_dir).glob("*.jsonl")):
+        for line in jsonl.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if event.get("type") != "assistant":
+                continue
+            for block in (event.get("message") or {}).get("content") or []:
+                if isinstance(block, dict) and block.get("type") == "text" and block.get("text"):
+                    parts.append(block["text"])
+    dest.write_text("\n\n".join(parts)[:max_chars], encoding="utf-8")
+
+
 def _parse_session_tree(stdout: str) -> str | None:
     for line in stdout.splitlines():
         if line.startswith("SESSION_TREE="):
@@ -260,6 +326,7 @@ def run_one(repo_root: Path, ref: str, invocation: str, spec_path: Path, out_dir
         raise RuntimeError(f"observe failed (rc={observe.returncode}) for ref {ref}:\n{observe.stderr[-2000:]}")
     metrics = _metrics_from_packet(json.loads(observed.read_text(encoding="utf-8")))
     metrics["output_lines"] = _git_added_lines(out_dir / "worktree")
+    _write_transcript(Path(tree), out_dir / "transcript.txt")
     return metrics
 
 
@@ -292,10 +359,15 @@ def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, k
                 raw_runs.append(record)
                 preserve = results_dir / "preserved" / f"{arm['name']}__{index}"
                 preserve.mkdir(parents=True, exist_ok=True)
-                for name in ("observed.v1.json", "trace-digest.jsonl"):
+                for name in ("observed.v1.json", "trace-digest.jsonl", "transcript.txt"):
                     src = out_dir / name
                     if src.is_file():
                         shutil.copy(src, preserve / name)
+                # Outcome-grader evidence: the run's PRODUCED files (changed set only),
+                # so output_file_* assertions and the LLM judge can read real artifacts.
+                worktree = out_dir / "worktree"
+                if worktree.is_dir():
+                    preserve_outputs(worktree, preserve / "outputs")
             except (subprocess.CalledProcessError, RuntimeError) as exc:
                 # One flaky capture must not nuke a multi-run matrix or leak its
                 # worktree; log, drop the data point, and let aggregate cope with n-1.

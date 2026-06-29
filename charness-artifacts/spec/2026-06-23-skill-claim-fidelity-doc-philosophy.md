@@ -806,3 +806,35 @@ Still deferred (next slices): (1) capture-side OUTPUT preservation in
 invocation (real `claude -p` spend, ask-before-run); (4) wiring the grade into the
 A/B bundle/report. The `outcome-assertions.json` data has no durable validator surface
 yet beyond a conformance unit test — a candidate follow-up surface, not added now.
+
+### Outcome Grader — preservation + live judge adapter (2026-06-29, Slice A)
+
+Closes deferred part (1) and ships the part (3)-live ADAPTER so the live judge is
+runnable (the actual invocation is the ask-before-run spend, Slice B):
+
+- `run_skill_efficiency_ab.py` now preserves, per run, the PRODUCED outputs (the
+  changed file set only, never the whole worktree; bounded by a per-file size cap with
+  an `outputs-manifest.json` recording omissions) into `preserved/<arm>__<n>/outputs/`,
+  plus an assistant-text `transcript.txt` (assistant TEXT turns only — no tool_result
+  contents, so no tool-output secrets land in the committed bundle). So `output_file_*`
+  assertions now grade real artifacts, and the judge sees what the run PRESENTED.
+  Secret caveat: the size cap is a size guard, not a secrecy guard — preserved OUTPUTS
+  are only as safe as what the run writes to disk, so run `check-secrets.sh` before
+  committing any real captured bundle.
+- `grade_skill_outcome.py`'s judge context now includes the transcript and bounded
+  excerpts of the produced outputs, so the LLM judge grades the actual work, not just
+  the summary+trace.
+- `scripts/outcome_judge_cmd.py` is the reference LIVE judge adapter for the
+  `--judge-cmd` seam: it shells the `{statement,context}` payload through `claude -p`
+  and emits a strict `{verdict,evidence}` JSON, fail-closed (claude failure / unparseable
+  verdict → non-zero exit → the grader records an honest ERROR, never a silent pass).
+  The seam stays generic (a different host can point `--judge-cmd` elsewhere); the LLM
+  judge lives host-side per the cautilus eval-only ownership rule.
+- Proven offline end-to-end (no spend): the full `--grade --judge-cmd` path with a stub
+  judge scores deterministic + judge-kind assertions over a synthetic bundle with
+  `outputs/` + `transcript.txt`. The only remaining live piece is swapping the stub for
+  the real `claude -p` adapter — Slice B.
+
+Still deferred after Slice A: (3)-live the real `claude -p` judge run over a freshly
+captured bundle (Slice B, ask-before-run spend); (4) wiring the grade into the A/B
+bundle/report; the `outcome-assertions.json` durable validator surface.
