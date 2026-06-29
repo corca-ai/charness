@@ -1,0 +1,28 @@
+session_id: hitl-20260629-021249
+status: in_progress
+target: docs/operator-acceptance.md
+base_ref: working-tree
+scope: single-file
+queue_total_chunks: 7
+require_explicit_apply: true
+apply_mode: explicit-after-all-chunks
+queue_epoch: 2
+queue_status: ready
+accepted_rules:
+  - "R1: Each chunk presents direct source excerpt + Agent Assessment + non-binding Recommended Disposition + explicit decision for the human, then pauses."
+  - "R2: Do not advance to the next chunk until the human explicitly approves the current one. Suggestion is not approval."
+  - "R3: Review-only loop; the target file is not edited mid-review. Any edits wait for the Apply Phase and explicit apply instruction (require_explicit_apply=true)."
+active_rules_applied: []
+target_cursor_checked: false
+target_cursor_check_result: ""
+intent_resync_required: false
+last_presented_chunk_id: ""
+last_intent_resync_at: ""
+applied_rewrite_review_status: inactive
+pending_rewrite_chunk_id: ""
+pending_rewrite_source_anchor: ""
+last_rewritten_chunk_id: ""
+last_rewrite_review_result: ""
+full_target_review_item_id: full_target_review
+full_target_review_status: pending_after_chunks
+full_target_review_result: ""

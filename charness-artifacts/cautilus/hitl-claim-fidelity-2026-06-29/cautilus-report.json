@@ -1,0 +1,131 @@
+{
+  "comparisonSummary": {
+    "betterThanBaseline": 0,
+    "evaluationsWithBaseline": 0,
+    "sameAsBaseline": 0,
+    "worseThanBaseline": 0
+  },
+  "evaluatedAt": "2026-06-29T02:15:50.798534541Z",
+  "evaluationCounts": {
+    "blocked": 0,
+    "degraded": 0,
+    "execution": 1,
+    "failed": 0,
+    "passed": 1,
+    "total": 1,
+    "trigger": 0,
+    "unstable": 0
+  },
+  "evaluationRuns": [
+    {
+      "displayName": "hitl",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-hitl-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          }
+        ],
+        "summary": "hitl should complete the intended task cleanly once the skill is invoked."
+      },
+      "metrics": {
+        "duration_ms": 101982,
+        "total_tokens": 927570
+      },
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "passed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-29T02:12:28.334Z",
+      "status": "passed",
+      "summary": "Execution of /hitl: 927570 total tokens (20953 output, 739162 cache-read), 101982ms wall. Tool profile: Bash=6 Edit=4 Read=2 Skill=1. All declared claims met. Reference coverage: 1/5 declared references opened (missing: adapter-contract.md, report-mode.md, rule-propagation.md, state-model.md).",
+      "surface": "execution_quality",
+      "targetId": "hitl",
+      "targetKind": "public_skill"
+    }
+  ],
+  "evaluations": [
+    {
+      "displayName": "hitl",
+      "evaluationId": "execution-hitl-claim-fidelity",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-hitl-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          }
+        ],
+        "summary": "hitl should complete the intended task cleanly once the skill is invoked."
+      },
+      "invoked": true,
+      "metrics": {
+        "duration_ms": 101982,
+        "total_tokens": 927570
+      },
+      "prompt": "/charness:hitl docs/operator-acceptance.md 를 bounded human-in-the-loop로 청크 단위로 함께 검토하자 — 각 청크마다 원문 발췌 + Agent Assessment + 비구속 Recommended Disposition을 제시하고, 내가 승인한 뒤에만 다음 청크로 진행해줘.",
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "passed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-06-29T02:12:28.334Z",
+      "status": "passed",
+      "summary": "Execution of /hitl: 927570 total tokens (20953 output, 739162 cache-read), 101982ms wall. Tool profile: Bash=6 Edit=4 Read=2 Skill=1. All declared claims met. Reference coverage: 1/5 declared references opened (missing: adapter-contract.md, report-mode.md, rule-propagation.md, state-model.md).",
+      "surface": "execution_quality",
+      "targetId": "hitl",
+      "targetKind": "public_skill"
+    }
+  ],
+  "recommendation": "accept-now",
+  "samplingSummary": {
+    "evaluationsWithSampling": 1,
+    "overallConsensusRate": 1,
+    "overallInvocationRate": 1,
+    "overallPassRate": 1,
+    "totalConsensusSamples": 1,
+    "totalInvocations": 1,
+    "totalPassingSamples": 1,
+    "totalSamples": 1,
+    "unstableEvaluations": 0
+  },
+  "schemaVersion": "cautilus.skill_evaluation_summary.v1",
+  "skillDisplayName": "hitl",
+  "skillId": "hitl"
+}
