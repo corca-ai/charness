@@ -5,52 +5,47 @@
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
 - **Big picture:** skills satisfy two axes, evals verify each SEPARATELY —
-  **correctness** (claim-fidelity: does a run honor its claim? proven by live
-  capture) and **efficiency** (process + output waste; advisory, never pass/fail).
+  **correctness** (claim-fidelity, proven by live capture) and **efficiency** (advisory).
 
 ## Current State
 
-- **impl capture DONE (2026-07-01): 5th sweep skill.** Floor **MISS** (coverage 0/8,
-  `verification-ladder.md` not opened); substance **4/5** (executed-verification +
-  smallest-slice PASS; `honest-categorized-closeout` FAIL — the run produced the
-  closeout in PROSE, not the canonical Lint-Gate/completion-report enum that lives
-  ONLY in `verification-ladder.md` and is NOT inlined in SKILL.md). **impl stays
-  HYPOTHESIS; floor + assertions un-softened.** New `outcome-assertions.json` landed.
+- **#409 DONE (pushed `9d4c2882`).** capture→grade now preserves evidence for
+  committing/clean runs (diff vs the capture base, transcript from `stream.jsonl`).
+  Sweep reuse unblocked.
+- **Reference-compaction census + plan DONE (this session).** All 24 skills / 196 refs
+  classified — **DEPTH 109 · INLINE 58 · DUP 26 · DEAD 3**. Keystone policy + 7-slice
+  plan ready, operator-approved, deferred to next session.
+  [contract](../charness-artifacts/reference-compaction/contract.md)
+  (+ [census.json](../charness-artifacts/reference-compaction/census.json),
+  [plan.json](../charness-artifacts/reference-compaction/plan.json) = per-skill exec
+  detail + risk verdicts).
+- impl capture (5th sweep skill): floor **MISS** (0/8), substance **4/5**
+  (`honest-categorized-closeout` FAIL — the enum lives ONLY in `verification-ladder.md`,
+  not inlined). The impl closeout-vocab fork is now RESOLVED into the keystone (Option A).
   [finding](../charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/finding.md)
-- **#409 filed — BLOCKS sweep reuse.** capture→grade loses outcome-grader evidence
-  for clean/committing skills (`preserve_outputs` diffs vs HEAD but a faithful impl
-  run COMMITS; tree transcript missed the final closeout block, `stream.jsonl` was
-  complete). Worked around manually this run.
-- PROVEN: retro, hitl, quality, debug (n=2). impl = 5th captured, HYPOTHESIS. ~13
-  skills still uncaptured. Debug Plan-C (2026-06-30): `five-steps.md` retired from
-  floor at n=2; `debug-memory.md` stays the floor.
+- PROVEN floors: retro, hitl, quality, debug (n=2). impl HYPOTHESIS. ~13 uncaptured.
 
 ## Next Session
 
-1. **Fix #409 FIRST — it unblocks the sweep.** `preserve_outputs` should diff vs the
-   capture ref (not HEAD); build the transcript from `stream.jsonl` (not the truncated
-   tree); add a cheap evidence-pipeline preflight before expensive captures. Until
-   fixed, substance grading of any committing/clean skill needs the manual workaround.
-2. **Continue the correctness sweep**, one skill at a time, REUSING the
-   outcome-assertion pattern. Remaining HYPOTHESIS-floor skills: achieve, announcement,
-   create-cli, create-skill, critique, find-skills, gather, handoff, hotl, ideation,
-   narrative, release, spec. A miss = skill-shape signal (re-pin/re-classify/planner),
-   never soften the matcher. `--justification-log` overrides `next_action: none`.
-3. **Operator decision: impl closeout-vocabulary fork.** Internalize the enum into
-   `impl/SKILL.md` (debug-Plan-A-style → floor weak proxy + substance pass) vs keep
-   `verification-ladder.md` load-bearing (the MISS is a real gap). Candidate issue.
-4. **AGENTS.md-level lesson-internalization fixture (operator-raised)** — still open;
-   judge whether a prior recent-lessons lesson was internalized by a later session.
+1. **Execute reference-compaction, slice by slice** (per the contract). Start
+   **Slice 1 = keystone mechanism** (gate exemption + RCF-or-RSF guard + classTag infra +
+   `create-skill` rule; no per-skill content; MUST be first — empty-RCF fails closed until
+   the guard relaxes). Then 2→6; Slice 7 (RCF→RSF sweep) is issue-filed and needs fresh
+   ask-before-run captures. Diagnosis CORRECTED: coverage was already advisory; the real
+   teeth is RCF pinned to a doc filename → assert emitted TOKENS via RSF instead.
+2. **Continue correctness sweep** one skill at a time, reusing outcome-assertions.
+   Remaining HYPOTHESIS-floor: achieve, announcement, create-cli, create-skill, critique,
+   find-skills, gather, handoff, hotl, ideation, narrative, release, spec. A miss =
+   skill-shape signal (re-pin/re-classify/planner), never soften the matcher.
+3. **AGENTS.md lesson-internalization fixture (operator-raised)** — still open.
 
 ## Discuss
 
-- Threshold policy RESOLVED: per-skill `max_duration_ms` from a PASSING capture (~2x).
-  impl left UNSET (floor not passed); 123821ms natural-completion recorded for a PASS.
 - Brittle test: [test_handoff_plan.py](../tests/test_handoff_plan.py)
-  `..._derives_refresh_and_pickup` reads the LIVE handoff and reds broad pytest on any
-  near-limit (>=60 line) handoff. Deeper fix: decouple the test from live mutable state.
+  `..._derives_refresh_and_pickup` reds broad pytest on any >=60-line handoff. Keep this
+  file under 60 lines until the test is decoupled from live state.
 
 ## References
 
-- pickup: [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) · [quality latest](../charness-artifacts/quality/latest.md)
-- proofs: [cautilus latest](../charness-artifacts/cautilus/latest.md) · [impl finding](../charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/finding.md) · [impl retro](../charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md)
+- pickup: [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) · [reference-compaction contract](../charness-artifacts/reference-compaction/contract.md)
+- proofs: [cautilus latest](../charness-artifacts/cautilus/latest.md) · [impl finding](../charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/finding.md)
