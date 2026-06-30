@@ -24,13 +24,10 @@
   `debug-memory` floor refs. `five-whys-causal-chain.md` RE-PINNED out (planner
   routes it on_demand; a good run reached the structural outcome without it). debug
   stays HYPOTHESIS. [finding](../charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30/finding.md)
-- **dup-ratchet GREEN + capture git-hook friction fixed (this session):**
-  capture-skill-run.sh now neutralizes hooks to an empty dir; the red dup-ratchet
-  (17+2 families) resolved via 1 extraction + honest intentional classifications.
-  **Portability finding:** `fae23` (debug↔retro adapter echo) was classified
-  "intentional/portability" but the experiment FALSIFIED that — it was reducible into
-  the already-shared `run_plan_envelope.py` (byte-identical output, portability
-  intact, now extracted). So SOME "intentional" notes are over-applied.
+- **dup-ratchet GREEN + capture git-hook friction fixed:** capture-skill-run.sh
+  neutralizes hooks to an empty dir; red dup-ratchet (17+2 families) resolved via 1
+  extraction + intentional classifications. The `fae23` portability finding seeded the
+  full audit, now DONE (Next Session 1).
   [hooks+dup critique](../charness-artifacts/critique/2026-06-30-capture-hooks-and-dup-ratchet-critique.md)
 - **Efficiency — outcome grader COMPLETE + LIVE-PROVEN** (prior session): auto-grade
   wired into the A/B harness (`run_ab` grades each bundle; `--judge-cmd` /
@@ -38,13 +35,16 @@
 
 ## Next Session
 
-1. **Aggressive dup-review portability audit (NEW, user-requested):** the `fae23`
-   experiment proved some "intentional/portability" classifications hide reducible
-   dups. Mechanism: `run_plan_envelope.py` is ALREADY a universal planner dependency,
-   so "would add coupling" is FALSE for anything that can live there. Falsification-
-   test EVERY intentional family (start with `1029`, `32e8` — debug/retro/4-planner
-   blocks): try the reduction; keep if behavior-neutral + portability-intact, else
-   keep the note now VERIFIED (not assumed). Review ALL families, be aggressive.
+1. **Dup-review portability audit — DONE** (25 families, workflow + fresh-eye)
+   [VERIFIED table](../charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md).
+   Workflow flagged 11/25 reducible; **fresh-eye caught the #390 / `a741e613` standing
+   decision** the audit lacked — resolver-scaffolding consolidation was REJECTED
+   (bare-shell + no-cross-skill-import + `packages/` split; `check_bootstrap_shim_consistency.py`
+   governs 93 sites). So `fe221bab`/`54bc9db2`/`3edc6552` are intentional-per-#390;
+   `cd865345`(414) verified-true. **Fixable survivors:** `16fec8ed` `878bffbe` `c2c42ffe`
+   `a664a431` `13741926` ≈290 dl (`b8dbc45f` deferred — non-neutral timeout msg). Next:
+   extract survivors as ONE #395 batch, each proven behavior-neutral. **Lesson:**
+   falsification must also check standing decisions, not only neutrality + coupling.
 2. **Correctness sweep (continue, ask-before-run):** capture the next hypothesis-floor
    skill, one at a time. A miss = skill-shape signal (re-pin / re-classify / planner),
    never soften the matcher; do NOT planner-ize mechanically. `--justification-log`
