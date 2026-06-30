@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-06-30",
-  "source_artifact_count": 276,
-  "candidate_count": 1279,
+  "source_artifact_count": 277,
+  "candidate_count": 1286,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -735,6 +735,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:07f6a0c0f2ab",
+      "kind": "current_focus",
+      "lesson": "Executed handoff item 1 \"debug: internalize method into structure + compress reference docs\".",
+      "normalized_key": "executed handoff item 1 debug internalize method into structure compress reference docs",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:28209b42a6bf",
       "kind": "next_improvement",
       "lesson": "**capability (APPLIED):** `grade_skill_outcome.py _output_excerpts` per_file 500→8000 (+40KB total budget) so substance sections (bottom-anchored) are visible to the judge. Committed a3639f11 (mirror synced).",
@@ -775,6 +795,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:940e82cdea17",
+      "kind": "next_improvement",
+      "lesson": "**capability (headline, operator-originated) — AGENTS.md / operating-contract claim-fidelity fixture.** A NEW Cautilus target class (`agent-context`, distinct from the 20 `public_skill` specs): capture a session, then judge whether a named prior lesson from `recent-lessons.md` was HONORED or the trap repeated — the consumer-side analogue of debug's substance assertions. Highest-value failure to catch: \"lesson written, next session repeats it.\" Open design rocks: capture unit (session vs skill-run), lesson selection, gaming risk. Headed for an issue.",
+      "normalized_key": "capability headline operator originated agents md operating contract claim fidelity fixture a new cautilus",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:60f54d153af4",
       "kind": "next_improvement",
       "lesson": "**memory:** recent-lessons should carry: (1) a \"fixable\" mis-fire can be only an aggravating factor — prove behavior-change SEPARATELY from symptom-fix; (2) verify a grader/judge's evidence window before trusting a FAIL.",
@@ -789,6 +829,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
+          "date": "2026-06-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:14dd7fc20b3e",
+      "kind": "next_improvement",
+      "lesson": "**memory:** recent-lessons should carry: (1) a forward-only `latest.md`-only validator marker must MIGRATE the live current pointer to the new contract — whole-tree validation reds otherwise; the fresh-eye critique is the backstop, the pointer migration is the fix; (2) standing tests that read live mutable repo artifacts (`--repo-root .` over docs/handoff.md, `*/latest.md`) red the suite on normal drift — assert via fixtures, not live state.",
+      "normalized_key": "memory recent lessons should carry 1 a forward only latest md only validator marker",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:616a45c02179",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** at session PICKUP, establish a broad-pytest (or last-commit CI / closeout) baseline so an INHERITED red is distinguished from a session-introduced red immediately, before slice work masks it with green focused tests.",
+      "normalized_key": "workflow at session pickup establish a broad pytest or last commit ci closeout baseline",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
           "date": "2026-06-30",
           "section": "Next Improvements"
         }
@@ -831,86 +911,6 @@
           "artifact_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
           "date": "2026-06-30",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:55118106d553",
-      "kind": "repeat_trap",
-      "lesson": "**Mis-framed the fix as the cause before proving it.** The plan assumed the `continue-existing-artifact` mis-fire CAUSED the floor doc-skip. The live re-capture proved otherwise: the fix changed behavior (fresh artifact + `Resolution: resolved`) but the run STILL skipped five-steps/debug-memory — the mis-fire was only an aggravating factor. The framing was corrected by RUNNING the capture, not by reasoning. Cost: low (the plan still landed real value), but the \"PASS attempt\" expectation was set higher than the evidence supported.",
-      "normalized_key": "mis framed the fix as the cause before proving it the plan assumed the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
-      "latest_source_date": "2026-06-30",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
-          "date": "2026-06-30",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:1e1118f816c4",
-      "kind": "repeat_trap",
-      "lesson": "**Trusted a judge FAIL before checking what the judge saw.** The first outcome grade FAILed detection-gap + sibling-search; the evidence line said \"Output truncated at '## Correct Behavior'.\" The grader excerpted each output at only 500 chars, so the judge graded substance blind. ~1 extra judge spend to re-grade after fixing the window. Caught only because the judge cited its own truncation.",
-      "normalized_key": "trusted a judge fail before checking what the judge saw the first outcome grade",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
-      "latest_source_date": "2026-06-30",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
-          "date": "2026-06-30",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:dc24c3f920bb",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.57.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 57 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md",
-      "latest_source_date": "2026-06-28",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md",
-          "date": "2026-06-28",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4a6ee89f8305",
-      "kind": "current_focus",
-      "lesson": "This retro reviews `charness-artifacts/goals/2026-06-28-issue-405-405-add-verification-channel-fitness-guard-propagation-acros.md`: the achieve goal that resolved GitHub issue #405 by adding two named bullets (`verification-channel fitness`, `guard-propagation across seams`) to the `quality` Behavior lens and a `## Distinct Named Lenses` delegation note to the shared `fresh-eye-subagent-review.md`, plus the regenerated `plugins/` mirror.",
-      "normalized_key": "this retro reviews charness artifacts goals 2026 06 28 issue 405 405 add verification",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md",
-      "latest_source_date": "2026-06-28",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md",
-          "date": "2026-06-28",
-          "section": "Context"
         }
       ]
     }
@@ -1637,6 +1637,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:07f6a0c0f2ab",
+      "kind": "current_focus",
+      "lesson": "Executed handoff item 1 \"debug: internalize method into structure + compress reference docs\".",
+      "normalized_key": "executed handoff item 1 debug internalize method into structure compress reference docs",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:28209b42a6bf",
       "kind": "next_improvement",
       "lesson": "**capability (APPLIED):** `grade_skill_outcome.py _output_excerpts` per_file 500→8000 (+40KB total budget) so substance sections (bottom-anchored) are visible to the judge. Committed a3639f11 (mirror synced).",
@@ -1677,6 +1697,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:940e82cdea17",
+      "kind": "next_improvement",
+      "lesson": "**capability (headline, operator-originated) — AGENTS.md / operating-contract claim-fidelity fixture.** A NEW Cautilus target class (`agent-context`, distinct from the 20 `public_skill` specs): capture a session, then judge whether a named prior lesson from `recent-lessons.md` was HONORED or the trap repeated — the consumer-side analogue of debug's substance assertions. Highest-value failure to catch: \"lesson written, next session repeats it.\" Open design rocks: capture unit (session vs skill-run), lesson selection, gaming risk. Headed for an issue.",
+      "normalized_key": "capability headline operator originated agents md operating contract claim fidelity fixture a new cautilus",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:60f54d153af4",
       "kind": "next_improvement",
       "lesson": "**memory:** recent-lessons should carry: (1) a \"fixable\" mis-fire can be only an aggravating factor — prove behavior-change SEPARATELY from symptom-fix; (2) verify a grader/judge's evidence window before trusting a FAIL.",
@@ -1691,6 +1731,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
+          "date": "2026-06-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:14dd7fc20b3e",
+      "kind": "next_improvement",
+      "lesson": "**memory:** recent-lessons should carry: (1) a forward-only `latest.md`-only validator marker must MIGRATE the live current pointer to the new contract — whole-tree validation reds otherwise; the fresh-eye critique is the backstop, the pointer migration is the fix; (2) standing tests that read live mutable repo artifacts (`--repo-root .` over docs/handoff.md, `*/latest.md`) red the suite on normal drift — assert via fixtures, not live state.",
+      "normalized_key": "memory recent lessons should carry 1 a forward only latest md only validator marker",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:616a45c02179",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** at session PICKUP, establish a broad-pytest (or last-commit CI / closeout) baseline so an INHERITED red is distinguished from a session-introduced red immediately, before slice work masks it with green focused tests.",
+      "normalized_key": "workflow at session pickup establish a broad pytest or last commit ci closeout baseline",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
           "date": "2026-06-30",
           "section": "Next Improvements"
         }
@@ -1731,6 +1811,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md",
+          "date": "2026-06-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8f322c80ce8a",
+      "kind": "repeat_trap",
+      "lesson": "**Background launch denied — repeat of a known trap.** First capture launch stacked a compound `rm -rf` + multi-statement command with `run_in_background`; denied. The clean single command was accepted. SAME lesson already in recent-lessons.md — it recurred, so a structural fix beats re-noting it.",
+      "normalized_key": "background launch denied repeat of a known trap first capture launch stacked a compound",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c52796c1e4b2",
+      "kind": "repeat_trap",
+      "lesson": "**Closeout broad-pytest fingerprint friction.** Ran the `--verification-lock` closeout twice on a stale cached proof (different fingerprint, expected post- commit) before reaching for `--refresh-broad-pytest-proof`. ~1 wasted closeout invocation; the message named the fix and I re-read it rather than acting first.",
+      "normalized_key": "closeout broad pytest fingerprint friction ran the verification lock closeout twice on a stale",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+          "date": "2026-06-30",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e855e6d612e8",
+      "kind": "repeat_trap",
+      "lesson": "**Inherited broad-pytest red diagnosed late.** The full suite was red on `test_handoff_plan.py` from session start (committed by 853fb9fc), but I only saw it at the FINAL broad closeout because the focused per-slice tests were green and masked it. I then spent a detour proving it was inherited (not mine) before fixing it. A broad-pytest baseline at PICKUP would have classified the red as inherited instantly. Cost: ~one diagnosis detour.",
+      "normalized_key": "inherited broad pytest red diagnosed late the full suite was red on test handoff",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
+      "latest_source_date": "2026-06-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md",
           "date": "2026-06-30",
           "section": "Waste"
         }

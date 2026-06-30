@@ -3,21 +3,21 @@
 ## Current Focus
 
 - Achieve goal closeout for `charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md`. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- Release publish triggered a configured automatic session retro for `v0.57.0`. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`)
+- Executed handoff item 1 "debug: internalize method into structure + compress reference docs". (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
 - **Background launch denied → one wasted round-trip.** I stacked the tool's `run_in_background` with shell `nohup … &` AND a compound `rm -rf` one-liner — three permission triggers at once. The clean single command via the tool's native `run_in_background` was accepted. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- **Mis-framed the fix as the cause before proving it.** The plan assumed the `continue-existing-artifact` mis-fire CAUSED the floor doc-skip. The live re-capture proved otherwise: the fix changed behavior (fresh artifact + `Resolution: resolved`) but the run STILL skipped five-steps/debug-memory — the mis-fire was only an aggravating factor. The framing was corrected by RUNNING the capture, not by reasoning. Cost: low (the plan still landed real value), but the "PASS attempt" expectation was set higher than the evidence supported. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- **Trusted a judge FAIL before checking what the judge saw.** The first outcome grade FAILed detection-gap + sibling-search; the evidence line said "Output truncated at '## Correct Behavior'." The grader excerpted each output at only 500 chars, so the judge graded substance blind. ~1 extra judge spend to re-grade after fixing the window. Caught only because the judge cited its own truncation. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
+- **Background launch denied — repeat of a known trap.** First capture launch stacked a compound `rm -rf` + multi-statement command with `run_in_background`; denied. The clean single command was accepted. SAME lesson already in recent-lessons.md — it recurred, so a structural fix beats re-noting it. (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
+- **Closeout broad-pytest fingerprint friction.** Ran the `--verification-lock` closeout twice on a stale cached proof (different fingerprint, expected post- commit) before reaching for `--refresh-broad-pytest-proof`. ~1 wasted closeout invocation; the message named the fix and I re-read it rather than acting first. (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
 - **capability (APPLIED):** `grade_skill_outcome.py _output_excerpts` per_file 500→8000 (+40KB total budget) so substance sections (bottom-anchored) are visible to the judge. Committed a3639f11 (mirror synced). (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
 - **capability / follow-up (tracked-candidate):** the floor doc-skip — a competent run reaches the structural outcome via the scaffold STRUCTURE without opening the canonical reference docs — is a debug skill-shape question (are the reference docs over-built given the scaffold supplies the structure?). NOT a floor softening; a candidate issue for the next correctness-sweep session. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- **memory:** recent-lessons should carry: (1) a "fixable" mis-fire can be only an aggravating factor — prove behavior-change SEPARATELY from symptom-fix; (2) verify a grader/judge's evidence window before trusting a FAIL. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
+- **capability (headline, operator-originated) — AGENTS.md / operating-contract claim-fidelity fixture.** A NEW Cautilus target class (`agent-context`, distinct from the 20 `public_skill` specs): capture a session, then judge whether a named prior lesson from `recent-lessons.md` was HONORED or the trap repeated — the consumer-side analogue of debug's substance assertions. Highest-value failure to catch: "lesson written, next session repeats it." Open design rocks: capture unit (session vs skill-run), lesson selection, gaming risk. Headed for an issue. (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
 
 ## Selection Policy
 
@@ -95,3 +95,4 @@
 - `charness-artifacts/retro/2026-06-27-v0-56-9-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`
+- `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`
