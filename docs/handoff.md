@@ -34,29 +34,22 @@
 
 ## Next Session
 
-1. **Dup audit DONE + 3 extractions landed** (this session)
-   [VERIFIED table](../charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md).
-   25 families (workflow judge→refute + fresh-eye). **#390 governs ONLY the
-   `_load_skill_runtime_bootstrap` finder shim (`cd865345`, irreducible)** — NOT the resolver
-   `main()` tail. EXTRACTED, all proven behavior-neutral + fresh-eye SAFE: `fe221bab`/`54bc9db2`
-   (16 resolvers → `SKILL_RUNTIME.run_adapter_cli`), `878bffbe` (dogfood format_human),
-   `c2c42ffe` (tool-rec payload). DEFERRED with hands-on VERIFIED notes (awkward-param /
-   divergent / risky-equivalence / doc-composition, not clean neutral wins): `16fec8ed`
-   `a664a431` `3edc6552` `704b93d2` `13741926` `b8dbc45f`. **Lesson:** a standing-decision
-   override is only as broad as what the gate ACTUALLY governs; a "fixable" verdict still
-   needs hands-on byte-identical proof before it lands.
-2. **Correctness sweep (continue, ask-before-run):** capture the next hypothesis-floor
-   skill, one at a time. A miss = skill-shape signal (re-pin / re-classify / planner),
-   never soften the matcher; do NOT planner-ize mechanically. `--justification-log`
-   overrides `next_action: none`; mirror the hitl/retro/quality path. The outcome-grade
-   surface is live, so a captured skill can also get an outcome assertion set
-   (only hitl has one) — add per-eval as you capture, not speculatively.
-3. **debug follow-ups (operator-agreed):** author a debug OUTCOME-ASSERTION set
-   (protect the structural-improvement intent by SUBSTANCE — real Detection Gap /
-   Sibling Search / Prevention content — not doc-opening, a weak proxy); review
-   whether debug reference docs are over-built given the scaffold already supplies
-   the structure; fix `continue-existing-artifact` mode mis-firing for fresh bugs;
-   re-capture debug to attempt a PASS.
+1. **debug follow-ups — START HERE (sharpens #2).** Author a debug OUTCOME-ASSERTION set
+   (protect the structural intent by SUBSTANCE — real Detection Gap / Sibling Search /
+   Prevention content, not doc-opening, a weak proxy); fix `continue-existing-artifact`
+   mis-fire for fresh bugs; re-capture debug to attempt a PASS. **Why first:** landing the
+   outcome-assertion pattern on one worked skill lets the #2 sweep REUSE it per-eval
+   instead of reinventing it skill-by-skill.
+2. **Correctness sweep (ask-before-run):** capture the next hypothesis-floor skill, one at a
+   time. A miss = skill-shape signal (re-pin / re-classify / planner), never soften the
+   matcher; do NOT planner-ize mechanically. `--justification-log` overrides
+   `next_action: none`; mirror the hitl/retro/quality path. Add an outcome-assertion set
+   per-eval as you capture (the #3 pattern; only hitl has one), not speculatively.
+3. **Dup leg — RECORDED / closed.** Audit (25 families) + 3 extractions landed (resolver
+   tail 16 skills → `run_adapter_cli`, dogfood `format_human`, tool-rec payload), all
+   behavior-neutral proven; 6 deferred as OPTIONAL behavior-equivalence refactors (not
+   blocking) — [VERIFIED table](../charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md).
+   Lesson: a "fixable" verdict still needs hands-on byte-identical proof before it lands.
 
 ## Discuss
 
