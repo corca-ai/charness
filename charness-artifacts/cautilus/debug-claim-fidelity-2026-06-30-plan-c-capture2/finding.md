@@ -96,6 +96,16 @@ read 3x and `inventory_gitignore_scan_hygiene.py` read 2x (`duplicate_read`); a
 `wc -l` Bash run repeated 5x/4x. None affect the substance verdict; flagged for the
 efficiency lens.
 
+## Non-Claims
+
+- The CI producer and the Pattern B git-failure path are reasoned mechanisms, **not
+  observed at runtime** (as the run itself recorded).
+- `debug-memory.md` stays an **unproven floor** — its consume-prior-incident-memory
+  behavior is not yet internalized or substance-asserted, so it is deliberately NOT
+  retired; the floor doc-skip (coverage 5/10) remains the standing HYPOTHESIS.
+- Follow-up: internalize + substance-assert the `debug-memory.md` consume-prior gap
+  before considering its floor retirement.
+
 ## Disposition
 
 - **n=2 PROVEN.** `falsifiable-hypothesis-before-fix` PASS on two independent clean

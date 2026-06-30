@@ -69,6 +69,15 @@ removed no rule a competent run needs.
 One waste smell: the produced artifact was edited 4x
 (`repeated_edit` — batch into one). Advisory, non-blocking.
 
+## Non-Claims
+
+- This is **n=1** on the `falsifiable-hypothesis-before-fix` PASS — not yet the n≥2
+  the Plan C floor-retirement gate requires. No floor or matcher softening is claimed.
+- The floor doc-skip (coverage 1/10, `five-steps.md`/`debug-memory.md` not opened) is
+  the standing **HYPOTHESIS**, not a proven pass.
+- Follow-up: confirm the `falsifiable-hypothesis` PASS on one more clean capture
+  before retiring any floor doc.
+
 ## Disposition
 
 - **Plan A: LANDED + PROVEN.** The internalized scaffold seed + `disconfirmer:`
