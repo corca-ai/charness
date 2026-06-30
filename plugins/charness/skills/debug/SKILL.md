@@ -161,8 +161,8 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 
 - Apply disciplined-RCA hygiene: no fix before a falsifiable hypothesis, the exact
   error preserved, multiple candidate causes, a minimal reproduction,
-  web-search-first, and the artifact kept past the fix. The full anti-pattern list
-  lives in `references/anti-patterns.md`.
+  web-search-first, and the artifact kept past the fix. If one of these slips, stop
+  and repair the process before changing more code.
 - Do not leave external-seam or host-disproves-local risk as free-form prose;
   carry it forward in the structured handoff fields so the next slice cannot
   quietly reset into ordinary implementation posture.
@@ -176,7 +176,6 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - `references/detection-gap.md`
 - `references/sibling-search.md`
 - `references/debug-memory.md`
-- `references/anti-patterns.md`
 - `references/document-seams.md`
 - `references/disconfirmer-first.md`
 - `references/named-target-verification.md`

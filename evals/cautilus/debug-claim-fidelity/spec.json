@@ -13,7 +13,6 @@
   "requiredSummaryFragments": [],
   "declaredReferences": [
     "adapter-contract.md",
-    "anti-patterns.md",
     "debug-memory.md",
     "detection-gap.md",
     "disconfirmer-first.md",
@@ -29,11 +28,6 @@
       "engagement": "on-demand",
       "rationale": "Owns artifact location, validator contract, and adapter field definitions; consulted only when setting up or troubleshooting the durable-artifact surface.",
       "trigger": "when customizing artifact location, understanding validator schema, or resolving repo-specific debug-adapter.yaml overrides"
-    },
-    "anti-patterns.md": {
-      "engagement": "on-demand",
-      "rationale": "Listed in guardrails section (line 160) as a checkpoint reference rather than a procedurally-routed step; useful for pre-work hygiene checks but not part of the representative five-step workflow.",
-      "trigger": "when the operator risks common debugging failures (fixing before defining behavior, paraphrasing the exact error, jumping to first cause, or abandoning the artifact)"
     },
     "debug-memory.md": {
       "engagement": "engage-always",

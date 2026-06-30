@@ -18,7 +18,6 @@ ON_DEMAND_REFERENCE_READS = (
     ("references/invariant-first-review.md", "for workflow-boundary bugs, propagated diagnostics, or readiness decisions"),
     ("references/detection-gap.md", "before closeout, map what existing gate failed to catch"),
     ("references/sibling-search.md", "before closeout, classify sibling decisions and proof levels"),
-    ("references/anti-patterns.md", "when the investigation starts to repair before falsifying a hypothesis"),
 )
 
 
