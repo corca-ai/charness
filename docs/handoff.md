@@ -19,6 +19,11 @@
   `max_duration_ms` stays provisional 600000 (captures hit the cap on a red
   dup-ratchet + git-hook rabbit-hole).
   [spec](../charness-artifacts/spec/2026-06-29-skill-planner-uniformity.md) · [quality finding](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-29/finding.md)
+- **debug capture (2026-06-30) = MISS (informative):** competent structural RCA
+  (exemplary Detection Gap + Sibling Search) but skipped its own `five-steps` +
+  `debug-memory` floor refs. `five-whys-causal-chain.md` RE-PINNED out (planner
+  routes it on_demand; a good run reached the structural outcome without it). debug
+  stays HYPOTHESIS. [finding](../charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30/finding.md)
 - **dup-ratchet GREEN + capture git-hook friction fixed (this session):**
   capture-skill-run.sh now neutralizes hooks to an empty dir; the red dup-ratchet
   (17+2 families) resolved via 1 extraction + honest intentional classifications.
@@ -46,8 +51,12 @@
    overrides `next_action: none`; mirror the hitl/retro/quality path. The outcome-grade
    surface is live, so a captured skill can also get an outcome assertion set
    (only hitl has one) — add per-eval as you capture, not speculatively.
-3. **Light doctrine (cheap):** `floor-addition-restraint:` ledger harvester;
-   output-minimalism rule ("code first; delete the explanation if it outruns code").
+3. **debug follow-ups (operator-agreed):** author a debug OUTCOME-ASSERTION set
+   (protect the structural-improvement intent by SUBSTANCE — real Detection Gap /
+   Sibling Search / Prevention content — not doc-opening, a weak proxy); review
+   whether debug reference docs are over-built given the scaffold already supplies
+   the structure; fix `continue-existing-artifact` mode mis-firing for fresh bugs;
+   re-capture debug to attempt a PASS.
 
 ## Discuss
 

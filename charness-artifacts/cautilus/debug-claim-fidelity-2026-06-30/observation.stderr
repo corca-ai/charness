@@ -1,0 +1,13 @@
+outcome=failed | jsonl files=1 | coverage=2/11 | total_tokens=12877313 | duration_ms=896648 | tools: Bash=31 Edit=21 Read=11 Write=3 Skill=1
+claim failures: command log missing required fragment: five-steps.md; command log missing required fragment: debug-memory.md; command log missing required fragment: five-whys-causal-chain.md
+waste smells (3): 2026-06-30-non-gitignore-aware-scanners.md read 2x; 2026-06-30-non-gitignore-aware-scanners.md edited 23x (batch into one?); `cd /tmp/charness-debug-capture-20260630/worktree
+wc -l charn…` run 5x
+--- paste-ready finding.md block ---
+## Efficiency
+
+- trace: `trace-digest.jsonl` (67 tool calls)
+- waste smell (duplicate_read): 2026-06-30-non-gitignore-aware-scanners.md read 2x — confirm or dismiss on review
+- waste smell (repeated_edit): 2026-06-30-non-gitignore-aware-scanners.md edited 23x (batch into one?) — confirm or dismiss on review
+- waste smell (repeated_bash): `cd /tmp/charness-debug-capture-20260630/worktree
+wc -l charn…` run 5x — confirm or dismiss on review
+--- end block ---
