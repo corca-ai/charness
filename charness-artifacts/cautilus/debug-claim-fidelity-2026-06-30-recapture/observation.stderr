@@ -1,0 +1,2 @@
+note: planner reports next_action='none', must_ask_before_running=True; proceeding because an explicit --justification-log is supplied.
+running: cautilus evaluate observation --input charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-recapture/observed.v1.json

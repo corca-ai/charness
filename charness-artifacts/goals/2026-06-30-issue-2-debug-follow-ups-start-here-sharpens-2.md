@@ -9,15 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active (activated 2026-06-30).
-- Current slice: Slices 1 + 2 DONE (assertion set + planner resolved-state guard);
-  Slice 3 (live re-capture) is the next reviewable unit — OPERATOR-GATED.
-- Current slice intent: Slice 3 — plant a failing fixture, consult
-  `plan_cautilus_proof.py`, run the capture via `run_cautilus_eval.py` with output
-  preservation (`--keep-untracked-outputs`) so the judge can grade substance, then
-  grade the outcome set. PAUSE at the `cautilus evaluate` boundary for explicit go.
-- Next action: present the Slice 3 plan + capture params and ask for the explicit
-  go (the Operator Decision Queue live-eval item) before any cautilus spend.
+- Current disposition: CLOSEOUT — all three legs (a+c+d) executed; recording
+  Final Verification + retro before flip to complete.
+- Current slice: Slice 3 DONE (live re-capture + judge grade ran). Honest result:
+  FLOOR miss (debug stays HYPOTHESIS), SUBSTANCE grade pass_rate 0.8 (the outcome
+  set discriminated), planner fix proven live (fresh artifact + Resolution set).
+- Next action: fill Final Verification / User Verification / Auto-Retro, run the
+  quality gate + retro, then flip status to complete.
 - Verification cadence: cheap deterministic checks (validators, pytest) at commit
   boundaries; fresh-eye slice critique at slice boundaries; the live cautilus
   re-capture + outcome grading is the final external proof — operator-gated.
@@ -235,6 +233,20 @@ Closeout floors to satisfy when triggered:
 - Critique: Fresh-eye bounded reviewer verdict: safe to commit as-is. Public-skill validation: the debug DOGFOOD consumer contract (routes to debug, names latest.md, preserves artifact) is UNCHANGED — Resolution is an internal planner-lifecycle refinement, so no docs/public-skill-dogfood.json freeze needed. Scenario decision: resolved-pointer-routes-fresh is now covered by deterministic tests; the live scenario re-capture is Slice 3 (operator-gated), so scenarios.json is not mutated now.
 - Off-goal findings:
 - Lessons carried forward:
+- Metrics:
+
+### Slice 3: Live re-capture + judge grade (operator-gated)
+
+- Objective: Leg (d): operator-approved live cautilus re-capture of /charness:debug at HEAD (with the fix), build observed packet, run cautilus evaluate observation, grade the outcome set with the LLM judge. Attempt debug HYPOTHESIS->PROVEN.
+- Why this approach: The fix should let a competent run honor the floor reads. Outcome judge tests whether the substance set discriminates a faithful run independent of doc-opening.
+- Commits: (this slice's commit)
+- What changed: NEW bundle charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-recapture/ (justification, observed.v1.json, trace-digest, cautilus-report, outcome-grade, finding, outputs/). FIX grade_skill_outcome.py _output_excerpts per_file 500->8000 +40KB total budget (synced mirror).
+- Alternatives rejected:
+- Targeted verification: Capture exit 0 (full run, not the cap). FLOOR: cautilus failed/reject, coverage 3/11, still skipped five-steps.md+debug-memory.md. SUBSTANCE (after the excerpt fix): pass_rate 0.8 — detection-gap/sibling-search/prevention PASS, falsifiable-hypothesis FAIL (static-only, no repro/disconfirmer before fix). Planner fix proven live: run scaffolded a FRESH artifact + set Resolution: resolved at closeout.
+- Test duplication pressure:
+- Critique: Honest MISS on the FLOOR (debug stays HYPOTHESIS; do NOT soften — the mis-fire was aggravating, not causal for the doc-skip). The outcome set is VALIDATED: it discriminated real substance (3 PASS) and caught a real discipline gap (falsifiable FAIL) the floor + prior prose both missed. The first grade false-negatived two substance rows via a 500-char judge excerpt truncation; fixed and re-graded.
+- Off-goal findings: FLOOR doc-skip is a debug skill-shape question (run reaches structural outcome via the scaffold without the docs) — out of this goal's scope; candidate follow-up. falsifiable-hypothesis FAIL (static-only RCA) is the most actionable substance signal for a future debug emphasis.
+- Lessons carried forward: A 'fixable' mis-fire can be only an aggravating factor — proving the fix changed behavior (fresh artifact, Resolution set) is separate from proving it fixes the downstream symptom (floor reads). Substance grading needs the judge to see the FULL artifact, not its head.
 - Metrics:
 
 ## Context Sources

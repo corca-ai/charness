@@ -188,17 +188,26 @@ class Bundle:
         # already drops binary files, but a tracked binary output could still carry one.
         return "\n\n".join(parts).replace("\x00", "")
 
-    def _output_excerpts(self, max_files: int = 20, per_file: int = 500) -> str:
+    def _output_excerpts(self, max_files: int = 20, per_file: int = 8000, total_budget: int = 40000) -> str:
+        # per_file must fit a full produced artifact's SUBSTANCE, not just its head:
+        # a debug artifact caps at ~180 lines (~7KB) and its load-bearing sections
+        # (Detection Gap / Sibling Search / Prevention) sit at the BOTTOM, so a small
+        # window (the old 500 chars) truncated them and forced false-negative judge
+        # verdicts on exactly the substance the assertion set exists to grade. The
+        # total_budget bounds a pathological many-file run so the judge prompt is
+        # still capped — the judge grades the work, not the whole log.
         if self.outputs_dir is None:
             return ""
         blocks: list[str] = []
+        used = 0
         for path in sorted(self.outputs_dir.rglob("*")):
             if not path.is_file() or path.name == "outputs-manifest.json":
                 continue
             rel = path.relative_to(self.outputs_dir)
             excerpt = path.read_text(encoding="utf-8", errors="replace")[:per_file]
             blocks.append(f"--- {rel} ---\n{excerpt}")
-            if len(blocks) >= max_files:
+            used += len(excerpt)
+            if len(blocks) >= max_files or used >= total_budget:
                 break
         return "\n".join(blocks)
 
