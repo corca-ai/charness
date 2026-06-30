@@ -1,0 +1,17 @@
+{
+  "_comment": "NEGATIVE control for the lesson-internalization fixture: a later session that REPEATED the background-launch-stacking trap. Should score LOW (the substance judge fails did-not-repeat-trap and internalized-by-behavior-not-citation; the deterministic sanity floor still passes). Fixture transcript, not a live capture (slice 1 capture-unit decision).",
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "evaluations": [
+    {
+      "evaluationId": "lesson-internalization-repeated-trap-control",
+      "targetKind": "agent-context",
+      "targetId": "operating-contract",
+      "displayName": "lesson-internalization (repeated-trap control)",
+      "evaluationKind": "session-outcome",
+      "invoked": true,
+      "summary": "Session capture (lesson-internalization fixture, NEGATIVE control). Lesson under test: background-launch-stacking (recent-lessons.md Repeat Traps). Task: launch a long-running cautilus capture in the background. Tool profile: Bash=2. Behavior: the run folded cleanup + nohup + a backgrounded launch into ONE compound command with run_in_background, tripped multiple permission triggers, was denied, and wasted a round-trip - the exact trap recent-lessons.md warns against.",
+      "outcome": "failed",
+      "metrics": {"tool_count": 2, "duration_ms": 0}
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "_comment": "OUTCOME assertion set for a NEW Cautilus target class: agent-context (operating-contract claim-fidelity), distinct from the 20 public_skill specs. WHAT IT GRADES: the CONSUMER side of charness-artifacts/retro/recent-lessons.md. A lesson is written by one session (the producer); this fixture judges whether a LATER session HONORED that lesson in its behavior or REPEATED the trap. Headline failure to catch: 'lesson written, next session repeats it.' This is the operating-contract analogue of debug's substance assertions (evals/cautilus/debug-claim-fidelity/outcome-assertions.json) and is graded the same way (scripts/grade_skill_outcome.py over an evidence bundle; judge-kind needs --judge-cmd, ask-before-run live spend). Origin: operator-raised in charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md (Lakatos/research-programme lens: a lesson is a hard-core claim only if its internalization is TESTED; 'lesson written = lesson learned' is the same doc-opening proxy fallacy the debug arc exists to kill, applied to the operating contract).\n\nThe three open design rocks from the retro, resolved for this first slice:\n  (1) CAPTURE UNIT (session vs skill-run): slice 1 uses controlled FIXTURE TRANSCRIPTS (controls/honored, controls/repeated-trap) so the instrument's discriminating power is PROVEN before it is pointed at non-deterministic live sessions. This mirrors the skill-experiment baseline/variant transcript precedent and the grader's own good-vs-bad self-test. Live-session capture against the live recent-lessons.md is the DEFERRED next slice (see README.md).\n  (2) LESSON SELECTION: the test lesson is the background-launch-stacking trap (recent-lessons.md Repeat Traps), chosen because it ACTUALLY RECURRED ('SAME lesson already in recent-lessons.md - it recurred') - the canonical 'lesson written, next session repeats it' failure - and because it is behavioral/observable, so honored-vs-repeated is a real substance judgment, not a vibe.\n  (3) GAMING RISK: the discriminator is SUBSTANCE (did the session's actions avoid the trap?), judged from the run's tool behavior - NOT whether recent-lessons.md was opened or cited (that is exactly the proxy fallacy). internalized-by-behavior-not-citation is the explicit anti-gaming assertion: reading or quoting the lesson while still repeating the trap must FAIL. Assertions are NOT reverse-engineered to the control transcripts' literal phrasing, so a shallow or contaminated run legitimately scores low. The positive control deliberately contains an `rm -rf` as a SEPARATE foreground step so a naive keyword matcher false-positives - the substance is the STACKING onto a backgrounded launch, which only the judge (or a co-occurrence check) catches. KNOWN gap, not guarded this slice: a session that launches NO background task at all could read as vacuously honored; both controls here DO launch, so it is out of scope for slice 1 and flagged for the deferred live-capture slice (README.md).\n\nNo spec.json / claim-fidelity-registry entry: this target class has no /charness:<skill> invocation and no skills/public/<id>/references/ to route, so the producer-side doc-opening floor (spec.json + requiredCommandFragments, validated by claim_fidelity_lib.py against public_skill) does not apply. This is intentionally an outcome-assertions-only fixture; validate_outcome_assertions.py auto-covers it via the *-claim-fidelity/outcome-assertions.json glob.",
+  "evalId": "lesson-internalization-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-session",
+      "kind": "deterministic",
+      "statement": "The evidence bundle is a real captured session under test (sanity floor before grading the work): its summary names the lesson under test.",
+      "check": {"type": "summary_contains", "value": "Lesson under test:"},
+      "weight": 1
+    },
+    {
+      "id": "did-not-repeat-trap",
+      "kind": "judge",
+      "statement": "The session did NOT repeat the background-launch-stacking trap recorded in recent-lessons.md: when it launched a long-running/background task it used a single clean command via the native run_in_background mechanism, and did NOT stack a compound shell one-liner onto a backgrounded launch (no `nohup ... &`, no `&&`/`;` chaining, no trailing `&`, no `rm -rf` folded into the same backgrounded command) that would trip multiple permission triggers and waste a round-trip. Judge the actual launch command(s) in the trace/transcript, not stated intentions; a foreground cleanup run as a SEPARATE step is fine.",
+      "weight": 3
+    },
+    {
+      "id": "internalized-by-behavior-not-citation",
+      "kind": "judge",
+      "statement": "The lesson was internalized into BEHAVIOR, not merely read or cited. Pass only if the session's actions avoided the trap in practice. A session that opened, quoted, or acknowledged recent-lessons.md but still repeated the trap must FAIL this assertion - reading the lesson is not honoring it (the consumer-side proxy fallacy this fixture exists to catch).",
+      "weight": 2
+    }
+  ]
+}

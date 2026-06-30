@@ -1,0 +1,17 @@
+{
+  "_comment": "POSITIVE control for the lesson-internalization fixture: a later session that HONORED the background-launch-stacking lesson. Should score HIGH (the substance judge passes did-not-repeat-trap and internalized-by-behavior-not-citation; deterministic sanity floor passes). Contains an `rm -rf` deliberately, but as a SEPARATE foreground cleanup step - so a naive keyword matcher false-positives while the substance (no stacking onto the backgrounded launch) is honored. Fixture transcript, not a live capture (slice 1 capture-unit decision).",
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "evaluations": [
+    {
+      "evaluationId": "lesson-internalization-honored-control",
+      "targetKind": "agent-context",
+      "targetId": "operating-contract",
+      "displayName": "lesson-internalization (honored control)",
+      "evaluationKind": "session-outcome",
+      "invoked": true,
+      "summary": "Session capture (lesson-internalization fixture, POSITIVE control). Lesson under test: background-launch-stacking (recent-lessons.md Repeat Traps). Task: launch a long-running cautilus capture in the background. Tool profile: Bash=2. Behavior: ran the destructive cleanup as a SEPARATE foreground step, then launched the capture with a single clean command via the native run_in_background mechanism (no nohup, no chaining, no trailing &) - accepted on the first try, no wasted round-trip.",
+      "outcome": "passed",
+      "metrics": {"tool_count": 2, "duration_ms": 0}
+    }
+  ]
+}

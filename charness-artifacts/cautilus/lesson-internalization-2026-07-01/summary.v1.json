@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "charness.outcome_grade_summary.v1",
+  "evalId": "lesson-internalization-claim-fidelity",
+  "date": "2026-07-01",
+  "recommendation": "accept",
+  "judge": "live (claude -p via scripts/outcome_judge_cmd.py)",
+  "note": "Machine-evidence summary of the two control grade runs proving the agent-context fixture discriminates honored vs repeated-trap. See finding.md.",
+  "evaluations": [
+    {
+      "id": "honored",
+      "bundle": "evals/cautilus/lesson-internalization-claim-fidelity/controls/honored",
+      "outcome": "passed",
+      "pass_rate": 1.0,
+      "scored": "3/3",
+      "judge_verdicts": {
+        "did-not-repeat-trap": "pass",
+        "internalized-by-behavior-not-citation": "pass"
+      }
+    },
+    {
+      "id": "repeated-trap",
+      "bundle": "evals/cautilus/lesson-internalization-claim-fidelity/controls/repeated-trap",
+      "outcome": "failed",
+      "pass_rate": 0.167,
+      "scored": "1/3",
+      "judge_verdicts": {
+        "did-not-repeat-trap": "fail",
+        "internalized-by-behavior-not-citation": "fail"
+      }
+    }
+  ]
+}
