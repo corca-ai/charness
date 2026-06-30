@@ -19,11 +19,15 @@
   `max_duration_ms` stays provisional 600000 (captures hit the cap on a red
   dup-ratchet + git-hook rabbit-hole).
   [spec](../charness-artifacts/spec/2026-06-29-skill-planner-uniformity.md) · [quality finding](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-29/finding.md)
-- **debug capture (2026-06-30) = MISS (informative):** competent structural RCA
-  (exemplary Detection Gap + Sibling Search) but skipped its own `five-steps` +
-  `debug-memory` floor refs. `five-whys-causal-chain.md` RE-PINNED out (planner
-  routes it on_demand; a good run reached the structural outcome without it). debug
-  stays HYPOTHESIS. [finding](../charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30/finding.md)
+- **debug follow-ups LANDED (2026-06-30):** the outcome-assertion PATTERN is
+  authored + PROVEN to discriminate substance (re-capture `pass_rate 0.8`: Detection
+  Gap / Sibling Search / Prevention PASS, `falsifiable-hypothesis` FAIL = a real
+  static-only-RCA gap). The planner resolved-state guard fixes the
+  `continue-existing-artifact` mis-fire (proven live: the run scaffolded a FRESH
+  artifact + set `Resolution: resolved`). **NEW finding:** the floor doc-skip is
+  INDEPENDENT of the mis-fire — the run STILL skipped `five-steps`/`debug-memory` in
+  fresh mode, so debug stays HYPOTHESIS (floor NOT softened). Grader judge-window
+  truncation fixed (500→8000). [recapture](../charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-recapture/finding.md) · [goal](../charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md)
 - **dup-ratchet GREEN + capture git-hook friction fixed:** capture-skill-run.sh
   neutralizes hooks to an empty dir; the `fae23` portability finding seeded the full
   audit (Next Session 1).
@@ -34,18 +38,15 @@
 
 ## Next Session
 
-1. **debug follow-ups — START HERE (sharpens #2).** Author a debug OUTCOME-ASSERTION set
-   (protect the structural intent by SUBSTANCE — real Detection Gap / Sibling Search /
-   Prevention content, not doc-opening, a weak proxy); fix `continue-existing-artifact`
-   mis-fire for fresh bugs; re-capture debug to attempt a PASS. **Why first:** landing the
-   outcome-assertion pattern on one worked skill lets the #2 sweep REUSE it per-eval
-   instead of reinventing it skill-by-skill.
-2. **Correctness sweep (ask-before-run):** capture the next hypothesis-floor skill, one at a
-   time. A miss = skill-shape signal (re-pin / re-classify / planner), never soften the
-   matcher; do NOT planner-ize mechanically. `--justification-log` overrides
-   `next_action: none`; mirror the hitl/retro/quality path. Add an outcome-assertion set
-   per-eval as you capture (the #3 pattern; only hitl has one), not speculatively.
-3. **Dup leg — RECORDED / closed.** Audit (25 families) + 3 extractions landed (resolver
+1. **Correctness sweep (ask-before-run) — START HERE.** Capture the next hypothesis-floor
+   skill, one at a time, REUSING the now-proven outcome-assertion pattern per-eval (debug's
+   set is the worked example — it discriminated substance at `pass_rate 0.8`). A miss =
+   skill-shape signal (re-pin / re-classify / planner), never soften the matcher; do NOT
+   planner-ize mechanically. `--justification-log` overrides `next_action: none`; mirror the
+   hitl/retro/quality/debug path. **debug follow-up (deferred, candidate issue):** the floor
+   doc-skip is a debug skill-shape question — does a run need the reference docs when the
+   scaffold already supplies the structure? NOT a floor softening.
+2. **Dup leg — RECORDED / closed.** Audit (25 families) + 3 extractions landed (resolver
    tail 16 skills → `run_adapter_cli`, dogfood `format_human`, tool-rec payload), all
    behavior-neutral proven; 6 deferred as OPTIONAL behavior-equivalence refactors (not
    blocking) — [VERIFIED table](../charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md).
