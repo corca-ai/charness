@@ -13,6 +13,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_public_skill_dogfood_lib_module = import_repo_module(__file__, "scripts.public_skill_dogfood_lib")
 build_matrix = _scripts_public_skill_dogfood_lib_module.build_matrix
+format_human = _scripts_public_skill_dogfood_lib_module.format_human
 _scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
 public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 
@@ -23,19 +24,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skill-id", action="append", default=[])
     parser.add_argument("--json", action="store_true")
     return parser.parse_args()
-def format_human(report: dict[str, object]) -> str:
-    lines = ["Public skill consumer dogfood matrix:"]
-    for row in report["matrix"]:
-        assert isinstance(row, dict)
-        lines.append(
-            f"- `{row['skill_id']}`: prompt={row['prompt']} repo_shape={row['repo_shape']}"
-        )
-        artifact = row["expected_artifact"] or "none"
-        lines.append(
-            f"  expected_skill=`{row['expected_skill']}` artifact=`{artifact}` "
-            f"tier=`{row['validation_tier']}` adapter=`{row['adapter_requirement']}`"
-        )
-    return "\n".join(lines)
 
 
 def main() -> int:

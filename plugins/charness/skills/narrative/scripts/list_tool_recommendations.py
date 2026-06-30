@@ -21,11 +21,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _RECOMMENDATION_LIB = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.tool_recommendation_lib"
 )
-recommendations_for_role = _RECOMMENDATION_LIB.recommendations_for_role
-_CONTROL_PLANE_LIB = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.control_plane_lib"
-)
-load_manifests = _CONTROL_PLANE_LIB.load_manifests_for_discovery
+role_recommendation_payload = _RECOMMENDATION_LIB.role_recommendation_payload
 
 
 def main() -> None:
@@ -36,18 +32,12 @@ def main() -> None:
     parser.add_argument("--include-ready", action="store_true", help="Include ready (non-blocking) recommendations as well")
     args = parser.parse_args()
 
-    repo_root = args.repo_root.resolve()
-    payload = {
-        "recommendation_role": args.recommendation_role,
-        "next_skill_id": args.next_skill_id,
-        "tool_recommendations": recommendations_for_role(
-            repo_root,
-            load_manifests(repo_root),
-            recommendation_role=args.recommendation_role,
-            next_skill_id=args.next_skill_id,
-            only_blocking=not args.include_ready,
-        ),
-    }
+    payload = role_recommendation_payload(
+        args.repo_root.resolve(),
+        recommendation_role=args.recommendation_role,
+        next_skill_id=args.next_skill_id,
+        include_ready=args.include_ready,
+    )
     sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
 

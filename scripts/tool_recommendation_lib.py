@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.control_plane_lib import staged_tool_ids
+from scripts.control_plane_lib import load_manifests_for_discovery, staged_tool_ids
 from scripts.doctor_lib import inspect_capability_state
 
 
@@ -115,6 +115,26 @@ def recommendations_for_role(
     if not only_blocking:
         return recommendations
     return [item for item in recommendations if item["recommendation_status"] != "ready"]
+
+
+def role_recommendation_payload(
+    repo_root: Path, *, recommendation_role: str, next_skill_id: str, include_ready: bool
+) -> dict[str, Any]:
+    """The role-recommendation CLI payload shared by the per-skill
+    list_tool_recommendations.py mains. The argparse surface (defaults/help) stays
+    per-skill; only this invariant payload build is shared. Loads discovery manifests
+    via the already-imported control plane, so callers do not re-wire the dependency."""
+    return {
+        "recommendation_role": recommendation_role,
+        "next_skill_id": next_skill_id,
+        "tool_recommendations": recommendations_for_role(
+            repo_root,
+            load_manifests_for_discovery(repo_root),
+            recommendation_role=recommendation_role,
+            next_skill_id=next_skill_id,
+            only_blocking=not include_ready,
+        ),
+    }
 
 
 def _task_text_matches(task_text: str, candidate: str) -> bool:

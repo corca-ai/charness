@@ -27,6 +27,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _scripts_public_skill_dogfood_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.public_skill_dogfood_lib")
 build_matrix = _scripts_public_skill_dogfood_lib_module.build_matrix
+format_human = _scripts_public_skill_dogfood_lib_module.format_human
 _scripts_public_skill_validation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.public_skill_validation_lib")
 public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 
@@ -37,21 +38,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skill-id", action="append", default=[], help="Public skill id to include in the matrix (repeatable; defaults to all)")
     parser.add_argument("--json", action="store_true", help="Emit the full dogfood matrix payload as JSON")
     return parser.parse_args()
-
-
-def format_human(report: dict[str, object]) -> str:
-    lines = ["Public skill consumer dogfood matrix:"]
-    for row in report["matrix"]:
-        assert isinstance(row, dict)
-        lines.append(
-            f"- `{row['skill_id']}`: prompt={row['prompt']} repo_shape={row['repo_shape']}"
-        )
-        artifact = row["expected_artifact"] or "none"
-        lines.append(
-            f"  expected_skill=`{row['expected_skill']}` artifact=`{artifact}` "
-            f"tier=`{row['validation_tier']}` adapter=`{row['adapter_requirement']}`"
-        )
-    return "\n".join(lines)
 
 
 def main() -> int:

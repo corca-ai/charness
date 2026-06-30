@@ -240,3 +240,18 @@ def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
         "repo_root": str(repo_root),
         "matrix": matrix,
     }
+
+
+def format_human(report: dict[str, object]) -> str:
+    lines = ["Public skill consumer dogfood matrix:"]
+    for row in report["matrix"]:
+        assert isinstance(row, dict)
+        lines.append(
+            f"- `{row['skill_id']}`: prompt={row['prompt']} repo_shape={row['repo_shape']}"
+        )
+        artifact = row["expected_artifact"] or "none"
+        lines.append(
+            f"  expected_skill=`{row['expected_skill']}` artifact=`{artifact}` "
+            f"tier=`{row['validation_tier']}` adapter=`{row['adapter_requirement']}`"
+        )
+    return "\n".join(lines)

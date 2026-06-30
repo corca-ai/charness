@@ -41,6 +41,52 @@ behavior-neutral). Remaining fixable survivors queued: `16fec8ed`, `878bffbe`, `
 blanket from the commit's headline. The duplication-is-harm default wins unless a real,
 scoped contract says otherwise.
 
+## Survivor extraction outcomes (hands-on, behavior-neutral proven or deferred)
+
+Extracting each survivor surfaced that several workflow "fixable" verdicts are NOT
+clean behavior-neutral wins on contact — exactly what hands-on falsification is for.
+
+**EXTRACTED (byte-identical proven, ruff clean):**
+
+- `878bffbe` — `format_human` moved into `scripts/public_skill_dogfood_lib.py` (both
+  consumers already import it). Verified: quality + scripts dogfood `--json`/human
+  output byte-identical.
+- `c2c42ffe` — the role-recommendation payload build moved into
+  `scripts/tool_recommendation_lib.py::role_recommendation_payload` (the lib already
+  imports `control_plane_lib`, so no new coupling; per-skill argparse stays local).
+  Verified: narrative + quality `list_tool_recommendations.py` byte-identical across
+  role/skill/include-ready arg combinations.
+
+**DEFERRED with VERIFIED note (reduction exists but is not a clean behavior-neutral
+win — keeping local on the honest ground, not portability):**
+
+- `16fec8ed` (scaffold `payload_for`) — depends on 6 skill-local callables
+  (`load_adapter`, `default_title`, `_slug`, `render_template`, `validator_command`,
+  `allowed_enums`) AND the payload dicts diverge (critique has `allowed_enums`, retro
+  does not). Extraction = a 6-callable + optional-key shim; the shared `emit_payload_main(payload_for)`
+  seam already shares the invariant entrypoint. Cargo-cult > win.
+- `a664a431` (load_adapter result builder) — the 3 member spans are NOT byte-identical
+  (per-member warnings/canonical/validate differ). Heavy parameterization for a partial
+  overlap.
+- `3edc6552` (debug/gather resolver glue) — debug/gather ALREADY use the shared
+  `load_adapter_contract`; the remaining span is skill-specific config (`STRING_FIELDS`,
+  `ARTIFACT_*`). Adopting the higher-level `load_simple_adapter` is NOT a guaranteed
+  byte-identical swap (its `STRING_FIELDS`/validate path may differ from debug's), so it
+  is a behavior-risking change, not a neutral dedup.
+- `704b93d2` (`find_adapter`) — debug already shares it via
+  `simple_skill_adapter_lib.find_adapter(repo_root, skill_id)`; the 5 remaining members
+  use a different `(repo_root)`→module-`ADAPTER_CANDIDATES` signature. Reducible but a
+  5-line pure-fn, low priority.
+- `13741926` (doc Operator-Queue seed) — tri-sourced across two template `.md` files and
+  a detector regex; single-sourcing needs template-composition machinery (a separate
+  concern), not an in-place edit.
+- `b8dbc45f` — adopting `subprocess_guard.run_process` changes the timeout message; not
+  behavior-neutral.
+
+Net this session: resolver CLI tail (16 skills) + `878bffbe` + `c2c42ffe` extracted,
+all behavior-neutral proven; `cd865345` genuinely irreducible; the rest deferred with
+hands-on VERIFIED reasons.
+
 ## Headline (original workflow tally)
 
 - **11/25 families** the workflow flagged REDUCIBLE — confirmed for the resolver CLI tail

@@ -25,9 +25,8 @@
   routes it on_demand; a good run reached the structural outcome without it). debug
   stays HYPOTHESIS. [finding](../charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30/finding.md)
 - **dup-ratchet GREEN + capture git-hook friction fixed:** capture-skill-run.sh
-  neutralizes hooks to an empty dir; red dup-ratchet (17+2 families) resolved via 1
-  extraction + intentional classifications. The `fae23` portability finding seeded the
-  full audit, now DONE (Next Session 1).
+  neutralizes hooks to an empty dir; the `fae23` portability finding seeded the full
+  audit (Next Session 1).
   [hooks+dup critique](../charness-artifacts/critique/2026-06-30-capture-hooks-and-dup-ratchet-critique.md)
 - **Efficiency — outcome grader COMPLETE + LIVE-PROVEN** (prior session): auto-grade
   wired into the A/B harness (`run_ab` grades each bundle; `--judge-cmd` /
@@ -35,16 +34,17 @@
 
 ## Next Session
 
-1. **Dup audit DONE + resolver CLI tail EXTRACTED** (this session)
+1. **Dup audit DONE + 3 extractions landed** (this session)
    [VERIFIED table](../charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md).
    25 families (workflow judge→refute + fresh-eye). **#390 governs ONLY the
-   `_load_skill_runtime_bootstrap` finder shim (`cd865345`, irreducible chicken-and-egg)** —
-   NOT the resolver `main()` tail. So `fe221bab`/`54bc9db2` (16 resolvers) were EXTRACTED to
-   shared `SKILL_RUNTIME.run_adapter_cli`, **proven behavior-neutral** (16/16 byte-identical
-   `--json` + `--help`). **Fixable survivors queued:** `16fec8ed` `878bffbe` `c2c42ffe` `a664a431` `704b93d2`
-   `3edc6552` `13741926` (`b8dbc45f` deferred — non-neutral timeout msg). **Lesson:** a
-   standing-decision override is only as broad as what the gate ACTUALLY governs (one
-   finder fn here) — read the gate scope, don't infer a blanket from the commit headline.
+   `_load_skill_runtime_bootstrap` finder shim (`cd865345`, irreducible)** — NOT the resolver
+   `main()` tail. EXTRACTED, all proven behavior-neutral + fresh-eye SAFE: `fe221bab`/`54bc9db2`
+   (16 resolvers → `SKILL_RUNTIME.run_adapter_cli`), `878bffbe` (dogfood format_human),
+   `c2c42ffe` (tool-rec payload). DEFERRED with hands-on VERIFIED notes (awkward-param /
+   divergent / risky-equivalence / doc-composition, not clean neutral wins): `16fec8ed`
+   `a664a431` `3edc6552` `704b93d2` `13741926` `b8dbc45f`. **Lesson:** a standing-decision
+   override is only as broad as what the gate ACTUALLY governs; a "fixable" verdict still
+   needs hands-on byte-identical proof before it lands.
 2. **Correctness sweep (continue, ask-before-run):** capture the next hypothesis-floor
    skill, one at a time. A miss = skill-shape signal (re-pin / re-classify / planner),
    never soften the matcher; do NOT planner-ize mechanically. `--justification-log`
