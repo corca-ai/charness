@@ -24,9 +24,12 @@ Usage: capture-skill-run.sh --ref <git-ref> --invocation "/charness:quality" --o
 
 Writes under <out-dir>:
   worktree/            the throwaway checkout at <git-ref>
+  base-commit.txt      the commit the worktree was checked out at (the diff base a
+                       committing run's produced-output extractor must use, #409)
   config/              the isolated CLAUDE_CONFIG_DIR
   config/projects/.../ the session-log tree (parent + subagents/*.jsonl)
-  stream.jsonl         the --output-format stream-json stdout
+  stream.jsonl         the --output-format stream-json stdout (the authoritative
+                       transcript source; the tree can drop the final block, #409)
   stderr.log
 Prints SESSION_TREE=<dir> (the projects/<proj> dir) on success.
 Default timeout: 1200s. The caller owns cleanup of <out-dir> and the worktree.
@@ -55,6 +58,13 @@ rm -rf "$wt" "$cfg" 2>/dev/null || true
 git -C "$repo_root" worktree remove --force "$wt" 2>/dev/null || true
 
 git -C "$repo_root" worktree add --detach "$wt" "$ref" >/dev/null
+# Record the commit the worktree is checked out at, NOW, before the captured run can
+# commit its slice and advance HEAD. A faithful skill run (impl, and any commit-discipline
+# skill) commits inside the worktree, so the produced-output extractor must diff the
+# changed set against THIS base, not the moved HEAD, or it reads an EMPTY set and the
+# substance judge grades blind (#409 Gap 1). This is the detached base ref by definition of
+# `git worktree add --detach <ref>`.
+git -C "$wt" rev-parse HEAD > "$out_dir/base-commit.txt"
 # Neutralize git hooks for the captured subprocess: point core.hooksPath at an
 # EMPTY dir. A worktree otherwise inherits the main clone's absolute hooksPath and
 # the maintainer-setup gate derails the run; pinning the worktree's own .githooks

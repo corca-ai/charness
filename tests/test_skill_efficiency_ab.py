@@ -17,6 +17,9 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 ab = load_script_module("run_skill_efficiency_ab_under_test", ROOT / "scripts" / "run_skill_efficiency_ab.py")
+# The #409 gaps are only truly closed when the FINAL consumer — the outcome grader — reads
+# the preserved outputs/ and transcript; import it to prove producer->consumer end-to-end.
+import grade_skill_outcome as grader  # noqa: E402  (scripts/ added to sys.path above)
 
 
 def test_aggregate_metrics_basic() -> None:
@@ -108,12 +111,29 @@ def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=True)
 
 
-def test_git_added_lines_counts_tracked_diff_and_untracked(tmp_path: Path) -> None:
+def _init_repo(tmp_path: Path) -> Path:
+    """A fresh empty git repo with deterministic identity (shared fixture; keeps the
+    git-init boilerplate in one place instead of repeated per test)."""
     repo = tmp_path / "wt"
     repo.mkdir()
     _git(repo, "init", "-q")
     _git(repo, "config", "user.email", "t@example.com")
     _git(repo, "config", "user.name", "t")
+    return repo
+
+
+def _seed_repo(tmp_path: Path) -> Path:
+    """An `_init_repo` with one committed `seed.txt` (shared fixture for tests that need a
+    base commit before producing changes)."""
+    repo = _init_repo(tmp_path)
+    (repo / "seed.txt").write_text("s\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    return repo
+
+
+def test_git_added_lines_counts_tracked_diff_and_untracked(tmp_path: Path) -> None:
+    repo = _init_repo(tmp_path)
     (repo / "base.txt").write_text("a\nb\nc\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "base")
@@ -126,11 +146,7 @@ def test_git_added_lines_counts_tracked_diff_and_untracked(tmp_path: Path) -> No
 
 
 def test_changed_files_lists_added_and_modified_not_deleted(tmp_path: Path) -> None:
-    repo = tmp_path / "wt"
-    repo.mkdir()
-    _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
+    repo = _init_repo(tmp_path)
     (repo / "keep.txt").write_text("base\n", encoding="utf-8")
     (repo / "gone.txt").write_text("bye\n", encoding="utf-8")
     _git(repo, "add", "-A")
@@ -143,14 +159,7 @@ def test_changed_files_lists_added_and_modified_not_deleted(tmp_path: Path) -> N
 
 
 def test_preserve_outputs_copies_changed_with_size_cap(tmp_path: Path) -> None:
-    repo = tmp_path / "wt"
-    repo.mkdir()
-    _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
-    (repo / "seed.txt").write_text("s\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
+    repo = _seed_repo(tmp_path)
     (repo / "sub").mkdir()
     (repo / "sub" / "small.md").write_text("hello\n", encoding="utf-8")
     (repo / "big.bin").write_text("z" * 200, encoding="utf-8")
@@ -166,14 +175,7 @@ def test_preserve_outputs_skips_binary_files(tmp_path: Path) -> None:
     # A binary file (NUL byte) — e.g. a __pycache__ .pyc swept in by
     # --keep-untracked-outputs — is omitted from the bundle: it is not grading
     # evidence and its NUL would crash the judge subprocess.
-    repo = tmp_path / "wt"
-    repo.mkdir()
-    _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
-    (repo / "seed.txt").write_text("s\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
+    repo = _seed_repo(tmp_path)
     (repo / "queue.json").write_text('{"ok": true}\n', encoding="utf-8")  # text -> kept
     (repo / "mod.pyc").write_bytes(b"\xed\x00\x00code")  # binary -> omitted
     out = tmp_path / "preserved" / "outputs"
@@ -184,8 +186,8 @@ def test_preserve_outputs_skips_binary_files(tmp_path: Path) -> None:
 
 
 def test_write_transcript_keeps_assistant_text_only(tmp_path: Path) -> None:
-    tree = tmp_path / "tree"
-    tree.mkdir()
+    # #409 Gap 2: the transcript is built from stream.jsonl (the authoritative complete
+    # stdout), not the session tree which can drop the final assistant block on a clean exit.
     events = [
         {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "chunk 1 assessment"}]}},
         {"type": "assistant", "message": {"role": "assistant", "content": [
@@ -194,13 +196,128 @@ def test_write_transcript_keeps_assistant_text_only(tmp_path: Path) -> None:
         {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "Recommended Disposition: accept"}]}},
         "{ malformed",  # tolerated
     ]
-    (tree / "session.jsonl").write_text(
+    stream = tmp_path / "stream.jsonl"
+    stream.write_text(
         "".join((e if isinstance(e, str) else json.dumps(e)) + "\n" for e in events), encoding="utf-8")
     dest = tmp_path / "transcript.txt"
-    ab._write_transcript(tree, dest)
+    ab._write_transcript(stream, dest)
     text = dest.read_text(encoding="utf-8")
     assert "chunk 1 assessment" in text and "Recommended Disposition: accept" in text
     assert "SECRET_OUTPUT" not in text and "secret --token" not in text  # secret-safe: no tool contents
+    # A missing stream file degrades to an empty transcript, never a crash.
+    missing_dest = tmp_path / "empty.txt"
+    ab._write_transcript(tmp_path / "nope.jsonl", missing_dest)
+    assert missing_dest.read_text(encoding="utf-8") == ""
+
+
+def test_capture_base_reads_marker_or_falls_back(tmp_path: Path) -> None:
+    # #409 Gap 1: capture-skill-run.sh records the checkout base in base-commit.txt so the
+    # produced-output extractors diff against it, not the committing run's moved HEAD.
+    out_dir = tmp_path / "work" / "a__0"
+    out_dir.mkdir(parents=True)
+    assert ab._capture_base(out_dir) == "HEAD"  # no marker -> safe fallback (old behavior)
+    (out_dir / "base-commit.txt").write_text("d5e222a6\n", encoding="utf-8")
+    assert ab._capture_base(out_dir) == "d5e222a6"
+    (out_dir / "base-commit.txt").write_text("   \n", encoding="utf-8")
+    assert ab._capture_base(out_dir) == "HEAD"  # blank marker -> fallback, never a crash
+
+
+def test_capture_script_records_base_before_the_captured_run() -> None:
+    # Recurrence guard for #409 Gap 1: capture-skill-run.sh must record the checkout base in
+    # base-commit.txt AFTER worktree creation but BEFORE the captured `claude -p` run can
+    # commit and advance HEAD. No live capture exercises that bash emit, and _capture_base
+    # falls back to "HEAD" when the marker is absent — which would SILENTLY reintroduce the
+    # diff-vs-HEAD bug — so pin the emit's presence and ordering here.
+    lines = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(
+        encoding="utf-8").splitlines()
+    emit = next((i for i, ln in enumerate(lines) if "rev-parse HEAD" in ln and "base-commit.txt" in ln), None)
+    worktree_add = next((i for i, ln in enumerate(lines) if "worktree add --detach" in ln), None)
+    # The actual captured invocation, not the comment that merely mentions `claude -p`.
+    run = next((i for i, ln in enumerate(lines) if 'claude -p "$invocation"' in ln), None)
+    assert emit is not None, "capture script must record the checkout base to base-commit.txt"
+    assert worktree_add is not None and run is not None
+    assert worktree_add < emit < run, (
+        "base-commit.txt must be recorded after worktree creation but before the captured run "
+        f"can commit (worktree_add={worktree_add}, emit={emit}, run={run})")
+
+
+def _commit_base_then_slice(tmp_path: Path, slice_files: dict[str, str]) -> tuple[Path, str]:
+    """A git worktree with a base commit, then a SECOND commit (the run's slice) on top —
+    the impl-style committing run that advances HEAD past the checkout base (#409 Gap 1).
+    Returns (worktree, base_sha)."""
+    repo = _seed_repo(tmp_path)
+    base = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
+                          capture_output=True, text=True, check=True).stdout.strip()
+    for rel, body in slice_files.items():
+        (repo / rel).write_text(body, encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "run slice")  # HEAD now off base
+    return repo, base
+
+
+def test_changed_files_diffs_committed_slice_against_base(tmp_path: Path) -> None:
+    # #409 Gap 1 (red-first): diff-vs-HEAD reads EMPTY for a committing run; diff-vs-base
+    # captures the produced file. This is the exact gap the issue observed.
+    repo, base = _commit_base_then_slice(tmp_path, {"produced.py": "x = 1\n"})
+    assert ab._changed_files(repo) == []  # vs HEAD: the bug — produced file invisible
+    assert ab._changed_files(repo, base) == ["produced.py"]  # vs base: the fix
+
+
+def test_git_added_lines_counts_committed_slice_against_base(tmp_path: Path) -> None:
+    # Sibling of Gap 1 on the advisory output_lines metric: a committing run's added lines
+    # read 0 vs HEAD but are counted vs the checkout base.
+    repo, base = _commit_base_then_slice(tmp_path, {"produced.py": "a\nb\nc\n"})
+    assert ab._git_added_lines(repo) == 0  # vs HEAD: undercounts the committed slice
+    assert ab._git_added_lines(repo, base) == 3  # vs base: counts it
+
+
+def _grader_bundle(tmp_path: Path) -> Path:
+    bundle = tmp_path / "preserved" / "a__0"
+    bundle.mkdir(parents=True)
+    (bundle / "observed.v1.json").write_text(
+        json.dumps({"evaluations": [{"summary": "s", "outcome": "passed", "metrics": {}}]}),
+        encoding="utf-8")
+    return bundle
+
+
+def test_preserve_outputs_committed_slice_reaches_the_grader(tmp_path: Path) -> None:
+    # End-to-end #409 Gap 1: the committing run's produced file must reach the bundle
+    # outputs/ AND be readable by the FINAL consumer — the outcome grader's
+    # output_file_exists check. Proves the producer fix actually unblinds the judge, not
+    # just that the helper returns the right list.
+    repo, base = _commit_base_then_slice(tmp_path, {"test_produced.py": "def test_x():\n    assert True\n"})
+    bundle = _grader_bundle(tmp_path)
+    check = {"type": "output_file_exists", "path": "test_produced.py"}
+
+    # diff-vs-HEAD (the bug): empty outputs/ -> the grader's output check FAILS.
+    ab.preserve_outputs(repo, bundle / "outputs")
+    buggy, _ = grader.eval_deterministic(check, grader.load_bundle(bundle))
+    assert buggy == grader.FAIL
+    shutil.rmtree(bundle / "outputs")
+
+    # diff-vs-base (the fix): the committed file lands in outputs/ -> the grader PASSES.
+    manifest = ab.preserve_outputs(repo, bundle / "outputs", base)
+    assert manifest["copied"] == ["test_produced.py"]
+    fixed, evidence = grader.eval_deterministic(check, grader.load_bundle(bundle))
+    assert fixed == grader.PASS, evidence
+
+
+def test_transcript_from_stream_reaches_the_grader_closeout(tmp_path: Path) -> None:
+    # End-to-end #409 Gap 2: the final ## Closeout block the substance judge must read lives
+    # in stream.jsonl even when the session tree dropped it. Building the transcript from the
+    # stream makes the grader's transcript_contains check see the closeout.
+    stream = tmp_path / "stream.jsonl"
+    events = [
+        {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "## Plan\nfirst block"}]}},
+        {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "## Closeout\nLint Gate: ran-pass ruff"}]}},
+    ]
+    stream.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+    bundle = _grader_bundle(tmp_path)
+    ab._write_transcript(stream, bundle / "transcript.txt")
+
+    check = {"type": "transcript_contains", "value": "Lint Gate: ran-pass"}
+    verdict, evidence = grader.eval_deterministic(check, grader.load_bundle(bundle))
+    assert verdict == grader.PASS, evidence
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is required to run the real metric extractor")
@@ -266,7 +383,7 @@ def test_run_one_captures_observes_and_returns_metrics(tmp_path: Path, monkeypat
         return _completed(cmd, 0)
 
     monkeypatch.setattr(ab.subprocess, "run", fake_run)
-    monkeypatch.setattr(ab, "_git_added_lines", lambda wt: 7)
+    monkeypatch.setattr(ab, "_git_added_lines", lambda wt, base="HEAD": 7)
     metrics = ab.run_one(tmp_path, "HEAD", "do the task", spec, out_dir, 600)
     assert metrics["outcome"] == "passed"
     assert metrics["total_tokens"] == 100

@@ -315,6 +315,23 @@ Reopen trigger:
 - Reopen trigger: A pickup again misses a backlog item already resolved/obviated by a
   recent commit, or the chunker's issue-union is extended for another reason.
 
+### D32. Capture observation metrics still trust the session tree (the #409 Gap-2 channel)
+
+- Question: Should [`build-skill-execution-observation.mjs`](../scripts/agent-runtime/build-skill-execution-observation.mjs) stop deriving per-run METRICS (token/tool counts) from the session-tree `*.jsonl` glob, the same channel #409 Gap 2 proved can drop the final assistant block on a clean natural-completion exit?
+- Current choice: Defer. #409 fixed only the SUBSTANCE-evidence path (`_write_transcript` now reads the complete `stream.jsonl`); the observation builder that feeds the advisory efficiency metrics still globs the tree (`build-skill-execution-observation.mjs:81-89`). A truncated tree under-counts tokens/tools, but those metrics are advisory, never gate, and read the [min–max] range, so a single dropped block is low-impact relative to the substance grade.
+- Why now: The substance pipeline was the JTBD-blocking surface for the correctness sweep; rerouting the metrics extractor to `stream.jsonl` (a `.mjs` change with its own parser + self-test) is a separate slice, and bundling it would widen the #409 fix past the reporter's job-to-be-done.
+- Impact surfaces: [scripts/agent-runtime/build-skill-execution-observation.mjs](../scripts/agent-runtime/build-skill-execution-observation.mjs), [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py) (`run_one` observe step), the advisory `output_lines`/token/tool metrics.
+- Reopen trigger: A capture's advisory metrics are observed to misread because the session tree dropped a block (the same truncation race #409 Gap 2 hit on the transcript), or the metrics extractor is touched for another reason.
+
+### D33. Split run_skill_efficiency_ab.py at the next module-growing change
+
+- Question: [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py) sits at 478 tokei code lines (hard limit 480) after the #409 fix added a necessary capture-base helper. Should it be split now or at the next change?
+- Current choice: Defer the split. The #409 bugfix kept the additions minimal (tight docstrings, one inlined call) to land under the limit rather than refactor mid-fix. The file is a single cohesive harness (aggregate/compare → live orchestration → self-test → CLI), not a grab-bag, so it is an honest cohesive unit near its limit, not over-accumulation to split reactively.
+- Why now: Splitting touches the custom `load_script_module` test harness and risks a circular import between the main module and an extracted self-test module (`selftest` imports `ranks_worse`/`_metrics_from_packet`; `main` imports `selftest`) — real risk that does not belong in a correctness bugfix.
+- Extraction candidate: the self-test section (`_event`/`_result`/`_ts`/`_write_lean`/`_write_wasteful`/`_dump`/`_SELFTEST_SPEC`/`SELFTEST_KEYS`/`_observe`/`selftest`, ~100 lines) into a sibling module, importing the shared pure helpers explicitly.
+- Impact surfaces: [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py), [tests/test_skill_efficiency_ab.py](../tests/test_skill_efficiency_ab.py), [scripts/check_python_lengths.py](../scripts/check_python_lengths.py) warn band.
+- Reopen trigger: The next change that adds net code lines to this file (it will hard-fail the 480 gate), or the self-test section is touched for another reason.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

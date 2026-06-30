@@ -32,7 +32,7 @@ Self-tested instruments (`--selftest`, offline, no API): prove the extractor ran
 known-WASTEFUL run worse than a known-LEAN one before trusting any comparison; the
 harness refuses otherwise (mirrors ponytail's `run.py --selftest`). Metrics per run:
 total_tokens, output_tokens, duration_ms, tool_count, waste_smell_count, output_lines
-(added worktree lines vs the ref, best-effort; excludes in-run commits).
+(added worktree lines vs the capture base ref, best-effort; includes an in-run commit's slice, #409).
 
 Config schema (JSON):
   {"name": "<label>", "spec_path": "evals/cautilus/<skill>-claim-fidelity/spec.json",
@@ -177,7 +177,7 @@ def build_report(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = N
         "## Honest caveats",
         "",
         f"- n={config.get('runs')} per arm — read the [min–max] range, not just the mean; small-n means overlap is common.",
-        "- output_lines is best-effort (added lines in the worktree vs the ref; excludes any in-run commits).",
+        "- output_lines is best-effort (added lines in the worktree vs the capture base ref, including any in-run commit's slice).",
         "- No LLM judge yet (over-build / completeness deferred) — these are process + size metrics only.",
         "- Cross-ref arms hold project CLAUDE.md / find-skills routing constant, so a delta is the ref difference. A same-ref 'baseline' plain prompt still runs in the charness worktree and can auto-route to the skill (CONTAMINATION) — verify via each arm's Skill/tool trace before trusting a baseline-vs-skill delta.",
         "",
@@ -188,12 +188,12 @@ def build_report(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = N
 # --- live orchestration (capture -> observe -> metrics) -------------------------
 
 
-def _git_added_lines(worktree: Path) -> int | None:
-    """Added lines in the worktree vs its checked-out ref: tracked diff numstat +
-    untracked file line counts. None when the dir is not a usable git tree."""
+def _git_added_lines(worktree: Path, base: str = "HEAD") -> int | None:
+    """Added lines in the worktree vs `base` (its checkout commit): tracked numstat +
+    untracked lines. Diff `base` not HEAD — a committing run moves HEAD off base (#409)."""
     try:
         numstat = subprocess.run(
-            ["git", "-C", str(worktree), "diff", "--numstat", "HEAD"],
+            ["git", "-C", str(worktree), "diff", "--numstat", base],
             capture_output=True, text=True, check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -217,16 +217,14 @@ def _git_added_lines(worktree: Path) -> int | None:
     return added
 
 
-def _changed_files(worktree: Path, include_ignored: bool = False) -> list[str]:
-    """Paths the run added or modified vs its checked-out ref (tracked ACMR +
-    untracked). The set of files a charness skill actually PRODUCED — the outcome
-    grader's artifact evidence — not the whole repo checkout. When include_ignored is
-    set, gitignored runtime outputs are also listed (for a skill whose meaningful
-    product is gitignored runtime state, e.g. hitl's queue); off by default so the
-    committed bundle stays clean."""
+def _changed_files(worktree: Path, base: str = "HEAD", include_ignored: bool = False) -> list[str]:
+    """Paths the run produced vs `base` (its checkout commit): tracked ACMR + untracked —
+    the grader's artifact evidence, not the whole checkout. Diff `base` not HEAD: a committing
+    run moves HEAD off base, so diff-vs-HEAD reads EMPTY and the judge grades blind (#409 Gap
+    1). include_ignored adds gitignored outputs; defaults to HEAD for unit fixtures."""
     try:
         tracked = subprocess.run(
-            ["git", "-C", str(worktree), "diff", "--name-only", "--diff-filter=ACMR", "HEAD"],
+            ["git", "-C", str(worktree), "diff", "--name-only", "--diff-filter=ACMR", base],
             capture_output=True, text=True, check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -238,15 +236,14 @@ def _changed_files(worktree: Path, include_ignored: bool = False) -> list[str]:
     return sorted({p for p in tracked.splitlines() + others.splitlines() if p.strip()})
 
 
-def preserve_outputs(worktree: Path, outputs_dir: Path, max_bytes: int = 65536,
+def preserve_outputs(worktree: Path, outputs_dir: Path, base: str = "HEAD", max_bytes: int = 65536,
                      include_ignored: bool = False) -> dict:
-    """Copy the run's PRODUCED files (only the changed set, never the whole tree)
-    into the durable bundle so the outcome grader can read the actual artifacts.
-    Files over max_bytes are omitted-with-reason (the bundle is committed; a giant
-    blob does not belong there). include_ignored also captures gitignored runtime
-    outputs. Writes an outputs-manifest.json and returns it."""
+    """Copy the run's PRODUCED files (the changed set vs `base`, never the whole tree) into
+    the durable bundle so the grader reads the real artifacts. `base` not HEAD is load-bearing
+    for a committing run — see _changed_files (#409 Gap 1). Over-max_bytes files are
+    omitted-with-reason; include_ignored adds gitignored outputs. Returns the manifest."""
     manifest: dict = {"copied": [], "omitted": []}
-    for rel in _changed_files(worktree, include_ignored):
+    for rel in _changed_files(worktree, base, include_ignored):
         src = worktree / rel
         if not src.is_file():
             continue
@@ -266,26 +263,29 @@ def preserve_outputs(worktree: Path, outputs_dir: Path, max_bytes: int = 65536,
     return manifest
 
 
-def _write_transcript(tree_dir: Path, dest: Path, max_chars: int = 20000) -> None:
-    """Render the assistant TEXT turns from the captured session tree into dest.
-    Deliberately excludes tool_result contents (no tool-output secrets land in the
-    committed bundle) — it is the judge's primary evidence of what the run PRESENTED,
-    which for a skill like hitl lives in the assistant text, not the file outputs."""
+def _write_transcript(stream_path: Path, dest: Path, max_chars: int = 20000) -> None:
+    """Render the assistant TEXT turns from the capture's complete stream-json stdout
+    (stream.jsonl) into dest — AUTHORITATIVE: the session tree can drop the final block on a
+    clean exit, blinding the judge to the closeout (#409 Gap 2). Excludes tool_result contents
+    (no secrets); a missing/unreadable stream yields an empty transcript, never a crash."""
     parts: list[str] = []
-    for jsonl in sorted(Path(tree_dir).glob("*.jsonl")):
-        for line in jsonl.read_text(encoding="utf-8", errors="replace").splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                event = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if event.get("type") != "assistant":
-                continue
-            for block in (event.get("message") or {}).get("content") or []:
-                if isinstance(block, dict) and block.get("type") == "text" and block.get("text"):
-                    parts.append(block["text"])
+    try:
+        lines = Path(stream_path).read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        lines = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("type") != "assistant":
+            continue
+        for block in (event.get("message") or {}).get("content") or []:
+            if isinstance(block, dict) and block.get("type") == "text" and block.get("text"):
+                parts.append(block["text"])
     dest.write_text("\n\n".join(parts)[:max_chars], encoding="utf-8")
 
 
@@ -294,6 +294,15 @@ def _parse_session_tree(stdout: str) -> str | None:
         if line.startswith("SESSION_TREE="):
             return line[len("SESSION_TREE="):].strip()
     return None
+
+
+def _capture_base(out_dir: Path) -> str:
+    """The worktree's checkout commit (capture-skill-run.sh records it in base-commit.txt);
+    extractors diff this, not the run-moved HEAD (#409). HEAD fallback when the marker is absent."""
+    try:
+        return (out_dir / "base-commit.txt").read_text(encoding="utf-8").strip() or "HEAD"
+    except OSError:
+        return "HEAD"
 
 
 def _metrics_from_packet(packet: dict) -> dict:
@@ -334,8 +343,10 @@ def run_one(repo_root: Path, ref: str, invocation: str, spec_path: Path, out_dir
     if observe.returncode != 0:
         raise RuntimeError(f"observe failed (rc={observe.returncode}) for ref {ref}:\n{observe.stderr[-2000:]}")
     metrics = _metrics_from_packet(json.loads(observed.read_text(encoding="utf-8")))
-    metrics["output_lines"] = _git_added_lines(out_dir / "worktree")
-    _write_transcript(Path(tree), out_dir / "transcript.txt")
+    metrics["output_lines"] = _git_added_lines(out_dir / "worktree", _capture_base(out_dir))
+    # Transcript from stream.jsonl (the complete stdout), NOT the session tree: the tree can
+    # drop the final assistant block (the closeout) on a clean exit (#409 Gap 2).
+    _write_transcript(out_dir / "stream.jsonl", out_dir / "transcript.txt")
     return metrics
 
 
@@ -381,7 +392,11 @@ def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, k
                 # so output_file_* assertions and the LLM judge can read real artifacts.
                 worktree = out_dir / "worktree"
                 if worktree.is_dir():
-                    preserve_outputs(worktree, preserve / "outputs", include_ignored=keep_untracked)
+                    # Diff the produced set against the capture base, not the worktree HEAD:
+                    # a faithful run commits its slice and moves HEAD, so diff-vs-HEAD is
+                    # empty and the grader sees an empty outputs/ (#409 Gap 1).
+                    preserve_outputs(worktree, preserve / "outputs", _capture_base(out_dir),
+                                     include_ignored=keep_untracked)
                 preserved_dirs.append(preserve)
             except (subprocess.CalledProcessError, RuntimeError) as exc:
                 # One flaky capture must not nuke a multi-run matrix or leak its
