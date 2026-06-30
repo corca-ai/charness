@@ -10,40 +10,47 @@
 
 ## Current State
 
-- **Plan C DONE (2026-06-30): debug floor retired `five-steps.md`; n=2 PROVEN.**
-  Capture #2 (`...plan-c-capture2/`) reproduced capture #1's
-  `falsifiable-hypothesis-before-fix` PASS on an independent clean run (real repro +
-  disconfirmer before any fix; floor still MISS, coverage 5/10). Gate met, so
-  `requiredCommandFragments` is now `[debug-memory.md]` — the substance assertion is
-  the bar; doc-opening retired as a proxy. `debug-memory.md` STAYS the floor (its
-  consume-prior gap is unproven). Planner unchanged (still routes five-steps.md).
-- **Debug internalize + compress DONE (handoff item 1):** Plan A (ce3caa6c)
-  scaffold-seeded the repro/hypothesis/verification method + `disconfirmer:` marker;
-  Plan B (853a5174) cut references 633->565 lines, 11->10 files.
-  [spec](../charness-artifacts/spec/2026-06-30-debug-doc-internalization-and-compression.md)
+- **impl capture DONE (2026-07-01): 5th sweep skill.** Floor **MISS** (coverage 0/8,
+  `verification-ladder.md` not opened); substance **4/5** (executed-verification +
+  smallest-slice PASS; `honest-categorized-closeout` FAIL — the run produced the
+  closeout in PROSE, not the canonical Lint-Gate/completion-report enum that lives
+  ONLY in `verification-ladder.md` and is NOT inlined in SKILL.md). **impl stays
+  HYPOTHESIS; floor + assertions un-softened.** New `outcome-assertions.json` landed.
+  [finding](../charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/finding.md)
+- **#409 filed — BLOCKS sweep reuse.** capture→grade loses outcome-grader evidence
+  for clean/committing skills (`preserve_outputs` diffs vs HEAD but a faithful impl
+  run COMMITS; tree transcript missed the final closeout block, `stream.jsonl` was
+  complete). Worked around manually this run.
+- PROVEN: retro, hitl, quality, debug (n=2). impl = 5th captured, HYPOTHESIS. ~13
+  skills still uncaptured. Debug Plan-C (2026-06-30): `five-steps.md` retired from
+  floor at n=2; `debug-memory.md` stays the floor.
 
 ## Next Session
 
-1. **Correctness sweep.** Capture the next hypothesis-floor skill one at a time,
-   REUSING the proven outcome-assertion pattern per-eval. A miss = skill-shape signal
-   (re-pin / re-classify / planner), never soften the matcher. `--justification-log`
-   overrides `next_action: none`; mirror hitl/retro/quality/debug.
-2. **AGENTS.md-level lesson-internalization fixture (operator-raised).** New cautilus
-   target class: judge whether a prior recent-lessons.md lesson was internalized by a
-   later session (consumer-side fidelity). Candidate issue; see latest session retro.
-3. **More compression (optional):** remaining big debug docs (adapter-contract 88,
-   invariant-first 78, named-target 75) are phrase-pinned; cut only capture-confirmed.
+1. **Fix #409 FIRST — it unblocks the sweep.** `preserve_outputs` should diff vs the
+   capture ref (not HEAD); build the transcript from `stream.jsonl` (not the truncated
+   tree); add a cheap evidence-pipeline preflight before expensive captures. Until
+   fixed, substance grading of any committing/clean skill needs the manual workaround.
+2. **Continue the correctness sweep**, one skill at a time, REUSING the
+   outcome-assertion pattern. Remaining HYPOTHESIS-floor skills: achieve, announcement,
+   create-cli, create-skill, critique, find-skills, gather, handoff, hotl, ideation,
+   narrative, release, spec. A miss = skill-shape signal (re-pin/re-classify/planner),
+   never soften the matcher. `--justification-log` overrides `next_action: none`.
+3. **Operator decision: impl closeout-vocabulary fork.** Internalize the enum into
+   `impl/SKILL.md` (debug-Plan-A-style → floor weak proxy + substance pass) vs keep
+   `verification-ladder.md` load-bearing (the MISS is a real gap). Candidate issue.
+4. **AGENTS.md-level lesson-internalization fixture (operator-raised)** — still open;
+   judge whether a prior recent-lessons lesson was internalized by a later session.
 
 ## Discuss
 
-- **Brittle test surfaced:** [test_handoff_plan.py](../tests/test_handoff_plan.py)
-  `..._derives_refresh_and_pickup` reads the LIVE `docs/handoff.md` and asserts
-  `follow_workflow_trigger`, so ANY near_limit handoff (>=60 lines) reds broad
-  pytest. 853fb9fc shipped it red; pruned here. Deeper fix: decouple the test from
-  live mutable state.
 - Threshold policy RESOLVED: per-skill `max_duration_ms` from a PASSING capture (~2x).
+  impl left UNSET (floor not passed); 123821ms natural-completion recorded for a PASS.
+- Brittle test: [test_handoff_plan.py](../tests/test_handoff_plan.py)
+  `..._derives_refresh_and_pickup` reads the LIVE handoff and reds broad pytest on any
+  near-limit (>=60 line) handoff. Deeper fix: decouple the test from live mutable state.
 
 ## References
 
 - pickup: [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) · [quality latest](../charness-artifacts/quality/latest.md)
-- proofs: [cautilus latest](../charness-artifacts/cautilus/latest.md) · [plan-a recapture n=1](../charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-plan-a-recapture/finding.md) · [plan-c capture2 n=2](../charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-plan-c-capture2/finding.md)
+- proofs: [cautilus latest](../charness-artifacts/cautilus/latest.md) · [impl finding](../charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/finding.md) · [impl retro](../charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md)
