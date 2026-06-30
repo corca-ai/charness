@@ -67,7 +67,7 @@ def valid_current_artifact(*, next_step: str = "impl", handoff_artifact: str = "
                 "",
                 "## Hypothesis",
                 "",
-                "hypothesis",
+                "- falsifiable claim: the gate skips volatile roots | disconfirmer: add `.cautilus` to a fixture and assert it is excluded",
                 "",
                 "## Verification",
                 "",
@@ -124,8 +124,8 @@ def test_validate_debug_artifact_rejects_extra_top_level_section(tmp_path: Path)
     repo = seed_repo(
         tmp_path,
         valid_current_artifact().replace(
-            "## Hypothesis\n\nhypothesis\n\n",
-            "## Hypothesis\n\nhypothesis\n\n## Session Log\n\n- log\n\n",
+            "## Verification\n\nverification\n\n",
+            "## Verification\n\nverification\n\n## Session Log\n\n- log\n\n",
         ),
     )
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
@@ -533,6 +533,79 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_cross_file(tmp_
         + CROSS_FILE_LINE
         + "\n",
         "- n/a — trivial fix; no plausible siblings\n",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+# --- Plan A: falsifiable-hypothesis disconfirmer marker (latest.md / forward-only) -
+
+HYPOTHESIS_LINE = (
+    "- falsifiable claim: the gate skips volatile roots | "
+    "disconfirmer: add `.cautilus` to a fixture and assert it is excluded"
+)
+
+
+def test_validate_debug_artifact_rejects_latest_hypothesis_without_disconfirmer(
+    tmp_path: Path,
+) -> None:
+    # A `## Hypothesis` with no `disconfirmer:` marker must FAIL on latest.md — the
+    # static-only-RCA gap Plan A closes by internalizing the rule into structure.
+    artifact = valid_current_artifact().replace(
+        HYPOTHESIS_LINE, "- the gate skips volatile roots"
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "disconfirmer" in result.stderr
+    assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
+
+
+def test_validate_debug_artifact_accepts_disconfirmer_na_escape(tmp_path: Path) -> None:
+    # The justified escape `disconfirmer: n/a — <why>` PASSES (some bug classes have
+    # no cheap local repro); the OUTCOME assertion, not this marker, is the real bar.
+    artifact = valid_current_artifact().replace(
+        HYPOTHESIS_LINE,
+        "- falsifiable claim: the gate skips volatile roots | "
+        "disconfirmer: n/a — only reproduces in CI, no cheap local refutation",
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_rejects_empty_disconfirmer_marker(tmp_path: Path) -> None:
+    # `disconfirmer:` with no value is not a declaration.
+    artifact = valid_current_artifact().replace(
+        HYPOTHESIS_LINE, "- falsifiable claim: the gate skips volatile roots | disconfirmer:"
+    )
+    repo = seed_repo(tmp_path, artifact)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "disconfirmer" in result.stderr
+
+
+def test_validate_debug_artifact_disconfirmer_marker_not_required_for_dated_records(
+    tmp_path: Path,
+) -> None:
+    # latest.md/forward-only: a dated artifact missing the disconfirmer marker still
+    # passes, so the historical corpus is never retro-regressed.
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    dated = valid_current_artifact().replace(HYPOTHESIS_LINE, "- the gate skips volatile roots")
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(dated, encoding="utf-8")
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "Validated debug artifact charness-artifacts/debug/2026-04-01-dated.md" in result.stdout
+
+
+def test_validate_debug_artifact_trivial_short_circuit_satisfies_disconfirmer(
+    tmp_path: Path,
+) -> None:
+    # A trivial-fix `## Hypothesis` is satisfied by the short-circuit alone, matching
+    # validate_cross_file_sibling_marker.
+    artifact = valid_current_artifact().replace(
+        HYPOTHESIS_LINE, "- n/a — trivial fix; no plausible siblings"
     )
     repo = seed_repo(tmp_path, artifact)
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))

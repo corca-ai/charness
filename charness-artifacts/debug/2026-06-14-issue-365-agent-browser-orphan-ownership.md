@@ -60,6 +60,11 @@ neighbor checkout's daemon (cwd outside `repo_root`) would not be selected and
 would survive `--cleanup-orphans --execute`, while a genuine this-checkout
 daemon would still be flagged and cleaned.
 
+- disconfirmer: before any fix, launched a real in-use daemon and read its
+  `ppid` + `/proc/<pid>/cwd` — a live daemon already shows `ppid == 1` and a
+  stable launching-checkout cwd (see Verification), falsifying both "ppid==1 ==
+  abandoned" and "cwd is unreliable", so the cwd-scoping fix is the survivor.
+
 ## Verification
 
 - Confirmed empirically that a live, in-use daemon already has `ppid == 1`

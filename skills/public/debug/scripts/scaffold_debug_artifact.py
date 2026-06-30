@@ -60,6 +60,39 @@ def render_template(*, title: str, date_text: str) -> str:
                 ]
             )
             continue
+        if heading == "## Reproduction":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- TODO smallest reproduction (input/path/env that still fails),"
+                    " or `n/a — could not reproduce: <why; gathered stronger observation instead>`",
+                    "",
+                ]
+            )
+            continue
+        if heading == "## Hypothesis":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- TODO falsifiable claim: <what observably changes if true>"
+                    " | disconfirmer: <cheapest check run to refute it before the fix>",
+                    "",
+                ]
+            )
+            continue
+        if heading == "## Verification":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- TODO result: confirmed | disconfirmed | still-candidate"
+                    " — evidence from the disconfirmer/reproduction above",
+                    "",
+                ]
+            )
+            continue
         if heading == "## Detection Gap":
             lines.extend(
                 [

@@ -59,6 +59,11 @@ CROSS_FILE_MARKER = "cross-file:"
 NO_CROSS_FILE_SIBLING_MARKER = "no cross-file sibling:"
 SIBLING_SOURCE_REFERENCE = "skills/public/debug/references/sibling-search.md"
 
+HYPOTHESIS_HEADING = "## Hypothesis"
+HYPOTHESIS_BOUNDARY_HEADINGS = ("## Verification", "## Root Cause")
+DISCONFIRMER_MARKER = "disconfirmer:"
+FALSIFIABLE_SOURCE_REFERENCE = "skills/public/debug/references/disconfirmer-first.md"
+
 MAX_ARTIFACT_LINES = 180
 REQUIRED_SECTIONS = (
     "## Problem",
@@ -213,6 +218,23 @@ def validate_current_invariant_proof(lines: list[str]) -> None:
     )
 
 
+def _section_declares_marker(section: list[str], markers: tuple[str, ...]) -> bool:
+    """A section satisfies an authored honesty marker when a trivial-fix
+    short-circuit is present, or any line carries one of `markers` followed by a
+    non-empty value. Shared by the cross-file-sibling and falsifiable-hypothesis
+    marker checks so the two stay one pattern, not drift-prone twins.
+    """
+    if any(is_trivial_short_circuit(line) for line in section):
+        return True
+    for line in section:
+        lowered = line.lower()
+        for marker in markers:
+            position = lowered.find(marker)
+            if position != -1 and lowered[position + len(marker) :].strip():
+                return True
+    return False
+
+
 def validate_cross_file_sibling_marker(lines: list[str]) -> None:
     """Require the current debug artifact's `## Sibling Search` to declare cross-file scope.
 
@@ -232,19 +254,49 @@ def validate_cross_file_sibling_marker(lines: list[str]) -> None:
     not an anti-gaming gate.
     """
     section = section_lines(lines, SIBLING_SEARCH_HEADING, SIBLING_BOUNDARY_HEADINGS)
-    if any(is_trivial_short_circuit(line) for line in section):
+    if _section_declares_marker(section, (NO_CROSS_FILE_SIBLING_MARKER, CROSS_FILE_MARKER)):
         return
-    for line in section:
-        lowered = line.lower()
-        for marker in (NO_CROSS_FILE_SIBLING_MARKER, CROSS_FILE_MARKER):
-            position = lowered.find(marker)
-            if position != -1 and lowered[position + len(marker) :].strip():
-                return
     raise ValidationError(
         "current debug artifact `## Sibling Search` must declare cross-file scope: add "
         "`cross-file: <path-or-axis>` naming a sibling outside the subject file, or "
         "`no cross-file sibling: <reason>` as a justified escape (the trivial-fix "
         f"short-circuit also satisfies it); see {SIBLING_SOURCE_REFERENCE}."
+    )
+
+
+def validate_falsifiable_hypothesis_marker(lines: list[str]) -> None:
+    """Require the current debug artifact's `## Hypothesis` to record a disconfirmer.
+
+    The proven static-only-RCA gap (debug claim-fidelity 2026-06-30 re-capture, the
+    `falsifiable-hypothesis-before-fix` outcome FAIL) is a run that authored a
+    conclusion from `static scan only` with no cheapest-refutation check.
+    `five-steps.md` step 5 ("verify a FALSIFIABLE hypothesis; don't call intuition a
+    diagnosis") and `disconfirmer-first.md` own that rule, but a bare `TODO`
+    Hypothesis seed left it un-internalized, so the run filled the section shallowly.
+    This moves the rule INTO the artifact structure: the section must carry a
+    `disconfirmer: <cheapest refutation>` marker. A justified
+    `disconfirmer: n/a — <why no cheap refutation exists>` escape satisfies it
+    (some bug classes — e.g. CI-only — have no local repro). Like the cross-file
+    sibling marker, this is an honesty contract surfaced for fresh-eye review, NOT an
+    anti-gaming gate: the `falsifiable-hypothesis-before-fix` OUTCOME assertion
+    (`evals/cautilus/debug-claim-fidelity/outcome-assertions.json`) stays the real
+    substance bar, which a `disconfirmer: n/a` static-only run still fails. The
+    trivial-fix short-circuit satisfies it, matching `validate_cross_file_sibling_marker`.
+    """
+    # floor-addition-restraint: keep. Recorded recurrence (static-only RCF FAIL across
+    # two debug claim-fidelity captures, 2026-06-30 + re-capture), modeled on the
+    # accepted cross-file sibling marker, and absorbed by the existing
+    # check_artifact_surface_preflight (the debug validator already runs there), so it
+    # is not a new serial end-gate. The OUTCOME assertion remains the real bar; this
+    # marker only surfaces the field for the run and for fresh-eye review.
+    section = section_lines(lines, HYPOTHESIS_HEADING, HYPOTHESIS_BOUNDARY_HEADINGS)
+    if _section_declares_marker(section, (DISCONFIRMER_MARKER,)):
+        return
+    raise ValidationError(
+        "current debug artifact `## Hypothesis` must record a falsifiability check: add "
+        "`disconfirmer: <cheapest refutation run before the fix>` (a justified "
+        "`disconfirmer: n/a — <why no cheap refutation exists>` escape, or the trivial-fix "
+        f"short-circuit, also satisfies it); see {FALSIFIABLE_SOURCE_REFERENCE}."
     )
 
 
@@ -312,6 +364,7 @@ def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
                 lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE
             ),
             lambda: validate_cross_file_sibling_marker(lines),
+            lambda: validate_falsifiable_hypothesis_marker(lines),
             lambda: validate_current_interrupt_sections(lines),
         )
     else:
