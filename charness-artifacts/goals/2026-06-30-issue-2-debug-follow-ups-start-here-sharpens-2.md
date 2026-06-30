@@ -1,6 +1,6 @@
 # Achieve Goal: debug follow-ups — land the outcome-assertion pattern + fix the planner mis-fire
 
-Status: draft
+Status: active
 Created: 2026-06-30
 Activation: `/goal @charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md`
 
@@ -9,12 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: real draft awaiting activation.
-- Current slice: shaped, awaiting activation.
-- Current slice intent: shaped draft; the acceptance boundary is the three legs
-  a (outcome-assertion set) + c (planner resolved-state guard) + d (gated live
-  re-capture). Once active, this names the reviewable-intent unit in progress.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md`.
+- Current disposition: active (activated 2026-06-30).
+- Current slice: Slice 1 — author the debug outcome-assertion set.
+- Current slice intent: author `evals/cautilus/debug-claim-fidelity/outcome-assertions.json`
+  keyed on SUBSTANCE (Detection Gap / Sibling Search / Prevention via judge-kind)
+  + minimal deterministic sanity floors, mirroring the hitl set; validate it.
+  This is the leg-(a) reviewable unit; independent of the Slice 2 planner fix.
+- Next action: design + write the assertion set, then `validate_outcome_assertions.py`.
 - Verification cadence: cheap deterministic checks (validators, pytest) at commit
   boundaries; fresh-eye slice critique at slice boundaries; the live cautilus
   re-capture + outcome grading is the final external proof — operator-gated.
@@ -205,6 +206,20 @@ Closeout floors to satisfy when triggered:
   internal Next Session cross-reference, not GitHub issue #2).
 
 ## Slice Log
+
+### Slice 1: Author the debug outcome-assertion set
+
+- Objective: Author evals/cautilus/debug-claim-fidelity/outcome-assertions.json keyed on SUBSTANCE (Detection Gap / Sibling Search / Prevention + falsifiable-hypothesis-before-fix as judge-kind) plus minimal deterministic sanity floors (ran-debug, wrote-debug-artifact), mirroring the only prior set (hitl). Leg (a); independent of the Slice 2 planner fix.
+- Why this approach: The 2026-06-30 capture nailed the structural SUBSTANCE but missed doc-opening; protecting substance directly (judge-kind) — not doc-opening, which spec.json already scores — is what the finding's disposition called for. Deterministic floors stay minimal and NOT over-fit to that capture's numbers.
+- Commits: (this slice's commit)
+- What changed: NEW evals/cautilus/debug-claim-fidelity/outcome-assertions.json (6 assertions: 2 deterministic + 4 judge).
+- Alternatives rejected: Rejected a doc-opening 'missing required fragment' negate assertion (the hitl pattern) as a substance proxy — the finding proved doc-opening is a weak proxy here; the spec.json floor already scores it.
+- Targeted verification: validate_outcome_assertions.py OK (2 sets). No-spend deterministic dry-grade vs the prior bundle: ran-debug PASS (summary 'Execution of /debug'), wrote-debug-artifact FAIL-honest ('no outputs/ dir' = not preserved, not unwritten), 4 judge SKIPPED (no --judge-cmd, ask-before-run respected), grader self-test PASSED.
+- Test duplication pressure:
+- Critique:
+- Off-goal findings: Slice 3 dependency surfaced: substance judging reads the debug artifact via the bundle PRODUCED OUTPUTS excerpt, so the live re-capture must preserve it (--keep-untracked-outputs) or judge rows can't see the substance.
+- Lessons carried forward:
+- Metrics:
 
 ## Context Sources
 

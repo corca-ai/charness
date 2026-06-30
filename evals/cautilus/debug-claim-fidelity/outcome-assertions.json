@@ -1,0 +1,45 @@
+{
+  "_comment": "OUTCOME assertion set for the debug skill (companion to spec.json, which scores ROUTING/floor doc-opening). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle. CONTEXT: the 2026-06-30 capture (charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30/) was a MISS on doc-opening (the floor refs five-steps.md + debug-memory.md were not opened) BUT nailed the STRUCTURAL SUBSTANCE — an exemplary Detection Gap (named the gates that failed) and Sibling Search (~15 sibling scanners with per-sibling decisions). This set protects that substance DIRECTLY: the structural-improvement intent is the Detection Gap / Sibling Search / Prevention CONTENT plus a falsifiable-hypothesis-before-fix discipline, judged on SUBSTANCE — NOT doc-opening, which is a weak proxy the spec.json floor (requiredCommandFragments) already scores. The substance assertions are therefore judge-kind: they need the live judge (--judge-cmd, ask-before-run) and read the produced debug artifact via the judge bundle's PRODUCED OUTPUTS excerpt, so a live re-capture MUST preserve the debug artifact as a bundle output (--keep-untracked-outputs) or the judge cannot see the substance. Honest discriminating assertions for a FAITHFUL debug run: NOT reverse-engineered to the 2026-06-30 capture (no literal-phrase matching against that run's numbers), so a shallow/contaminated run legitimately scores low. output_glob assertions resolve against a bundle outputs/ dir; capture-side output preservation is a tracked follow-up, so today they FAIL with that evidence (honest 'not preserved', not 'not written') rather than passing.",
+  "evalId": "debug-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-debug",
+      "kind": "deterministic",
+      "statement": "The captured run actually executed the debug skill (sanity floor before grading the work).",
+      "check": {"type": "summary_contains", "value": "Execution of /debug"},
+      "weight": 1
+    },
+    {
+      "_comment": "Recursive glob over the default debug output dir (charness-artifacts/debug/: the latest.md current pointer plus dated incident files). Bundle preservation is a tracked capture follow-up, so today this FAILS with 'no outputs/ dir' — the honest signal that the artifact was not preserved for grading, NOT that it was not written. A debug run that produces no durable artifact is a real failure (the debug-memory contract); this floor catches that once preservation is wired. Pattern stays on the default dir name, not a capture-specific filename, to avoid over-fitting to one run.",
+      "id": "wrote-debug-artifact",
+      "kind": "deterministic",
+      "statement": "The run materialized a durable debug artifact (the debug-memory surface every run must leave behind), not just an in-chat answer.",
+      "check": {"type": "output_glob", "pattern": "**/debug/*.md"},
+      "weight": 1
+    },
+    {
+      "id": "falsifiable-hypothesis-before-fix",
+      "kind": "judge",
+      "statement": "The run stated a falsifiable root-cause hypothesis and tested it (a reproduction or the cheapest disconfirming check) BEFORE applying any fix — the debug discipline of not jumping to a fix before the cause is proven, whether or not five-steps.md was opened.",
+      "weight": 2
+    },
+    {
+      "id": "detection-gap-substance",
+      "kind": "judge",
+      "statement": "The run's Detection Gap names a SPECIFIC existing gate or detection surface that failed to catch the bug and WHY it failed (concrete: the gate exists but does not cover this case, with evidence), not a generic 'add a test' — or an explicit, justified 'n/a — trivial fix' only when the bug is genuinely single-site trivial.",
+      "weight": 2
+    },
+    {
+      "id": "sibling-search-substance",
+      "kind": "judge",
+      "statement": "The run abstracted the bug's mental model and searched for sibling occurrences across the codebase, recording a per-sibling decision (fix / skip-with-reason / follow-up), rather than fixing only the one reported site.",
+      "weight": 2
+    },
+    {
+      "id": "prevention-substance",
+      "kind": "judge",
+      "statement": "The run proposed a concrete smallest-change prevention move tied to the named detection gap (a gate, test, or invariant that would have caught this class of bug), not a vague exhortation to be careful.",
+      "weight": 2
+    }
+  ]
+}
