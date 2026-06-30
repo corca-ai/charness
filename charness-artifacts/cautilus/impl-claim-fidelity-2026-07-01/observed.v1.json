@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "impl",
+  "skillDisplayName": "impl",
+  "evaluations": [
+    {
+      "evaluationId": "execution-impl-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "impl",
+      "displayName": "impl",
+      "evaluationKind": "execution",
+      "prompt": "/charness:impl tests/ 에 scripts/claim_fidelity_lib.py 의 헬퍼 함수(_validate_string_list 의 빈-리스트·중복 거부, _validate_engagement 의 on-demand trigger 필수 규칙)를 직접 호출해 검증하는 deterministic 단위 테스트를 — 기존 registry 레벨 테스트(tests/quality_gates/test_claim_fidelity_specs.py)와 겹치지 않는 추가 커버리지로 — 작은 슬라이스로 더하고 실제로 실행해서 증명해줘. 가장 강한 정직한 경로로 검증하고, 증명하지 못한 동작은 명시적으로 unverified로 남기고, Lint Gate 상태와 completion-report 카테고리로 closeout 한 뒤 멈추기 전에 stop gate critique까지 돌려줘.",
+      "startedAt": "2026-06-30T18:34:00.520Z",
+      "invoked": true,
+      "summary": "Execution of /impl: 1276525 total tokens (22933 output, 829916 cache-read), 123821ms wall. Tool profile: Bash=8 Read=6 Skill=1 Write=1 Agent=1. Claim failures: command log missing required fragment: verification-ladder.md. Reference coverage: 0/8 declared references opened (missing: adapter-contract.md, contract-consumption.md, design-lenses.md, external-api-contract.md, review-gate.md, sequence-discipline.md, spec-loop.md, verification-ladder.md). Waste smells: 2 (duplicate_read).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 1276525,
+        "output_tokens": 22933,
+        "tool_count": 17,
+        "waste_smell_count": 2,
+        "duration_ms": 123821
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      }
+    }
+  ]
+}

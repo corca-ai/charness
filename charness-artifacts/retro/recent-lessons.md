@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Autonomous `achieve` run of `charness-artifacts/goals/2026-07-01-correctness-sweep-next-floor.md` — the 5th skill in the correctness sweep (after retro, hitl, quality, debug). (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
 - Achieve goal closeout for `charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md`. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- Executed handoff item 1 "debug: internalize method into structure + compress reference docs". (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
-- **Background launch denied → one wasted round-trip.** I stacked the tool's `run_in_background` with shell `nohup … &` AND a compound `rm -rf` one-liner — three permission triggers at once. The clean single command via the tool's native `run_in_background` was accepted. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- **Background launch denied — repeat of a known trap.** First capture launch stacked a compound `rm -rf` + multi-statement command with `run_in_background`; denied. The clean single command was accepted. SAME lesson already in recent-lessons.md — it recurred, so a structural fix beats re-noting it. (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
-- **Closeout broad-pytest fingerprint friction.** Ran the `--verification-lock` closeout twice on a stale cached proof (different fingerprint, expected post- commit) before reaching for `--refresh-broad-pytest-proof`. ~1 wasted closeout invocation; the message named the fix and I re-read it rather than acting first. (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
+- **Avoidable-in-hindsight:** the first goal draft omitted output preservation entirely. The fresh-eye plan critique caught it pre-capture, so the cost was paid in review, not in a blind grade — the critique earned its cost. The residual gap (a *committing* run defeats even a wired `preserve_outputs`) was NOT predictable from the plan alone; it needed the live run. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
+- **Real, but it was discovery, not avoidable waste:** ~3 recovery cycles diagnosing why `git status` was empty in the worktree (the run committed → HEAD moved) and why the tree transcript was short (final block unflushed). Phase-aware (per `references/phase-aware-efficiency.md`): this was investigation that SURFACED two genuine harness bugs (#409), not churn — the triage locked quickly once the commit and the stream/tree block-count divergence were seen. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
+- The captured run's own duplicate reads (claim_fidelity_lib.py 2x, the registry test 2x) are advisory smells about the SUBJECT run, not this session. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
-- **capability (APPLIED):** `grade_skill_outcome.py _output_excerpts` per_file 500→8000 (+40KB total budget) so substance sections (bottom-anchored) are visible to the judge. Committed a3639f11 (mirror synced). (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- **capability / follow-up (tracked-candidate):** the floor doc-skip — a competent run reaches the structural outcome via the scaffold STRUCTURE without opening the canonical reference docs — is a debug skill-shape question (are the reference docs over-built given the scaffold supplies the structure?). NOT a floor softening; a candidate issue for the next correctness-sweep session. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
-- **capability (headline, operator-originated) — AGENTS.md / operating-contract claim-fidelity fixture.** A NEW Cautilus target class (`agent-context`, distinct from the 20 `public_skill` specs): capture a session, then judge whether a named prior lesson from `recent-lessons.md` was HONORED or the trap repeated — the consumer-side analogue of debug's substance assertions. Highest-value failure to catch: "lesson written, next session repeats it." Open design rocks: capture unit (session vs skill-run), lesson selection, gaming risk. Headed for an issue. (source: `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`)
+- **capability:** issue #409 — fix `preserve_outputs` to diff against the capture ref (not HEAD) and build the transcript from `stream.jsonl` (not the possibly-truncated tree). (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
+- **decision (operator):** `impl` skill-shape — internalize the Lint Gate / completion-report enum into `impl/SKILL.md` (debug-Plan-A-style, makes the floor a weak proxy and the substance pass) vs keep the floor load-bearing (the MISS is a real closeout-vocabulary gap). Candidate issue; recorded in the goal's Off-Goal Findings. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
+- **memory:** recent-lessons digest gets two transferable lessons (below). (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
 
 ## Selection Policy
 
@@ -95,4 +95,4 @@
 - `charness-artifacts/retro/2026-06-27-v0-56-9-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`
-- `charness-artifacts/retro/2026-06-30-debug-internalize-compress-session.md`
+- `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`

@@ -1,0 +1,45 @@
+I'll start with the mandated session-start routing call, then explore the target files in parallel.
+
+Routing is read-only (no support skill matched — plain unit-test authoring is native `impl` work). I have the full picture now. Let me restate the contract and implement.
+
+**Inline current-slice contract**
+- **Slice**: Add deterministic unit tests that *directly* call `_validate_string_list` (empty-list + duplicate rejection) and `_validate_engagement` (on-demand trigger-required rule) in `scripts/claim_fidelity_lib.py`.
+- **Non-overlap requirement**: existing `tests/quality_gates/test_claim_fidelity_specs.py` exercises these only through `validate_registry` (full-registry path); `_validate_string_list` empty/duplicate branches and `_validate_engagement`'s positive return + whitespace-trigger branch are **not** reached there. New tests must call the helpers directly.
+- **Acceptance**: new tests run green; coverage is genuinely additional, not a rename of the registry-level cases.
+
+Now let me verify by actually running the new tests, plus the existing registry suite to confirm I didn't break it, and the Lint Gate (ruff) on the new file.
+
+Tests pass (6 new + 11 existing = 17), Lint Gate green. Now the mandatory stop-gate critique — a fresh bounded subagent review (test-only, local-risk slice, so `Critique: short` scope, but run as a different agent context per contract).
+
+Critique: **SHIP**, no blockers. Per the operating contract, I commit task-completing repo work before closing out.
+
+Done. Closeout below.
+
+## Closeout
+
+**Implemented** — `tests/quality_gates/test_claim_fidelity_lib_helpers.py` (6 new tests) that directly call the two private helpers in `scripts/claim_fidelity_lib.py`:
+- `_validate_string_list`: empty-list rejection, duplicate rejection, plus a positive return-value anchor.
+- `_validate_engagement`: on-demand missing-trigger rejection, whitespace-only-trigger rejection, plus a positive return (`"on-demand"`) anchor.
+
+**Capability Delivered** — Branch-level unit coverage of the claim-fidelity validators that the existing registry-level suite cannot reach, so a regression in those specific guards now fails at the cheapest, most localized level.
+
+**Contract Source** — Inline current-slice contract (no separate `spec` artifact existed for this slice); routed through `find-skills` first (read-only, no support skill matched — native `impl` work).
+
+**Verification** —
+- Code/fixture: 6 new tests, pure in-memory direct calls (no fs/time/network).
+- Runtime proof (executed): `pytest tests/quality_gates/test_claim_fidelity_lib_helpers.py tests/quality_gates/test_claim_fidelity_specs.py` → **17 passed** (6 new + 11 existing, existing suite unbroken). Fresh-eye reviewer independently re-ran the new file → **6 passed**.
+- Match strings and return values verified against `claim_fidelity_lib.py:42-62` (no vacuous passes).
+
+**Lint Gate** — `ruff check` on the new file → **All checks passed** (clean).
+
+**Truth Surface Sync** — None required. Test-only addition; no user-visible capability, README, adapter `truth_surfaces`, or honest-stage claim changed.
+
+**Critique** — `Critique: short test-coverage` via fresh bounded subagent (different context, read-only shared worktree). Verdict **SHIP**, no blockers/nits: confirmed binding to real helper behavior, honest non-overlap with `test_claim_fidelity_specs.py`, full determinism, and green pytest+ruff.
+
+**Contract Updates** — None; slice scope, acceptance, and fixed decisions held as stated.
+
+**Residual Risks / Unverified** —
+- `_validate_engagement`'s **other** branches (non-dict input, invalid `engagement` value, missing/blank `rationale`, `gate-sufficient` missing-gate) and `_validate_string_list`'s **non-list / non-string-item** branch are **not** covered by this slice — explicitly *unverified* here (out of the requested scope; some are covered at registry level, e.g. gate-sufficient).
+- No mutation testing run on the new file; binding confidence rests on the positive/negative pairing and the reviewer's line-by-line match-string check, not a mutation score.
+
+**Next Slice (optional)** — If fuller helper coverage is wanted, add direct-call cases for `_validate_engagement`'s `gate-sufficient`/rationale/invalid-value branches and `_validate_string_list`'s non-list/non-string-item branch, again at the unit level.

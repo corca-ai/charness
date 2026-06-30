@@ -1,0 +1,39 @@
+{
+  "_comment": "OUTCOME assertion set for the impl skill (companion to spec.json, which scores ROUTING/floor doc-opening of verification-ladder.md). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle. CONTEXT: impl's central claim is 'implement the smallest meaningful slice, verify it aggressively, keep the contract synchronized.' The spec.json FLOOR (requiredCommandFragments=[verification-ladder.md]) scores whether the run OPENED the doc that uniquely owns the Lint Gate status vocabulary + the five completion-report categories — a weak proxy. This set protects the SUBSTANCE directly: did the run actually EXECUTE its added verification and produce an HONEST categorized closeout using that vocabulary, whether or not the doc was opened. The substance assertions are judge-kind (need the live judge --judge-cmd, ask-before-run) and read the run's PRODUCED test files via the bundle outputs/ excerpt + the assistant transcript, so a live capture MUST preserve the produced files (preserve_outputs) and transcript (_write_transcript) into the bundle or the judge grades blind. Assertions are NOT reverse-engineered to one capture's literal output (no phrase-matching against a run's numbers): they name only the deterministic SUBJECT the prompt gave (the claim_fidelity_lib helpers + the existing registry test it must not duplicate), so a shallow run that writes-but-never-runs tests, or closes without the honest Lint Gate / completion-report vocabulary, legitimately scores low. impl writes to tests/** with no fixed durable output dir (unlike debug's charness-artifacts/debug/), so the deterministic file floor is a test_*.py glob over the preserved changed set, not a fixed-path check; a floor MISS on verification-ladder.md with a substance PASS here is the informative 'doc-opening is a weak proxy' result, never a reason to soften the matcher.",
+  "evalId": "impl-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-impl",
+      "kind": "deterministic",
+      "statement": "The captured run actually executed the impl skill (sanity floor before grading the work).",
+      "check": {"type": "summary_contains", "value": "Execution of /impl"},
+      "weight": 1
+    },
+    {
+      "_comment": "impl's product for this slice is added test coverage under tests/**; it has no fixed durable output dir, so this globs any Python test file the run PRODUCED (preserved into the bundle outputs/ changed set), not a capture-specific filename. With output preservation wired, a run that wrote no test file FAILs honestly here. Pattern stays on the test_*.py convention, not a specific name, to avoid over-fitting to one run.",
+      "id": "wrote-tests",
+      "kind": "deterministic",
+      "statement": "The run materialized at least one Python test file (impl's product for this slice is added, runnable test coverage), preserved into the bundle outputs.",
+      "check": {"type": "output_glob", "pattern": "**/test_*.py"},
+      "weight": 1
+    },
+    {
+      "id": "executed-verification",
+      "kind": "judge",
+      "statement": "The run actually EXECUTED the verification it added — it ran the new tests (e.g. invoked pytest / the test directly) and observed the result before closing, rather than only writing tests or asserting success without running them. This is impl's central 'verify it aggressively' claim, judged on whether real execution happened (evidence in the transcript/trace + the produced tests), independent of whether verification-ladder.md was opened.",
+      "weight": 2
+    },
+    {
+      "id": "honest-categorized-closeout",
+      "kind": "judge",
+      "statement": "The run's closeout uses the verification-ladder.md vocabulary: an explicit Lint Gate status (one of ran-pass / ran-fail-fixed / ran-fail-deferred / not-detected / skipped) AND a completion-report category (one of durable / external-writes / test-only / verification / unverified-future), and it leaves any genuinely-unproven behavior explicitly marked unverified — not a generic 'done'/'looks good' with no honest categorization. The vocabulary itself is the substance; producing it (whether recalled or read) is the behavior the claim asserts.",
+      "weight": 2
+    },
+    {
+      "id": "smallest-non-overlapping-slice",
+      "kind": "judge",
+      "statement": "The run added a SMALL, focused slice — deterministic unit tests that directly call the named library helpers as ADDITIVE coverage that does not merely duplicate the existing registry-level test it was told not to overlap — rather than sprawling into unrelated rewrites, padding, or re-implementing coverage that already exists. Honors impl's smallest-meaningful-slice + test-duplication-pressure claims.",
+      "weight": 1
+    }
+  ]
+}

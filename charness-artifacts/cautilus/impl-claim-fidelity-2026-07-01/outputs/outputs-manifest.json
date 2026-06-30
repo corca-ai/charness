@@ -1,0 +1,7 @@
+{
+  "copied": [
+    "tests/quality_gates/test_claim_fidelity_lib_helpers.py"
+  ],
+  "omitted": [],
+  "_basis": "changed vs capture ref d5e222a66420 (run committed inside worktree)"
+}
