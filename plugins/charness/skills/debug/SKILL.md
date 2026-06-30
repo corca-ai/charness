@@ -117,6 +117,11 @@ related incidents in the artifact when they shape the current hypothesis.
      handoff artifact instead of handing directly to ordinary `impl`
    - record prevention or follow-up; the prevention move should map to the
      detection-gap and sibling-search outputs, not restate the root cause
+   - when the investigation is concluded (bug fixed or handed off), set
+     `- Resolution: resolved` in the `Interrupt Decision` section so the next
+     debug run treats this closed `latest.md` pointer as prior memory, not an
+     open continuation; leave it `open` only while the bug is genuinely still
+     in progress (a stale `open` pointer is what hijacks a fresh bug)
    - before closing task-completing debug work or handing off a repair, record
      the required critique as short scoped diagnosis/repair risk or full
      standalone review when the fix affects design, workflow, compatibility,

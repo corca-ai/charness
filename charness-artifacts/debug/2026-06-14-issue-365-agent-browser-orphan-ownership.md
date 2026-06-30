@@ -140,6 +140,7 @@ scoping.
 
 ## Interrupt Decision
 
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: impl
 - Handoff Artifact: none

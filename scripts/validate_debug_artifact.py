@@ -170,6 +170,20 @@ def validate_current_interrupt_sections(lines: list[str]) -> None:
     if next_step not in {"impl", "spec"}:
         raise ValidationError("`Next Step` must be `impl` or `spec`")
 
+    # `Resolution` is OPTIONAL for backward-compat (legacy artifacts predate it):
+    # a missing field is read by plan_debug_run.py as an open investigation to
+    # continue. When the author DOES declare it, constrain it to the lifecycle
+    # enum the planner consumes (`open` to continue, `resolved` to demote the
+    # pointer to a prior incident so it stops hijacking a fresh bug).
+    resolution_line = next((line for line in interrupt_lines if line.startswith("- Resolution: ")), None)
+    if resolution_line is not None:
+        # Match the planner's case-folding (plan_debug_run.py lowercases before the
+        # `== "resolved"` compare) so the validator never rejects a value the
+        # consumer would honor — a producer/consumer mismatch in its own right.
+        resolution = resolution_line[len("- Resolution: ") :].strip().lower()
+        if resolution not in {"open", "resolved"}:
+            raise ValidationError("`Resolution` must be `open` or `resolved`")
+
     forced = bool(set(risk_classes) & FORCED_RISK_CLASSES or generalization_pressure == "factor-now")
     if forced and critique_required != "yes":
         raise ValidationError("forced risk interrupt must record `Critique Required: yes`")

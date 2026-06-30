@@ -10,12 +10,14 @@ runs the activation command.
 ## Active Operating Frame
 
 - Current disposition: active (activated 2026-06-30).
-- Current slice: Slice 1 — author the debug outcome-assertion set.
-- Current slice intent: author `evals/cautilus/debug-claim-fidelity/outcome-assertions.json`
-  keyed on SUBSTANCE (Detection Gap / Sibling Search / Prevention via judge-kind)
-  + minimal deterministic sanity floors, mirroring the hitl set; validate it.
-  This is the leg-(a) reviewable unit; independent of the Slice 2 planner fix.
-- Next action: design + write the assertion set, then `validate_outcome_assertions.py`.
+- Current slice: Slices 1 + 2 DONE (assertion set + planner resolved-state guard);
+  Slice 3 (live re-capture) is the next reviewable unit — OPERATOR-GATED.
+- Current slice intent: Slice 3 — plant a failing fixture, consult
+  `plan_cautilus_proof.py`, run the capture via `run_cautilus_eval.py` with output
+  preservation (`--keep-untracked-outputs`) so the judge can grade substance, then
+  grade the outcome set. PAUSE at the `cautilus evaluate` boundary for explicit go.
+- Next action: present the Slice 3 plan + capture params and ask for the explicit
+  go (the Operator Decision Queue live-eval item) before any cautilus spend.
 - Verification cadence: cheap deterministic checks (validators, pytest) at commit
   boundaries; fresh-eye slice critique at slice boundaries; the live cautilus
   re-capture + outcome grading is the final external proof — operator-gated.
@@ -218,6 +220,20 @@ Closeout floors to satisfy when triggered:
 - Test duplication pressure:
 - Critique:
 - Off-goal findings: Slice 3 dependency surfaced: substance judging reads the debug artifact via the bundle PRODUCED OUTPUTS excerpt, so the live re-capture must preserve it (--keep-untracked-outputs) or judge rows can't see the substance.
+- Lessons carried forward:
+- Metrics:
+
+### Slice 2: Targeted resolved-state planner guard
+
+- Objective: Fix the continue-existing-artifact mis-fire (leg c): a current-pointer artifact from a closed prior incident forced continue-existing-artifact, burying five-steps/debug-memory for a fresh bug. Add a Resolution: open|resolved lifecycle field; planner continues only when resolution != resolved.
+- Why this approach: RCA confirmed no resolved/closed signal existed in the schema (only Next Step: impl|spec, which cannot distinguish). Chose missing->open (smallest behavior change: legacy/in-progress keep continuing; only explicit resolved flips) + scaffold writes open + closeout sets resolved + one-time migrate the live latest.md (#365, concluded). Rejected missing->resolved (larger behavior change, breaks fieldless resume).
+- Commits: (this slice's commit)
+- What changed: plan_debug_run.py (_artifact_summary resolution parse; mode ladder; _required_reads exists-branch surfaces resolved pointer as prior memory; _next_action); scaffold_debug_artifact.py (template emits Resolution: open); validate_debug_artifact.py (OPTIONAL Resolution enum, case-folded for planner parity); SKILL.md (closeout sets Resolution: resolved); migrated charness-artifacts/debug/2026-06-14-issue-365...md to resolved; tests/test_debug_plan.py (+3 tests); synced plugins/charness mirror (4 files, byte-identical).
+- Alternatives rejected:
+- Targeted verification: pytest debug suite green (plan+artifact+scaffold); validate_debug_artifact OK over all 20 live artifacts; live planner now routes the migrated #365 pointer to fresh-investigation-with-prior-memory (was continue). Fresh-eye slice critique (separate agent): SAFE TO COMMIT, no blockers, mirror byte-identical, both directions tested; folded its 2 over-worries (validator case-parity + a fail-safe test).
+- Test duplication pressure: tests/test_debug_plan.py +3 small fixtures (explicit-open, resolved-flips, unknown-value fail-safe); no duplication vs existing suite — each asserts a distinct mode/resolution branch the old suite did not cover.
+- Critique: Fresh-eye bounded reviewer verdict: safe to commit as-is. Public-skill validation: the debug DOGFOOD consumer contract (routes to debug, names latest.md, preserves artifact) is UNCHANGED — Resolution is an internal planner-lifecycle refinement, so no docs/public-skill-dogfood.json freeze needed. Scenario decision: resolved-pointer-routes-fresh is now covered by deterministic tests; the live scenario re-capture is Slice 3 (operator-gated), so scenarios.json is not mutated now.
+- Off-goal findings:
 - Lessons carried forward:
 - Metrics:
 

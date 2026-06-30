@@ -101,7 +101,15 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
     write_path = repo_root / write_rel
     exists = artifact_path.is_file()
     write_exists = write_path.is_file()
-    line_count = len(artifact_path.read_text(encoding="utf-8").splitlines()) if exists else 0
+    text = artifact_path.read_text(encoding="utf-8") if exists else ""
+    line_count = len(text.splitlines()) if exists else 0
+    # Resolution lifecycle: an existing current pointer is treated as an OPEN
+    # investigation to continue UNLESS it explicitly declares `- Resolution: resolved`.
+    # Default open (missing field) keeps same-investigation resume and legacy
+    # behavior; only an explicit `resolved` (set at closeout) makes the planner
+    # treat the pointer as a closed prior incident instead of a continuation, so a
+    # closed artifact stops hijacking a fresh bug (#debug claim-fidelity mis-fire).
+    resolution = "resolved" if (exists and (_parse_field(text, "Resolution") or "").strip().lower() == "resolved") else "open"
     if exists and scaffold["write_artifact_role"] == "current_pointer_target":
         status = "current_pointer_target_exists"
     elif exists:
@@ -111,6 +119,7 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
     summary: dict[str, Any] = {
         "path": artifact_rel,
         "exists": exists,
+        "resolution": resolution,
         "line_count": line_count,
         "status": status,
         "role": scaffold["artifact_role"],
@@ -165,7 +174,7 @@ def _required_reads(
     prior_incidents: list[dict[str, Any]],
 ) -> list[dict[str, str]]:
     reads: list[dict[str, str]] = []
-    if artifact["exists"]:
+    if artifact["exists"] and artifact["resolution"] != "resolved":
         reads.append(
             _read(
                 str(artifact["path"]),
@@ -179,10 +188,19 @@ def _required_reads(
             _read(
                 "scripts/scaffold_debug_artifact.py",
                 "script",
-                "artifact is missing; scaffold before recording diagnosis",
+                "artifact is missing or resolved; scaffold a fresh investigation before recording diagnosis",
                 base="skill",
             )
         )
+        if artifact["exists"]:
+            reads.append(
+                _read(
+                    str(artifact["path"]),
+                    "artifact",
+                    "resolved prior incident; read if the symptom or seam is related, then scaffold a new artifact",
+                    base="repo",
+                )
+            )
 
     reads.append(_read("references/five-steps.md", "reference", "canonical RCA sequence for the run", base="skill"))
     reads.append(
@@ -279,7 +297,7 @@ def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
             "read the current artifact and seam references, then hand off a named spec artifact before ordinary repair",
             artifact,
         )
-    if artifact["exists"]:
+    if artifact["exists"] and artifact["resolution"] != "resolved":
         return _artifact_next_action(
             "continue-existing-artifact",
             "read the current artifact, preserve observed facts, then continue with the cheapest falsifier before repair",
@@ -302,9 +320,9 @@ def build_plan(repo_root: Path) -> dict[str, Any]:
     prior_incidents = _prior_incidents(repo_root, output_dir, str(artifact["write_path"]))
     if artifact["requires_interrupt"]:
         mode = "risk-interrupt"
-    elif artifact["exists"]:
+    elif artifact["exists"] and artifact["resolution"] != "resolved":
         mode = "continue-existing-artifact"
-    elif prior_incidents:
+    elif prior_incidents or artifact["exists"]:
         mode = "fresh-investigation-with-prior-memory"
     else:
         mode = "fresh-investigation"

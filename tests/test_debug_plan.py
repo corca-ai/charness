@@ -92,6 +92,9 @@ def test_debug_plan_reports_missing_skill_runtime_bootstrap(monkeypatch) -> None
 
 
 def test_debug_plan_continues_existing_current_artifact(tmp_path: Path) -> None:
+    # A current pointer with NO `Resolution:` field defaults to OPEN: legacy and
+    # in-progress artifacts keep continuing, so same-investigation resume is
+    # preserved (only an explicit `Resolution: resolved` demotes the pointer).
     repo = tmp_path / "repo"
     write_adapter(repo)
     debug_dir = repo / "charness-artifacts" / "debug"
@@ -102,10 +105,81 @@ def test_debug_plan_continues_existing_current_artifact(tmp_path: Path) -> None:
 
     assert payload["mode"] == "continue-existing-artifact"
     assert payload["artifact"]["status"] == "current_pointer_exists"
+    assert payload["artifact"]["resolution"] == "open"
     assert payload["artifact"]["line_count"] == 5
     assert payload["next_action"]["kind"] == "continue-existing-artifact"
     required_paths = [read["path"] for read in payload["required_reads"]]
     assert required_paths[0] == "charness-artifacts/debug/latest.md"
+
+
+def test_debug_plan_continues_explicit_open_resolution(tmp_path: Path) -> None:
+    # The genuine OPEN case: an in-progress artifact that explicitly declares
+    # `Resolution: open` still routes to continue-existing-artifact. This is the
+    # regression floor that the resolved-state guard must NOT break.
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    (debug_dir / "latest.md").write_text(
+        "# Current Debug\n\n## Interrupt Decision\n\n- Resolution: open\n\n## Problem\n\nTODO\n",
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["resolution"] == "open"
+    assert payload["mode"] == "continue-existing-artifact"
+    assert payload["next_action"]["kind"] == "continue-existing-artifact"
+    required_paths = [read["path"] for read in payload["required_reads"]]
+    assert required_paths[0] == "charness-artifacts/debug/latest.md"
+
+
+def test_debug_plan_resolved_pointer_routes_fresh_with_prior_memory(tmp_path: Path) -> None:
+    # The mis-fire fix: a current pointer that explicitly declares
+    # `Resolution: resolved` is a CLOSED prior incident, not an open continuation.
+    # A fresh bug must route to a fresh investigation with the canonical required
+    # reads (five-steps + debug-memory) surfaced unburied, and the resolved
+    # pointer offered as prior memory — not silently continued.
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    (debug_dir / "latest.md").write_text(
+        "# Current Debug\n\n## Interrupt Decision\n\n- Resolution: resolved\n",
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["resolution"] == "resolved"
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["next_action"]["kind"] == "scaffold-debug-artifact"
+    required_paths = [read["path"] for read in payload["required_reads"]]
+    assert "scripts/scaffold_debug_artifact.py" in required_paths
+    assert "references/five-steps.md" in required_paths
+    assert "references/debug-memory.md" in required_paths
+    # the resolved pointer is preserved as a prior-memory read, not lost
+    assert "charness-artifacts/debug/latest.md" in required_paths
+
+
+def test_debug_plan_unknown_resolution_value_fails_safe_to_continue(tmp_path: Path) -> None:
+    # Fail-safe direction: any non-`resolved` value (incl. an unknown/typo'd one)
+    # is read as open and continues, so the guard never wrongly DEMOTES an
+    # in-progress artifact. The validator separately rejects non-enum values from
+    # a valid `latest.md`, so this only governs the planner's defensive read.
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    (debug_dir / "latest.md").write_text(
+        "# Current Debug\n\n## Interrupt Decision\n\n- Resolution: closed\n\n## Problem\n\nTODO\n",
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["resolution"] == "open"
+    assert payload["mode"] == "continue-existing-artifact"
 
 
 def test_debug_plan_preserves_symlinked_current_pointer_target(tmp_path: Path) -> None:
