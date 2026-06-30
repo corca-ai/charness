@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Achieve goal closeout for `charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md`. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
 - Release publish triggered a configured automatic session retro for `v0.57.0`. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`)
-- This retro reviews `charness-artifacts/goals/2026-06-28-issue-405-405-add-verification-channel-fitness-guard-propagation-acros.md`: the achieve goal that resolved GitHub issue #405 by adding two named bullets (`verification-channel fitness`, `guard-propagation across seams`) to the `quality` Behavior lens and a `## Distinct Named Lenses` delegation note to the shared `fresh-eye-subagent-review.md`, plus the regenerated `plugins/` mirror. (source: `charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
-- The Before-phase consequential-discussion floor fired five triggers when only two (issue-close, proof-non-claim) were genuine; the other three matched my own prose that *describes* those categories as not-applicable. Resolving it cost one extra edit cycle (the floor is presence-only and cannot read negation — an accepted simplicity tradeoff, not a defect). (source: `charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md`)
-- The first `Discuss before activation:` summary was placed after `## Slice Log` and worded `none — …`, both of which the parser rejects (summary must precede `## Slice Log` and begin `resolved/confirmed/approved`). The `--pursue-ready` reason named the gap precisely, so it self-corrected in one cycle, but a Before-phase describe-first preflight (the After-phase has one) would have surfaced the shape up front. (source: `charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md`)
-- The active worktree also contains unrelated v0.56.7 release WIP. Keeping that boundary explicit was necessary, but it means broad lock-style closeout cannot honestly be claimed for this goal without mixing unrelated release state. (source: `charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md`)
+- **Background launch denied → one wasted round-trip.** I stacked the tool's `run_in_background` with shell `nohup … &` AND a compound `rm -rf` one-liner — three permission triggers at once. The clean single command via the tool's native `run_in_background` was accepted. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
+- **Mis-framed the fix as the cause before proving it.** The plan assumed the `continue-existing-artifact` mis-fire CAUSED the floor doc-skip. The live re-capture proved otherwise: the fix changed behavior (fresh artifact + `Resolution: resolved`) but the run STILL skipped five-steps/debug-memory — the mis-fire was only an aggravating factor. The framing was corrected by RUNNING the capture, not by reasoning. Cost: low (the plan still landed real value), but the "PASS attempt" expectation was set higher than the evidence supported. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
+- **Trusted a judge FAIL before checking what the judge saw.** The first outcome grade FAILed detection-gap + sibling-search; the evidence line said "Output truncated at '## Correct Behavior'." The grader excerpted each output at only 500 chars, so the judge graded substance blind. ~1 extra judge spend to re-grade after fixing the window. Caught only because the judge cited its own truncation. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
-- A Before-phase describe-first preflight (sibling to `describe_goal_closeout_shape.py`) could surface the `Discuss before activation:` placement/wording shape before `--pursue-ready` rejects it. Disposition: out-of-scope: a Before-phase preflight is a separate achieve-tooling change larger than this docs goal; `--pursue-ready` already names the exact gap, so the friction is one self-correcting cycle, not a recurrence warranting a new tool here. (source: `charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md`)
-- The two new Behavior-lens entries and the delegation note are portable skill doctrine, inherited by every charness-consuming repo through the public `quality` skill and shared reference. Disposition: applied: the doctrine landed in `skills/public/quality/references/quality-lenses.md` and `skills/shared/references/fresh-eye-subagent-review.md` (mirrored to `plugins/`), so adopting repos inherit it, not just charness. (source: `charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md`)
-- After writing a quality current-pointer artifact, immediately run `validate_quality_artifact.py`, `validate_inventory_consumption.py`, `check_spec_evidence_durability.py`, and `validate_current_pointer_freshness.py` before starting locked closeout. (source: `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`)
+- **capability (APPLIED):** `grade_skill_outcome.py _output_excerpts` per_file 500→8000 (+40KB total budget) so substance sections (bottom-anchored) are visible to the judge. Committed a3639f11 (mirror synced). (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
+- **capability / follow-up (tracked-candidate):** the floor doc-skip — a competent run reaches the structural outcome via the scaffold STRUCTURE without opening the canonical reference docs — is a debug skill-shape question (are the reference docs over-built given the scaffold supplies the structure?). NOT a floor softening; a candidate issue for the next correctness-sweep session. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
+- **memory:** recent-lessons should carry: (1) a "fixable" mis-fire can be only an aggravating factor — prove behavior-change SEPARATELY from symptom-fix; (2) verify a grader/judge's evidence window before trusting a FAIL. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
 
 ## Selection Policy
 
@@ -89,11 +89,9 @@
 - `charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-26-v0-56-5-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-27-capability-first-skill-redesign-retro.md`
-- `charness-artifacts/retro/2026-06-27-sustained-quality-speed-token-release-round-4-goal-retro.md`
 - `charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-27-v0-56-8-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-27-v0-56-9-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-28-issue-405-405-quality-lens-guard-propagation-retro.md`
 - `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`

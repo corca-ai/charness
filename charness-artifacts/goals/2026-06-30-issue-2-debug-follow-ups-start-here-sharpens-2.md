@@ -1,6 +1,6 @@
 # Achieve Goal: debug follow-ups — land the outcome-assertion pattern + fix the planner mis-fire
 
-Status: active
+Status: complete
 Created: 2026-06-30
 Activation: `/goal @charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md`
 
@@ -9,13 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: CLOSEOUT — all three legs (a+c+d) executed; recording
-  Final Verification + retro before flip to complete.
-- Current slice: Slice 3 DONE (live re-capture + judge grade ran). Honest result:
-  FLOOR miss (debug stays HYPOTHESIS), SUBSTANCE grade pass_rate 0.8 (the outcome
-  set discriminated), planner fix proven live (fresh artifact + Resolution set).
-- Next action: fill Final Verification / User Verification / Auto-Retro, run the
-  quality gate + retro, then flip status to complete.
+- Current disposition: COMPLETE — all three legs (a+c+d) landed, committed
+  (c41222f9, 9981d7a2, a3639f11), and closed out with retro + Final Verification.
+- Final result: outcome-assertion set LANDED + VALIDATED (discriminated substance,
+  pass_rate 0.8); planner resolved-state guard LANDED + proven live (fresh artifact
+  + Resolution set); FLOOR miss stands → debug stays HYPOTHESIS (not softened).
+- Next action: none — goal complete. See `## Final Verification`.
 - Verification cadence: cheap deterministic checks (validators, pytest) at commit
   boundaries; fresh-eye slice critique at slice boundaries; the live cautilus
   re-capture + outcome grading is the final external proof — operator-gated.
@@ -161,35 +160,16 @@ What the user can do to verify completion directly.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+Both operator decisions surfaced this run were resolved before closeout:
 
-Queue item form:
+- Decision: approve the live cautilus re-capture (leg d) and its capture params —
+  RESOLVED: operator approved "Run full re-capture + judge" (2026-06-30); capture ran
+  at HEAD `--timeout-sec 1200`, exit 0; bundle + judge grade committed (a3639f11).
+- Decision: confirm whether the `Resolution:` guard needs more than a single field —
+  RESOLVED: Slice 2 RCA confirmed a single field + scaffold/template/validator edits
+  suffice; it did not grow toward the rejected broad redesign, so no re-scope.
 
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Open items:
-
-- Decision: approve the live cautilus re-capture (leg d) and its capture params.
-  | Owner: operator (bae.hwidong@corca.ai) | Why deferred: legs a+c are fully
-  local and provable without it; the live eval spends tokens. | Unblock action:
-  explicit "run the re-capture" go, after I surface the planted fixture, HEAD ref,
-  and timeout from `plan_cautilus_proof.py`. | Revisit trigger: slices 1+2 proven
-  green and committed.
-- Decision (checkpoint, not a blocker): a minimal `Resolution:` artifact field is
-  pre-approved as within the targeted guard (Slice 2 scope). Stop to confirm ONLY
-  if Slice 2 RCA finds the resolved-vs-open guard needs MORE than a single field +
-  its scaffold/template/validator edits (i.e. it grows toward the rejected broad
-  redesign). | Owner: operator (bae.hwidong@corca.ai) | Why deferred: the
-  single-field path is the expected minimal mechanism. | Unblock action: confirm
-  whether the larger change is in scope or should be re-scoped to a new goal. |
-  Revisit trigger: slice 2 RCA shows the guard cannot be expressed as a single
-  distinction.
+No operator-only decision remains open.
 
 ## Coordination Cues
 
@@ -197,8 +177,14 @@ Phase routing defers to `find-skills` (no inline phase→skill map): query it wh
 a leg names a capability (debug RCA, quality validation, issue filing, critique).
 Closeout floors to satisfy when triggered:
 
-- Routing: recorded phase work routes through `find-skills` (this goal entered via
-  the find-skills → handoff chunked-routing pickup).
+- Routing: find-skills → achieve for the goal lifecycle (this goal entered via the
+  find-skills → handoff chunked-routing pickup).
+- Routing: find-skills → debug/impl for the planner resolved-state guard RCA, and
+  critique for the fresh-eye Slice-2 review.
+- Routing: find-skills → quality owns the slice-closeout public-skill validation
+  review for the debug skill-surface change (acked at closeout).
+- Routing: find-skills → issue for the deferred Off-Goal follow-up candidates (floor
+  doc-skip + doc-excerpt audit) — recorded as `follow-up:` lines, not filed.
 - Gather: n/a — no external source feeds this goal (the originating context is the
   in-repo debug finding, already cited).
 - Release: n/a — no release surface; no plugin version bump (see Non-Goals).
@@ -316,8 +302,71 @@ Raised, not folded as blockers (over-worry / already sound):
 
 ## Off-Goal Findings
 
+- FLOOR doc-skip (debug skill-shape): a competent run reaches the structural
+  outcome via the scaffold STRUCTURE without opening `five-steps.md` /
+  `debug-memory.md`. Out of this goal's scope (the floor stays unsoftened);
+  candidate follow-up for the next correctness sweep — are the reference docs
+  over-built given the scaffold supplies the sequence?
+- Transferable-waste sibling (from retro): fixed-size doc excerpts feeding LLM
+  judges/reviewers can truncate bottom-anchored verdict-bearing sections — only
+  `grade_skill_outcome.py` confirmed affected this session;
+  `follow-up: audit other doc-excerpt windows feeding judges` (low priority).
+
 ## Final Verification
+
+All three legs executed and committed (c41222f9, 9981d7a2, a3639f11). Honest result:
+
+- Leg (a) — outcome-assertion set: LANDED + VALIDATED. The set discriminated a
+  faithful run's SUBSTANCE: `pass_rate 0.8` on the live re-capture — detection-gap,
+  sibling-search, prevention PASS (real content), `falsifiable-hypothesis-before-fix`
+  FAIL (static-only RCA, no repro/disconfirmer — a real discipline gap the floor and
+  prior human prose both missed). NOT keyed to doc-opening.
+- Leg (c) — resolved-state planner guard: LANDED + proven. Deterministic tests
+  (`tests/test_debug_plan.py`) prove resolved→fresh and open/missing→continue; the
+  live re-capture proved it behaviorally (the run scaffolded a FRESH artifact and set
+  `Resolution: resolved` at closeout instead of continuing the closed #365 pointer).
+- Leg (d) — live re-capture: ran (operator-approved), exit 0 (full run). FLOOR =
+  MISS (cautilus reject, coverage 3/11; the run still skipped the floor docs). KEY
+  FINDING: the doc-skip is INDEPENDENT of the mis-fire (the fix changed behavior but
+  did not produce the floor reads) — so debug stays a HYPOTHESIS on the floor; the
+  floor is NOT softened. Bundle:
+  `charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-recapture/`.
+- Harness fix (surfaced during grading, committed): `grade_skill_outcome.py`
+  excerpt window 500→8000 (+40KB budget) so substance sections are judge-visible.
+
+Non-claims: debug is NOT PROVEN (floor miss stands; n=1). No claim that the fix
+makes a run open the floor docs — it provably does not. The outcome grade is
+advisory, not a pass/fail commit verdict.
+
+Retro: charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md
+Host log probe: charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-recapture/host-log-probe.md
+Disposition review: charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md
 
 ## User Verification Instructions
 
+- `python3 scripts/validate_outcome_assertions.py` → the debug set passes.
+- `python3 -m pytest tests/test_debug_plan.py` → resolved→fresh + open/missing→continue.
+- `python3 -m pytest tests/test_grade_skill_outcome.py` → grader still green after the window fix.
+- Read `charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30-recapture/outcome-grade.md`
+  for the per-assertion substance verdicts, and `finding.md` for the honest verdict.
+- `python3 skills/public/debug/scripts/plan_debug_run.py --repo-root . | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['mode'])"`
+  → `fresh-investigation-with-prior-memory` (the migrated resolved pointer no longer hijacks).
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md
+
+Per-improvement dispositions, mirroring the cited retro's `## Next Improvements`:
+
+- Retro dispositions: applied: `grade_skill_outcome.py` judge excerpt window
+  500→8000 (+40KB budget) so substance assertions are gradeable on deep artifacts
+  (committed a3639f11, mirror synced).
+- Retro dispositions: applied: recent-lessons digest refreshed with "a fixable
+  mis-fire can be only an aggravating factor — prove behavior-change separately from
+  symptom-fix" and "verify a grader/judge's evidence window before trusting a FAIL".
+- Retro dispositions: out-of-scope: the FLOOR doc-skip debug skill-shape question is
+  recorded in Off-Goal Findings as a candidate follow-up for the next correctness
+  sweep, not this goal's targeted scope.
+- Structural follow-up: none — the one transferable sibling (doc-excerpt truncation
+  feeding judges) was fixed at its confirmed site (`grade_skill_outcome.py`); the
+  broader audit is a low-priority `follow-up:` in Off-Goal Findings, not a new gate.
