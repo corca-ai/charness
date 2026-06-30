@@ -38,19 +38,19 @@
 
 ## Next Session
 
-1. **Correctness sweep (ask-before-run) — START HERE.** Capture the next hypothesis-floor
-   skill, one at a time, REUSING the now-proven outcome-assertion pattern per-eval (debug's
-   set is the worked example — it discriminated substance at `pass_rate 0.8`). A miss =
-   skill-shape signal (re-pin / re-classify / planner), never soften the matcher; do NOT
-   planner-ize mechanically. `--justification-log` overrides `next_action: none`; mirror the
-   hitl/retro/quality/debug path. **debug follow-up (deferred, candidate issue):** the floor
-   doc-skip is a debug skill-shape question — does a run need the reference docs when the
-   scaffold already supplies the structure? NOT a floor softening.
-2. **Dup leg — RECORDED / closed.** Audit (25 families) + 3 extractions landed (resolver
-   tail 16 skills → `run_adapter_cli`, dogfood `format_human`, tool-rec payload), all
-   behavior-neutral proven; 6 deferred as OPTIONAL behavior-equivalence refactors (not
-   blocking) — [VERIFIED table](../charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md).
-   Lesson: a "fixable" verdict still needs hands-on byte-identical proof before it lands.
+1. **Debug: internalize method into structure + compress reference docs — START HERE**
+   (operator-committed). The re-capture proved scaffold-internalized rules (Detection Gap /
+   Sibling Search) PASS without doc-opening, while bare-`TODO` sections (Reproduction /
+   falsifiable Hypothesis) FAIL. Move five-steps' repro+falsifiable rule INTO the scaffold
+   seed + an honesty-marker validator (verify via the substance assertion, NOT doc-opening),
+   then review all 11 debug docs (633 lines) for compression/deletion. Full design +
+   per-doc scope + caveats:
+   [spec](../charness-artifacts/spec/2026-06-30-debug-doc-internalization-and-compression.md).
+2. **Correctness sweep (ask-before-run).** Capture the next hypothesis-floor skill, one at a
+   time, REUSING the proven outcome-assertion pattern per-eval (debug's set is the worked
+   example, `pass_rate 0.8`). A miss = skill-shape signal (re-pin / re-classify / planner),
+   never soften the matcher; do NOT planner-ize mechanically. `--justification-log` overrides
+   `next_action: none`; mirror the hitl/retro/quality/debug path.
 
 ## Discuss
 
