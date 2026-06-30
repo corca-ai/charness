@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -21,15 +18,12 @@ adapter_policy = SKILL_RUNTIME.load_local_skill_module(__file__, "achieve_adapte
 
 
 def main() -> None:
-    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="achieve resolve_adapter")
-    parser = argparse.ArgumentParser(description="Resolve the optional achieve adapter policy.")
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to load the achieve adapter from")
-    try:
-        args = parser.parse_args()
-        payload = adapter_policy.load_adapter(args.repo_root.resolve())
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-    finally:
-        cancel_timeout()
+    SKILL_RUNTIME.run_adapter_cli(
+        adapter_policy.load_adapter,
+        label="achieve resolve_adapter",
+        repo_root_help="Repo root to load the achieve adapter from",
+        description="Resolve the optional achieve adapter policy.",
+    )
 
 
 if __name__ == "__main__":

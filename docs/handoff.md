@@ -35,16 +35,16 @@
 
 ## Next Session
 
-1. **Dup-review portability audit — DONE** (25 families, workflow + fresh-eye)
+1. **Dup audit DONE + resolver CLI tail EXTRACTED** (this session)
    [VERIFIED table](../charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md).
-   Workflow flagged 11/25 reducible; **fresh-eye caught the #390 / `a741e613` standing
-   decision** the audit lacked — resolver-scaffolding consolidation was REJECTED
-   (bare-shell + no-cross-skill-import + `packages/` split; `check_bootstrap_shim_consistency.py`
-   governs 93 sites). So `fe221bab`/`54bc9db2`/`3edc6552` are intentional-per-#390;
-   `cd865345`(414) verified-true. **Fixable survivors:** `16fec8ed` `878bffbe` `c2c42ffe`
-   `a664a431` `13741926` ≈290 dl (`b8dbc45f` deferred — non-neutral timeout msg). Next:
-   extract survivors as ONE #395 batch, each proven behavior-neutral. **Lesson:**
-   falsification must also check standing decisions, not only neutrality + coupling.
+   25 families (workflow judge→refute + fresh-eye). **#390 governs ONLY the
+   `_load_skill_runtime_bootstrap` finder shim (`cd865345`, irreducible chicken-and-egg)** —
+   NOT the resolver `main()` tail. So `fe221bab`/`54bc9db2` (16 resolvers) were EXTRACTED to
+   shared `SKILL_RUNTIME.run_adapter_cli`, **proven behavior-neutral** (16/16 byte-identical
+   `--json` + `--help`). **Fixable survivors queued:** `16fec8ed` `878bffbe` `c2c42ffe` `a664a431` `704b93d2`
+   `3edc6552` `13741926` (`b8dbc45f` deferred — non-neutral timeout msg). **Lesson:** a
+   standing-decision override is only as broad as what the gate ACTUALLY governs (one
+   finder fn here) — read the gate scope, don't infer a blanket from the commit headline.
 2. **Correctness sweep (continue, ask-before-run):** capture the next hypothesis-floor
    skill, one at a time. A miss = skill-shape signal (re-pin / re-classify / planner),
    never soften the matcher; do NOT planner-ize mechanically. `--justification-log`

@@ -19,10 +19,12 @@ arm_cli_timeout = _SKILL_RUNTIME_BOOTSTRAP.arm_cli_timeout
 load_local_skill_module = _SKILL_RUNTIME_BOOTSTRAP.load_local_skill_module
 load_repo_module_from_skill_script = _SKILL_RUNTIME_BOOTSTRAP.load_repo_module_from_skill_script
 repo_root_from_skill_script = _SKILL_RUNTIME_BOOTSTRAP.repo_root_from_skill_script
+run_adapter_cli = _SKILL_RUNTIME_BOOTSTRAP.run_adapter_cli
 
 __all__ = [
     "arm_cli_timeout",
     "load_local_skill_module",
     "load_repo_module_from_skill_script",
     "repo_root_from_skill_script",
+    "run_adapter_cli",
 ]

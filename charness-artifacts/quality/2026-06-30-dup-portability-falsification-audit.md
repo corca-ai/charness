@@ -4,34 +4,48 @@ Date: 2026-06-30. Method: per-family workflow (25 families x judge->adversarial-
 50 agents). Anchor = the fae23 precedent (a shared module the members ALREADY depend on
 adds ZERO new coupling, so "would couple / keep skill-local-portable" is testable, not assumed).
 
-## CRITICAL CORRECTION (post-audit fresh-eye review)
+## CORRECTION TRAIL (two passes — read this first)
 
-The workflow audit tested behavior-neutrality + zero-coupling but did **not** know a
-standing architectural decision: **#390 / commit `a741e613` explicitly considered and
-REJECTED "full consolidation to a shared import" of the per-skill resolver/bootstrap
-scaffolding**, on three grounds — the *bare-shell invocation contract*, the
-*no-cross-skill-import rule*, and the *planned `packages/` split* ("charness ships
-standalone portable plugins, so the copy is correct"). `check_bootstrap_shim_consistency.py`
-machine-governs 93 shim sites at byte-identity. So **per-skill resolver-scaffolding
-duplication is a VERIFIED-intentional portability contract, not falsified debt.**
+**Pass 1 (fresh-eye, over-corrected):** a fresh-eye review flagged that #390 / commit
+`a741e613` "REJECTED resolver-scaffolding consolidation," so I first flipped the
+resolve_adapter "fixable" verdicts to intentional-per-#390. **That over-corrected.**
 
-Therefore the resolver-scaffolding "fixable" verdicts below are **OVERRIDDEN to
-intentional-per-#390**:
+**Pass 2 (challenged + PROVEN — current truth):** re-reading the actual artifacts shows
+#390's governance is **narrower** than the flip assumed:
 
-- `fe221bab` (resolve_adapter `main()` CLI tail, 6 skills) → **intentional (#390)**
-- `54bc9db2` (resolve_adapter CLI driver, ~5 skills) → **intentional (#390)** (the refuter was right; my first-pass reconciliation that kept it fixable was WRONG)
-- `3edc6552` (debug/gather resolver glue) → **intentional (#390)** (resolver scaffolding)
-- `704b93d2` (find_adapter) → **#390-contested**: skill copies are #390-covered; only the repo-infra `*_adapter_lib.py` copies are outside the portable-plugin scope.
+- `check_bootstrap_shim_consistency.py` governs **only** the `_load_skill_runtime_bootstrap`
+  *finder shim* (`SHIM_NAME` = that one function) — i.e. **`cd865345`**, the
+  bootstrap-of-bootstrap that genuinely cannot be shared (chicken-and-egg). That stays
+  verified-true intentional.
+- #390's "reject full consolidation to a shared import / bare-shell invocation contract"
+  is about that **finder** (it must be inline so the script can bootstrap itself), **not**
+  the resolver `main()` CLI tail. The CLI tail runs *after* the finder and already calls
+  `SKILL_RUNTIME.arm_cli_timeout` — an **already-shared** bootstrap function.
+- So extracting the byte-identical CLI tail into `SKILL_RUNTIME.run_adapter_cli` (beside
+  `arm_cli_timeout`, skill-specific `load_adapter`/label/help kept local) is the *same
+  established mechanism*, adds zero new coupling, and is **proven behavior-neutral**:
+  16/16 resolvers emit byte-identical `--json` + identical `--help` after the change.
 
-**Surviving genuinely-fixable set (NOT resolver scaffolding; adopt an already-imported
-repo-root helper, so #390 does not apply):** `16fec8ed`, `878bffbe`, `c2c42ffe`,
-`a664a431` (2/3 members are repo-infra), `13741926` (doc). `b8dbc45f` stays deferred —
-adopting `subprocess_guard.run_process` changes the timeout message (`…while running cmd`),
-not behavior-neutral.
+**Resolver CLI tail = genuinely FIXABLE, and now DONE** (this session):
 
-## Headline (pre-correction workflow tally; see correction above)
+- `fe221bab` + `54bc9db2` (resolve_adapter/review_adapter `main()` tail, **16 skills**)
+  → **EXTRACTED** into `SKILL_RUNTIME.run_adapter_cli` (commit follows). #390 does not block it.
 
-- **11/25 families** the workflow flagged REDUCIBLE — but ~4 are resolver scaffolding the #390 contract keeps intentional, so the genuinely-actionable set is **~5–6 families** (the non-resolver adopt-existing-helper cases).
+Still genuinely intentional: `cd865345` (414, finder shim, governed). Still deferred:
+`b8dbc45f` (adopting `subprocess_guard.run_process` changes the timeout message — not
+behavior-neutral). Remaining fixable survivors queued: `16fec8ed`, `878bffbe`, `c2c42ffe`,
+`a664a431`, `704b93d2`, `3edc6552`, `13741926`.
+
+**Lesson (sharpened):** a "standing decision" override is only as broad as what the gate
+*actually* governs — read the gate's scope (here: one finder function), don't infer a
+blanket from the commit's headline. The duplication-is-harm default wins unless a real,
+scoped contract says otherwise.
+
+## Headline (original workflow tally)
+
+- **11/25 families** the workflow flagged REDUCIBLE — confirmed for the resolver CLI tail
+  (now extracted, behavior-neutral proven) and the non-resolver survivors; only `cd865345`
+  (finder shim) is genuinely irreducible.
 - **14/25 stay intentional** — but most need their NOTE reworded (the real reason is simplicity / repo-infra / north-star uniformity, NOT portability).
 - **Two systematic findings the refuters surfaced:**
   1. The fae23 rule generalizes to *the home the members already depend on*. For adapter resolvers that is repo-root `scripts/`, NOT `skills/shared/` — picking the wrong home is what made several look intentional.

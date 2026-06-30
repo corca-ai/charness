@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -137,13 +134,6 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         artifact_class_key=None,
     )
 def main() -> None:
-    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="release resolve_adapter")
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to locate the release adapter")
-    try:
-        args = parser.parse_args()
-        sys.stdout.write(json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-    finally:
-        cancel_timeout()
+    SKILL_RUNTIME.run_adapter_cli(load_adapter, label="release resolve_adapter", repo_root_help="Repo root used to locate the release adapter")
 if __name__ == "__main__":
     main()

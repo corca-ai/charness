@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -151,16 +148,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
 
 
 def main() -> None:
-    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="retro resolve_adapter")
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to load the retro adapter from")
-    try:
-        args = parser.parse_args()
-        sys.stdout.write(
-            json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-        )
-    finally:
-        cancel_timeout()
+    SKILL_RUNTIME.run_adapter_cli(load_adapter, label="retro resolve_adapter", repo_root_help="Repo root to load the retro adapter from")
 
 
 if __name__ == "__main__":
