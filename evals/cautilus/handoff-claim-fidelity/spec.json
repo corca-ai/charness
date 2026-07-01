@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the handoff skill, DEFAULT scenario (chunked_routing). handoff ships a deterministic planner (`plan_handoff_run.py`) whose `_required_reads` are INTENT-keyed and mutually exclusive: chunked_routing -> chunked-routing.md; pickup -> workflow-trigger.md + continuation-sequence.md; refresh -> state-selection.md + spill-targets.md; adapter-contract.md is read only when the adapter is missing/warned/invalid. The old fixture's RCF was the UNION of all intents and so false-failed every real run (no single intent opens all of them); per lens 4 the skill is split into one scenario per intent, each with its planner-derived RCF (lens 1). This default scenario is the bare `/charness:handoff`: `should_fire_chunker` fires on the plugin-namespaced invocation (a chunker fix shipped with this calibration made `/charness:handoff` register as the handoff command rather than 'another slash command', so the bare namespaced call deterministically resolves to chunked_routing), whose only required read is chunked-routing.md. Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
+  "_comment": "Claim-fidelity spec for the handoff skill, DEFAULT scenario (chunked_routing). handoff ships a deterministic planner (`plan_handoff_run.py`) whose `_required_reads` are INTENT-keyed and mutually exclusive: chunked_routing -> chunked-routing.md; pickup -> workflow-trigger.md + continuation-sequence.md; refresh -> state-selection.md + spill-targets.md; adapter-contract.md is read only when the adapter is missing/warned/invalid. The old fixture's RCF was the UNION of all intents and so false-failed every real run (no single intent opens all of them); per lens 4 the skill is split into one scenario per intent, each with its planner-derived RCF (lens 1). This default scenario is the bare `/charness:handoff`: `should_fire_chunker` fires on the plugin-namespaced invocation (a chunker fix shipped with this calibration made `/charness:handoff` register as the handoff command rather than 'another slash command', so the bare namespaced call deterministically resolves to chunked_routing), whose only required read is chunked-routing.md. Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget. SLICE 7 (2026-07-01) CAPTURE — floor PROVEN: bare /charness:handoff fired the chunker and opened chunked-routing.md (coverage 1/7, outcome=passed), so the planner-derived chunked-routing.md floor is load-bearing and #410's RCF->RSF move does NOT apply. document-seams.md removed from declaredReferences and deleted (DUP: its 'default to docs/handoff.md, override via adapter' rule is inlined in SKILL.md Bootstrap; opened by no scenario run). thresholds.max_duration_ms set from this passing baseline (325663ms, ~2x).",
   "skillId": "handoff",
   "skillDisplayName": "handoff",
   "evaluationId": "execution-handoff-claim-fidelity",
@@ -14,7 +14,6 @@
     "adapter-contract.md",
     "chunked-routing.md",
     "continuation-sequence.md",
-    "document-seams.md",
     "spill-targets.md",
     "state-selection.md",
     "workflow-trigger.md"
@@ -34,11 +33,6 @@
       "rationale": "A pickup-intent planner read; not opened on a chunked_routing run.",
       "trigger": "pickup intent — ordering the next move as continuation rather than history"
     },
-    "document-seams.md": {
-      "engagement": "on-demand",
-      "rationale": "Addresses portability when a repo already uses a checked-in handoff surface; the adapter handles the default path otherwise.",
-      "trigger": "repo has a pre-existing checked-in handoff surface that should override the default location"
-    },
     "spill-targets.md": {
       "engagement": "on-demand",
       "rationale": "A refresh-intent planner read; not opened on a chunked_routing run.",
@@ -54,5 +48,8 @@
       "rationale": "A pickup/judge-intent planner read; not opened on a chunked_routing run.",
       "trigger": "pickup intent — starting from the named workflow trigger"
     }
+  },
+  "thresholds": {
+    "max_duration_ms": 660000
   }
 }

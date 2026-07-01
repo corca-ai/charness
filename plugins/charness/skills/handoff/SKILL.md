@@ -124,7 +124,6 @@ The handoff should usually contain:
 - `references/continuation-sequence.md`
 - `references/workflow-trigger.md`
 - `references/state-selection.md`
-- `references/document-seams.md`
 - `references/spill-targets.md`
 - `../../shared/references/closeout-discipline.md`
 - `../../shared/references/fresh-eye-subagent-review.md`

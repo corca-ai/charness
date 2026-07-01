@@ -1,0 +1,37 @@
+I've resumed the pinned task and reached the one real gate. Here's the honest state and the decision I need from you.
+
+## Resumed: Reference-compaction Slice 7 sweep (#410)
+
+**The handoff doc is stale.** It was written at `73e8ec14` (create-cli done), but two more slices landed after it:
+- `gather` (`8700f526`) — RCF hypothesis **REFUTED**, no floor move (finding recorded)
+- `hotl` (`65d12860`) — **FLOOR PROVEN**, Move C N/A (kept the RCF floor)
+
+Both findings are durably recorded under `charness-artifacts/cautilus/`. Working tree is clean.
+
+**True remaining sweep:** `critique` → `hitl` → `handoff` → `setup` → `achieve`.
+
+## Next slice prepped: `critique`
+
+Read-only prep done. The `critique` slice (per #410) is:
+- Drop `counterweight-triage.md` from RCF in **both** `evals/cautilus/critique-claim-fidelity/spec.json` (RCF `[autonomous-trigger.md, counterweight-triage.md]`) and `decision.spec.json` (RCF `[counterweight-triage.md, premortem-decision.md]`), replacing with an **observed** RSF token.
+- Lift the Structured Findings / Reviewer Tier enums into a headroom-exempt `## Closeout Vocabulary`.
+- **Ceiling confirmed real:** `critique/SKILL.md` is **194 lines** — knife-edge against the 200 ceiling / ~195 warn. The slice must trim the repeated no-same-agent rule to make room (the exact risk #410 flagged).
+
+## The gate — I need explicit cautilus authorization to proceed
+
+`scripts/plan_cautilus_proof.py` currently returns `next_action: "none"`, `must_ask_before_running: true`, `run_mode: ask`. The RSF token **must be OBSERVED from a fresh capture, not assumed** (the Slice 5 lesson).
+
+Per the repo's ask-before-run contract — and matching the precedent that authorized the `create-cli` capture (operator explicitly said *"코틸러스 실행 허용"*) — **"resume the task" is not itself cautilus-execution approval.** I've taken the workflow right up to this boundary but won't fire a capture without your explicit go.
+
+On approval, the capture runs via the proven mechanics:
+```
+scripts/agent-runtime/capture-skill-run.sh --spec evals/cautilus/critique-claim-fidelity/spec.json \
+  --out-dir <ABSOLUTE .../charness-artifacts/cautilus/critique-claim-fidelity-slice7-2026-07-01/>
+# then grade: build-skill-execution-observation.mjs --spec ... --stream stream.jsonl
+# repeat for decision.spec.json
+```
+(I'll finalize exact flags from `capture-skill-run.sh --help` at run, log the operator-log justification, and scrub the bundle before commit.)
+
+**Two questions:**
+1. **Authorize the ask-before-run cautilus capture** for `critique` (both scenarios)? A "yes, allow cautilus execution" is the log-backed request the planner needs. Or point me at a specific skill if you'd rather sweep in a different order.
+2. Want me to **refresh the stale handoff** (fold in gather+hotl, trim remaining set) now, or after the critique slice lands?

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-07-01T01:34:07Z",
+  "generated_at": "2026-07-01T07:30:55Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -290,8 +290,7 @@
           "skills/public/handoff/references/state-selection.md",
           "skills/public/handoff/references/spill-targets.md",
           "skills/public/handoff/references/adapter-contract.md",
-          "skills/public/handoff/references/workflow-trigger.md",
-          "skills/public/handoff/references/document-seams.md"
+          "skills/public/handoff/references/workflow-trigger.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -622,9 +621,9 @@
           "skills/shared/references/source-bound-records.md",
           "skills/public/spec/references/evidence-durability.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/spec/references/acceptance-checks.md",
           "skills/public/spec/references/fixed-probe-defer.md",
           "skills/public/spec/references/success-criteria.md",
-          "skills/public/spec/references/acceptance-checks.md",
           "skills/public/spec/references/executable-spec-cost.md",
           "skills/shared/references/agent-assessment-invariant.md",
           "skills/shared/references/success-criteria-review.md"

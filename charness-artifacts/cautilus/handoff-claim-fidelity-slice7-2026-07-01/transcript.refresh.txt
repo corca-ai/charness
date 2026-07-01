@@ -1,0 +1,20 @@
+Handoff refresh complete and committed (`8dc31d0c`).
+
+## What changed
+
+**Refresh scope** — two captures landed since the last handoff write (`73e8ec14`), so I updated only the state that moves the next action:
+
+- **hotl DONE** (`65d12860`): RCF floor **PROVEN** and **kept** — both reference docs are load-bearing doc-opens and hotl has no substance judge, so the RCF→RSF move does not apply.
+- **gather DONE** (`8700f526`): #410's doc-open floor **REFUTED** — a public-URL run is fully script-driven (0/8 refs). Moved from "remaining sweep work" to a new **Discuss** open decision (redesign as an artifact/substance floor, Option 1; do not pin the trivial `public` token).
+- Slice 7 remaining trimmed to: handoff, setup, critique, achieve, hitl. Correctness HYPOTHESIS-floor list dropped the three now-resolved skills.
+
+**Spill (guardrail: promote recurring rules to their owner)** — the per-slice capture playbook and the don't-assume-the-token rule had been riding the handoff across refreshes. Promoted them to `reference-compaction/contract.md` under a new `## Capture Mechanics` section; the handoff now points there instead of restating them. Also dropped resolved history (#409, the impl-fork detail) that no longer changes the next move.
+
+**Verification**
+- Deterministic gates green: shape validator, doc-authoring preflight (markdownlint/links/length clean), current-pointer freshness.
+- 59 lines — under the brittle-test cap; `test_handoff_plan.py` 10 passed.
+- Caught and removed stray `</content>`/`</invoke>` artifacts a Write had left in the file.
+- Note: the repo shape gate rejects the skill's generic `Continuation Capability` section — repo validator's 5 canonical sections win, so that pointer folded into Next Session item 1.
+- Fresh-eye bounded misunderstanding critique: **SHIP**, no blocking fixes.
+
+**Next pickup** is unchanged in trigger (`find-skills → invoke handoff`); the first concrete move is the next Slice 7 capture (handoff/setup/critique/achieve/hitl) per the contract's new `## Capture Mechanics`. One item awaits your input: the **gather floor redesign** decision in Discuss.

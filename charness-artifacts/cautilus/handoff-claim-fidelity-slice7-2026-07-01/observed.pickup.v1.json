@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "handoff",
+  "skillDisplayName": "handoff",
+  "evaluations": [
+    {
+      "evaluationId": "execution-handoff-pickup-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "handoff",
+      "displayName": "handoff",
+      "evaluationKind": "execution",
+      "prompt": "/charness:handoff resume the pinned task from the current state and start the named workflow before doing anything else",
+      "startedAt": "2026-07-01T07:14:55.192Z",
+      "invoked": true,
+      "summary": "Execution of /handoff: 1682329 total tokens (41788 output, 1477125 cache-read), 209413ms wall. Tool profile: Bash=12 Read=3 Skill=1. Claim failures: command log missing required fragment: continuation-sequence.md. Reference coverage: 1/7 declared references opened (missing: adapter-contract.md, chunked-routing.md, continuation-sequence.md, document-seams.md, spill-targets.md, state-selection.md).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 1682329,
+        "output_tokens": 41788,
+        "tool_count": 16,
+        "waste_smell_count": 0,
+        "duration_ms": 209413
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      }
+    }
+  ]
+}

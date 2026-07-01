@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the handoff skill, PICKUP scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`start the named workflow`) that bypasses the chunker plus pickup wording (`resume`), so `plan_handoff_run.py` deterministically resolves intent=pickup, whose planner _required_reads are workflow-trigger.md + continuation-sequence.md (the RCF). Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
+  "_comment": "Claim-fidelity spec for the handoff skill, PICKUP scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`start the named workflow`) that bypasses the chunker plus pickup wording (`resume`), so `plan_handoff_run.py` deterministically resolves intent=pickup, whose planner _required_reads are workflow-trigger.md + continuation-sequence.md (the RCF). Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget. SLICE 7 (2026-07-01) CAPTURE — workflow-trigger.md PROVEN load-bearing (opened), so #410's 'drop workflow-trigger.md -> RSF' is REFUTED. But continuation-sequence.md was NOT opened: the pickup was unambiguous (one clear pinned task), and continuation-sequence.md is for 'when several plausible pickups exist' (SKILL.md). plan_handoff_run.py UNCONDITIONALLY emits continuation-sequence.md for the pickup intent, so this RCF mirrors the planner and the eval correctly FLAGS the gap — a PLANNER over-requirement finding (filed follow-up), NOT a spec softening. RCF is KEPT planner-faithful (this scenario's floor legitimately fails until the planner conditionalizes continuation-sequence.md). document-seams.md removed + deleted (DUP).",
   "skillId": "handoff",
   "scenarioId": "pickup",
   "skillDisplayName": "handoff",
@@ -16,7 +16,6 @@
     "adapter-contract.md",
     "chunked-routing.md",
     "continuation-sequence.md",
-    "document-seams.md",
     "spill-targets.md",
     "state-selection.md",
     "workflow-trigger.md"
@@ -35,11 +34,6 @@
     "continuation-sequence.md": {
       "engagement": "engage-always",
       "rationale": "A pickup-intent UNCONDITIONAL planner required read: orders the next move as continuation (dependency sequencing) rather than replaying history."
-    },
-    "document-seams.md": {
-      "engagement": "on-demand",
-      "rationale": "Addresses portability when a repo already uses a checked-in handoff surface; the adapter handles the default path otherwise.",
-      "trigger": "repo has a pre-existing checked-in handoff surface that should override the default location"
     },
     "spill-targets.md": {
       "engagement": "on-demand",

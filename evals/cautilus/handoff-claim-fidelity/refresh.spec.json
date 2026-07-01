@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the handoff skill, REFRESH scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`run a refresh pass`) that bypasses the chunker plus refresh wording (`refresh`/`write`), so `plan_handoff_run.py` deterministically resolves intent=refresh, whose planner _required_reads are state-selection.md + spill-targets.md (the RCF). Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
+  "_comment": "Claim-fidelity spec for the handoff skill, REFRESH scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`run a refresh pass`) that bypasses the chunker plus refresh wording (`refresh`/`write`), so `plan_handoff_run.py` deterministically resolves intent=refresh, whose planner _required_reads are state-selection.md + spill-targets.md (the RCF). Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget. SLICE 7 (2026-07-01) CAPTURE — floor PROVEN: the refresh run opened BOTH RCF docs state-selection.md + spill-targets.md (coverage 2/7, outcome=passed), so #410's 'drop the refresh docs -> RSF' is REFUTED — both are load-bearing planner reads. document-seams.md removed + deleted (DUP). thresholds.max_duration_ms set from this passing baseline (273120ms, ~2x).",
   "skillId": "handoff",
   "scenarioId": "refresh",
   "skillDisplayName": "handoff",
@@ -16,7 +16,6 @@
     "adapter-contract.md",
     "chunked-routing.md",
     "continuation-sequence.md",
-    "document-seams.md",
     "spill-targets.md",
     "state-selection.md",
     "workflow-trigger.md"
@@ -37,11 +36,6 @@
       "rationale": "A pickup-intent planner read; not opened on a refresh run.",
       "trigger": "pickup intent — ordering the next move as continuation rather than history"
     },
-    "document-seams.md": {
-      "engagement": "on-demand",
-      "rationale": "Addresses portability when a repo already uses a checked-in handoff surface; the adapter handles the default path otherwise.",
-      "trigger": "repo has a pre-existing checked-in handoff surface that should override the default location"
-    },
     "spill-targets.md": {
       "engagement": "engage-always",
       "rationale": "A refresh-intent UNCONDITIONAL planner required read: governs what durable detail moves to its owning artifact versus what stays, so a refresh that only prunes inline would not follow its own routing."
@@ -55,5 +49,8 @@
       "rationale": "A pickup/judge-intent planner read; not opened on a refresh run.",
       "trigger": "pickup intent — starting from the named workflow trigger"
     }
+  },
+  "thresholds": {
+    "max_duration_ms": 550000
   }
 }

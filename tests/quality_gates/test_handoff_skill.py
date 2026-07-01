@@ -7,9 +7,6 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def test_handoff_skill_names_diary_antipattern_and_size_gate() -> None:
     skill_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(encoding="utf-8")
-    document_seams = (
-        ROOT / "skills" / "public" / "handoff" / "references" / "document-seams.md"
-    ).read_text(encoding="utf-8")
     spill_targets = (
         ROOT / "skills" / "public" / "handoff" / "references" / "spill-targets.md"
     ).read_text(encoding="utf-8")
@@ -30,7 +27,10 @@ def test_handoff_skill_names_diary_antipattern_and_size_gate() -> None:
     assert "routed here by `find-skills`" in normalized
     assert "recurring routing miss" in normalized
     assert "host already injects" in state_selection
-    assert "host-injected instruction surfaces" in document_seams
+    # document-seams.md deleted in reference-compaction Slice 7 (DUP: its
+    # host-injected-surface Non-Goal is covered by SKILL.md's "always-loaded host
+    # instruction surfaces" / "host already injects them automatically" and
+    # state-selection.md's "host already injects").
     assert "git log" in spill_targets
     assert "release notes" in spill_targets
     assert "quality/latest.md" in spill_targets

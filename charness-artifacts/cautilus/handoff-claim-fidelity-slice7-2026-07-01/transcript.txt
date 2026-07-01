@@ -1,0 +1,41 @@
+Both the chunk proposal and the generative-sequence ranking validated clean. Here is the routed backlog — 7 work packages (3 handoff entries + 5 open issues; #410 merged into the sweep entry), ranked as a Christopher Alexander generative sequence (what unlocks/de-risks the most for the rest comes first), not by cost or input order.
+
+---
+
+## Ranked pickup — bare `/handoff` chunked routing
+
+**1. `gather-floor-redesign-411` — #411 gather claim-fidelity floor redesign**
+Redesign gather's public-URL floor as an artifact/substance instrument after the mechanical RCF→RSF hypothesis was *refuted by live capture* (0/8 doc coverage).
+→ *Keystone.* Settles how to floor a script-driven skill whose only emitted token is trivial — the same design uncertainty the correctness sweep and the AGENTS.md capture face — and unblocks the gather member of the Slice-7 sweep.
+
+**2. `mutation-regression-404` — #404 StrykerJS mutation regression on main**
+Restore the missing `stryker-js.json` report so JS mutation full mode is green again.
+→ A red gate on main means later closeouts can't tell a new regression from the pre-existing one. Fixing it early gives every subsequent commit a trustworthy baseline.
+
+**3. `refcompaction-slice7-sweep` — #410 Reference-compaction Slice 7 (remaining skills)**
+Per-skill RCF→RSF captures for hotl, handoff, setup, critique, achieve, hitl (create-cli DONE).
+→ With the floor pattern (#411) and green baseline (#404) settled, the mechanical captures run at lowest risk and harden the shared capture mechanics the correctness sweep reuses.
+
+**4. `correctness-floor-sweep` — Continue correctness (claim-fidelity) floor sweep**
+One skill at a time across remaining HYPOTHESIS-floor skills, reusing outcome-assertions.
+→ Reuses the hardened capture tooling and the #411 substance-floor pattern, so each capture is cheaper once those precede it. (Separate axis from #3's reference-compaction.)
+
+**5. `agents-lesson-internalization-capture` — #3 AGENTS.md lesson-internalization live capture**
+Build the deferred live-session capture unit + vacuous-pass guard + rotation.
+→ Benefits from the floor/guard conventions the earlier eval chunks establish; not a prerequisite for them, so it follows once those stabilize.
+
+**6. `ownership-boundary-review-408` — #408 ownership-boundary review discipline**
+Make RCA/debug/quality/critique require a producer/consumer question so symptom-driven prompt/core fixes get flagged.
+→ Blocks no eval chunk; running it later lets earlier work surface concrete boundary-violation examples that sharpen the acceptance test.
+
+**7. `agent-browser-teardown-371` — #371 agent-browser orphaned chromium trees**
+Tie the browser process tree + profile dir to the tool-call lifecycle.
+→ Fully independent integration fix with no unlock relation to the others, so it sorts last.
+
+---
+
+**Pick a chunk to activate** (I'll draft a goal skeleton and route you to `/achieve @<artifact>` to shape it), or **decline** to route to normal handoff pickup/refresh instead. You can also ask "why not chunk N?" — I'll answer from the reasoning above without re-ranking.
+
+Two things worth flagging before you choose:
+- The ranking is a **proposal, not a directive** — #404 (red main gate) is objectively time-sensitive if you'd rather clear the baseline first regardless of the unlock story.
+- Per end-only-write discipline I have **not** rewritten `docs/handoff.md`; the only write happens on selection (the forward goal skeleton).
