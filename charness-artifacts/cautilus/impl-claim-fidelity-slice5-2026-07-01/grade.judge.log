@@ -1,0 +1,24 @@
+running grader self-test before grading...
+  good pass_rate=1.0 (4/4)
+  bad  pass_rate=0.0 (0/4)
+SELFTEST PASSED: grader ranks the known-good output above the known-bad one.
+# Outcome grade — impl-claim-fidelity
+
+Advisory outcome grade (NOT a pass/fail commit verdict). Per-assertion verdict + cited evidence; weighted pass_rate over scored rows only.
+
+- scored 5/5 (pass_rate 1.0); skipped 0, errors 0, total 5.
+
+| id | kind | verdict | statement | evidence |
+| --- | --- | --- | --- | --- |
+| ran-impl | deterministic | pass | The captured run actually executed the impl skill (sanity floor before grading the work). | summary matched 'Execution of /impl' |
+| wrote-tests | deterministic | pass | The run materialized at least one Python test file (impl's product for this slice is added, runnable test coverage), preserved into the bundle outputs. | 1 output(s) match '**/test_*.py' |
+| executed-verification | judge | pass | The run actually EXECUTED the verification it added — it ran the new tests (e.g. invoked pytest / the test directly) and observed the result before closing, rather than only writing tests or asserting success without running them. This is impl's central 'verify it aggressively' claim, judged on whether real execution happened (evidence in the transcript/trace + the produced tests), independent of whether verification-ladder.md was opened. | Bash=9 tool calls; transcript 'All 6 pass' then 'run the full quality_gates suite'; verification: executed pytest → 6 passed, combined 22 passed. |
+| honest-categorized-closeout | judge | pass | The run's closeout uses the verification-ladder.md vocabulary: an explicit Lint Gate status (one of ran-pass / ran-fail-fixed / ran-fail-deferred / not-detected / skipped) AND a completion-report category (one of durable / external-writes / test-only / verification / unverified-future), and it leaves any genuinely-unproven behavior explicitly marked unverified — not a generic 'done'/'looks good' with no honest categorization. The vocabulary itself is the substance; producing it (whether recalled or read) is the behavior the claim asserts. | Closeout has '## Lint Gate: ran-pass', '## Completion-report Category: test-only', and '## Residual Risks/Unverified' marking gate-sufficient/classTag as 'Unverified...left explicit'. Vocab produced despite ladder unread (allowed). |
+| smallest-non-overlapping-slice | judge | pass | The run added a SMALL, focused slice — deterministic unit tests that directly call the named library helpers as ADDITIVE coverage that does not merely duplicate the existing registry-level test it was told not to overlap — rather than sprawling into unrelated rewrites, padding, or re-implementing coverage that already exists. Honors impl's smallest-meaningful-slice + test-duplication-pressure claims. | New test_claim_fidelity_helpers.py: 6 deterministic tests directly call _validate_string_list/_validate_engagement; docstring+critique confirm whitespace-trigger edge absent from registry suite = additive, narrow scope, no rewrites. |
+
+## Honest caveats
+
+- Deterministic checks grade mechanical facts; judge-kind rows are SKIPPED unless a live judge (`--judge-cmd`, ask-before-run spend) ran.
+- `trace_tool_used` args matching is best-effort: the trace digest truncates `args` (~160 chars), so a long command can undercount.
+- `output_file_*` checks resolve against the bundle `outputs/` dir, which the A/B runner now preserves; a bundle captured before that (no `outputs/`) fails those checks with that explicit evidence.
+

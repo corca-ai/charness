@@ -1,15 +1,15 @@
 {
-  "_comment": "Claim-fidelity spec for the impl skill: does a real `/charness:impl` run honor its central claim — route to its references at the point of need? impl has no planner that emits required reads; its scripts resolve the adapter (resolve_adapter.py) and survey the repo's verification TOOLS (survey_verification.py detects the lint command and tool availability), but neither resolves the per-surface verification RULES or the closeout vocabulary. RCF was over-broad at five floors; lens 7 (script-briefs-judge) cuts it to the one doc whose unique content a representative run is actually forced to open. The single engage-always floor is verification-ladder.md: SKILL.md step 4 declares it 'owns the per-surface rules' and the Output Shape requires `Lint Gate per references/verification-ladder.md`; the Lint Gate status vocabulary (ran-pass / ran-fail-fixed / ran-fail-deferred / not-detected / skipped) and the five completion-report categories (durable / external-writes / test-only / verification / unverified-future) live ONLY in this doc — survey_verification.py emits a detect signal and the `not-detected` hint but not the closeout vocab — so an honest categorized closeout cannot be produced without opening it. The other four formerly-RCF references stay engage-always but are NOT floors (claimRole skill-inlined-context): SKILL.md's always-loaded workflow inlines their gist — contract-consumption.md (step 1-2 + Bootstrap: read-first order, carry-forward set), sequence-discipline.md and design-lenses.md (step 3: smallest-slice + ordering gist), review-gate.md (step 6: minimum lenses + critique scaling) — so a representative run engages each concern from the workflow and opens the doc only for the slice-specific depth (Beck/Ousterhout moves, stronger-gate triggers). That inlining is correct for impl, the most-run skill: forcing five doc-opens per slice would be friction, not fidelity, so this is a fixture-only recalibration, not a skill defect. adapter-contract.md, external-api-contract.md, and spec-loop.md stay on-demand. The prompt is pinned to a CONCRETE repo-honest slice — add deterministic unit tests that directly call claim_fidelity_lib.py's helper functions (_validate_string_list, _validate_engagement), additive to and non-overlapping with the existing registry-level tests/quality_gates/test_claim_fidelity_specs.py — so a representative run has a real, non-trivial subject to act on. Bare /charness:impl has no slice and stalls (lens 2); an abstract 'implement a small slice' is a shape, not an executable subject (lens 8), so the named slice replaces it. The slice exercises executed verification + the Lint Gate / completion-report closeout vocabulary so verification-ladder.md is genuinely forced, without naming the reference file. The live capture runs in the Cautilus sandbox, so a code-mutating subject is safe. declaredReferences is the full skill-local set (coverage); shared refs (source-bound-records.md, prescribed-path-self-test.md, external-capability-proof-ladder.md, active-goal-coordination.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget.",
+  "_comment": "Claim-fidelity spec for the impl skill: does a real `/charness:impl` run emit its honest categorized closeout vocabulary — a `Lint Gate` status plus a completion-report category? reference-compaction Slice 5 moved this claim from the re-read PROXY to the EMITTED-token floor. Before: requiredCommandFragments=['verification-ladder.md'] asserted the run OPENED the doc that uniquely held the Lint Gate status enum (ran-pass / ran-fail-fixed / ran-fail-deferred / not-detected / skipped) and the five completion-report labels (durable / external-writes / test-only / verification / unverified-future). That is a wasteful re-read: the first impl capture (charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/) reached an honest closeout in PROSE without opening the doc (floor MISS 0/8) — doc-opening was a weak proxy. Fix: the enum + labels were lifted verbatim into SKILL.md `## Closeout Vocabulary` (the headroom-exempt emittable-token home added by Slice 1), and verification-ladder.md's two sections now point-to-core, so an honest closeout emits the canonical tokens from always-loaded core. So requiredCommandFragments is now empty and requiredSummaryFragments asserts an actually-emitted token (`ran-pass`), re-baselined from a FRESH ask-before-run Cautilus capture per the cautilus-on-demand contract (NOT assumed). The deterministic emitted-token floor (form) pairs with the advisory judge `honest-categorized-closeout` (substance, outcome-assertions.json) — the form+substance split covers the hollow-RSF risk (a run could echo a summary token without doing the categorization work; the judge catches that). verification-ladder.md stays declared with classTag DEPTH (per-surface WHY prose: browser output, external-API depth, completion-report rationale). The four skill-inlined refs are tagged INLINE (claimRole skill-inlined-context): contract-consumption.md (step 1-2 + Bootstrap read-first order + carry-forward set), sequence-discipline.md and design-lenses.md (step 3 smallest-slice + ordering gist), review-gate.md (step 6 minimum lenses + critique scaling) — SKILL.md's always-loaded workflow inlines their gist, so a representative run engages each concern from the workflow and opens the doc only for slice-specific depth. adapter-contract.md, external-api-contract.md, and spec-loop.md stay on-demand. The prompt is pinned to a CONCRETE repo-honest slice — add deterministic unit tests that directly call claim_fidelity_lib.py's helper functions (_validate_string_list, _validate_engagement), additive to and non-overlapping with the existing registry-level tests/quality_gates/test_claim_fidelity_specs.py — so a representative run has a real, non-trivial subject that exercises executed verification + the Lint Gate / completion-report closeout vocabulary. Bare /charness:impl has no slice and stalls (lens 2); an abstract 'implement a small slice' is a shape, not an executable subject (lens 8), so the named slice replaces it. The live capture runs in the Cautilus sandbox, so a code-mutating subject is safe. declaredReferences is the full skill-local set (coverage; DEPTH-only denominator scores the DEPTH refs, INLINE/DUP advisory); shared refs (source-bound-records.md, prescribed-path-self-test.md, external-capability-proof-ladder.md, active-goal-coordination.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis + the classTag DUP/INLINE/DEPTH taxonomy from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a PASSING baseline capture sets a budget.",
   "skillId": "impl",
   "skillDisplayName": "impl",
   "evaluationId": "execution-impl-claim-fidelity",
   "targetKind": "public_skill",
   "targetId": "impl",
   "prompt": "/charness:impl tests/ 에 scripts/claim_fidelity_lib.py 의 헬퍼 함수(_validate_string_list 의 빈-리스트·중복 거부, _validate_engagement 의 on-demand trigger 필수 규칙)를 직접 호출해 검증하는 deterministic 단위 테스트를 — 기존 registry 레벨 테스트(tests/quality_gates/test_claim_fidelity_specs.py)와 겹치지 않는 추가 커버리지로 — 작은 슬라이스로 더하고 실제로 실행해서 증명해줘. 가장 강한 정직한 경로로 검증하고, 증명하지 못한 동작은 명시적으로 unverified로 남기고, Lint Gate 상태와 completion-report 카테고리로 closeout 한 뒤 멈추기 전에 stop gate critique까지 돌려줘.",
-  "requiredCommandFragments": [
-    "verification-ladder.md"
+  "requiredCommandFragments": [],
+  "requiredSummaryFragments": [
+    "ran-pass"
   ],
-  "requiredSummaryFragments": [],
   "declaredReferences": [
     "adapter-contract.md",
     "contract-consumption.md",
@@ -29,12 +29,14 @@
     "contract-consumption.md": {
       "engagement": "engage-always",
       "rationale": "Every run ingests the current slice contract (step 1), but the doc's read-first order (canonical spec -> handoff -> diff) and carry-forward set (slice, fixed decisions, success criteria, acceptance checks, probe questions) are inlined in SKILL.md steps 1-2 and the Bootstrap commands, so the run engages the contract from the workflow rather than being forced to open this doc: engage-always but not an RCF floor (lens 7, skill-inlined).",
-      "claimRole": "skill-inlined-context"
+      "claimRole": "skill-inlined-context",
+      "classTag": "INLINE"
     },
     "design-lenses.md": {
       "engagement": "engage-always",
       "rationale": "Every run chooses a slice (step 3, routed at line 10), but step 3 inlines the smallest-honest-slice gist; the doc's specific Beck/Ousterhout moves (deeper seam, ownership boundary, copied-coordination signal) are opened only when interface/seam shape is the real risk, so it is engage-always but not an RCF floor (lens 7, skill-inlined).",
-      "claimRole": "skill-inlined-context"
+      "claimRole": "skill-inlined-context",
+      "classTag": "INLINE"
     },
     "external-api-contract.md": {
       "engagement": "on-demand",
@@ -44,12 +46,14 @@
     "review-gate.md": {
       "engagement": "engage-always",
       "rationale": "Every task-completing slice runs the stop gate (step 6), but SKILL.md step 6 inlines the minimum review lenses (contract honesty, runtime behavior, boundary ownership, docs sync) and the critique-scaling vocabulary; the doc's unique content (stronger-gate triggers, meaningful-slice-cadence pointer, contract re-read) is opened only when the slice's reach demands the stronger gate, so it is engage-always but not an RCF floor (lens 7, skill-inlined).",
-      "claimRole": "skill-inlined-context"
+      "claimRole": "skill-inlined-context",
+      "classTag": "INLINE"
     },
     "sequence-discipline.md": {
       "engagement": "engage-always",
       "rationale": "Every run orders its slice (step 3, routed at line 10), but step 3 inlines the highest-leverage-first / avoid-locking-adjacent-detail gist; the doc's recovery-path and interface-freeze-delay moves are opened only when slice-ordering tension is real, so it is engage-always but not an RCF floor (lens 7, skill-inlined).",
-      "claimRole": "skill-inlined-context"
+      "claimRole": "skill-inlined-context",
+      "classTag": "INLINE"
     },
     "spec-loop.md": {
       "engagement": "on-demand",
@@ -58,8 +62,9 @@
     },
     "verification-ladder.md": {
       "engagement": "engage-always",
-      "rationale": "The single engage-always floor. SKILL.md step 4 declares it 'owns the per-surface rules' (browser output, lint gate, external/third-party APIs, completion-report categories) and the Output Shape requires `Lint Gate per references/verification-ladder.md`. The Lint Gate status vocabulary and the five completion-report categories live only in this doc; survey_verification.py detects the lint command but does not emit the closeout vocabulary, so a representative verify-and-close run that never opens this cannot produce its own honest closeout (lens 7: unique content the prompt forces).",
-      "claimRole": "verification-owner"
+      "rationale": "No longer the closeout-vocab RCF floor. The Lint Gate status enum and the five completion-report category labels were lifted verbatim into SKILL.md `## Closeout Vocabulary` (the emittable-token home), and this doc's `## Lint Gate Closeout Shape` + `## Completion Report Categories` sections now point-to-core. What remains here is per-surface WHY prose (browser output, external/third-party API depth, the completion-report rationale, the capability-seeking rule) opened only when the slice's surface needs that depth. DEPTH ref, not an RCF floor: the claim moved from the re-read proxy (did the run open the doc) to the emitted-token floor in requiredSummaryFragments.",
+      "claimRole": "verification-owner",
+      "classTag": "DEPTH"
     }
   }
 }

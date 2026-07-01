@@ -157,19 +157,23 @@ The closeout should usually include:
 
 `Implemented`, `Capability Delivered`, `Contract Source`, `Verification` naming
 code/fixture and runtime/evaluator proof, `Lint Gate` per
-`references/verification-ladder.md`, `Truth Surface Sync`, `Critique`,
+`## Closeout Vocabulary`, `Truth Surface Sync`, `Critique`,
 `Contract Updates`, `Residual Risks`, `Next Slice`.
+
+## Closeout Vocabulary
+
+Emittable-verbatim closeout tokens (validator substring-matches these); WHY-prose stays in `references/verification-ladder.md`.
+
+- `Lint Gate` status is one of `ran-pass <command>` / `ran-fail-fixed <command>` / `ran-fail-deferred <command> <issue|anchor>` / `not-detected` / `skipped <reason>`.
+- Completion-report categories are `durable` / `external-writes` / `test-only` / `verification` (proof + level `worker_queued`/`provider_roundtrip`/`agent_choice`) / `unverified-future`.
 
 ## Guardrails
 
-- The Workflow steps and the referenced ladders own the positive form of each
-  rule the guardrails would otherwise restate: no stale or imaginary contract
-  and no silent scope creep, re-reading `Fixed Decisions` before closeout, no
-  default pause under autonomous continuation, catching a stale
-  `<repo-root>/README.md` or truth surface, holding past a forced debug interrupt
-  until the named spec handoff allows plain `impl`, proving rather than inspecting
-  any user-facing branch or fallback, asking for stronger proof rather than
-  downgrading the claim, and recording `Lint Gate` per `references/verification-ladder.md`.
+- The Workflow steps and referenced ladders own the positive form of each rule
+  the guardrails would otherwise restate — contract honesty, no silent scope creep,
+  truth-surface/`<repo-root>/README.md` freshness, the forced-debug-interrupt hold,
+  proving (not inspecting) user-facing branches, stronger-proof-over-downgrade, and
+  `Lint Gate` recording per `## Closeout Vocabulary`.
 - Do not call a same-agent review a critique. If the required critique is
   blocked, stop instead of downgrading to a local substitute and still calling
   the slice reviewed.

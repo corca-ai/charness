@@ -1,0 +1,51 @@
+The functions are clear. Let me check the verification surface and lint gate before writing.
+
+Environment confirmed. Now I'll add the focused helper-level test file (new file, no overlap with the registry-level suite).
+
+All 6 pass. Now the lint gate before closeout.
+
+Lint gate passes. Let me run the full quality_gates suite to confirm no regression, then run the stop-gate critique.
+
+Now the mandatory stop-gate critique — a fresh-eye bounded subagent review (required by contract, not a same-agent pass).
+
+Critique verdict: CLEAN. Per the operating contract, committing this task-completing slice before closeout.
+
+Committed. Slice complete.
+
+## Implemented
+`tests/quality_gates/test_claim_fidelity_helpers.py` — 6 deterministic unit tests that call the private helpers in `scripts/claim_fidelity_lib.py` directly:
+- `_validate_string_list`: valid-returns-value, **empty-list rejection**, **duplicate rejection**
+- `_validate_engagement`: on-demand-with-trigger returns `("on-demand", None)`, **missing-trigger rejection**, **whitespace-only-trigger rejection**
+
+## Capability Delivered
+Operator/maintainer gets helper-level regression coverage that pins the two named rules at their point of definition, independent of the full `validate_registry` path.
+
+## Contract Source
+Inline current-slice contract from the direct impl prompt (no prior `spec` artifact). Fixed decisions honored: additional/non-overlapping vs `tests/quality_gates/test_claim_fidelity_specs.py`; narrow scope (the two named rules only, no scope creep into `_validate_optional_string_list`/`gate-sufficient`/`classTag`).
+
+## Verification
+- Code/fixture: new file, 6 tests.
+- Runtime proof (executed, `agent_choice` → strongest local path): `python3 -m pytest tests/quality_gates/test_claim_fidelity_helpers.py -v` → **6 passed**; combined with existing suite → **22 passed**. Both rejection paths proven to fire via the *intended* guard (the whitespace edge reaches the trigger guard because a valid `rationale` is supplied, so no wrong-reason pass).
+- Fresh-eye critique confirmed assertions match the implementation and the whitespace-only-trigger case is genuinely absent from the registry suite.
+
+## Lint Gate
+`ran-pass bash .githooks/pre-commit` (py_compile + ruff + length/filename/reversion/boundary checks all PASS).
+
+## Truth Surface Sync
+None required — test-only slice; no user-visible capability, README, or adapter `truth_surfaces` change.
+
+## Critique
+`full CLEAN` — fresh-eye bounded subagent (general-purpose), read-only in shared worktree. No correctness defects, no wrong-reason passes, no meaningful overlap. Only note: literal error-string matching is mildly brittle to message reword, but matches the existing suite's convention — accepted.
+
+## Completion-report Category
+`test-only` (verification proof level: `agent_choice`, executed locally).
+
+## Contract Updates
+None — slice delivered exactly as scoped.
+
+## Residual Risks / Unverified
+- **Unverified (out of named scope, left explicit):** `_validate_engagement`'s `gate-sufficient` gate rule and `classTag` validation are not covered here (the registry suite covers them). `_validate_optional_string_list` is not touched. These were intentionally excluded per the narrow scope, not proven by this slice.
+- Error-message-string coupling is brittle-by-design (same tradeoff as the existing suite).
+
+## Next Slice
+If broader helper-level coverage is wanted: direct tests for `_validate_engagement` gate-sufficient/classTag branches and `_validate_optional_string_list`, again as non-overlapping additions.

@@ -78,15 +78,9 @@ trap shapes that mocked tests routinely miss.
 
 ## Lint Gate Closeout Shape
 
-`Lint Gate` records one of:
-
-- `ran-pass <command>` — surveyed command ran clean
-- `ran-fail-fixed <command>` — ran, surfaced regressions, fixed in the same slice
-- `ran-fail-deferred <command> <issue|anchor>` — ran, deferred fixes to a named follow-up
-- `not-detected` — bootstrap survey found no standing gate
-- `skipped <reason>` — doc-only slice, autonomous-continuation cost cap, or
-  pre-existing unrelated lint debt; the reason names the choice so the next
-  reader can audit it
+The `Lint Gate` status enum lives in impl SKILL.md `## Closeout Vocabulary`;
+record one of those tokens per the bootstrap survey signal (the `<issue|anchor>`
+and `<reason>` placeholders carry the deferred/skipped audit requirement).
 
 Sibling pointers: a filed follow-up should also surface as a
 `follow-up: <url>` entry under the related `## Sibling Search` bullet when the
@@ -111,6 +105,10 @@ At the end of the slice, state:
 Completion reports separate these categories instead of mixing them as one
 "done" claim. The reader needs to distinguish what now lives in the repo from
 what was only test scaffolding or external side effect.
+
+The emittable category labels live in impl SKILL.md `## Closeout Vocabulary`;
+the bolded entries below are the why-these-categories rationale, not the
+emittable tokens.
 
 - **Durable changes**: code, docs, schemas, generated surfaces that landed in
   the working tree and are committed (or staged for commit).
