@@ -152,5 +152,16 @@ DEPTH keeps its doc-open floor as-is (already capture-proven load-bearing).
   subagent's **prompt** — into the command log the RCF matcher substring-searches. So
   naming a ref filename in an Agent-tool prompt satisfies a doc-open floor with **no
   genuine Read** (critique's decision scenario is a live example: coverage 1/12,
-  counterweight-triage.md "engaged" via a name-mention). Recorded as its own issue;
+  counterweight-triage.md "engaged" via a name-mention). Filed as **#415**;
   fixing it changes matcher semantics + needs a re-grade, so it is filed, not rushed.
+
+### Issue trail (all posted 2026-07-01)
+
+- **#411 (gather)** / **#413 (setup)** — reframed: census INLINE is the driver, the
+  0-coverage capture confirms it; the artifact/substance-judge redesign stands;
+  #411's `capability-contract.md`→DEPTH proposal corrected to INLINE.
+- **#412 (handoff planner)** — sharpened: `continuation-sequence.md` is INLINE (MOVE),
+  so fix both the planner (conditional) AND retire the pickup doc-open floor to RSF.
+- **#415 (matcher honesty)** — new: RCF satisfied by a subagent-prompt name-mention.
+- Parent sweep: **#410**. The 12 capture-gated MOVEs + the hotl/ledger INLINE-token
+  lift execute in a future ask-before-run Cautilus session.
