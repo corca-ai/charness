@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the critique skill, DECISION scenario: does a `/charness:critique` run with a pinned decision premortem honor its own routing? The prompt supplies a concrete decision lock-in, so the Target Selection table routes 'decision premortem' -> references/premortem-decision.md UNCONDITIONALLY (SKILL.md Target Selection), and step 5 always triages via counterweight-triage.md. Both RCF refs are therefore deterministic here (no autonomous inference, no non-determinism), so this is the fixture where the deterministic teeth carry the weight — the complement to the autonomous default fixture, where the Cautilus recommendation / LLM-judge signal carries the inference-quality weight. autonomous-trigger.md is on-demand here because a target is supplied (no scan). thresholds omitted until a first baseline capture sets a runtime budget.",
+  "_comment": "Claim-fidelity spec for the critique skill, DECISION scenario: does a `/charness:critique` run with a pinned decision premortem honor its own routing? The prompt supplies a concrete decision lock-in, so the Target Selection table routes 'decision premortem' -> references/premortem-decision.md UNCONDITIONALLY (SKILL.md Target Selection), and step 5 always triages via counterweight-triage.md. Both RCF refs are therefore deterministic here (no autonomous inference, no non-determinism), so this is the fixture where the deterministic teeth carry the weight — the complement to the autonomous default fixture, where the Cautilus recommendation / LLM-judge signal carries the inference-quality weight. autonomous-trigger.md is on-demand here because a target is supplied (no scan). thresholds omitted until a first baseline capture sets a runtime budget. SLICE 7 (2026-07-01) CAPTURE — floor PASSES, #410 drop NOT applied. The decision-premortem run genuinely OPENED premortem-decision.md (load-bearing) and reached the four-bin triage (Over-Worry emitted). counterweight-triage.md was engaged via DELEGATION (named in the angle-subagent prompts) applying the four-bin enum inlined at SKILL.md:37, not a genuine doc-open — so the RCF matcher passes on the command-log mention. Rather than drop a passing floor, it is KEPT: the DEFAULT scenario (spec.json) genuinely opens counterweight-triage.md (Read+cat+sed), proving #410's 'drop counterweight-triage.md' is REFUTED skill-wide. thresholds.max_duration_ms set from this passing baseline (457563ms, ~2x). No SKILL.md lift (the four-bin enum is already inlined at line 37), so the ~195 ceiling is untouched.",
   "skillId": "critique",
   "skillDisplayName": "critique",
   "scenarioId": "decision",
@@ -87,5 +87,8 @@
       "rationale": "Routes to this target reference only when change type is spec/design; this scenario pins a decision lock-in, not a spec contract gating implementation.",
       "trigger": "when the pending change is a spec or design contract about to gate implementation (spec critique, spec premortem, pre-impl review)"
     }
+  },
+  "thresholds": {
+    "max_duration_ms": 915000
   }
 }

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "critique",
+  "skillDisplayName": "critique",
+  "evaluations": [
+    {
+      "evaluationId": "execution-critique-decision-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "critique",
+      "displayName": "critique",
+      "evaluationKind": "execution",
+      "prompt": "/charness:critique  '모든 claim-fidelity 픽스처 prompt를 한국어로 작성한다' 결정을 lock-in 전에 decision premortem으로 비평해줘",
+      "startedAt": "2026-07-01T08:01:52.934Z",
+      "invoked": true,
+      "summary": "Execution of /critique: 2686607 total tokens (83625 output, 2157217 cache-read), 457563ms wall. Tool profile: Bash=29 Read=5 Agent=4 Skill=1. All declared claims met. Reference coverage: 1/12 declared references opened (missing: adapter-contract.md, angle-selection.md, autonomous-trigger.md, cadence.md, code-critique.md, confirmed-input-over-anchoring.md, counterweight-triage.md, prepare-packet.md, release-critique.md, rename-critique.md, spec-critique.md).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 2686607,
+        "output_tokens": 83625,
+        "tool_count": 39,
+        "waste_smell_count": 0,
+        "duration_ms": 457563
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      }
+    }
+  ]
+}

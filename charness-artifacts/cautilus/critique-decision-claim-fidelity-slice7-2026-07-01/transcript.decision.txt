@@ -1,0 +1,59 @@
+Critique complete. Fresh-eye subagent path satisfied (3 angle reviewers + 1 separate counterweight, all parent-delegated). Here is the result.
+
+---
+
+## Decision Premortem — "모든 claim-fidelity 픽스처 prompt를 한국어로 작성한다"
+
+**Execution:** 3 bounded fresh-eye angle subagents (Jackson/framing, Weinberg/diagnostic, Gawande/operational) + 1 separate counterweight subagent.
+**Fresh-Eye Satisfaction:** `parent-delegated`
+**Packet Consumed:** `charness-artifacts/critique/2026-07-01-080401-packet.md` (2 sections; clean working tree — decision lock-in, no diff)
+**Target:** `references/premortem-decision.md` (Klein-lineage decision lock-in)
+**Klein Lineage Cite:** none prior; this fixture prompt *is itself* `evals/cautilus/critique-claim-fidelity/decision.spec.json` — the decision is pleasingly self-referential.
+
+### Change (locking)
+프롬프트 언어 규약: 모든 `evals/cautilus/<skill>-claim-fidelity/*.spec.json`의 `prompt` 필드를 한국어로 작성하는 것을 표준으로 lock-in.
+
+### Capability at Stake
+claim-fidelity 픽스처의 **핵심 신호 무결성** — 라이브 캡처가 "스킬이 자기가 라우팅한다고 주장한 reference를 실제로 열었는가"를 정직하게 측정하는 능력. 잘못하면 언어 변경이 라우팅을 조용히 뒤집어 **가짜 실패(false failure)**를 만들고, 이는 스킬 결함처럼 보인다.
+
+### The premise is ~80% already true — this reframes everything
+전 스킬 프롬프트를 조사한 결과: **거의 모든 프롬프트가 이미 한국어**다. 단, **code-switched** — 한국어 캐리어 문장 + 영어 trigger/command 토큰 보존(`resolve`, `new`, `decision premortem`, `RCA`, `proof packet`). 순수 한국어가 아니다. 완전 영어인 것은 **딱 4개**: `handoff/pickup`, `handoff/refresh`, `setup/greenfield`, `setup/normalization`. 즉 실제 결정은 "마지막 4개 변환 + 규칙 확정"이며, **그 규칙의 문구가 pure Korean이냐 code-switched냐가 정반대 결과를 낳는다.**
+
+### Counterweight Triage (four bins)
+
+**🔴 Act Before Ship** — 확정 전에 반드시 결정 계약을 고쳐야 함
+- **C1 — handoff pickup/refresh를 순수 번역하면 조용히 깨진다 (검증됨).** `plan_handoff_run.py:138,141`의 `_resolve_intent`는 영어 토큰만으로 intent를 판정한다 (`resume`/`refresh`/`update`… → pickup/refresh, 없으면 chunked_routing 디폴트로 fall-through). "resume"/"refresh"를 한국어로 바꾸면 intent가 조용히 디폴트로 떨어지고 → 잘못된 `requiredCommandFragments`가 열려 → 픽스처가 **스킬 결함처럼 보이는 가짜 실패**로 뒤집힌다. north-star가 막으라는 "탈출한 오답" 그 자체.
+- **C2 — 결정이 underspecified: "순수 한국어" vs "code-switched 한국어".** 두 해석이 정반대 결과를 낳는데 결정문이 어느 쪽인지 안 말한다. C1도 이 정의가 서야 판정 가능하다.
+
+**🟡 Bundle Anyway** — 같은 lock-in에서 값싸게 처리
+- **C3 — "4개"는 동질이 아니다.** handoff 2개는 keyword-bound(번역 시 깨짐), setup 2개는 **model-judged** (`SKILL.md:79-83`, 키워드 게이트 없음 → 번역 plausibly 안전하나 fixture별 1회 검증). code-switch 규칙에 "keyword-bound은 토큰 보존, model-judged는 검증 후 변환 가능" 한 줄로 흡수.
+- **C4 — 결정이 problem이 아니라 mechanism을 명명.** goal이 REALISM(→ code-switch, 이미 80% 완료)인지 ROBUSTNESS(→ EN/KR 분할 필요, all-Korean은 이걸 **defeat**)인지 한 줄 rationale 필요. 80% code-switched 현황이 realism이 실제 의도임을 이미 드러냄.
+- **C8 — bare-command 프롬프트**(`/charness:critique`, `/charness:handoff`, `/charness:quality`)는 자연어가 없음. 규약을 "자연어 캐리어를 포함하는 프롬프트"로 한정해 "all"의 over-reach 제거.
+
+**⚪ Over-Worry** — 시니어라면 통과시킴
+- **C5 — "한국어 mis-route 증거가 없다"를 blocker로 삼는 것.** 이미 80% 한 방향인 코퍼스를 표준화하는 데 실패 로그는 불필요. 단, C5의 **reframe**(진짜 문제는 code-switch 규약이 미문서화)은 C2/C4가 이미 흡수.
+- **C7 — 미래의 번역 가능한 `requiredSummaryFragments`.** 오늘 프래그먼트는 `version`/`ran-pass`로 언어 중립·통과 중. 투기적 미래 소비자.
+
+**🔵 Valid but Defer**
+- **C6 — code-switch를 강제하는 validator 부재.** 실제 갭(값싼 CI 캐치 vs 비싼 라이브 캡처 캐치)이지만, 픽스처 4개·인시던트 0건을 위해 `promptTriggerTokens` allowlist라는 **새 유지 스키마**를 지금 만드는 건 over-engineering. 문서 절 + 기존 slash-prefix 체크가 지금의 올바른 altitude. 두 번째 번역이 실제로 들어오거나 코퍼스가 커지면 재개.
+
+### Acceptance Tightening (Act Before Ship 해소용 구체 편집)
+1. 결정문을 **"code-switched Korean"**으로 재정의: *"한국어 캐리어 산문 + (a) `/charness:<skill>` prefix, (b) 대상 스킬이 intent/scenario 라우팅·self-activation에 파싱하는 영어 단어, (c) 인-프롬프트로 등장하는 `requiredCommandFragments` 베이스네임·`requiredSummaryFragments` 토큰을 verbatim 보존."* (C1+C2)
+2. `handoff/pickup`·`handoff/refresh`를 명시적으로 보호(토큰 보존) 또는 예외 처리. 대안: `plan_handoff_run.py:138,141`을 **bilingual**로 (retro `plan_retro_run.py:162`, find-skills `list_capabilities_lib.py:271`이 이미 쓰는 house pattern) — 단 이건 별도 리뷰가 붙는 실제 product 변경.
+
+### Deliberately Not Doing (Deferred Decisions)
+- `promptTriggerTokens` validator allowlist (**C6**): 지금 만들지 않음. 트리거 = 두 번째 언어-스트립 번역이 실제로 들어오거나 fixture 수가 유의미하게 증가. `docs/deferred-decisions.md`에 기록 권장.
+- Multilingual-robustness용 의도적 EN/KR split (**C4 대안 goal**): realism을 goal로 확정하면 채택 안 함. 단, "왜 영어 커버리지를 지우기로 했는지"를 남겨 미래 robustness 인시던트 때 추적 가능하게.
+- 미래 번역가능 summary-fragment 가드 (**C7**): 액션 없음, deferred 노트 한 줄로만.
+
+### Next Move
+1. **Lock 전 필수:** 결정문을 "code-switched Korean, 영어 trigger/command 토큰 verbatim 보존"으로 재작성하고, handoff pickup/refresh를 보호(또는 resolver bilingual화). 이거 없이 "pure Korean, all prompts"로 확정 = ship-and-silently-break, 그 파손은 정확히 `handoff/pickup`·`handoff/refresh`에 떨어진다.
+2. **같은 커밋에 값싸게 번들:** realism goal 한 줄 rationale, "자연어 캐리어 포함 프롬프트"로 범위 한정(bare-command 제외), setup 2개는 model-judged라 변환-가능-후-검증 명시.
+3. **Defer:** validator allowlist는 `docs/deferred-decisions.md`에 파킹.
+4. **문서 홈:** 이 규약은 `charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md`(locked methodology contract) 또는 `evals/README.md`의 "Per-Skill Claim-Fidelity Specs" 절에 써야 함 — 현재 세 문서 모두 프롬프트 언어에 대해 침묵.
+
+---
+
+이 결정은 lock 자체보다 **문구를 code-switched로 못 박고 handoff 두 픽스처를 보호하는 것**이 전부입니다. 그 두 가지만 처리하면 나머지는 같은 커밋의 산문 한 줄씩으로 흡수됩니다.
+
+방금 tightened 결정을 methodology contract(위 4번 홈)에 반영해 실제로 lock-in 할까요, 아니면 결정문 재작성만 초안으로 드릴까요? 생성된 critique packet은 `charness-artifacts/critique/2026-07-01-080401-packet.md`에 있습니다.

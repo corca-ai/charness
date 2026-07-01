@@ -1,0 +1,37 @@
+Validator passes; the critique record and its prepare packet are written as durable artifacts. Note: this is a detached-HEAD **capture worktree** (`not on any branch`), and my critique's own conclusion is *no mutation this session* — so there's no code change to commit alongside, and I'm not fabricating a commit on the capture base (that would corrupt the capture→grade diff). The artifacts persist in the worktree bundle.
+
+Here is the critique result.
+
+---
+
+## Critique — Slice 7 `critique`-skill RCF→RSF floor rewrite
+
+**Execution:** completed via canonical bounded-subagent path (3 angle reviewers + 1 separate counterweight).
+**Fresh-Eye Satisfaction:** `parent-delegated` — four bounded fresh-eye subagents ran in a different agent context; no same-agent substitution, no nested spawn requested or run.
+**Packet Consumed:** `charness-artifacts/critique/2026-07-01-081542-packet.md` (adapter declared 2 `packet_sections`).
+**Target:** `spec-critique.md` (pre-impl spec lock-in).
+
+**Change:** Apply reference-compaction Move C to `critique` — drop a reference *filename* from `requiredCommandFragments`, assert an emitted closeout token via `requiredSummaryFragments`, add a `## Closeout Vocabulary` block to SKILL.md. Two fixtures: `spec.json` (autonomous, under capture now) + `decision.spec.json` (pinned).
+
+**Capability at Stake:** the deterministic floor that proves a real run *followed its path* (autonomous scan + four-bin triage) — without over-relaxing into a hollow token or blowing the 194/200-line SKILL.md ceiling.
+
+**Angles:** Jackson (problem framing) · Gawande (operational gate) · Weinberg (diagnostic) — the spec-critique slate with Gawande swapped in for the "does the floor still gate?" question.
+
+### Counterweight Triage (four bins)
+
+| Bin | Concern |
+|---|---|
+| **Act Before Ship** | **F1** — No `critique-claim-fidelity` capture bundle exists yet; `plan.json` mandates a fresh ask-before-run capture before any RCF/RSF change lands. *Action: do not lock the floor move this session.* |
+| **Valid but Defer** | **F4** — 194/200 ceiling knife-edge (a vocab lift forces a compensating prose trim) — but the SKILL.md edit is scoped to the follow-up sweep, not this slice. **F5** — no `outcome-assertions.json` substance judge; once RSF lands the token is the only *durable* teeth (live-capture LLM-judge covers inference quality only). *Decide judge-vs-token when the capture runs.* |
+| **Over-Worry** | **F2** — "drop both RCF entries" is a strawman; `plan.json` already scopes Move C to the kebab Structured-Findings enum and keeps `autonomous-trigger.md` + `premortem-decision.md` RCF-pinned. **F3** — Title-Case bins are already DUP-inlined at `SKILL.md:37`; no vocab lift of the bins is warranted. **F6** — the no-same-agent guardrail is a one-line pointer, not a trimmable duplicate. |
+
+Counterweight correction folded in: captured-sibling ratio is **2 REFUTED / 2 PROVEN** (gather+setup refuted, hotl+create-cli proven), not "3 of 4."
+
+### Deliberately Not Doing
+- Not editing SKILL.md, the reference files, or either fixture's RCF/RSF this session (F1 blocks lock-in; F2/F3 show the naive move is unwarranted).
+- Not adding a `## Closeout Vocabulary` block — the genuinely-INLINE tokens are the kebab enum already validator-checked in `validate_critique_artifacts.py`, and the bins are already inlined; a lift would only spend the 6-line ceiling margin for no floor gain.
+
+### Next Move
+Run the plan's mandated proof, not the refactor: consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json`, then the ask-before-run Cautilus capture for the critique fixtures per the on-demand contract, and record the outcome as a finding — PROVEN (keep the floor) or REFUTED (no floor move). The RCF→RSF lift stays deferred in sweep issue #410 until that capture exists.
+
+Durable record: `charness-artifacts/critique/2026-07-01-slice7-critique-rcf-to-rsf.md` (validator PASS).
