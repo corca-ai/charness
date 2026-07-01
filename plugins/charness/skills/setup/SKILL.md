@@ -140,6 +140,25 @@ Then load only the references needed for the detected state:
      `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`
      instead of inflating `setup`
+7. Close with the canonical normalization vocabulary.
+   - emit `Repo mode: <mode>`, then a per-surface status line for each operating
+     surface using the `## Closeout Vocabulary` tokens (what was realigned versus
+     left already-aligned), and end with an explicit `Normalization non-claims:` line
+   - never report a bare "normalized"/"done": the per-surface CHANGED-versus-LEFT
+     accounting plus honest non-claims are the closeout's substance
+
+## Closeout Vocabulary
+
+Emittable-verbatim closeout tokens (validator substring-matches these); WHY-prose
+stays in `references/normalization-flow.md`.
+
+- `Repo mode` is one of `GREENFIELD` / `NORMALIZE` / `PARTIAL` / `read-only <reason>`.
+- Per operating surface (README / AGENTS / roadmap / operator-acceptance, plus any
+  optional surface actually touched), the closeout status is one of
+  `realigned <drift>` / `already-aligned` / `scaffolded` / `suppressed <reason>` /
+  `unverified <reason>`.
+- End with `Normalization non-claims:` naming what was NOT proven (pre-existing
+  failures, deferred advisories, unpushed state), or `Normalization non-claims: none`.
 
 ## Guardrails
 
