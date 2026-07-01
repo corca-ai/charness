@@ -9,13 +9,13 @@
 
 ## Current State
 
-- **Reference-compaction Slice 1 (KEYSTONE) DONE (committed `5971a29e`).** Shared
-  mechanism only, no per-skill token movement: RCF-or-RSF floor guard + advisory
-  `classTag` (DUP/INLINE/DEPTH, untagged→DEPTH) + `## Closeout Vocabulary` headroom
-  exemption w/ token-shape anti-abuse + create-skill token-home rule. 28 node + 16 py
-  tests, 25 live specs green, fresh-eye critique verdict SHIP. Residual:
-  `check_skill_surface_preflight.py` at 478/480 code lines — extract helpers before
-  the next add. [contract](../charness-artifacts/reference-compaction/contract.md)
+- **Reference-compaction Slices 1–2 DONE (`5971a29e`, `0e3f5f4f`).** S1 KEYSTONE
+  (mechanism only): RCF-or-RSF floor guard + advisory `classTag` (DUP/INLINE/DEPTH,
+  untagged→DEPTH) + `## Closeout Vocabulary` headroom exemption w/ token-shape
+  anti-abuse + create-skill token-home rule. S2 deleted 3 dead provenance memos
+  (web-fetch/gather-slack/gather-notion) + mirrors + inventory. Both fresh-eye SHIP.
+  Residual: `check_skill_surface_preflight.py` 478/480 code lines — extract helpers
+  before the next add. [contract](../charness-artifacts/reference-compaction/contract.md)
   (+ [census.json](../charness-artifacts/reference-compaction/census.json),
   [plan.json](../charness-artifacts/reference-compaction/plan.json)).
 - **#409 DONE (`9d4c2882`).** capture→grade preserves evidence for committing/clean
@@ -28,13 +28,13 @@
 
 ## Next Session
 
-1. **Continue reference-compaction (Slice 1 keystone DONE).** Next: **Slice 2 = DEAD
-   deletes** (web-fetch/gather-slack/gather-notion provenance memos: rm file + drop
-   SKILL.md `## References` bullet + mirror + find-skills inventory, together), then
-   **Slice 3** (spec 8 pure-DUP deletes), **Slice 4** (advisory classTag only). **Slice 5
-   (impl)** and **Slice 6 (spec enum)** move real tokens and Slice 5 **needs a FRESH
-   ask-before-run cautilus capture** to pick the honest RSF token. Slice 7 (RCF→RSF sweep)
-   is issue-filed. Per-slice contracts + risk verdicts in
+1. **Continue reference-compaction (Slices 1–2 DONE).** Next: **Slice 3 = spec 8
+   pure-DUP deletes** (RCF untouched; re-baseline spec coverage 16→8), then **Slice 4**
+   (advisory classTag only, no token movement). **Slice 5 (impl)** and **Slice 6 (spec
+   enum)** move real tokens and Slice 5 **needs a FRESH ask-before-run cautilus capture**
+   to pick the honest RSF token. Slice 7 (RCF→RSF sweep) is issue-filed. NB: watch the
+   ≥1-`references/`-file floor (validate_skills:327,356) when deleting — a skill can't hit
+   zero refs. Per-slice detail:
    [plan.json](../charness-artifacts/reference-compaction/plan.json) (`execution.slices`).
 2. **Continue correctness sweep** one skill at a time, reusing outcome-assertions.
    Remaining HYPOTHESIS-floor: achieve, announcement, create-cli, create-skill, critique,
