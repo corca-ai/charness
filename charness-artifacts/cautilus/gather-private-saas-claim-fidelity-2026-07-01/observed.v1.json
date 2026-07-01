@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "gather",
+  "skillDisplayName": "gather",
+  "evaluations": [
+    {
+      "evaluationId": "execution-gather-private-saas-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "gather",
+      "displayName": "gather",
+      "evaluationKind": "execution",
+      "prompt": "/charness:gather 회사 내부 전용 SaaS 대시보드 URL 하나 — SSO 뒤에 있는 사설 HR 로스터 도구(https://roster.internal.acme.example/team/eng) — 를 durable 지식 자산으로 수집해줘. 공개 접근도, 공식 export/CSV/API도 없고, 인증된 브라우저 세션만 가능한 상황이야. 더 강한 공식 경로(host grant / 공식 export)부터 정직하게 시도하고, 그게 없으면 어떤 auth/bootstrap 모드가 필요한지 명시한 뒤, 인증을 끝낼 수 없으면 로스터를 수집했다고 주장하지 말고 clean stop 으로 정확한 다음 단계를 남겨줘.",
+      "startedAt": "2026-07-01T13:51:53.947Z",
+      "invoked": true,
+      "summary": "Execution of /gather: 1149898 total tokens (24094 output, 994521 cache-read), 150405ms wall. Tool profile: Bash=11 Read=2 Skill=1. All declared claims met. Reference coverage: 1/6 DEPTH references opened (missing: adapter-contract.md, asset-refresh.md, document-seams.md, gather-provider.md, google-workspace-access.md). Advisory ref classes: 2 INLINE, 0 DUP (excluded from the coverage ratio).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 1149898,
+        "output_tokens": 24094,
+        "tool_count": 14,
+        "waste_smell_count": 0,
+        "duration_ms": 150405
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      }
+    }
+  ]
+}

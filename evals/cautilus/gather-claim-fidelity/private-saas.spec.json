@@ -1,0 +1,65 @@
+{
+  "_comment": "Claim-fidelity spec for the gather skill, PRIVATE-SAAS scenario (fan-out sibling of the public-URL default). Designed per-condition from the docs+routing (charness-artifacts/reference-compaction/gather-fixture-redesign.md): the public-URL default opens no skill-local doc a run must read, but a private-SaaS source with no official export/API and only an authenticated browser session forces browser-mediated-private-sources.md. RCF=[browser-mediated-private-sources.md] is the genuine run-time doc-floor this condition requires (its decision ladder + auth/bootstrap-mode vocabulary + remote/headless rule are absent from SKILL.md and emitted by no script). source-priority.md + capability-contract.md stay engage-always (planner-required) but are INLINE, not the floor here; gather-provider/google-workspace-access are on-demand for their own provider conditions. The source is a generic private SaaS (not slack/notion/gworkspace/github) so it does NOT route to a provider adviser — it hits the browser-mediated ladder. VERIFY (fresh capture): a representative run must OPEN browser-mediated-private-sources.md, reason about the auth/bootstrap ladder, and stop cleanly if no auth path exists (never claim the roster was acquired). thresholds omitted until a first passing baseline.",
+  "skillId": "gather",
+  "scenarioId": "private-saas",
+  "skillDisplayName": "gather",
+  "evaluationId": "execution-gather-private-saas-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "gather",
+  "prompt": "/charness:gather 회사 내부 전용 SaaS 대시보드 URL 하나 — SSO 뒤에 있는 사설 HR 로스터 도구(https://roster.internal.acme.example/team/eng) — 를 durable 지식 자산으로 수집해줘. 공개 접근도, 공식 export/CSV/API도 없고, 인증된 브라우저 세션만 가능한 상황이야. 더 강한 공식 경로(host grant / 공식 export)부터 정직하게 시도하고, 그게 없으면 어떤 auth/bootstrap 모드가 필요한지 명시한 뒤, 인증을 끝낼 수 없으면 로스터를 수집했다고 주장하지 말고 clean stop 으로 정확한 다음 단계를 남겨줘.",
+  "requiredCommandFragments": [
+    "browser-mediated-private-sources.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "asset-refresh.md",
+    "browser-mediated-private-sources.md",
+    "capability-contract.md",
+    "document-seams.md",
+    "gather-provider.md",
+    "google-workspace-access.md",
+    "source-priority.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "The bootstrap resolves the adapter via resolve_adapter.py on every run (artifact location + current-pointer mechanics + provider modes), so adapter readiness is unconditional; but the run reads the resolved adapter output, not this explainer doc, so it is engage-always yet not an RCF floor (lens 3, script-resolved)."
+    },
+    "asset-refresh.md": {
+      "engagement": "on-demand",
+      "rationale": "Provides the specific mechanics for safely writing dated records and refreshing the current pointer, only consulted when writing the result.",
+      "trigger": "When ready to write the durable asset to disk in step 4, ensuring symlink-aware pointer refresh and dated record handling."
+    },
+    "browser-mediated-private-sources.md": {
+      "engagement": "engage-always",
+      "classTag": "DEPTH",
+      "rationale": "This scenario pins a private-SaaS source with no public access, no official export/API, and no host-mediated provider — so the browser-mediated decision ladder (try stronger official/host paths first, agent-browser fallback, clean stop, honest degrade) plus the First-Class Auth/Bootstrap Modes vocabulary (imported auth state / persistent profile / session-name persistence / auth vault / origin-scoped headers / human-only bootstrap) and the remote/headless rule are the unconditional authority the run must open. None of it is in SKILL.md or emitted by a script, so this is a genuine run-time doc-floor (unlike the public-URL default, which opens no skill-local doc)."
+    },
+    "capability-contract.md": {
+      "engagement": "engage-always",
+      "rationale": "A planner UNCONDITIONAL required read: defines the access-mode decision ladder (grant/binary/env/public/human-only/degraded), trace preservation, and clean-stop behavior the run applies to interpret the acquisition result — judgment the script does not resolve.",
+      "classTag": "INLINE"
+    },
+    "document-seams.md": {
+      "engagement": "on-demand",
+      "rationale": "Suggests checking for existing repo-specific knowledge surfaces before defaulting to charness-artifacts/gather/; only relevant if the repo has established one.",
+      "trigger": "When the repo has a custom checked-in knowledge surface (docs folder, references directory, knowledge folder) that should override the default artifact location."
+    },
+    "gather-provider.md": {
+      "engagement": "on-demand",
+      "rationale": "The provider mode VALUE is resolved from the adapter by the bootstrap; this doc explains the direct-cli/host-mediated/none modes and is consulted only when acquiring a provider-backed (non-public) source, not on a public-URL gather where no provider is involved.",
+      "trigger": "When the source needs a direct-cli or host-mediated provider mode (Slack, Notion, Google Workspace, or other provider-backed source) rather than a public URL."
+    },
+    "google-workspace-access.md": {
+      "engagement": "on-demand",
+      "rationale": "Directs operator to use the workspace path adviser script and defines the preference order (host-mediated > operator export > browser-mediated), only consulted for Google sources.",
+      "trigger": "When the source is identified as Google Docs, Drive, Sheets, or Slides content requiring access beyond a public URL."
+    },
+    "source-priority.md": {
+      "engagement": "engage-always",
+      "rationale": "A planner UNCONDITIONAL required read and the skill's step 1: identify which source to gather from, keep primary-source identity explicit, and do not widen into search or substitute a derivative — judgment the script does not resolve.",
+      "classTag": "INLINE"
+    }
+  }
+}

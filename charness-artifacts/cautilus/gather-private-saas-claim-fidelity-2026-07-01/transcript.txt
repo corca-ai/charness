@@ -1,0 +1,39 @@
+I attempted the strongest honest paths and reached a **clean stop**. The roster was **not** gathered — I will not claim otherwise. Here is the typed result.
+
+## Gather Result — private HR roster (clean stop, not acquired)
+
+- **Source**: `https://roster.internal.acme.example/team/eng` (private HR roster, behind corporate SSO)
+- **Knowledge Capability requested**: durable, reusable snapshot of the `eng` team roster for later sessions
+- **Canonical Asset**: none written. `charness-artifacts/gather/latest.md` is **untouched** (still points at the prior unrelated record). Per the capability contract, error/degraded acquisitions must not refresh the durable pointer, so nothing was fabricated into the ledger.
+- **Freshness**: n/a — no capture
+- **Access Mode**: attempted `grant` → `binary`(browser) → all failed; terminal state = clean stop / missing capability
+- **Route / Selected Attempt**: `direct-then-fallback`; disposition `degraded`, final_status `error`, confidence `none`. Every stage errored:
+
+| Stage | Tool | Result |
+|---|---|---|
+| direct-public-fetch | curl | error — `ERR_NAME_NOT_RESOLVED` |
+| impersonated-public-fetch | curl_cffi | error |
+| defuddle-reader-extraction | defuddle | error |
+| patchright-render-recon | patchright | error |
+| agent-browser-render-recon | agent-browser | error — `net::ERR_NAME_NOT_RESOLVED` |
+
+### Requested Facts
+None available. No roster names, roles, or headcount were retrieved.
+
+### Captured vs Human Confirmation
+Nothing captured. This is **not** a partial/degraded content record — it is a no-content clean stop.
+
+### Why it stopped (two independent blockers)
+1. **Official path is unreachable, not just export-less.** I honestly tried the stronger path first — the origin `roster.internal.acme.example` does **not resolve** from this runtime (`NO_DNS_RESOLUTION`; `.example` is a reserved TLD and there's no VPN/split-tunnel/host-grant route to the internal network). So no page, and no probed export/CSV/API endpoint (`/team/eng/export`, `.csv`, `/api/team/eng`, `/api/v1/roster`) is reachable at all. There is no official export/CSV/API to fall back to.
+2. **Browser fallback has no bootstrap.** The `agent-browser` binary is installed (`/usr/local/bin/agent-browser`), but there is **no saved auth state, no persistent profile, no origin-scoped headers** (`~/.agent-browser`, `~/.config/agent-browser` absent). This is a **remote headless Linux runner** — SSO login cannot be completed non-interactively, and even a valid session would still hit blocker #1 (the origin doesn't resolve here).
+
+### Open Gaps → exact next steps
+To gather this durably, one of these must be provided; then re-run this same skill and it will proceed:
+
+- **Preferred — official export via host grant (strongest, most durable):** have IT/HR-tooling owner expose an official export/CSV/API for the `eng` roster, or grant this runtime a host-mediated capability to it. This removes the browser dependency entirely.
+- **Otherwise — browser bootstrap, requires BOTH:**
+  1. **Network reachability** to the internal origin from this runner (VPN/split-tunnel, or run the gather from a host inside the corporate network that resolves `roster.internal.acme.example`), **and**
+  2. **An approved auth/bootstrap mode** — one of: imported auth state, a persistent authenticated profile path, session-name persistence, or auth-vault login. On this remote/headless host that means a **one-time manual/headed SSO login** to mint the auth state before any headless run is honest.
+  - Do **not** paste SSO credentials/tokens into chat or into repo docs; deliver auth state through the approved local operator path only.
+
+Once either path is in place, re-invoke `/charness:gather` on the same URL — the source identity will match and it will refresh in place rather than create a duplicate.

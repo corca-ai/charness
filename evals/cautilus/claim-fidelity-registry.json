@@ -46,7 +46,13 @@
     {
       "skill_id": "gather",
       "spec_path": "evals/cautilus/gather-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
+      "fan_out_fit": "yes — gather fans out by SOURCE CONDITION (gather-fixture-redesign.md): this public-URL default opens no skill-local doc a run must read (source-priority/capability-contract are INLINE/planner-required; the provider docs are script-resolved), so its honest floor is the produced artifact; the private-saas sibling forces browser-mediated-private-sources.md."
+    },
+    {
+      "skill_id": "gather",
+      "scenario_id": "private-saas",
+      "spec_path": "evals/cautilus/gather-claim-fidelity/private-saas.spec.json",
+      "fan_out_fit": "yes — a private SaaS source with no export/host path forces the browser-mediated decision ladder + auth/bootstrap-mode vocabulary (browser-mediated-private-sources.md), which no other gather scenario opens."
     },
     {
       "skill_id": "handoff",
