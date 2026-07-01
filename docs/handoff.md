@@ -9,15 +9,12 @@
 
 ## Current State
 
-- **Reference-compaction Slices 1–6 DONE; Slice 7 issue-filed (#410).** S1 keystone;
-  S2–S4 deletes + advisory `classTag`; **S5 (`3c5c8657`) = impl proving slice: token-home
-  lift + RCF→RSF floor, PROVEN by a live ask-before-run capture (FLOOR PASS + substance
-  5/5; the plan's assumed `unverified-future` was NOT emitted — only `ran-pass` pinned)**;
-  S6 (`f9003594`) spec verification-type enum lift (no floor move, INLINE tags off-plan
-  per coverage-honesty). All fresh-eye SHIP. Residual:
-  `check_skill_surface_preflight.py` near its code-line cap — extract helpers before next
-  add. [contract](../charness-artifacts/reference-compaction/contract.md) ·
-  [plan.json](../charness-artifacts/reference-compaction/plan.json).
+- **Reference-compaction Slices 1–6 DONE; Slice 7 (#410) UNDERWAY.** S1 keystone (RCF-or-RSF
+  guard, `## Closeout Vocabulary`, `classTag`); S5 (`3c5c8657`) proved the impl RCF→RSF pattern.
+  **S7 create-cli DONE (`323f14a6`): FLOOR PASS, RSF=[`version`] OBSERVED (not in prompt),
+  command-conventions.md→DEPTH, RCF 3-entry, +quality-gates.md nit; fresh-eye SHIP.** Residual:
+  `check_skill_surface_preflight.py` near its code-line cap — extract helpers before next add.
+  [contract](../charness-artifacts/reference-compaction/contract.md) · [plan.json](../charness-artifacts/reference-compaction/plan.json).
 - **#409 DONE (`9d4c2882`).** capture→grade preserves evidence for committing/clean
   runs (diff vs capture base, transcript from `stream.jsonl`). Sweep reuse unblocked.
 - impl capture (5th sweep skill): floor **MISS** (0/8), substance **4/5**
@@ -29,15 +26,16 @@
 
 ## Next Session
 
-1. **Reference-compaction Slice 7 sweep — see #410.** Per-skill RCF→RSF floor rewrites
-   (critique/hitl/gather/hotl/handoff/setup/create-cli/achieve), each its own gate-clean
-   slice needing a FRESH ask-before-run cautilus capture to re-baseline the RSF token
-   (proven necessary in S5 — do NOT assume). greenfield-flow.md + default-surfaces.md STAY
-   RCF-pinned; issue/markdown-preview need no change. Instrument is now clean: **#409 Gap 2
-   FIXED (`22ed2c2b`)** — the mjs sources the RSF summary from `stream.jsonl`, so #410
-   captures grade without the tree-truncation false-MISS. Lesson still hot: run broad pytest
-   BEFORE the critique (grep misses path-built test consumers, e.g.
-   [test_skill_lesson_durability.py](../tests/quality_gates/test_skill_lesson_durability.py)).
+1. **Reference-compaction Slice 7 sweep — see #410.** Per-skill RCF→RSF, each its own
+   gate-clean slice needing a FRESH ask-before-run capture to re-baseline the RSF token (S5
+   lesson: do NOT assume). **DONE: create-cli.** REMAINING: hotl, handoff, setup (normalization
+   only; greenfield-flow.md + default-surfaces.md STAY RCF-pinned), critique (ceiling + dual-spec),
+   achieve (conditional), **hitl (CONTESTED — chunk-contract.md holds a rubric beyond the
+   disposition enum; the capture must confirm the RCF drop is not over-relaxation)**, gather
+   (capture fetches an external URL → needs sandbox network). Proven mechanics: `capture-skill-run.sh`
+   needs an ABSOLUTE `--out-dir`; grade the mjs `--stream stream.jsonl`; scrub worktree/credentials
+   from the bundle before commit; run broad pytest BEFORE the critique (grep misses path-built
+   consumers, e.g. [test_skill_lesson_durability.py](../tests/quality_gates/test_skill_lesson_durability.py)).
 2. **Continue correctness sweep** one skill at a time, reusing outcome-assertions.
    Remaining HYPOTHESIS-floor: achieve, announcement, create-cli, create-skill, critique,
    find-skills, gather, handoff, hotl, ideation, narrative, release, spec. A miss =
