@@ -1,0 +1,109 @@
+Confirmed: `docs/roadmap.md` exists nowhere in the repo, and the only file referencing it is `operator-acceptance.md` itself. That's a real fidelity signal for Chunk 1. Setup is complete — here is the review frame and the first chunk.
+
+---
+
+## Review Goal
+
+Bounded, resumable, chunk-by-chunk human-in-the-loop review of **`docs/operator-acceptance.md`** (198 lines). Each chunk gets: verbatim excerpt → Agent Assessment → non-binding Recommended Disposition → a concrete decision for you. **Nothing advances or gets edited until you approve.** Adapter has `require_explicit_apply: true`, so even after all chunks are accepted, I will not touch the target file until you give an explicit apply instruction.
+
+## Judgment Capability (why human, not auto)
+
+This is claim-fidelity work: whether wording still matches repo reality is partly a *product-intent* call (e.g. "is roadmap.md deliberately gone or accidentally stale?"). Automation can flag a missing path; only you can say whether the doc's framing should change.
+
+## Proposed Review Criteria (adjust these before I proceed if you disagree)
+
+1. **Claim-fidelity** — referenced paths, commands, and contracts match repo reality.
+2. **Internal-consistency** — no stale or self-contradictory guidance across items.
+3. **Actionability** — acceptance bars are concrete and operator-verifiable.
+
+## Chunk Plan (7 chunks, section-anchored)
+
+| ID | Lines | Section |
+|----|-------|---------|
+| c1 | 1–27 | Intro + Shared Start + Progressive Operator Path |
+| c2 | 29–47 | Item 1 — Close Deferred Decisions |
+| c3 | 49–78 | Item 2 — Wire cautilus Into charness |
+| c4 | 80–141 | Item 3 — Run Managed CLI Install Experiments |
+| c5 | 143–161 | Item 4 — Raise create-skill / spec Gates |
+| c6 | 163–188 | Item 5 — Decide Adapter Requirements Per Public Skill |
+| c7 | 190–198 | Closeout Rule |
+
+---
+
+# Chunk 1 / 7 — Intro + Shared Start + Progressive Operator Path
+
+**Target:** `docs/operator-acceptance.md` · **Lines:** 1–27 · **Target/Cursor Checked:** ✅ (verified this is the current working-tree text; cursor at start, no prior accepted chunk)
+
+### Original Material (verbatim excerpt)
+
+<md>
+# Operator Acceptance
+
+This document translates the remaining roadmap into operator-owned acceptance runs.
+Use it when you want to take over one roadmap item directly instead of asking an agent to discover the whole repo state again.
+Each item names the ownership seam, read-first surfaces, and acceptance bar. Restate that material in your own prompt instead of copying another embedded prompt block into chat.
+
+## Shared Start
+
+Run these first at the repo root:
+</md>
+
+<bash>
+git status --short
+sed -n '1,220p' docs/handoff.md
+sed -n '1,260p' docs/roadmap.md 2>/dev/null || true
+./scripts/run-quality.sh
+</bash>
+
+<md>
+If the work touches evaluator, integrations, or packaging, also read:
+</md>
+
+<bash>
+sed -n '1,220p' docs/control-plane.md
+sed -n '1,220p' docs/public-skill-validation.md
+</bash>
+
+<md>
+## Progressive Operator Path
+
+See [docs/operator-progressive-path.md](./operator-progressive-path.md) for the per-horizon operator capability map (Day 1, Week 8, Month 6).
+</md>
+
+### Related Context
+
+I verified every path referenced in this chunk against the working tree:
+
+| Reference | Line | Exists? |
+|-----------|------|---------|
+| `docs/handoff.md` | 13 | ✅ |
+| `docs/roadmap.md` | 14 | ❌ **missing** (guarded by `2>/dev/null \|\| true`) |
+| `scripts/run-quality.sh` | 15 | ✅ |
+| `docs/control-plane.md` | 21 | ✅ |
+| `docs/public-skill-validation.md` | 22 | ✅ |
+| `docs/operator-progressive-path.md` | 27 | ✅ |
+
+`docs/roadmap.md` exists **nowhere** in the repo, and `operator-acceptance.md` is the **only** file that still references it.
+
+### Agent Assessment
+
+- **Claim-fidelity — one real defect.** The intro (line 3) says the doc "translates the remaining **roadmap** into operator-owned acceptance runs," and Shared Start (line 14) tells the operator to read `docs/roadmap.md`. That file does not exist. Because line 14 is guarded with `2>/dev/null || true`, it silently no-ops — so an operator following Shared Start literally gets *nothing* from that line and is never told the roadmap file is gone. The framing promises a roadmap source that isn't there.
+- **Internal-consistency — ok otherwise.** The evaluator/integrations/packaging branch and the Progressive Operator Path pointer are consistent and resolve correctly.
+- **Actionability — good.** Shared Start is concrete and runnable. The "restate in your own prompt instead of copying embedded prompt blocks" instruction (line 5) is a sound operator discipline.
+- **Ambiguity for you to resolve:** Is the roadmap deliberately retired (this doc *is* the successor to a roadmap) or is `docs/roadmap.md` accidentally deleted/renamed? The fix differs: if retired, rewrite line 3 + drop line 14's roadmap read; if accidental, the file should be restored (out of scope for this doc review, but I'd flag it).
+
+### Recommended Disposition (non-binding)
+
+**Revise** — narrow edit, pending your intent call:
+- Line 3: replace "translates the remaining roadmap" with wording that doesn't promise a roadmap file (e.g. "translates the remaining acceptance items" or "the remaining roadmap items tracked here").
+- Line 14: remove the `sed ... docs/roadmap.md` line from Shared Start (or repoint it to `docs/handoff.md`'s backlog, whichever reflects where "remaining items" actually live now).
+
+If you tell me the roadmap was deliberately folded into this doc, I'll treat "retired" as an accepted rule and apply that lens to later chunks too.
+
+### Decision Needed
+
+1. Do you accept these three review criteria as the standing rules for all 7 chunks?
+2. For Chunk 1: **Accept as-is**, **Accept-with-revise** (my proposed edits), or **Revise differently** (tell me how)?
+3. Intent on the roadmap: **retired** (this doc supersedes it) or **accidentally missing** (should be restored)?
+
+I will not record any accepted text or advance to Chunk 2 until you respond. No target-file edits happen until the Apply Phase after all chunks + your explicit apply instruction.
