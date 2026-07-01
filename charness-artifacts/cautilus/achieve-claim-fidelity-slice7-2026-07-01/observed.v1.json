@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "achieve",
+  "skillDisplayName": "achieve",
+  "evaluations": [
+    {
+      "evaluationId": "execution-achieve-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "achieve",
+      "displayName": "achieve",
+      "evaluationKind": "execution",
+      "prompt": "/charness:achieve  모든 repo 스크립트에 일관된 --json 출력 모드를 공유 헬퍼와 테스트로 추가하는 목표를 잡아줘",
+      "startedAt": "2026-07-01T08:27:22.505Z",
+      "invoked": true,
+      "summary": "Execution of /achieve: 1961611 total tokens (39467 output, 1705536 cache-read), 236894ms wall. Tool profile: Bash=13 Edit=6 Skill=1 Read=1. Claim failures: command log missing required fragment: lifecycle.md; command log missing required fragment: goal-artifact.md. Reference coverage: 0/3 DEPTH references opened (missing: adapter-contract.md, goal-artifact.md, lifecycle.md). Advisory ref classes: 1 INLINE, 1 DUP (excluded from the coverage ratio). Waste smells: 1 (repeated_edit).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 1961611,
+        "output_tokens": 39467,
+        "tool_count": 21,
+        "waste_smell_count": 1,
+        "duration_ms": 236894
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      }
+    }
+  ]
+}

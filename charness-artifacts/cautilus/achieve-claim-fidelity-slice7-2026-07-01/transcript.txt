@@ -1,0 +1,34 @@
+The goal artifact is shaped and validated. One thing I will **not** silently do: commit it. This is a **cautilus eval-capture worktree** on detached HEAD (not a branch) — the canonical repo is `/home/hwidong/codes/charness` on `main`. A commit here would be a dangling commit that never reaches `main` and gets scrubbed with the capture bundle. That commit-target decision is yours.
+
+Here's the Before-phase result.
+
+## Goal shaped (draft, not activated)
+
+**`charness-artifacts/goals/2026-07-01-repo-script-json-output-mode.md`** — validates clean (`ok: true`, 0 placeholders), and correctly **refuses activation** (`pursue_ready: false`) until one scope decision is resolved.
+
+### What it targets (grounded in a 2026-07-01 survey)
+- `scripts/` has **271 `.py`**, of which **149 are argparse CLI entrypoints**, **79 are `_lib.py` helpers** (excluded — no CLI surface).
+- **79 entrypoints already emit `--json`** — each hand-rolling `json.dumps(...)` with drifting `ensure_ascii`/`indent`/key layout. **No shared helper exists.**
+- There's an existing convention to extend, not reinvent: `create-cli/references/machine-readable-state.md` (machine payload only in `--json` mode; human chatter on stderr).
+
+### Shape
+- **Goal:** one shared `scripts/*_lib.py` owning envelope shape + serialization + `--json` flag shim + stdout/stderr split; migrate emitters onto it; add a **consistency gate + unit tests** so it can't drift.
+- **5-slice plan:** helper (keystone) → gate → migrate the 79 → classify/exempt the remaining ~70 → wire gate + docs + retro.
+- **Non-goals** guard the obvious traps: no semantic/exit-code changes, no `_lib.py`, no big-bang rewrite, no empty-envelope padding of human-only scripts.
+- **Verification:** local pytest + the new gate is the completion floor; **no external/live proof** needed.
+
+### The one open decision blocking activation (broad-scope trigger)
+**What does "all repo scripts" mean for completion?**
+- **(A, proposed default)** normalize the 79 existing `--json` emitters + land the gate so new scripts must conform; remaining ~70 are a follow-on classification pass.
+- **(B)** full coverage — all 149 entrypoints gain helper-backed `--json` before complete (~2–3× timebox; risks padding human-only scripts).
+
+Plus confirm human-only exemptions are allowed, and confirm extending the existing convention doc vs a standalone one.
+
+## To activate
+Answer **A or B** (and the exemption/doc-convention points), I'll mark `## Discuss Before Activation` resolved, then:
+
+```
+/goal @charness-artifacts/goals/2026-07-01-repo-script-json-output-mode.md
+```
+
+Want me to (1) resolve the scope decision now if you pick A/B, and (2) tell me where to commit the draft — this capture worktree, or the canonical `main` checkout at `/home/hwidong/codes/charness`?

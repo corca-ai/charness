@@ -1,0 +1,27 @@
+{
+  "_comment": "OUTCOME assertion set for the achieve skill (companion to spec.json, which as of reference-compaction Slice 7 scores the EMITTED-token floor requiredSummaryFragments=['charness-artifacts/goals']). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle. Added in Slice 7 to close the gap the Slice-7 achieve fresh-eye critique surfaced: with the RCF doc-open proxy retired and no substance judge, the spec.json RSF token was achieve's WHOLE floor, and a bare-directory substring ('charness-artifacts/goals') can be satisfied by a run that merely NAMES the goals dir without producing an artifact. This set binds achieve's central claim ('interview prose intent into a reviewable goal artifact under charness-artifacts/goals/, keep slice progress and verification visible, prove the goal with honest non-claims') to a PRODUCED artifact + honest substance, not a path mention. The output_glob assertion resolves against a bundle outputs/ dir; capture-side output preservation for achieve is a tracked follow-up (as for hitl), so until preservation is wired it fails-closed with that evidence rather than passing — an honest known-pending floor, not a green. The judge assertion is judge-kind (needs the live judge --judge-cmd, ask-before-run) and is SKIPPED otherwise. Assertions are NOT reverse-engineered to one capture's literal output: they name only achieve's declared central-claim shape (a goal artifact under charness-artifacts/goals/ carrying slices + visible verification + honest non-claims), so a run that shapes no artifact, or closes without honest slice/verification/non-claim structure, legitimately scores low.",
+  "evalId": "achieve-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-achieve",
+      "kind": "deterministic",
+      "statement": "The captured run actually executed the achieve skill (sanity floor before grading the work).",
+      "check": {"type": "summary_contains", "value": "Execution of /achieve"},
+      "weight": 1
+    },
+    {
+      "_comment": "Recursive glob: achieve writes the goal artifact under charness-artifacts/goals/<dated>.md, so match a goals/*.md at any depth in the preserved changed set. This binds the spec.json RSF token to a REAL produced artifact rather than a path mention.",
+      "id": "produced-goal-artifact",
+      "kind": "deterministic",
+      "statement": "The run materialized a durable goal artifact under charness-artifacts/goals/ (produced, not merely named) so the objective is auditable.",
+      "check": {"type": "output_glob", "pattern": "**/goals/*.md"},
+      "weight": 2
+    },
+    {
+      "id": "auditable-goal-substance",
+      "kind": "judge",
+      "statement": "The produced goal artifact turns the prose intent into an auditable goal: it carries reviewable slices, keeps verification visible during the run, and proves the goal with honest non-claims (not an aspirational restatement of the prompt).",
+      "weight": 2
+    }
+  ]
+}
