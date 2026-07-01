@@ -31,7 +31,7 @@
       "skill_id": "critique",
       "scenario_id": "decision",
       "spec_path": "evals/cautilus/critique-claim-fidelity/decision.spec.json",
-      "fan_out_fit": "yes — pinned decision premortem makes premortem-decision.md unconditional, so the deterministic teeth (counterweight-triage + premortem-decision) carry the weight here, complementing the autonomous fixture."
+      "fan_out_fit": "yes — pinned decision premortem makes premortem-decision.md unconditional, so the deterministic tooth (premortem-decision) carries the weight here, complementing the autonomous fixture. (counterweight-triage.md retired from RCF in the Slice-7 reconciliation: census INLINE, and here it passed only via a subagent-prompt name-mention, #415.)"
     },
     {
       "skill_id": "debug",
