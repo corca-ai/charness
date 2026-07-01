@@ -526,3 +526,98 @@ test("parseEventsFromFiles and listSessionTreeJsonl read a parent + subagents tr
 	assert.ok(records.every((r) => typeof r.name === "string" && typeof r.step === "number"));
 	assert.deepEqual(records.map((r) => r.name).sort(), ["Bash", "Read"]);
 });
+
+// #409 Gap 2: a committing/clean run renders its closeout LAST, after the on-disk
+// session tree's final flush, so the tree can drop the block requiredSummaryFragments
+// match against. The authoritative capture stdout (stream.jsonl) retains it; the fix
+// reads the summary from a separate `finalTextEvents` stream while coverage/trace stay
+// on the tree (a subagent's reference read lives ONLY in the tree, never in the stream).
+test("finalTextEvents sources the closeout summary so a truncated tree is not a false MISS (#409 Gap 2)", () => {
+	const spec = {
+		skillId: "impl",
+		evaluationId: "execution-impl",
+		targetId: "impl",
+		prompt: "/charness:impl",
+		requiredCommandFragments: [],
+		requiredSummaryFragments: ["ran-pass"],
+		declaredReferences: [],
+	};
+	// Tree dropped the final closeout: its last parent text is the pre-commit critique line.
+	const treeEvents = [
+		assistantText("wrote the tests, ran pytest"),
+		assistantText("Critique verdict: CLEAN; committing before closeout"),
+	];
+	// Authoritative stream retains the ran-pass closeout as the final parent block.
+	const streamEvents = [
+		...treeEvents,
+		assistantText("## Lint Gate\n`ran-pass bash .githooks/pre-commit`"),
+	];
+	// Tree-only summary -> false MISS.
+	assert.equal(buildExecutionObservation({ spec, events: treeEvents }).report.outcome, "failed");
+	// Stream-sourced summary -> the RSF token matches -> PASS.
+	const { report } = buildExecutionObservation({ spec, events: treeEvents, finalTextEvents: streamEvents });
+	assert.equal(report.outcome, "passed");
+	assert.equal(report.findings.length, 0);
+});
+
+test("finalTextEvents only sources the summary; coverage stays on the tree", () => {
+	const spec = {
+		skillId: "impl",
+		evaluationId: "execution-impl",
+		targetId: "impl",
+		prompt: "/charness:impl",
+		requiredCommandFragments: [],
+		requiredSummaryFragments: ["ran-pass"],
+		declaredReferences: ["depth-a.md"],
+		referenceEngagement: { "depth-a.md": { engagement: "engage-always", rationale: "x", classTag: "DEPTH" } },
+	};
+	// The reference read is in the TREE only; the stream carries only the closeout text.
+	const treeEvents = [
+		assistantToolUse([{ name: "Read", input: { file_path: "/skills/public/impl/references/depth-a.md" } }]),
+		assistantText("did the work"),
+	];
+	const streamEvents = [assistantText("closeout: `ran-pass`")];
+	const { report } = buildExecutionObservation({ spec, events: treeEvents, finalTextEvents: streamEvents });
+	assert.equal(report.outcome, "passed"); // ran-pass came from the stream
+	assert.equal(report.coverage.declared, 1);
+	assert.equal(report.coverage.covered, 1); // depth-a.md opened, seen in the TREE not the stream
+});
+
+test("runCli --stream sources the summary from the authoritative stdout, not the truncated tree", () => {
+	const root = mkdtempSync(join(tmpdir(), "charness-stream-"));
+	// Session tree: final parent block has NO ran-pass (dropped closeout).
+	writeFileSync(
+		join(root, "sess.jsonl"),
+		`${JSON.stringify(assistantToolUse([{ name: "Bash", input: { command: "pytest" } }]))}\n` +
+			`${JSON.stringify(assistantText("Critique verdict: CLEAN; committing"))}\n`,
+	);
+	// stream.jsonl: complete stdout with the ran-pass closeout as the final block.
+	const streamPath = join(root, "stream.jsonl");
+	writeFileSync(
+		streamPath,
+		`${JSON.stringify(assistantText("Critique verdict: CLEAN; committing"))}\n` +
+			`${JSON.stringify(assistantText("## Lint Gate `ran-pass`"))}\n`,
+	);
+	const specPath = join(root, "spec.json");
+	writeFileSync(
+		specPath,
+		JSON.stringify({
+			skillId: "impl",
+			evaluationId: "execution-impl",
+			targetId: "impl",
+			prompt: "/charness:impl",
+			requiredCommandFragments: [],
+			requiredSummaryFragments: ["ran-pass"],
+			declaredReferences: [],
+		}),
+	);
+	// Without --stream: tree-only summary -> false MISS.
+	const failPath = join(root, "fail.json");
+	runCli(["--session-tree", join(root, "sess.jsonl"), "--spec", specPath, "--output", failPath]);
+	assert.equal(JSON.parse(readFileSync(failPath, "utf-8")).evaluations[0].outcome, "failed");
+	// With --stream: closeout token matches -> PASS.
+	const okPath = join(root, "ok.json");
+	const code = runCli(["--session-tree", join(root, "sess.jsonl"), "--spec", specPath, "--stream", streamPath, "--output", okPath]);
+	assert.equal(code, 0);
+	assert.equal(JSON.parse(readFileSync(okPath, "utf-8")).evaluations[0].outcome, "passed");
+});

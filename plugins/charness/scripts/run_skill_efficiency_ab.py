@@ -337,6 +337,10 @@ def run_one(repo_root: Path, ref: str, invocation: str, spec_path: Path, out_dir
         [
             "node", str(repo_root / OBSERVE_SCRIPT),
             "--session-tree", tree, "--spec", str(spec_path), "--output", str(observed),
+            # requiredSummaryFragments match the closeout; read it from the complete
+            # stdout, not the tree, which can drop the final block (#409 Gap 2 — the
+            # same reason _write_transcript reads stream.jsonl below).
+            "--stream", str(out_dir / "stream.jsonl"),
         ],
         capture_output=True, text=True, check=False,
     )

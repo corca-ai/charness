@@ -22,7 +22,7 @@
 // Outcome is set from the claim matchers only (passed/failed). Budget drift is
 // left to cautilus's threshold degrade so the two signals stay separable.
 
-import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import process from "node:process";
 
@@ -648,7 +648,15 @@ function referenceClass(spec, ref) {
 	return CLASS_TAGS.has(tag) ? tag : "DEPTH";
 }
 
-export function buildExecutionObservation({ spec, events } = {}) {
+// `finalTextEvents` (optional) is the AUTHORITATIVE parent-track event stream for
+// the closeout summary — the capture harness's `stream.jsonl` stdout, which retains
+// the final flushed assistant block that the on-disk session tree can drop
+// (#409 Gap 2: a committing run renders its closeout LAST, after the tree's final
+// flush). requiredSummaryFragments match against that closeout, so a tree-only read
+// gives a false MISS on a genuinely-passing run. When provided, the summary is read
+// from it; the tree `events` still own coverage/trace/tokens (a subagent's reference
+// read lives ONLY in its tree jsonl, never in the parent stdout stream).
+export function buildExecutionObservation({ spec, events, finalTextEvents } = {}) {
 	if (!spec || typeof spec !== "object") {
 		throw new Error("spec must be an object");
 	}
@@ -658,7 +666,7 @@ export function buildExecutionObservation({ spec, events } = {}) {
 		}
 	}
 	const commandLog = collectCommandLog(events);
-	const summaryText = finalAssistantText(events);
+	const summaryText = finalAssistantText(finalTextEvents ?? events);
 	const opened = collectOpenedBasenames(events);
 	const tokens = sumTokens(events);
 	const duration = durationMs(events);
@@ -790,6 +798,7 @@ const USAGE = `Usage:
   node ./scripts/agent-runtime/build-skill-execution-observation.mjs \\
     --session-tree <projDir-or-session.jsonl> \\
     --spec <spec.json> \\
+    [--stream <stream.jsonl>] \\
     [--output <observed.v1.json>] [--trace-digest <trace-digest.jsonl>]
 
 Reads every *.jsonl under the session tree (parent + subagents), applies the
@@ -799,6 +808,14 @@ and emits a cautilus.skill_evaluation_inputs.v1 observed packet for
 \`cautilus evaluate observation\`. A human-readable claim/coverage line is printed
 to stderr.
 
+requiredSummaryFragments match the run's CLOSEOUT (final parent assistant text).
+The on-disk session tree can drop that final flushed block on a committing/clean
+run (#409 Gap 2), so the summary is read from the authoritative capture stdout:
+pass --stream <stream.jsonl>, or omit it and the capture harness's sibling
+stream.jsonl (out-dir/stream.jsonl, three levels up from a config/projects/<proj>
+tree dir) is auto-resolved. The tree still owns coverage/trace/tokens. Synthetic
+trees with no sibling stream fall back to the tree summary unchanged.
+
 It also writes a per-tool-call efficiency trace (\`trace-digest.jsonl\`, default
 next to --output) and runs a deterministic, advisory waste lens, printing any
 smells plus a paste-ready \`## Efficiency\` finding block to stderr. Run --output
@@ -806,7 +823,7 @@ INTO the durable bundle dir so the trace survives the ephemeral capture cleanup.
 `;
 
 export function runCli(argv, { readFile = readJson } = {}) {
-	const options = { sessionTree: null, spec: null, output: null, traceDigest: null };
+	const options = { sessionTree: null, spec: null, output: null, traceDigest: null, stream: null };
 	for (let index = 0; index < argv.length; index += 1) {
 		const arg = argv[index];
 		if (arg === "-h" || arg === "--help") {
@@ -822,6 +839,8 @@ export function runCli(argv, { readFile = readJson } = {}) {
 			options.output = value;
 		} else if (arg === "--trace-digest") {
 			options.traceDigest = value;
+		} else if (arg === "--stream") {
+			options.stream = value;
 		} else {
 			throw new Error(`Unknown argument: ${arg}`);
 		}
@@ -837,12 +856,38 @@ export function runCli(argv, { readFile = readJson } = {}) {
 		throw new Error("--spec is required");
 	}
 	const spec = readFile(options.spec);
-	const files = listSessionTreeJsonl(resolve(options.sessionTree));
+	const resolvedTree = resolve(options.sessionTree);
+	const files = listSessionTreeJsonl(resolvedTree);
 	if (files.length === 0) {
 		throw new Error(`No *.jsonl found under ${options.sessionTree}`);
 	}
 	const events = parseEventsFromFiles(files);
-	const { packet, report } = buildExecutionObservation({ spec, events });
+	// Authoritative closeout source (#409 Gap 2): prefer an explicit --stream, else
+	// auto-resolve the capture harness's sibling stream.jsonl (out-dir/stream.jsonl,
+	// three levels up from the config/projects/<proj> session tree). The on-disk tree
+	// can drop the final flushed closeout block that requiredSummaryFragments match
+	// against, so a tree-only summary is a false MISS on a passing run.
+	let streamPath = options.stream ? resolve(options.stream) : null;
+	if (!streamPath) {
+		let treeIsDir = false;
+		try {
+			treeIsDir = statSync(resolvedTree).isDirectory();
+		} catch {
+			treeIsDir = false;
+		}
+		if (treeIsDir) {
+			const candidate = join(resolvedTree, "..", "..", "..", "stream.jsonl");
+			if (existsSync(candidate)) {
+				streamPath = candidate;
+			}
+		}
+	}
+	let finalTextEvents;
+	if (streamPath && existsSync(streamPath)) {
+		finalTextEvents = parseEventsFromFiles([streamPath]);
+		process.stderr.write(`summary source: ${streamPath} (authoritative stream, #409 Gap 2)\n`);
+	}
+	const { packet, report } = buildExecutionObservation({ spec, events, finalTextEvents });
 	const serialized = `${JSON.stringify(packet, null, 2)}\n`;
 	if (options.output) {
 		writeFileSync(options.output, serialized);
