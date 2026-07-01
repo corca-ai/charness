@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "hotl",
+  "skillDisplayName": "hotl",
+  "evaluations": [
+    {
+      "evaluationId": "execution-hotl-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "hotl",
+      "displayName": "hotl",
+      "evaluationKind": "execution",
+      "prompt": "/charness:hotl 방금 적용된 repo 가드 동작 하나 — portable 스킬 편집에 issue 앵커(#NNN)가 들어가면 차단하는 pre-commit 가드 — 가 실제로 의도대로 차단하는지 evidence 기반으로 closeout 해줘. 실행 전에 proof packet(성공 기준·pre-roundtrip 실패 점검·feasibility·non-claims)을 먼저 쓰고, 이 증명이 어느 acceptance class(local-only 결정적 테스트인지 provider roundtrip인지)에 해당하는지 분류한 다음, 증명을 끝낼 수 없으면 ledger에 정확한 status 하나로 명시적 disposition 처리해줘.",
+      "startedAt": "2026-07-01T11:42:43.773Z",
+      "invoked": true,
+      "summary": "Execution of /hotl: 4853348 total tokens (72020 output, 4430181 cache-read), 451526ms wall. Tool profile: Bash=33 Read=21 Write=3 Skill=1 Agent=1 Edit=1. All declared claims met. Reference coverage: 1/2 DEPTH references opened (missing: adapter-contract.md). Advisory ref classes: 0 INLINE, 1 DUP (excluded from the coverage ratio). Waste smells: 5 (duplicate_read).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 4853348,
+        "output_tokens": 72020,
+        "tool_count": 60,
+        "waste_smell_count": 5,
+        "duration_ms": 451526
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 510000
+      }
+    }
+  ]
+}

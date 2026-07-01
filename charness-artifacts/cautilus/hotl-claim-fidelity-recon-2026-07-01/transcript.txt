@@ -1,0 +1,27 @@
+Closeout complete. Here's the HOTL result.
+
+## HOTL Closeout — skill-package issue-anchor edit-time guard
+
+**Loop Inventory** — The just-applied guard blocking disallowed issue anchors (`#NNN`, `owner/repo#N`, `issues/N`) in portable skill-package files: scan `scripts/skill_issue_anchor_scan.py` (slice `7204940d`) + PostToolUse edit-time guard `scripts/post_edit_skill_anchor_guard.py` (slice `08119de4`), sharing the canonical rule in `skill_text_quality_lib.py`.
+
+**Surface Class** — *Local guard* (deterministic), not a provider surface. **Framing correction:** your "pre-commit 가드" label is imprecise — the applied surface is an **edit-time PostToolUse guard**, not `.githooks/pre-commit` (that runs slice-closeout, no anchor logic). The git-side backstop is `validate_skill_ergonomics.py`, reached via the quality gate, sharing the same rule.
+
+**Acceptance Class** — **local-only deterministic test** (NOT provider roundtrip). Per the proof rules, deterministic tests *are* valid proof for this class.
+
+**Proof Packet** (written before execution) — success criteria (dirty→exit 2 + `path:line`; clean→exit 0; fail-open→exit 0; reachable via the repo-owned CLI); pre-roundtrip checks all passed (pytest 9.0.2, rule lib present, CLI exposes `--scan-issue-anchors`; `core.hooksPath`→empty-hooks affects git hooks only, not this guard); feasibility = adapter-declared commands already exist; no human intervention; non-claims recorded.
+
+**Executed Proof** — two independent channels:
+- `pytest tests/test_skill_anchor_guard_hook.py` → **11 passed**
+- Real seeded files: PostToolUse guard blocked `#417` (`exit 2`, `SKILL.md:3`), passed clean (`exit 0`), stayed silent on non-skill path (`exit 0`); CLI driver blocked (`exit 1`).
+
+**Ledger Status** — **`verified`** · `verified_at` 2026-07-01 · `verified_against` commit `0ee34676`, proof artifact = the closeout record, proving_surface_refs = the two guard scripts + canonical lib + test file.
+
+**Staleness** — none (baseline = HEAD; no proving-surface ref changed). Standing adjudication: `covered_by_tests`.
+
+**Non-Claims** — (1) live host *firing* of the PostToolUse hook is a separate host-runtime surface, not proven (this capture env has no installed host settings, so it wouldn't fire here); (2) the commit-time ergonomics sweep is the declared backstop, not re-proven; (3) non-skill files out of scope; (4) by-design, a *bare* `#12`/`#1` isn't flagged (`#\d{3,}` threshold) — prefixed forms still caught at any digit count.
+
+**Fresh-Eye Review** — bounded read-only reviewer adversarially checked all five claims → **CONFIRM** on `verified`; only note was the short-bare-anchor boundary, now recorded.
+
+**Next Action** — none for the applied guard (closed `verified`). Optional follow-up loop: prove live host firing via installed `settings.json` PostToolUse readback on a real edit.
+
+Artifacts committed (`45149187`): `charness-artifacts/hotl/2026-07-01-skill-anchor-edit-guard-closeout.md` + `latest.md`.
