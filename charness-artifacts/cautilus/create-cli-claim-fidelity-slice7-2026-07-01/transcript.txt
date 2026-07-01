@@ -1,0 +1,108 @@
+I have the full picture. This CLI is a **thin façade unifying four scripts that already exist but are scattered** — `plan_cautilus_proof.py` (the ask-before-run gate), `run_cautilus_eval.py` (the eval-only wrapper), `grade_skill_outcome.py` (advisory grader), and the `evals/cautilus/*-claim-fidelity/` fixture registry. The design's job is to give operators and agents one obvious front door without loosening the repo's eval-only / ask-before-run contract. Here is the design.
+
+---
+
+# `claim-fidelity` capture CLI — design
+
+## 1. Operator contract (who runs it, what's deterministic)
+
+| Caller | Uses it for | Needs |
+|---|---|---|
+| **Agent** (primary) | Discover a fixture → get a gated plan → run the capture → read a score, all chainable | `--json` on every verb; stable payload |
+| **Maintainer** | "Which skills are still un-captured?", re-baseline one skill after a reference edit | concise human stdout |
+| **CI** | Never runs `capture` (eval-only, `run_mode: ask`); may run `list`/`doctor` read-only | non-zero exit on gate refusal |
+
+- **Deterministic:** `list`, `plan` (planner verdict), `doctor`, and the fixture/registry validation. Same inputs → same output.
+- **Advisory / non-gating:** `score` (grader is explicitly advisory, "never gates").
+- **The one SPEND:** `capture` — it invokes cautilus. It is the only command that can be refused, and it must be.
+- **State that must survive:** the plan artifact (prep→execute contract) and the observation/score bundle under `charness-artifacts/cautilus/<eval>/`, so a later agent continues from facts, not a re-derivation.
+
+## 2. Command surface
+
+The proposed verbs mostly survive the intent-first checklist, with one reconciliation worth stating out loud (point-of-need check against `intent-first-grammar.md`):
+
+- The **upstream Cautilus binary** already uses `discover claims` / `evaluate observation`. This CLI is a *different layer* — it operates **this repo's** claim-fidelity capture workflow, not the Cautilus engine — so journey verbs named for the operator's job are correct here. I keep `list/plan/capture/score` and do **not** rename them to `discover/evaluate`; I just note that `score` is this repo's word for `evaluate observation` and keep the object implied.
+- `plan`→`capture` is a textbook **prep/execute split**, and it passes the 4-question test: (a) an agent is the primary caller that inspects/retries the intermediate, (b) fixture resolution + the planner gate is deterministic expansion worth caching, (c) the plan artifact schema is more stable than cautilus flags, (d) subset/retry matters. So the split is justified, not a no-op wrapper.
+
+```
+claim-fidelity list                          # discover fixtures (read-only)
+claim-fidelity plan   <skill[/scenario]>     # PREP: gated capture plan → artifact
+claim-fidelity capture <skill[/scenario]>    # EXECUTE: run the gated plan (only SPEND)
+claim-fidelity score  <eval|bundle-dir>      # grade an observation (advisory)
+claim-fidelity doctor [binary|readiness]     # read-only health, two scopes
+claim-fidelity version                        # cheap startup probe for agents
+```
+
+Rules applied from `command-surface.md` / `command-conventions.md`:
+- **Two probe layers kept separate**, not one overloaded `doctor`: `doctor binary` (is `cautilus` on PATH, runnable) vs `doctor readiness` (registry valid, adapter `run_mode`, fixtures resolvable). Bare `doctor` prints one primary `next_action` + per-scope `next_steps`.
+- **`version`** is the stable read-only probe for agents doing repeated startup checks; `-v` stays `verbose`.
+- **Machine discovery ≠ help text:** `claim-fidelity list --json` *is* the command/fixture registry for wrappers; no help-scraping.
+- Every verb takes `--json`; default stdout stays short.
+
+## 3. Mutation rules (the spine of this design)
+
+`list`, `plan`, `doctor`, `version`, and `score` (offline) are **read-only**. Only `capture` spends, and it is fenced exactly as `CLAUDE.md` + `cautilus-on-demand.md` require:
+
+- **`plan` is the dry-run of `capture`.** It calls `plan_cautilus_proof.py --json` and refuses to produce a runnable plan when:
+  - `next_action: "none"` → deterministic gates own this closeout; plan emits `runnable: false, reason: "planner-none"`.
+  - `must_ask_before_running: true` and `run_mode: "ask"` and **no** named log-backed request → `runnable: false, reason: "needs-justification-log"`.
+- **`capture` re-runs the gate itself** (never trusts a stale plan) and shells to the repo wrapper `run_cautilus_eval.py --mode observation --justification-log <path>` — never bare `cautilus evaluate`. Without a valid `--justification-log` (exists, ≥32 bytes, has a `- source-kind:` line in the allowed set) it exits non-zero, matching the wrapper's exit-2 contract.
+- **Option-looking positional rejection:** `plan --help` / `capture --help` as the *positional* value is rejected before any gate call; `<skill[/scenario]>` must not start with `-`.
+- **Progress to stderr, payload to stdout:** `capture` prints phase start / bounded heartbeat dots / phase completion to **stderr** so `--json` stdout stays parseable (long cautilus run = the exact "captures child output" case the skill calls out).
+- `capture` reports what it wrote (the run dir, the `- source-ref:`/`- source-kind:` block for `charness-artifacts/cautilus/latest.md`).
+
+## 4. Prep→execute artifact (the contract)
+
+`plan` writes a product-owned, machine-readable artifact that `capture` consumes; the artifact — not the cautilus flags — is the stable contract:
+
+```json
+{
+  "schema_version": 1,
+  "skill_id": "create-cli",
+  "scenario_id": null,
+  "spec_path": "evals/cautilus/create-cli-claim-fidelity/spec.json",
+  "runnable": false,
+  "reason": "needs-justification-log",
+  "planner": { "next_action": "none", "must_ask_before_running": true, "run_mode": "ask" },
+  "required_justification_kind": ["failing-prompt","transcript","operator-log","issue-log","regression-log"],
+  "required_command_fragments": ["command-surface.md"],
+  "capture_command": ["python3","scripts/run_cautilus_eval.py","--mode","observation","--justification-log","<REQUIRED>"]
+}
+```
+
+`capture_command` carries a `<REQUIRED>` placeholder for the justification-log precisely so the artifact can't be blindly executed — the operator/agent must supply the honest behavior source. This is the source-bound-record discipline: the gate travels *with* the plan.
+
+## 5. Distribution & code shape
+
+- **One checked-in entrypoint**, stdlib `argparse`, thin façade: `scripts/claim_fidelity.py` (sibling to `plan_cautilus_proof.py`/`run_cautilus_eval.py`). No new framework dependency, no reimplementation — each verb imports and calls the existing lib/script:
+  - `list` → read `evals/cautilus/claim-fidelity-registry.json` (+ scenario sub-specs), validate via `claim_fidelity_lib.validate_registry`.
+  - `plan` → `plan_cautilus_proof.py`.
+  - `capture` → `run_cautilus_eval.py`.
+  - `score` → `grade_skill_outcome.py --grade <bundle> --assertions <...>`.
+  - `doctor` → reuse `doctor_lib`/`cautilus_adapter_lib` for binary + `run_mode`.
+- Shared lifecycle logic (repo-root resolution, `--json` emit, positional guard) factored once, not copied per subcommand.
+
+## 6. Quality gates (from the capability seam above)
+
+Chosen from the contract, not a generic list:
+
+- Parser/`--help` smoke for all six verbs; `version` probe test.
+- **No-side-effect `--help`** on `plan`/`capture`; **option-looking positional rejection** on `plan`/`capture`.
+- **Gate fixtures — the load-bearing ones:** `plan` returns `runnable:false` on `next_action:none`; `capture` **refuses** (non-zero) with a missing/invalid justification-log; `capture` never calls bare `cautilus`.
+- **Side-effect watch:** assert `list`/`plan`/`doctor`/`score` touch no files and spawn no `cautilus` process; assert `capture --dry-run` spawns none either.
+- **JSON-shape tests** for all `--json` payloads incl. `list` (the discovery registry).
+- **Redaction:** `capture`/`score` surface transcripts → assert no raw secrets/tokens leak to stdout or JSON.
+- **`doctor` read-only** + **binary-vs-readiness not conflated** checks.
+- **Command-docs drift** gate (narrow: verb existence, `--json` anchor, "doctor is read-only", "capture requires --justification-log").
+- **Broad-verification worktree safety:** capture leaves `git status` clean / `HEAD` unchanged on success.
+- **Lint gate before slice-complete:** `ruff check` (C90) + `mypy`, recorded in the `Lint Gate` closeout field.
+
+---
+
+## Open decisions before I implement
+
+1. **Entrypoint name/home** — standalone `scripts/claim_fidelity.py`, or fold these verbs under an existing repo CLI namespace if one is the intended front door? (I lean standalone thin-façade to avoid inventing a registry.)
+2. **`capture` cautilus mode** — I've mapped live-capture to `--mode observation` (run the slash command → grade the observation). If the intended flow is `--mode skill-experiment` (subagent skill-clone), the plan artifact's `capture_command` changes; tell me which and I'll pin it.
+3. **`score` input** — grade an existing bundle dir only, or also auto-locate the latest bundle for a `<skill>`? (Auto-locate is friendlier but adds a "latest pointer" I'd rather keep explicit.)
+
+This is a design, not code yet — matching the "설계해줘" scope. Say the word (and answer 1–3) and I'll implement `scripts/claim_fidelity.py` + the gate/JSON/docs-drift tests as the smallest honest slice, then run the lint gate and close out.

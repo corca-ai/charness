@@ -46,8 +46,9 @@ by `impl`:
   (`lint_gate.detected` / `lint_gate.command`)
 - record the result in the `Lint Gate` closeout field whose states
   (`ran-pass`, `ran-fail-fixed`, `ran-fail-deferred`, `not-detected`,
-  `skipped <reason>`) are defined in
+  `skipped <reason>`) live in `impl` SKILL.md `## Closeout Vocabulary`, to which
   `../../impl/references/verification-ladder.md` "Lint Gate Closeout Shape"
+  now forwards
 
 The discipline is disclosure-before-commit, not a new hard gate; the repo's
 own pre-push/pre-commit hook still owns hard-block enforcement.

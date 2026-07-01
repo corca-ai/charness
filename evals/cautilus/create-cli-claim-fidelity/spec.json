@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the create-cli skill: does a real `/charness:create-cli` run honor its own central claims, above all that it routes to its references at the point of need? The prompt names a CONCRETE multi-command, agent-driven CLI (a live claim-fidelity capture runner with an explicit plan=prep / capture=execute split and a doctor lifecycle verb) because two of the four RCF refs are conditional on CLI shape: command-conventions.md is routed only 'for multi-command CLIs' and command-surface.md only for the prep/execute decision on agent-primary workflow commands. Pinning a multi-command agent-workflow CLI makes all four unconditional, and this is create-cli's most representative use (the skill emphasises subcommand-first, agent-facing, lifecycle surfaces) rather than matcher theater. declaredReferences is the full reference set (coverage report). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis. thresholds omitted until a first baseline capture sets a runtime budget. requiredCommandFragments rationale: intent-first-grammar.md (step 2, pick journey verbs first — unconditional) and quality-gates.md (step 6, choose gate axes — unconditional) are the strong matchers; command-conventions.md (multi-command lifecycle verbs) and command-surface.md (prep/execute split) are unconditional ONLY under the pinned multi-command agent-workflow prompt. command-surface.md is the weakest (routed solely at the prep/execute bullet) and is the live-capture watch item: if the captured run does not exercise a prep/execute decision, demote it from RCF then.",
+  "_comment": "Claim-fidelity spec for the create-cli skill: does a real /charness:create-cli run APPLY its canonical lifecycle-verb convention — emit the canonical `version` surface — rather than just OPEN the doc that describes it? reference-compaction Slice 7 moves this floor from the re-read PROXY to the EMITTED-token floor. Before: requiredCommandFragments pinned four docs including command-conventions.md, whose flagship content — the lifecycle verb enum (init/doctor/update/reset/uninstall/version) and 'treat version as the canonical version surface' — is ALREADY inlined verbatim in skills/public/create-cli/SKILL.md step 2 (lines 44-46), so opening command-conventions.md to satisfy the floor re-reads a convention the run already has in always-loaded core. Fix: requiredSummaryFragments asserts an actually-emitted canonical verb (`version`), re-baselined from a FRESH ask-before-run capture (charness-artifacts/cautilus/create-cli-claim-fidelity-slice7-2026-07-01/), NOT assumed. `version` is NOT in the prompt (which names list/plan/capture/score/doctor), so a run emitting it demonstrably ADDED the canonical version surface from the convention — the exact claim the doc-open proxied. command-conventions.md stays DECLARED with classTag DEPTH: the observed run DID open it, but for its unique depth (probe-surface list, -v=verbose rule, version/help flag conventions, product-shaped-divergence rationale), NOT the inlined verb enum — a depth read opened when the slice needs it, not an every-run floor. create-cli has NO outcome-assertions.json (no substance judge), so `version` carries the emitted signal alone; the three RETAINED RCF floors (intent-first-grammar.md step-2 journey verbs, command-surface.md prep/execute split, quality-gates.md gate axes — all unconditional under the pinned multi-command agent-workflow prompt) hold the routing floor. Honest-reading guard: `version` also occurs incidentally (e.g. a JSON `schema_version`), so it is a FORM floor; a future run that emits `version` only incidentally without a real design still fails the three doc-open floors, and if the token proves too weak in a later capture, re-pin to a stronger emitted phrase — never soften. The prompt names a CONCRETE multi-command agent-driven CLI (an explicit plan=prep / capture=execute split + a doctor lifecycle verb) because two RCF refs are conditional on CLI shape: command-surface.md (prep/execute) and formerly command-conventions.md (multi-command lifecycle) are unconditional only under a multi-command agent-workflow prompt, create-cli's most representative use. declaredReferences is the full reference set (coverage; DEPTH-only denominator, INLINE/DUP advisory). referenceEngagement classifies each reference on the engage-always/on-demand/gate-sufficient axis plus the classTag DUP/INLINE/DEPTH taxonomy. thresholds.max_duration_ms set from this first PASSING baseline capture (177065ms) at ~2x headroom (360000), the hitl/retro model; runtime_budget_respect is a degrade signal, not pass/fail.",
   "skillId": "create-cli",
   "skillDisplayName": "create-cli",
   "evaluationId": "execution-create-cli-claim-fidelity",
@@ -9,10 +9,11 @@
   "requiredCommandFragments": [
     "intent-first-grammar.md",
     "command-surface.md",
-    "command-conventions.md",
     "quality-gates.md"
   ],
-  "requiredSummaryFragments": [],
+  "requiredSummaryFragments": [
+    "version"
+  ],
   "declaredReferences": [
     "case-studies.md",
     "code-shape.md",
@@ -38,8 +39,9 @@
     },
     "command-conventions.md": {
       "engagement": "engage-always",
-      "rationale": "SKILL.md step 2 explicitly routes here for canonical lifecycle verbs (init, doctor, update, etc.) that govern the surface.",
-      "claimRole": "baseline-invariants"
+      "rationale": "SKILL.md step 2 routes here for the canonical lifecycle verbs, but that verb enum (init/doctor/update/reset/uninstall/version, 'version as the canonical version surface') is inlined verbatim in SKILL.md step 2 (lines 44-46), so the floor moved off the doc-open to the emitted `version` token (requiredSummaryFragments). This doc stays engage-always DEPTH for its unique depth — probe-surface list, -v=verbose rule, version/help flag conventions, product-shaped-divergence rationale — a read opened for slice depth, not an RCF floor.",
+      "claimRole": "baseline-invariants",
+      "classTag": "DEPTH"
     },
     "command-surface.md": {
       "engagement": "engage-always",
@@ -76,5 +78,8 @@
       "rationale": "SKILL.md line 104 mentions recording version provenance and defining cached latest-version checks, but only when the product owns version state.",
       "trigger": "when update guidance depends on install channel or the CLI needs version-tracking contract"
     }
+  },
+  "thresholds": {
+    "max_duration_ms": 360000
   }
 }
