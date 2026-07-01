@@ -142,7 +142,7 @@ Reopen trigger:
 - Question: Keep explicit mode menu or heuristic branch?
 - Current choice: Stay with heuristic branch strategy; explicit mode menu remains retired.
 - Why now: This direction is already implemented and reduces authoring overhead.
-- Impact surfaces: [`skills/public/spec/SKILL.md`](../skills/public/spec/SKILL.md), [`skills/public/spec/references/contract-modes.md`](../skills/public/spec/references/contract-modes.md)
+- Impact surfaces: [`skills/public/spec/SKILL.md`](../skills/public/spec/SKILL.md) (the contract-shaping heuristics, formerly `references/contract-modes.md`, are now inlined in the `## Contract Shaping` section)
 - Reopen trigger: If operators repeatedly request explicit mode selection for predictability.
 
 ### D16. `announcement` Delivery Kinds

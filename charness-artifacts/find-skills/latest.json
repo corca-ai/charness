@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-07-01T00:56:29Z",
+  "generated_at": "2026-07-01T01:34:07Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -616,24 +616,16 @@
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/spec/references/public-executable-contracts.md",
-          "skills/public/spec/references/sequence-discipline.md",
           "skills/public/spec/references/design-lenses.md",
           "skills/public/spec/references/taxonomy-axis-checkpoint.md",
           "skills/shared/references/generative-sequence.md",
           "skills/shared/references/source-bound-records.md",
           "skills/public/spec/references/evidence-durability.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
-          "skills/public/spec/references/contract-modes.md",
           "skills/public/spec/references/fixed-probe-defer.md",
-          "skills/public/spec/references/ingest-and-refine.md",
           "skills/public/spec/references/success-criteria.md",
           "skills/public/spec/references/acceptance-checks.md",
           "skills/public/spec/references/executable-spec-cost.md",
-          "skills/public/spec/references/rejected-alternatives.md",
-          "skills/public/spec/references/ambiguity-rules.md",
-          "skills/public/spec/references/impl-loop.md",
-          "skills/public/spec/references/ideation-boundary.md",
-          "skills/public/spec/references/document-seams.md",
           "skills/shared/references/agent-assessment-invariant.md",
           "skills/shared/references/success-criteria-review.md"
         ],

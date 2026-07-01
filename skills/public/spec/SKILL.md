@@ -38,8 +38,8 @@ If an ideation document already exists, refine it instead of restating the full
 discovery history. If executable acceptance artifacts already exist, treat them
 as part of the spec surface and keep them at the acceptance boundary. Distinguish
 `public executable contract` from `maintenance lint / implementation guard`.
-Use `references/public-executable-contracts.md`, `references/sequence-discipline.md`,
-and `references/design-lenses.md` for the detailed shaping rules.
+Use `references/public-executable-contracts.md` and `references/design-lenses.md`
+for the detailed shaping rules.
 
 ## Worktree Readiness
 
@@ -172,21 +172,13 @@ as `Entities` or `Stages` instead of recreating them under new names.
 
 ## References
 
-- `references/contract-modes.md`
 - `references/fixed-probe-defer.md`
-- `references/ingest-and-refine.md`
 - `references/success-criteria.md`
 - `references/acceptance-checks.md`
 - `references/evidence-durability.md`
 - `references/public-executable-contracts.md`
 - `references/executable-spec-cost.md`
-- `references/rejected-alternatives.md`
 - `references/design-lenses.md`
-- `references/sequence-discipline.md`
-- `references/ambiguity-rules.md`
-- `references/impl-loop.md`
-- `references/ideation-boundary.md`
-- `references/document-seams.md`
 - `references/taxonomy-axis-checkpoint.md`
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/success-criteria-review.md`

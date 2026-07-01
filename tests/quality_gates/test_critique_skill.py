@@ -112,16 +112,16 @@ def test_spec_and_narrative_preserve_rejected_alternatives() -> None:
     spec_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
         encoding="utf-8"
     )
-    rejected = (
-        ROOT / "skills" / "public" / "spec" / "references" / "rejected-alternatives.md"
-    ).read_text(encoding="utf-8")
     narrative_text = (ROOT / "skills" / "public" / "narrative" / "SKILL.md").read_text(
         encoding="utf-8"
     )
 
     assert "call `critique` for non-trivial contract decisions" in spec_text
     assert "Deliberately Not Doing" in spec_text
-    assert "rejected alternatives" in rejected
+    # The rejected-alternatives gist now lives inline in spec SKILL.md (the
+    # references/rejected-alternatives.md DUP was removed in reference-compaction
+    # Slice 3), so the concept is asserted against the core, not a deleted ref.
+    assert "rejected alternatives" in spec_text
     assert "Deliberately Not Doing" in narrative_text
 
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the spec skill: does a real `/charness:spec` run honor its central claim — route to its references at the point of need? spec ships NO scripts (pure-prose skill), so RCF is derived from the SKILL.md workflow + lens 7 (the test is which routed doc holds unique content the SKILL.md body does NOT inline). spec carries 16 references; the original fan-out closeout already tightened RCF 13 -> 4, and this pass refines that 4 -> 2 by two corrections. (1) public-executable-contracts.md is entirely about the public-executable-contract vs maintenance-lint boundary — relevant ONLY when the repo treats executable checks (specdown) as contract artifacts, the same condition that already makes executable-spec-cost.md on-demand; it was inconsistently tagged engage-always RCF -> demoted to on-demand. (2) sequence-discipline.md is routed at SKILL.md lines 41-42 but its content (put Fixed Decisions ahead of the probes they enable, order by dependency, defer post-slice choices) is inlined in Workflow step 2's Fixed/Probe/Deferred classification + ordering rule — the same reason fixed-probe-defer.md is already engage-always-not-RCF — so a representative run does the ordering from the workflow and is not forced to open the doc -> demoted from RCF (engage-always, claimRole decision-ordering). The two surviving floors are the routed docs whose unique content the workflow does NOT inline: design-lenses.md (lines 41-42 route 'Use references/design-lenses.md for the detailed shaping rules'; the Beck/Ousterhout slice-size and interface moves appear nowhere in the SKILL.md Contract Shaping body) and evidence-durability.md (line 104 routes 'See references/evidence-durability.md'; the full proof contract — durable-evidence vs reproduction-source roles, the Selected Evidence artifact shape, the reproduction-source HTML marker, the link-checker failure mode — is doc-only, the step-5 inline is a one-line gist). The other engage-always docs stay coverage-classified governing rubrics whose gist is inlined in their workflow steps (ingest-and-refine step 1, fixed-probe-defer/sequence step 2, ambiguity-rules step 3, success-criteria/acceptance-checks step 5, impl-loop step 6, ideation-boundary bootstrap/guardrails, contract-modes/document-seams shaping/guardrails), not hard must-open matchers. Bare /charness:spec stalls (spec needs a concept to contract — like ideation); the prompt pins a CONCRETE repo-honest concept to spec (lens 2 + lens 8) so the run shapes a slice (forcing design-lenses) and ties acceptance to durable proof (forcing evidence-durability), naming neither reference file (ungameable). spec writes its durable contract artifact in-repo (sandboxed in a capture), not an external write, so no lens-5 external non-claim applies. Fixture-only: design-lenses and evidence-durability are already routed at the point of need, and the demotions are fixture corrections, not skill defects. declaredReferences is the full skill-local set (coverage); shared refs (agent-assessment-invariant.md, success-criteria-review.md, source-bound-records.md, fresh-eye-subagent-review.md, generative-sequence.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds omitted until a baseline capture sets a budget.",
+  "_comment": "Claim-fidelity spec for the spec skill: does a real `/charness:spec` run honor its central claim — route to its references at the point of need? spec ships NO scripts (pure-prose skill), so RCF is derived from the SKILL.md workflow + lens 7 (the test is which routed doc holds unique content the SKILL.md body does NOT inline). spec carries 8 references (reference-compaction Slice 3 deleted 8 pure-DUP coverage refs; declaredReferences 16 -> 8, RCF unchanged); the original fan-out closeout already tightened RCF 13 -> 4, and a later pass refined that 4 -> 2 by two corrections. (1) public-executable-contracts.md is entirely about the public-executable-contract vs maintenance-lint boundary — relevant ONLY when the repo treats executable checks (specdown) as contract artifacts, the same condition that already makes executable-spec-cost.md on-demand; it was inconsistently tagged engage-always RCF -> demoted to on-demand. (2) sequence-discipline.md is routed at SKILL.md lines 41-42 but its content (put Fixed Decisions ahead of the probes they enable, order by dependency, defer post-slice choices) is inlined in Workflow step 2's Fixed/Probe/Deferred classification + ordering rule — the same reason fixed-probe-defer.md is already engage-always-not-RCF — so a representative run does the ordering from the workflow and is not forced to open the doc -> demoted from RCF (engage-always, claimRole decision-ordering). The two surviving floors are the routed docs whose unique content the workflow does NOT inline: design-lenses.md (lines 41-42 route 'Use references/design-lenses.md for the detailed shaping rules'; the Beck/Ousterhout slice-size and interface moves appear nowhere in the SKILL.md Contract Shaping body) and evidence-durability.md (line 104 routes 'See references/evidence-durability.md'; the full proof contract — durable-evidence vs reproduction-source roles, the Selected Evidence artifact shape, the reproduction-source HTML marker, the link-checker failure mode — is doc-only, the step-5 inline is a one-line gist). The other engage-always docs stay coverage-classified governing rubrics whose gist is inlined in their workflow steps (fixed-probe-defer step 2, success-criteria/acceptance-checks step 5), not hard must-open matchers. NOTE: Slice 3 deleted the pure-DUP coverage refs whose gist SKILL.md fully inlines (contract-modes, ingest-and-refine, rejected-alternatives, sequence-discipline, ambiguity-rules, impl-loop, ideation-boundary, document-seams — spec-dir copies only); some RCF-derivation prose above references those now-deleted docs as historical context. The two RCF floors (design-lenses, evidence-durability) and the on-demand executable-only refs are unchanged. Bare /charness:spec stalls (spec needs a concept to contract — like ideation); the prompt pins a CONCRETE repo-honest concept to spec (lens 2 + lens 8) so the run shapes a slice (forcing design-lenses) and ties acceptance to durable proof (forcing evidence-durability), naming neither reference file (ungameable). spec writes its durable contract artifact in-repo (sandboxed in a capture), not an external write, so no lens-5 external non-claim applies. Fixture-only: design-lenses and evidence-durability are already routed at the point of need, and the demotions are fixture corrections, not skill defects. declaredReferences is the full skill-local set (coverage); shared refs (agent-assessment-invariant.md, success-criteria-review.md, source-bound-records.md, fresh-eye-subagent-review.md, generative-sequence.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds omitted until a baseline capture sets a budget.",
   "skillId": "spec",
   "skillDisplayName": "spec",
   "evaluationId": "execution-spec-claim-fidelity",
@@ -13,19 +13,11 @@
   "requiredSummaryFragments": [],
   "declaredReferences": [
     "acceptance-checks.md",
-    "ambiguity-rules.md",
-    "contract-modes.md",
     "design-lenses.md",
-    "document-seams.md",
     "evidence-durability.md",
     "executable-spec-cost.md",
     "fixed-probe-defer.md",
-    "ideation-boundary.md",
-    "impl-loop.md",
-    "ingest-and-refine.md",
     "public-executable-contracts.md",
-    "rejected-alternatives.md",
-    "sequence-discipline.md",
     "success-criteria.md",
     "taxonomy-axis-checkpoint.md"
   ],
@@ -35,25 +27,10 @@
       "rationale": "SKILL.md Workflow step 5 states 'every important success criterion should imply at least one acceptance check' and references this doc for common types; the acceptance-check gist is inlined in step 5, so it is a governing rubric, not a forced open.",
       "claimRole": "verification-bridge"
     },
-    "ambiguity-rules.md": {
-      "engagement": "engage-always",
-      "rationale": "SKILL.md Workflow step 3 inlines the ask-vs-default-vs-defer gate (ask only for choices that change scope/behavior/acceptance/sequencing/risk; recommend a default when clear); the doc is the governing rubric, not a forced open.",
-      "claimRole": "questioning-gate"
-    },
-    "contract-modes.md": {
-      "engagement": "engage-always",
-      "rationale": "SKILL.md Contract Shaping inlines 'choose the lightest honest contract shape'; this doc is the governing heuristic for that step, not a forced open.",
-      "claimRole": "shaping-heuristic"
-    },
     "design-lenses.md": {
       "engagement": "engage-always",
       "rationale": "One of the two RCF floors. SKILL.md lines 41-42 route 'Use references/design-lenses.md for the detailed shaping rules', and the Beck (smallest honest slice, fast feedback) and Ousterhout (deeper seam, duplicated low-level detail = wrong boundary) moves appear nowhere in the SKILL.md Contract Shaping body — so a representative run that decides slice size and contract boundary is forced to open it for content the workflow does not inline.",
       "claimRole": "shaping-lens"
-    },
-    "document-seams.md": {
-      "engagement": "engage-always",
-      "rationale": "SKILL.md Guardrails inline 'keep host-specific file locations or template choices outside the core skill body'; this doc owns the canonical-artifact/no-duplication rules as a governing rubric, not a forced open.",
-      "claimRole": "portability-rule"
     },
     "evidence-durability.md": {
       "engagement": "engage-always",
@@ -70,35 +47,10 @@
       "rationale": "SKILL.md Workflow step 2 names this 'the core discipline for spec' but inlines the Fixed/Probe/Deferred classification verbatim (lines 75-79), so the run engages the discipline from the workflow rather than being forced to open the doc.",
       "claimRole": "core-discipline"
     },
-    "ideation-boundary.md": {
-      "engagement": "engage-always",
-      "rationale": "SKILL.md Bootstrap and Guardrails inline the inherit-stable-concept-or-send-back-to-ideation rule; this doc is the governing upstream gate, not a forced open.",
-      "claimRole": "upstream-gate"
-    },
-    "impl-loop.md": {
-      "engagement": "engage-always",
-      "rationale": "SKILL.md Workflow step 6 inlines the keep-the-contract-alive rule (if implementation discovers a fact that changes scope/acceptance, update the spec); this doc is the governing sync rubric, not a forced open.",
-      "claimRole": "sync-rule"
-    },
-    "ingest-and-refine.md": {
-      "engagement": "engage-always",
-      "rationale": "SKILL.md Workflow step 1 inlines the opening move (identify source artifact, restate the stable idea, separate decided from ambiguous); this doc is the governing rubric for step 1, not a forced open.",
-      "claimRole": "opening-move"
-    },
     "public-executable-contracts.md": {
       "engagement": "on-demand",
       "rationale": "The doc is entirely about the public-executable-contract vs maintenance-lint boundary, relevant only when the repo treats executable checks (e.g. specdown) as contract artifacts — the same condition that makes executable-spec-cost.md on-demand. A representative prose-contract run never opens it, so the prior engage-always-RCF tag was an over-classification inconsistent with its executable-only trigger.",
       "trigger": "When the repo already treats executable checks as contract artifacts and the spec must separate the public executable contract from maintenance lint / implementation guards."
-    },
-    "rejected-alternatives.md": {
-      "engagement": "on-demand",
-      "rationale": "SKILL.md Output Shape includes the optional 'Deliberately Not Doing' section; this is a narrower gate for design-shaping contracts where future re-litigation risk is material.",
-      "trigger": "When the spec involves deleting/renaming an established surface, choosing one canonical implementation, or declining a compatibility path that future maintainers are likely to reopen."
-    },
-    "sequence-discipline.md": {
-      "engagement": "engage-always",
-      "rationale": "Routed at SKILL.md lines 41-42, but its content (put Fixed Decisions ahead of the probes they enable, order by dependency not document convenience, defer post-slice choices) is inlined in Workflow step 2's Fixed/Probe/Deferred classification and ordering rule — the same reason fixed-probe-defer.md is engage-always-not-RCF — so the run engages decision ordering from the workflow rather than being forced to open this doc (lens 7, skill-inlined).",
-      "claimRole": "decision-ordering"
     },
     "success-criteria.md": {
       "engagement": "engage-always",
