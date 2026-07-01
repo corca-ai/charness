@@ -9,35 +9,36 @@
 
 ## Current State
 
-- **Reference-compaction Slices 1–4 DONE (`5971a29e`, `0e3f5f4f`, `1306b1c8`, `bbb088b5`).**
-  S1 KEYSTONE mechanism; S2 deleted 3 dead provenance memos; S3 deleted 8 pure-DUP spec
-  refs (16→8); S4 added advisory `classTag` to 7 skills' specs (no token movement, RCF
-  untouched; 2 tags census-aligned off-plan per critique — debug/five-steps→INLINE,
-  narrative/source-map→DEPTH). All fresh-eye SHIP. Residual:
-  `check_skill_surface_preflight.py` 478/480 code lines — extract helpers before next
-  add. [contract](../charness-artifacts/reference-compaction/contract.md)
-  (+ [census.json](../charness-artifacts/reference-compaction/census.json),
-  [plan.json](../charness-artifacts/reference-compaction/plan.json)).
+- **Reference-compaction Slices 1–6 DONE; Slice 7 issue-filed (#410).** S1 keystone;
+  S2–S4 deletes + advisory `classTag`; **S5 (`3c5c8657`) = impl proving slice: token-home
+  lift + RCF→RSF floor, PROVEN by a live ask-before-run capture (FLOOR PASS + substance
+  5/5; the plan's assumed `unverified-future` was NOT emitted — only `ran-pass` pinned)**;
+  S6 (`f9003594`) spec verification-type enum lift (no floor move, INLINE tags off-plan
+  per coverage-honesty). All fresh-eye SHIP. Residual:
+  `check_skill_surface_preflight.py` near its code-line cap — extract helpers before next
+  add. [contract](../charness-artifacts/reference-compaction/contract.md) ·
+  [plan.json](../charness-artifacts/reference-compaction/plan.json).
 - **#409 DONE (`9d4c2882`).** capture→grade preserves evidence for committing/clean
   runs (diff vs capture base, transcript from `stream.jsonl`). Sweep reuse unblocked.
 - impl capture (5th sweep skill): floor **MISS** (0/8), substance **4/5**
   (`honest-categorized-closeout` FAIL — the enum lives ONLY in `verification-ladder.md`,
   not inlined). The impl closeout-vocab fork is now RESOLVED into the keystone (Option A).
   [finding](../charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/finding.md)
-- PROVEN floors: retro, hitl, quality, debug (n=2). impl HYPOTHESIS. ~13 uncaptured.
+- PROVEN floors: retro, hitl, quality, debug (n=2), impl (n=1, new emitted-token floor).
+  ~13 uncaptured.
 
 ## Next Session
 
-1. **Continue reference-compaction (Slices 1–4 DONE) — USER will do S5+S6 next session.**
-   **Slice 5 (impl)**: `## Closeout Vocabulary` lift (Lint-Gate enum + 5 completion-report
-   categories from verification-ladder.md → pointer-to-core) + RCF→RSF; validator-enforced,
-   HIGHEST risk (200-line knife-edge ~199, needs S1's guard). **NEEDS a FRESH ask-before-run
-   cautilus capture** to pick the honest RSF token (consult `plan_cautilus_proof.py` first;
-   use `run_cautilus_eval.py`). **Slice 6 (spec)**: acceptance-checks enum lift (no RCF
-   rewrite → no capture, lower risk). Slice 7 (RCF→RSF sweep) is issue-filed. Lessons: run
-   broad pytest BEFORE the critique (grep misses path-built test consumers); watch the
-   ≥1-`references/` floor when deleting. Per-slice detail:
-   [plan.json](../charness-artifacts/reference-compaction/plan.json) (`execution.slices`).
+1. **Reference-compaction Slice 7 sweep — see #410.** Per-skill RCF→RSF floor rewrites
+   (critique/hitl/gather/hotl/handoff/setup/create-cli/achieve), each its own gate-clean
+   slice needing a FRESH ask-before-run cautilus capture to re-baseline the RSF token
+   (proven necessary in S5 — do NOT assume). greenfield-flow.md + default-surfaces.md STAY
+   RCF-pinned; issue/markdown-preview need no change. Also surfaced: **#409 Gap 2 recurs at
+   the mjs-direct layer** — `build-skill-execution-observation.mjs --session-tree <projDir>`
+   tree-truncates the final post-commit closeout block; grade claim-fidelity captures
+   against `stream.jsonl`, not the raw tree. Lesson still hot: run broad pytest BEFORE the
+   critique (grep misses path-built test consumers, e.g.
+   [test_skill_lesson_durability.py](../tests/quality_gates/test_skill_lesson_durability.py)).
 2. **Continue correctness sweep** one skill at a time, reusing outcome-assertions.
    Remaining HYPOTHESIS-floor: achieve, announcement, create-cli, create-skill, critique,
    find-skills, gather, handoff, hotl, ideation, narrative, release, spec. A miss =
