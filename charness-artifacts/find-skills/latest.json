@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-06-29T09:00:51Z",
+  "generated_at": "2026-07-01T00:56:29Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -197,7 +197,6 @@
           "skills/public/debug/references/detection-gap.md",
           "skills/public/debug/references/sibling-search.md",
           "skills/shared/references/rca-ledger-append.md",
-          "skills/public/debug/references/anti-patterns.md",
           "skills/public/debug/references/adapter-contract.md",
           "skills/public/debug/references/five-steps.md",
           "skills/public/debug/references/debug-memory.md",
@@ -663,7 +662,6 @@
         ],
         "referenced_paths": [
           "skills/support/gather-notion/references/runtime-contract.md",
-          "skills/support/gather-notion/references/provenance.md",
           "skills/support/gather-notion/scripts/export_page.py"
         ],
         "source": "local-support",
@@ -689,7 +687,6 @@
         ],
         "referenced_paths": [
           "skills/support/gather-slack/references/runtime-contract.md",
-          "skills/support/gather-slack/references/provenance.md",
           "skills/support/gather-slack/scripts/export-thread.sh"
         ],
         "source": "local-support",
@@ -743,7 +740,6 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/support/web-fetch/references/runtime-contract.md",
           "skills/support/web-fetch/references/routing-table.md",
-          "skills/support/web-fetch/references/provenance.md",
           "skills/support/web-fetch/scripts/route_public_fetch.py",
           "skills/support/web-fetch/scripts/classify_fetch_response.py",
           "skills/support/web-fetch/scripts/acquire_public_url.py"

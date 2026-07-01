@@ -38,5 +38,4 @@ python3 scripts/export_page.py \
 ## References
 
 - `references/runtime-contract.md`
-- `references/provenance.md`
 - `scripts/export_page.py`

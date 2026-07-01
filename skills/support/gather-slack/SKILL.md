@@ -49,5 +49,4 @@ Use the wrapper:
 ## References
 
 - `references/runtime-contract.md`
-- `references/provenance.md`
 - `scripts/export-thread.sh`
