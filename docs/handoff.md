@@ -33,17 +33,19 @@
    (critique/hitl/gather/hotl/handoff/setup/create-cli/achieve), each its own gate-clean
    slice needing a FRESH ask-before-run cautilus capture to re-baseline the RSF token
    (proven necessary in S5 — do NOT assume). greenfield-flow.md + default-surfaces.md STAY
-   RCF-pinned; issue/markdown-preview need no change. Also surfaced: **#409 Gap 2 recurs at
-   the mjs-direct layer** — `build-skill-execution-observation.mjs --session-tree <projDir>`
-   tree-truncates the final post-commit closeout block; grade claim-fidelity captures
-   against `stream.jsonl`, not the raw tree. Lesson still hot: run broad pytest BEFORE the
-   critique (grep misses path-built test consumers, e.g.
+   RCF-pinned; issue/markdown-preview need no change. Instrument is now clean: **#409 Gap 2
+   FIXED (`22ed2c2b`)** — the mjs sources the RSF summary from `stream.jsonl`, so #410
+   captures grade without the tree-truncation false-MISS. Lesson still hot: run broad pytest
+   BEFORE the critique (grep misses path-built test consumers, e.g.
    [test_skill_lesson_durability.py](../tests/quality_gates/test_skill_lesson_durability.py)).
 2. **Continue correctness sweep** one skill at a time, reusing outcome-assertions.
    Remaining HYPOTHESIS-floor: achieve, announcement, create-cli, create-skill, critique,
    find-skills, gather, handoff, hotl, ideation, narrative, release, spec. A miss =
    skill-shape signal (re-pin/re-classify/planner), never soften the matcher.
-3. **AGENTS.md lesson-internalization fixture (operator-raised)** — still open.
+3. **AGENTS.md lesson-internalization live capture (operator-raised)** — does AGENTS.md make
+   an agent READ+ACT on recent-lessons? = the deferred "live-session capture unit" of the
+   existing `lesson-internalization-claim-fidelity` eval (offline instrument DONE; #3 unblocks
+   the capture side). Spec-level: arbitrary-session harness + vacuous-pass guard + rotation.
 
 ## Discuss
 
