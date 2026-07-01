@@ -119,6 +119,9 @@ Optional fields:
 
 - `claimRole`: `required_command_fragment`, `coverage_only`,
   `gate_replacement`, or another local note used only by the harness.
+- `classTag`: `DUP`, `INLINE`, or `DEPTH` — the advisory reference-compaction
+  class (see "Reference Compaction classTag" below). Optional and tolerant: an
+  untagged reference is treated as `DEPTH` by the coverage denominator.
 - `gate`: deterministic gate or script that makes a `gate-sufficient` document
   unnecessary for the claim under test.
 - `trigger`: the narrower user question that should lead to an `on-demand`
@@ -857,3 +860,32 @@ would populate `outputs/` and exercise the `output_*` checks. The judge is an LL
 Still deferred: (4) wiring the grade into the A/B bundle/report; the
 `outcome-assertions.json` durable validator surface; a `--keep-untracked-outputs` option
 for skills whose meaningful output is gitignored runtime state.
+
+## Reference Compaction classTag + RCF-or-RSF Floor (2026-07-01)
+
+Reference-compaction Slice 1 (keystone mechanism) landed three coordinated,
+tolerant, backward-compatible additions. None move a token yet; they let the
+per-skill slices that follow do so honestly.
+
+- **Floor channel is RCF-or-RSF, not RCF-pinned.** `claim_fidelity_lib.validate_spec`
+  no longer requires `requiredCommandFragments` to be non-empty. A spec proves its
+  claim via the command log (`requiredCommandFragments`) OR the final summary
+  (`requiredSummaryFragments`); either channel may be empty, but not both. This
+  removes the old force: a floor pinned to a reference *filename* made a run
+  re-open a doc just to reproduce a string it already had. The right fix is to
+  assert the emitted **token** via `requiredSummaryFragments`. The existing
+  invariant is preserved — any ref that remains in `requiredCommandFragments`
+  must still be an `engage-always` `declaredReference`.
+- **Advisory `classTag` (`DUP` / `INLINE` / `DEPTH`).** Optional per-ref tag in
+  `referenceEngagement`. The observation builder's reported coverage denominator
+  (`report.coverage.declared`) now counts `DEPTH` refs only; `DUP`/`INLINE` are
+  surfaced on a separate advisory line and never counted as "missing". The full
+  declared count is preserved as `report.coverage.declaredAll` for backward
+  compatibility. **Untagged defaults to `DEPTH`**, so every current (untagged)
+  spec keeps its full declared set as the denominator — no behavior change until
+  a spec is deliberately tagged. Coverage stays advisory: it never drives
+  `outcome` (only `fragmentFindings` does).
+- **Consistency guard.** A `requiredCommandFragments` ref may not be tagged
+  `DUP`/`INLINE`: a re-read floor asserts the ref is load-bearing, which
+  contradicts a redundant/inline classification. This is the deterministic
+  anti-abuse against silently downgrading a real floor to dodge a coverage miss.

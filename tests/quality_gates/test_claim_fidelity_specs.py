@@ -16,12 +16,18 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def _ea(rationale: str = "always") -> dict[str, str]:
-    return {"engagement": "engage-always", "rationale": rationale}
+def _ea(rationale: str = "always", class_tag: str | None = None) -> dict[str, str]:
+    entry = {"engagement": "engage-always", "rationale": rationale}
+    if class_tag is not None:
+        entry["classTag"] = class_tag
+    return entry
 
 
-def _od(rationale: str = "narrow", trigger: str = "when X") -> dict[str, str]:
-    return {"engagement": "on-demand", "rationale": rationale, "trigger": trigger}
+def _od(rationale: str = "narrow", trigger: str = "when X", class_tag: str | None = None) -> dict[str, str]:
+    entry = {"engagement": "on-demand", "rationale": rationale, "trigger": trigger}
+    if class_tag is not None:
+        entry["classTag"] = class_tag
+    return entry
 
 
 def _scaffold_skill(
@@ -31,6 +37,7 @@ def _scaffold_skill(
     *,
     declared=None,
     rcf=None,
+    rsf=None,
     scenario: str = "default",
     prompt: str | None = None,
 ) -> dict:
@@ -52,7 +59,7 @@ def _scaffold_skill(
         "targetId": skill,
         "prompt": prompt if prompt is not None else f"/charness:{skill}",
         "requiredCommandFragments": rcf,
-        "requiredSummaryFragments": [],
+        "requiredSummaryFragments": [] if rsf is None else rsf,
         "declaredReferences": declared,
         "referenceEngagement": engagement,
     }
@@ -157,4 +164,41 @@ def test_prompt_wrong_skill_rejected(tmp_path: Path) -> None:
     entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=["a.md"], prompt="/charness:alphabet do X")
     _write_registry(tmp_path, [entry])
     with pytest.raises(ValidationError, match="`prompt` must be"):
+        validate_registry(tmp_path)
+
+
+def test_rsf_only_floor_passes(tmp_path: Path) -> None:
+    # RCF-or-RSF channel: an empty requiredCommandFragments is legal as long as a
+    # requiredSummaryFragments token carries the floor (the RSF-token claim).
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=["categorized closeout"])
+    _write_registry(tmp_path, [entry])
+    assert validate_registry(tmp_path)["results"][0]["skill_id"] == "alpha"
+
+
+def test_both_floor_channels_empty_rejected(tmp_path: Path) -> None:
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[])
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="at least one of .*requiredCommandFragments.*requiredSummaryFragments"):
+        validate_registry(tmp_path)
+
+
+def test_valid_class_tags_pass(tmp_path: Path) -> None:
+    engagement = {"a.md": _ea(), "b.md": _od(class_tag="DUP"), "c.md": _od(class_tag="INLINE")}
+    entry = _scaffold_skill(tmp_path, "alpha", engagement, rcf=["a.md"])
+    _write_registry(tmp_path, [entry])
+    assert validate_registry(tmp_path)["results"][0]["skill_id"] == "alpha"
+
+
+def test_invalid_class_tag_rejected(tmp_path: Path) -> None:
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea(class_tag="BOGUS")}, rcf=["a.md"])
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="classTag must be one of"):
+        validate_registry(tmp_path)
+
+
+def test_required_command_fragment_may_not_be_dup_or_inline_tagged(tmp_path: Path) -> None:
+    # A re-read floor asserts the ref is load-bearing; tagging it DUP contradicts that.
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea(class_tag="DUP")}, rcf=["a.md"])
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="must not be DUP/INLINE-tagged"):
         validate_registry(tmp_path)

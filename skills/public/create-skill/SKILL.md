@@ -103,7 +103,7 @@ canonical adapter when the repo should own topology terms.
    - for sequencing-shaped skill improvements, consume
      `../../shared/references/generative-sequence.md` lightly instead of
      embedding that lens in this skill
-   - move schemas, examples, and theory into `references/`
+   - move schemas, examples, prose theory to `references/`; keep tokens a closeout emits VERBATIM in a core `## Closeout Vocabulary` H2 (that ref's rule)
    - add scripts for repeated bootstrap, adapter resolution, artifact upsert,
      or recovery behavior that would otherwise become prose-only ritual
    - ship a deterministic planner emitting the canonical run-plan envelope

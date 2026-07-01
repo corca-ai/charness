@@ -147,6 +147,27 @@ standing evals.
   guards to simulate semantic proof; those guards belong in lower
   deterministic layers when they are still justified at all
 
+## Claim-Fidelity Floor Channel And Advisory Ref Class
+
+The claim-fidelity registry validation
+([scripts/claim_fidelity_lib.py](../scripts/claim_fidelity_lib.py),
+[tests/quality_gates/test_claim_fidelity_specs.py](../tests/quality_gates/test_claim_fidelity_specs.py))
+is a deterministic seam, not a live evaluator. Two properties of that gate matter
+to authors:
+
+- **Floor channel is RCF-or-RSF.** A claim-fidelity spec proves its floor via the
+  command log (`requiredCommandFragments`) OR the final summary
+  (`requiredSummaryFragments`); either may be empty, but not both. Prefer
+  asserting the emitted closeout **token** via `requiredSummaryFragments` over
+  pinning `requiredCommandFragments` to a reference *filename*, which only forces
+  a wasteful re-open of a doc whose content the run already has.
+- **`classTag` is advisory only.** The optional per-ref `DUP`/`INLINE`/`DEPTH`
+  tag narrows the *reported* reference-coverage denominator to `DEPTH` refs; it
+  never drives a run's pass/fail outcome. Untagged refs default to `DEPTH`, so
+  existing specs are unaffected. See the methodology contract
+  [`charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md`](../charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md)
+  for the full engagement-tag contract.
+
 ## Tier Definitions
 
 ### `smoke-only`

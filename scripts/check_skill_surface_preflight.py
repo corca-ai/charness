@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -27,7 +28,17 @@ MAX_CORE_NONEMPTY_LINES = 160
 # by the broad-gate core-headroom test and the commit-boundary ratchet below, so
 # the two surfaces can never disagree on the buffer width.
 CORE_NONEMPTY_HEADROOM_BUFFER = 4
-PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
+# `Closeout Vocabulary` is headroom-exempt so a skill can keep the literal tokens
+# a representative run must reproduce VERBATIM for a well-formed / validator-
+# passing closeout (status enums, exact substring-matched strings) in core,
+# without those tokens paying core decision-prose density. The total MAX_SKILL_MD
+# _LINES ceiling still counts them (a file-size guard). Anti-abuse below keeps the
+# block token-shaped so it cannot become a prose escape hatch from the density gate.
+CLOSEOUT_VOCAB_SECTION = "Closeout Vocabulary"
+PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References", CLOSEOUT_VOCAB_SECTION}
+# A `## Closeout Vocabulary` block is token-shaped: at most this many non-empty
+# lines, each a label + one clause, never multi-sentence prose.
+CLOSEOUT_VOCAB_MAX_LINES = 12
 
 
 class PreflightError(Exception):
@@ -106,6 +117,55 @@ def _remove_pressure_exempt_sections(lines: list[str]) -> list[str]:
 def _core_nonempty_lines(text: str) -> int:
     body_lines = _remove_pressure_exempt_sections(_strip_frontmatter(text).splitlines())
     return sum(1 for line in body_lines if line.strip())
+
+
+def _section_body_lines(lines: list[str], section: str) -> list[str]:
+    """Lines under the first `## <section>` H2, up to the next `## ` (exclusive)."""
+    body: list[str] = []
+    capturing = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            if capturing:
+                break
+            capturing = stripped[3:].strip() == section
+            continue
+        if capturing:
+            body.append(line)
+    return body
+
+
+# A period/question/exclamation followed by whitespace + a capital letter is a
+# sentence boundary. A token line (`ran-fail-deferred <command> <issue|anchor>`,
+# a slash-separated enum) never matches; multi-sentence prose does.
+_SENTENCE_BOUNDARY_RE = re.compile(r"[.!?]\s+[A-Z]")
+
+
+def closeout_vocabulary_findings(text: str) -> list[str]:
+    """Anti-abuse for the headroom-exempt `## Closeout Vocabulary` block.
+
+    The exemption exists so emittable literal tokens can live in core without
+    paying density; it must not become a prose hatch that dodges the core-nonempty
+    gate. Flag an over-long block or any line that is multi-sentence prose rather
+    than a single label + clause token. Returns [] when the block is absent or
+    already token-shaped."""
+    body = _section_body_lines(_strip_frontmatter(text).splitlines(), CLOSEOUT_VOCAB_SECTION)
+    nonempty = [line for line in body if line.strip()]
+    if not nonempty:
+        return []
+    findings: list[str] = []
+    if len(nonempty) > CLOSEOUT_VOCAB_MAX_LINES:
+        findings.append(
+            f"`## {CLOSEOUT_VOCAB_SECTION}` has {len(nonempty)} non-empty lines "
+            f"(max {CLOSEOUT_VOCAB_MAX_LINES}); it must hold emittable tokens, not prose."
+        )
+    for line in nonempty:
+        if _SENTENCE_BOUNDARY_RE.search(line):
+            findings.append(
+                f"`## {CLOSEOUT_VOCAB_SECTION}` line is multi-sentence prose, not a token: "
+                f"{line.strip()[:80]!r}"
+            )
+    return findings
 
 
 def _headroom(current: int, limit: int, preview_delta: int) -> dict[str, Any]:
@@ -205,6 +265,8 @@ def scan_changed_skill_md(repo_root: Path, paths: list[str]) -> dict[str, Any]:
             _core_nonempty_lines(new_text),
             _base_core_nonempty(repo_root, rel),
         )
+        row["vocab_findings"] = closeout_vocabulary_findings(new_text)
+        row["blocked"] = row["blocked"] or bool(row["vocab_findings"])
         row["path"] = rel
         checked.append(row)
     blocked = [row["path"] for row in checked if row["blocked"]]
@@ -224,6 +286,8 @@ def format_changed_human(report: dict[str, Any]) -> str:
             f"- {row['path']}: {row['new_remaining']} left "
             f"(buffer {row['buffer']}, was {was}) [{verdict}]"
         )
+        for finding in row.get("vocab_findings", []):
+            lines.append(f"  - closeout-vocab: {finding}")
     if report["status"] == "blocked":
         lines.append(
             "Changed SKILL.md core dropped below the core_nonempty headroom "
@@ -377,12 +441,14 @@ def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_check
                 ),
             }
         )
+    closeout_vocab = closeout_vocabulary_findings(text)
     checks = _run_checks(repo_root) if run_checks else []
     check_failures = [row["id"] for row in checks if row["returncode"] != 0]
     return {
-        "status": "blocked" if blockers or check_failures else "ok",
+        "status": "blocked" if blockers or check_failures or closeout_vocab else "ok",
         "blockers": blockers,
         "warnings": warnings,
+        "closeout_vocab": closeout_vocab,
         "check_failures": check_failures,
         "skill": {
             "id": context["skill_id"],
@@ -420,6 +486,8 @@ def format_human(report: dict[str, Any]) -> str:
     ]
     for row in report.get("warnings", []):
         lines.append(f"WARN {row['id']}: {row['message']}")
+    for finding in report.get("closeout_vocab", []):
+        lines.append(f"BLOCK closeout-vocab: {finding}")
     if report["target"]["current_lines"] is not None:
         lines.append(f"target current lines: {report['target']['current_lines']}")
     lines.append("couplings:")

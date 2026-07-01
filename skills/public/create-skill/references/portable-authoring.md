@@ -266,6 +266,35 @@ instructions.
 Good scripts reduce cold-start variance and make error recovery real. A future
 session should not have to reinterpret the same ritual from scratch.
 
+## Closeout Vocabulary Rule
+
+The Progressive Disclosure and File Layout rules exile schemas, examples, and
+theory to `references/`. This rule carves out the one exception: the literal
+tokens a representative run must reproduce VERBATIM to produce a well-formed or
+validator-passing closeout — status enums, exact substring-matched strings,
+required field names — stay in `SKILL.md` core.
+
+Author decision test: "Would a claim-fidelity spec substring-match this string
+(`requiredCommandFragments` / `requiredSummaryFragments`), or would a closeout
+line be malformed without these exact characters?"
+
+- Yes -> the token lives in core, under a dedicated `## Closeout Vocabulary` H2.
+- No (it teaches WHEN or WHY) -> it is prose and stays in a `references/` doc.
+
+`## Closeout Vocabulary` is headroom-exempt in
+`scripts/check_skill_surface_preflight.py` (`PRESSURE_EXEMPT_H2_SECTIONS`), so
+inlining emittable tokens does not spend core decision-prose density — the same
+treatment `## References` and `## Load-Bearing Anchors` already get. The total
+`SKILL.md` line ceiling still counts the block, and an anti-abuse check keeps it
+token-shaped (at most ~12 non-empty lines, each a label + one clause, never
+multi-sentence prose), so the exemption cannot become a prose escape hatch.
+
+Never strand an emittable token in a `references/` doc and then pin a
+claim-fidelity spec's `requiredCommandFragments` to that doc's filename: that
+forces a representative run to re-open the doc just to reproduce a string it
+already needs — the re-read waste this rule removes. Assert the emitted token via
+`requiredSummaryFragments` instead.
+
 ## Closeout Schema Rule
 
 The Helper Script Rule covers producer-side bootstrap. Its mirror covers

@@ -11,6 +11,12 @@ from scripts.public_skill_validation_lib import ValidationError, public_skill_id
 REGISTRY_PATH = Path("evals/cautilus/claim-fidelity-registry.json")
 PUBLIC_SKILLS_DIR = Path("skills/public")
 ENGAGEMENT_VALUES = ("engage-always", "on-demand", "gate-sufficient")
+# Advisory reference-compaction class: DUP (redundant, deletable), INLINE
+# (stranded emittable tokens that belong in SKILL.md `## Closeout Vocabulary`),
+# DEPTH (load-bearing conditional judgment worth a re-read). Optional and
+# tolerant: an untagged reference is treated as DEPTH by the coverage denominator
+# in build-skill-execution-observation.mjs, so un-tagged specs stay valid.
+CLASS_TAG_VALUES = ("DUP", "INLINE", "DEPTH")
 # A skill may ship several scenario fixtures (e.g. setup's greenfield vs
 # normalization branches). The default scenario keeps the bare `spec.json`
 # filename and `execution-<skill>-claim-fidelity` evaluationId; additional
@@ -39,7 +45,7 @@ def expected_public_skills(repo_root: Path) -> set[str]:
     return {skill_id for skill_id in public_skill_ids(repo_root) if reference_basenames(repo_root, skill_id)}
 
 
-def _validate_engagement(spec_path: str, ref: str, value: object) -> str:
+def _validate_engagement(spec_path: str, ref: str, value: object) -> tuple[str, str | None]:
     if not isinstance(value, dict):
         raise ValidationError(f"{spec_path}: referenceEngagement[{ref}] must be an object")
     engagement = value.get("engagement")
@@ -51,12 +57,36 @@ def _validate_engagement(spec_path: str, ref: str, value: object) -> str:
         raise ValidationError(f"{spec_path}: on-demand reference {ref} must record a trigger")
     if engagement == "gate-sufficient" and not str(value.get("gate") or "").strip():
         raise ValidationError(f"{spec_path}: gate-sufficient reference {ref} must name a gate")
-    return engagement
+    class_tag = value.get("classTag")
+    if class_tag is not None and class_tag not in CLASS_TAG_VALUES:
+        raise ValidationError(
+            f"{spec_path}: referenceEngagement[{ref}].classTag must be one of {list(CLASS_TAG_VALUES)} when present"
+        )
+    # A DUP/INLINE tag asserts the ref is redundant or belongs inlined; the
+    # universal rationale requirement above already forces a written reason for
+    # that downgrade, so the tag can never silently weaken the floor without a
+    # justification (the RCF cross-check in validate_spec closes the other side:
+    # a re-read floor may not be tagged DUP/INLINE).
+    return engagement, class_tag
 
 
 def _validate_string_list(spec_path: str, field: str, value: object) -> list[str]:
     if not isinstance(value, list) or not value or not all(isinstance(item, str) for item in value):
         raise ValidationError(f"{spec_path}: `{field}` must be a non-empty string list")
+    if len(value) != len(set(value)):
+        raise ValidationError(f"{spec_path}: `{field}` has duplicate entries")
+    return value
+
+
+def _validate_optional_string_list(spec_path: str, field: str, value: object) -> list[str]:
+    """A fragment channel (requiredCommandFragments / requiredSummaryFragments)
+    that may be absent or empty, but must be a duplicate-free string list when
+    present. The RCF-or-RSF floor guard in validate_spec enforces that at least
+    one channel is non-empty; either one on its own may be empty."""
+    if value is None:
+        return []
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ValidationError(f"{spec_path}: `{field}` must be a string list")
     if len(value) != len(set(value)):
         raise ValidationError(f"{spec_path}: `{field}` has duplicate entries")
     return value
@@ -128,16 +158,38 @@ def validate_spec(repo_root: Path, skill_id: str, scenario_id: str, spec_path: s
         raise ValidationError(f"{spec_path}: referenceEngagement has undeclared references: {undeclared_engagement}")
 
     engage_always: set[str] = set()
+    class_tags: dict[str, str | None] = {}
     for ref in declared:
         if ref not in engagement:
             raise ValidationError(f"{spec_path}: declaredReference {ref} has no referenceEngagement entry")
-        if _validate_engagement(spec_path, ref, engagement[ref]) == "engage-always":
+        engagement_value, class_tag = _validate_engagement(spec_path, ref, engagement[ref])
+        if engagement_value == "engage-always":
             engage_always.add(ref)
+        class_tags[ref] = class_tag
 
-    required = _validate_string_list(spec_path, "requiredCommandFragments", spec.get("requiredCommandFragments"))
+    # RCF-or-RSF floor channel: a spec proves its claim via the command log
+    # (requiredCommandFragments) OR the final summary (requiredSummaryFragments).
+    # Either channel may be empty, but not both — a spec with no floor asserts
+    # nothing. (The historical rule pinned RCF non-empty, which forced a doc-open
+    # proxy even when a summary-token assertion was the honest floor.)
+    required = _validate_optional_string_list(spec_path, "requiredCommandFragments", spec.get("requiredCommandFragments"))
+    summary_required = _validate_optional_string_list(spec_path, "requiredSummaryFragments", spec.get("requiredSummaryFragments"))
+    if not required and not summary_required:
+        raise ValidationError(
+            f"{spec_path}: at least one of `requiredCommandFragments` or `requiredSummaryFragments` "
+            "must be non-empty (the claim floor channel)"
+        )
     not_engage_always = [ref for ref in required if ref not in engage_always]
     if not_engage_always:
         raise ValidationError(f"{spec_path}: requiredCommandFragments must be engage-always declaredReferences: {not_engage_always}")
+    # A re-read floor asserts the ref is load-bearing enough to force opening;
+    # tagging it DUP/INLINE contradicts that. Tolerant: DEPTH or untagged pass.
+    downgraded_floor = [ref for ref in required if class_tags.get(ref) in ("DUP", "INLINE")]
+    if downgraded_floor:
+        raise ValidationError(
+            f"{spec_path}: requiredCommandFragments must not be DUP/INLINE-tagged "
+            f"(a re-read floor must be load-bearing/DEPTH): {downgraded_floor}"
+        )
 
     thresholds = spec.get("thresholds")
     if thresholds is not None and not isinstance(thresholds, dict):

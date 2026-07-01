@@ -330,6 +330,54 @@ test("buildExecutionObservation passes and counts coverage when a subagent reads
 	assert.deepEqual(report.coverage.coveredRefs, ["quality-lenses.md"]);
 });
 
+test("coverage denominator counts DEPTH refs only; INLINE/DUP stay advisory and declaredAll keeps the full count", () => {
+	const spec = {
+		skillId: "impl",
+		evaluationId: "execution-impl",
+		targetId: "impl",
+		prompt: "/charness:impl",
+		requiredCommandFragments: [],
+		requiredSummaryFragments: ["categorized closeout"],
+		declaredReferences: ["depth-a.md", "depth-b.md", "inline-c.md", "dup-d.md"],
+		referenceEngagement: {
+			"depth-a.md": { engagement: "engage-always", rationale: "x", classTag: "DEPTH" },
+			"depth-b.md": { engagement: "on-demand", rationale: "x", trigger: "t", classTag: "DEPTH" },
+			"inline-c.md": { engagement: "engage-always", rationale: "x", classTag: "INLINE" },
+			"dup-d.md": { engagement: "engage-always", rationale: "x", classTag: "DUP" },
+		},
+	};
+	const events = [
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/references/depth-a.md" } }]),
+		assistantText("categorized closeout emitted"),
+	];
+	const { packet, report } = buildExecutionObservation({ spec, events });
+	assert.equal(report.coverage.declared, 2); // DEPTH refs only
+	assert.equal(report.coverage.declaredAll, 4); // full declared set preserved
+	assert.equal(report.coverage.covered, 1); // depth-a opened
+	assert.deepEqual(report.coverage.missingRefs, ["depth-b.md"]); // inline/dup never "missing"
+	assert.deepEqual(report.coverage.inlineRefs, ["inline-c.md"]);
+	assert.deepEqual(report.coverage.dupRefs, ["dup-d.md"]);
+	assert.equal(report.outcome, "passed"); // RSF summary token present, no RCF needed
+	assert.match(packet.evaluations[0].summary, /1\/2 DEPTH references opened \(missing: depth-b\.md\)/);
+	assert.match(packet.evaluations[0].summary, /Advisory ref classes: 1 INLINE, 1 DUP/);
+});
+
+test("untagged declared refs default to DEPTH so declared === declaredAll (backward compatible)", () => {
+	const spec = {
+		skillId: "quality",
+		evaluationId: "execution-quality",
+		targetId: "quality",
+		prompt: "/charness:quality",
+		requiredCommandFragments: ["quality-lenses.md"],
+		declaredReferences: ["quality-lenses.md", "operability-signals.md"],
+	};
+	const { report } = buildExecutionObservation({ spec, events: [] });
+	assert.equal(report.coverage.declared, 2);
+	assert.equal(report.coverage.declaredAll, 2);
+	assert.deepEqual(report.coverage.inlineRefs, []);
+	assert.deepEqual(report.coverage.dupRefs, []);
+});
+
 test("buildExecutionObservation rejects an incomplete spec", () => {
 	assert.throws(() => buildExecutionObservation({ spec: { skillId: "q" }, events: [] }), /must be a non-empty string/);
 });

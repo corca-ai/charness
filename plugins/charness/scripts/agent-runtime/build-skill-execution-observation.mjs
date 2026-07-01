@@ -631,6 +631,23 @@ function fragmentFindings(label, text, requiredFragments, forbiddenFragments) {
 	return findings;
 }
 
+// Advisory reference-compaction classes (claim_fidelity_lib.CLASS_TAG_VALUES).
+const CLASS_TAGS = new Set(["DUP", "INLINE", "DEPTH"]);
+
+// A declared reference's advisory compaction class, read from
+// spec.referenceEngagement[ref].classTag. Untagged -> DEPTH, so an un-tagged spec
+// keeps the full declared set as its coverage denominator (identical to the
+// pre-classTag behavior). DUP (redundant) and INLINE (belongs in SKILL.md
+// `## Closeout Vocabulary`) refs are reported separately and never counted in the
+// DEPTH coverage ratio: they are not load-bearing reads a run should be expected
+// to open. Coverage is advisory only — it never drives outcome (findings do).
+function referenceClass(spec, ref) {
+	const engagement = spec.referenceEngagement;
+	const entry = engagement && typeof engagement === "object" ? engagement[ref] : null;
+	const tag = entry && typeof entry === "object" ? entry.classTag : null;
+	return CLASS_TAGS.has(tag) ? tag : "DEPTH";
+}
+
 export function buildExecutionObservation({ spec, events } = {}) {
 	if (!spec || typeof spec !== "object") {
 		throw new Error("spec must be an object");
@@ -656,8 +673,14 @@ export function buildExecutionObservation({ spec, events } = {}) {
 		.join(" ");
 
 	const declared = Array.isArray(spec.declaredReferences) ? spec.declaredReferences : [];
-	const covered = declared.filter((ref) => opened.has(ref));
-	const missing = declared.filter((ref) => !opened.has(ref));
+	// The coverage denominator is the DEPTH refs only: an INLINE/DUP ref is not a
+	// load-bearing read, so counting it as "missing" when a run does not open it
+	// slandered honest runs. declaredAll preserves the full count for back-compat.
+	const depthRefs = declared.filter((ref) => referenceClass(spec, ref) === "DEPTH");
+	const inlineRefs = declared.filter((ref) => referenceClass(spec, ref) === "INLINE");
+	const dupRefs = declared.filter((ref) => referenceClass(spec, ref) === "DUP");
+	const covered = depthRefs.filter((ref) => opened.has(ref));
+	const missing = depthRefs.filter((ref) => !opened.has(ref));
 
 	const findings = [
 		...fragmentFindings("command log", commandLog, spec.requiredCommandFragments, spec.forbiddenCommandFragments),
@@ -665,9 +688,16 @@ export function buildExecutionObservation({ spec, events } = {}) {
 	];
 	const outcome = findings.length > 0 ? "failed" : "passed";
 
-	const coveragePart = declared.length > 0
-		? ` Reference coverage: ${covered.length}/${declared.length} declared references opened` +
+	// Only call the denominator "DEPTH references" when a tag actually narrowed it;
+	// an untagged spec keeps the verbatim "declared references" wording (and count).
+	const coverageNoun = inlineRefs.length + dupRefs.length > 0 ? "DEPTH references" : "declared references";
+	const coveragePart = depthRefs.length > 0
+		? ` Reference coverage: ${covered.length}/${depthRefs.length} ${coverageNoun} opened` +
 			`${missing.length > 0 ? ` (missing: ${missing.join(", ")})` : ""}.`
+		: "";
+	// Advisory-only: INLINE/DUP refs are surfaced but excluded from the ratio.
+	const advisoryClassPart = inlineRefs.length + dupRefs.length > 0
+		? ` Advisory ref classes: ${inlineRefs.length} INLINE, ${dupRefs.length} DUP (excluded from the coverage ratio).`
 		: "";
 	const claimPart = findings.length > 0
 		? ` Claim failures: ${findings.join("; ")}.`
@@ -680,7 +710,7 @@ export function buildExecutionObservation({ spec, events } = {}) {
 		`(${tokens.output} output, ${tokens.cacheRead} cache-read)` +
 		`${duration !== null ? `, ${duration}ms wall` : ""}.` +
 		`${profileLine ? ` Tool profile: ${profileLine}.` : ""}` +
-		`${claimPart}${coveragePart}${wastePart}`;
+		`${claimPart}${coveragePart}${advisoryClassPart}${wastePart}`;
 
 	// metrics carries the headline budget numbers (cautilus applies its
 	// max_total_tokens/max_duration_ms thresholds against total_tokens/duration_ms)
@@ -734,7 +764,15 @@ export function buildExecutionObservation({ spec, events } = {}) {
 		report: {
 			outcome,
 			findings,
-			coverage: { declared: declared.length, covered: covered.length, coveredRefs: covered, missingRefs: missing },
+			coverage: {
+				declared: depthRefs.length,
+				declaredAll: declared.length,
+				covered: covered.length,
+				coveredRefs: covered,
+				missingRefs: missing,
+				inlineRefs,
+				dupRefs,
+			},
 			metrics,
 			tokens,
 			toolProfile,
