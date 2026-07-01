@@ -117,6 +117,25 @@ in RCF would break the validator; dropping the RCF with no proven replacement fa
 closed. Therefore this session corrects the **record only** (spec `_comment` notes
 + this doc + issue reframes); the classTag/RCF flips ride with the capture-gated MOVE.
 
+### METHOD CORRECTION (operator-directed, 2026-07-01) — design per condition, not from a single capture
+
+The reconciliation classified each ref MOVE/MIXED/KEEP from census + a SINGLE representative
+capture. That is correct for **doc-opening skills** where one run exercises the floor (hotl,
+critique — the clean MOVEs stand, verified). It is **too coarse for script/condition-driven
+skills** (gather, setup, handoff): a single fixture cannot exercise a *conditionally*-read doc,
+so "the run opened 0 docs → INLINE / needs a substance judge" mis-reads a **missing scenario**
+as a missing floor.
+
+Corrected method (proven on gather, see `gather-fixture-redesign.md`): **design the fixture
+from the full docs + routing code** (what each reference is FOR and WHEN it is consulted —
+`gather_plan.py`, the advisers) — a **scenario per condition** so every genuinely load-bearing
+doc is forced under its trigger. **No capture is needed to DESIGN; the capture only VERIFIES.**
+gather proved it: only 1 of its 4 census-DEPTH docs is a genuine run-floor (2 are script-resolved),
+and #411's "needs a substance judge" was really "missing a private-SaaS scenario" — now added and
+PROVEN. **setup + handoff need the same re-examination** — some of their "MOVE (INLINE)" verdicts
+below may be genuine DEPTH under a condition no current fixture exercises → design that scenario,
+don't retire the doc.
+
 ### Execution progress (operator-authorized, 2026-07-01)
 
 - ✅ **hotl/proof-rules.md** — RCF retired → `[ledger-and-dispositions.md]`; PROVEN by a fresh
@@ -125,10 +144,13 @@ closed. Therefore this session corrects the **record only** (spec `_comment` not
   `[premortem-decision.md]`; PROVEN from the existing committed captures (strictly-weaker floor,
   retained DEPTH ref genuinely opened, SKILL.md unchanged) — no fresh capture; also removed a #415
   matcher-theater pass. `bf2fdeef`.
-- ⏳ **Remaining 10** are the genuinely capture-coupled ones (below): handoff ×4 (RSF FORM floors,
-  need a fresh capture to OBSERVE the emitted token — cannot design honestly by assumption, #409/#410),
-  gather ×2 + setup ×4 (need a substance judge `outcome-assertions.json` built = #411/#413).
-  hotl/ledger MIXED token-lift stays deferred (no floor depends on it).
+- ✅ **gather — per-condition redesign** (`gather-fixture-redesign.md`, `4f4586b5`): NEW private-SaaS
+  scenario forces `browser-mediated-private-sources.md` (PROVEN, genuine judgment open); corrects #411
+  (not a substance judge — a missing scenario); 2 of 4 census-DEPTH docs are script-resolved. Remaining
+  gather: the public-URL default's output-floor + retire its INLINE RCF (the narrowed #411).
+- ⏳ **setup + handoff** — re-examine by the corrected per-condition method (above), NOT the coarse
+  MOVE/substance-judge reading: design a scenario per genuinely-DEPTH condition; retire only truly-inlined
+  docs. hotl/ledger MIXED token-lift stays deferred (no floor depends on it).
 
 Clean-MOVE rule proven this session: a pure retirement that leaves an already-genuinely-opened DEPTH
 floor is provable from existing captures at zero new cost; only floor-REPLACEMENT (new RSF/judge) needs

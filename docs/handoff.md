@@ -15,12 +15,15 @@
   prior "keep because the capture opened it" was the flagged method error (an INLINE/DUP doc
   opens redundantly). Full verdicts + queue:
   [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
-- **Execution started (operator-authorized): 2 of 12 MOVEs done.** ✅ hotl/proof-rules (fresh
-  capture `ceb87340`) · ✅ critique/counterweight-triage (proven from EXISTING captures, zero new
-  cost, `bf2fdeef`). Both "clean": retiring left a genuine DEPTH floor, no new RSF/judge. **Remaining
-  10 are floor-REPLACEMENT** (new RSF/judge → must OBSERVE the token, cannot assume — #409/#410):
-  handoff ×4 (RSF FORM floors + #412 planner), gather ×2 + setup ×4 (build `outcome-assertions.json`
-  substance judge = #411/#413). hotl/ledger MIXED token-lift deferred (no floor depends on it).
+- **Execution + METHOD CORRECTION (operator-directed).** Design fixtures **per condition** from the
+  docs+routing (what each ref is FOR + WHEN read); the capture only VERIFIES — no capture needed to
+  design. See the reconciliation doc's "METHOD CORRECTION" +
+  [gather-fixture-redesign.md](../charness-artifacts/reference-compaction/gather-fixture-redesign.md). Done:
+  ✅ hotl/proof-rules (fresh capture, `ceb87340`), ✅ critique/counterweight-triage (existing evidence,
+  `bf2fdeef`), ✅ gather per-condition redesign — NEW private-SaaS scenario PROVEN, corrects #411
+  (`4f4586b5`). Next: **setup + handoff by the same per-condition method** — re-examine their
+  MOVE/INLINE verdicts (some may be genuine DEPTH under a condition no fixture exercises → design that
+  scenario, don't retire) — plus gather's public-URL output-floor. hotl/ledger token-lift deferred.
 - Issues: **#411**/**#413** reframed (census INLINE is the driver, not a live "refutation";
   artifact/substance-judge fix stands; #411 capability-contract corrected DEPTH->INLINE),
   **#412** sharpened (continuation-sequence.md is INLINE too), **#415** filed (matcher honesty:
@@ -28,14 +31,13 @@
 
 ## Next Session
 
-1. **Execute the remaining 10 capture-gated MOVEs + the hotl/ledger INLINE-token lift** (2/12 done:
-   hotl, critique). Per skill: inline the gist into SKILL.md (watch the
-   critique 194/200-line ceiling), drop the RCF filename, prove the RSF/output floor from a FRESH
-   capture. No substance judge => an RSF is a FORM floor (over-relax risk); script-driven
-   gather/setup (0-coverage) need an `outcome-assertions.json` judge = the #411/#413 redesign.
-   Mechanics: `capture-skill-run.sh` needs an ABSOLUTE `--out-dir`; grade mjs `--stream stream.jsonl`;
-   scrub the worktree/config before ANY commit (its `config/settings.json` pollutes repo-wide
-   `check_doc_links`); broad pytest BEFORE the critique (grep misses path-built consumers).
+1. **Continue the per-condition fixture work** (see the reconciliation doc's METHOD CORRECTION):
+   **setup** then **handoff** — trace each ref to its trigger, design a scenario per genuinely-DEPTH
+   condition, retire only truly-inlined docs; then gather's public-URL output-floor + hotl/ledger
+   token-lift. Mechanics: `capture-skill-run.sh` needs an ABSOLUTE `--out-dir` OUTSIDE the repo (its
+   `config/settings.json` pollutes `check_doc_links`); grade with
+   `build-skill-execution-observation.mjs --spec <spec> --stream <out>/stream.jsonl`; broad pytest
+   BEFORE the critique (grep misses path-built consumers).
 2. **Continue correctness sweep** for the remaining untested HYPOTHESIS floors (announcement,
    create-skill, find-skills, ideation, narrative, release, spec), one at a time — expect
    keeps/refutes, not just moves.
