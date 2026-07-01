@@ -1,0 +1,31 @@
+{
+  "_comment": "OUTCOME assertion set for the setup skill's NORMALIZATION scenario (companion to normalization.spec.json). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle; ADVISORY (grades nothing), it protects the SUBSTANCE the claim-fidelity floor cannot. CONTEXT: setup's central normalization claim is 'realign the repo's real operating surfaces (README/AGENTS/roadmap/operator-acceptance) without pretending deep review happened.' The Slice-7 in-repo capture (charness-artifacts/cautilus/setup-normalization-claim-fidelity-slice7-2026-07-01/) scored the OLD RCF doc-open floor outcome=FAILED coverage 0/9 — the run opened ZERO reference docs yet did a FAITHFUL normalization (read the four target surfaces, fixed a genuine AGENTS.md drift, committed clean). So the doc-open proxy is refuted (#413) and the honest floor is the SUBSTANCE: did the run touch + honestly normalize the REAL surfaces, whether or not a setup/references/*.md was opened. SCOPE: this set resolves as the sibling of the whole evals/cautilus/setup-claim-fidelity/ dir (skill_outcome_wiring resolves spec_path.parent/outcome-assertions.json), so it is applied to whichever setup scenario is graded. It is written for the NORMALIZATION product (edits to existing surfaces on a mature repo). greenfield.spec.json is DEFERRED (not in-repo capturable, #410) and keeps its RCF doc-open floor; do NOT grade a greenfield capture against these normalization assertions without adding a scenario guard. NON-REVERSE-ENGINEERING: assertions name only the deterministic SUBJECT the prompt gave (the four real operating surfaces + an honest per-surface closeout), never a phrase or number from the one capture — a shallow run that emits advice without touching a surface, or closes with a generic 'normalized/done' and no per-surface accounting, legitimately scores low. Judge-kind assertions need the live judge (--judge-cmd, ask-before-run) and read the run's transcript + the PRODUCED/edited surface files, so a live capture MUST preserve outputs (edited files, not only created ones) + the transcript into the bundle or the judge grades blind — confirm edited-file preservation before relying on any output_* check here. CAPTURE-BEFORE-PIN: the DETERMINISTIC claim-fidelity floor move (drop the refuted RCF doc-opens -> reclassify INLINE/DEPTH, pin an OBSERVED emitted-token RSF from setup's `## Closeout Vocabulary`) rides the Slice-2 fresh ask-before-run capture; the token is OBSERVED there, never assumed here (impl Slice-5 lesson: the plan assumed a token the run never emitted).",
+  "evalId": "setup-normalization-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-setup",
+      "kind": "deterministic",
+      "statement": "The captured run actually executed the setup skill (sanity floor before grading the work).",
+      "check": {"type": "summary_contains", "value": "Execution of /setup"},
+      "weight": 1
+    },
+    {
+      "id": "touched-real-operating-surfaces",
+      "kind": "judge",
+      "statement": "The run engaged the repo's REAL operating surfaces — README, AGENTS.md (host policy), roadmap, and operator-acceptance — reading them and EDITING the ones it found drifted, rather than only opening setup reference docs or emitting normalization advice without touching a surface. This is setup's central 'realign the operating surface' claim, judged on the transcript + the produced/edited surface files, independent of whether any setup/references/*.md was opened.",
+      "weight": 2
+    },
+    {
+      "id": "honest-per-surface-closeout",
+      "kind": "judge",
+      "statement": "The run's closeout honestly distinguishes what it CHANGED from what it LEFT: it accounts for each operating surface it was asked to normalize (named the specific drift it realigned, or stated the surface was already aligned), and marks anything it could not verify as unproven — not a generic 'normalized'/'done' with no per-surface accounting. The per-surface honesty is the substance the normalize claim asserts, whether the vocabulary was recalled or read.",
+      "weight": 2
+    },
+    {
+      "id": "normalize-not-greenfield-overreach",
+      "kind": "judge",
+      "statement": "The run detected NORMALIZE/PARTIAL mode on a mature repo and REALIGNED existing surfaces, rather than scaffolding greenfield boilerplate, inventing parallel rituals, or pretending a deep quality/product review already happened. Honors setup's mode-branch discipline and its explicit 'without pretending quality review or deep ideation happened' boundary — a run that over-writes healthy surfaces or fabricates review it did not do scores low.",
+      "weight": 1
+    }
+  ]
+}

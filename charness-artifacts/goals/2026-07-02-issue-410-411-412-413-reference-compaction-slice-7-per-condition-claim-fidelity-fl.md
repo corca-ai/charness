@@ -11,11 +11,15 @@ runs the activation command.
 
 - Current disposition: ACTIVE — scope locked to setup + handoff only, open-ended
   (no timebox). Activated 2026-07-02.
-- Current slice: Slice 1 — design setup's substance floor
-  (`evals/cautilus/setup-claim-fidelity/outcome-assertions.json`) + reclassification plan.
-- Next action: execute Slice 1 (non-capture design work), verify against
-  `grade_skill_outcome.py`, fresh-eye critique, commit; then STOP at the Slice 2
-  ask-before-run Cautilus capture boundary for operator approval.
+- Current slice: Slice 1 DONE (outcome-assertions.json landed, validated, fresh-eye
+  SOUND). PAUSED at the Slice 2 boundary.
+- Next action: Slice 2 is OPERATOR-GATED — it needs (a) a candidate
+  `## Closeout Vocabulary` in setup SKILL.md so the run emits a canonical token,
+  then (b) a fresh ask-before-run Cautilus capture of `/charness:setup`
+  normalization to OBSERVE that token, pin the RSF floor, and flip the 3 refuted
+  RCF docs → INLINE/DEPTH. Consult `python3 scripts/plan_cautilus_proof.py
+  --repo-root . --json` and get operator approval before any `run_cautilus_eval.py`.
+  WAITING on operator go for the capture.
 - Verification cadence: cheap deterministic gates + unit tests at commit
   boundaries; fresh-eye subagent critique at each slice boundary; ask-before-run
   Cautilus capture as the live floor proof at the setup and handoff bundle
@@ -306,6 +310,20 @@ closeout floors for this goal:
 - Release: n/a — no plugin version bump expected (Non-Goals).
 
 ## Slice Log
+
+### Slice 1: Design setup substance floor (outcome-assertions.json)
+
+- Objective: Add the advisory substance instrument for setup normalization (#413 step 1): grade real-surface touch (README/AGENTS/roadmap/operator-acceptance) + honest per-surface closeout + no-greenfield-overreach, NOT doc-opens. RCF/RSF floor flip deferred to the Slice-2 capture (token OBSERVED, not assumed).
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: validate_assertion_set: 0 errors; validate_outcome_assertions.py: OK (6 sets); ran-setup deterministic floor matches observed summary 'Execution of /setup'; broad pytest 3976 passed; fresh-eye Slice-1 critique SOUND (no blockers). Deferred refinement (carry to the #410-deferred greenfield capture, out of this goal's scope): add a machine-enforced scenarioId/wiring guard so the sibling set is not applied to a future greenfield bundle.
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
 
 ## Context Sources
 
