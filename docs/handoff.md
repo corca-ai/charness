@@ -9,16 +9,17 @@
 
 ## Current State
 
-- **#409 DONE (pushed `9d4c2882`).** capture→grade now preserves evidence for
-  committing/clean runs (diff vs the capture base, transcript from `stream.jsonl`).
-  Sweep reuse unblocked.
-- **Reference-compaction census + plan DONE (this session).** All 24 skills / 196 refs
-  classified — **DEPTH 109 · INLINE 58 · DUP 26 · DEAD 3**. Keystone policy + 7-slice
-  plan ready, operator-approved, deferred to next session.
-  [contract](../charness-artifacts/reference-compaction/contract.md)
+- **Reference-compaction Slice 1 (KEYSTONE) DONE (committed `5971a29e`).** Shared
+  mechanism only, no per-skill token movement: RCF-or-RSF floor guard + advisory
+  `classTag` (DUP/INLINE/DEPTH, untagged→DEPTH) + `## Closeout Vocabulary` headroom
+  exemption w/ token-shape anti-abuse + create-skill token-home rule. 28 node + 16 py
+  tests, 25 live specs green, fresh-eye critique verdict SHIP. Residual:
+  `check_skill_surface_preflight.py` at 478/480 code lines — extract helpers before
+  the next add. [contract](../charness-artifacts/reference-compaction/contract.md)
   (+ [census.json](../charness-artifacts/reference-compaction/census.json),
-  [plan.json](../charness-artifacts/reference-compaction/plan.json) = per-skill exec
-  detail + risk verdicts).
+  [plan.json](../charness-artifacts/reference-compaction/plan.json)).
+- **#409 DONE (`9d4c2882`).** capture→grade preserves evidence for committing/clean
+  runs (diff vs capture base, transcript from `stream.jsonl`). Sweep reuse unblocked.
 - impl capture (5th sweep skill): floor **MISS** (0/8), substance **4/5**
   (`honest-categorized-closeout` FAIL — the enum lives ONLY in `verification-ladder.md`,
   not inlined). The impl closeout-vocab fork is now RESOLVED into the keystone (Option A).
@@ -27,12 +28,14 @@
 
 ## Next Session
 
-1. **Execute reference-compaction, slice by slice** (per the contract). Start
-   **Slice 1 = keystone mechanism** (gate exemption + RCF-or-RSF guard + classTag infra +
-   `create-skill` rule; no per-skill content; MUST be first — empty-RCF fails closed until
-   the guard relaxes). Then 2→6; Slice 7 (RCF→RSF sweep) is issue-filed and needs fresh
-   ask-before-run captures. Diagnosis CORRECTED: coverage was already advisory; the real
-   teeth is RCF pinned to a doc filename → assert emitted TOKENS via RSF instead.
+1. **Continue reference-compaction (Slice 1 keystone DONE).** Next: **Slice 2 = DEAD
+   deletes** (web-fetch/gather-slack/gather-notion provenance memos: rm file + drop
+   SKILL.md `## References` bullet + mirror + find-skills inventory, together), then
+   **Slice 3** (spec 8 pure-DUP deletes), **Slice 4** (advisory classTag only). **Slice 5
+   (impl)** and **Slice 6 (spec enum)** move real tokens and Slice 5 **needs a FRESH
+   ask-before-run cautilus capture** to pick the honest RSF token. Slice 7 (RCF→RSF sweep)
+   is issue-filed. Per-slice contracts + risk verdicts in
+   [plan.json](../charness-artifacts/reference-compaction/plan.json) (`execution.slices`).
 2. **Continue correctness sweep** one skill at a time, reusing outcome-assertions.
    Remaining HYPOTHESIS-floor: achieve, announcement, create-cli, create-skill, critique,
    find-skills, gather, handoff, hotl, ideation, narrative, release, spec. A miss =
