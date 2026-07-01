@@ -1,0 +1,38 @@
+Closeout complete and committed (`e65010c9`). Here is the evidence-based HOTL result.
+
+## Loop Inventory
+The just-applied behavior: an edit-time guard that scans a skill-package file the author just edited and **blocks disallowed issue anchors** (`#NNN`, `owner/repo#N`, `issues/N`) in portable skill packages. Shipped on `main` by `7204940d` (scan, slice 1) and `08119de4` (PostToolUse hook, slice 2); audited at HEAD `8700f526`.
+
+## Claim-Fidelity Correction (important)
+You described it as a **"pre-commit guard."** It is actually a Claude **PostToolUse edit-time hook** — not a git pre-commit hook. Git commit-time hooks are disabled in this worktree (`core.hooksPath` → `empty-hooks`), and the commit-time backstop is a *separate* surface (`validate_skill_ergonomics`). The guard is additive to that sweep, not a git hook. I proved the edit-time guard; there is no git pre-commit path to prove.
+
+## Surface Class
+`local guard` — deterministic scan, verdict = exit **2** (block) / **0** (silent, fail-open), surfaced via a host PostToolUse hook.
+
+## Acceptance Class → **local-only, deterministic** (not provider roundtrip)
+The guard's own behavior is fully determined by repo-owned code and provable by deterministic local tests (proof rule #6, class named explicitly). No external mutation, no provider readback. The one higher-ladder piece — the *host actually firing the hook* — is scoped out as a named non-claim / separate operator entry.
+
+## Proof Packet (written before execution)
+- **Success criteria:** block file → exit 2 + `skill-issue-anchor-scan: blocked`; clean file → exit 0; 7 fail-open inputs → exit 0; real subprocess exit-code contract; install/uninstall/reconcile correct; scanner reuses the canonical commit-sweep rule (single source).
+- **Pre-roundtrip checks:** no provider/network/credentials (N/A); pytest present; artifact path writable; single-source symbols confirmed; live host settings entry confirmed present.
+- **Feasibility:** no hotl adapter declared → proof via the repo-owned deterministic test suite (legitimate for a local-only class, not improvised live execution).
+- **Non-claims:** does **not** prove the live host *invokes* the hook end-to-end; does **not** prove any git pre-commit behavior; does **not** prove the commit-time backstop.
+
+## Executed Proof
+- `pytest tests/test_skill_anchor_guard_hook.py -q` → **11 passed (0.44s)** — covers block, pass, fail-open, real-subprocess exit-code contract, and install/reconcile/status.
+- Scanner confirmed to reuse `ISSUE_ANCHOR_RE` + `is_allowed_issue_anchor_context` + `issue_anchor_findings_for_file` (same rule as the commit sweep).
+- Live `~/.claude/settings.json` has the PostToolUse anchor-guard entry installed.
+
+## Ledger Status
+- **Entry 1 — guard blocks disallowed anchors in portable skill edits → `verified`**
+  - `verified_at`: 2026-07-01 · `source_commit`: `8700f526` · `proof_artifact`: pytest 11-passed + closeout record
+  - `proving_surface_refs`: `post_edit_skill_anchor_guard.py`, `skill_issue_anchor_scan.py`, `skill_text_quality_lib.py` (canonical rule), `host_hook_skill_anchor_guard.py`, `test_skill_anchor_guard_hook.py`, `.agents/usage-episodes-adapter.yaml`
+- **Entry 2 — live host end-to-end hook fire → `blocked-needs-operator`** (non-blocking)
+  - owner: operator; reason: host-owned firing decision, not deterministically reproducible from repo code (install is confirmed, host-fire is not); revisit: operator adds `#NNN` to a `skills/public/<skill>/*.md` in a live session and observes the block.
+
+## Staleness
+- **Findings:** none — `proving_surface_refs` unchanged after baseline `8700f526`; proof taken at HEAD.
+- **Adjudication:** `covered_by_tests` (deterministic suite covers the local-only class; command recorded).
+
+## Next Action
+Local-only class is closed `verified` — no further action. Upgrade Entry 2 to `verified` when an operator runs the live-session action packet and observes the host block. Durable ledger committed (`e65010c9`).
