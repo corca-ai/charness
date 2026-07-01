@@ -117,6 +117,23 @@ in RCF would break the validator; dropping the RCF with no proven replacement fa
 closed. Therefore this session corrects the **record only** (spec `_comment` notes
 + this doc + issue reframes); the classTag/RCF flips ride with the capture-gated MOVE.
 
+### Execution progress (operator-authorized, 2026-07-01)
+
+- ✅ **hotl/proof-rules.md** — RCF retired → `[ledger-and-dispositions.md]`; PROVEN by a fresh
+  capture (`hotl-claim-fidelity-recon-2026-07-01`, genuine Read, proof-rules not opened). `ceb87340`.
+- ✅ **critique/counterweight-triage.md** (both specs) — RCF retired → `[autonomous-trigger.md]` /
+  `[premortem-decision.md]`; PROVEN from the existing committed captures (strictly-weaker floor,
+  retained DEPTH ref genuinely opened, SKILL.md unchanged) — no fresh capture; also removed a #415
+  matcher-theater pass. `bf2fdeef`.
+- ⏳ **Remaining 10** are the genuinely capture-coupled ones (below): handoff ×4 (RSF FORM floors,
+  need a fresh capture to OBSERVE the emitted token — cannot design honestly by assumption, #409/#410),
+  gather ×2 + setup ×4 (need a substance judge `outcome-assertions.json` built = #411/#413).
+  hotl/ledger MIXED token-lift stays deferred (no floor depends on it).
+
+Clean-MOVE rule proven this session: a pure retirement that leaves an already-genuinely-opened DEPTH
+floor is provable from existing captures at zero new cost; only floor-REPLACEMENT (new RSF/judge) needs
+a fresh capture, because the replacement token/assertion must be OBSERVED, not assumed.
+
 ### Capture-gated queue (execute in an ask-before-run Cautilus session)
 
 Systemic finding: **none of these skills has a substance judge**

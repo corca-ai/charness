@@ -15,11 +15,12 @@
   prior "keep because the capture opened it" was the flagged method error (an INLINE/DUP doc
   opens redundantly). Full verdicts + queue:
   [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
-- **RECORD-ONLY this session** (no floor moved, nothing claimed proven). `classTag`/RCF are NOT
-  flipped: `claim_fidelity_lib` forbids DUP/INLINE-tagging a live RCF floor, so the flip is
-  COUPLED to the MOVE. Blockers to executing the MOVEs: Cautilus is gate-refused (ask-before-run,
-  no auth this session), NO substance judge exists (`outcome-assertions.json` absent everywhere),
-  and bundles retain no `stream.jsonl` — so each MOVE needs a **fresh authorized capture**.
+- **Execution started (operator-authorized): 2 of 12 MOVEs done.** ✅ hotl/proof-rules (fresh
+  capture `ceb87340`) · ✅ critique/counterweight-triage (proven from EXISTING captures, zero new
+  cost, `bf2fdeef`). Both "clean": retiring left a genuine DEPTH floor, no new RSF/judge. **Remaining
+  10 are floor-REPLACEMENT** (new RSF/judge → must OBSERVE the token, cannot assume — #409/#410):
+  handoff ×4 (RSF FORM floors + #412 planner), gather ×2 + setup ×4 (build `outcome-assertions.json`
+  substance judge = #411/#413). hotl/ledger MIXED token-lift deferred (no floor depends on it).
 - Issues: **#411**/**#413** reframed (census INLINE is the driver, not a live "refutation";
   artifact/substance-judge fix stands; #411 capability-contract corrected DEPTH->INLINE),
   **#412** sharpened (continuation-sequence.md is INLINE too), **#415** filed (matcher honesty:
@@ -27,8 +28,8 @@
 
 ## Next Session
 
-1. **Execute the 12 capture-gated MOVEs + the hotl/ledger INLINE-token lift** — needs operator
-   Cautilus authorization (ask-before-run). Per skill: inline the gist into SKILL.md (watch the
+1. **Execute the remaining 10 capture-gated MOVEs + the hotl/ledger INLINE-token lift** (2/12 done:
+   hotl, critique). Per skill: inline the gist into SKILL.md (watch the
    critique 194/200-line ceiling), drop the RCF filename, prove the RSF/output floor from a FRESH
    capture. No substance judge => an RSF is a FORM floor (over-relax risk); script-driven
    gather/setup (0-coverage) need an `outcome-assertions.json` judge = the #411/#413 redesign.
