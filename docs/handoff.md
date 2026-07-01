@@ -9,11 +9,11 @@
 
 ## Current State
 
-- **Reference-compaction Slices 1–3 DONE (`5971a29e`, `0e3f5f4f`, `1306b1c8`).** S1
-  KEYSTONE (mechanism only): RCF-or-RSF floor guard + advisory `classTag` +
-  `## Closeout Vocabulary` headroom exemption + create-skill token-home rule. S2
-  deleted 3 dead provenance memos. S3 deleted 8 pure-DUP spec refs (16→8, 4-surface
-  removals, RCF intact). All fresh-eye SHIP. Residual:
+- **Reference-compaction Slices 1–4 DONE (`5971a29e`, `0e3f5f4f`, `1306b1c8`, `bbb088b5`).**
+  S1 KEYSTONE mechanism; S2 deleted 3 dead provenance memos; S3 deleted 8 pure-DUP spec
+  refs (16→8); S4 added advisory `classTag` to 7 skills' specs (no token movement, RCF
+  untouched; 2 tags census-aligned off-plan per critique — debug/five-steps→INLINE,
+  narrative/source-map→DEPTH). All fresh-eye SHIP. Residual:
   `check_skill_surface_preflight.py` 478/480 code lines — extract helpers before next
   add. [contract](../charness-artifacts/reference-compaction/contract.md)
   (+ [census.json](../charness-artifacts/reference-compaction/census.json),
@@ -28,14 +28,15 @@
 
 ## Next Session
 
-1. **Continue reference-compaction (Slices 1–3 DONE).** Next: **Slice 4 = advisory
-   classTag only** (retro/achieve/create-skill/find-skills/announcement/narrative/debug;
-   cosmetic, no token movement), then **Slice 5 (impl)** + **Slice 6 (spec enum)** which
-   move real tokens — Slice 5 **needs a FRESH ask-before-run cautilus capture** for the
-   honest RSF token. Slice 7 (RCF→RSF sweep) is issue-filed. Delete-slice lessons: watch
-   the ≥1-`references/`-file floor (validate_skills:327,356 — a skill can't hit zero refs);
-   **run the broad pytest BEFORE the fresh-eye critique** — grep misses path-built test
-   consumers (S3 caught only in critique). Detail:
+1. **Continue reference-compaction (Slices 1–4 DONE) — USER will do S5+S6 next session.**
+   **Slice 5 (impl)**: `## Closeout Vocabulary` lift (Lint-Gate enum + 5 completion-report
+   categories from verification-ladder.md → pointer-to-core) + RCF→RSF; validator-enforced,
+   HIGHEST risk (200-line knife-edge ~199, needs S1's guard). **NEEDS a FRESH ask-before-run
+   cautilus capture** to pick the honest RSF token (consult `plan_cautilus_proof.py` first;
+   use `run_cautilus_eval.py`). **Slice 6 (spec)**: acceptance-checks enum lift (no RCF
+   rewrite → no capture, lower risk). Slice 7 (RCF→RSF sweep) is issue-filed. Lessons: run
+   broad pytest BEFORE the critique (grep misses path-built test consumers); watch the
+   ≥1-`references/` floor when deleting. Per-slice detail:
    [plan.json](../charness-artifacts/reference-compaction/plan.json) (`execution.slices`).
 2. **Continue correctness sweep** one skill at a time, reusing outcome-assertions.
    Remaining HYPOTHESIS-floor: achieve, announcement, create-cli, create-skill, critique,
