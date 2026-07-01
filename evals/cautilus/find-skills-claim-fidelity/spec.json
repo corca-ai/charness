@@ -29,7 +29,8 @@
     "session-start-routing.md": {
       "engagement": "on-demand",
       "rationale": "Explains the routing decision when a session starts and the skill must invoke the next workflow; a pure 'which skill handles X?' query treats the inventory answer as the deliverable without this doc.",
-      "trigger": "when a session opens with a pickup (bare handoff mention) or named workflow to execute, requiring the skill to drive the routed workflow"
+      "trigger": "when a session opens with a pickup (bare handoff mention) or named workflow to execute, requiring the skill to drive the routed workflow",
+      "classTag": "INLINE"
     },
     "support-consumption.md": {
       "engagement": "on-demand",

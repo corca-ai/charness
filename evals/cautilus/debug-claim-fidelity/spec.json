@@ -31,7 +31,8 @@
     "debug-memory.md": {
       "engagement": "engage-always",
       "rationale": "The deterministic planner (plan_debug_run.py) emits this as an unconditional required read for every run ('how to preserve and reuse prior incident memory'), so a run following the Bootstrap planner opens it regardless of bug shape; the durable-artifact preservation it governs is the point of every debug run.",
-      "claimRole": "debug memory contract"
+      "claimRole": "debug memory contract",
+      "classTag": "DEPTH"
     },
     "detection-gap.md": {
       "engagement": "engage-always",
@@ -51,7 +52,8 @@
     "five-steps.md": {
       "engagement": "engage-always",
       "rationale": "The deterministic planner (plan_debug_run.py) emits this as its first unconditional required read ('canonical RCA sequence for the run'), so every run following the Bootstrap planner opens it; it carries the compact five-move sequence plus the non-linear traversal rule and the test-guarded Durable Follow-Through lesson. DEMOTED from requiredCommandFragments as of 2026-06-30 Plan C (n=2): its repro+falsifiable rules are internalized in the scaffold seeds + substance-asserted by falsifiable-hypothesis-before-fix, so doc-opening is no longer the floor proof; it stays engage-always because the planner still routes it (engage-always classification does not require RCF membership).",
-      "claimRole": "canonical RCA sequence (substance-asserted, no longer a floor matcher)"
+      "claimRole": "canonical RCA sequence (substance-asserted, no longer a floor matcher)",
+      "classTag": "INLINE"
     },
     "five-whys-causal-chain.md": {
       "engagement": "engage-always",

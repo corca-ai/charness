@@ -38,7 +38,8 @@
     "mode-guide.md": {
       "engagement": "engage-always",
       "rationale": "Every run selects a mode (step 1), but SKILL.md step 1 inlines the session/weekly selection rule and the Auto Selection order and step 2 inlines the per-mode evidence bias — the run engages mode selection from the workflow, not by opening this doc: engage-always yet not an RCF floor (lens 7, skill-inlined).",
-      "claimRole": "skill-inlined-context"
+      "claimRole": "skill-inlined-context",
+      "classTag": "DUP"
     },
     "phase-aware-efficiency.md": {
       "engagement": "on-demand",

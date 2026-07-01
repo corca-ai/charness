@@ -22,27 +22,32 @@
     "adapter-contract.md": {
       "engagement": "on-demand",
       "rationale": "Consulted only at closeout when the goal's adapter policy must be resolved for publication defaults, issue-closeout carrier, and Auto-Retro disposition floors; not needed for Before-phase shaping or simple local-only goals.",
-      "trigger": "when the goal resolves tracked issues, touches release surfaces, or needs to determine closeout publication defaults at the After-phase evidence gate"
+      "trigger": "when the goal resolves tracked issues, touches release surfaces, or needs to determine closeout publication defaults at the After-phase evidence gate",
+      "classTag": "DEPTH"
     },
     "coordination.md": {
       "engagement": "engage-always",
       "rationale": "Required for understanding how achieve coordinates with existing skills and for the find-skills routing cues that must be seeded during active runs, as the lifecycle section (317-328) makes coordination routing a core workflow step.",
-      "claimRole": "coordination-framework"
+      "claimRole": "coordination-framework",
+      "classTag": "INLINE"
     },
     "goal-artifact.md": {
       "engagement": "engage-always",
       "rationale": "Explicitly referenced alongside lifecycle.md for the artifact shape and helper scripts required to save and validate goals, forming the structural contract every run must follow to save a reviewable artifact.",
-      "claimRole": "artifact-contract"
+      "claimRole": "artifact-contract",
+      "classTag": "DEPTH"
     },
     "index.md": {
       "engagement": "on-demand",
       "rationale": "A navigation index that points to the four references rather than providing substantive content; a representative run consults the actual references directly, not this index.",
-      "trigger": "when the user asks for a consolidated overview of all achieve reference documents"
+      "trigger": "when the user asks for a consolidated overview of all achieve reference documents",
+      "classTag": "DUP"
     },
     "lifecycle.md": {
       "engagement": "engage-always",
       "rationale": "The skill's own Workflow section explicitly routes to lifecycle.md for the full contract on Before/During/After phases and activation readiness, which shapes every representative run's shaping and activation decisions.",
-      "claimRole": "phase-contract"
+      "claimRole": "phase-contract",
+      "classTag": "DEPTH"
     }
   }
 }

@@ -22,12 +22,14 @@
     "adapter-contract.md": {
       "engagement": "engage-always",
       "rationale": "Step 2 reviews adapter fitness on every run, but resolve_adapter.py and review_adapter.py resolve the adapter (source set, mutable documents, brief_template, block/warn findings) — the run reads the resolved adapter output, not this explainer doc, so it is engage-always yet not an RCF floor (lens 3, script-resolved).",
-      "claimRole": "script-resolved-context"
+      "claimRole": "script-resolved-context",
+      "classTag": "INLINE"
     },
     "brief-shape.md": {
       "engagement": "engage-always",
       "rationale": "The single engage-always floor. Workflow step 6 now derives the brief 'per references/brief-shape.md'; the doc owns the audience-neutral discipline and the what-to-avoid rules (do not dump repo paths / decision-ids / stage-labels, do not replace source docs) that no script resolves and the adapter's brief_template does not supply. A representative run that derives a brief and never opens it skipped its own routing; the same-pass skill fix added the point-of-need route so this floor is real.",
-      "claimRole": "brief-discipline"
+      "claimRole": "brief-discipline",
+      "classTag": "DEPTH"
     },
     "cross-repo-issue-shaping.md": {
       "engagement": "on-demand",
@@ -47,7 +49,8 @@
     "source-map.md": {
       "engagement": "engage-always",
       "rationale": "Step 2 maps the truth surface on every run, but map_sources.py resolves the source-document set, dirty paths, and git freshness, and SKILL.md step 5 inlines the alignment rules (rewrite contradictions at source, one durable narrative) — the run reads the script's output. The one rule this doc uniquely holds that neither the script emits nor SKILL.md inlines is the freshness interpretation 'remote-ahead does not force a stop; stop when local truth cannot be trusted', which is load-bearing only in the narrow remote-ahead case (charness is current), so this stays engage-always yet not an RCF floor (lens 3, script-resolved).",
-      "claimRole": "script-resolved-context"
+      "claimRole": "script-resolved-context",
+      "classTag": "DEPTH"
     }
   }
 }
