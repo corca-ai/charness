@@ -1,0 +1,27 @@
+Committed, tree clean. Normalization complete.
+
+## Setup normalization — done
+
+**Repo mode:** `NORMALIZE` (mature, self-referential charness repo). Routed correctly through `find-skills` → `setup`, local-first, no external surface needed.
+
+### What I found across the four target surfaces
+| Surface | State | Action |
+|---|---|---|
+| `README.md` | Healthy, current (orientation, Quick Start, Workflow Routes, Core Concepts, Skill Map coherent) | Left as-is |
+| `AGENTS.md` | One genuine drift: `commit_discipline_drift` | **Fixed** |
+| `docs/operator-acceptance.md` | Healthy, current | Left as-is (one advisory logged) |
+| `docs/roadmap.md` | **Intentionally** adapter-suppressed (`.agents/setup-adapter.yaml` → `surfaces: roadmap: null`) | Not created — function carried by operator-acceptance *Remaining Items* + handoff *Next Session* |
+
+### The one realigned boundary
+AGENTS.md routes work through goal/skill routing but lacked the explicit *commit-each-slice / don't-report-done-while-uncommitted* rule. The canonical Commit Discipline lives in `docs/conventions/operating-contract.md`, which by design "does not repeat detail in the root file" — but `## Phase Rules` already surfaces the top-level commit hard rules (bullets around 54/56/58), so the missing peer rule belonged there. Added one line (AGENTS.md:57); full detail stays owned by operating-contract.md. Host-doc invariants intact (`CLAUDE.md` → `AGENTS.md` symlink kept).
+
+### Verification
+- Inspector after edit: `status: ok`, `recommendations: []`, `missing_surfaces: []`, `commit_discipline_present: true`.
+- `test_setup_commit_discipline.py`: 9 passed. Current-pointer freshness: validated.
+- **Fresh-eye bounded review** (host-policy / operator-takeover lens): **SHIP**, all invariants CONFIRMED, `parent-delegated`. The `high-leverage` tier resolved host-defaulted (adapter maps it to gpt-5.5, unavailable on this Claude host).
+
+### Honest non-claims
+- `./scripts/run-quality.sh --read-only` reports 14 pytest failures + a `dup-ratchet` arm + `cautilus-diagnostics`/`maintainer-setup` — **all confirmed pre-existing on clean HEAD** (verified by stash comparison). Root cause is this worktree's environment (husky/lefthook hook detection, `core.hooksPath` not installed). My one-line diff introduces **zero** new failures. I did not fix these — they're out of setup's scope and environmental.
+- Advisory (queued, not applied): `operator-acceptance.md` references a "remaining roadmap"/reads `docs/roadmap.md` (guarded `|| true`). Tolerable given the intentional roadmap suppression; revisit only if a real roadmap.md returns.
+
+Committed as `e6d84fe1` (AGENTS.md + durable note under `charness-artifacts/setup/`). Not pushed — the pre-push gate's pre-existing environmental failures are unrelated to this change, so I left pushing to you.
