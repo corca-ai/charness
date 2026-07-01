@@ -1,0 +1,23 @@
+Done. Captured the page as a durable, content-bearing knowledge asset — not just a fetch trace.
+
+## Gather Result
+
+- **Source**: `https://docs.python.org/3/library/asyncio-task.html` — primary source, `<link rel="canonical">` confirmed (no search widening; the named URL resolved directly).
+- **Knowledge Capability**: asyncio task-scheduling API — `create_task` / `gather` / `wait_for`+`timeout` / cancellation propagation — referenceable **without re-fetching**.
+- **Canonical Asset**: `charness-artifacts/gather/2026-07-01-docs-python-org-3-library-asyncio-task-html-86481391.md`, mirrored to `charness-artifacts/gather/latest.md` (pointer refreshed via helper, in sync). Committed as `074eb110`.
+- **Freshness / Version**: Python **3.14.6** docs; page footer "Last updated Jul 01, 2026 (06:20 UTC)"; captured 2026-07-01.
+- **Access Mode / Route**: support/web-fetch public route, `direct-public-fetch` succeeded on the first stage.
+
+### Requested facts (now in the asset)
+- **`create_task(coro, *, name, context, eager_start, **kwargs)`** — schedules on `get_running_loop()`, `RuntimeError` with no running loop; keep a reference to avoid GC.
+- **`gather(*aws, return_exceptions=False)`** — results in `aws` order; default propagates the first exception but **leaves siblings running**; `return_exceptions=True` collects them; **cancelling `gather` cancels all pending children**.
+- **`wait_for(aw, timeout)`** — on timeout **cancels the task and raises `TimeoutError`**; may exceed `timeout` (waits for cancellation); `shield()` to protect the inner task. Contrast: `wait(...)` does *not* raise on timeout (returns `pending`).
+- **`timeout(delay)`** async CM — converts the injected `CancelledError` into `TimeoutError` at its boundary.
+- **Cancellation** — `Task.cancel(msg)` injects `CancelledError` (no guarantee; can be suppressed with `uncancel()`); `CancelledError` subclasses `BaseException` (won't be caught by `except Exception`); `shield()` is the opt-out boundary.
+
+### Captured vs human confirmation
+Content was fetched and **hand-verified against the primary-source `<dt>` signatures** (the classifier's `weak` confidence is a length heuristic, not a fidelity signal). No human confirmation was sought.
+
+### Notes / open gaps
+- The default `gather_public_url.py` record is trace-only (`Content Persistence: none`), which would have forced a re-fetch — contrary to your explicit ask — so I distilled the primary-source facts into a `## Durable Knowledge` section (`Content Persistence: distilled`). Raw HTML itself is not stored.
+- Not captured (out of the requested scope): full `TaskGroup` semantics, `Runner`/`Task` object method surface, and introspection helpers. Say the word if you want those folded into the same asset.
