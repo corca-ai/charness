@@ -15,14 +15,8 @@ Good acceptance checks usually specify:
 
 ## Common Verification Types
 
-- `manual`
-- `unit`
-- `integration`
-- `e2e`
-- `eval`
-- `specdown`
-
-Pick the lightest check that still proves the behavior honestly.
+The verification-type enum lives in spec SKILL.md `## Closeout Vocabulary`; pick
+the lightest check that still proves the behavior honestly.
 
 If the repo uses executable specs such as `specdown`:
 

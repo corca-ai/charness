@@ -152,6 +152,12 @@ The final spec should usually include:
 If the idea depends on durable structure or flow, reuse ideation outputs such
 as `Entities` or `Stages` instead of recreating them under new names.
 
+## Closeout Vocabulary
+
+Emittable-verbatim acceptance-check tokens (a reader/validator substring-matches these); the teaching prose stays in `references/acceptance-checks.md`.
+
+- Verification type is one of `manual` / `unit` / `integration` / `e2e` / `eval` / `specdown`.
+
 ## Guardrails
 
 - Do not reopen broad concept exploration that belongs in `ideation`, treat
