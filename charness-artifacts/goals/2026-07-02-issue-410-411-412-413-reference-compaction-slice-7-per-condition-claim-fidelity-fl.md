@@ -11,15 +11,16 @@ runs the activation command.
 
 - Current disposition: ACTIVE — scope locked to setup + handoff only, open-ended
   (no timebox). Activated 2026-07-02.
-- Current slice: Slice 1 DONE (outcome-assertions.json landed, validated, fresh-eye
-  SOUND). PAUSED at the Slice 2 boundary.
-- Next action: Slice 2 is OPERATOR-GATED — it needs (a) a candidate
-  `## Closeout Vocabulary` in setup SKILL.md so the run emits a canonical token,
-  then (b) a fresh ask-before-run Cautilus capture of `/charness:setup`
-  normalization to OBSERVE that token, pin the RSF floor, and flip the 3 refuted
-  RCF docs → INLINE/DEPTH. Consult `python3 scripts/plan_cautilus_proof.py
-  --repo-root . --json` and get operator approval before any `run_cautilus_eval.py`.
-  WAITING on operator go for the capture.
+- Current slice: Slices 1–3 DONE. Slice 1 (setup substance instrument) + Slice 2
+  (setup floor flip, capture-gated, #413 resolvable) + Slice 3 (handoff planner
+  conditional continuation-sequence.md, progresses #412) all landed with fresh-eye
+  critiques (all SOUND/no blockers) and broad pytest green.
+- Next action: Slice 4 (handoff floor re-baseline) is the SECOND OPERATOR-GATED
+  capture — needs a fresh ask-before-run capture of the handoff pickup scenario
+  (clear + ambiguous fixtures) to confirm the planner change, then drop
+  `continuation-sequence.md` from `pickup.spec.json` RCF (keep `workflow-trigger.md`).
+  Then Slice 5 closeout (#412/#413 issue closeout via `issue`, #410 rows, handoff
+  refresh, retro). WAITING on operator go for the handoff capture.
 - Verification cadence: cheap deterministic gates + unit tests at commit
   boundaries; fresh-eye subagent critique at each slice boundary; ask-before-run
   Cautilus capture as the live floor proof at the setup and handoff bundle
@@ -320,6 +321,34 @@ closeout floors for this goal:
 - Alternatives rejected:
 - Targeted verification: validate_assertion_set: 0 errors; validate_outcome_assertions.py: OK (6 sets); ran-setup deterministic floor matches observed summary 'Execution of /setup'; broad pytest 3976 passed; fresh-eye Slice-1 critique SOUND (no blockers). Deferred refinement (carry to the #410-deferred greenfield capture, out of this goal's scope): add a machine-enforced scenarioId/wiring guard so the sibling set is not applied to a future greenfield bundle.
 - Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 2: setup floor flip — capture-gated RCF->RSF (Slice 2)
+
+- Objective: Add setup ## Closeout Vocabulary (74c639cf), run operator-authorized ask-before-run capture, OBSERVE emitted tokens, flip normalization.spec.json RCF=[] -> RSF=[Repo mode:, Normalization non-claims:], reclassify 3 refuted docs classTag INLINE. Resolves #413.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: Old RCF floor grades outcome=FAILED (1/9); flipped RSF floor grades outcome=PASSED (both tokens OBSERVED in closeout). validate_spec + registry (26 specs) OK. grade_skill_outcome selftest PASSED, ran-setup deterministic PASS. Fresh-eye Slice-2b critique: HONEST + LOAD-BEARING, no #410 softening, no blockers. Evidence: charness-artifacts/cautilus/setup-normalization-claim-fidelity-slice2b-2026-07-02/.
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 3: handoff planner conditional continuation-sequence.md (Slice 3)
+
+- Objective: Make plan_handoff_run.py emit continuation-sequence.md for pickup ONLY when ambiguous (no clearly-pinned task AND >=2 plausible pickups). Adds _invocation_pins_single_task (issue-id/word-boundary 'pinned' with negation guard/file-path) + _pickup_needs_continuation_sequence + next_session_entry_count. Aligns planner with the skill's 'when several plausible pickups exist' scope. Progresses #412 (RCF drop rides Slice 4 capture).
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 15 handoff-plan unit tests pass (clear/ambiguous/single/pinned/issue/unpinned); heuristic edge-cases verified; source+mirror synced identical; broad pytest 3980 passed; fresh-eye Slice-3 critique SOUND, no blockers (folded \bpinned\b negation guard + unpinned test).
+- Test duplication pressure: added 5 planner tests (pickup ambiguity); no duplicate-coverage pressure — new discriminating cases, not overlap.
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:

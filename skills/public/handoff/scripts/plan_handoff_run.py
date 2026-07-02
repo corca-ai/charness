@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -95,7 +96,16 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
             "extra_h2_sections": [],
         }
 
-    lines = path.read_text(encoding="utf-8").splitlines()
+    raw = path.read_text(encoding="utf-8")
+    lines = raw.splitlines()
+    try:
+        # Actionable `## Next Session` entries = plausible pickups. Used only to
+        # decide whether a pickup is ambiguous enough to need continuation-sequence.md;
+        # open-issue union is intentionally omitted here to keep the planner
+        # deterministic and tracker-independent.
+        next_session_entry_count = len(chunked_routing_lib.parse_handoff_entries(raw))
+    except Exception:
+        next_session_entry_count = 0
     h2_sections = [line.strip() for line in lines if line.startswith("## ")]
     missing = [section for section in REQUIRED_SECTIONS if section not in h2_sections]
     extra = [section for section in h2_sections if section not in REQUIRED_SECTIONS]
@@ -119,7 +129,39 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         "dated_session_sections": dated_sessions,
         "missing_sections": missing,
         "extra_h2_sections": extra,
+        "next_session_entry_count": next_session_entry_count,
     }
+
+
+def _invocation_pins_single_task(invocation_text: str) -> bool:
+    """A pickup invocation clearly pins ONE task when it names a specific target,
+    so no sequencing among plausible pickups remains. Conservative signals only."""
+    lowered = invocation_text.lower()
+    if re.search(r"#\d+", invocation_text):  # a specific issue id
+        return True
+    # A standalone "pinned" (e.g. "resume the pinned task") signals one pinned task,
+    # unless it is negated ("unpinned" has no word boundary; "not/nothing pinned"
+    # is a negation phrase) — those describe an ambiguous pickup, not a pinned one.
+    pinned = re.search(r"\bpinned\b", lowered)
+    if pinned:
+        preceding = lowered[: pinned.start()].split()[-2:]
+        if not any(neg in preceding for neg in ("no", "not", "nothing", "without", "never")):
+            return True
+    for token in invocation_text.split():  # a specific file path other than the handoff
+        stripped = token.strip("`'\"()[],")
+        if ("/" in stripped or stripped.endswith((".md", ".py", ".json"))) and "handoff" not in stripped.lower():
+            return True
+    return False
+
+
+def _pickup_needs_continuation_sequence(artifact: dict[str, Any], invocation_text: str) -> bool:
+    """continuation-sequence.md orders the next move among SEVERAL plausible pickups.
+    A pickup needs it only when the pickup is ambiguous: the invocation does not pin
+    one task AND the live state offers more than one plausible pickup. This aligns the
+    planner with the skill's own 'when several plausible pickups exist' scope."""
+    if _invocation_pins_single_task(invocation_text):
+        return False
+    return artifact.get("next_session_entry_count", 0) >= 2
 
 
 def _resolve_intent(
@@ -156,6 +198,7 @@ def _required_reads(
     artifact: dict[str, Any],
     intent: dict[str, Any],
     adapter: dict[str, Any],
+    invocation_text: str,
 ) -> list[dict[str, str]]:
     reads: list[dict[str, str]] = []
     if artifact["exists"]:
@@ -187,10 +230,20 @@ def _required_reads(
             )
         )
 
+    pickup_skip_continuation = (
+        intent["resolved"] == "pickup"
+        and not _pickup_needs_continuation_sequence(artifact, invocation_text)
+    )
     for path, why in INTENT_REFERENCE_READS.get(
         intent["resolved"],
         INTENT_REFERENCE_READS["judge_from_user_request"],
     ):
+        if pickup_skip_continuation and path == "references/continuation-sequence.md":
+            # Unambiguous pickup: one clearly-pinned task or a single plausible
+            # pickup — no sequencing among alternatives is needed, so the planner
+            # does not force continuation-sequence.md (which scopes itself to
+            # "when several plausible pickups exist").
+            continue
         reads.append(_read(path, "reference", why, base="skill"))
     return reads
 
@@ -288,6 +341,7 @@ def build_plan(
             artifact=artifact,
             intent=resolved_intent,
             adapter=adapter,
+            invocation_text=invocation_text,
         ),
         next_action=_next_action(
             artifact=artifact,

@@ -246,3 +246,83 @@ def test_handoff_plan_scaffolds_missing_artifact(tmp_path: Path) -> None:
     assert plan["required_reads"][0]["base"] == "skill"
     assert plan["gate_packets"][0]["id"] == "handoff-artifact-shape"
     assert plan["gate_packets"][0]["available"] is False
+
+
+def _pickup_body(next_entries: int) -> str:
+    lines = [
+        "# Demo Handoff",
+        "",
+        "## Workflow Trigger",
+        "",
+        "- trigger",
+        "",
+        "## Current State",
+        "",
+        "- state",
+        "",
+        "## Next Session",
+        "",
+    ]
+    lines.extend(f"{index}. Task {index} to do." for index in range(1, next_entries + 1))
+    lines.extend(
+        [
+            "",
+            "## Discuss",
+            "",
+            "- discuss",
+            "",
+            "## References",
+            "",
+            "- [guide](docs/guide.md)",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _pickup_reads(repo: Path, invocation_text: str) -> set[str]:
+    plan = run_plan(
+        "--repo-root",
+        str(repo),
+        "--intent",
+        "pickup",
+        "--invocation-text",
+        invocation_text,
+    )
+    return {read["path"] for read in plan["required_reads"]}
+
+
+def test_handoff_plan_pickup_requires_continuation_when_ambiguous(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _pickup_body(3))
+    reads = _pickup_reads(repo, "resume from the current state")
+    # Several plausible pickups + no pinned task -> continuation-sequence.md orders them.
+    assert "references/continuation-sequence.md" in reads
+    assert "references/workflow-trigger.md" in reads
+
+
+def test_handoff_plan_pickup_skips_continuation_when_single_plausible_pickup(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _pickup_body(1))
+    reads = _pickup_reads(repo, "resume from the current state")
+    # Only one plausible pickup -> no sequencing choice, so the planner does not force it.
+    assert "references/continuation-sequence.md" not in reads
+    assert "references/workflow-trigger.md" in reads
+
+
+def test_handoff_plan_pickup_skips_continuation_when_task_pinned(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _pickup_body(3))
+    # A clearly-pinned task overrides state ambiguity (mirrors the pickup spec prompt).
+    reads = _pickup_reads(repo, "resume the pinned task and start the named workflow")
+    assert "references/continuation-sequence.md" not in reads
+
+
+def test_handoff_plan_pickup_skips_continuation_when_issue_pinned(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _pickup_body(3))
+    reads = _pickup_reads(repo, "resume and work on #412")
+    assert "references/continuation-sequence.md" not in reads
+
+
+def test_handoff_plan_pickup_keeps_continuation_when_unpinned(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _pickup_body(3))
+    # "unpinned" must NOT read as a pinned task: several plausible pickups remain.
+    reads = _pickup_reads(repo, "the next pickup is unpinned, resume from the current state")
+    assert "references/continuation-sequence.md" in reads
