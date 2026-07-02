@@ -9,38 +9,25 @@
 
 ## Current State
 
+- **v0.58.0 SHIPPED** — tag pushed, `main`==`origin/main`, all three `--release`
+  gate blockers cleared honestly; #412/#413 closed on push. Historical runbook:
+  [v0.58.0-blockers.md](../charness-artifacts/release/v0.58.0-blockers.md).
 - **Slice-7 setup (#413) + handoff (#412) claim-fidelity floors DONE** — goal
-  [2026-07-02 setup+handoff floor](../charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl.md),
-  6 commits `69552811..551a1f49`, all gates green (broad pytest 3981), 5 fresh-eye
-  critiques SOUND.
-- setup floor moved RCF→RSF `[Repo mode:, Normalization non-claims:]` via live
-  capture (+ `## Closeout Vocabulary` + `outcome-assertions.json` substance judge).
-  handoff planner conditionalized, and the pickup floor split into two
-  per-condition falsifiable fixtures — a clear
-  [pickup](../evals/cautilus/handoff-claim-fidelity/pickup.spec.json) arm and an
-  ambiguous [pickup-ambiguous](../evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json)
-  arm, both capture-proven; continuation-sequence.md reclassified on-demand DEPTH.
+  [2026-07-02 setup+handoff floor](../charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl.md).
 - **Method locked (operator-directed):** every skill path/condition gets its OWN
   falsifiable fixture; capture VERIFIES, docs+routing DESIGN; token OBSERVED never assumed.
 - Deferred honestly (not captured): setup greenfield + narrow host-docs-only
-  normalization (greenfield not in-repo capturable, #410).
-- **v0.58.0 release PREPPED but BLOCKED.** Critique + notes done/committed; a
-  `publish --execute` attempt fail-closed at `./scripts/run-quality.sh --release`
-  (3 gates, mostly pre-existing debt). Nothing pushed; version reverted to 0.57.0.
-  ~40 commits still on local `main`.
+  normalization — greenfield not in-repo capturable (#410).
 
 ## Next Session
 
-1. **Finish the v0.58.0 release** — full runbook + exact commands:
-   [v0.58.0-blockers.md](../charness-artifacts/release/v0.58.0-blockers.md). Three
-   `--release` gate blockers to work (no forcing/softening): 18 malformed cautilus
-   bundles (bundle-1 fixed as a template), changed-line mutation coverage (BLOCKING
-   in --release, base 2f5d0f7c), dup-ratchet (7 code + 1 doc families → honest
-   dup-review). Then `publish_release.py --part minor … --execute`; #412/#413 close on push.
-2. **Continue the sweep** (next ranked chunks): gather #411 public-URL output-floor
-   (private-SaaS half done), the correctness sweep of untested HYPOTHESIS floors,
-   then matcher-honesty #415 — same per-condition-falsifiable + capture-before-pin method.
-3. **File the deferred guard idea:** a validator cross-checking each planner's
+1. **Continue the correctness sweep** — same per-condition-falsifiable +
+   capture-before-pin method, next ranked chunks:
+   - **#411** gather claim-fidelity floor redesign (public-URL output-floor;
+     private-SaaS half done).
+   - correctness sweep of the untested HYPOTHESIS floors.
+   - **#415** matcher honesty (RCF floor met by a prompt name-mention, not a real Read).
+2. **File the deferred guard idea:** a validator cross-checking each planner's
    intent/condition-keyed required-reads against scenario specs (auto-detect a
    conditionally-required doc no scenario forces).
 
