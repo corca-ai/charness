@@ -100,6 +100,52 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
     assert (output_dir / "lesson-selection-index.json").is_file()
 
 
+def test_persist_retro_artifact_stamps_persisted_path(tmp_path: Path, monkeypatch, capsys) -> None:
+    # The helper knows the durable path it writes, so it stamps the `## Persisted`
+    # line — the run must not hand-edit the placeholder afterward (the micro-churn
+    # the retro H0 fresh-eye caught: two byte-identical edits + a verifying read).
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    output_dir.mkdir(parents=True)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/retro",
+                "evidence_paths: []",
+                "metrics_commands: []",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "\n".join(["# Session Retro", "", "## Persisted", "", "Persisted: yes: TODO path", ""]) + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-07-03-demo.md",
+        "--markdown-file",
+        str(markdown_file),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["persisted_line_stamped"] is True
+    written = (output_dir / "2026-07-03-demo.md").read_text(encoding="utf-8")
+    assert "Persisted: yes: charness-artifacts/retro/2026-07-03-demo.md" in written
+    assert "TODO path" not in written
+
+
 def test_persist_retro_artifact_skips_self_refresh_for_summary_target(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:

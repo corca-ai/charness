@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -8,6 +9,22 @@ from typing import Any
 from scripts.portable_artifact_lib import sanitize_artifact_json
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
 from scripts.t_events_emit_lib import emit_retro_lesson_cites
+
+_PERSISTED_LINE_PATTERN = re.compile(r"^Persisted:.*$", re.MULTILINE)
+
+
+def stamp_persisted_path(markdown_text: str, relpath: str) -> str:
+    """Fill the `## Persisted` line with the durable relpath the persist step just
+    computed, so a run does not hand-edit the placeholder after persisting — the
+    helper already knows where the file landed (the retro analog of the debug
+    size_budget fix: stamp what the tool computes instead of making the agent
+    re-derive it). Replaces only the first `Persisted:` line; no-op if the body
+    has none, so a hand-authored `Persisted: no: <reason>` without a persist call
+    is untouched."""
+    replacement = f"Persisted: yes: {relpath}"
+    stamped, count = _PERSISTED_LINE_PATTERN.subn(replacement, markdown_text, count=1)
+    return stamped if count else markdown_text
+
 
 _STUB_SUMMARY_MARKERS: tuple[str, ...] = (
     "No current focus bullets found in retro lesson index.",
@@ -63,11 +80,15 @@ def persist_retro_artifact(
         )
 
     artifact_path = output_dir / normalized_name
+    relpath = str(artifact_path.relative_to(repo_root))
+    line_stamped = bool(_PERSISTED_LINE_PATTERN.search(markdown_text))
+    markdown_text = stamp_persisted_path(markdown_text, relpath)
     _write_text(artifact_path, markdown_text)
 
     result: dict[str, Any] = {
-        "artifact_path": str(artifact_path.relative_to(repo_root)),
+        "artifact_path": relpath,
         "summary_refreshed": False,
+        "persisted_line_stamped": line_stamped,
     }
     if was_normalized:
         result["artifact_name_normalized"] = True

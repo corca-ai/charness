@@ -12,37 +12,39 @@
 
 ## Current State
 
-- **The lever class is CHURN/RITUAL, not references.** Three per-skill H0 captures
-  now agree:
-  - **quality** — churn lever FOUND+FIXED+PROVEN (closeout re-run 6× → report-all
-    default + scaffold-first).
-  - **spec** — NO lever; refs load-bearing, costs are the skill working well:
-    [spec-h0-capture-diagnosis.md](../charness-artifacts/reference-compaction/spec-h0-capture-diagnosis.md).
-  - **debug** — churn lever FOUND+FIXED+**PROVEN** (`ff80f914`):
+- **Lever class is CHURN, not references.** Four per-skill H0 captures agree, and
+  the mechanism is now precise (see the rule below):
+  - **quality** — churn FIXED+PROVEN (report-all default + scaffold-first).
+  - **debug** — churn FIXED+**PROVEN** (`ff80f914`, A/B `f54f8e4f`):
     [debug-h0-closeout-churn.md](../charness-artifacts/reference-compaction/debug-h0-closeout-churn.md).
-    Trim-to-fit loop vs an invisible `MAX_ARTIFACT_LINES=180` → scaffold surfaces
-    `size_budget` + validator reports overage. Controlled A/B re-capture (same
-    session/bug, only the fix differs): edits 37→7, `wc -l` 19→0, wall 18→11min,
-    artifact 180 (at ceiling)→152 (headroom) and still complete. The run heeded
-    the budget — fresh-eye's 'debug ignores guidance' worry refuted.
+    Invisible `MAX_ARTIFACT_LINES=180` trim-loop → scaffold surfaces `size_budget`
+    and the validator reports the overage. Controlled A/B: edits 37→7, `wc -l` 19→0.
+  - **spec** — NO lever (refs load-bearing; pure-prose, no artifact gate):
+    [spec-h0-capture-diagnosis.md](../charness-artifacts/reference-compaction/spec-h0-capture-diagnosis.md).
+  - **retro** — no *dominant* lever, the **anti-churn exemplar** (~8× cheaper than
+    debug) + one micro-lever **FIXED**:
+    [retro-h0-anti-churn-exemplar.md](../charness-artifacts/reference-compaction/retro-h0-anti-churn-exemplar.md).
+    persist-helper + no ceiling + lens_brief = what the churn fixes converge to;
+    `persist_retro_artifact` now stamps the `## Persisted` path (no hand-edit).
 
 ## Next Session
 
-1. **Continue the churn-class hunt** on the next artifact-write/closeout-heavy
-   skill (`ideation`, `retro`, `issue`, `achieve` are the candidates) — capture-
-   then-diagnose, name the suspected avoidable cost, fix on sight, then prove with
-   a controlled A/B re-capture (the debug pattern: same session/bug, only the fix
-   differs — stronger than n=2 uncontrolled). Do NOT sweep by ref count (spec
-   proved ref count ≠ lever).
-2. **Reusable win:** the shared `size_budget` scaffold field + count-reporting
-   `validate_max_lines` now help ANY length-capped artifact skill — check whether
-   quality/retro/etc. artifacts show the same trim-loop and wire their scaffolds.
-3. **Orthogonal debug gap (separate):** debug runs still skip the `debug-memory.md`
-   RCF (documented, not-yet-internalized cross-incident memory) — its own lever.
+1. **Target by the HEURISTIC, don't sweep.** Churn PRESENT ⇐ a skill (a) hand-edits
+   its artifact via `Edit` (no persist helper) AND (b) the run iterates to satisfy an
+   invisible **validator-format rule** (a `MAX_*_LINES` ceiling is one; retro's
+   `Persisted` form was a micro-case with no ceiling). Cheap STATIC check of a
+   candidate's scaffold+validator predicts the capture. Candidates: `issue`,
+   `achieve`, `ideation`, `hotl` — static-check first, H0 only the hits.
+2. **Fix pattern:** surface the budget (debug) or adopt a persist helper (retro,
+   the stronger shape). Prove with a controlled A/B re-capture (same session/bug,
+   only the fix differs — stronger than n=2 uncontrolled).
+3. **Reusable win already shared:** `size_budget` scaffold field + count-reporting
+   `validate_max_lines` help ANY length-capped artifact skill (wire their scaffolds).
+4. **Orthogonal debug gap:** debug runs still skip the `debug-memory.md` RCF — its
+   own (non-churn) lever, documented.
 
 ## Discuss
 
-- The debug fix is honest-but-unproven; #1 is the gate before calling it fixed.
 - Ungated evidence path = `capture-skill-run.sh` + `build-observation.mjs`; only
   `cautilus evaluate` scoring is ask-before-run, `cautilus improve` disabled.
 - Brittle test: [test_handoff_plan.py](../tests/test_handoff_plan.py)
