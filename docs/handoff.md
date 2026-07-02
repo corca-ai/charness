@@ -12,42 +12,33 @@
 
 ## Current State
 
-- **All contract slices SHIPPED** (Slice 1 keystone → Slice 7 deferred sweep) plus
-  the quality prune+brief pilot. The effort is now a per-skill **capture-then-
-  diagnose** pass: run the real skill (ungated capture harness), find the DOMINANT
-  cost, and pull a lever ONLY if a real one exists.
-- **Two H0 diagnoses now bracket the method:**
-  - **quality** — lever FOUND+FIXED: dominant cost was artifact **closeout churn**
-    (validator re-run 6×), not refs → report-all default + scaffold-first.
-  - **spec** — lever NONE (this session):
+- **The lever class is CHURN/RITUAL, not references.** Three per-skill H0 captures
+  now agree:
+  - **quality** — churn lever FOUND+FIXED+PROVEN (closeout re-run 6× → report-all
+    default + scaffold-first).
+  - **spec** — NO lever; refs load-bearing, costs are the skill working well:
     [spec-h0-capture-diagnosis.md](../charness-artifacts/reference-compaction/spec-h0-capture-diagnosis.md).
-    Costs are load-bearing (fresh-eye critique caught 2 real defects; repo-truth
-    ingest), refs NOT dominant (3rd confirmation), the 2 RCF floors genuinely
-    opened, the 4 DEPTH refs correctly un-forced. Spec's real compaction already
-    was Slices 3/6. **One NAMED candidate survives:** the Bootstrap blanket scans
-    (`spec/SKILL.md:21,28,32`) the capable run executed 0× — a lower-context
-    capture would prove/kill it (option 3 below); not trimmed blind.
+  - **debug** — churn lever FOUND, mechanism LANDED, reduction **UNPROVEN**
+    (`ff80f914`): [debug-h0-closeout-churn.md](../charness-artifacts/reference-compaction/debug-h0-closeout-churn.md).
+    Trim-to-fit loop vs an invisible `MAX_ARTIFACT_LINES=180`; scaffold now surfaces
+    `size_budget` + validator reports overage. Fresh-eye SOUND-WITH-DEFECTS —
+    behavioral reduction not captured, and debug runs demonstrably ignore surfaced
+    guidance, so 'surface→heed' is unproven here.
 
 ## Next Session
 
-**Do NOT H0-sweep the remaining skills for coverage — that is the proxy disease.**
-The two biggest overhead skills (quality #1, spec #2 by refs) are done; the lesson
-is that reference count ≠ overhead lever. Decide the direction with the operator:
-
-1. **Close the per-skill lever hunt.** All slices shipped; the method and its honest
-   null case are proven. Route future work by a named hypothesis, not ref-count.
-2. **The real open problem is SYSTEMIC** (intent.md "Held open"): the context tax a
-   skill's overhead levies across a whole session — single captures can't see it,
-   so it needs a different instrument. Design it or explicitly defer it.
-3. **Named hypothesis on the table:** re-capture `spec` in a *low-context /
-   unfamiliar* repo to test whether the Bootstrap blanket scans are globally dead
-   weight (prune/brief them) or just redundant-when-you-know-the-repo (keep). Any
-   other skill qualifies only with a named avoidable cost stated before capturing.
+1. **PROOF GATE for the debug fix (do FIRST):** fresh `/charness:debug` capture on
+   `ff80f914` vs the pre-fix baseline, same planted bug (a non-gitignore-aware
+   scanner on a scratch branch); compare Edit/`wc -l` churn. Drops → claim fixed.
+   Persists → the budget rides a channel debug ignores; escalate (planner-enforced /
+   pre-sized sections). Either outcome is a real finding.
+2. **Continue the churn-class hunt** on artifact-write/closeout-heavy skills
+   (ideation, retro, issue, achieve) — name the suspected avoidable cost, then H0.
+   Do NOT sweep by ref count (spec proved ref count ≠ lever).
 
 ## Discuss
 
-- The close-vs-continue routing is the operator's call; the evidence says the clear
-  per-skill levers are exhausted.
+- The debug fix is honest-but-unproven; #1 is the gate before calling it fixed.
 - Ungated evidence path = `capture-skill-run.sh` + `build-observation.mjs`; only
   `cautilus evaluate` scoring is ask-before-run, `cautilus improve` disabled.
 - Brittle test: [test_handoff_plan.py](../tests/test_handoff_plan.py)
