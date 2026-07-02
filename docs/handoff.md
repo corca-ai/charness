@@ -24,18 +24,25 @@
   falsifiable fixture; capture VERIFIES, docs+routing DESIGN; token OBSERVED never assumed.
 - Deferred honestly (not captured): setup greenfield + narrow host-docs-only
   normalization (greenfield not in-repo capturable, #410).
+- **v0.58.0 release PREPPED but BLOCKED.** Critique + notes done/committed; a
+  `publish --execute` attempt fail-closed at `./scripts/run-quality.sh --release`
+  (3 gates, mostly pre-existing debt). Nothing pushed; version reverted to 0.57.0.
+  ~40 commits still on local `main`.
 
 ## Next Session
 
-1. **Operator-gated closeout of the DONE work:** close #412 + #413, check #410
-   setup+handoff rows, `git push` (branch 30+ ahead). Fixes landed + captured locally.
+1. **Finish the v0.58.0 release** — full runbook + exact commands:
+   [v0.58.0-blockers.md](../charness-artifacts/release/v0.58.0-blockers.md). Three
+   `--release` gate blockers to work (no forcing/softening): 18 malformed cautilus
+   bundles (bundle-1 fixed as a template), changed-line mutation coverage (BLOCKING
+   in --release, base 2f5d0f7c), dup-ratchet (7 code + 1 doc families → honest
+   dup-review). Then `publish_release.py --part minor … --execute`; #412/#413 close on push.
 2. **Continue the sweep** (next ranked chunks): gather #411 public-URL output-floor
-   (private-SaaS half already done), then the correctness sweep of untested HYPOTHESIS
-   floors (announcement/create-skill/find-skills/ideation/narrative/release/spec),
+   (private-SaaS half done), the correctness sweep of untested HYPOTHESIS floors,
    then matcher-honesty #415 — same per-condition-falsifiable + capture-before-pin method.
 3. **File the deferred guard idea:** a validator cross-checking each planner's
    intent/condition-keyed required-reads against scenario specs (auto-detect a
-   conditionally-required doc no scenario forces) — would have caught the ambiguous-fixture gap.
+   conditionally-required doc no scenario forces).
 
 ## Discuss
 
