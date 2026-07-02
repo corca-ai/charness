@@ -1,0 +1,21 @@
+Done. I resumed the handoff pickup and completed the next workflow slice.
+
+## What I did
+
+**Resumed** via the session-start route (`find-skills` → handoff planner → `pickup`), read the workflow trigger and continuation state, and started the named next workflow: the **per-condition fixture redesign** for `setup` (the gather-proven method — design each fixture from docs+routing; capture only *verifies*, so this is safe design-only work).
+
+**Completed the `setup` slice** (`fd1c5a4e`):
+- Traced all 9 setup references to their trigger conditions. Key finding — setup has **no planner** and its AGENTS.md host contract is **script-emitted** (`normalize_host_docs.py` → `render_agents_template`; routing via `render_skill_routing.py`), so the greenfield RCF trio are **not genuine run-floors**:
+  - `greenfield-flow.md` = DUP → retire
+  - `agent-docs-policy.md` = script-resolved → retire from RCF
+  - `default-surfaces.md` = mostly script-resolved; one genuine DEPTH (Early Quality Baseline lint family, under a code-repo condition)
+- The **real gap**: `github-actions-defaults.md` is genuine DEPTH with **no scenario exercising it** → design a new github-actions scaffold scenario (the gather-private-SaaS parallel — "design the scenario, don't retire").
+- Wrote [`setup-fixture-redesign.md`](charness-artifacts/reference-compaction/setup-fixture-redesign.md); noted the corrected trace in `greenfield.spec.json` (no RCF/classTag flip — that's capture-gated, and greenfield/gh-actions aren't in-repo capturable, #410).
+
+**Adversarially fresh-eye verified** (pre-authorized by the repo's Subagent Delegation contract): all 4 verdicts **CONFIRMED** on primary sources; incorporated one concrete clarity fix (the override-admonition + `## Dynamic Workflows` content is agent-docs-policy.md-only and script-blind).
+
+**Verification:** claim-fidelity spec tests 47 passed; `check_doc_links` clean; handoff shape gate passes (51 lines, under the 60 limit).
+
+**Updated the handoff** (`9628bfbb`) — next pickup is the **`handoff` per-condition redesign** by the same method, then gather's public-URL output-floor and the correctness sweep.
+
+One correction to prior state worth flagging: the `setup` **normalization** branch was already resolved (Slice 2b, `74c639cf`) and setup **does** have a substance judge (`outcome-assertions.json`) — so only the greenfield/gh-actions conditions remain, and those are capture-deferred.

@@ -201,6 +201,13 @@ DEPTH keeps its doc-open floor as-is (already capture-proven load-bearing).
   #411's `capability-contract.md`→DEPTH proposal corrected to INLINE.
 - **#412 (handoff planner)** — sharpened: `continuation-sequence.md` is INLINE (MOVE),
   so fix both the planner (conditional) AND retire the pickup doc-open floor to RSF.
+  **SUPERSEDED (2026-07-02, Slice 4):** the per-condition redesign refutes the line-98
+  INLINE/MOVE verdict — the conditionalized planner (commit `c1a66f4d`) requires
+  `continuation-sequence.md` only for AMBIGUOUS pickups, and a live ambiguous capture
+  genuinely OPENS it, so it is honestly **on-demand DEPTH**, not INLINE. It stays a
+  doc-open floor under the new `pickup-ambiguous.spec.json` (RCF both docs) while the
+  clear `pickup.spec.json` drops it to `RCF=[workflow-trigger.md]`. Both arms are
+  falsifiable; see `charness-artifacts/cautilus/handoff-pickup-ambiguous-slice4-2026-07-02/`.
 - **#415 (matcher honesty)** — new: RCF satisfied by a subagent-prompt name-mention.
 - Parent sweep: **#410**. The 12 capture-gated MOVEs + the hotl/ledger INLINE-token
   lift execute in a future ask-before-run Cautilus session.

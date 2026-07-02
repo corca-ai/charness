@@ -67,6 +67,12 @@
     },
     {
       "skill_id": "handoff",
+      "scenario_id": "pickup-ambiguous",
+      "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json",
+      "fan_out_fit": "yes — the AMBIGUOUS arm of the conditionalized pickup planner: a generic pickup with no clearly-pinned task against >=2 plausible pickups forces both workflow-trigger.md AND continuation-sequence.md, while the clear-pickup scenario and a chunked_routing/refresh run do not — so it needs its own scenario."
+    },
+    {
+      "skill_id": "handoff",
       "scenario_id": "refresh",
       "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
       "fan_out_fit": "yes — the refresh intent reads state-selection.md + spill-targets.md, mutually exclusive with the pickup and chunked_routing reads, so its own scenario."

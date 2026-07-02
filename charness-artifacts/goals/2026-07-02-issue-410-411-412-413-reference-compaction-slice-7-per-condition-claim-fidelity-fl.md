@@ -11,16 +11,14 @@ runs the activation command.
 
 - Current disposition: ACTIVE — scope locked to setup + handoff only, open-ended
   (no timebox). Activated 2026-07-02.
-- Current slice: Slices 1–3 DONE. Slice 1 (setup substance instrument) + Slice 2
-  (setup floor flip, capture-gated, #413 resolvable) + Slice 3 (handoff planner
-  conditional continuation-sequence.md, progresses #412) all landed with fresh-eye
-  critiques (all SOUND/no blockers) and broad pytest green.
-- Next action: Slice 4 (handoff floor re-baseline) is the SECOND OPERATOR-GATED
-  capture — needs a fresh ask-before-run capture of the handoff pickup scenario
-  (clear + ambiguous fixtures) to confirm the planner change, then drop
-  `continuation-sequence.md` from `pickup.spec.json` RCF (keep `workflow-trigger.md`).
-  Then Slice 5 closeout (#412/#413 issue closeout via `issue`, #410 rows, handoff
-  refresh, retro). WAITING on operator go for the handoff capture.
+- Current slice: Slices 1–4 DONE. setup (#413) fully redesigned+captured; handoff
+  (#412) planner conditionalized (Slice 3) AND both pickup conditions now have
+  falsifiable fixtures — clear (`pickup.spec.json`, re-graded from Slice-7) +
+  ambiguous (`pickup-ambiguous.spec.json`, fresh capture, both docs opened). Slice 4
+  fresh-eye critique pending.
+- Next action: Slice 5 closeout — stage #412/#413 issue closeout via `issue`
+  (external write, operator-confirm), check #410 setup+handoff rows, refresh
+  `docs/handoff.md`, run `retro`, flip goal to complete.
 - Verification cadence: cheap deterministic gates + unit tests at commit
   boundaries; fresh-eye subagent critique at each slice boundary; ask-before-run
   Cautilus capture as the live floor proof at the setup and handoff bundle
@@ -349,6 +347,20 @@ closeout floors for this goal:
 - Alternatives rejected:
 - Targeted verification: 15 handoff-plan unit tests pass (clear/ambiguous/single/pinned/issue/unpinned); heuristic edge-cases verified; source+mirror synced identical; broad pytest 3980 passed; fresh-eye Slice-3 critique SOUND, no blockers (folded \bpinned\b negation guard + unpinned test).
 - Test duplication pressure: added 5 planner tests (pickup ambiguity); no duplicate-coverage pressure — new discriminating cases, not overlap.
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 4: handoff pickup floor re-baseline — per-condition falsifiable fixtures (Slice 4, resolves #412)
+
+- Objective: Split the pickup floor into two falsifiable per-condition fixtures matching the conditionalized planner: CLEAR (pickup.spec.json, RCF=[workflow-trigger.md], re-graded from the existing Slice-7 capture) + NEW AMBIGUOUS (pickup-ambiguous.spec.json, RCF=[workflow-trigger.md, continuation-sequence.md], fresh operator-authorized capture). continuation-sequence.md reclassified on-demand DEPTH (planner change refutes the census INLINE — it IS load-bearing when several plausible pickups exist). Registered pickup-ambiguous in claim-fidelity-registry.json.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: Clear arm: Slice-7 capture's only RCF failure was continuation-sequence.md -> passes RCF=[workflow-trigger.md]. Ambiguous arm: fresh capture at c1a66f4d resolved intent=pickup and OPENED both docs -> outcome=passed (coverage 2/6); falsifiable (skipping continuation-sequence.md fails). validate_spec both specs OK; registry validation 47 passed. Evidence: charness-artifacts/cautilus/handoff-pickup-ambiguous-slice4-2026-07-02/.
+- Test duplication pressure:
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:
