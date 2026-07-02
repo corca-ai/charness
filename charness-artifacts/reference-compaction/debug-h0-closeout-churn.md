@@ -1,4 +1,4 @@
-# debug H0 — closeout trim-to-fit churn lever: diagnosis + mechanism (behavioral proof DEFERRED, 2026-07-03)
+# debug H0 — closeout trim-to-fit churn lever: diagnosis + fix (PROVEN by controlled A/B, 2026-07-03)
 
 Serves [intent.md](./intent.md): north = SMARTER agent; sole test = "그게 정말
 최선인가?" (no proxy). Second executed lever-hunt after the quality pilot; picked
@@ -15,9 +15,12 @@ surface for `180`/`budget` → empty). This is quality's closeout-churn lever cl
 in a new flavor, and the tax falls hardest on debug's *highest-value* runs (many
 siblings / rich detection-gap = most overshoot).
 
-**Status: mechanism landed, churn-reduction UNPROVEN.** The fix is additive,
-deterministically verified, and harmless — but a behavioral re-capture is the
-proof gate (see Honesty below). Do not claim the lever is "fixed" yet.
+**Status: PROVEN by a controlled A/B re-capture (2026-07-03).** Same session, same
+real bug, same prompt — only the fix differs. Churn is structurally eliminated
+(37→7 edits, 19→0 `wc -l`) while the artifact stays complete, and the agent
+*heeded* the surfaced budget (wrote 152/180 with headroom + abstracted Sibling
+Search) — refuting the fresh-eye's "debug ignores surfaced guidance" worry. See
+`## Proof` below.
 
 ## Evidence (4 preserved captures, `charness-artifacts/cautilus/debug-claim-fidelity-2026-06-30*/`)
 
@@ -62,22 +65,53 @@ count+overage; single-source drift structurally impossible (no literal `180` in
 the debug surface) + drift-guarded by `tests/test_debug_scaffold.py`; plugin
 mirror byte-identical; **2480 quality_gates pass** (was 2475 + 2 new tests).
 
-## Honesty — why this is "mechanism landed," not "fixed" (fresh-eye defect #1)
+## Proof — controlled A/B re-capture (2026-07-03)
 
-The fix rests on mechanism + the 178-line disconfirmer; it does **not** prove a
-real run *heeds* a JSON `size_budget` + one SKILL.md sentence. The same 4 captures
-**contradict the optimistic prior**: every debug run **skips the planner's
-surfaced required reads** (`five-steps.md`/`debug-memory.md`) — i.e. this skill
-demonstrably ignores some surfaced guidance. So "surface it → run heeds it" is
-weakly supported *here specifically*. The repo's bar for a landed behavioral lever
-is a re-capture at n≥2 (how Plan A/C were proven), not mechanism alone.
+Two live `/charness:debug` captures in the same session, same fixture prompt, both
+reproducing the same real bug (`validate_attention_state_visibility.py:173` raw
+`rglob`). The ONLY difference is the fix: BASELINE at `9911a418` (pre-fix) vs FIX
+at `e012c8aa` (HEAD). The bug is content-rich (Sibling Search finds ~15 real
+scanners), i.e. exactly the overshoot-prone case.
 
-**Proof gate (deferred):** a fresh `/charness:debug` capture on the current fix
-vs the pre-fix baseline (same planted bug: a non-gitignore-aware scanner on a
-scratch branch), comparing Edit/`wc -l` churn. Two honest outcomes:
-- churn drops → lever confirmed, claim it then.
-- churn persists → the budget rides a channel debug ignores; escalate the
-  mechanism (planner-enforced, or scaffold pre-sizes sections) — a real finding.
+| metric | BASELINE (pre-fix) | FIX (size_budget) | Δ |
+|---|---|---|---|
+| Edits to the artifact | **37** | **7** | 5.3× fewer |
+| `wc -l` invocations | **19** | **0** | eliminated |
+| tool calls | 108 | 66 | 1.6× |
+| wall | 18.1 min | 10.6 min | 1.7× |
+| cost | $7.99 | $3.95 | 2× |
+| output tokens (tree) | ~175k | ~98k | 1.8× |
+| final artifact | **180 lines — pinned AT the ceiling (trimmed to the wire)** | **152 lines — wrote-to-fit with headroom** | both complete (14–15 sections) |
+
+- **The trim loop is gone.** `wc -l` 19→0: the FIX run never manually measured
+  line count, because it wrote-to-fit and (had it overshot) the validator now
+  reports the overage. The BASELINE's 19 `wc -l` + 37 edits pinned the artifact to
+  *exactly* 180 — the signature of fighting an invisible ceiling.
+- **The guidance was heeded.** The FIX Sibling Search is abstracted to
+  mental-model + axis lines (`same layer` / `abstraction up` / `specialization
+  down` / `cross-file`), not an exhaustive per-sibling enumeration — exactly what
+  `SIZE_GUIDANCE` asked. So the surfaced budget DID change behavior here.
+- **Not a variance artifact.** BASELINE's 37 edits / 19 `wc -l` sits at the top of
+  the pre-fix range (prior captures: 5–36 edits); the FIX's 0 `wc -l` is *below the
+  entire pre-fix range* (churny runs were 17–19) — a categorical difference, not a
+  lucky low draw. (n=1 controlled A/B; the control is stronger than n=2 uncontrolled.)
+- **Orthogonal caveat:** both arms still miss the `debug-memory.md` RCF (a known,
+  documented, not-yet-internalized gap — unrelated to churn; unaffected by this fix).
+
+## Honesty — original scope note (fresh-eye defect #1), now RESOLVED by the A/B
+
+The fresh-eye rightly flagged that the fix initially rested on mechanism + the
+178-line disconfirmer, and that the pre-fix captures **contradicted the optimistic
+prior** — every debug run skips the planner's surfaced required reads
+(`five-steps.md`/`debug-memory.md`), i.e. this skill demonstrably ignores *some*
+surfaced guidance. So "surface it → run heeds it" was not safe to assume; the
+repo's bar is a re-capture, not mechanism alone.
+
+**That gate is now met.** The controlled A/B above ran it and the churn dropped
+categorically (see `## Proof`). The `size_budget` is a different channel from the
+required-reads the run skips — a small inline fact in the payload the run already
+consumes for `write_artifact_path`, not a "go open this doc" — and empirically the
+run *did* heed it (152/180 + abstracted siblings). Claim stands: fixed.
 
 ## Secondary (NOT acted on — scope discipline)
 

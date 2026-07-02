@@ -18,23 +18,27 @@
     default + scaffold-first).
   - **spec** — NO lever; refs load-bearing, costs are the skill working well:
     [spec-h0-capture-diagnosis.md](../charness-artifacts/reference-compaction/spec-h0-capture-diagnosis.md).
-  - **debug** — churn lever FOUND, mechanism LANDED, reduction **UNPROVEN**
-    (`ff80f914`): [debug-h0-closeout-churn.md](../charness-artifacts/reference-compaction/debug-h0-closeout-churn.md).
-    Trim-to-fit loop vs an invisible `MAX_ARTIFACT_LINES=180`; scaffold now surfaces
-    `size_budget` + validator reports overage. Fresh-eye SOUND-WITH-DEFECTS —
-    behavioral reduction not captured, and debug runs demonstrably ignore surfaced
-    guidance, so 'surface→heed' is unproven here.
+  - **debug** — churn lever FOUND+FIXED+**PROVEN** (`ff80f914`):
+    [debug-h0-closeout-churn.md](../charness-artifacts/reference-compaction/debug-h0-closeout-churn.md).
+    Trim-to-fit loop vs an invisible `MAX_ARTIFACT_LINES=180` → scaffold surfaces
+    `size_budget` + validator reports overage. Controlled A/B re-capture (same
+    session/bug, only the fix differs): edits 37→7, `wc -l` 19→0, wall 18→11min,
+    artifact 180 (at ceiling)→152 (headroom) and still complete. The run heeded
+    the budget — fresh-eye's 'debug ignores guidance' worry refuted.
 
 ## Next Session
 
-1. **PROOF GATE for the debug fix (do FIRST):** fresh `/charness:debug` capture on
-   `ff80f914` vs the pre-fix baseline, same planted bug (a non-gitignore-aware
-   scanner on a scratch branch); compare Edit/`wc -l` churn. Drops → claim fixed.
-   Persists → the budget rides a channel debug ignores; escalate (planner-enforced /
-   pre-sized sections). Either outcome is a real finding.
-2. **Continue the churn-class hunt** on artifact-write/closeout-heavy skills
-   (ideation, retro, issue, achieve) — name the suspected avoidable cost, then H0.
-   Do NOT sweep by ref count (spec proved ref count ≠ lever).
+1. **Continue the churn-class hunt** on the next artifact-write/closeout-heavy
+   skill (`ideation`, `retro`, `issue`, `achieve` are the candidates) — capture-
+   then-diagnose, name the suspected avoidable cost, fix on sight, then prove with
+   a controlled A/B re-capture (the debug pattern: same session/bug, only the fix
+   differs — stronger than n=2 uncontrolled). Do NOT sweep by ref count (spec
+   proved ref count ≠ lever).
+2. **Reusable win:** the shared `size_budget` scaffold field + count-reporting
+   `validate_max_lines` now help ANY length-capped artifact skill — check whether
+   quality/retro/etc. artifacts show the same trim-loop and wire their scaffolds.
+3. **Orthogonal debug gap (separate):** debug runs still skip the `debug-memory.md`
+   RCF (documented, not-yet-internalized cross-incident memory) — its own lever.
 
 ## Discuss
 
