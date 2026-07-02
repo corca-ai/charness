@@ -4,8 +4,12 @@
 
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
-- **Big picture:** skills satisfy two axes, evals verify each SEPARATELY —
-  **correctness** (claim-fidelity, proven by live capture) and **efficiency** (advisory).
+- **Governing intent** (read first):
+  [intent.md](../charness-artifacts/reference-compaction/intent.md) — the point is a
+  SMARTER agent, not proof/surface; prune gates/refs that don't earn their place;
+  the ONLY test is "그게 정말 최선인가?" (no proxy metric). claim-fidelity/cautilus is
+  the *instrument*, read for "does this ref meaningfully help / is it already covered
+  by body/script/template," not "floor passed."
 
 ## Current State
 

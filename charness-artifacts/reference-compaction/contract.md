@@ -1,5 +1,9 @@
 # Reference Compaction — Keystone Policy + Slice Plan (2026-07-01)
 
+> **Why this exists + how to judge it: [intent.md](./intent.md).** The north is a
+> SMARTER agent (not proof/surface); the sole test is "그게 정말 최선인가?" (no proxy
+> metric). This contract SERVES that intent — if it conflicts, intent.md wins.
+
 Operator-approved; execution deferred to the next session, slice by slice.
 Full per-ref classification + evidence: `census.json`. Full per-skill execution
 contracts + adversarial risk verdicts: `plan.json` (`per_skill_plans`, `execution`).
