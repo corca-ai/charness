@@ -14,8 +14,10 @@
   falsifiable fixture; capture VERIFIES, docs+routing DESIGN; token OBSERVED never assumed.
 - **#411 gather public-URL substance floor CAPTURE-PROVEN** (4/4, live judge;
   `ae6d833d`, proof in [cautilus/latest.md](../charness-artifacts/cautilus/latest.md));
-  doc-open RCF refuted 0/8 on a fresh run. RCF-flip now blocked on a design decision,
-  not proof.
+  doc-open RCF refuted 0/8 on a fresh run.
+- **Substance-floor-only spec support SHIPPED** (`325909f7`, fresh-eye SOUND):
+  `claim_fidelity_lib` now allows empty RCF+RSF when a sibling `outcome-assertions.json`
+  exists — unblocks the gather public-URL AND setup #413 RCF flips.
 - **Untested-HYPOTHESIS floor sweep DESIGNED** (census-anchored, 7 never-captured
   skills, zero captures):
   [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md)
@@ -25,11 +27,12 @@
 
 ## Next Session
 
-1. **Unblock the RCF flips:** decide + implement **substance-floor-only spec support**
-   in `claim_fidelity_lib` (allow empty RCF+RSF when a sibling `outcome-assertions.json`
-   exists) — gates gather public-URL flip AND setup #413. Then flip gather (drop refuted
-   RCF, inline the Access-Modes enum into SKILL.md, handle the `mode_option_pressure_terms`
-   gate) + a capture-confirm.
+1. **Flip gather public-URL + setup #413** (now unblocked by `325909f7`): drop the
+   refuted RCF → empty (substance floor carries it), inline the Access-Modes enum into
+   gather SKILL.md while **resolving the `mode_option_pressure_terms` ergonomics gate**
+   the enum trips (reduce mode vocab or declare the opt-in rule), sync mirror, then a
+   confirming ask-before-run capture each (substance floor already proven, so this is a
+   behavior re-confirm).
 2. **Batched ask-before-run captures** for the remaining untested HYPOTHESIS floors:
    [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md).
    Gate via `plan_cautilus_proof.py` / `run_cautilus_eval.py`; capture-before-pin;
