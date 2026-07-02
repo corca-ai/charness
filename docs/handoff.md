@@ -31,18 +31,18 @@
 
 ## Next Session
 
-1. **Flip gather public-URL + setup #413** (now unblocked by `325909f7`): drop the
-   refuted RCF → empty (substance floor carries it), inline the Access-Modes enum into
-   gather SKILL.md while **resolving the `mode_option_pressure_terms` ergonomics gate**
-   the enum trips (reduce mode vocab or declare the opt-in rule), sync mirror, then a
-   confirming ask-before-run capture each (substance floor already proven, so this is a
-   behavior re-confirm).
-2. **Batched ask-before-run captures** for the remaining untested HYPOTHESIS floors:
-   [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md).
-   Gate via `plan_cautilus_proof.py` / `run_cautilus_eval.py`; capture-before-pin;
-   missing-scenario trace before each REFUTED-class retire.
-3. **File the deferred guard idea:** a validator cross-checking each planner's
-   intent/condition-keyed required-reads against scenario specs.
+1. **"prune + brief" pilot on `quality`** (serves
+   [intent.md](../charness-artifacts/reference-compaction/intent.md); the pattern for
+   the rest): is `quality` even the best shape? audit each GATE + reference — "earns
+   its place, or already covered by body/script/template?"; delete redundant, convert
+   blocking gates that should BRIEF the agent instead (teeth→brief); one capture read
+   for "leaner skill used intelligence at least as well," not floor. Judge by
+   "그게 정말 최선인가?" — no proxy.
+2. **Fold in the unblocked ref deletions** as first prune instances: gather public-URL
+   flip (drop refuted RCF → substance floor; inline enum + resolve the
+   `mode_option_pressure_terms` gate) + setup #413 (unblocked by `325909f7`).
+3. **After the pilot sets the pattern**, extend to other overhead-heavy skills;
+   remaining untested HYPOTHESIS floors + guard-validator idea are lower priority.
 
 ## Discuss
 
