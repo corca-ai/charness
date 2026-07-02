@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "setup",
+  "skillDisplayName": "setup",
+  "evaluations": [
+    {
+      "evaluationId": "execution-setup-normalization-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "setup",
+      "displayName": "setup",
+      "evaluationKind": "execution",
+      "prompt": "/charness:setup  normalize this repo's full operating surface (README, AGENTS, roadmap, operator-acceptance) and realign any drifted boundaries",
+      "startedAt": "2026-07-01T23:38:58.386Z",
+      "invoked": true,
+      "summary": "Execution of /setup: 3432590 total tokens (43396 output, 3031271 cache-read), 317564ms wall. Tool profile: Bash=22 Read=10 Agent=2 Write=2 Skill=1 Edit=1. Claim failures: command log missing required fragment: agent-docs-policy.md; command log missing required fragment: default-surfaces.md. Reference coverage: 1/9 declared references opened (missing: agent-docs-policy.md, bootstrap-seams.md, default-surfaces.md, github-actions-defaults.md, greenfield-flow.md, operator-acceptance-synthesis.md, probe-surface.md, retro-memory-seam.md). Waste smells: 1 (duplicate_read).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 3432590,
+        "output_tokens": 43396,
+        "tool_count": 38,
+        "waste_smell_count": 1,
+        "duration_ms": 317564
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+Committed, tree clean. Normalization complete.
+
+## Setup Normalization Closeout
+
+**Repo mode: NORMALIZE**
+
+I mapped capabilities via `find-skills`, bootstrapped `setup`, ran deterministic inspection, applied the one confirmed drift, and had two bounded fresh-eye reviewers (host-policy fit; adapter/operator-takeover) verify — both **CLEAN**.
+
+Per-surface status:
+- **README: already-aligned** — current, honest orientation and quick-start; no drift.
+- **AGENTS: realigned commit-discipline-drift** — added a `## Phase Rules` bullet: commit meaningful implementation/workflow slices as they finish, and never report a task-completing goal as done while meaningful work remains uncommitted unless a deferral is explicit. Clears the deterministic `commit_discipline_drift` finding; re-inspection reports `status: ok`, `findings: []`, `commit_discipline_present: true`. `CLAUDE.md` (symlink → `AGENTS.md`) inherits it.
+- **roadmap: suppressed adapter-acknowledged-null** — `.agents/setup-adapter.yaml` sets `surfaces: roadmap: null`; deliberately not scaffolded (confirmed correct by the adapter-fit reviewer).
+- **operator-acceptance: already-aligned** — self-contained five-item takeover path. Its pre-existing, `2>/dev/null`-guarded reference to the absent `docs/roadmap.md` is queued as an advisory (softening line-3 wording), not fixed — fixing it would contradict the intentional roadmap-null boundary and is outside this run's introduced changes.
+- **Host docs / Skill Routing: already-aligned** — `keep_agents` + `keep_claude_symlink`; skill-routing matches the compact block.
+
+Durable record refreshed at `charness-artifacts/setup/latest.md`; AGENTS.md + artifact committed together (`74b0562a`), tree clean.
+
+**Normalization non-claims:** no roadmap scaffolded (intentional adapter-null boundary); operator-acceptance roadmap soft-reference left as advisory only; no repo-wide quality/security posture review run — route to `quality` if deeper posture is wanted; commit is local, not pushed.
