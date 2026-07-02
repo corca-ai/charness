@@ -9,24 +9,25 @@
 
 ## Current State
 
-- **v0.58.0 SHIPPED** — tag pushed, `main`==`origin/main`, all three `--release`
-  gate blockers cleared honestly; #412/#413 closed on push. Historical runbook:
-  [v0.58.0-blockers.md](../charness-artifacts/release/v0.58.0-blockers.md).
-- **Slice-7 setup (#413) + handoff (#412) claim-fidelity floors DONE** — goal
-  [2026-07-02 setup+handoff floor](../charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl.md).
+- **v0.58.0 SHIPPED** — tag pushed, `main`==`origin/main`; #412/#413 closed on push.
 - **Method locked (operator-directed):** every skill path/condition gets its OWN
   falsifiable fixture; capture VERIFIES, docs+routing DESIGN; token OBSERVED never assumed.
-- Deferred honestly (not captured): setup greenfield + narrow host-docs-only
-  normalization — greenfield not in-repo capturable (#410).
+- **#411 gather public-URL substance floor SHIPPED** (`outcome-assertions.json`,
+  `3b650cb6`, fresh-eye SOUND); its enum-inline + RCF-flip is the capture-gated remainder.
+- **Untested-HYPOTHESIS floor sweep DESIGNED** (census-anchored, 7 never-captured
+  skills, zero captures):
+  [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md)
+  — REFUTED-class (announcement/ideation/narrative), MIXED (create-skill/release/spec),
+  genuine-DEPTH verify-only (find-skills).
+- Deferred honestly: setup greenfield (not in-repo capturable, #410).
 
 ## Next Session
 
-1. **Continue the correctness sweep** — same per-condition-falsifiable +
-   capture-before-pin method, next ranked chunks:
-   - **#411** gather claim-fidelity floor redesign (public-URL output-floor;
-     private-SaaS half done).
-   - correctness sweep of the untested HYPOTHESIS floors.
-   - **#415** matcher honesty (RCF floor met by a prompt name-mention, not a real Read).
+1. **Run the BATCHED ask-before-run Cautilus capture session** over the queue in
+   [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md)
+   (gather MOVE + REFUTED-class + MIXED + find-skills). Gate via
+   `plan_cautilus_proof.py`; run `run_cautilus_eval.py`, never bare `cautilus evaluate`.
+   Before each REFUTED-class retire, do the missing-scenario trace (caveat 1).
 2. **File the deferred guard idea:** a validator cross-checking each planner's
    intent/condition-keyed required-reads against scenario specs (auto-detect a
    conditionally-required doc no scenario forces).
