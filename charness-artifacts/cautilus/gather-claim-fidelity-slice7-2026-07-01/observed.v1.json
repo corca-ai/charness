@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "gather",
+  "skillDisplayName": "gather",
+  "evaluations": [
+    {
+      "evaluationId": "execution-gather-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "gather",
+      "displayName": "gather",
+      "evaluationKind": "execution",
+      "prompt": "/charness:gather https://docs.python.org/3/library/asyncio-task.html 페이지를 durable 지식 자산으로 수집해줘 — 나중 세션이 asyncio 태스크 스케줄링 API(create_task / gather / wait_for 타임아웃 / 취소 전파)를 다시 페치하지 않고 참조할 수 있도록, 1차 출처 식별을 지키면서.",
+      "startedAt": "2026-07-01T06:47:10.881Z",
+      "invoked": true,
+      "summary": "Execution of /gather: 2088827 total tokens (38734 output, 1854961 cache-read), 238486ms wall. Tool profile: Bash=12 Read=3 Edit=2 Skill=1. Claim failures: command log missing required fragment: source-priority.md; command log missing required fragment: capability-contract.md. Reference coverage: 0/8 declared references opened (missing: adapter-contract.md, asset-refresh.md, browser-mediated-private-sources.md, capability-contract.md, document-seams.md, gather-provider.md, google-workspace-access.md, source-priority.md).",
+      "outcome": "failed",
+      "metrics": {
+        "total_tokens": 2088827,
+        "output_tokens": 38734,
+        "tool_count": 18,
+        "waste_smell_count": 0,
+        "duration_ms": 238486
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 0,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 1
+        }
+      }
+    }
+  ]
+}

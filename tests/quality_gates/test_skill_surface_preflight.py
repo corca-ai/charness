@@ -335,3 +335,93 @@ def test_changed_skill_md_cli_empty_list_is_ok(tmp_path: Path, monkeypatch) -> N
         ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--changed-skill-md", "--json"],
     )
     assert preflight.main() == 0
+
+
+# --- closeout-vocabulary anti-abuse preflight ---
+
+
+def test_closeout_vocabulary_findings_flags_overlong_and_prose() -> None:
+    tokens = [f"- token-{index} <command>" for index in range(12)]
+    text = "\n".join(
+        [
+            "# Demo",
+            "",
+            f"## {preflight.CLOSEOUT_VOCAB_SECTION}",
+            "",
+            *tokens,
+            "This is prose. It clearly runs two sentences.",
+            "",
+            "## Next",
+            "",
+            "- after",
+        ]
+    )
+    findings = preflight.closeout_vocabulary_findings(text)
+    # 13 non-empty lines (> the 12 cap) => an over-length finding, plus the
+    # multi-sentence line => a prose finding. The trailing `## Next` bounds the block.
+    assert any("non-empty lines" in finding for finding in findings)
+    assert any("multi-sentence prose" in finding for finding in findings)
+
+
+def test_closeout_vocabulary_findings_empty_when_token_shaped() -> None:
+    text = "\n".join(
+        [
+            "# Demo",
+            "",
+            f"## {preflight.CLOSEOUT_VOCAB_SECTION}",
+            "",
+            "- ran-fail-deferred <command> <issue|anchor>",
+            "",
+            "## Next",
+            "",
+            "- after",
+        ]
+    )
+    assert preflight.closeout_vocabulary_findings(text) == []
+
+
+def test_format_human_surfaces_closeout_vocab_block(tmp_path: Path) -> None:
+    tokens = [f"- token-{index} <command>" for index in range(13)]
+    skill_lines = [
+        "---",
+        "name: demo",
+        'description: "Demo skill."',
+        "---",
+        "",
+        "# Demo",
+        "",
+        "Use this when the repo needs a demo skill.",
+        "",
+        f"## {preflight.CLOSEOUT_VOCAB_SECTION}",
+        "",
+        *tokens,
+        "",
+        "## References",
+        "",
+        "- `references/note.md`",
+    ]
+    repo = tmp_path / "repo"
+    skill_path = _write_skill(repo, skill_lines=skill_lines)
+    payload = preflight.build_report(repo.resolve(), str(skill_path), 0, False)
+    assert payload["closeout_vocab"]
+    human = preflight.format_human(payload)
+    assert "BLOCK closeout-vocab:" in human
+
+
+def test_format_changed_human_surfaces_vocab_findings() -> None:
+    report = {
+        "status": "blocked",
+        "checked": [
+            {
+                "path": "skills/public/demo/SKILL.md",
+                "blocked": True,
+                "base_remaining": None,
+                "new_remaining": 3,
+                "buffer": 5,
+                "vocab_findings": ["`## Closeout Vocabulary` line is multi-sentence prose"],
+            }
+        ],
+    }
+    human = preflight.format_changed_human(report)
+    assert "closeout-vocab:" in human
+    assert "[BLOCK]" in human

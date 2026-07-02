@@ -44,6 +44,15 @@ chunked_routing), Read=37 / Bash=25, ~12min.
 Together they prove the planner's conditional emission in both directions and make
 `continuation-sequence.md` an honestly-classified on-demand DEPTH reference.
 
+## Non-Claims
+
+- n=1 per arm: the ambiguous floor is PROVEN falsifiable at a single sample, not a
+  stability proof.
+- The clear-pickup arm's PASS is a re-grade of the existing Slice-7 capture, not a
+  fresh run.
+- Not a matcher softening: the planner's conditional emission is the mechanism; the
+  fix was a per-condition fixture split, never a relaxed matcher.
+
 ## Bundle
 
 - `observed.ambiguous-PASSED.v1.json` — the passing grade (both docs opened).

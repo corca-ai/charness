@@ -49,3 +49,10 @@ No RCF/RSF move (correctly). The spec `_comment` records the PROVEN status + the
 Move-C-N/A finding, and `thresholds.max_duration_ms=510000` is set from this first
 PASSING baseline (253485ms) at ~2x headroom (advisory degrade). hotl moves off the
 HYPOTHESIS-floor list (correctness-sweep item #2).
+
+## Non-Claims
+
+- n=1 first live capture: PROVEN is suggestive at one sample, not a stability proof.
+- No floor move: the RCF doc-open is KEPT. hotl has no substance judge, so an
+  emitted-token FORM floor would over-relax; the doc-open is the honest instrument.
+- The 510000ms threshold is advisory degrade headroom, not a pass/fail bound.

@@ -18,7 +18,7 @@ under the private-SaaS condition the single fixture never exercised. The fix was
 SCENARIO, designed from the docs, not a substance judge. gather now fans out by source
 condition (registry fan_out_fit yes).
 
-## Capture
+## What ran
 
 `/charness:gather` of a private SSO-gated HR roster (no public access, no export/API, browser
 only) at `HEAD`=c7c51835, isolated worktree, exit 0, **150405ms**, 1.15M tokens, tool profile
@@ -41,3 +41,12 @@ Bash=11 Read=2 Skill=1. Graded against `private-saas.spec.json`:
   #411 hard part; separate.
 - gather-provider.md / google-workspace-access.md: reclassify as script-resolved (advisers emit
   their content), engage-always but not RCF floors.
+
+## Non-Claims
+
+- n=1 capture: the private-SaaS RCF is PROVEN at a single sample, suggestive of a
+  reliably-forced doc-open, not a stability proof.
+- Scope is this scenario only. The public-URL default floor stays #411's open hard
+  part (retire the INLINE RCF + floor on the produced artifact) and is not closed here.
+- Not a matcher softening: the RCF was satisfied by a genuine Read (verified
+  in-stream, no subagent-prompt name-mention), not a relaxed matcher.

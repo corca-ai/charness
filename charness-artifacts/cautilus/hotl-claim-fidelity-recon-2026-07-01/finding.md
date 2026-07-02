@@ -16,7 +16,7 @@ classTag: proof-rules.md = DUP (retired, stays declared for coverage), ledger-an
 (the completion-audit anti-proxy / P4 re-examination rule is genuine on-demand depth absent from SKILL.md).
 No SKILL.md change — proof-rules.md was already fully inlined (that is WHY it is DUP).
 
-## Capture
+## What ran
 
 `/charness:hotl` (the spec's representative repo-guard proof prompt) at `HEAD`=0ee34676,
 isolated worktree, exit 0, **451526ms** (< threshold 510000), 4.85M tokens, tool profile

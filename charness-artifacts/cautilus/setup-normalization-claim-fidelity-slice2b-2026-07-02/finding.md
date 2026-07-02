@@ -51,6 +51,16 @@ per-surface phrase or promote the outcome-assertions judge to gating — NEVER s
 RCF-pinned/deferred (not in-repo capturable, #410). Fresh-eye Slice-2b critique: HONEST +
 LOAD-BEARING, no blockers.
 
+## Non-Claims
+
+- n=1 capture: the RSF emitted-token floor is proven at a single sample, not a
+  stability proof.
+- Scope is `normalization.spec.json` only; `greenfield.spec.json` stays
+  RCF-pinned/deferred and is not closed here.
+- Not a softening: the escalation rule (re-pin a stronger per-surface phrase or
+  promote the outcome-assertions judge to gating, never soften) governs any future
+  hollow pass.
+
 ## Bundle
 
 - `observed.flipped-PASSED.v1.json` — the passing grade under the new floor.

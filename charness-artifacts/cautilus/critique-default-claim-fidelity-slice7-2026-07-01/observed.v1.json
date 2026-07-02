@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "critique",
+  "skillDisplayName": "critique",
+  "evaluations": [
+    {
+      "evaluationId": "execution-critique-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "critique",
+      "displayName": "critique",
+      "evaluationKind": "execution",
+      "prompt": "/charness:critique",
+      "startedAt": "2026-07-01T08:13:21.657Z",
+      "invoked": true,
+      "summary": "Execution of /critique: 7070323 total tokens (118737 output, 6170951 cache-read), 621849ms wall. Tool profile: Bash=76 Read=18 Agent=4 ReportFindings=4 Skill=1 Write=1. All declared claims met. Reference coverage: 4/12 declared references opened (missing: adapter-contract.md, angle-selection.md, cadence.md, code-critique.md, confirmed-input-over-anchoring.md, prepare-packet.md, release-critique.md, rename-critique.md). Waste smells: 6 (duplicate_read).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 7070323,
+        "output_tokens": 118737,
+        "tool_count": 104,
+        "waste_smell_count": 6,
+        "duration_ms": 621849
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      }
+    }
+  ]
+}

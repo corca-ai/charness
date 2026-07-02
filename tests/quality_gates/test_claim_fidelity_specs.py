@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.claim_fidelity_lib import validate_registry
+from scripts.claim_fidelity_lib import _validate_optional_string_list, validate_registry
 from scripts.public_skill_validation_lib import ValidationError, public_skill_ids
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -202,3 +202,19 @@ def test_required_command_fragment_may_not_be_dup_or_inline_tagged(tmp_path: Pat
     _write_registry(tmp_path, [entry])
     with pytest.raises(ValidationError, match="must not be DUP/INLINE-tagged"):
         validate_registry(tmp_path)
+
+
+def test_optional_string_list_none_returns_empty() -> None:
+    # An absent fragment channel is legal; the RCF-or-RSF floor guard enforces that
+    # at least one channel is non-empty elsewhere.
+    assert _validate_optional_string_list("spec.json", "requiredSummaryFragments", None) == []
+
+
+def test_optional_string_list_non_list_rejected() -> None:
+    with pytest.raises(ValidationError, match="must be a string list"):
+        _validate_optional_string_list("spec.json", "requiredSummaryFragments", "not-a-list")
+
+
+def test_optional_string_list_duplicate_entries_rejected() -> None:
+    with pytest.raises(ValidationError, match="has duplicate entries"):
+        _validate_optional_string_list("spec.json", "requiredSummaryFragments", ["dup", "dup"])

@@ -356,6 +356,62 @@
    "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
    "reviewed_at": "2026-06-24",
    "surface": "doc"
+  },
+  {
+   "class": "intentional",
+   "id": "863febd48a0dbfe9",
+   "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution \u2014 intentional, not extractable",
+   "reviewed_at": "2026-07-02",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "346302c3b53cdad1",
+   "note": "stdlib import header (argparse/json/re/runpy/pathlib/SimpleNamespace/typing) shared by plan_handoff_run and audit_public_release_narrative; a shared import shim would couple independent portable scripts for a stdlib boilerplate \u2014 intentional",
+   "reviewed_at": "2026-07-02",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "2dd39753778c7cb1",
+   "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable \u2014 intentional",
+   "reviewed_at": "2026-07-02",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "24a1bbf51d3b7985",
+   "note": "gate report formatter skeleton (status line + per-row BLOCK/ok verdict + blocked remediation + join) shared by check_skill_surface_preflight.format_changed_human and skill_issue_anchor_scan.format_human; each gate stays independently executable and formats different rows, so a shared formatter would couple unrelated gates for little value \u2014 intentional",
+   "reviewed_at": "2026-07-02",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "6fd3d8f200cdd69e",
+   "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain \u2014 intentional",
+   "reviewed_at": "2026-07-02",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "222aaec8531c8f44",
+   "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) \u2014 extraction would obscure the distinction \u2014 intentional",
+   "reviewed_at": "2026-07-02",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "fba5b0dd854c84ab",
+   "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them \u2014 intentional; revisit if a 3rd consumer appears",
+   "reviewed_at": "2026-07-02",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "57a52ad013e764b8",
+   "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained \u2014 intentional",
+   "reviewed_at": "2026-07-02",
+   "surface": "doc"
   }
  ],
  "fixable_ceiling": 0,

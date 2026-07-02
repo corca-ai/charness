@@ -326,3 +326,30 @@ def test_handoff_plan_pickup_keeps_continuation_when_unpinned(tmp_path: Path) ->
     # "unpinned" must NOT read as a pinned task: several plausible pickups remain.
     reads = _pickup_reads(repo, "the next pickup is unpinned, resume from the current state")
     assert "references/continuation-sequence.md" in reads
+
+
+def test_handoff_plan_pickup_skips_continuation_when_file_path_pinned(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _pickup_body(3))
+    # A concrete non-handoff file path names one target, so no sequencing remains
+    # among the plausible pickups -> continuation-sequence.md is not forced.
+    reads = _pickup_reads(repo, "resume work on skills/public/impl/SKILL.md")
+    assert "references/continuation-sequence.md" not in reads
+    assert "references/workflow-trigger.md" in reads
+
+
+def test_artifact_summary_counts_zero_when_entry_parse_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The `## Next Session` entry count is defensive: if the shared entry parser
+    # raises, the planner degrades to zero plausible pickups instead of crashing.
+    module = load_plan_module()
+    artifact = tmp_path / "handoff.md"
+    artifact.write_text("# H\n\n## Next Session\n\n- one\n", encoding="utf-8")
+
+    def _raise(_raw: str):
+        raise ValueError("unparseable handoff entries")
+
+    monkeypatch.setattr(module.chunked_routing_lib, "parse_handoff_entries", _raise)
+    summary = module._artifact_summary(tmp_path, {"artifact_path": "handoff.md"})
+    assert summary["exists"] is True
+    assert summary["next_session_entry_count"] == 0

@@ -10,7 +10,7 @@ spill-targets.md are all load-bearing (opened) — so #410's "drop the pickup/re
 docs → RSF" does NOT apply. Only continuation-sequence.md is questionable, and that
 is a PLANNER over-requirement, not a spec move.
 
-## The three scenario captures
+## What ran (the three scenario captures)
 
 | scenario | RCF | outcome | coverage | verdict |
 |---|---|---|---|---|

@@ -8,7 +8,7 @@ Companion evidence: `../critique-decision-claim-fidelity-slice7-2026-07-01/`.
 the autonomous scenario GENUINELY opens it.** No floor move, no SKILL.md change (so
 the ~195-line ceiling #410 flagged is untouched).
 
-## The two scenarios
+## What ran (the two scenarios)
 
 | scenario | RCF | outcome | coverage | counterweight-triage.md engagement |
 |---|---|---|---|---|

@@ -9,6 +9,14 @@ chunk. Since the 2026-06-29 capture DID open it, the doc-open is
 non-deterministic. hitl uniquely has a substance judge, so this is the sweep's
 third clean move (impl's form+substance twin) — not a softening.
 
+## What ran
+
+Fresh Slice-7 capture (`HEAD`=cf0edb5f, exit 0, 156085ms, 1.18M tokens) of
+`/charness:hitl` reviewing `docs/operator-acceptance.md` in bounded chunks, graded
+against `evals/cautilus/hitl-claim-fidelity/spec.json`. Behavior source in this
+dir: `observed.v1.json` + `transcript.txt`. Full run shape is described under
+"The two captures disagree" below.
+
 ## The two captures disagree (the flaky-floor signal)
 
 | capture | opened chunk-contract.md? | coverage | floor |
@@ -59,3 +67,13 @@ This move is BETTER than keeping the flaky floor: RCF=[chunk-contract.md] fails
 ~half the time (0/5 here, 1/5 in 2026-06-29) while faithful runs pass the judge
 every time. Retiring the flaky proxy and leaning on the always-present substance
 judge is the reliable, honest floor.
+
+## Non-Claims
+
+- n=1 fresh capture: combined with the 2026-06-29 capture it shows the doc-open is
+  flaky (0/5 vs 1/5), not a stability proof of the new floor.
+- Not a softening: the flaky doc-open proxy is replaced by the RSF form token PLUS
+  the always-present substance judge + `materialized-queue`, not by a relaxed matcher.
+- Honest limit (already recorded above): on the free path the substance judge is
+  skipped, so deterministic fidelity coverage then rests on `materialized-queue` +
+  `ran-hitl` alone — the chunk-shape fidelity floor is judge-gated, not free-deterministic.
