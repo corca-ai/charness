@@ -1,0 +1,50 @@
+I'll start with the mandated session bootstrap, then plan the gather.
+
+find-skills confirms `gather` is the right route. Driving the gather workflow now — resolving the adapter and planning the source.
+
+The plan routes to the public URL helper. Running it with `--execute` to acquire and write the durable record.
+
+Fetch succeeded and the record was written, though the classifier flagged confidence as "weak". Let me inspect the captured record to confirm it actually contains the requested API content.
+
+The record captured the acquisition trace but **not the page body** — `Content Persistence: none`. That defeats the stated goal: a later session couldn't reference the API without re-fetching. Let me check whether the helper has a content-persistence flag.
+
+Found it — `--persist-extracted-content`. That's the missing piece for a durable asset. I'll re-run with content persistence plus `--expect-text` proof gates for the exact APIs the user needs, which will also upgrade the "weak" confidence with matched proof. Since source identity matches, this refreshes in place.
+
+The writer refuses to overwrite today's existing dated record (the content-less one from my first run). Since I created that stale record this session and it lacks the page body, I'll remove it so the corrected content-bearing record refreshes in place under the same slug (same source identity).
+
+Confidence upgraded to **strong** with all four API proofs matched. Let me verify the record now embeds the actual API content body.
+
+Content is now persisted (`## Extracted Content`, `Content Persistence: extracted`, `strong` confidence). Let me pull the specific requested facts from the gathered ledger and commit the durable artifact.
+
+All requested facts are captured in the durable asset. Committing the artifact per the operating contract.
+
+Gather complete. Durable asset captured, verified, and committed.
+
+## Gather Closeout
+
+**Source** — `https://docs.python.org/3/library/asyncio-task.html` (primary source; official CPython docs, currently serving 3.14.6). Source identity preserved — no search-widening, no adjacent-page substitution.
+
+**Knowledge Capability** — asyncio task scheduling API reference (`create_task` / `gather` / `wait_for` timeout / cancellation propagation) that later sessions read instead of re-fetching.
+
+**Canonical Asset**
+- Record: `charness-artifacts/gather/2026-07-02-docs-python-org-3-library-asyncio-task-html-86481391.md`
+- Pointer: `charness-artifacts/gather/latest.md` (refreshed atomically)
+- Committed: `65b16ff7`
+
+**Freshness** — captured 2026-07-02.
+
+**Access Mode** — `support/web-fetch` public route, `direct-then-fallback` (first stage `direct-public-fetch` succeeded; browser/reader fallbacks not needed).
+
+**Route / Selected Attempt** — `direct-public-fetch`, **final confidence `strong`**, `Content Persistence: extracted` (full page body embedded under `## Extracted Content`). Confidence is proof-backed: all four `--expect-text` gates matched (`create_task`, `asyncio.gather`, `wait_for`, `CancelledError`).
+
+**Requested Facts** (from the gathered ledger):
+- **`create_task`** — schedules a coroutine as a Task to run concurrently on the event loop.
+- **`gather(*aws, return_exceptions=False)`** — runs awaitables concurrently; coroutines auto-scheduled as Tasks; results ordered to match input. `return_exceptions=False` (default) propagates the first raised exception to the caller.
+- **`wait_for(aw, timeout)`** — waits with a timeout (float/int seconds, or `None` to block); on timeout it **cancels the task and raises `TimeoutError`**. (3.7+: waits for the cancellation to finish before raising; loop param removed in 3.10.)
+- **Cancellation propagation** — `CancelledError` is raised in the task at the next opportunity; it subclasses `BaseException`; use `try/finally` for cleanup and re-propagate `CancelledError` after cleanup rather than swallowing it.
+
+**Captured vs Human Confirmation** — content is machine-captured from the primary source and verified by text proofs; not human-reviewed line-by-line.
+
+**Open Gaps** — none recorded. Note the live page tracks latest stable (3.14.6) since the URL is version-agnostic `/3/`; the record freshness-stamps this capture.
+
+One correction worth flagging: my first run wrote a trace-only record with `Content Persistence: none` — no page body, useless for the stated "don't re-fetch" goal. I removed that stale record and re-ran with `--persist-extracted-content` + proof gates so the asset actually holds the API content.
