@@ -176,10 +176,35 @@ def test_rsf_only_floor_passes(tmp_path: Path) -> None:
 
 
 def test_both_floor_channels_empty_rejected(tmp_path: Path) -> None:
+    # No RCF/RSF AND no sibling substance floor → still rejected (asserts nothing).
     entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[])
     _write_registry(tmp_path, [entry])
     with pytest.raises(ValidationError, match="at least one of .*requiredCommandFragments.*requiredSummaryFragments"):
         validate_registry(tmp_path)
+
+
+def test_substance_floor_only_passes_with_outcome_assertions(tmp_path: Path) -> None:
+    # A script/committing skill whose faithful run opens no doc and emits no
+    # distinctive token (gather public-URL #411, setup #413) may floor on a sibling
+    # outcome-assertions.json substance set with both RCF and RSF empty.
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[])
+    # A genuinely-valid substance floor (>=1 assertion); the outcome-assertions
+    # schema/non-emptiness is enforced by the sibling validate_outcome_assertions
+    # gate on the same surface, so claim_fidelity only requires the file exists.
+    _write(
+        tmp_path / "evals" / "cautilus" / "alpha-claim-fidelity" / "outcome-assertions.json",
+        json.dumps({
+            "evalId": "alpha",
+            "assertions": [{
+                "id": "ran-alpha", "kind": "deterministic",
+                "statement": "The run executed the skill.",
+                "check": {"type": "summary_contains", "value": "Execution of /alpha"},
+                "weight": 1,
+            }],
+        }) + "\n",
+    )
+    _write_registry(tmp_path, [entry])
+    assert validate_registry(tmp_path)["results"][0]["skill_id"] == "alpha"
 
 
 def test_valid_class_tags_pass(tmp_path: Path) -> None:

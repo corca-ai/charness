@@ -126,6 +126,46 @@ def _validate_scenario_id(spec_path: str, scenario_id: str, value: object) -> No
         raise ValidationError(f"{spec_path}: `scenarioId` must be `{scenario_id}`")
 
 
+def _validate_floor_channel(
+    repo_root: Path,
+    spec_path: str,
+    spec: dict,
+    engage_always: set[str],
+    class_tags: dict[str, str | None],
+) -> None:
+    """RCF-or-RSF floor channel: a spec proves its claim via the command log
+    (requiredCommandFragments) OR the final summary (requiredSummaryFragments).
+    Either channel may be empty; BOTH empty is allowed ONLY when a sibling
+    outcome-assertions.json substance floor carries the claim instead — the honest
+    floor for a script/committing skill whose faithful run opens no doc and emits no
+    distinctive token (gather public-URL #411, setup #413). The substance set's own
+    validity is owned by validate_outcome_assertions.py (the same claim-fidelity-specs
+    changed-surface obligation); here we only require it exists so the spec still
+    asserts SOMETHING. (The historical rule pinned RCF non-empty, forcing a doc-open
+    proxy even when a summary-token or substance assertion was the honest floor.)"""
+    required = _validate_optional_string_list(spec_path, "requiredCommandFragments", spec.get("requiredCommandFragments"))
+    summary_required = _validate_optional_string_list(spec_path, "requiredSummaryFragments", spec.get("requiredSummaryFragments"))
+    if not required and not summary_required:
+        substance_floor = (repo_root / spec_path).parent / "outcome-assertions.json"
+        if not substance_floor.is_file():
+            raise ValidationError(
+                f"{spec_path}: at least one of `requiredCommandFragments` or `requiredSummaryFragments` "
+                "must be non-empty (the claim floor channel), OR a sibling outcome-assertions.json "
+                "substance floor must exist"
+            )
+    not_engage_always = [ref for ref in required if ref not in engage_always]
+    if not_engage_always:
+        raise ValidationError(f"{spec_path}: requiredCommandFragments must be engage-always declaredReferences: {not_engage_always}")
+    # A re-read floor asserts the ref is load-bearing enough to force opening;
+    # tagging it DUP/INLINE contradicts that. Tolerant: DEPTH or untagged pass.
+    downgraded_floor = [ref for ref in required if class_tags.get(ref) in ("DUP", "INLINE")]
+    if downgraded_floor:
+        raise ValidationError(
+            f"{spec_path}: requiredCommandFragments must not be DUP/INLINE-tagged "
+            f"(a re-read floor must be load-bearing/DEPTH): {downgraded_floor}"
+        )
+
+
 def validate_spec(repo_root: Path, skill_id: str, scenario_id: str, spec_path: str) -> dict[str, object]:
     expected_path = _expected_spec_path(skill_id, scenario_id)
     if spec_path != expected_path:
@@ -167,29 +207,7 @@ def validate_spec(repo_root: Path, skill_id: str, scenario_id: str, spec_path: s
             engage_always.add(ref)
         class_tags[ref] = class_tag
 
-    # RCF-or-RSF floor channel: a spec proves its claim via the command log
-    # (requiredCommandFragments) OR the final summary (requiredSummaryFragments).
-    # Either channel may be empty, but not both — a spec with no floor asserts
-    # nothing. (The historical rule pinned RCF non-empty, which forced a doc-open
-    # proxy even when a summary-token assertion was the honest floor.)
-    required = _validate_optional_string_list(spec_path, "requiredCommandFragments", spec.get("requiredCommandFragments"))
-    summary_required = _validate_optional_string_list(spec_path, "requiredSummaryFragments", spec.get("requiredSummaryFragments"))
-    if not required and not summary_required:
-        raise ValidationError(
-            f"{spec_path}: at least one of `requiredCommandFragments` or `requiredSummaryFragments` "
-            "must be non-empty (the claim floor channel)"
-        )
-    not_engage_always = [ref for ref in required if ref not in engage_always]
-    if not_engage_always:
-        raise ValidationError(f"{spec_path}: requiredCommandFragments must be engage-always declaredReferences: {not_engage_always}")
-    # A re-read floor asserts the ref is load-bearing enough to force opening;
-    # tagging it DUP/INLINE contradicts that. Tolerant: DEPTH or untagged pass.
-    downgraded_floor = [ref for ref in required if class_tags.get(ref) in ("DUP", "INLINE")]
-    if downgraded_floor:
-        raise ValidationError(
-            f"{spec_path}: requiredCommandFragments must not be DUP/INLINE-tagged "
-            f"(a re-read floor must be load-bearing/DEPTH): {downgraded_floor}"
-        )
+    _validate_floor_channel(repo_root, spec_path, spec, engage_always, class_tags)
 
     thresholds = spec.get("thresholds")
     if thresholds is not None and not isinstance(thresholds, dict):
