@@ -71,7 +71,8 @@ def selected_artifact_paths(
 def validate_max_lines(lines: Sequence[str], *, max_lines: int, artifact_label: str) -> None:
     if len(lines) > max_lines:
         raise ValidationError(
-            f"{artifact_label} should stay concise; archive or move durable detail before it grows past {max_lines} lines"
+            f"{artifact_label} is {len(lines)} lines; should stay concise — archive or move "
+            f"durable detail to get back under {max_lines} (cut ~{len(lines) - max_lines} lines)"
         )
 
 
