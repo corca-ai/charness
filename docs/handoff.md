@@ -12,8 +12,10 @@
 - **v0.58.0 SHIPPED** — tag pushed, `main`==`origin/main`; #412/#413 closed on push.
 - **Method locked (operator-directed):** every skill path/condition gets its OWN
   falsifiable fixture; capture VERIFIES, docs+routing DESIGN; token OBSERVED never assumed.
-- **#411 gather public-URL substance floor SHIPPED** (`outcome-assertions.json`,
-  `3b650cb6`, fresh-eye SOUND); its enum-inline + RCF-flip is the capture-gated remainder.
+- **#411 gather public-URL substance floor CAPTURE-PROVEN** (4/4, live judge;
+  `ae6d833d`, proof in [cautilus/latest.md](../charness-artifacts/cautilus/latest.md));
+  doc-open RCF refuted 0/8 on a fresh run. RCF-flip now blocked on a design decision,
+  not proof.
 - **Untested-HYPOTHESIS floor sweep DESIGNED** (census-anchored, 7 never-captured
   skills, zero captures):
   [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md)
@@ -23,14 +25,17 @@
 
 ## Next Session
 
-1. **Run the BATCHED ask-before-run Cautilus capture session** over the queue in
-   [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md)
-   (gather MOVE + REFUTED-class + MIXED + find-skills). Gate via
-   `plan_cautilus_proof.py`; run `run_cautilus_eval.py`, never bare `cautilus evaluate`.
-   Before each REFUTED-class retire, do the missing-scenario trace (caveat 1).
-2. **File the deferred guard idea:** a validator cross-checking each planner's
-   intent/condition-keyed required-reads against scenario specs (auto-detect a
-   conditionally-required doc no scenario forces).
+1. **Unblock the RCF flips:** decide + implement **substance-floor-only spec support**
+   in `claim_fidelity_lib` (allow empty RCF+RSF when a sibling `outcome-assertions.json`
+   exists) — gates gather public-URL flip AND setup #413. Then flip gather (drop refuted
+   RCF, inline the Access-Modes enum into SKILL.md, handle the `mode_option_pressure_terms`
+   gate) + a capture-confirm.
+2. **Batched ask-before-run captures** for the remaining untested HYPOTHESIS floors:
+   [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md).
+   Gate via `plan_cautilus_proof.py` / `run_cautilus_eval.py`; capture-before-pin;
+   missing-scenario trace before each REFUTED-class retire.
+3. **File the deferred guard idea:** a validator cross-checking each planner's
+   intent/condition-keyed required-reads against scenario specs.
 
 ## Discuss
 
