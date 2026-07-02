@@ -335,8 +335,10 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
         lambda: validate_skill_ergonomics_count_claims(lines, resolved_repo_root),
     )
 
-    # Default fails fast on the first violation; --report-all surfaces every
-    # violation in one pass via the shared artifact_validator helper.
+    # collect_all surfaces every violation in one pass (the CLI default) so a
+    # multi-rule draft is fixed in a single edit pass instead of one rule per
+    # gate run — the closeout-churn fix; --fail-fast opts back into stopping at
+    # the first violation.
     run_validation_checks(checks, collect_all=collect_all, artifact_label="quality artifact")
 
 
@@ -346,14 +348,19 @@ def main() -> int:
     parser.add_argument(
         "--report-all",
         action="store_true",
-        help="Report every rule violation in one pass instead of failing on the first.",
+        help="Deprecated no-op: reporting every violation in one pass is now the default.",
+    )
+    parser.add_argument(
+        "--fail-fast",
+        action="store_true",
+        help="Stop at the first rule violation instead of reporting every violation in one pass.",
     )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     adapter = load_adapter(repo_root)
     artifact_path = repo_root / adapter["artifact_path"]
-    validate_quality_artifact(artifact_path, repo_root=repo_root, collect_all=args.report_all)
+    validate_quality_artifact(artifact_path, repo_root=repo_root, collect_all=not args.fail_fast)
     print(f"Validated quality artifact {artifact_path.relative_to(repo_root)}.")
     return 0
 

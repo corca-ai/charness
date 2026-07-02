@@ -57,8 +57,8 @@ def render_template(*, title: str, date_text: str) -> str:
         f"Date: {date_text}",
         "",
         f"<!-- fill guard: fill the TODO slots in place and keep the finished artifact"
-        f" <= {MAX_ARTIFACT_LINES} lines; check every rule in one pass with the"
-        " payload's validator_command plus `--report-all` -->",
+        f" <= {MAX_ARTIFACT_LINES} lines; the payload's validator_command reports every"
+        " rule violation in one pass -->",
         "",
     ]
     for heading in SECTIONS:

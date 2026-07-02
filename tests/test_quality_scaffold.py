@@ -95,7 +95,7 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     # The cap is asserted against the validator's own constant so the template
     # cannot drift into teaching a wrong number.
     assert f"<= {_validate_quality_artifact.MAX_ARTIFACT_LINES} lines" in template
-    assert "--report-all" in template
+    assert "reports every rule violation in one pass" in template
     assert "`- active ` or `- passive `" in template
     assert "` because`" in template and "` until`" in template
     assert "capability_needed=TODO" in template

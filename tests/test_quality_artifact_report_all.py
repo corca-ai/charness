@@ -115,9 +115,20 @@ def _multi_violation_artifact() -> str:
     )
 
 
-def test_validate_quality_artifact_default_mode_fails_fast(tmp_path: Path) -> None:
+def test_validate_quality_artifact_default_mode_reports_all(tmp_path: Path) -> None:
+    # Closeout-churn fix: the bare CLI now batches every violation into one pass
+    # so a multi-rule draft is fixed in one edit pass, not one rule per gate run.
     repo = seed_repo(tmp_path, _multi_violation_artifact())
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "quality artifact rule violation(s)" in result.stderr
+    assert "runtime source must not be markdown" in result.stderr
+    assert "passive recommended next quality moves must explain" in result.stderr
+
+
+def test_validate_quality_artifact_fail_fast_stops_at_first_violation(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _multi_violation_artifact())
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo), "--fail-fast")
     assert result.returncode == 1
     assert "runtime source must not be markdown" in result.stderr
     assert "rule violation(s)" not in result.stderr

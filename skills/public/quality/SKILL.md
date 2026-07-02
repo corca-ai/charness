@@ -58,8 +58,11 @@ git status --short
    extraction, interface narrowing, advisory, existing-gate reuse, or a
    candidate floor that has passed the north-star and floor-addition-restraint
    checks.
-8. Use `scaffold_quality_artifact.py` for the quality artifact; the scaffold and
-   validator own the output shape.
+8. Scaffold the quality artifact FIRST with `scaffold_quality_artifact.py` (it
+   emits a skeleton that already passes the validator) and fill real findings
+   into that structure instead of hand-writing the section format. Validate once
+   with `validate_quality_artifact.py` — it reports every remaining violation in
+   one pass, so fix them together rather than iterating one error at a time.
 9. Run bounded fresh-eye review after initial inventory and before broad
    recommendations when the quality contract calls for it; use the
    high-leverage tier in `../../shared/references/fresh-eye-subagent-review.md`
