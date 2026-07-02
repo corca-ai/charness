@@ -36,7 +36,11 @@ git status --short
 1. Restate the quality question and scope.
 2. Run `plan_quality_run.py`; when the quality question names a target skill,
    pass `--target-skill <skill-id>` so the planner anchors the structural packet.
-3. Read every planner `required_reads` entry before broad gates.
+3. Read every planner `required_reads` entry before broad gates. The planner
+   `brief` carries the load-bearing classification, automation-promotion, and
+   maintainer-local-enforcement discipline inline; apply it directly and open a
+   brief `detail_ref` only when its trigger fires, rather than reading those
+   docs up front.
 4. Run applicable `gate_packets` as report-first evidence. Use each packet's
    `trust_model`, `cost_tier`, `parallel_group`, and `run_when` to decide what
    can be trusted directly, what can run in parallel, and what needs judgment

@@ -1,5 +1,5 @@
 {
-  "_comment": "Claim-fidelity spec for the quality skill: does a real `/charness:quality` run honor its own central claims? The skill's SKILL.md routes, during the bounded primer and lens phase, to references/quality-lenses.md for lens detail; a run that never opens its own lens-detail doc is not following its own routing. requiredCommandFragments is matched against the FULL session-tree command log (parent + subagents) by build-skill-execution-observation.mjs, so a reference read delegated to a subagent still counts. declaredReferences drives a coverage report (how many of the skill's references are actually opened). thresholds are scored by `cautilus evaluate observation` (max_total_tokens / max_duration_ms) for the runtime_budget_respect degrade. max_duration_ms is set from the 2026-06-22 baseline run (the gate-dominated run took ~755s and read 0/39 references): a reference-driven posture review should conclude well inside 10 minutes, so the time bar is 600000ms and the baseline both fails the reference-read claim and exceeds the time budget. NOTE (2026-06-29 threshold policy): 600000 is PROVISIONAL — a reasoned bar, not a passing-baseline derivation, because quality has no passing capture yet; per the per-skill-baseline policy (methodology spec), re-derive max_duration_ms from quality's first PASSING capture (~2x headroom, the retro model) during the item-3 rollout. See README. UPDATE (2026-06-29 capture, charness-artifacts/cautilus/quality-claim-fidelity-2026-06-29/): the floor (quality-lenses.md) is now LIVE-PROVEN n=2 (cautilus skill_task_fidelity PASS; status degraded only on runtime_budget). max_duration_ms STAYS provisional at 600000 and is NOT re-derived: both captures hit the timeout cap (no natural completion), and the overrun is dominated by a red dup-ratchet rabbit-hole + capture-sandbox git-hook friction, not reference-routing cost (the 2026-06-23 capture completed in 154968ms, so the budget is achievable). This capture also surfaced and fixed a matcher false-negative on the for-loop batch-read idiom (expandForLoopReadCommands in build-skill-execution-observation.mjs).",
+  "_comment": "Claim-fidelity spec for the quality skill: does a real `/charness:quality` run honor its own central claims? The skill's SKILL.md routes, during the bounded primer and lens phase, to references/quality-lenses.md for lens detail; a run that never opens its own lens-detail doc is not following its own routing. requiredCommandFragments is matched against the FULL session-tree command log (parent + subagents) by build-skill-execution-observation.mjs, so a reference read delegated to a subagent still counts. declaredReferences drives a coverage report (how many of the skill's references are actually opened). thresholds are scored by `cautilus evaluate observation` (max_total_tokens / max_duration_ms) for the runtime_budget_respect degrade. max_duration_ms is set from the 2026-06-22 baseline run (the gate-dominated run took ~755s and read 0/39 references): a reference-driven posture review should conclude well inside 10 minutes, so the time bar is 600000ms and the baseline both fails the reference-read claim and exceeds the time budget. NOTE (2026-06-29 threshold policy): 600000 is PROVISIONAL — a reasoned bar, not a passing-baseline derivation, because quality has no passing capture yet; per the per-skill-baseline policy (methodology spec), re-derive max_duration_ms from quality's first PASSING capture (~2x headroom, the retro model) during the item-3 rollout. See README. UPDATE (2026-06-29 capture, charness-artifacts/cautilus/quality-claim-fidelity-2026-06-29/): the floor (quality-lenses.md) is now LIVE-PROVEN n=2 (cautilus skill_task_fidelity PASS; status degraded only on runtime_budget). max_duration_ms STAYS provisional at 600000 and is NOT re-derived: both captures hit the timeout cap (no natural completion), and the overrun is dominated by a red dup-ratchet rabbit-hole + capture-sandbox git-hook friction, not reference-routing cost (the 2026-06-23 capture completed in 154968ms, so the budget is achievable). This capture also surfaced and fixed a matcher false-negative on the for-loop batch-read idiom (expandForLoopReadCommands in build-skill-execution-observation.mjs). UPDATE (2026-07-02 reference-compaction prune+brief pilot): gate-classification.md, automation-promotion.md, and maintainer-local-enforcement.md demoted engage-always -> on-demand. Their load-bearing residue (healthy/weak/missing/deferred states + the weak-on-cost-redundancy rule; the AUTO_* enum + inference-layer interpretation rule; the pre-push-enforcement prompt with Unclear->missing default) is now carried inline in plan_quality_run.py's `brief`, so a run keeps the discipline without a mandatory up-front prose read. RCF stays quality-lenses.md (the one engage-always floor); each demotion was adversarially verified (a bare-enum brief was insufficient for gate-classification and maintainer-local, so the brief carries the discipline, not just the labels).",
   "skillId": "quality",
   "skillDisplayName": "quality",
   "evaluationId": "execution-quality-claim-fidelity",
@@ -69,9 +69,9 @@
       "trigger": "production agent runtime, provider policy, fallback, telemetry, or serving-path risk"
     },
     "automation-promotion.md": {
-      "engagement": "engage-always",
-      "rationale": "The quality workflow always classifies findings as AUTO_EXISTING, AUTO_CANDIDATE, or NON_AUTOMATABLE before recommendations.",
-      "claimRole": "core_workflow_reference"
+      "engagement": "on-demand",
+      "rationale": "The AUTO_EXISTING/AUTO_CANDIDATE/NON_AUTOMATABLE enum and the inference-layer interpretation rule are carried inline in the plan_quality_run.py brief; the full per-surface interpretation questions and inventory-registration protocol load on demand.",
+      "trigger": "adding a new advisory/inventory or inference-layer surface, or an inference-layer advisory needs its full per-surface interpretation/registration protocol beyond the brief"
     },
     "behavior-testing.md": {
       "engagement": "on-demand",
@@ -139,9 +139,9 @@
       "trigger": "executable-spec runtime, duplication, or layering review"
     },
     "gate-classification.md": {
-      "engagement": "engage-always",
-      "rationale": "The quality workflow must classify observed and missing gates before recommending next quality moves.",
-      "claimRole": "core_workflow_reference"
+      "engagement": "on-demand",
+      "rationale": "The healthy/weak/missing/deferred closeout states and the non-obvious weak-on-cost-redundancy rule are carried inline in the plan_quality_run.py brief; the full classification discipline loads on demand when the weak-vs-missing boundary is contested or a candidate-floor needs its provenance rule.",
+      "trigger": "the planner brief's gate-state or weak-vs-missing discipline is contested, or a candidate-floor recommendation needs its full provenance rule"
     },
     "installable-cli-probes.md": {
       "engagement": "on-demand",
@@ -159,9 +159,9 @@
       "trigger": "lint-ignore inventory or retained-suppression decision"
     },
     "maintainer-local-enforcement.md": {
-      "engagement": "engage-always",
-      "rationale": "A quality posture run with a canonical final gate must ask how that proof is enforced before push in maintainer clones.",
-      "claimRole": "core_workflow_reference"
+      "engagement": "on-demand",
+      "rationale": "The forced pre-push-enforcement prompt (sharpened by a final-gate probe) and the Unclear-defaults-to-missing field discipline are carried inline in the plan_quality_run.py brief; the full pre-push/CI-parity/gate-policy-marker detail loads on demand.",
+      "trigger": "a canonical final gate's pre-push enforcement, CI/local gate parity, or gate-policy markers (scheduled-deeper-check, local-gate-subset-mirror) need judging beyond the brief prompt"
     },
     "mutation-testing.md": {
       "engagement": "on-demand",

@@ -13,10 +13,7 @@ gates.
 
 - `references/quality-lenses.md` — four-lens judgment frame.
 - `references/inventory-dispatch.md` — focused inventory routing table.
-- `references/automation-promotion.md` — when prose, advisory, or automation owns a concern.
-- `references/gate-classification.md` — enforcement-tier vocabulary.
 - `references/proposal-flow.md` — sourced, proportional recommendation discipline.
-- `references/maintainer-local-enforcement.md` — local-vs-CI proof placement.
 - `references/operability-signals.md` — setup, runtime, CI, and maintenance signals.
 - `references/skill-quality.md` — skill packages as quality artifacts.
 - `references/skill-ergonomics.md` — progressive-disclosure and skill-core pressure review.
@@ -26,6 +23,7 @@ gates.
 - `references/adapter-contract.md` — quality adapter schema and defaults.
 - `references/adapter-gate-review.md` — adapter/gate design finding classes.
 - `references/agent-production-runtime.md` — production agent runtime evidence questions.
+- `references/automation-promotion.md` — full automation-class + inference-layer interpretation/registration detail behind the planner brief.
 - `references/bootstrap-escalations.md` — non-default bootstrap and proof paths.
 - `references/bootstrap-posture.md` — quality adapter setup posture.
 - `references/brittle-source-guards.md` — brittle guard taxonomy and migration order.
@@ -39,8 +37,10 @@ gates.
 - `references/dup-ratchet.md` — duplicate-family ratchet and baseline policy.
 - `references/entrypoint-docs-ergonomics.md` — entrypoint documentation review.
 - `references/executable-spec-economics.md` — executable-spec cost and layering.
+- `references/gate-classification.md` — full gate-state + weak-vs-missing discipline behind the planner brief.
 - `references/installable-cli-probes.md` — installable CLI probe ownership.
 - `references/lint-ignore-discipline.md` — lint suppression pressure review.
+- `references/maintainer-local-enforcement.md` — full pre-push/CI-parity/gate-policy-marker detail behind the planner brief.
 - `references/mutation-testing.md` — mutation-testing workflow and sampling.
 - `references/prompt-asset-policy.md` — prompt/content inventory policy.
 - `references/public-spec-layering.md` — public spec layering and source-guard pressure.

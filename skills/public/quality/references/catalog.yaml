@@ -6,18 +6,9 @@ references:
   - path: references/inventory-dispatch.md
     role: required-primer
     why: Choose focused inventories without preloading every reference.
-  - path: references/automation-promotion.md
-    role: required-primer
-    why: Decide whether a finding deserves automation, advisory output, or judgment.
-  - path: references/gate-classification.md
-    role: required-primer
-    why: Classify findings before proposing gates or fixes.
   - path: references/proposal-flow.md
     role: required-primer
     why: Keep recommendations concrete, sourced, and proportionate.
-  - path: references/maintainer-local-enforcement.md
-    role: required-primer
-    why: Preserve locally reachable proof when judging gate placement.
   - path: references/operability-signals.md
     role: required-primer
     why: Read runtime, setup, CI, and maintenance signals as quality evidence.
@@ -29,6 +20,15 @@ references:
     role: scope-primer
     scope: skill-authoring
     why: Judge whether skill cores, references, and scripts preserve progressive disclosure.
+  - path: references/gate-classification.md
+    role: on-demand
+    trigger: the planner brief's gate-state or weak-vs-missing discipline is contested, or a candidate-floor recommendation needs its full provenance rule
+  - path: references/automation-promotion.md
+    role: on-demand
+    trigger: adding a new advisory/inventory or inference-layer surface, or an inference-layer advisory needs its full per-surface interpretation/registration protocol beyond the brief
+  - path: references/maintainer-local-enforcement.md
+    role: on-demand
+    trigger: a canonical final gate's pre-push enforcement, CI/local gate parity, or gate-policy markers (scheduled-deeper-check, local-gate-subset-mirror) need judging beyond the brief prompt
   - path: references/adapter-contract.md
     role: on-demand
     trigger: adapter missing, invalid, stale, or under-specified
@@ -142,3 +142,61 @@ gates:
     cost_tier: cheap
     parallel_group: inventories
     run_when: skills_in_scope
+# brief: load-bearing residue of demoted required-primers, carried inline in the
+# planner stdout so a run keeps the discipline without a mandatory prose read.
+# The planner (plan_quality_run.py:_quality_brief) injects the final-gate probe
+# result into maintainer_local_enforcement; everything else is static data. Open
+# a block's detail_ref only when its catalog trigger fires.
+brief:
+  purpose: >-
+    load-bearing residue of demoted primers, carried inline so a run keeps the
+    discipline without a mandatory prose read; open detail_ref only on trigger
+  gate_classification:
+    closeout_states:
+      healthy: present, runnable, high-signal for the seam it covers
+      weak: >-
+        present but easy to game, too shallow for the claimed confidence,
+        duplicated by a better gate, OR a green non-shallow gate STILL paying
+        standing runtime after a cheaper, more-direct proof now covers the same
+        seam (cost-redundancy alone makes a working gate weak)
+      missing: should exist for the current risk surface but is absent or only implied
+      deferred: useful later, not the next highest-leverage gate for the current state
+    note: >-
+      these four states are the required ## Healthy / ## Weak / ## Missing /
+      ## Deferred closeout sections; classify every gate before recommending moves
+    ranking_is_advisory: >-
+      Recommended Next Quality Moves ordering is an inference-layer proxy — answer
+      its interpretation question for THIS repo before trusting the rank
+    candidate_floor: exceptional; needs explicit north-star + floor-addition-restraint provenance
+    detail_ref: references/gate-classification.md
+  automation_promotion:
+    cases:
+      AUTO_EXISTING: >-
+        already enforced by a meaningful deterministic gate; do not re-report as a
+        manual finding without added repo interpretation
+      AUTO_CANDIDATE: >-
+        should become a deterministic gate; propose the gate before more policy prose
+      NON_AUTOMATABLE: >-
+        still needs judgment/tradeoffs/human review; belongs in prose findings and proposals
+    inference_layer_rule: >-
+      for any inference-layer advisory (clone %, ergonomics heuristics, rankings,
+      length/pressure smells, runtime trends) answer its self-declared
+      interpretation question for THIS repo before repeating/ranking/escalating;
+      each inventory emits its own question at run time
+    detail_ref: references/automation-promotion.md
+  maintainer_local_enforcement:
+    field_discipline: >-
+      record a Maintainer-Local Enforcement disposition; 'Unclear' is not
+      acceptable — default to `missing` until the gap is closed or explicitly
+      deferred with a reason
+    detail_ref: references/maintainer-local-enforcement.md
+    standing_prompt: >-
+      If the repo has a canonical final stop-before-finish gate, record HOW it is
+      enforced before push in maintainer clones (checked-in hook + clone
+      validator, repo-owned installer, or explicit documented omission).
+    detected_prompt_template: >-
+      DETECTED a canonical final gate ({gates}): before calling operability
+      healthy, record HOW it is enforced before push in maintainer clones
+      (checked-in hook + clone validator, a repo-owned installer, or an explicit
+      documented decision to omit hooks with a named CI owner). A green gate that
+      clones can push around is an enforcement gap that happens to compile.

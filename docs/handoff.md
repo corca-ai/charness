@@ -8,49 +8,45 @@
   [intent.md](../charness-artifacts/reference-compaction/intent.md) — the point is a
   SMARTER agent, not proof/surface; prune gates/refs that don't earn their place;
   the ONLY test is "그게 정말 최선인가?" (no proxy metric). claim-fidelity/cautilus is
-  the *instrument*, read for "does this ref meaningfully help / is it already covered
-  by body/script/template," not "floor passed."
+  the *instrument*, read for "does this ref meaningfully help," not "floor passed."
 
 ## Current State
 
-- **v0.58.0 SHIPPED** — tag pushed, `main`==`origin/main`; #412/#413 closed on push.
-- **Method locked (operator-directed):** every skill path/condition gets its OWN
-  falsifiable fixture; capture VERIFIES, docs+routing DESIGN; token OBSERVED never assumed.
-- **#411 gather public-URL substance floor CAPTURE-PROVEN** (4/4, live judge;
-  `ae6d833d`, proof in [cautilus/latest.md](../charness-artifacts/cautilus/latest.md));
-  doc-open RCF refuted 0/8 on a fresh run.
-- **Substance-floor-only spec support SHIPPED** (`325909f7`, fresh-eye SOUND):
-  `claim_fidelity_lib` now allows empty RCF+RSF when a sibling `outcome-assertions.json`
-  exists — unblocks the gather public-URL AND setup #413 RCF flips.
-- **Untested-HYPOTHESIS floor sweep DESIGNED** (census-anchored, 7 never-captured
-  skills, zero captures):
-  [untested-hypothesis-floor-sweep.md](../charness-artifacts/reference-compaction/untested-hypothesis-floor-sweep.md)
-  — REFUTED-class (announcement/ideation/narrative), MIXED (create-skill/release/spec),
-  genuine-DEPTH verify-only (find-skills).
-- Deferred honestly: setup greenfield (not in-repo capturable, #410).
+- **Prune+brief pattern ESTABLISHED + first instance SHIPPED on `quality`.**
+  Result + reusable pattern:
+  [quality-prune-brief-pilot.md](../charness-artifacts/reference-compaction/quality-prune-brief-pilot.md).
+  The lever is NOT delete/role-flip (a naive flip strands capability) but:
+  **upgrade planner stdout into a substantive `brief`, then the primer becomes
+  trigger-gated depth** (mechanism mirrors retro's `lens_brief`).
+- Demoted 3 of 9 mandatory `quality` primer reads (required_reads 9→6, −479 lines):
+  gate-classification, automation-promotion, maintainer-local-enforcement — each
+  adversarially verified; residue carried inline in `plan_quality_run.py` `brief`.
+- Verified: `tests/quality_gates` 2475 passed; fresh-eye critique SOUND;
+  `plan_cautilus_proof.py` → next_action none (deterministic + scenario review own
+  closeout; live capture contract-refused). Committed with artifacts.
 
 ## Next Session
 
-1. **"prune + brief" pilot on `quality`** (serves
-   [intent.md](../charness-artifacts/reference-compaction/intent.md); the pattern for
-   the rest): is `quality` even the best shape? audit each GATE + reference — "earns
-   its place, or already covered by body/script/template?"; delete redundant, convert
-   blocking gates that should BRIEF the agent instead (teeth→brief); one capture read
-   for "leaner skill used intelligence at least as well," not floor. Judge by
-   "그게 정말 최선인가?" — no proxy.
-2. **Fold in the unblocked ref deletions** as first prune instances: gather public-URL
-   flip (drop refuted RCF → substance floor; inline enum + resolve the
-   `mode_option_pressure_terms` gate) + setup #413 (unblocked by `325909f7`).
-3. **After the pilot sets the pattern**, extend to other overhead-heavy skills;
-   remaining untested HYPOTHESIS floors + guard-validator idea are lower priority.
+1. **inventory-dispatch.md instance** — biggest remaining always-loaded item (297
+   lines; kept required this session because ~19 inventory scripts live ONLY there
+   and the planner emits no script names). Add a machine-readable `scripts:` routing
+   layer to catalog.yaml so the planner can brief surface→script(+flags) routing,
+   THEN demote. A naive demote strands the scripts.
+2. **Extend the pattern to other overhead-heavy skills** — same method: audit
+   mandatory reads, adversarially verify each demote, brief the residue via the
+   planner, prove by scenario review. Judge by "그게 정말 최선인가?", not read-count.
+3. **Softer `quality` candidates** (proposal-flow, operability-signals,
+   skill-quality, skill-ergonomics): adversarially verify BEFORE demoting.
+   quality-lenses.md stays the one required-primer + RCF floor.
 
 ## Discuss
 
+- Operator intent wanted live cautilus verification ("실제로 돌려보자");
+  `plan_cautilus_proof.py` returns next_action none for this reversible slice.
+  Ask before any live capture (eval-only, ask-before-run).
 - Brittle test: [test_handoff_plan.py](../tests/test_handoff_plan.py)
-  `..._derives_refresh_and_pickup` reds broad pytest on any >=60-line handoff. Keep this
-  file under 60 lines until the test is decoupled from live state.
+  `..._derives_refresh_and_pickup` reds broad pytest on any >=60-line handoff.
 
 ## References
 
 - pickup: [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) · [reference-compaction contract](../charness-artifacts/reference-compaction/contract.md)
-- proofs: [session retro](../charness-artifacts/retro/2026-07-02-session-retro.md) · [cautilus latest](../charness-artifacts/cautilus/latest.md)

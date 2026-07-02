@@ -177,18 +177,70 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     plan = _run_plan(repo)
 
     triggers = plan["on_demand_trigger_map"]
-    assert len(triggers) == 30
+    assert len(triggers) == 33
     assert "references/adapter-contract.md" in triggers
     assert "references/dup-ratchet.md" in triggers
     assert "references/security-npm.md" in triggers
     assert "references/security-pnpm.md" in triggers
     assert "references/security-uv.md" in triggers
     assert "references/unit-test-quality.md" in triggers
+    # Demoted required-primers now load on demand; the planner brief carries their
+    # load-bearing residue (see test_quality_run_plan_brief_carries_demoted_primer_discipline).
+    assert "references/gate-classification.md" in triggers
+    assert "references/automation-promotion.md" in triggers
+    assert "references/maintainer-local-enforcement.md" in triggers
     assert any(
         read["path"] == "references/dup-ratchet.md"
         and "scanner skew" in read["trigger"]
         for read in plan["on_demand_reads"]
     )
+
+
+def test_quality_run_plan_brief_carries_demoted_primer_discipline(tmp_path: Path) -> None:
+    repo = tmp_path / "app"
+    repo.mkdir()
+    # A canonical final gate so the maintainer-local prompt sharpens to the named-gate form.
+    (repo / "scripts").mkdir()
+    (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+
+    plan = _run_plan(repo)
+    brief = plan["brief"]
+
+    # The three demoted primers are NOT mandatory reads any more...
+    reads = {read["path"] for read in plan["required_reads"]}
+    assert "references/gate-classification.md" not in reads
+    assert "references/automation-promotion.md" not in reads
+    assert "references/maintainer-local-enforcement.md" not in reads
+
+    # ...but their load-bearing residue rides in the brief.
+    gc = brief["gate_classification"]
+    assert set(gc["closeout_states"]) == {"healthy", "weak", "missing", "deferred"}
+    # The non-obvious weak-on-cost-redundancy rule must be carried, not just the label.
+    assert "cheaper" in gc["closeout_states"]["weak"]
+    assert gc["detail_ref"] == "references/gate-classification.md"
+
+    ap = brief["automation_promotion"]
+    assert set(ap["cases"]) == {"AUTO_EXISTING", "AUTO_CANDIDATE", "NON_AUTOMATABLE"}
+    assert ap["detail_ref"] == "references/automation-promotion.md"
+
+    mle = brief["maintainer_local_enforcement"]
+    assert mle["final_gates_detected"] == ["scripts/run-quality.sh"]
+    assert "DETECTED" in mle["prompt"]
+    assert "missing" in mle["field_discipline"]
+    assert mle["detail_ref"] == "references/maintainer-local-enforcement.md"
+
+
+def test_quality_run_plan_brief_standing_maintainer_prompt_without_final_gate(tmp_path: Path) -> None:
+    repo = tmp_path / "app"
+    repo.mkdir()
+
+    plan = _run_plan(repo)
+    mle = plan["brief"]["maintainer_local_enforcement"]
+
+    # No final gate detected -> the prompt stays the always-emitted standing question
+    # (maximally proactive: no reactive-trigger blind spot on the silent-gap repo).
+    assert mle["final_gates_detected"] == []
+    assert "If the repo has a canonical final" in mle["prompt"]
 
 
 def test_quality_run_plan_reports_gate_packet_cost_and_trust(tmp_path: Path) -> None:

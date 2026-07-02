@@ -113,6 +113,65 @@ ENFORCEMENT_POSTURES = (
     "no-gate",
 )
 
+# Canonical final stop-before-finish gate signals, cheap file/manifest probes.
+# Presence sharpens the maintainer-local-enforcement prompt from a standing
+# question into a named-gate one; absence leaves the standing question intact.
+FINAL_GATE_FILE_SIGNALS = (
+    ("scripts/run-quality.sh", "scripts/run-quality.sh"),
+    ("scripts/run-verify.sh", "scripts/run-verify.sh"),
+    ("scripts/run-verify.mjs", "scripts/run-verify.mjs"),
+)
+FINAL_GATE_MANIFEST_SIGNALS = (
+    ("package.json", '"verify"', "package.json verify script"),
+    ("Makefile", "verify:", "Makefile verify target"),
+)
+
+
+def _detect_final_gate(repo_root: Path) -> list[str]:
+    """Cheap probe for a canonical final stop-before-finish gate.
+
+    Only file existence + a single substring scan per manifest — no parsing — so
+    the planner stays fast and dependency-free. Used to sharpen, never to gate.
+    The manifest substring scan is deliberately permissive toward detection: a
+    false positive only sharpens the already-standing maintainer-local prompt,
+    while the ``else`` branch below still emits the standing question, so a miss
+    never silences the discipline.
+    """
+    found: list[str] = []
+    for rel, label in FINAL_GATE_FILE_SIGNALS:
+        if (repo_root / rel).is_file():
+            found.append(label)
+    for rel, needle, label in FINAL_GATE_MANIFEST_SIGNALS:
+        path = repo_root / rel
+        if not path.is_file():
+            continue
+        try:
+            if needle in path.read_text(encoding="utf-8", errors="ignore"):
+                found.append(label)
+        except OSError:
+            continue
+    return found
+
+
+def _quality_brief(repo_root: Path, catalog: dict[str, Any]) -> dict[str, Any]:
+    """Substantive brief that lets load-bearing primers stay trigger-gated depth.
+
+    North star (reference-compaction intent.md): a gate/reference should BRIEF a
+    capable agent, not force a mandatory prose read it already carries. The static
+    residue of the demoted required-primers is declarative catalog data (`brief:`);
+    this only injects the dynamic final-gate probe result into the maintainer-local
+    prompt. detail_ref pointers preserve discoverability when a trigger fires.
+    """
+    brief = dict(catalog.get("brief") or {})
+    final_gates = _detect_final_gate(repo_root)
+    mle = dict(brief.get("maintainer_local_enforcement", {}))
+    detected = str(mle.pop("detected_prompt_template", ""))
+    standing = str(mle.pop("standing_prompt", ""))
+    mle["final_gates_detected"] = final_gates
+    mle["prompt"] = detected.replace("{gates}", ", ".join(final_gates)) if final_gates else standing
+    brief["maintainer_local_enforcement"] = mle
+    return brief
+
 
 def _resolve_target_skill(repo_root: Path, skills: list[str], target: str | None) -> dict[str, Any]:
     if not target:
@@ -210,15 +269,17 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
         if isinstance(ref, dict) and ref.get("path") and ref.get("trigger")
     }
     structural_packet = _structural_review_packet(repo_root, skills, target_skill)
+    brief = _quality_brief(repo_root, catalog)
     phase_barriers = [
         "Read required_reads (also exposed as required_primer_refs for compatibility) before broad gates.",
+        "The brief carries the load-bearing classification/automation/maintainer-enforcement discipline inline; apply it and open a brief detail_ref only when its trigger fires.",
         "Run deterministic gates as evidence packets, then analyze the report against the primer refs before fixing.",
         "Use gate trust_model/cost_tier/parallel_group to decide whether to trust, parallelize, or manually inspect a packet.",
         "Open on-demand refs only when a concrete gate, inventory, source, or operator finding matches their trigger.",
     ]
     if structural_packet is not None:
         phase_barriers.insert(
-            2,
+            3,
             "Answer structural_review_packet before broad recommendations; separate target findings from ambient repo gate failures.",
         )
     return ENVELOPE.build_envelope(
@@ -227,6 +288,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
         next_action=ENVELOPE.next_action("read_primer_refs"),
         gate_packets=gates,
         repo_root=str(repo_root),
+        brief=brief,
         skills_in_scope=skills_in_scope,
         skill_scope_reason=(
             f"found {len(skills)} checked-in skill package(s)" if skills else "no skills/public or skills/support SKILL.md files found"
@@ -258,6 +320,21 @@ def format_human(plan: dict[str, Any]) -> str:
         lines.append("- structural_review_packet:")
         lines.append(f"  - target: {target['status']} {target.get('path') or target.get('requested') or '(unspecified)'}")
         lines.extend(f"  - {question['id']}: {question['question']}" for question in packet["questions"])
+    brief = plan.get("brief")
+    if brief:
+        lines.append("- brief (load-bearing residue of demoted primers; open detail_ref on trigger):")
+        gc = brief.get("gate_classification", {})
+        if gc.get("closeout_states"):
+            lines.append(f"  - gate states: {', '.join(gc['closeout_states'])} (see {gc.get('detail_ref', '')})")
+            lines.append(f"  - weak also = {gc['closeout_states'].get('weak', '')}")
+        ap = brief.get("automation_promotion", {})
+        if ap.get("cases"):
+            lines.append(f"  - automation: {', '.join(ap['cases'])} (see {ap.get('detail_ref', '')})")
+        mle = brief.get("maintainer_local_enforcement", {})
+        if mle.get("prompt"):
+            lines.append(f"  - maintainer-local: {mle['prompt']}")
+        if mle.get("field_discipline"):
+            lines.append(f"    field: {mle['field_discipline']}")
     lines.append("- gate_packets:")
     lines.extend(
         f"  - {gate['id']}: {gate['cost_tier']} / {gate['trust_model']}"
