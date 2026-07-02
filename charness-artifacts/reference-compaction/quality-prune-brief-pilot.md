@@ -34,20 +34,37 @@ forced reading), each adversarially verified before the demotion:
   "Unclear→default `missing`" field discipline; the probe makes the prompt
   *proactive* so the silent-gap repo (final gate, no hook) is still caught.
 
-## Scenario review
+## Capture (H0) — empirical, not predicted
 
-Proof-posture: `plan_cautilus_proof.py` → next_action none, so deterministic
-validation + this scenario review own closeout and a live capture is
-contract-refused (eval-only, ask-before-run).
+The capture harness (`capture-skill-run.sh` + `build-skill-execution-observation.mjs`)
+is host-owned and ungated; only `cautilus evaluate` scoring is ask-before-run
+(`plan_cautilus_proof.py` → next_action none). So a real `/charness:quality` run
+on HEAD was captured. Result:
 
-- **Weak-on-cost gate**: green E2E smoke now covered by a cheaper unit proof →
-  brief's `weak` definition drives the same `weak`+delete recommendation without
-  the mandatory read. At-least-as-smart.
-- **Silent-gap repo**: final gate, no pre-push hook → probe DETECTS the gate,
-  brief emits the enforcement prompt proactively → gap flagged `missing` without
-  the mandatory read (arguably smarter: probe-driven, not reader-primed).
-- **Inference-layer inventory** (`inventory_nose_clones`): the tool self-emits
-  its interpretation question at run time; the up-front read was redundant.
+- **Pilot confirmed:** the run read references with one for-loop over **exactly
+  the 6 remaining primers** and opened **0 of the 3 demoted docs**, fidelity
+  passed (RCF `quality-lenses.md`). The mandatory reads were genuinely droppable.
+- **2 residues confirmed without their docs:** it proactively probed pre-push
+  enforcement, **found + classified WEAK + fixed** a real `.githooks/pre-push`
+  gap (maintainer-local residue), and wrote proper `## Healthy/Weak/Missing/
+  Deferred` sections (gate-classification residue) — neither doc opened.
+- **Cost OBSERVED corrected the assumption:** 168k output tokens / 18.9M cache /
+  19.5min / 103 tools. The dominant cost was **not** reference reads (already
+  lean) but artifact **closeout churn** — see follow-up.
+
+## Capture-driven follow-up: closeout churn fix (SHIPPED)
+
+The capture showed the run hand-wrote the quality artifact and re-ran the
+fail-fast `validate_quality_artifact.py` **6×** (one format error per run),
+skipping the scaffold. Fixed (intent step 5 — template + gate stdout):
+
+- validator CLI default flipped fail-fast → **report-all** (all violations in one
+  pass; `--fail-fast` opt-out kept). SKILL.md step 8 → **scaffold-first** (the
+  scaffold emits a validator-passing skeleton). Fresh-eye critique SOUND.
+- **Method lesson for the sweep:** capture-then-diagnose, don't assume the lever.
+  Observation found a bigger lever (closeout churn) than the reference pruning.
+- `cautilus improve` (optimize surface) is **disabled by repo policy**
+  (`cautilus-on-demand.md`) — not the path; the H0 capture + diagnosis was.
 
 ## Verification
 
