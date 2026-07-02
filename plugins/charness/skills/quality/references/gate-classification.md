@@ -1,47 +1,33 @@
 # Gate Classification
 
-Classify each observed gate or missing gate honestly. When recommending how
-often a gate should run, pace targeted vs broad proof by the meaningful-unit
-cadence in
+The four closeout states (`healthy` / `weak` / `missing` / `deferred`) and the
+non-obvious rule that a green, non-shallow gate is still `weak` when a cheaper,
+more-direct proof now covers the same seam are single-sourced in the planner
+`brief` (`gate_classification.closeout_states`). This doc holds the deeper
+discipline the brief summarizes; open it when a classification is contested.
+
+Classify after enforcement triage (`AUTO_EXISTING` / `AUTO_CANDIDATE` /
+`NON_AUTOMATABLE`, defined in the brief's `automation_promotion`). When
+recommending how often a gate should run, pace targeted vs broad proof by the
+meaningful-unit cadence in
 [meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md):
 broad standing gates and pre-push proof default to the bundle/final boundary,
 not the inner loop.
 
-This happens after enforcement triage:
+## `weak` versus `missing`
 
-- `AUTO_EXISTING`
-- `AUTO_CANDIDATE`
-- `NON_AUTOMATABLE`
-
-## `healthy`
-
-- currently present
-- runnable
-- high-signal for the seam it covers
-
-## `weak`
-
-- present but easy to game
-- too shallow for the claimed confidence
-- duplicated by a better existing gate
-- still paying standing runtime after a cheaper and more direct proof exists
-
-## `missing`
-
-- should exist for the current risk surface
-- absent or only implied
-
-## `defer`
-
-- would be useful later
-- not the next highest-leverage gate for the current repo state
+This boundary decides which required artifact section a finding lands in. `weak`
+is present-but-inadequate: gameable, too shallow for the claimed confidence,
+duplicated by a better existing gate, or still paying standing runtime after a
+cheaper and more direct proof exists. `missing` is absent-or-only-implied for a
+risk the current surface carries. `defer` is useful-later but not the next
+highest-leverage move now.
 
 ## Recommended Next Quality Moves
 
-Every recommended next quality move should carry an execution posture tag:
-
-- `active`: install or change now as the next bounded proof move
-- `passive`: monitor, wait, or defer with an explicit reason
+Every recommended next quality move carries an execution posture tag —
+`active` (install or change now as the next bounded proof move) or `passive`
+(monitor, wait, or defer with an explicit reason).
 
 The ordering of `Recommended Next Quality Moves` is an **inference-layer**
 ranking, not a verdict, so it falls under
@@ -57,6 +43,7 @@ exact count) stay trusted — only the recommendation ordering is re-interpreted
 
 Move types include cleanup/delete, merge or split ownership, helper extraction,
 interface narrowing, dogfood or evidence packets, advisory/describe-first
-guidance, existing-gate reuse, candidate floor, defer/watch, and no-gate.
-`candidate-floor` is exceptional and needs explicit north-star plus
-floor-addition-restraint provenance before it becomes executable.
+guidance, existing-gate reuse, candidate floor, defer/watch, and no-gate (the
+planner packet enumerates the canonical `QUALITY_MOVE_TYPES`). `candidate-floor`
+is exceptional and needs explicit north-star plus floor-addition-restraint
+provenance before it becomes executable.
