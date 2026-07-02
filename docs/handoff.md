@@ -9,41 +9,33 @@
 
 ## Current State
 
-- **Reference-compaction Slice-7 census reconciliation DONE (commit `52a64799`).** All 13
-  contested doc-open floors re-examined census-FIRST via an adversarial analyze->verify
-  workflow (26 agents): **12 MOVE, 1 MIXED (hotl/ledger-and-dispositions), 0 KEEP** — every
-  prior "keep because the capture opened it" was the flagged method error (an INLINE/DUP doc
-  opens redundantly). Full verdicts + queue:
-  [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
-- **Execution + METHOD CORRECTION (operator-directed).** Design fixtures **per condition** from the
-  docs+routing (what each ref is FOR + WHEN read); the capture only VERIFIES — no capture needed to
-  design. See the reconciliation doc's "METHOD CORRECTION" +
-  [gather-fixture-redesign.md](../charness-artifacts/reference-compaction/gather-fixture-redesign.md). Done:
-  ✅ hotl/proof-rules (fresh capture, `ceb87340`), ✅ critique/counterweight-triage (existing evidence,
-  `bf2fdeef`), ✅ gather per-condition redesign — NEW private-SaaS scenario PROVEN, corrects #411
-  (`4f4586b5`). Next: **setup + handoff by the same per-condition method** — re-examine their
-  MOVE/INLINE verdicts (some may be genuine DEPTH under a condition no fixture exercises → design that
-  scenario, don't retire) — plus gather's public-URL output-floor. hotl/ledger token-lift deferred.
-- Issues: **#411**/**#413** reframed (census INLINE is the driver, not a live "refutation";
-  artifact/substance-judge fix stands; #411 capability-contract corrected DEPTH->INLINE),
-  **#412** sharpened (continuation-sequence.md is INLINE too), **#415** filed (matcher honesty:
-  RCF satisfied by a subagent-prompt name-mention, not a Read).
+- **Slice-7 setup (#413) + handoff (#412) claim-fidelity floors DONE** — goal
+  [2026-07-02 setup+handoff floor](../charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl.md),
+  6 commits `69552811..551a1f49`, all gates green (broad pytest 3981), 5 fresh-eye
+  critiques SOUND.
+- setup floor moved RCF→RSF `[Repo mode:, Normalization non-claims:]` via live
+  capture (+ `## Closeout Vocabulary` + `outcome-assertions.json` substance judge).
+  handoff planner conditionalized, and the pickup floor split into two
+  per-condition falsifiable fixtures — a clear
+  [pickup](../evals/cautilus/handoff-claim-fidelity/pickup.spec.json) arm and an
+  ambiguous [pickup-ambiguous](../evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json)
+  arm, both capture-proven; continuation-sequence.md reclassified on-demand DEPTH.
+- **Method locked (operator-directed):** every skill path/condition gets its OWN
+  falsifiable fixture; capture VERIFIES, docs+routing DESIGN; token OBSERVED never assumed.
+- Deferred honestly (not captured): setup greenfield + narrow host-docs-only
+  normalization (greenfield not in-repo capturable, #410).
 
 ## Next Session
 
-1. **Continue the per-condition fixture work** (see the reconciliation doc's METHOD CORRECTION):
-   **setup** then **handoff** — trace each ref to its trigger, design a scenario per genuinely-DEPTH
-   condition, retire only truly-inlined docs; then gather's public-URL output-floor + hotl/ledger
-   token-lift. Mechanics: `capture-skill-run.sh` needs an ABSOLUTE `--out-dir` OUTSIDE the repo (its
-   `config/settings.json` pollutes `check_doc_links`); grade with
-   `build-skill-execution-observation.mjs --spec <spec> --stream <out>/stream.jsonl`; broad pytest
-   BEFORE the critique (grep misses path-built consumers).
-2. **Continue correctness sweep** for the remaining untested HYPOTHESIS floors (announcement,
-   create-skill, find-skills, ideation, narrative, release, spec), one at a time — expect
-   keeps/refutes, not just moves.
-3. **AGENTS.md lesson-internalization live capture (operator-raised)** — the deferred
-   "live-session capture unit" of the existing `lesson-internalization-claim-fidelity` eval
-   (offline instrument DONE). Spec-level: arbitrary-session harness + vacuous-pass guard + rotation.
+1. **Operator-gated closeout of the DONE work:** close #412 + #413, check #410
+   setup+handoff rows, `git push` (branch 30+ ahead). Fixes landed + captured locally.
+2. **Continue the sweep** (next ranked chunks): gather #411 public-URL output-floor
+   (private-SaaS half already done), then the correctness sweep of untested HYPOTHESIS
+   floors (announcement/create-skill/find-skills/ideation/narrative/release/spec),
+   then matcher-honesty #415 — same per-condition-falsifiable + capture-before-pin method.
+3. **File the deferred guard idea:** a validator cross-checking each planner's
+   intent/condition-keyed required-reads against scenario specs (auto-detect a
+   conditionally-required doc no scenario forces) — would have caught the ambiguous-fixture gap.
 
 ## Discuss
 
@@ -54,4 +46,4 @@
 ## References
 
 - pickup: [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) · [reference-compaction contract](../charness-artifacts/reference-compaction/contract.md)
-- proofs: [cautilus latest](../charness-artifacts/cautilus/latest.md) · [reconciliation](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md)
+- proofs: [session retro](../charness-artifacts/retro/2026-07-02-session-retro.md) · [cautilus latest](../charness-artifacts/cautilus/latest.md)

@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Reviewing the achieve goal `charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl.md` — the setup (#413) + handoff (#412) per-condition claim-fidelity floor redesign, part of the reference-compaction Slice-7 sweep (#410). (source: `charness-artifacts/retro/2026-07-02-session-retro.md`)
 - Autonomous `achieve` run of `charness-artifacts/goals/2026-07-01-correctness-sweep-next-floor.md` — the 5th skill in the correctness sweep (after retro, hitl, quality, debug). (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
-- Achieve goal closeout for `charness-artifacts/goals/2026-06-30-issue-2-debug-follow-ups-start-here-sharpens-2.md`. (source: `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
+- **Edited the generated mirror, not the source.** First setup `## Closeout Vocabulary` edit went to `plugins/charness/skills/setup/SKILL.md` (the export) instead of `skills/public/setup/SKILL.md` (the source). Caught before commit, redone on source + synced. Guarded going forward by the staged-mirror-drift gate, so bounded. (source: `charness-artifacts/retro/2026-07-02-session-retro.md`)
+- **Under-scoped the per-condition falsifiability discipline until corrected.** I initially recommended deferring the ambiguous-pickup fixture (option A) — which would have shipped the conditionalized planner while proving only the clear arm. The operator caught it ("각 조건별 반증 가능한 픽스처"). The correction cost one clarification round but prevented a half-verified floor. (source: `charness-artifacts/retro/2026-07-02-session-retro.md`)
 - **Avoidable-in-hindsight:** the first goal draft omitted output preservation entirely. The fresh-eye plan critique caught it pre-capture, so the cost was paid in review, not in a blind grade — the critique earned its cost. The residual gap (a *committing* run defeats even a wired `preserve_outputs`) was NOT predictable from the plan alone; it needed the live run. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
-- **Real, but it was discovery, not avoidable waste:** ~3 recovery cycles diagnosing why `git status` was empty in the worktree (the run committed → HEAD moved) and why the tree transcript was short (final block unflushed). Phase-aware (per `references/phase-aware-efficiency.md`): this was investigation that SURFACED two genuine harness bugs (#409), not churn — the triage locked quickly once the commit and the stream/tree block-count divergence were seen. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
-- The captured run's own duplicate reads (claim_fidelity_lib.py 2x, the registry test 2x) are advisory smells about the SUBJECT run, not this session. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`; sources: 67)
-- **capability:** issue #409 — fix `preserve_outputs` to diff against the capture ref (not HEAD) and build the transcript from `stream.jsonl` (not the possibly-truncated tree). (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
-- **decision (operator):** `impl` skill-shape — internalize the Lint Gate / completion-report enum into `impl/SKILL.md` (debug-Plan-A-style, makes the floor a weak proxy and the substance pass) vs keep the floor load-bearing (the MISS is a real closeout-vocabulary gap). Candidate issue; recorded in the goal's Off-Goal Findings. (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
-- **memory:** recent-lessons digest gets two transferable lessons (below). (source: `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`)
+- a validator that cross-checks each planner's intent/condition-keyed required-reads against the scenario specs, flagging any conditionally-required doc that NO scenario forces — this would auto-detect the ambiguous-fixture gap the operator caught by hand. (source: `charness-artifacts/retro/2026-07-02-session-retro.md`)
+- this retro + the goal artifact record the per-condition-falsifiability discipline and capture-before-pin; carried to the next-session handoff. (source: `charness-artifacts/retro/2026-07-02-session-retro.md`)
+- when a change SPLITS behavior into a new condition/branch, design a falsifiable fixture for EACH branch in the same slice — never defer a branch's proof. (Applied in Slice 4.) (source: `charness-artifacts/retro/2026-07-02-session-retro.md`)
 
 ## Selection Policy
 
@@ -94,5 +94,5 @@
 - `charness-artifacts/retro/2026-06-27-v0-56-8-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-27-v0-56-9-release-auto-retro.md`
 - `charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-06-30-debug-follow-ups-recapture-closeout.md`
 - `charness-artifacts/retro/2026-07-01-correctness-sweep-next-floor-closeout.md`
+- `charness-artifacts/retro/2026-07-02-session-retro.md`

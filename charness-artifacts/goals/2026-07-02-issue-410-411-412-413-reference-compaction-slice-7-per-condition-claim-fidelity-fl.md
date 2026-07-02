@@ -1,6 +1,6 @@
 # Achieve Goal: Reference-compaction Slice-7 per-condition claim-fidelity floor redesign for setup then handoff (the pinned Next Session #1 front of the sweep).
 
-Status: active
+Status: complete
 Created: 2026-07-02
 Activation: `/goal @charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl.md`
 
@@ -9,16 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: ACTIVE — scope locked to setup + handoff only, open-ended
-  (no timebox). Activated 2026-07-02.
-- Current slice: Slices 1–4 DONE. setup (#413) fully redesigned+captured; handoff
-  (#412) planner conditionalized (Slice 3) AND both pickup conditions now have
-  falsifiable fixtures — clear (`pickup.spec.json`, re-graded from Slice-7) +
-  ambiguous (`pickup-ambiguous.spec.json`, fresh capture, both docs opened). Slice 4
-  fresh-eye critique pending.
-- Next action: Slice 5 closeout — stage #412/#413 issue closeout via `issue`
-  (external write, operator-confirm), check #410 setup+handoff rows, refresh
-  `docs/handoff.md`, run `retro`, flip goal to complete.
+- Current disposition: COMPLETE (2026-07-02). setup (#413) + handoff (#412) both
+  fully redesigned, captured, and fresh-eye-verified across 6 gate-clean commits.
+  Internal closeout done (retro + disposition review + goal complete). External
+  lanes (#412/#413 GitHub close, #410 rows, push) operator-gated — see the
+  Operator Decision Queue.
+- Current slice: none — all 5 slices done (Slice 5 = this closeout).
+- Next action (operator): review the 6 commits, close #412/#413, check #410 rows,
+  push. Then next goal candidates: gather #411 public-URL floor, correctness
+  sweep, matcher-honesty #415 (see docs/handoff.md).
 - Verification cadence: cheap deterministic gates + unit tests at commit
   boundaries; fresh-eye subagent critique at each slice boundary; ask-before-run
   Cautilus capture as the live floor proof at the setup and handoff bundle
@@ -272,39 +271,33 @@ You can verify completion directly by:
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+Open operator-only items at closeout (both Cautilus captures already approved +
+run):
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Active queue items:
-
-- Decision: approve each ask-before-run Cautilus capture (setup normalization;
-  handoff clear + ambiguous pickup) | Owner: operator | Why deferred: does not
-  block Slice 1/3 non-capture design + code work | Unblock action: approve at the
-  capture boundary after `plan_cautilus_proof.py` reports a runnable next_action
-  | Revisit trigger: reaching each capture boundary.
-- Decision: close/stage #412, #413 and check #410 setup+handoff rows | Owner:
-  operator | Why deferred: closeout is an After-phase external write, not a
-  blocker for the impl slices | Unblock action: confirm closeout after the fixes
-  land and captures pass | Revisit trigger: After phase.
+- Decision: close #412 (handoff planner) and #413 (setup floor) on GitHub |
+  Owner: operator | Why deferred: operator chose internal-closeout-only; issue
+  close is an external write | Unblock action: close both after reviewing the
+  6 slice-commits (fixes landed + captured) | Revisit trigger: operator review.
+- Decision: check the setup + handoff rows of the #410 checklist | Owner:
+  operator | Why deferred: editing the #410 issue body is an external write |
+  Unblock action: check the two rows when closing #412/#413 | Revisit trigger:
+  #410 update.
+- Decision: push the local branch (30+ commits ahead of origin/main) | Owner:
+  operator | Why deferred: push is an external write left to the operator |
+  Unblock action: `git push` after review | Revisit trigger: operator go.
 
 ## Coordination Cues
 
 Phase routing defers to `find-skills` (no inline phase→skill map). Expected
 closeout floors for this goal:
 
-- Routing: `find-skills` was invoked at session start and drove the pickup →
-  handoff chunker → this goal.
-- Issue closeout: #412 and #413 close via the `issue` skill after the fixes land
-  and captures pass; #410 setup+handoff rows are checked.
+- Routing: `find-skills` recommended `handoff` (chunked routing) then `achieve`
+  for this goal lifecycle; `impl`/`quality`/`critique`/`retro`/`issue` were routed
+  per phase via `find-skills` rather than an inline map (the `issue` route is for
+  the operator-gated #412/#413 closeout, staged not executed this session).
+- Issue closeout: #412 and #413 close via the `issue` skill; the fixes landed +
+  captured this run, so closeout is operator-gated (external write) and queued in
+  the Operator Decision Queue.
 - Gather: n/a — no external source ingestion in scope.
 - Release: n/a — no plugin version bump expected (Non-Goals).
 
@@ -462,6 +455,53 @@ Over-worry raised but NOT folded (with why):
 
 ## Final Verification
 
+Self-verification (local, high-confidence):
+
+- **setup (#413) DONE**: `outcome-assertions.json` substance instrument added +
+  `## Closeout Vocabulary` added + floor flipped RCF→RSF `[Repo mode:,
+  Normalization non-claims:]`, all proven by an operator-authorized live capture
+  (old floor FAILED / new floor PASSED side by side). 3 refuted docs → INLINE.
+- **handoff (#412) DONE**: planner conditionalized + pickup floor split into two
+  per-condition falsifiable fixtures (clear `pickup.spec.json` re-baselined from
+  the Slice-7 capture; ambiguous `pickup-ambiguous.spec.json` proven by a fresh
+  live capture opening both docs). continuation-sequence.md reclassified on-demand
+  DEPTH.
+- Gates: broad pytest 3981 passed (per slice); registry validation 47 passed;
+  `grade_skill_outcome` selftest good=1.0/bad=0.0; 5 fresh-eye critiques (plan +
+  Slice 1/2b/3/4) all SOUND, no #410 softening, no blockers.
+- Commits: `69552811`, `6a06ee77`, `74c639cf`, `7678fc27`, `c1a66f4d`, `551a1f49`
+  (each slice its own gate-clean reviewed commit per #410).
+
+Retro: charness-artifacts/retro/2026-07-02-session-retro.md
+Host log probe: charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl-host-log-probe.json
+Disposition review: charness-artifacts/goals/2026-07-02-issue-410-411-412-413-reference-compaction-slice-7-per-condition-claim-fidelity-fl-disposition-review.md
+
+Host log probe note: Claude host session detected (tokens available, duration
+derivable); goal_metric_window absent (no timebox set), so NO per-goal token
+total is claimed — the thread-wide session covers more than this goal.
+
+NOT done (operator-gated, dispositioned in the Operator Decision Queue, NOT
+claimed): #412/#413 GitHub close; #410 row-checks; push (branch 30+ ahead of
+origin/main). The WORK that resolves #412/#413 is landed + captured locally.
+
 ## User Verification Instructions
 
+- `git log --oneline 7cd5e4ec..HEAD` — the 6 slice-commits.
+- setup floor: `node scripts/agent-runtime/build-skill-execution-observation.mjs
+  --session-tree <bundle>/config/projects/... --spec
+  evals/cautilus/setup-claim-fidelity/normalization.spec.json --stream
+  <bundle>/stream.jsonl` over the Slice-2b bundle → outcome=passed; the pre-flip
+  grade in the bundle shows outcome=failed.
+- handoff planner: `python3 skills/public/handoff/scripts/plan_handoff_run.py
+  --repo-root . --intent pickup --invocation-text "resume the pinned task ..."`
+  → no continuation-sequence.md; `... "resume from the current state and start
+  the next workflow"` → both docs.
+- Tests: `python3 -m pytest -q tests/test_handoff_plan.py` (15 pass) and
+  `python3 scripts/validate_outcome_assertions.py --repo-root .` (6 sets OK).
+- Capture evidence: `charness-artifacts/cautilus/setup-normalization-claim-fidelity-slice2b-2026-07-02/`
+  and `charness-artifacts/cautilus/handoff-pickup-ambiguous-slice4-2026-07-02/`.
+
 ## Auto-Retro
+
+Retro dispositions: applied: per-condition falsifiable-fixture discipline enforced in Slice 4 — both the clear (`pickup.spec.json`) and ambiguous (`pickup-ambiguous.spec.json`) pickup arms shipped WITH the conditional planner (commit `551a1f49`), not deferred; recorded in the goal artifact + `charness-artifacts/retro/2026-07-02-session-retro.md`. The "edited generated mirror not source" waste is already guarded by the staged-mirror-drift gate (no new action).
+Structural follow-up: none — a validator cross-checking each planner's intent/condition-keyed required-reads against the scenario specs (auto-detect a conditionally-required doc that no scenario forces) is a genuine future guard but a NEW capability beyond this goal's setup+handoff scope; issue-filing is an external write the operator gated this session, so it is carried to docs/handoff.md for operator issue-filing rather than a fabricated issue number.
