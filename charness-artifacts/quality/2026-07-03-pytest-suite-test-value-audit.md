@@ -209,3 +209,18 @@ remains deliberately KEPT or explicitly out of scope:
   run before/after.
 - Cross-batch dedup is limited: each batch saw only its own files; shared support-module helpers
   duplicated across sibling test files are a likely source of additional un-counted redundancy.
+- **Duplication lens was never run (surfaced by a maintainer question post-Batch-C).** The audit and
+  Batch C were both *test-as-unit* lenses (delete-redundant / parametrize); neither sees intra-function
+  boilerplate. A full-path scan found **66 same-file re-reads across 16 test files** — concentrated:
+  `test_quality_skill_docs.py` re-reads `quality/references/inventory-dispatch.md` **15×**;
+  `test_skill_docs_contracts.py` re-reads several `setup` docs — genuine extract-constant candidates
+  (real LOC). **Production code is clean** (0 within-file same-file re-reads in `scripts/` + skill
+  scripts): this is a pure test-suite phenomenon (each test re-reads the same stable fixture doc to
+  stay self-contained). Honesty caveats: a *basename* scan overcounts (895 raw — `SKILL.md` is
+  polymorphic across skills; `gh-log.json`/`latest.md` are per-test tmp fixtures); **66** is the
+  full-path figure. And `read_text` is only ONE axis — inline fixture-script duplication (e.g. the
+  fake `gh` block rewritten ~5× in `test_issue_skill.py`) is real duplication this scan cannot see.
+  This is a concrete instance of intent.md's Goodhart warning: reducing function *count* was
+  LOC-neutral because the real LOC waste (duplication) is orthogonal to count. Cleanup deferred
+  pending an approach/scope decision — standing advisory signal (extend `inventory_structural_waste`)
+  vs manual extract-constant on the concentrated files vs full 16-file sweep.
