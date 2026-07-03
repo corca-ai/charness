@@ -29,11 +29,12 @@
 
 ## Next Session
 
-Rank 1 DONE (`855f611c`). Finding: the static-check was half-wrong — quality's
-ceiling was ALREADY template-surfaced, so the win was drift-elimination + `--json`
-routing (small Δ), not a trim-loop kill; proof was scenario_review, not A/B.
-**Heuristic fix:** "invisible ceiling" must check the template, not just whether
-the payload carries `size_budget`. Remaining locked patterns, re-ranked:
+Rank 1 DONE (`855f611c`), then its `--json` routing was generalized: scaffolds
+now ALWAYS emit the JSON payload and the `--json` flag is deleted (`7d2bb959`,
+breaking) — the "forgot the flag" footgun is killed across all six artifact
+scaffolds, so **rank 3 builds on this single-output contract.** Rank-1 finding:
+quality's ceiling was already template-surfaced (small Δ); **heuristic:**
+"invisible ceiling" checks the template, not just the payload. Re-ranked:
 
 1. **ideation — check for a format-rule micro-lever** (has a validator, no ceiling;
    retro's `Persisted` case proved non-ceiling format rules also churn).
