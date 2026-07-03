@@ -104,9 +104,10 @@ This slice does not add:
   `<repo>/.charness/capability.example.json`, and a `/.charness/local/`
   entry in `<repo>/.gitignore` all exist.
 - write a profile with `env_bindings` and verify that
-  `charness capability env slack.default` prints alias exports such as
-  `export SLACK_BOT_TOKEN="${SLACK_BOT_TOKEN_CEAL_DEV}"`.
-- verify that the Slack gather export helper can consume that env export path.
+  `charness capability env github.default` prints alias exports such as
+  `export GH_TOKEN="${GH_TOKEN_ACME_DEV}"` without printing the secret value.
+- verify that the resolved provider (a known integration tool or support
+  capability) can consume that env export path.
 - run repo validators and standing tests after syncing the checked-in plugin
   export surface.
 
