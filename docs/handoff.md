@@ -26,23 +26,23 @@
   - **retro** — no dominant lever + micro-lever FIXED (`6f71db59`); anti-churn
     exemplar (~8× leaner):
     [retro-h0-anti-churn-exemplar.md](../charness-artifacts/reference-compaction/retro-h0-anti-churn-exemplar.md)
+  - **ideation** — no format-rule micro-lever; churn ABSENT (static, no capture;
+    fresh-eye SOUND): [ideation-h0-format-rule-check.md](../charness-artifacts/reference-compaction/ideation-h0-format-rule-check.md)
 
 ## Next Session
 
-Rank 1 DONE (`855f611c`), then its `--json` routing was generalized: scaffolds
-now ALWAYS emit the JSON payload and the `--json` flag is deleted (`7d2bb959`,
-breaking) — the "forgot the flag" footgun is killed across all six artifact
-scaffolds, so **rank 3 builds on this single-output contract.** Rank-1 finding:
-quality's ceiling was already template-surfaced (small Δ); **heuristic:**
-"invisible ceiling" checks the template, not just the payload. Re-ranked:
+Rank 1 DONE this session: **ideation — no format-rule micro-lever, churn ABSENT**
+(static check, no capture spent; fresh-eye SOUND). Heuristic sharpened: a
+non-ceiling format rule churns only when the format is *invisible* OR a
+*tool-computable value is hidden* (retro `Persisted`) — ideation is neither
+(format surfaced in the scaffold + residual content is irreducible judgment).
+Re-ranked:
 
-1. **ideation — check for a format-rule micro-lever** (has a validator, no ceiling;
-   retro's `Persisted` case proved non-ceiling format rules also churn).
-2. **issue / achieve / hotl — heuristic predicts churn ABSENT** (scaffold-only, no
-   validator ceiling). Confirm cheaply; do not over-invest.
-3. **Strongest long-run transfer:** move artifact skills to retro's persist-helper-
+1. **issue / achieve / hotl — heuristic predicts churn ABSENT** (scaffold-only, no
+   validator ceiling). Confirm cheaply by static check; do not over-invest.
+2. **Strongest long-run transfer:** move artifact skills to retro's persist-helper-
    that-stamps shape (pattern 1) — a bigger per-skill change, weigh later.
-4. **Orthogonal debug gap:** debug still skips the `debug-memory.md` RCF — its own lever.
+3. **Orthogonal debug gap:** debug still skips the `debug-memory.md` RCF — its own lever.
 
 ## Discuss
 
