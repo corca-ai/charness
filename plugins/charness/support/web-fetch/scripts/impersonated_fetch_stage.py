@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import time
 from typing import Callable
 
@@ -12,10 +11,6 @@ from text_attempts import attempt_from_text
 PayloadFor = Callable[[object, dict[str, object], list[AcquisitionAttempt], str], dict[str, object]]
 
 IMPERSONATION_PROFILES = ("chrome120", "chrome", "safari", "firefox")
-
-
-def is_available() -> bool:
-    return importlib.util.find_spec("curl_cffi") is not None
 
 
 def _fetch(url: str, *, timeout: int, impersonate: str) -> tuple[str, str | None, dict[str, object]]:

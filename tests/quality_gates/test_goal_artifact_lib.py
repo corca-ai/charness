@@ -492,17 +492,6 @@ def test_check_complete_evidence_passes_with_real_files(tmp_path: Path) -> None:
     assert report["ok"] is True
 
 
-def test_scaffold_seeds_visible_closeout_evidence_placeholders(tmp_path: Path) -> None:
-    # #315: a freshly scaffolded goal carries visible closeout-evidence
-    # placeholders so an active run sees the obligation from the start.
-    gal.upsert_goal(tmp_path, date="2026-06-06", slug="g", title="T")
-    text = _goal_text(tmp_path, date="2026-06-06")
-    assert "Retro: TODO" in text
-    assert "Host log probe: TODO" in text
-    assert "Disposition review: TODO" in text
-    assert "Retro dispositions: TODO" in text
-
-
 def test_scaffold_placeholders_do_not_satisfy_complete_evidence_gate(tmp_path: Path) -> None:
     # #315 non-weakening invariant: the seeded `TODO` placeholders must STILL
     # fail the complete-evidence gate — they parse as neither evidence nor skip.

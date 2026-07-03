@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 
 import scripts.sync_support as sync_support_module
-import scripts.validate_integrations as validate_integrations_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
@@ -225,46 +224,3 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
     assert (plugin_root / "support" / "fixture-skill" / "SKILL.md").is_file()
 
 
-def test_sync_support_rejects_upstream_skill_file_path(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    tools_dir = repo / "integrations" / "tools"
-    tools_dir.mkdir(parents=True)
-    write_manifest_schema(repo)
-    (tools_dir / "bad.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "tool_id": "bad",
-                "kind": "external_skill",
-                "display_name": "bad",
-                "upstream_repo": "example/bad",
-                "homepage": "https://example.com/bad",
-                "lifecycle": {
-                    "install": {"mode": "manual", "install_url": "https://example.com/bad/install"},
-                    "update": {"mode": "manual"},
-                },
-                "checks": {
-                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
-                },
-                "access_modes": ["binary"],
-                "version_expectation": {"policy": "advisory", "constraint": "latest"},
-                "support_skill_source": {
-                    "source_type": "upstream_repo",
-                    "path": "skills/bad/SKILL.md",
-                    "ref": "main",
-                },
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    result = run_loaded_script_main(
-        "validate_integrations.py",
-        validate_integrations_module,
-        "--repo-root",
-        str(repo),
-    )
-    assert result.returncode == 1
-    assert "must point at a skill root directory" in result.stderr

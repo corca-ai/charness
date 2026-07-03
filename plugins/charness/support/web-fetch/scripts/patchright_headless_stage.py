@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import re
 import time
 from typing import Callable
@@ -17,10 +16,6 @@ DEFAULT_CONTEXT_DETAILS = {
     "locale": "browser-default",
     "timezone_id": "browser-default",
 }
-
-
-def is_available() -> bool:
-    return importlib.util.find_spec("patchright") is not None
 
 
 def _launch_args(channel: str | None) -> dict[str, object]:

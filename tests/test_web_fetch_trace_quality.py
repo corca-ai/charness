@@ -296,14 +296,6 @@ def test_impersonated_default_fetch_records_response_metadata(monkeypatch) -> No
     }
 
 
-def test_optional_stage_availability_checks(monkeypatch) -> None:
-    monkeypatch.setattr(impersonated_fetch_stage.importlib.util, "find_spec", lambda name: object())
-    monkeypatch.setattr(patchright_headless_stage.importlib.util, "find_spec", lambda name: object())
-
-    assert impersonated_fetch_stage.is_available() is True
-    assert patchright_headless_stage.is_available() is True
-
-
 def test_patchright_stage_uses_headless_renderer_and_keeps_network_diagnostic() -> None:
     class Args:
         url = "https://example.com/app"
