@@ -56,7 +56,7 @@
     },
     "success-criteria.md": {
       "engagement": "engage-always",
-      "rationale": "SKILL.md Workflow step 5 inlines that success criteria are 'the heart of the spec' and must be observable/testable/tied to user value; this doc is the governing acceptance-shaping rubric, not a forced open.",
+      "rationale": "SKILL.md Workflow step 5 requires every important success criterion to imply at least one acceptance check, and the guardrails forbid leaving criteria vague, so the criterion-to-check discipline engages from the body; but the criterion-QUALITY rubric (the observable/testable/bounded/tied-to-value attributes, the weak-criteria anti-patterns, and the pressure rules that operationalize 'not vague') lives ONLY in this doc, opened when a run must sharpen borderline criteria. Engage-always as the governing acceptance-shaping rubric, not a forced open.",
       "claimRole": "acceptance-shaping",
       "classTag": "INLINE"
     },

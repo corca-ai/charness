@@ -4,45 +4,48 @@
 
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
-- **Reference-compaction churn sweep is COMPLETE** (see Current State). Primary next
-  action is the intent's held-open **systemic context-tax** frontier — read
-  [intent.md](../charness-artifacts/reference-compaction/intent.md) §"Held open" +
-  [churn-sweep-completion.md](../charness-artifacts/reference-compaction/churn-sweep-completion.md) first.
+- **Reference-compaction: churn sweep CLOSED; the live frontier is a SKILLS-WIDE pass**
+  (context-tax + rationale accuracy + inventory-dispatch demote — see Next Session), grounded
+  in this session's [skill-anatomy-map.md](../charness-artifacts/reference-compaction/skill-anatomy-map.md)
+  and [intent.md](../charness-artifacts/reference-compaction/intent.md) §"Held open".
 
 ## Current State
 
-- **Churn sweep DONE + released (v0.60.0).** Every scaffold-gated artifact skill cold
-  static-confirmed (fresh-eye each); pure-writer/no-gate skills ABSENT-by-construction.
-  Only quality/debug/retro/achieve had real churn — all
-  FIXED (achieve false-green = `591c1652`, surfaces `invalid_early_close_reports`). All
-  others ABSENT (surfaced-format, no-gate, or one-pass persist-helper). Owning record:
+- **Churn sweep DONE + released (v0.60.0); do NOT re-open.** Only quality/debug/retro/achieve had
+  real churn — all FIXED; everything else ABSENT. Two old items dispositioned (persist-helper transfer
+  not warranted; debug-memory RCF deferred = measurement-validity). Record:
   [churn-sweep-completion.md](../charness-artifacts/reference-compaction/churn-sweep-completion.md).
-- **The two old open items are dispositioned — do NOT re-open as fixes:** persist-helper
-  transfer = NOT warranted (no un-fixed churn skill; release already is one); debug-memory
-  RCF = DEFERRED (measurement-validity + DEAD token swap per apparatus-floor-audit; the
-  real sub-lever is a behavioral memory-consumption internalization needing a capture).
-- Earlier diagnosis threads stay closed: redundancy 0/17 delete-safe; apparatus 76%+
-  well-shaped ([apparatus-floor-audit.md](../charness-artifacts/reference-compaction/apparatus-floor-audit.md)).
+- **This session mapped the skill surface + tested the inlining.** Built
+  [skill-anatomy-map.md](../charness-artifacts/reference-compaction/skill-anatomy-map.md) (20 skills:
+  intent · body support · 185 refs grouped engage-always/on-demand/gate-sufficient). Fresh-eye
+  delete-safety on 6 INLINE/DEPTH candidates = **0/6 delete-safe** — the inlining is SOUND (gist in
+  body, real trigger-gated depth in the doc; not DUP), re-confirming the 0/17 finding.
+- **Rationale-accuracy is a real defect class (1 found + FIXED this session):** spec
+  `success-criteria.md`'s claim-fidelity rationale claimed the body inlines "heart of the spec /
+  observable / bounded" — grep says it does NOT. Fixed to the actual thin gist. Likely more mislabels.
 
 ## Next Session
 
-1. **Systemic context-tax frontier (primary, genuinely open):** how a skill's overhead
-   taxes reasoning across a WHOLE session (the symptom single-run capture can't see).
-   The measurement approach is unsolved — design it. Scope: intent.md §"Held open".
+1. **Skills-wide reference-compaction pass (primary, grounded in the anatomy map):**
+   a. **Systemic context-tax** — how a skill's overhead taxes reasoning across a WHOLE session (the
+      symptom capture can't see); measurement approach still unsolved — design it (intent §"Held open").
+   b. **Rationale-accuracy audit** — for each INLINE ref, does its spec rationale accurately describe
+      what the body ACTUALLY inlines (grep-verify)? The success-criteria mislabel proves the class.
+   c. **inventory-dispatch demote (B)** — quality's 297-line always-load is DEPTH, not deletable; add a
+      machine-readable `scripts:` routing layer to catalog.yaml so the planner briefs the routing, then
+      the doc demotes (mirror the prune-brief pilot). Touches skills broadly, so do it with (a)/(b).
 2. Optional test-packaging tail: the borderline ~6-8 fn
-   [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py) subset —
-   confirm genuinely cleaner (declarative, LOC-neutral) else skip; fresh-eye + commit each batch.
+   [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py) subset — confirm
+   cleaner (declarative, LOC-neutral) else skip; fresh-eye + commit each batch.
 
 ## Discuss
 
-- KEPT deliberately: the 3 usage-episodes plugin bundle smokes — the only end-to-end
-  proof the shipped plugin bundle runs. Do not delete.
-- Brittle: [test_handoff_plan.py](../tests/test_handoff_plan.py) reds broad pytest on any
-  >=60-line handoff — keep THIS file under 60 lines.
-- Churn-sweep lesson: churn is RARE; the fix is always surface-it (channel intelligence via
-  planner/scaffold stdout) or a persist-helper stamp — never a new floor. Fresh-eye
-  refutation, not a capture, earns each PRESENT/ABSENT call.
+- KEPT deliberately: the 3 usage-episodes plugin bundle smokes — the only end-to-end proof the bundle runs.
+- Brittle: [test_handoff_plan.py](../tests/test_handoff_plan.py) reds broad pytest on any >=60-line
+  handoff — keep THIS file under 60 lines.
+- Compaction lesson: INLINE != DUP. The reviewed docs keep real single-sourced depth beyond the inlined
+  gist; the lever is NOT deletion but accurate rationales + demote-via-briefing (spec's proven shape).
 
 ## References
 
-- pickup: [churn-sweep-completion.md](../charness-artifacts/reference-compaction/churn-sweep-completion.md) · [intent.md](../charness-artifacts/reference-compaction/intent.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
+- pickup: [skill-anatomy-map.md](../charness-artifacts/reference-compaction/skill-anatomy-map.md) · [churn-sweep-completion.md](../charness-artifacts/reference-compaction/churn-sweep-completion.md) · [intent.md](../charness-artifacts/reference-compaction/intent.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
