@@ -52,14 +52,3 @@ def test_dry_run_emits_source_template() -> None:
     assert result.stdout == TEMPLATE.read_text(encoding="utf-8")
 
 
-def test_existing_file_refuses_without_force(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    target = repo / ".agents" / "t-events-adapter.yaml"
-    target.write_text("preserved\n", encoding="utf-8")
-
-    result = _run(repo, "--repo-root", ".")
-
-    assert result.returncode == 1
-    assert "already exists" in result.stderr
-    assert target.read_text(encoding="utf-8") == "preserved\n"

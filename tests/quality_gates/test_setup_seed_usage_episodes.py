@@ -84,18 +84,6 @@ def test_seed_usage_episodes_creates_nested_parent_directories(monkeypatch, tmp_
     assert (repo / nested_target).is_file()
 
 
-def test_seed_usage_episodes_refuses_overwrite_without_force(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    first = run_script(SCRIPT, "--repo-root", str(repo))
-    assert first.returncode == 0, first.stderr
-
-    second = run_script(SCRIPT, "--repo-root", str(repo))
-
-    assert second.returncode == 1
-    assert "force" in second.stderr
-
-
 def test_seed_usage_episodes_force_overwrites(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

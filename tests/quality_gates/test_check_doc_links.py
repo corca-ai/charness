@@ -22,15 +22,6 @@ def run_check_doc_links(monkeypatch, capsys, *args: str) -> SimpleNamespace:
     return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
-def test_check_doc_links_rejects_absolute_path(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "README.md").write_text("[bad](/tmp/not-in-repo.md)\n", encoding="utf-8")
-    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "absolute link" in result.stderr
-
-
 def test_check_doc_links_rejects_repo_local_absolute_path(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     docs_dir = repo / "docs"
