@@ -92,17 +92,20 @@ def test_gather_plan_prefers_reddit_feed_route(tmp_path) -> None:
 
 def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
     # north star: a Slack/Google Workspace URL is provider-backed, so the planner
-    # must hand the judge the right adviser instead of silently planning a generic
-    # public fetch. GitHub/public URLs keep the public-fetch next_action.
+    # must hand the judge the right next move instead of silently planning a generic
+    # public fetch. Slack is credentialed org data that public-only gather does not
+    # acquire; Google Workspace routes to the workspace path adviser. GitHub/public
+    # URLs keep the public-fetch next_action.
     slack = run_script(
         PLAN, "--repo-root", str(tmp_path), "--url", "https://acme.slack.com/archives/C0/p1700000000000000"
     )
     assert slack.returncode == 0, slack.stderr
     slack_payload = json.loads(slack.stdout)
     assert slack_payload["source_owner"]["source"] == "slack"
-    assert slack_payload["source_owner"]["adviser"] == "$SKILL_DIR/scripts/advise_slack_path.py"
-    assert slack_payload["next_action"]["command"][1] == "$SKILL_DIR/scripts/advise_slack_path.py"
-    assert "redirect" in slack_payload["next_action"]
+    assert slack_payload["source_owner"]["adviser"] is None
+    assert slack_payload["next_action"]["kind"] == "credentialed_source_out_of_scope"
+    assert "command" not in slack_payload["next_action"]
+    assert "capability/connector" in slack_payload["next_action"]["redirect"]
 
     gdoc = run_script(
         PLAN, "--repo-root", str(tmp_path), "--url", "https://docs.google.com/document/d/abc/edit"

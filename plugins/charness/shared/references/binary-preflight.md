@@ -145,9 +145,9 @@ consistent across skills:
 ## Support-skill delegation
 
 Some binaries are not owned by the public skill that invokes them - they
-belong to a support skill the public skill dispatches to. Example:
-`gather-slack` declares `command -v jq >/dev/null` in its `capability.json`,
-and `gather/SKILL.md` never touches `jq` directly.
+belong to a support skill the public skill dispatches to. Example: a support
+skill can declare `command -v jq >/dev/null` in its `capability.json`, and the
+public skill that dispatches to it never touches `jq` directly.
 
 Rule: the public skill declares the *support skill*, not the binary. The
 support skill's `capability.json` remains the single source of truth for its
@@ -155,8 +155,8 @@ own binary readiness. The deterministic gate for `Required Tools:` only
 fires on binaries the public skill calls directly inside its own Bootstrap
 fenced block.
 
-This prevents double-enforcement and keeps the ownership honest: when
-`gather-slack` changes its tooling, only its own manifest has to move.
+This prevents double-enforcement and keeps the ownership honest: when the
+support skill changes its tooling, only its own manifest has to move.
 
 ## Migration checklist
 

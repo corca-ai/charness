@@ -13,10 +13,6 @@ _advise_google_workspace_path = import_repo_module(
     ROOT / "skills" / "public" / "gather" / "scripts" / "advise_google_workspace_path.py",
     "skills.public.gather.scripts.advise_google_workspace_path",
 )
-_advise_slack_path = import_repo_module(
-    ROOT / "skills" / "public" / "gather" / "scripts" / "advise_slack_path.py",
-    "skills.public.gather.scripts.advise_slack_path",
-)
 
 
 def run_script_main(module, monkeypatch, capsys, *args: str) -> SimpleNamespace:
@@ -36,8 +32,29 @@ def seed_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def test_advise_google_workspace_path_reports_missing_direct_provider(tmp_path: Path) -> None:
+def test_advise_google_workspace_path_defaults_to_none(tmp_path: Path) -> None:
+    # gather is public-source only: with no adapter, google_workspace defaults to
+    # `none` and stops with a missing-capability explanation instead of reaching
+    # for a credentialed provider path.
     repo = seed_repo(tmp_path)
+
+    payload = _advise_google_workspace_path.payload_for(repo)
+
+    assert payload["provider"] == "google-workspace"
+    assert payload["provider_mode"] == "none"
+    assert payload["doctor_status"] == "skipped"
+    assert "mode=none" in payload["operator_prompt"]
+
+
+def test_advise_google_workspace_path_reports_missing_under_explicit_direct_cli(tmp_path: Path) -> None:
+    # There is no repo-owned Google Workspace direct CLI, so an explicit direct-cli
+    # request still degrades to the missing-direct-provider guidance.
+    repo = seed_repo(tmp_path)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "gather-adapter.yaml").write_text(
+        "version: 1\ngather_provider:\n  google_workspace:\n    mode: direct-cli\n",
+        encoding="utf-8",
+    )
 
     payload = _advise_google_workspace_path.payload_for(repo)
 
@@ -90,113 +107,44 @@ def test_advise_google_workspace_path_cli_emits_json(tmp_path: Path, monkeypatch
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["provider"] == "google-workspace"
-    assert payload["provider_mode"] == "direct-cli"
+    assert payload["provider_mode"] == "none"
 
 
-def test_gather_skill_description_names_concrete_source_triggers() -> None:
+def test_gather_skill_description_is_public_source_only() -> None:
     description = next(line for line in GATHER_SKILL.splitlines() if line.startswith("description: "))
 
-    for trigger in ("Slack thread", "Notion page", "Google Docs", "GitHub content", "arbitrary URL"):
+    for trigger in ("public web page", "GitHub content", "arbitrary URL", "public-source only"):
         assert trigger in description
+    # Credentialed org data is out of scope: the description must not advertise
+    # gather as a Slack/Notion acquisition tool.
+    assert "Slack thread" not in description
+    assert "Notion page" not in description
 
 
-def test_gather_skill_contract_names_browser_mediated_private_source_ladder() -> None:
-    assert "advise_slack_path.py" in GATHER_SKILL
-    # Plain gather is credentialless by default; the generic body must NOT
-    # hard-name a credentialed provider CLI path (the discovery leak #417 fixes).
-    assert "credentialless by default" in GATHER_SKILL
-    assert "support/gather-slack/scripts/export-thread.sh" not in GATHER_SKILL
+def test_gather_skill_contract_is_public_source_only() -> None:
+    # Plain gather is public-source only; the generic body must NOT hard-name a
+    # credentialed provider CLI/token path (the discovery leak #417/#418 fix).
+    assert "public-source only" in GATHER_SKILL
+    assert "advise_slack_path.py" not in GATHER_SKILL
+    assert "SLACK_BOT_TOKEN" not in GATHER_SKILL
+    assert "support/gather-slack" not in GATHER_SKILL
     assert "browser-mediated fallback through `agent-browser`" in GATHER_SKILL
     assert "official API/export docs before browser automation" in GATHER_SKILL
     assert "- `Access Mode`" in GATHER_SKILL
     assert "- `Captured vs Human Confirmation`" in GATHER_SKILL
 
 
-def test_advise_slack_path_defaults_to_credentialless_none(tmp_path: Path) -> None:
-    # No adapter → plain gather is credentialless: Slack resolves to `none` and
-    # stops clean instead of surfacing the charness-owned wrapper.
-    repo = tmp_path / "repo"
-    repo.mkdir()
-
-    payload = _advise_slack_path.payload_for(repo)
-
-    assert payload["provider"] == "gather-slack"
-    assert payload["provider_mode"] == "none"
-    assert payload["doctor_status"] == "skipped"
-    assert "missing-capability" in payload["operator_prompt"]
-    assert "credentialless default" in payload["operator_prompt"]
-
-
-def test_advise_slack_path_points_to_gather_slack_wrapper_when_opted_in(tmp_path: Path) -> None:
-    # Explicit direct-cli opt-in (maintainer owns the grant) still routes to the
-    # checked-in wrapper — the opt-in convenience is preserved.
-    repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "gather-adapter.yaml").write_text(
-        "version: 1\ngather_provider:\n  slack:\n    mode: direct-cli\n",
-        encoding="utf-8",
-    )
-
-    payload = _advise_slack_path.payload_for(repo)
-
-    assert payload["provider"] == "gather-slack"
-    assert payload["provider_mode"] == "direct-cli"
-    assert payload["wrapper_path"].endswith("skills/support/gather-slack/scripts/export-thread.sh")
-    assert payload["runtime_contract_path"].endswith("skills/support/gather-slack/references/runtime-contract.md")
-    assert "before browser-mediated private-source fallbacks" in payload["operator_prompt"]
-    assert any("charness capability env slack.default" in step for step in payload["next_steps"])
-
-
-def test_advise_slack_path_cli_emits_json(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-
-    result = run_script_main(
-        _advise_slack_path,
-        monkeypatch,
-        capsys,
-        "--repo-root",
-        str(repo),
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["provider"] == "gather-slack"
-    assert payload["provider_mode"] == "none"
-
-
-def test_advise_slack_path_honors_host_mediated_adapter(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "gather-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "gather_provider:",
-                "  slack:",
-                "    mode: host-mediated",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    payload = _advise_slack_path.payload_for(repo)
-
-    assert payload["provider_mode"] == "host-mediated"
-    assert payload["doctor_status"] == "skipped"
-    assert "host's Slack capability command" in payload["operator_prompt"]
-
-
-def test_gather_capability_needs_include_agent_browser_private_saas_path() -> None:
+def test_gather_capability_needs_are_public_source_only() -> None:
     payload = json.loads((ROOT / "skills" / "public" / "gather" / "capability-needs.json").read_text(encoding="utf-8"))
 
-    assert {need["logical_id"] for need in payload["capability_needs"]} == {
+    logical_ids = {need["logical_id"] for need in payload["capability_needs"]}
+    assert logical_ids == {
         "github.default",
-        "slack.default",
         "google-workspace.default",
         "agent-browser.default",
     }
+    # Credentialed Slack/Notion runtimes are removed: gather declares no such need.
+    assert "slack.default" not in logical_ids
 
 
 def test_agent_browser_manifest_supports_gather_runtime_contract() -> None:

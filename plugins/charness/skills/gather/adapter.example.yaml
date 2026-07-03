@@ -6,10 +6,9 @@ preset_id: portable-defaults
 customized_from: portable-defaults
 gather_provider:
   github:
-    mode: direct-cli
+    mode: direct-cli  # standard dev tooling reaching public content
   google_workspace:
-    mode: direct-cli
-  slack:
-    mode: none        # credentialless default; set host-mediated or direct-cli to enable
-  notion:
-    mode: none        # credentialless default; set host-mediated or direct-cli to enable
+    mode: none        # public-only default; set host-mediated to route private content through a host capability
+# Credentialed org sources (Slack, Notion, private Drive, ...) are not gather
+# sources: reach them through the consuming runtime's own capability/connector
+# surface, not a charness provider CLI or raw token.

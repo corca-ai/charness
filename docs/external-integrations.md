@@ -43,34 +43,27 @@ Examples:
 - how a public skill should degrade when it is absent
 - the scripted recovery path when a recurring integration failure mode is known
 
-### `gather` provider exception
+### `gather` is public-source only
 
-Some `gather` providers are not true upstream runtime dependencies even when
-their first implementation was inspired by another repo.
-
-If `charness gather` is supposed to work in consumer repos without asking those
-repos to install a second plugin or reimplement helper scripts, then
-`charness` owns that provider runtime.
+`gather` is public-source only. Credentialed organizational data — Slack,
+Notion, private Google Workspace, Drive, or similar — is not a gather source and
+`charness` does not own a credentialed provider runtime for it. Acquiring that
+data is the consuming runtime's responsibility, through its own first-class
+capability/connector surface, so `charness` never holds Slack/Google/Notion
+tokens or ships a token-backed export runtime in a portable skill bundle.
 
 That means:
 
-- Slack gather helper logic belongs in `charness`
-- published Notion gather helper logic belongs in `charness`
-- Google Workspace access should be modeled through a host-mediated capability,
-  operator-provided export, or browser-mediated private-source path, not through
-  a borrowed public-export implementation
+- Slack / Notion / private Google Workspace / Drive access is reached through the
+  consuming runtime's own capability/connector, not a `charness` gather provider
+- Google Workspace public content is modeled through a host-mediated capability,
+  operator-provided export, or browser-mediated path
+- `gh` remains an external integration for public GitHub content (standard dev
+  tooling), not a credentialed gather provider
 
-Current `charness` support homes:
-
-- `skills/support/gather-slack/`
-- `skills/support/gather-notion/`
-
-See [gather-provider-ownership.md](./gather-provider-ownership.md).
-The machine-readable metadata for these `charness`-owned gather providers now
-lives next to the support skill itself under:
-
-- [`skills/support/gather-slack/capability.json`](../skills/support/gather-slack/capability.json)
-- [`skills/support/gather-notion/capability.json`](../skills/support/gather-notion/capability.json)
+The earlier `charness`-owned credentialed gather runtimes (`gather-slack`,
+`gather-notion`) have been removed. See
+[gather-provider-ownership.md](./gather-provider-ownership.md).
 
 ## Runtime Access Principle
 

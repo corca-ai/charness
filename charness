@@ -421,7 +421,7 @@ def capability_setup_guidance(target_repo_root: Path) -> list[str]:
         f"Run `charness capability init --target-repo-root {shell_quote(str(target_repo_root))}` to scaffold the repo-local capability files.",
         f"Edit `{local_path}` (gitignored) with real bindings and profiles for this machine.",
         f"`{example_path}` is committed and should describe the shape without secret-name leakage.",
-        'Example: {"version":1,"bindings":{"slack.default":"slack.ceal-dev"},"profiles":{"slack.ceal-dev":{"provider":"gather-slack","access_mode_preference":["grant","env"],"env_bindings":{"SLACK_BOT_TOKEN":"SLACK_BOT_TOKEN_CEAL_DEV"}}}}',
+        'Example: {"version":1,"bindings":{"github.default":"github.acme-dev"},"profiles":{"github.acme-dev":{"provider":"github-gh","access_mode_preference":["grant","env"],"env_bindings":{"GH_TOKEN":"GH_TOKEN_ACME_DEV"}}}}',
         "If you previously used the retired `~/.config/charness/capability-profiles.json` and `~/.config/charness/repo-bindings.json` layout, copy each binding/profile entry into the file above. The old machine-local config is no longer read.",
     ]
 
@@ -560,17 +560,9 @@ def capability_local_template() -> dict[str, object]:
         "version": 1,
         "$schema_note": "This file is gitignored. Replace `*.change-me` profiles with real provider identities for THIS machine. Source env names below are non-secret aliases that point at machine-local env vars holding the actual secret.",
         "bindings": {
-            "slack.default": "slack.change-me",
             "github.default": "github.change-me",
         },
         "profiles": {
-            "slack.change-me": {
-                "provider": "gather-slack",
-                "access_mode_preference": ["grant", "env"],
-                "env_bindings": {
-                    "SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_CHANGE_ME",
-                },
-            },
             "github.change-me": {
                 "provider": "github-gh",
                 "access_mode_preference": ["binary", "public"],
@@ -585,14 +577,14 @@ def capability_example_template() -> dict[str, object]:
         "version": 1,
         "$schema_note": "Committed example. The real config lives at `.charness/local/capability.json` (gitignored). `bindings` map skill-facing logical ids to local profile ids. `profiles` declare one reusable provider identity each. `env_bindings` map runtime env names to non-secret SOURCE env names this machine already exports; raw secret values must never appear here.",
         "bindings": {
-            "slack.default": "slack.example-workspace",
+            "github.default": "github.example-workspace",
         },
         "profiles": {
-            "slack.example-workspace": {
-                "provider": "gather-slack",
+            "github.example-workspace": {
+                "provider": "github-gh",
                 "access_mode_preference": ["grant", "env"],
                 "env_bindings": {
-                    "SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_EXAMPLE_WORKSPACE",
+                    "GH_TOKEN": "GH_TOKEN_EXAMPLE_WORKSPACE",
                 },
             },
         },

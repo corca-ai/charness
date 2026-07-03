@@ -33,20 +33,20 @@ STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version"
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 
-GATHER_PROVIDER_SOURCES = ("github", "google_workspace", "slack", "notion")
+GATHER_PROVIDER_SOURCES = ("github", "google_workspace")
 GATHER_PROVIDER_MODES = ("direct-cli", "host-mediated", "none")
-DEFAULT_GATHER_PROVIDER_MODE = "direct-cli"
-# Plain gather is credentialless by default. Credentialed org providers that
-# would otherwise surface a charness-owned wrapper (`slack`, `notion`) stay
-# `none` until a repo adapter opts in, so an installed skill never advertises a
-# provider CLI route by default. `github` is standard dev tooling; Google
-# Workspace has no repo-owned direct CLI and already routes to host/export/browser
-# guidance, so both keep `direct-cli`.
+DEFAULT_GATHER_PROVIDER_MODE = "none"
+# Plain gather is public-source only. Credentialed organizational data (Slack,
+# Notion, private Google Workspace, and similar) is NOT a gather source: it flows
+# through the consuming runtime's own capability/connector surface, never a
+# charness-owned provider CLI or raw token route. `github` is standard dev
+# tooling that reaches public content, so it keeps `direct-cli`. Google Workspace
+# has no repo-owned direct CLI; its private content is a host/runtime capability
+# concern, so it defaults to `none` (stop with a missing-capability explanation)
+# until an adapter opts into a `host-mediated` route.
 DEFAULT_GATHER_PROVIDER_MODES = {
     "github": "direct-cli",
-    "google_workspace": "direct-cli",
-    "slack": "none",
-    "notion": "none",
+    "google_workspace": "none",
 }
 
 

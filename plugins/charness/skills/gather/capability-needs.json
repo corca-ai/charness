@@ -4,26 +4,21 @@
   "capability_needs": [
     {
       "logical_id": "github.default",
-      "summary": "Private GitHub gather through an authenticated provider path.",
-      "when": "when gather needs private GitHub repository or PR access"
-    },
-    {
-      "logical_id": "slack.default",
-      "summary": "Private Slack thread gather through the charness-owned Slack runtime.",
-      "when": "when gather needs private Slack thread access"
+      "summary": "GitHub content gather through a host/runtime-provided capability.",
+      "when": "when gather needs GitHub repository or PR access beyond public dev tooling"
     },
     {
       "logical_id": "google-workspace.default",
-      "summary": "Private Google Workspace gather through an authenticated provider path.",
-      "when": "when gather needs private Docs, Drive, Sheets, or Slides access"
+      "summary": "Google Workspace gather through a host/runtime-provided (host-mediated) capability.",
+      "when": "when gather needs Docs, Drive, Sheets, or Slides access and the host provides the capability"
     },
     {
       "logical_id": "agent-browser.default",
-      "summary": "Browser-mediated private SaaS gather through the external `agent-browser` runtime.",
-      "when": "when gather has a private SaaS URL or stable UI path and an official API/export route is unavailable or insufficient"
+      "summary": "Browser-mediated public source gather through the external `agent-browser` runtime.",
+      "when": "when gather has a public URL or stable UI path and an official API/export route is unavailable or insufficient"
     }
   ],
   "notes": [
-    "Public gather paths such as published Notion or generic web fetch do not require a private capability binding."
+    "gather is public-source only. Credentialed org data (Slack, Notion, private Drive) is out of scope and belongs to the consuming runtime's own capability/connector surface, not a charness gather capability binding."
   ]
 }

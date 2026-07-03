@@ -358,12 +358,12 @@ def scenario_find_skills_split_package_surface(root: Path) -> None:
     expect_success(result, "find-skills split package surface")
     inventory = json.loads(result.stdout)
     raw_output = result.stdout
-    if len(inventory["support_skills"]) < 4:
+    if len(inventory["support_skills"]) < 2:
         raise EvalError(
             "find-skills split package surface: expected support skills from sibling package, "
             f"got {len(inventory['support_skills'])}"
         )
-    if len(inventory["support_capabilities"]) < 4:
+    if len(inventory["support_capabilities"]) < 2:
         raise EvalError(
             "find-skills split package surface: expected support capabilities from sibling package, "
             f"got {len(inventory['support_capabilities'])}"

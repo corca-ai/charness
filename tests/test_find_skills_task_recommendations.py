@@ -392,7 +392,10 @@ def test_recommend_for_task_surfaces_support_skill_via_intent_triggers(tmp_path:
     assert payload["support_recommendation_note"] is None
 
 
-def test_recommend_for_task_surfaces_gather_slack_for_slack_urls() -> None:
+def test_recommend_for_task_does_not_surface_credentialed_slack_route() -> None:
+    # gather is public-source only: a Slack-thread gather task must NOT surface a
+    # credentialed gather-slack support route (removed with #418). Credentialed org
+    # data belongs to the consuming runtime's capability/connector, not gather.
     task = "Gather this Slack thread https://corcaai.slack.com/archives/C123/p1234567890123456"
 
     payload = _run_list_capabilities(
@@ -405,11 +408,8 @@ def test_recommend_for_task_surfaces_gather_slack_for_slack_urls() -> None:
     )
 
     matched_ids = [entry["id"] for entry in payload["support_skill_recommendations"]]
-    assert matched_ids == ["gather-slack"]
-    recommendation = payload["support_skill_recommendations"][0]
-    assert "slack.com/archives" in recommendation["matched_triggers"]
-    assert recommendation["path"] == "skills/support/gather-slack/SKILL.md"
-    assert payload["support_recommendation_note"] is None
+    assert "gather-slack" not in matched_ids
+    assert matched_ids == []
 
 
 def test_recommend_for_task_surfaces_named_validation_integration(tmp_path: Path) -> None:

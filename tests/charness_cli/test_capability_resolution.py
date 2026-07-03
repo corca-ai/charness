@@ -29,15 +29,19 @@ def init_target_repo(path: Path) -> Path:
 
 
 def test_capability_resolve_reads_repo_local_config(tmp_path: Path) -> None:
+    # The capability-resolution control plane is provider-agnostic: a consuming
+    # runtime binds a logical capability id to its own provider + secret env
+    # alias. github-gh is a retained known provider used here to exercise the
+    # mechanism (gather-slack/notion were removed with #418).
     target_repo = init_target_repo(tmp_path / "target")
     write_repo_capability_config(
         target_repo,
-        bindings={"slack.default": "slack.ceal-dev"},
+        bindings={"github.default": "github.acme-dev"},
         profiles={
-            "slack.ceal-dev": {
-                "provider": "gather-slack",
+            "github.acme-dev": {
+                "provider": "github-gh",
                 "access_mode_preference": ["grant", "env"],
-                "env_bindings": {"SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_CEAL_DEV"},
+                "env_bindings": {"GH_TOKEN": "GH_TOKEN_ACME_DEV"},
             },
         },
     )
@@ -49,13 +53,13 @@ def test_capability_resolve_reads_repo_local_config(tmp_path: Path) -> None:
         "--target-repo-root",
         str(target_repo),
         "--json",
-        "slack.default",
+        "github.default",
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["profile_id"] == "slack.ceal-dev"
-    assert payload["provider_id"] == "gather-slack"
-    assert payload["env_bindings"] == {"SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_CEAL_DEV"}
+    assert payload["profile_id"] == "github.acme-dev"
+    assert payload["provider_id"] == "github-gh"
+    assert payload["env_bindings"] == {"GH_TOKEN": "GH_TOKEN_ACME_DEV"}
     assert payload["capability_config_path"].endswith(".charness/local/capability.json")
 
 
@@ -63,17 +67,17 @@ def test_capability_env_emits_alias_exports_without_printing_secret_values(tmp_p
     target_repo = init_target_repo(tmp_path / "target")
     write_repo_capability_config(
         target_repo,
-        bindings={"slack.default": "slack.ceal-dev"},
+        bindings={"github.default": "github.acme-dev"},
         profiles={
-            "slack.ceal-dev": {
-                "provider": "gather-slack",
+            "github.acme-dev": {
+                "provider": "github-gh",
                 "access_mode_preference": ["grant", "env"],
-                "env_bindings": {"SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_CEAL_DEV"},
+                "env_bindings": {"GH_TOKEN": "GH_TOKEN_ACME_DEV"},
             },
         },
     )
     env = os.environ.copy()
-    env["SLACK_BOT_TOKEN_CEAL_DEV"] = "super-secret-token"
+    env["GH_TOKEN_ACME_DEV"] = "super-secret-token"
     result = run_cli(
         "capability",
         "env",
@@ -81,11 +85,11 @@ def test_capability_env_emits_alias_exports_without_printing_secret_values(tmp_p
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "slack.default",
+        "github.default",
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == 'export SLACK_BOT_TOKEN="${SLACK_BOT_TOKEN_CEAL_DEV}"'
+    assert result.stdout.strip() == 'export GH_TOKEN="${GH_TOKEN_ACME_DEV}"'
     assert "super-secret-token" not in result.stdout
 
 
@@ -93,10 +97,10 @@ def test_capability_doctor_reuses_provider_metadata_for_resolved_profile(tmp_pat
     target_repo = init_target_repo(tmp_path / "target")
     write_repo_capability_config(
         target_repo,
-        bindings={"notion.default": "notion.public"},
+        bindings={"web-fetch.default": "web-fetch.local"},
         profiles={
-            "notion.public": {
-                "provider": "gather-notion",
+            "web-fetch.local": {
+                "provider": "web-fetch",
                 "access_mode_preference": ["public"],
                 "env_bindings": {},
             },
@@ -110,12 +114,12 @@ def test_capability_doctor_reuses_provider_metadata_for_resolved_profile(tmp_pat
         "--target-repo-root",
         str(target_repo),
         "--json",
-        "notion.default",
+        "web-fetch.default",
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["provider_id"] == "gather-notion"
-    assert payload["provider_doctor"]["tool_id"] == "gather-notion"
+    assert payload["provider_id"] == "web-fetch"
+    assert payload["provider_doctor"]["tool_id"] == "web-fetch"
     assert payload["provider_doctor"]["doctor_status"] == "ok"
 
 
@@ -139,14 +143,19 @@ def test_capability_init_scaffolds_repo_local_config_and_updates_gitignore(tmp_p
     assert example_path.is_file()
     local_data = json.loads(local_path.read_text(encoding="utf-8"))
     assert local_data["bindings"] == {
-        "slack.default": "slack.change-me",
         "github.default": "github.change-me",
     }
-    assert set(local_data["profiles"]) == {"slack.change-me", "github.change-me"}
-    assert "gws-cli" not in local_path.read_text(encoding="utf-8")
+    assert set(local_data["profiles"]) == {"github.change-me"}
+    # gather is public-source only: the scaffold must not seed a credentialed
+    # gather provider (gather-slack) or a raw token route (SLACK_BOT_TOKEN, gws-cli).
+    local_text = local_path.read_text(encoding="utf-8")
+    assert "gws-cli" not in local_text
+    assert "gather-slack" not in local_text
+    assert "SLACK_BOT_TOKEN" not in local_text
     example_data = json.loads(example_path.read_text(encoding="utf-8"))
     assert "bindings" in example_data
     assert "profiles" in example_data
+    assert "gather-slack" not in example_path.read_text(encoding="utf-8")
     assert gitignore_path.is_file()
     gitignore_lines = gitignore_path.read_text(encoding="utf-8").splitlines()
     assert "/.charness/local/" in gitignore_lines
@@ -240,7 +249,6 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
     gather_payload = json.loads(gather_result.stdout)
     assert {need["logical_id"] for need in gather_payload["capability_needs"]} == {
         "github.default",
-        "slack.default",
         "google-workspace.default",
         "agent-browser.default",
     }

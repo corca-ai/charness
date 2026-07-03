@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-07-01T07:30:55Z",
+  "generated_at": "2026-07-03T12:59:56Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -237,8 +237,8 @@
       {
         "id": "gather",
         "name": "gather",
-        "description": "Use when a Slack thread, Notion page, Google Docs or Drive file, GitHub content, arbitrary URL, or other external source should become a durable local knowledge asset instead of a transient answer. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.",
-        "summary": "Use when a Slack thread, Notion page, Google Docs or Drive file, GitHub content, arbitrary URL, or other external source should become a durable local knowledge asset instead of a transient answer. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.",
+        "description": "Use when a public web page, GitHub content, a published or exported document, an arbitrary URL, a local file, or other public source should become a durable local knowledge asset instead of a transient answer. Gather is public-source only: credentialed organizational data (Slack, Notion, private Google Workspace) is out of scope and belongs to the consuming runtime's own capability/connector. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.",
+        "summary": "Use when a public web page, GitHub content, a published or exported document, an arbitrary URL, a local file, or other public source should become a durable local knowledge asset instead of a transient answer. Gather is public-source only: credentialed organizational data (Slack, Notion, private Google Workspace) is out of scope and belongs to the consuming runtime's own capability/connector. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.",
         "path": "skills/public/gather/SKILL.md",
         "skill_dir": "skills/public/gather",
         "canonical_path": "skills/public/gather/SKILL.md",
@@ -634,56 +634,6 @@
     ],
     "support_skills": [
       {
-        "id": "gather-notion",
-        "name": "gather-notion",
-        "description": "Internal support capability for gathering published Notion pages into durable local markdown without requiring consumer repos to supply their own export helper.",
-        "summary": "Internal support capability for gathering published Notion pages into durable local markdown without requiring consumer repos to supply their own export helper.",
-        "path": "skills/support/gather-notion/SKILL.md",
-        "skill_dir": "skills/support/gather-notion",
-        "canonical_path": "skills/support/gather-notion/SKILL.md",
-        "trigger_phrases": [
-          "gather-notion",
-          "gather-notion skill",
-          "gather-notion 스킬",
-          "charness:gather-notion",
-          "support/gather-notion",
-          "gather-notion support",
-          "gather-notion support skill",
-          "gather-notion helper"
-        ],
-        "referenced_paths": [
-          "skills/support/gather-notion/references/runtime-contract.md",
-          "skills/support/gather-notion/scripts/export_page.py"
-        ],
-        "source": "local-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "gather-slack",
-        "name": "gather-slack",
-        "description": "Internal support capability for gathering Slack threads into durable local markdown without asking consumer repos to reimplement Slack export helpers.",
-        "summary": "Internal support capability for gathering Slack threads into durable local markdown without asking consumer repos to reimplement Slack export helpers.",
-        "path": "skills/support/gather-slack/SKILL.md",
-        "skill_dir": "skills/support/gather-slack",
-        "canonical_path": "skills/support/gather-slack/SKILL.md",
-        "trigger_phrases": [
-          "gather-slack",
-          "gather-slack skill",
-          "gather-slack 스킬",
-          "charness:gather-slack",
-          "support/gather-slack",
-          "gather-slack support",
-          "gather-slack support skill",
-          "gather-slack helper"
-        ],
-        "referenced_paths": [
-          "skills/support/gather-slack/references/runtime-contract.md",
-          "skills/support/gather-slack/scripts/export-thread.sh"
-        ],
-        "source": "local-support",
-        "layer": "support skill"
-      },
-      {
         "id": "markdown-preview",
         "name": "markdown-preview",
         "description": "Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.",
@@ -740,123 +690,6 @@
       }
     ],
     "support_capabilities": [
-      {
-        "id": "gather-notion",
-        "kind": "support_runtime",
-        "display_name": "Published Notion gather runtime",
-        "summary": "charness-owned published Notion gather runtime used by the public gather skill.",
-        "access_modes": [
-          "public",
-          "human-only",
-          "degraded"
-        ],
-        "capability_requirements": {},
-        "intent_triggers": [],
-        "trigger_phrases": [
-          "gather-notion",
-          "Published Notion gather runtime",
-          "gather-notion support",
-          "gather-notion support skill",
-          "support/gather-notion"
-        ],
-        "config_layers": [
-          {
-            "layer_id": "notion-publish-step",
-            "layer_type": "operator-step",
-            "summary": "The operator may need to publish the Notion page to the web first."
-          },
-          {
-            "layer_id": "notion-public-export",
-            "layer_type": "public-fallback",
-            "summary": "Use the published-page export helper for public Notion page URLs."
-          }
-        ],
-        "readiness_checks": [],
-        "path": "skills/support/gather-notion/capability.json",
-        "support_skill_path": "skills/support/gather-notion/SKILL.md",
-        "supports_public_skills": [
-          "gather"
-        ],
-        "source": "local-support-capability",
-        "layer": "support capability"
-      },
-      {
-        "id": "gather-slack",
-        "kind": "support_runtime",
-        "display_name": "Slack thread gather runtime",
-        "summary": "charness-owned Slack thread gather runtime used by the public gather skill.",
-        "access_modes": [
-          "grant",
-          "env",
-          "human-only",
-          "degraded"
-        ],
-        "capability_requirements": {
-          "grant_ids": [
-            "slack.conversations.history",
-            "slack.users.read",
-            "slack.files.read"
-          ],
-          "env_vars": [
-            "Slack credential grant"
-          ],
-          "permission_scopes": [
-            "channels:history",
-            "channels:join",
-            "users:read",
-            "files:read"
-          ]
-        },
-        "intent_triggers": [
-          "Slack thread",
-          "Slack URL",
-          "Slack gather",
-          "slack.com/archives",
-          "gather Slack"
-        ],
-        "trigger_phrases": [
-          "gather-slack",
-          "Slack thread gather runtime",
-          "gather-slack support",
-          "gather-slack support skill",
-          "support/gather-slack",
-          "Slack thread",
-          "Slack URL",
-          "Slack gather",
-          "slack.com/archives",
-          "gather Slack"
-        ],
-        "config_layers": [
-          {
-            "layer_id": "slack-runtime-grant",
-            "layer_type": "grant",
-            "summary": "Prefer a host-mediated Slack capability grant when available."
-          },
-          {
-            "layer_id": "slack-bot-env",
-            "layer_type": "env",
-            "summary": "Fall back to `Slack credential grant` in ordinary local operator setups."
-          },
-          {
-            "layer_id": "slack-channel-operator-step",
-            "layer_type": "operator-step",
-            "summary": "The operator may still need to add the bot to the workspace or target channel."
-          }
-        ],
-        "readiness_checks": [
-          {
-            "check_id": "slack-runtime-deps",
-            "summary": "Slack gather runtime shell dependencies are available."
-          }
-        ],
-        "path": "skills/support/gather-slack/capability.json",
-        "support_skill_path": "skills/support/gather-slack/SKILL.md",
-        "supports_public_skills": [
-          "gather"
-        ],
-        "source": "local-support-capability",
-        "layer": "support capability"
-      },
       {
         "id": "markdown-preview",
         "kind": "support_runtime",

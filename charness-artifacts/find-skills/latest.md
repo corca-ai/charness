@@ -1,12 +1,12 @@
 # Find Skills Inventory
-Date: 2026-07-01
-Updated: 2026-07-01T07:30:55Z
+Date: 2026-07-03
+Updated: 2026-07-03T12:59:56Z
 
 ## Summary
 - public skills: 20
-- support skills: 4
+- support skills: 2
 - synced support skills: 0
-- support capabilities: 4
+- support capabilities: 2
 - integrations: 11
 - workflow integrations: 2
 - trusted skills: 0
@@ -19,7 +19,7 @@ Updated: 2026-07-01T07:30:55Z
 - `critique`: Use when a non-trivial design decision, code change, release, rename, deletion, spec, or workflow change needs a before-the-fact critique. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the change locks in.
 - `debug`: Use when investigating a bug, error, or unexpected behavior. Follow a disciplined root-cause workflow, preserve a durable debug artifact so future sessions inherit what was learned, and do not jump to fixes before a falsifiable hypothesis exists.
 - `find-skills`: Use when the user asks which skill, support capability, or integration should handle a task, or names a skill/support/capability such as `X skill`, `X 스킬`, `support/X`, or `X integration`. Call this before filesystem search for named capabilities; support skills are intentionally hidden from the default skill list.
-- `gather`: Use when a Slack thread, Notion page, Google Docs or Drive file, GitHub content, arbitrary URL, or other external source should become a durable local knowledge asset instead of a transient answer. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.
+- `gather`: Use when a public web page, GitHub content, a published or exported document, an arbitrary URL, a local file, or other public source should become a durable local knowledge asset instead of a transient answer. Gather is public-source only: credentialed organizational data (Slack, Notion, private Google Workspace) is out of scope and belongs to the consuming runtime's own capability/connector. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.
 - `handoff`: Use when the user wants the next session prepared or asks to update a handoff artifact. Keep the handoff short, current, and operationally useful, and treat mention-only pickup as an instruction to continue the workflow named in the handoff trigger.
 - `hitl`: Use when automated review is not enough and deliberate human judgment needs to be inserted into a bounded review loop. Keeps review state resumable, chunked, and adapter-driven without hardcoding one host runtime.
 - `hotl`: Use when applied live behavior needs human-on-the-loop closure: inventory what needs proof, write a proof packet before execution, run or record roundtrip/readback evidence through repo-owned commands, and keep every loop entry verified or explicitly dispositioned so unproven behavior is never closed as working.
@@ -34,14 +34,10 @@ Updated: 2026-07-01T07:30:55Z
 - `spec`: Use when a concept needs to become a living implementation contract. Refine ideation artifacts or existing design docs into the current build contract, decide what must be fixed now versus probed during implementation, define testable success criteria, and keep the contract synchronized as `impl` learns new facts.
 
 ## Support Skills
-- `gather-notion` (support skill): Internal support capability for gathering published Notion pages into durable local markdown without requiring consumer repos to supply their own export helper.
-- `gather-slack` (support skill): Internal support capability for gathering Slack threads into durable local markdown without asking consumer repos to reimplement Slack export helpers.
 - `markdown-preview` (support skill): Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.
 - `web-fetch` (support skill): Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.
 
 ## Support Capabilities
-- `gather-notion`: charness-owned published Notion gather runtime used by the public gather skill. Supports `gather`.
-- `gather-slack`: charness-owned Slack thread gather runtime used by the public gather skill. Supports `gather`.
 - `markdown-preview`: charness-owned markdown preview support that renders checked-in Markdown into width-specific text artifacts for doc-facing workflows. Supports `announcement, narrative, quality`.
 - `web-fetch`: charness-owned public-web fetch routing and response classification support used by gather when plain direct fetch is weak, blocked, or ambiguous. Supports `gather`.
 

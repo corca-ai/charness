@@ -113,10 +113,10 @@ setup, or adapter references.
 When one repo wants to reuse the same private provider across multiple
 `charness` skills or scripts, model that reuse repo-locally through:
 
-1. logical capability id, for example `slack.default`
-2. repo-local profile id, for example `slack.ceal-dev`
+1. logical capability id, for example `github.default`
+2. repo-local profile id, for example `github.acme-dev`
 3. provider id already modeled by manifests or support capability metadata,
-   for example `gather-slack`
+   for example `github-gh` or `web-fetch`
 
 The repo-local capability config (`<repo-root>/.charness/local/capability.json`)
 may record non-secret env var aliases such as:

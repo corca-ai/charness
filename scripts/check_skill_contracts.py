@@ -165,11 +165,13 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/gather/SKILL.md": (
         "official API/export docs before browser automation",
-        # gather-provider.md adapter-slot contract: keep the per-source
-        # read-mode boundary and the host-mediated stop-with-explanation
-        # promise pinned so silent regressions in the reference are caught.
+        # gather-provider.md public-only boundary: keep the per-source read-mode
+        # resolution, the credentialed-org-data-out-of-scope rule, and the
+        # stop-with-explanation promise pinned so silent regressions in the
+        # reference are caught.
         "resolves a per-source provider mode from the adapter",
-        "Modes that the\nhost does not expose should be declared",
+        "not a gather source",
+        "stops with a missing-capability explanation",
     ),
     "skills/public/create-skill/SKILL.md": (
         "For `evaluator-required` skills, treat maintained scenario coverage and",

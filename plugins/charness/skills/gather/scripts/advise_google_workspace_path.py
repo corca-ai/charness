@@ -40,7 +40,7 @@ SOURCE_ID = "google_workspace"
 def payload_for(repo_root: Path) -> dict[str, object]:
     data = load_gather_adapter(repo_root)["data"]
     entry = (data.get("gather_provider") or {}).get(SOURCE_ID) or {}
-    mode = str(entry.get("mode") or "direct-cli")
+    mode = str(entry.get("mode") or "none")
     if mode == "none":
         return _skipped_payload(
             mode,

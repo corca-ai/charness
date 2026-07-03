@@ -1,9 +1,16 @@
 # Gather Provider
 
-The `gather` skill resolves a per-source provider mode from the adapter
-before invoking any provider CLI, token-backed integration, or support
-skill. The body never assumes a specific provider binary or auth env is
-agent-reachable; the adapter selects which path the agent may take.
+The `gather` skill resolves a per-source provider mode from the adapter before
+routing a source. The body never assumes a specific provider binary or auth env
+is agent-reachable; the adapter selects which path the agent may take.
+
+Plain `gather` is **public-source only**. Credentialed organizational data —
+Slack, Notion, private Google Workspace, Drive, or similar — is not a gather
+source. It flows through the consuming runtime's own capability/connector
+surface, never a charness-owned provider CLI or raw token route. When a gather
+request names such a source, the skill hands it off to the runtime capability or
+stops with a missing-capability explanation rather than reaching for a
+credentialed provider path.
 
 ## Adapter Field
 
@@ -15,74 +22,55 @@ gather_provider:
   github:
     mode: direct-cli
   google_workspace:
-    mode: direct-cli
-  slack:
-    mode: none        # credentialless default; set host-mediated or direct-cli to enable
-  notion:
-    mode: none        # credentialless default; set host-mediated or direct-cli to enable
+    mode: none        # public-only default; set host-mediated to route private content through a host capability
 ```
 
 `mode` accepts:
 
-- `direct-cli`: use the maintainer-local CLI or checked-in support runtime when
-  one exists (`gh`, Slack, Notion). This is the default only for `github`
-  (standard dev tooling); Google Workspace intentionally has no repo-owned
-  direct CLI provider.
+- `direct-cli`: use standard dev tooling that reaches public content (`gh`).
+  This is the default only for `github`.
 - `host-mediated`: the host advertises a `<provider>` capability command;
   the skill instructs the agent to use the host's shape rather than
-  invoking the direct CLI/token path.
-- `none`: the source is unavailable in this runtime. The skill stops with
-  a missing-capability explanation instead of attempting a fallback.
-
-Plain gather is credentialless by default: the credentialed org providers that
-ship a charness-owned wrapper (`slack`, `notion`) default to `none`, so an
-installed skill never advertises a provider CLI route until a repo adapter opts
-in. Enable a credentialed provider by declaring `host-mediated` (route through
-the runtime's own capability) or `direct-cli` (only when the maintainer owns the
-grant).
+  invoking a direct CLI/token path.
+- `none`: the source is not reachable as a public gather in this runtime. The
+  skill stops with a missing-capability explanation instead of attempting a
+  credentialed fallback.
 
 ## Sources
 
-- `github` — gather from GitHub content
-- `google_workspace` — gather from Google Docs/Drive/Sheets
-- `slack` — gather from Slack threads (consumed via the `gather-slack`
-  support skill when mode is `direct-cli`)
-- `notion` — gather from Notion pages (consumed via the `gather-notion`
-  support skill when mode is `direct-cli`)
+- `github` — gather from public GitHub content
+- `google_workspace` — gather from Google Docs/Drive/Sheets. Has no repo-owned
+  direct CLI: private content routes to a host-mediated capability, an operator
+  export, or a browser-mediated fallback, never a checked-in provider token.
 
-Unknown source names are rejected by the adapter parser. Modes that the
-host does not expose should be declared `none` so the skill never reaches
-for a direct CLI under a worker runtime.
+Unknown source names are rejected by the adapter parser. Credentialed org
+providers (Slack, Notion, private Drive) are intentionally **not** valid gather
+sources; declaring one is a parser error, because acquiring that data is the
+consuming runtime's capability/connector responsibility, not gather's.
 
 ## Runtime Consumption
 
-- `scripts/advise_slack_path.py` reads `gather_provider.slack.mode`. When the
-  mode is `direct-cli`, it points at the checked-in `gather-slack` support
-  wrapper and runtime contract before browser-mediated or unrelated
-  private-source fallbacks. When the mode is `host-mediated` or `none`, it
-  returns the corresponding operator prompt without invoking the wrapper.
 - `scripts/advise_google_workspace_path.py` reads
   `gather_provider.google_workspace.mode`. The script returns host-mediated,
   none, or missing-direct-provider guidance without invoking a local Google
   Workspace CLI.
-- Support skills (`gather-slack`, `gather-notion`) are only invoked by the
-  public `gather` skill when the matching `gather_provider.<source>.mode`
-  is `direct-cli`. Under `host-mediated` or `none`, the gather body
-  instead names the missing or host-routed capability.
+- `gather_plan.py` detects a Slack URL and reports
+  `credentialed_source_out_of_scope`: public-only gather does not acquire it;
+  the runtime capability/connector owns credentialed org data. Google Workspace
+  URLs route to the workspace path adviser.
 - The `support/web-fetch` routing table treats `github.com` per
-  `gather_provider.github.mode` — direct `gh` is only the right path when
-  the adapter selected `direct-cli`.
+  `gather_provider.github.mode` — direct `gh` reaches public content when the
+  adapter selected `direct-cli`.
 
 ## Why Adapter-Driven
 
-Plain gather stays credentialless by default so an installed skill never
-teaches agents to reach for a credentialed provider CLI a consuming runtime did
-not authorize. A maintainer-local repo that owns the grants opts into
-`direct-cli` for `slack`/`notion` in its own adapter; a worker-runtime host that
-gates provider access behind a capability surface (such as `acme github`)
-declares the relevant sources as `host-mediated`. Either way the credentialed
-route is a repo-declared opt-in, and the same skill body works across host modes
-without baking host-specific identifiers into charness.
+Plain gather stays public-source only so an installed skill never teaches agents
+to reach for a credentialed provider CLI or raw token a consuming runtime did
+not authorize. A worker-runtime host that gates provider access behind a
+capability surface (such as `acme github`) declares the relevant source as
+`host-mediated`; the same skill body works across host modes without baking
+host-specific identifiers into charness. Credentialed org data is out of gather's
+scope entirely — the consuming runtime owns that boundary.
 
 ## Adapter Slot Boundary
 

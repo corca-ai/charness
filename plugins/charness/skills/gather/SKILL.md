@@ -1,6 +1,6 @@
 ---
 name: gather
-description: "Use when a Slack thread, Notion page, Google Docs or Drive file, GitHub content, arbitrary URL, or other external source should become a durable local knowledge asset instead of a transient answer. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request."
+description: "Use when a public web page, GitHub content, a published or exported document, an arbitrary URL, a local file, or other public source should become a durable local knowledge asset instead of a transient answer. Gather is public-source only: credentialed organizational data (Slack, Notion, private Google Workspace) is out of scope and belongs to the consuming runtime's own capability/connector. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request."
 ---
 
 # Gather
@@ -27,19 +27,17 @@ By default, durable records live under
 `<repo-root>/charness-artifacts/gather/` with `latest.md` as the current pointer.
 Repos may override the directory with `.agents/gather-adapter.yaml`.
 
-Plain `gather` is credentialless by default: it targets public and local
-sources. Credentialed org sources are reached through a host/runtime-owned
-capability — never a charness-prescribed provider CLI. Slack and Notion are off
-until a repo adapter opts in: their advisers stop with a missing-capability
-explanation until the adapter declares a route (`host-mediated` for a runtime
-capability, or an explicit `direct-cli` when the maintainer owns the grant).
-Google Workspace has no repo-owned direct CLI, so it routes to a host-mediated
-capability, an operator export, or a browser-mediated fallback. Use the repo-owned
-path advisers to resolve these routes before trying unrelated private-source
-helpers:
+Plain `gather` is public-source only: it targets public and local sources.
+Credentialed organizational data — Slack, Notion, private Google Workspace,
+Drive, or similar — is not a gather source. It is reached through the consuming
+runtime's own capability/connector surface, never a charness-prescribed provider
+CLI or raw token. When a request names such a source, hand it off to the runtime
+capability or stop with a missing-capability explanation. Google Workspace has no
+repo-owned direct CLI, so private content routes to a host-mediated capability,
+an operator export, or a browser-mediated fallback. Use the repo-owned path
+adviser to resolve that route before trying unrelated private-source helpers:
 
 ```bash
-python3 "$SKILL_DIR/scripts/advise_slack_path.py" --repo-root .
 python3 "$SKILL_DIR/scripts/advise_google_workspace_path.py" --repo-root .
 ```
 
@@ -57,8 +55,11 @@ python3 "$SKILL_DIR/scripts/gather_public_url.py" --repo-root . --url <public-ur
 
 1. Identify the exact source and requested scope.
    - name the knowledge capability later sessions need from this source
-   - classify the source as local, public URL, GitHub, Slack, Notion, Google
-     Workspace, browser-mediated private source, or broad research
+   - classify the source as local, public URL, GitHub, Google Workspace,
+     browser-mediated public source, or broad research
+   - credentialed org data (Slack, Notion, private Drive) is out of scope: hand
+     it to the runtime capability/connector or stop with a missing-capability
+     explanation
    - Prefer primary sources.
    - local files before external summaries
    - if the user named a source URL/path, do not widen into search until the

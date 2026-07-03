@@ -62,10 +62,11 @@ def _source_kind(url: str) -> str:
 
 # Provider-backed hosts gather_plan.py does NOT plan: it only routes public-URL
 # fetches, so a Slack/Google Workspace URL would otherwise be silently planned as a
-# generic public fetch. Detect them and hand the judge the right adviser instead of
-# a misroute (north star: the script briefs the judge). GitHub is excluded — it has
-# a real route (github-host-mediated); Notion/other private SaaS go through the
-# browser-mediated path, not a dedicated adviser.
+# generic public fetch. Detect them and hand the judge the right next move instead
+# of a misroute (north star: the script briefs the judge). GitHub is excluded — it
+# reaches public content directly. Google Workspace routes to the workspace path
+# adviser. Slack is credentialed org data that public-only gather does not acquire:
+# hand it off to the runtime capability/connector, do not plan a fetch.
 _GOOGLE_WORKSPACE_HOSTS = {
     "docs.google.com",
     "drive.google.com",
@@ -75,13 +76,17 @@ _GOOGLE_WORKSPACE_HOSTS = {
 }
 
 
-def _provider_redirect(host: str | None) -> dict[str, str] | None:
+def _provider_redirect(host: str | None) -> dict[str, object] | None:
     host = (host or "").lower()
     if host == "slack.com" or host.endswith(".slack.com"):
         return {
             "source": "slack",
-            "adviser": "$SKILL_DIR/scripts/advise_slack_path.py",
-            "why": "Slack threads are acquired through the gather-slack provider path, not the public-URL fetch route.",
+            "adviser": None,
+            "why": (
+                "Slack threads are credentialed organizational data. charness gather "
+                "is public-source only; acquire Slack through the consuming runtime's "
+                "own capability/connector surface, not a charness provider path or raw token."
+            ),
         }
     if host in _GOOGLE_WORKSPACE_HOSTS:
         return {
@@ -145,7 +150,7 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
         browser_mode,
     ]
     redirect = _provider_redirect(route.get("normalized_host"))
-    if redirect is not None:
+    if redirect is not None and redirect.get("adviser"):
         next_action = ENVELOPE.next_action(
             "redirect_to_provider_adviser",
             command=["python3", redirect["adviser"], "--repo-root", str(repo_root)],
@@ -154,6 +159,12 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
                 f"run the named adviser and follow the provider path instead. {redirect['why']}"
             ),
             stop_when="the adviser reports the provider mode is none/unavailable and no honest fallback (operator export or labeled browser-mediated) remains",
+        )
+    elif redirect is not None:
+        next_action = ENVELOPE.next_action(
+            "credentialed_source_out_of_scope",
+            redirect=f"{redirect['source']} source: {redirect['why']}",
+            stop_when="charness gather does not credential-acquire this source; hand off to the runtime capability/connector or stop with a missing-capability explanation",
         )
     else:
         next_action = ENVELOPE.next_action(

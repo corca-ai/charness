@@ -18,22 +18,19 @@ def _load_gather_module(name: str):
     return module
 
 
-def test_gather_adapter_defaults_are_credentialless(tmp_path: Path) -> None:
-    # Plain gather is credentialless by default: the org providers that ship a
-    # charness-owned wrapper (slack, notion) default to `none` so an installed
-    # skill never advertises a credentialed provider route until a repo opts in.
-    # github stays direct-cli (dev tooling); google_workspace stays direct-cli
-    # (no repo-owned CLI → host/export/browser guidance, no wrapper to leak).
+def test_gather_adapter_defaults_are_public_source_only(tmp_path: Path) -> None:
+    # gather is public-source only: the credentialed org providers (slack, notion)
+    # are removed entirely, not merely defaulted off. github stays direct-cli (dev
+    # tooling reaching public content); google_workspace defaults to `none` (no
+    # repo-owned CLI → host-mediated/export/browser, never a credentialed default).
     resolve = _load_gather_module("resolve_adapter")
     payload = resolve.load_adapter(tmp_path)
 
     assert payload["valid"] is True
     provider = payload["data"]["gather_provider"]
-    assert set(provider) == {"github", "google_workspace", "slack", "notion"}
+    assert set(provider) == {"github", "google_workspace"}
     assert provider["github"] == {"mode": "direct-cli"}
-    assert provider["google_workspace"] == {"mode": "direct-cli"}
-    assert provider["slack"] == {"mode": "none"}
-    assert provider["notion"] == {"mode": "none"}
+    assert provider["google_workspace"] == {"mode": "none"}
 
 
 def test_gather_adapter_parses_per_source_modes(tmp_path: Path) -> None:
@@ -49,10 +46,6 @@ def test_gather_adapter_parses_per_source_modes(tmp_path: Path) -> None:
                 "    mode: host-mediated",
                 "  google_workspace:",
                 "    mode: 'none'",
-                "  slack:",
-                "    mode: direct-cli",
-                "  notion:",
-                "    mode: host-mediated",
                 "",
             ]
         ),
@@ -65,36 +58,37 @@ def test_gather_adapter_parses_per_source_modes(tmp_path: Path) -> None:
     provider = payload["data"]["gather_provider"]
     assert provider["github"]["mode"] == "host-mediated"
     assert provider["google_workspace"]["mode"] == "none"
-    assert provider["slack"]["mode"] == "direct-cli"
-    assert provider["notion"]["mode"] == "host-mediated"
 
 
 def test_gather_adapter_rejects_unknown_mode(tmp_path: Path) -> None:
     adapter_dir = tmp_path / ".agents"
     adapter_dir.mkdir()
     (adapter_dir / "gather-adapter.yaml").write_text(
-        "version: 1\nrepo: demo\ngather_provider:\n  slack:\n    mode: bogus\n",
+        "version: 1\nrepo: demo\ngather_provider:\n  github:\n    mode: bogus\n",
         encoding="utf-8",
     )
     resolve = _load_gather_module("resolve_adapter")
     payload = resolve.load_adapter(tmp_path)
 
     assert payload["valid"] is False
-    assert any("gather_provider.slack.mode" in err for err in payload["errors"])
+    assert any("gather_provider.github.mode" in err for err in payload["errors"])
 
 
-def test_gather_adapter_rejects_unknown_source(tmp_path: Path) -> None:
+def test_gather_adapter_rejects_credentialed_org_sources(tmp_path: Path) -> None:
+    # Slack/Notion are no longer valid gather sources: acquiring credentialed org
+    # data is the consuming runtime's capability/connector responsibility, so
+    # declaring one is a parser error rather than a silent opt-in.
     adapter_dir = tmp_path / ".agents"
     adapter_dir.mkdir()
     (adapter_dir / "gather-adapter.yaml").write_text(
-        "version: 1\nrepo: demo\ngather_provider:\n  pinterest:\n    mode: direct-cli\n",
+        "version: 1\nrepo: demo\ngather_provider:\n  slack:\n    mode: host-mediated\n",
         encoding="utf-8",
     )
     resolve = _load_gather_module("resolve_adapter")
     payload = resolve.load_adapter(tmp_path)
 
     assert payload["valid"] is False
-    assert any("gather_provider.pinterest" in err for err in payload["errors"])
+    assert any("gather_provider.slack" in err for err in payload["errors"])
 
 
 def _run_advise(tmp_path: Path) -> dict[str, object]:

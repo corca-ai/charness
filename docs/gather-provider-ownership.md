@@ -1,50 +1,45 @@
 # Gather Provider Ownership
 
-This document corrects the ownership model for provider-specific runtime under
-the public `gather` skill.
+This document defines the ownership boundary for the public `gather` skill.
 
-## Default Boundary: credentialless generic gather, opt-in credentialed access
+## Default Boundary: gather is public-source only
 
-Plain `gather` is credentialless by default. It targets public URLs, local
-files, and other sources that need no organizational credential. Credentialed
-org data — Slack, Notion, Google Workspace, Drive, or similar — is **not**
-reached through a charness-prescribed provider CLI by default; it is reached
-through the **consuming runtime's** first-class capability/connector surface,
-declared as a repo adapter opt-in (`gather_provider.<source>.mode`).
+Plain `gather` targets public URLs, local files, published/exported documents,
+public GitHub content, and other sources that need no organizational credential.
 
-The shipped defaults encode this: `slack` and `notion` default to `none`, so an
-installed skill never advertises a credentialed provider route until a maintainer
-who owns the grant opts in. Google Workspace has no repo-owned direct CLI at all,
-so it stays credentialless without an opt-in — it routes to a host-mediated
-capability, an operator export, or a browser-mediated fallback. The optional
-charness-owned provider runtime below is a convenience for the Slack/Notion
-opt-in path, not the generic behavior.
+Credentialed organizational data — Slack, Notion, private Google Workspace,
+Drive, or similar — is **not** a gather source. Reaching that data is the
+**consuming runtime's** responsibility, through its own first-class
+capability/connector surface. `charness` gather does not hold Slack/Google/Notion
+tokens, ship provider-specific credentialed export runtimes, or advertise a
+provider-CLI route to reach private org data. When a gather request names such a
+source, gather hands it off to the runtime capability or stops with a
+missing-capability explanation.
 
-## Goal
-
-When a consumer *opts into* a credentialed provider, they should not have to
-reimplement provider scripts in each consumer repo.
-
-That means:
-
-- if an opted-in `direct-cli` `gather` route needs provider-specific runtime to
-  talk to Slack, Notion, or a similar API, `charness` may own that optional
-  runtime so consumers who choose it do not rebuild it
-- consumers choose the boundary: a host/runtime-owned capability
-  (`host-mediated`), the maintainer-owned grant path (`direct-cli`), or `none`
-- consumer repos should not need to recreate Slack API helpers or other
-  provider scripts when they deliberately opt into the charness-owned route
+This is a deliberate narrowing. An earlier design shipped charness-owned
+credentialed provider runtimes (`gather-slack`, `gather-notion`) and a
+`direct-cli` provider mode so a maintainer who owned the grant could pull private
+org data through gather. That surface was dangerous (raw tokens such as
+`SLACK_BOT_TOKEN` on a portable, materialized skill bundle) and became
+pointless once consuming runtimes (e.g. Ceal) moved credentialed access to their
+own connector/integration layer. Those support skills and the credentialed
+`direct-cli` routes have been removed; the token boundary now lives entirely with
+the consuming runtime.
 
 ## Correct Ownership Split
 
 ### `charness` owns
 
-- public `gather` behavior (credentialless by default)
-- the optional, opt-in provider-specific support/runtime for a `direct-cli`
-  credentialed route
-- capability requirements and degradation rules
-- support skills and helper scripts that hide repeated provider bootstrap
+- public `gather` behavior (public-source only)
+- capability requirements and degradation rules for public routes
+- the public-URL / reader-extraction / browser-mediated-public source ladder
 - provenance notes when another repo informed the implementation
+
+### the consuming runtime owns
+
+- credentialed organizational data access (Slack, Notion, private Google
+  Workspace, Drive, and similar) through its own capability/connector surface
+- the grants, tokens, and audit boundary for that access
 
 ### external integrations own
 
@@ -57,11 +52,8 @@ Examples:
 - external binary integrations:
   - `agent-browser`
   - `specdown`
-  - `gh`
+  - `gh` (public GitHub content is standard dev tooling)
   - `defuddle`
-- `charness`-owned gather provider runtime:
-  - Slack thread export logic used by `gather`
-  - Notion published-page gather logic used by `gather`
 
 ## Reference Implementation Rule
 
@@ -85,39 +77,19 @@ When using a reference implementation, separate:
 `charness` must not model a reference implementation repo as the runtime owner
 unless the consumer is truly expected to install or sync that repo at runtime.
 
-## Current Correction
-
-The earlier experimental manifests for `google-public-export`,
-`slack-bot-export`, and `notion-published-export` were too easy to misread as
-"`charness` depends on `claude-plugins` runtime".
-
-That is not the intended product shape.
-
-The corrected direction is:
-
-- Slack and Notion gather provider logic should move toward `charness`-owned
-  support/runtime
-- `claude-plugins` may remain a provenance or design reference, not a required
-  runtime dependency
-- Google should not use a `google-public-export` helper path in `charness`;
-  Google gather should instead flow through a host-mediated capability,
-  operator-provided export, or browser-mediated private-source path
-
 ## Consumer Contract
 
-When a consumer wants provider-backed gather:
+When a consumer needs credentialed org data:
 
-- Slack:
-  - provide the approved grant or env fallback
-  - do not reimplement Slack API helper scripts in the consumer repo
-- Notion:
-  - provide the approved publication or access path
-  - do not reimplement Notion export helpers in the consumer repo
-- Google:
+- Slack / Notion / private Google Workspace / Drive:
+  - reach them through the consuming runtime's own capability/connector surface
+  - do not expect charness gather to hold the token or ship the export runtime;
+    gather is public-source only
+- Google (public/published content):
   - prefer a host-mediated capability when one exists
   - otherwise ask for an operator-provided export or use the browser-mediated
-    private-source ladder when appropriate
-- browser-mediated private SaaS:
+    public-source ladder when appropriate
+- browser-mediated public SaaS:
   - let `gather` own the official-path-first and degradation policy
   - let `agent-browser` stay the external browser runtime boundary
   - do not push each consumer repo to reinvent profile/auth/bootstrap wording
@@ -158,18 +130,10 @@ When a consumer wants provider-backed gather:
 ## Modeling Rule Going Forward
 
 - use `integrations/tools/*.json` for true external ownership boundaries
-- use `skills/support/<skill-id>/capability.json` plus repo-owned helper
-  scripts for `charness`-owned provider runtime
+- keep gather public-source only; credentialed org data stays behind the
+  consuming runtime's capability/connector surface
 - keep provenance in references or docs instead of pretending it is the active
   runtime owner
-
-## Near-Term Follow-Up
-
-1. Keep Google on a host/export/browser-mediated path until a concrete runtime
-   contract is stable enough to consume.
-2. Treat the Slack and Notion provider runtime as an optional, opt-in
-   `charness`-owned convenience (not an external plugin dependency and not the
-   generic default): plain gather stays credentialless, and the runtime is
-   consumed only when a repo adapter declares `direct-cli`.
-3. Keep capability metadata honest while the support/runtime home lands under
-   `skills/support/`.
+- a Charness-side provider-boundary gate keeps model-facing skill surfaces (and
+  their `plugins/` mirror) free of direct provider-CLI / raw-token wording so the
+  public-only boundary does not silently regress

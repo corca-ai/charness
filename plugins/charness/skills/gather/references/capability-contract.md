@@ -12,11 +12,13 @@ Common examples:
 - local repo files
 - public web fetch
 - GitHub
-- Google Workspace
-- Slack
-- Notion
-- browser-mediated private SaaS fallback through `agent-browser`
-- future repo-specific document or connector surfaces
+- Google Workspace (public/host-mediated)
+- browser-mediated public SaaS fallback through `agent-browser`
+- future repo-specific public document surfaces
+
+Credentialed organizational data (Slack, Notion, private Drive) is **not** a
+gather provider class: gather is public-source only, and that data is reached
+through the consuming runtime's own capability/connector surface.
 
 ## Access Modes
 

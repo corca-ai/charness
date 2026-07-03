@@ -137,19 +137,25 @@ charness checkout supplies provider manifests.
 {
   "version": 1,
   "bindings": {
-    "slack.default": "slack.ceal-dev"
+    "github.default": "github.acme-dev"
   },
   "profiles": {
-    "slack.ceal-dev": {
-      "provider": "gather-slack",
+    "github.acme-dev": {
+      "provider": "github-gh",
       "access_mode_preference": ["grant", "env"],
       "env_bindings": {
-        "SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_CEAL_DEV"
+        "GH_TOKEN": "GH_TOKEN_ACME_DEV"
       }
     }
   }
 }
 ```
+
+The `provider` must be a provider `charness` already models (an
+`integrations/tools/*.json` tool id or a `skills/support/*/capability.json`
+capability id). Credentialed org connectors the consuming runtime owns (Slack,
+Notion, private Drive) are bound the same way against the runtime's own
+provider, not a `charness`-owned one.
 
 `<repo-root>/.charness/capability.example.json` (committed) keeps the same
 shape with placeholder source env names. It must not contain real source env

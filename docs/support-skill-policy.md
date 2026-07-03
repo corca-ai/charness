@@ -57,8 +57,7 @@ Examples:
 
 - `web-fetch`
 - a thin wrapper skill that teaches how to use an external engine safely
-- `gather-slack`
-- `gather-notion`
+- `markdown-preview`
 
 ## Prefer Upstream Consumption When
 
