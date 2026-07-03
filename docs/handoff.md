@@ -31,18 +31,20 @@
 
 ## Next Session
 
-Rank 1 DONE this session: **ideation — no format-rule micro-lever, churn ABSENT**
-(static check, no capture spent; fresh-eye SOUND). Heuristic sharpened: a
-non-ceiling format rule churns only when the format is *invisible* OR a
-*tool-computable value is hidden* (retro `Persisted`) — ideation is neither
-(format surfaced in the scaffold + residual content is irreducible judgment).
-Re-ranked:
+**Two live tracks, both matter (operator: 둘 다 중요, 적을수록 좋음):**
 
-1. **issue / achieve / hotl — heuristic predicts churn ABSENT** (scaffold-only, no
-   validator ceiling). Confirm cheaply by static check; do not over-invest.
-2. **Strongest long-run transfer:** move artifact skills to retro's persist-helper-
-   that-stamps shape (pattern 1) — a bigger per-skill change, weigh later.
-3. **Orthogonal debug gap:** debug still skips the `debug-memory.md` RCF — its own lever.
+- **Redundancy compaction** — Phase 0 re-verified the 17 surviving DUP/DEAD
+  candidates against the LIVE tree: **0 delete-safe** (calibration passed; census
+  is stale and mislabels RCF floors as DUP). Deletion track CLOSED; lift yield ~nil.
+  Real lever is UPSTREAM — `claim_fidelity` `declaredReferences` actively resists ref
+  deletion, so **gated on the concurrent test-necessity verdict.** Plan + per-ref
+  evidence: [compaction-plan.md](../charness-artifacts/reference-compaction/compaction-plan.md).
+- **Churn sweep** — ideation DONE this session (ABSENT, static, fresh-eye SOUND;
+  heuristic sharpened — a non-ceiling format rule churns only when the format is
+  *invisible* OR a *tool-computable value is hidden*). Remaining, in order:
+  1. issue / achieve / hotl — predicted ABSENT; confirm cheaply by static check.
+  2. persist-helper transfer (pattern 1) — bigger per-skill change, weigh later.
+  3. debug still skips the `debug-memory.md` RCF — its own lever.
 
 ## Discuss
 
