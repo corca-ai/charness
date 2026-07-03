@@ -149,11 +149,28 @@ attribution; do not import coverage.py's default behavior as a repo invariant.
 - `6e0347a7` — corrected this artifact (the false subprocess premise).
 - `ae442a88` — **deferred items resolved**: removed the 3 deferred tests + the dead `is_available()`
   source functions (2 stage modules + plugin mirrors). **−3 tests, −2 dead source fns.**
+- **batch C** (prose-pin parametrize fold): folded the genuinely-homogeneous pure-markdown clusters
+  only. `test_skill_lesson_durability.py` (**8 fns → 3**): the 6 "read a doc, assert plain substrings"
+  lessons became a declarative `LESSON_GUARDS` table; the 2 special-logic guards (section-scoped
+  create-skill verification, raw+normalized debug) stay byte-identical named functions.
+  `test_closeout_discipline_propagation.py` (**8 fns → 4**): the 5 identical SKILL-anchor twins
+  (release/announcement/gather/narrative/handoff) became one parametrized test; the 3 distinct-shape
+  fns kept. **−9 test functions, 0 collected-item delta** — every asserted substring is preserved as
+  a param case, whole-suite collection stays 3974. Honest accounting: **LOC is ~neutral, not reduced**
+  (propagation −12; lesson-durability +15 from the table structure + an explanatory docstring). The
+  real win is a declarative table for the two homogeneous clusters + fewer functions, NOT less code
+  or less brittleness — coverage and the 2,382-`==`-pin brittleness are byte-identical. A first draft
+  used a 4-column `(section, normalize)` schema for the lesson table; that was reverted as
+  "procedure hidden in data" (it grew LOC and only 1–2 cases used each column) — folding only the
+  truly-homogeneous subset is the honest shape. ruff clean; both files + full `quality_gates` dir
+  (2463) green; standing suite green; bounded fresh-eye reviewed (38 + 10 substrings preserved
+  verbatim, confirmed two ways).
 
 **Total: 23 test functions removed** (issue-57 −2, A −12, B −3, correction −3, deferred −3) plus
 2 dead source functions. Standing suite green (3900); collection 3997 → 3974. No unsafe deletion
 shipped — every removed test's source branch is still covered by a retained sibling; all deletions
-passed a bounded fresh-eye review.
+passed a bounded fresh-eye review. (Batch C is separate: a −9 test-function *fold*, 0 deletions,
+0 collected-item change, LOC ~neutral.)
 
 ## Deferred — resolved / remaining
 
@@ -164,12 +181,26 @@ remains deliberately KEPT or explicitly out of scope:
   + `…product_review_smoke` + `test_usage_episodes_validator.py::…validator_smoke`) — **KEPT**: the
   only end-to-end proof the shipped plugin BUNDLE runs (the byte-parity gate proves `.py` identity;
   import-smoke only imports; neither runs the bundle).
-- **Batch C** (prose-pin cluster) — **NEXT SESSION**: parametrize/rewrite doc-substring tests that
-  exercise no Python source — count↓, coverage identical. Larger, separate slice. Candidate anchors
-  from the audit: `test_skill_lesson_durability.py` (~8 fns / ~51 substring asserts),
-  `test_source_bound_records_guidance.py`, `test_quality_skill_docs.py`, `test_issue_skill.py`,
-  `test_issue_closeout_discipline.py`, `test_closeout_discipline_propagation.py`. Whole-suite there
-  are 2,382 exact-string `==` asserts — most brittle-pin value lives here, not in deletions.
+- **Batch C** (prose-pin cluster) — **DONE (partial by design)**. Of the 6 candidate anchors, only 2
+  held a genuinely homogeneous "read one doc → assert substrings" cluster where a declarative
+  parametrize is strictly better at equal capability. **Folded** (see Applied):
+  `test_skill_lesson_durability.py` 8→1 and the 5 SKILL-anchor twins in
+  `test_closeout_discipline_propagation.py` 5→1. **Skipped, with rationale** (folding these fails the
+  "그게 정말 최선인가?" test — it would not be the best shape):
+  - `test_source_bound_records_guidance.py` — already 1 fn; a fold would *increase* collected items
+    and add a table for a single logical guard. Not better.
+  - `test_quality_skill_docs.py` (22 fns) — heterogeneous multi-doc combos, per-assert normalization
+    variants, a negative (`not in`) assert, and `#NNN` issue-context comments; a fold-schema would be
+    a procedure hidden in data, not declarative, and would risk dropping the comments. (Borderline: a
+    ~6–8 fn "dispatch + one lens ref" subset could be revisited, but the win is marginal.)
+  - `test_issue_skill.py` (29 fns) — only 3 are pure-markdown and scattered; the rest exercise
+    `issue_tool`/`issue_plan` source (out of Batch C scope). Negligible fold value.
+  - `test_issue_closeout_discipline.py` (10 fns) — 2 subprocess (excluded) + 8 heterogeneous
+    cross-doc guards, no homogeneous cluster to fold cleanly.
+  **Framing correction:** `parametrize` does NOT reduce the collected-item count (each case is its
+  own item), so Batch C's real lever is test-FUNCTION count + LOC + declarativeness — not the
+  "count↓" the original bullet implied. The 2,382 `==` brittle pins are unchanged: a fold preserves
+  every pin verbatim, so it does not reduce brittleness (which was never in this slice's scope).
 
 ## Blind spots
 

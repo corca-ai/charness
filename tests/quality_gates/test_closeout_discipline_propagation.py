@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from .support import ROOT
 
 
@@ -35,41 +37,27 @@ def test_closeout_discipline_is_cited_across_consumer_skills() -> None:
     assert not missing, f"consumers missing closeout-discipline cite: {missing}"
 
 
-def test_release_skill_anchors_verified_ledger_and_target_durability() -> None:
-    text = (ROOT / "skills" / "public" / "release" / "SKILL.md").read_text(encoding="utf-8")
+# Each consumer SKILL.md must anchor its own closeout-discipline vocabulary
+# (verified ledger + target/source-identity phrasing). Folded from one function
+# per skill into a declarative (skill_id, required substrings) table; every
+# asserted substring is preserved, so collection count is unchanged.
+SKILL_ANCHOR_GUARDS = [
+    ("release", ("verified release ledger", "target_unavailable")),
+    ("announcement", ("verified delivery ledger", "external-source identity")),
+    ("gather", ("verified gathered-asset ledger", "reuse the resolved source")),
+    ("narrative", ("external originating context", "canonical source identity")),
+    ("handoff", ("external originating context", "canonical source identity")),
+]
+
+
+@pytest.mark.parametrize(
+    "skill_id, substrings",
+    SKILL_ANCHOR_GUARDS,
+    ids=[skill_id for skill_id, _ in SKILL_ANCHOR_GUARDS],
+)
+def test_skill_anchors_closeout_discipline(skill_id: str, substrings: tuple[str, ...]) -> None:
+    text = (ROOT / "skills" / "public" / skill_id / "SKILL.md").read_text(encoding="utf-8")
     normalized = " ".join(text.split())
 
-    assert "verified release ledger" in normalized
-    assert "target_unavailable" in normalized
-
-
-def test_announcement_skill_anchors_external_source_identity() -> None:
-    text = (ROOT / "skills" / "public" / "announcement" / "SKILL.md").read_text(encoding="utf-8")
-    normalized = " ".join(text.split())
-
-    assert "verified delivery ledger" in normalized
-    assert "external-source identity" in normalized
-
-
-def test_gather_skill_anchors_verified_ledger_and_target_durability() -> None:
-    text = (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8")
-    normalized = " ".join(text.split())
-
-    assert "verified gathered-asset ledger" in normalized
-    assert "reuse the resolved source" in normalized
-
-
-def test_narrative_skill_anchors_external_source_identity() -> None:
-    text = (ROOT / "skills" / "public" / "narrative" / "SKILL.md").read_text(encoding="utf-8")
-    normalized = " ".join(text.split())
-
-    assert "external originating context" in normalized
-    assert "canonical source identity" in normalized
-
-
-def test_handoff_skill_anchors_external_source_identity() -> None:
-    text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(encoding="utf-8")
-    normalized = " ".join(text.split())
-
-    assert "external originating context" in normalized
-    assert "canonical source identity" in normalized
+    for substring in substrings:
+        assert substring in normalized, f"missing {substring!r} in {skill_id} SKILL.md"
