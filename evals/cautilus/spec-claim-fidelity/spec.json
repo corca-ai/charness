@@ -45,7 +45,7 @@
     },
     "fixed-probe-defer.md": {
       "engagement": "engage-always",
-      "rationale": "SKILL.md Workflow step 2 names this 'the core discipline for spec' but inlines the Fixed/Probe/Deferred classification verbatim (lines 75-79), so the run engages the discipline from the workflow rather than being forced to open the doc.",
+      "rationale": "SKILL.md Workflow step 2 ('Classify the remaining uncertainty', lines 74-79) inlines the Fixed/Probe/Deferred three-way classification as a faithful gist — each category name plus its one-line rule and the dependency-ordering rule — so the run engages the discipline from the workflow rather than being forced to open the doc (the doc itself, not step 2, frames it as 'the core discipline for spec' at its line 3). fixed-probe-defer.md stays engage-always for the genuinely doc-only depth: the per-category 'use when' trigger lists, the 'every probe should name what will be built / what signal answers it / how the spec changes' structure, and the hidden-deferral-becomes-drift rule.",
       "claimRole": "core-discipline",
       "classTag": "INLINE"
     },

@@ -45,7 +45,7 @@
     },
     "review-gate.md": {
       "engagement": "engage-always",
-      "rationale": "Every task-completing slice runs the stop gate (step 6), but SKILL.md step 6 inlines the minimum review lenses (contract honesty, runtime behavior, boundary ownership, docs sync) and the critique-scaling vocabulary; the doc's unique content (stronger-gate triggers, meaningful-slice-cadence pointer, contract re-read) is opened only when the slice's reach demands the stronger gate, so it is engage-always but not an RCF floor (lens 7, skill-inlined).",
+      "rationale": "Every task-completing slice runs the stop gate (step 6), and SKILL.md inlines the review-gate gist across steps 5-6: step 6's fresh-eye review names the runtime-behavior, boundary-honesty, and docs/spec-synchronization lenses plus the critique-scaling vocabulary, and step 5 inlines the contract-honesty lens as the contract re-read (re-read `Fixed Decisions` and named acceptance checks; confirm each is reflected, deferred, or reclassified). The doc's genuinely unique depth is only the stronger-gate trigger list, the fix-drift-in-code/contract-not-chat-only nuance, and the meaningful-slice-cadence pointer, opened when the slice's reach demands the stronger gate — so it is engage-always but not an RCF floor (lens 7, skill-inlined).",
       "claimRole": "skill-inlined-context",
       "classTag": "INLINE"
     },

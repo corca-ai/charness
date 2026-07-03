@@ -20,7 +20,7 @@
   "referenceEngagement": {
     "adapter-contract.md": {
       "engagement": "engage-always",
-      "rationale": "The Workflow step 2 explicitly consults the adapter to resolve drafting context; step 4 applies adapter policy (sections, audience_tags, omission_lenses, in_progress_sources, outputs); adapter shape governs the entire representative run from first bootstrap call through final recording.",
+      "rationale": "Workflow step 2 consults the adapter to resolve drafting context (e.g. walking each declared `in_progress_sources` entry into the draft's `## Source surfaces`, line 85); step 4 'Apply adapter policy' inlines the policy gist — ordered `sections`, `public_body_shape`, audience tags when configured, omission lenses, and `outputs` routing — so the run engages adapter shape from the body. Engage-always because adapter shape governs the representative run from first bootstrap call through final recording, yet with a resolved adapter present the run applies the step-2/step-4 policy inline and need not open the human-facing contract doc, whose canonical path/search order, full field list and defaults, `delivery_contract` resolver semantics, artifact rule, and delivery-kinds detail stay doc-only.",
       "claimRole": "bootstrap & policy foundation",
       "classTag": "INLINE"
     },
