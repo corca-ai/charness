@@ -20,9 +20,29 @@ _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scri
 # Mirrors REQUIRED_SECTIONS in scripts/validate_quality_artifact.py. The scaffold
 # emits a skeleton that passes that validator out of the box so an author fills
 # slots instead of rediscovering the contract by trial-and-error.
-# Mirrors MAX_ARTIFACT_LINES in scripts/validate_quality_artifact.py so the
-# template can surface the cap as a fill-time guard.
-MAX_ARTIFACT_LINES = 140
+
+# Single-source the artifact line budget from the validator (the one authority
+# for MAX_ARTIFACT_LINES) so the scaffold surfaces the exact ceiling the gate
+# enforces, without a second literal that can drift. If the validator module
+# cannot load, degrade to no budget rather than break the scaffold — the field is
+# additive guidance, never load-bearing.
+try:
+    _quality_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_quality_artifact")
+    _MAX_ARTIFACT_LINES: int | None = int(_quality_validator.MAX_ARTIFACT_LINES)
+except Exception:
+    _MAX_ARTIFACT_LINES = None
+
+# Budget guidance routes the run to write-to-fit instead of writing long then
+# trim-looping. It names the judgment-heavy sections that run largest in the real
+# artifact (## Advisory, ## Recommended Next Quality Moves, ## Delegated Review)
+# plus the structural rule for enumerate-prone sections, rather than asserting an
+# unproven "usual overflow" section the one captured artifact does not support.
+SIZE_GUIDANCE = (
+    "Write the whole artifact within max_lines. The judgment-heavy sections "
+    "(## Advisory, ## Recommended Next Quality Moves, ## Delegated Review) run "
+    "largest — keep each finding to its evidence, and cite the inventory command "
+    "rather than pasting every gate or command entry verbatim."
+)
 SECTIONS = (
     "## Scope",
     "## Current Gates",
@@ -56,9 +76,8 @@ def render_template(*, title: str, date_text: str) -> str:
         f"# {title}",
         f"Date: {date_text}",
         "",
-        f"<!-- fill guard: fill the TODO slots in place and keep the finished artifact"
-        f" <= {MAX_ARTIFACT_LINES} lines; the payload's validator_command reports every"
-        " rule violation in one pass -->",
+        "<!-- fill guard: fill the TODO slots in place; the payload's"
+        " validator_command reports every rule violation in one pass -->",
         "",
     ]
     for heading in SECTIONS:
@@ -153,6 +172,11 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     output_dir = Path(adapter["data"]["output_dir"])
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
+    size_budget = (
+        {"max_lines": _MAX_ARTIFACT_LINES, "guidance": SIZE_GUIDANCE}
+        if _MAX_ARTIFACT_LINES is not None
+        else None
+    )
     return _scaffold_lib.current_pointer_payload(
         repo_root=repo_root,
         output_dir=output_dir,
@@ -160,6 +184,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         title=resolved_title,
         template=render_template(title=resolved_title, date_text=date_text),
         validator_command=validator_command(repo_root),
+        size_budget=size_budget,
     )
 
 

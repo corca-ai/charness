@@ -58,11 +58,16 @@ git status --short
    extraction, interface narrowing, advisory, existing-gate reuse, or a
    candidate floor that has passed the north-star and floor-addition-restraint
    checks.
-8. Scaffold the quality artifact FIRST with `scaffold_quality_artifact.py` (it
-   emits a skeleton that already passes the validator) and fill real findings
-   into that structure instead of hand-writing the section format. Validate once
-   with `validate_quality_artifact.py` — it reports every remaining violation in
-   one pass, so fix them together rather than iterating one error at a time.
+8. Scaffold the quality artifact FIRST with
+   `scaffold_quality_artifact.py --repo-root . --json` (it emits a skeleton that
+   already passes the validator) and fill real findings into that payload's
+   `template` instead of hand-writing the section format. Use the payload as the
+   artifact contract: write to fit its `size_budget.max_lines` on the first pass
+   and heed `size_budget.guidance` on the judgment-heavy sections, rather than
+   writing long and then trimming to fit against a ceiling the validator only
+   reveals at the end. Validate once with `validate_quality_artifact.py` — it
+   reports every remaining violation in one pass, so fix them together rather than
+   iterating one error at a time.
 9. Run bounded fresh-eye review after initial inventory and before broad
    recommendations when the quality contract calls for it; use the
    high-leverage tier in `../../shared/references/fresh-eye-subagent-review.md`
