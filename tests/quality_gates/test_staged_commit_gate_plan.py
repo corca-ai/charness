@@ -21,6 +21,8 @@ from scripts.surfaces_lib import load_surfaces, match_surfaces
 
 from .support import ROOT, run_script
 
+SURFACES_JSON = (ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8")
+
 
 def _surface_verify_commands_for(paths: list[str]) -> set[str]:
     manifest = load_surfaces(ROOT, required=False)
@@ -605,7 +607,7 @@ def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
     # skill-packages surface verify_commands so portable-package issue anchors,
     # dated incidents, and host-surface references fail at the commit boundary,
     # not only at the broad/bundle quality gate.
-    surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
+    surfaces = json.loads(SURFACES_JSON)
     skill_packages = next(s for s in surfaces["surfaces"] if s["surface_id"] == "skill-packages")
     assert (
         "python3 scripts/validate_skill_ergonomics.py --repo-root ." in skill_packages["verify_commands"]
@@ -616,7 +618,7 @@ def test_repo_python_surface_runs_fast_boundary_bypass_ratchet_before_broad_pyte
     # #314 acceptance (1): the fast boundary-bypass ratchet must run in the
     # repo-python surface and precede the broad pytest so a redundant boundary-
     # spawning test fails at the commit boundary, not 172s into the broad gate.
-    surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
+    surfaces = json.loads(SURFACES_JSON)
     repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
     verify = repo_python["verify_commands"]
     from scripts.slice_closeout_broad_gate import is_broad_pytest_command
@@ -635,7 +637,7 @@ def test_fast_surface_verify_allowlist_keys_exist_in_some_surface() -> None:
     # in some surface verify_commands. If surfaces.json renames or drops a fast
     # checker without updating FAST_SURFACE_VERIFY_COMMANDS (or vice versa), the
     # two commit-boundary paths would silently disagree -- pin it so drift fails.
-    surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
+    surfaces = json.loads(SURFACES_JSON)
     all_verify = {cmd for s in surfaces["surfaces"] for cmd in s["verify_commands"]}
     for command in FAST_SURFACE_VERIFY_COMMANDS:
         assert command in all_verify, f"{command!r} not found in any surface verify_commands"

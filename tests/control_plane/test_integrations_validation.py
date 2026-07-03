@@ -27,12 +27,15 @@ from tests.script_main import run_loaded_script_main
 
 from .support import ROOT, run_script, seed_control_plane_repo
 
+MANIFEST_SCHEMA = (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8")
+DEPENDENCIES_SCHEMA = (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(encoding="utf-8")
+
 
 def write_manifest_schema(repo: Path) -> Path:
     tools_dir = repo / "integrations" / "tools"
     tools_dir.mkdir(parents=True, exist_ok=True)
     (tools_dir / "manifest.schema.json").write_text(
-        (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        MANIFEST_SCHEMA,
         encoding="utf-8",
     )
     return tools_dir
@@ -47,7 +50,7 @@ def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> 
         Repo()
         .file(
             "integrations/tools/manifest.schema.json",
-            lambda: (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+            lambda: MANIFEST_SCHEMA,
         )
         .file(
             "integrations/tools/bad.json",
@@ -474,7 +477,7 @@ def test_validate_integrations_accepts_dependencies_referencing_known_tool(tmp_p
         json.dumps(deps, indent=2) + "\n", encoding="utf-8"
     )
     (repo / "integrations" / "tools" / "dependencies.schema.json").write_text(
-        (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(encoding="utf-8"),
+        DEPENDENCIES_SCHEMA,
         encoding="utf-8",
     )
 
@@ -496,7 +499,7 @@ def test_validate_integrations_rejects_dependencies_with_unknown_tool(tmp_path: 
         json.dumps(deps, indent=2) + "\n", encoding="utf-8"
     )
     (repo / "integrations" / "tools" / "dependencies.schema.json").write_text(
-        (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(encoding="utf-8"),
+        DEPENDENCIES_SCHEMA,
         encoding="utf-8",
     )
 
@@ -515,7 +518,7 @@ def test_validate_integrations_rejects_dependencies_with_unknown_tool(tmp_path: 
 def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
     (repo / "integrations" / "tools" / "dependencies.schema.json").write_text(
-        (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(encoding="utf-8"),
+        DEPENDENCIES_SCHEMA,
         encoding="utf-8",
     )
 

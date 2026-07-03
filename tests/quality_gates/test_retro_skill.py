@@ -4,21 +4,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
+RETRO_SKILL = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
+
 
 def test_retro_skill_triggers_on_present_but_undeclared_invariants() -> None:
-    skill_text = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
     reference_text = (
         ROOT / "skills" / "public" / "retro" / "references" / "trigger-and-persistence.md"
     ).read_text(encoding="utf-8")
 
-    assert "fresh-eye reader misread an invariant" in skill_text
-    assert "check_auto_trigger.py" in skill_text
-    assert "auto_session_trigger_surfaces" in skill_text
+    assert "fresh-eye reader misread an invariant" in RETRO_SKILL
+    assert "check_auto_trigger.py" in RETRO_SKILL
+    assert "auto_session_trigger_surfaces" in RETRO_SKILL
     assert "present invariant as absent" in reference_text
 
 
 def test_retro_efficiency_waste_is_phase_aware() -> None:
-    skill_text = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
     section_text = (
         ROOT / "skills" / "public" / "retro" / "references" / "section-guide.md"
     ).read_text(encoding="utf-8")
@@ -26,9 +26,9 @@ def test_retro_efficiency_waste_is_phase_aware() -> None:
         ROOT / "skills" / "public" / "retro" / "references" / "phase-aware-efficiency.md"
     ).read_text(encoding="utf-8")
 
-    assert "references/phase-aware-efficiency.md" in skill_text
-    assert "phase intent and the triage lock" in skill_text
-    assert "audit_codex_session.py" in skill_text
+    assert "references/phase-aware-efficiency.md" in RETRO_SKILL
+    assert "phase intent and the triage lock" in RETRO_SKILL
+    assert "audit_codex_session.py" in RETRO_SKILL
     assert "Broad" in section_text and "not waste solely because it was broad" in section_text
     assert "Classify high-cost activity by phase" in efficiency_text
     assert "Exploration -> Triage -> Implementation -> Verification" in efficiency_text
@@ -42,7 +42,6 @@ def test_retro_efficiency_waste_is_phase_aware() -> None:
 
 
 def test_retro_consumes_prepare_packets_when_adapter_declares_sections() -> None:
-    skill_text = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
     adapter_text = (
         ROOT / "skills" / "public" / "retro" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
@@ -50,8 +49,8 @@ def test_retro_consumes_prepare_packets_when_adapter_declares_sections() -> None
         ROOT / "skills" / "public" / "retro" / "references" / "prepare-packet.md"
     ).read_text(encoding="utf-8")
 
-    assert "prepare_packet.py" in skill_text
-    assert "Packet Consumed" in skill_text
+    assert "prepare_packet.py" in RETRO_SKILL
+    assert "Packet Consumed" in RETRO_SKILL
     assert "packet_sections" in adapter_text
     assert "charness.retro_prepare_packet" in packet_text
     assert "CHARNESS_RETRO_CHANGED_REF" in packet_text

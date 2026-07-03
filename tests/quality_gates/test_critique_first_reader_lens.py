@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from .support import ROOT
 
+ANGLE_SELECTION = (
+    ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md"
+).read_text(encoding="utf-8")
+
 
 def test_angle_selection_lists_first_reader_lens() -> None:
-    text = (ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md").read_text(
-        encoding="utf-8"
-    )
+    text = ANGLE_SELECTION
 
     assert "`first-reader`" in text
     assert "plain-language" in text
@@ -16,9 +18,7 @@ def test_angle_selection_lists_first_reader_lens() -> None:
 
 
 def test_angle_selection_triggers_first_reader_lens_for_durable_doc_decisions() -> None:
-    text = (ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md").read_text(
-        encoding="utf-8"
-    )
+    text = ANGLE_SELECTION
     normalized = " ".join(text.split())
 
     rotation_section = normalized.split("Rotate or swap angles", 1)[1]

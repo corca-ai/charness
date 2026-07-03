@@ -4,6 +4,10 @@ from pathlib import Path
 
 from .support import ROOT, run_script
 
+SPEC_SKILL = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
+    encoding="utf-8"
+)
+
 
 def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> None:
     skill_text = (ROOT / "skills" / "public" / "critique" / "SKILL.md").read_text(
@@ -28,9 +32,6 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
         ROOT / "skills" / "public" / "critique" / "references" / "cadence.md"
     ).read_text(encoding="utf-8")
     handoff_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
-    spec_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
         encoding="utf-8"
     )
 
@@ -59,7 +60,7 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "repo-mandated bounded fresh-eye reviews are already delegated" in capability_text
     assert "`host signal:` or `tool signal:`" in capability_text
     assert "wrong next action" in handoff_text
-    assert "likely implementer misread" in spec_text
+    assert "likely implementer misread" in SPEC_SKILL
     assert "Delegated reviewer fast path" in skill_text
     assert "Do not report blocked for missing nested subagents" in skill_text
     assert "First branch for delegated reviewers" in capability_text
@@ -109,19 +110,16 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
 
 
 def test_spec_and_narrative_preserve_rejected_alternatives() -> None:
-    spec_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
     narrative_text = (ROOT / "skills" / "public" / "narrative" / "SKILL.md").read_text(
         encoding="utf-8"
     )
 
-    assert "call `critique` for non-trivial contract decisions" in spec_text
-    assert "Deliberately Not Doing" in spec_text
+    assert "call `critique` for non-trivial contract decisions" in SPEC_SKILL
+    assert "Deliberately Not Doing" in SPEC_SKILL
     # The rejected-alternatives gist now lives inline in spec SKILL.md (the
     # references/rejected-alternatives.md DUP was removed in reference-compaction
     # Slice 3), so the concept is asserted against the core, not a deleted ref.
-    assert "rejected alternatives" in spec_text
+    assert "rejected alternatives" in SPEC_SKILL
     assert "Deliberately Not Doing" in narrative_text
 
 

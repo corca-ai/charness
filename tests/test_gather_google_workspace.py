@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
+GATHER_SKILL = (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8")
 _advise_google_workspace_path = import_repo_module(
     ROOT / "skills" / "public" / "gather" / "scripts" / "advise_google_workspace_path.py",
     "skills.public.gather.scripts.advise_google_workspace_path",
@@ -93,22 +94,19 @@ def test_advise_google_workspace_path_cli_emits_json(tmp_path: Path, monkeypatch
 
 
 def test_gather_skill_description_names_concrete_source_triggers() -> None:
-    skill_text = (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8")
-    description = next(line for line in skill_text.splitlines() if line.startswith("description: "))
+    description = next(line for line in GATHER_SKILL.splitlines() if line.startswith("description: "))
 
     for trigger in ("Slack thread", "Notion page", "Google Docs", "GitHub content", "arbitrary URL"):
         assert trigger in description
 
 
 def test_gather_skill_contract_names_browser_mediated_private_source_ladder() -> None:
-    skill_text = (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8")
-
-    assert "advise_slack_path.py" in skill_text
-    assert "support/gather-slack/scripts/export-thread.sh" in skill_text
-    assert "browser-mediated fallback through `agent-browser`" in skill_text
-    assert "official API/export docs before browser automation" in skill_text
-    assert "- `Access Mode`" in skill_text
-    assert "- `Captured vs Human Confirmation`" in skill_text
+    assert "advise_slack_path.py" in GATHER_SKILL
+    assert "support/gather-slack/scripts/export-thread.sh" in GATHER_SKILL
+    assert "browser-mediated fallback through `agent-browser`" in GATHER_SKILL
+    assert "official API/export docs before browser automation" in GATHER_SKILL
+    assert "- `Access Mode`" in GATHER_SKILL
+    assert "- `Captured vs Human Confirmation`" in GATHER_SKILL
 
 
 def test_advise_slack_path_points_to_gather_slack_wrapper(tmp_path: Path) -> None:

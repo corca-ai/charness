@@ -4,12 +4,38 @@ import json
 
 from .support import ROOT
 
+IMPL_SKILL = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+SETUP_SKILL = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
+QUALITY_SKILL = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+BOOTSTRAP_SEAMS = (
+    ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
+).read_text(encoding="utf-8")
+DEFAULT_SURFACES = (
+    ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
+).read_text(encoding="utf-8")
+AGENT_DOCS_POLICY = (
+    ROOT / "skills" / "public" / "setup" / "references" / "agent-docs-policy.md"
+).read_text(encoding="utf-8")
+DISPATCH = (
+    ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+).read_text(encoding="utf-8")
+MAINTAINER_LOCAL_ENFORCEMENT = (
+    ROOT / "skills" / "public" / "quality" / "references" / "maintainer-local-enforcement.md"
+).read_text(encoding="utf-8")
+QUALITY_INDEX = (
+    ROOT / "skills" / "public" / "quality" / "references" / "index.md"
+).read_text(encoding="utf-8")
+PROMPT_ASSET_POLICY = (
+    ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
+).read_text(encoding="utf-8")
+PUBLIC_SKILL_VALIDATION = (
+    ROOT / "docs" / "public-skill-validation.md"
+).read_text(encoding="utf-8")
+
 
 def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
-    skill_text = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
-    bootstrap_seams = (
-        ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
-    ).read_text(encoding="utf-8")
+    skill_text = SETUP_SKILL
+    bootstrap_seams = BOOTSTRAP_SEAMS
     probe_reference = (
         ROOT / "skills" / "public" / "setup" / "references" / "probe-surface.md"
     ).read_text(encoding="utf-8")
@@ -22,9 +48,7 @@ def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
 
 
 def test_setup_default_surfaces_carry_early_quality_baseline() -> None:
-    default_surfaces = (
-        ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
-    ).read_text(encoding="utf-8")
+    default_surfaces = DEFAULT_SURFACES
 
     assert "## Early Quality Baseline" in default_surfaces
     assert "Python: `ruff check` with `E`, `F`, `I`, and `C90`" in default_surfaces
@@ -34,18 +58,10 @@ def test_setup_default_surfaces_carry_early_quality_baseline() -> None:
 
 
 def test_setup_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
-    skill_text = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(
-        encoding="utf-8"
-    ).lower()
-    agent_docs = (
-        ROOT / "skills" / "public" / "setup" / "references" / "agent-docs-policy.md"
-    ).read_text(encoding="utf-8").lower()
-    bootstrap_seams = (
-        ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
-    ).read_text(encoding="utf-8").lower()
-    default_surfaces = (
-        ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
-    ).read_text(encoding="utf-8").lower()
+    skill_text = SETUP_SKILL.lower()
+    agent_docs = AGENT_DOCS_POLICY.lower()
+    bootstrap_seams = BOOTSTRAP_SEAMS.lower()
+    default_surfaces = DEFAULT_SURFACES.lower()
 
     assert "already delegated" in skill_text
     assert "second user message" in bootstrap_seams
@@ -63,10 +79,10 @@ def test_setup_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
 
 
 def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
-    skill_text = (ROOT / "skills/public/setup/SKILL.md").read_text(encoding="utf-8").lower()
-    agent_docs = (ROOT / "skills/public/setup/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
-    bootstrap_seams = (ROOT / "skills/public/setup/references/bootstrap-seams.md").read_text(encoding="utf-8").lower()
-    default_surfaces = (ROOT / "skills/public/setup/references/default-surfaces.md").read_text(encoding="utf-8").lower()
+    skill_text = SETUP_SKILL.lower()
+    agent_docs = AGENT_DOCS_POLICY.lower()
+    bootstrap_seams = BOOTSTRAP_SEAMS.lower()
+    default_surfaces = DEFAULT_SURFACES.lower()
     normalization_flow = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
     assert "bootstrap-seams.md" in skill_text
@@ -82,10 +98,10 @@ def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
 
 
 def test_setup_docs_seed_announcement_ready_commit_bodies() -> None:
-    skill_text = (ROOT / "skills/public/setup/SKILL.md").read_text(encoding="utf-8").lower()
-    agent_docs = (ROOT / "skills/public/setup/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
-    bootstrap_seams = (ROOT / "skills/public/setup/references/bootstrap-seams.md").read_text(encoding="utf-8").lower()
-    default_surfaces = (ROOT / "skills/public/setup/references/default-surfaces.md").read_text(encoding="utf-8").lower()
+    skill_text = SETUP_SKILL.lower()
+    agent_docs = AGENT_DOCS_POLICY.lower()
+    bootstrap_seams = BOOTSTRAP_SEAMS.lower()
+    default_surfaces = DEFAULT_SURFACES.lower()
 
     assert "bootstrap-seams.md" in skill_text
     for text in (agent_docs, bootstrap_seams, default_surfaces):
@@ -170,10 +186,8 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
 
 
 def test_impl_skill_routes_validation_and_browser_proof_explicitly() -> None:
-    skill_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-    dispatch = (
-        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
-    ).read_text(encoding="utf-8")
+    skill_text = IMPL_SKILL
+    dispatch = DISPATCH
     verification_ladder = (
         ROOT / "skills" / "public" / "impl" / "references" / "verification-ladder.md"
     ).read_text(encoding="utf-8")
@@ -195,14 +209,7 @@ def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> Non
     debug_text = (
         ROOT / "skills" / "public" / "debug" / "SKILL.md"
     ).read_text(encoding="utf-8")
-    maintainer_local = (
-        ROOT
-        / "skills"
-        / "public"
-        / "quality"
-        / "references"
-        / "maintainer-local-enforcement.md"
-    ).read_text(encoding="utf-8")
+    maintainer_local = MAINTAINER_LOCAL_ENFORCEMENT
 
     assert "pre-worker\n     acknowledgement" in debug_text
     assert "worker execution" in debug_text
@@ -224,7 +231,7 @@ def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
 
 
 def test_public_skill_validation_doc_keeps_critique_and_on_demand_boundary_visible() -> None:
-    validation_doc = (ROOT / "docs" / "public-skill-validation.md").read_text(encoding="utf-8")
+    validation_doc = PUBLIC_SKILL_VALIDATION
 
     assert "`critique`" in validation_doc
     assert "on-demand proof through" in validation_doc
@@ -242,12 +249,8 @@ def test_control_plane_documents_authenticated_release_probe_contract() -> None:
 
 
 def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
-    index = (
-        ROOT / "skills" / "public" / "quality" / "references" / "index.md"
-    ).read_text(encoding="utf-8")
-    dispatch = (
-        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
-    ).read_text(encoding="utf-8")
+    index = QUALITY_INDEX
+    dispatch = DISPATCH
     adapter_contract = (
         ROOT / "skills" / "public" / "quality" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
@@ -257,9 +260,7 @@ def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     fresh_eye = (
         ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
-    prompt_policy = (
-        ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
-    ).read_text(encoding="utf-8")
+    prompt_policy = PROMPT_ASSET_POLICY
 
     assert "quality-lenses.md" in index
     assert "prompt/content bulk" in dispatch
@@ -279,10 +280,8 @@ def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
 
 
 def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
-    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
-    dispatch = (
-        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
-    ).read_text(encoding="utf-8")
+    skill_text = QUALITY_SKILL
+    dispatch = DISPATCH
     automation = (
         ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
     ).read_text(encoding="utf-8")
@@ -292,9 +291,7 @@ def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
     lenses = (
         ROOT / "skills" / "public" / "quality" / "references" / "quality-lenses.md"
     ).read_text(encoding="utf-8")
-    enforcement = (
-        ROOT / "skills" / "public" / "quality" / "references" / "maintainer-local-enforcement.md"
-    ).read_text(encoding="utf-8")
+    enforcement = MAINTAINER_LOCAL_ENFORCEMENT
 
     assert "narrow an interface" in skill_text
     assert "bounded test-ratio posture" in dispatch
@@ -307,10 +304,8 @@ def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
 
 
 def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
-    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
-    index = (
-        ROOT / "skills" / "public" / "quality" / "references" / "index.md"
-    ).read_text(encoding="utf-8")
+    skill_text = QUALITY_SKILL
+    index = QUALITY_INDEX
     reference_text = (
         ROOT / "skills" / "public" / "quality" / "references" / "testability-and-selection.md"
     ).read_text(encoding="utf-8")
@@ -330,7 +325,7 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
 
 
 def test_impl_skill_carries_truth_surface_sync_guardrail() -> None:
-    skill_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+    skill_text = IMPL_SKILL
     adapter_contract = (ROOT / "skills" / "public" / "impl" / "references" / "adapter-contract.md").read_text(encoding="utf-8")
     assert "Sync truth surfaces and re-read the contract before closeout." in skill_text
     assert "Truth Surface Sync" in skill_text
@@ -339,7 +334,7 @@ def test_impl_skill_carries_truth_surface_sync_guardrail() -> None:
 
 
 def test_impl_skill_defaults_to_autonomous_continuation() -> None:
-    skill_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+    skill_text = IMPL_SKILL
     assert "autonomous continuation" in skill_text.lower()
     assert "continuation" in skill_text and "checkpoints" in skill_text
     assert "irreversible" in skill_text and "external side effect" in skill_text
@@ -348,8 +343,8 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
 
 
 def test_current_cautilus_guidance_uses_eval_surface() -> None:
-    impl_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-    public_skill_validation = (ROOT / "docs" / "public-skill-validation.md").read_text(encoding="utf-8")
+    impl_text = IMPL_SKILL
+    public_skill_validation = PUBLIC_SKILL_VALIDATION
     adapter_text = (ROOT / ".agents" / "cautilus-adapter.yaml").read_text(encoding="utf-8")
 
     assert "cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>" in impl_text
@@ -365,13 +360,9 @@ def test_current_cautilus_guidance_uses_eval_surface() -> None:
 
 
 def test_cautilus_guidance_does_not_use_generic_review_triggers() -> None:
-    impl_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-    dispatch = (
-        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
-    ).read_text(encoding="utf-8")
-    prompt_policy = (
-        ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
-    ).read_text(encoding="utf-8")
+    impl_text = IMPL_SKILL
+    dispatch = DISPATCH
+    prompt_policy = PROMPT_ASSET_POLICY
     manifest = json.loads((ROOT / "integrations" / "tools" / "cautilus.json").read_text(encoding="utf-8"))
 
     assert "generic" in impl_text

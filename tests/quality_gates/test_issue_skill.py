@@ -8,6 +8,8 @@ from pathlib import Path
 
 from tests.quality_gates.support import ROOT, run_script, write_issue_adapter_with_backend
 
+ISSUE_SKILL = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
+
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 
 
@@ -610,13 +612,12 @@ def test_issue_close_with_comment_rejects_adapter_template_with_unknown_placehol
 
 
 def test_issue_skill_records_github_sot_for_omitted_selector() -> None:
-    skill_text = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
     resolve_flow = (ROOT / "skills" / "public" / "issue" / "references" / "resolve-flow.md").read_text(
         encoding="utf-8"
     )
 
-    assert "GitHub is the source of truth" in skill_text
-    assert "Do not use the session's last-created issue" in skill_text
+    assert "GitHub is the source of truth" in ISSUE_SKILL
+    assert "Do not use the session's last-created issue" in ISSUE_SKILL
     assert "omitted selector means newest open GitHub issue" in resolve_flow
 
 
@@ -734,13 +735,12 @@ def test_issue_plan_resolve_rejects_ignored_target_flag(tmp_path: Path) -> None:
 
 
 def test_issue_skill_documents_backend_resolution() -> None:
-    skill_text = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
     backend_ref = (ROOT / "skills" / "public" / "issue" / "references" / "issue-backend.md").read_text(
         encoding="utf-8"
     )
 
-    assert "selected backend comes from the adapter" in " ".join(skill_text.lower().split())
-    assert "selected_backend" in skill_text
+    assert "selected backend comes from the adapter" in " ".join(ISSUE_SKILL.lower().split())
+    assert "selected_backend" in ISSUE_SKILL
     assert "issue_backend" in backend_ref
     assert "acme" in backend_ref
 
@@ -776,11 +776,10 @@ def test_resolve_milestone_leaves_unassigned_when_none_requested() -> None:
 
 
 def test_issue_skill_documents_existing_milestone_rule() -> None:
-    skill_text = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
     shaping = (ROOT / "skills" / "public" / "issue" / "references" / "issue-shaping.md").read_text(
         encoding="utf-8"
     )
-    skill_flat = " ".join(skill_text.split())
+    skill_flat = " ".join(ISSUE_SKILL.split())
     shaping_flat = " ".join(shaping.split())
     assert "Assign only existing repository labels and milestones" in skill_flat
     assert "Never create a new milestone" in shaping_flat

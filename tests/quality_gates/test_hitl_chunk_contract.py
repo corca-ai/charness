@@ -6,6 +6,11 @@ from pathlib import Path
 
 from .support import ROOT, run_script
 
+HITL_SKILL = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
+CHUNK_CONTRACT = (ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md").read_text(
+    encoding="utf-8"
+)
+
 CHECK_SCRIPT = "skills/public/hitl/scripts/check_chunk_contract.py"
 
 
@@ -19,31 +24,23 @@ def _load_hitl_lib():
 
 
 def test_hitl_skill_requires_agent_assessment_before_decision() -> None:
-    skill_text = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
-
-    assert "Agent Assessment" in skill_text
-    assert "Recommended Disposition" in skill_text
-    assert "non-binding" in skill_text
-    assert "question-only chunks are not enough" in skill_text
+    assert "Agent Assessment" in HITL_SKILL
+    assert "Recommended Disposition" in HITL_SKILL
+    assert "non-binding" in HITL_SKILL
+    assert "question-only chunks are not enough" in HITL_SKILL
 
 
 def test_hitl_chunk_contract_lists_assessment_and_recommendation() -> None:
-    chunk_contract = (ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "agent assessment" in chunk_contract
-    assert "recommended disposition" in chunk_contract
-    assert "display-only" in chunk_contract
-    assert "Suggestions never auto-record as approval" in chunk_contract
+    assert "agent assessment" in CHUNK_CONTRACT
+    assert "recommended disposition" in CHUNK_CONTRACT
+    assert "display-only" in CHUNK_CONTRACT
+    assert "Suggestions never auto-record as approval" in CHUNK_CONTRACT
 
 
 def test_hitl_output_shape_orders_assessment_before_decision_needed() -> None:
-    skill_text = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
-
-    assessment_index = skill_text.index("Agent Assessment")
-    recommendation_index = skill_text.index("Recommended Disposition")
-    decision_index = skill_text.index("Decision Needed")
+    assessment_index = HITL_SKILL.index("Agent Assessment")
+    recommendation_index = HITL_SKILL.index("Recommended Disposition")
+    decision_index = HITL_SKILL.index("Decision Needed")
 
     assert assessment_index < decision_index
     assert recommendation_index < decision_index
@@ -124,12 +121,8 @@ def test_agent_assessment_invariant_is_cited_across_chunk_surfaces() -> None:
 
 
 def test_hitl_chunk_contract_extends_invariant_to_applied_and_full_target_review() -> None:
-    text = (ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "Full Target Review" in text
-    applied_section = text.split("## Applied Rewrite Review", 1)[1].split("##", 1)[0]
+    assert "Full Target Review" in CHUNK_CONTRACT
+    applied_section = CHUNK_CONTRACT.split("## Applied Rewrite Review", 1)[1].split("##", 1)[0]
     assert "Agent Assessment" in applied_section
     assert "Recommended Disposition" in applied_section
 

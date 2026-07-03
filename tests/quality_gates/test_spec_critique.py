@@ -2,37 +2,35 @@ from __future__ import annotations
 
 from .support import ROOT, skill_package_text
 
+SPEC_SKILL = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
+    encoding="utf-8"
+)
+
 
 def test_spec_skill_surfaces_critique_and_fresh_eye_review() -> None:
-    skill_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
     shared_review = (
         ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
 
-    assert "critique" in skill_text.lower()
-    assert "fresh-eye" in skill_text
-    assert "subagent" in skill_text or "subagents" in skill_text
-    assert "../../shared/references/fresh-eye-subagent-review.md" in skill_text
-    assert "likely implementer misread" in skill_text
-    assert "overstated acceptance" in skill_text
+    assert "critique" in SPEC_SKILL.lower()
+    assert "fresh-eye" in SPEC_SKILL
+    assert "subagent" in SPEC_SKILL or "subagents" in SPEC_SKILL
+    assert "../../shared/references/fresh-eye-subagent-review.md" in SPEC_SKILL
+    assert "likely implementer misread" in SPEC_SKILL
+    assert "overstated acceptance" in SPEC_SKILL
     assert "Parent sessions that never spawned a fresh-eye reviewer" in shared_review
 
 
 def test_spec_skill_distinguishes_public_executable_contract_from_implementation_guard() -> None:
-    skill_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
     package_text = skill_package_text("spec")
     reference_text = (
         ROOT / "skills" / "public" / "spec" / "references" / "public-executable-contracts.md"
     ).read_text(encoding="utf-8")
 
-    assert "public executable contract" in skill_text
-    assert "maintenance lint / implementation guard" in skill_text
+    assert "public executable contract" in SPEC_SKILL
+    assert "maintenance lint / implementation guard" in SPEC_SKILL
     assert "future roadmap" in package_text
-    assert "`references/public-executable-contracts.md`" in skill_text
+    assert "`references/public-executable-contracts.md`" in SPEC_SKILL
     assert "reader-facing current claims" in reference_text
     assert "implementation-file pinning" in reference_text
     assert "fixed-string source assertions" in reference_text

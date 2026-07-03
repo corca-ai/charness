@@ -39,6 +39,8 @@ from tests.quality_gates.support import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
+MUTATION_WORKFLOW = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+
 PROPOSE_SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "propose_mutation_testing.py"
 TEMPLATE_PATH = ROOT / "skills" / "public" / "quality" / "scripts" / "templates" / "mutation-tests.yml"
 
@@ -384,17 +386,17 @@ def test_a4_template_samples_only_full_runs_with_sample_command() -> None:
 
 
 def test_checked_in_mutation_workflow_rotates_scheduled_sample_seed() -> None:
-    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    body = MUTATION_WORKFLOW
     assert "MUTATION_SAMPLE_SEED: ${{ github.run_id }}:" in body
 
 
 def test_checked_in_mutation_workflow_reuses_sample_seed_for_mutation_run() -> None:
-    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    body = MUTATION_WORKFLOW
     assert body.count("MUTATION_SAMPLE_SEED: ${{ github.run_id }}:") == 2
 
 
 def test_checked_in_mutation_workflow_samples_only_full_runs_with_sample_command() -> None:
-    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    body = MUTATION_WORKFLOW
     assert (
         "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''"
         in body
@@ -402,7 +404,7 @@ def test_checked_in_mutation_workflow_samples_only_full_runs_with_sample_command
 
 
 def test_checked_in_mutation_workflow_uses_repo_owned_requirements() -> None:
-    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    body = MUTATION_WORKFLOW
     requirements = (ROOT / "packaging" / "mutation-requirements.txt").read_text(encoding="utf-8")
 
     assert "pip install -r packaging/mutation-requirements.txt" in body
@@ -411,7 +413,7 @@ def test_checked_in_mutation_workflow_uses_repo_owned_requirements() -> None:
 
 
 def test_checked_in_mutation_workflow_installs_length_gate_binary_before_sampling() -> None:
-    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    body = MUTATION_WORKFLOW
 
     assert "cargo install tokei" in body
     assert "tokei --version" in body

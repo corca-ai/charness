@@ -8,6 +8,8 @@ from tests.script_loader import load_script_module
 
 from .support import ROOT
 
+AGENTS = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
 RETRO_RESOLVE_ADAPTER = load_script_module(
     "tests.quality_gates.retro_resolve_adapter",
     ROOT / "skills/public/retro/scripts/resolve_adapter.py",
@@ -29,7 +31,6 @@ def test_retro_adapter_exposes_recent_lessons_summary_path(monkeypatch, capsys) 
 
 
 def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
-    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
     handoff_text = (ROOT / "docs" / "handoff.md").read_text(encoding="utf-8")
     skill_text = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
     contract_text = (
@@ -37,7 +38,7 @@ def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
     ).read_text(encoding="utf-8")
     lessons_text = (ROOT / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
 
-    assert "charness-artifacts/retro/recent-lessons.md" in agents_text
+    assert "charness-artifacts/retro/recent-lessons.md" in AGENTS
     assert "recent-lessons.md" in handoff_text
     assert "summary_path" in skill_text
     assert "summary_path" in contract_text
@@ -48,18 +49,17 @@ def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
 
 
 def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
-    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
     development_text = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
 
-    assert "docs/development.md" in agents_text
-    assert "--skip-cli-install" not in agents_text
-    assert "~/.agents/src/charness/charness update" not in agents_text
+    assert "docs/development.md" in AGENTS
+    assert "--skip-cli-install" not in AGENTS
+    assert "~/.agents/src/charness/charness update" not in AGENTS
     assert "--skip-cli-install" in development_text
     assert "~/.agents/src/charness/charness update" in development_text
 
 
 def test_agents_carries_bounded_subagent_delegation_rule() -> None:
-    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8").lower()
+    agents_text = AGENTS.lower()
 
     assert "subagent delegation" in agents_text
     assert "explicit user delegation request" in agents_text
