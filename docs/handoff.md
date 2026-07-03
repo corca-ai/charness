@@ -16,8 +16,8 @@
   are now **LOCKED**:
   [anti-churn-patterns.md](../charness-artifacts/reference-compaction/anti-churn-patterns.md)
   (retro = exemplar; transfer targets + churn heuristic + H0 method).
-  - **quality** — churn FIXED+PROVEN (report-all default + scaffold-first). *Still has
-    an un-surfaced `max_lines` ceiling — see Next Session #1.*
+  - **quality** — churn FIXED+PROVEN (report-all + scaffold-first + `size_budget`
+    single-sourced/routed via `--json`, `855f611c`). Lever class closed for quality.
   - **debug** — churn FIXED+PROVEN (`ff80f914`, A/B `f54f8e4f`): invisible `MAX=180`
     trim-loop → scaffold surfaces `size_budget`; A/B edits 37→7, `wc -l` 19→0.
     [debug-h0-closeout-churn.md](../charness-artifacts/reference-compaction/debug-h0-closeout-churn.md)
@@ -29,19 +29,19 @@
 
 ## Next Session
 
-Transfer the locked patterns (static-checked, ranked):
+Rank 1 DONE (`855f611c`). Finding: the static-check was half-wrong — quality's
+ceiling was ALREADY template-surfaced, so the win was drift-elimination + `--json`
+routing (small Δ), not a trim-loop kill; proof was scenario_review, not A/B.
+**Heuristic fix:** "invisible ceiling" must check the template, not just whether
+the payload carries `size_budget`. Remaining locked patterns, re-ranked:
 
-1. **quality — surface `size_budget` (HIGH, cheap).** Static-check: quality has a
-   `max_lines` ceiling but `scaffold_quality_artifact.py` does NOT pass `size_budget`
-   → the debug trim-loop likely persists. Shared field + count-reporting validator
-   already exist; wire it like debug, then prove with a controlled A/B.
-2. **ideation — check for a format-rule micro-lever** (has a validator, no ceiling;
+1. **ideation — check for a format-rule micro-lever** (has a validator, no ceiling;
    retro's `Persisted` case proved non-ceiling format rules also churn).
-3. **issue / achieve / hotl — heuristic predicts churn ABSENT** (scaffold-only, no
+2. **issue / achieve / hotl — heuristic predicts churn ABSENT** (scaffold-only, no
    validator ceiling). Confirm cheaply; do not over-invest.
-4. **Strongest long-run transfer:** move artifact skills to retro's persist-helper-
+3. **Strongest long-run transfer:** move artifact skills to retro's persist-helper-
    that-stamps shape (pattern 1) — a bigger per-skill change, weigh later.
-5. **Orthogonal debug gap:** debug still skips the `debug-memory.md` RCF — its own lever.
+4. **Orthogonal debug gap:** debug still skips the `debug-memory.md` RCF — its own lever.
 
 ## Discuss
 
