@@ -28,21 +28,23 @@ By default, durable records live under
 Repos may override the directory with `.agents/gather-adapter.yaml`.
 
 Plain `gather` is credentialless by default: it targets public and local
-sources. Credentialed org sources (Slack, Notion, Google Workspace, Drive) are
-off until a repo adapter opts in, and are reached through a host/runtime-owned
-capability the adapter declares — never a charness-prescribed provider CLI. Use
-the repo-owned path advisers to resolve the adapter-declared route before trying
-unrelated private-source helpers:
+sources. Credentialed org sources are reached through a host/runtime-owned
+capability — never a charness-prescribed provider CLI. Slack and Notion are off
+until a repo adapter opts in: their advisers stop with a missing-capability
+explanation until the adapter declares a route (`host-mediated` for a runtime
+capability, or an explicit `direct-cli` when the maintainer owns the grant).
+Google Workspace has no repo-owned direct CLI, so it routes to a host-mediated
+capability, an operator export, or a browser-mediated fallback. Use the repo-owned
+path advisers to resolve these routes before trying unrelated private-source
+helpers:
 
 ```bash
 python3 "$SKILL_DIR/scripts/advise_slack_path.py" --repo-root .
 python3 "$SKILL_DIR/scripts/advise_google_workspace_path.py" --repo-root .
 ```
 
-The advisers stop with a missing-capability explanation until the adapter
-declares a route (`host-mediated` for a runtime capability, or an explicit
-`direct-cli` when the maintainer owns the grant). For Google Workspace and
-private SaaS, read official API/export docs before browser automation.
+For Google Workspace and private SaaS,
+read official API/export docs before browser automation.
 
 For arbitrary public URLs, let the public URL helper consume `support/web-fetch`
 and preserve route, attempts, selected proof, typed verdict, and open gaps:

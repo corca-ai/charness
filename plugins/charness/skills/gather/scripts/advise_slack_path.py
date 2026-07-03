@@ -69,13 +69,15 @@ def payload_for(repo_root: Path) -> dict[str, object]:
     wrapper = support_root / "scripts" / "export-thread.sh"
 
     if mode == "none":
+        # Credentialless default: do NOT surface the wrapper route here — the
+        # whole point is that plain gather stops clean without advertising a
+        # credentialed provider CLI. wrapper_path stays in the opt-in branches.
         return {
             "provider": SUPPORT_ID,
             "provider_mode": mode,
             "doctor_status": "skipped",
             "support_skill_path": portable(support_skill, repo_root),
             "runtime_contract_path": portable(runtime_contract, repo_root),
-            "wrapper_path": portable(wrapper, repo_root),
             "operator_prompt": (
                 "gather_provider.slack.mode=none (credentialed Slack is not enabled in this "
                 "runtime; this is the credentialless default until a repo adapter opts in). "

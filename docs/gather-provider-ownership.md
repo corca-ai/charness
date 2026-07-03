@@ -14,8 +14,11 @@ declared as a repo adapter opt-in (`gather_provider.<source>.mode`).
 
 The shipped defaults encode this: `slack` and `notion` default to `none`, so an
 installed skill never advertises a credentialed provider route until a maintainer
-who owns the grant opts in. The optional charness-owned provider runtime below is
-a convenience for that opt-in path, not the generic behavior.
+who owns the grant opts in. Google Workspace has no repo-owned direct CLI at all,
+so it stays credentialless without an opt-in — it routes to a host-mediated
+capability, an operator export, or a browser-mediated fallback. The optional
+charness-owned provider runtime below is a convenience for the Slack/Notion
+opt-in path, not the generic behavior.
 
 ## Goal
 
