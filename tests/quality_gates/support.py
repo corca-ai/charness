@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -85,6 +86,40 @@ def run_shell_script(
 def write_executable(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
     path.chmod(0o755)
+
+
+def fake_gh_env(tmp_path: Path) -> dict[str, str]:
+    """A PATH env with a stub `gh` that succeeds (including `gh auth`), for issue-tool
+    tests that need `gh` present on PATH but not real."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    write_executable(bin_dir / "gh", '#!/usr/bin/env sh\nif [ "$1" = auth ]; then exit 0; fi\nexit 0\n')
+    return {**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"}
+
+
+def write_argv_logging_fake(bin_dir: Path, name: str, log_env: str, response_lines: list[str]) -> Path:
+    """Write a fake `gh`/`acme` binary that appends its argv (as a list) to the JSON
+    file named by the `log_env` environment variable, then runs `response_lines`
+    (which decide what to print per subcommand). Shares the log-append preamble so
+    each caller supplies only its own response logic."""
+    fake = bin_dir / name
+    write_executable(
+        fake,
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, os, sys",
+                "from pathlib import Path",
+                f"log = Path(os.environ['{log_env}'])",
+                "entries = json.loads(log.read_text()) if log.exists() else []",
+                "entries.append(sys.argv[1:])",
+                "log.write_text(json.dumps(entries))",
+                *response_lines,
+                "",
+            ]
+        ),
+    )
+    return fake
 
 
 def write_issue_adapter_with_backend(tmp_path: Path, *, backend_id: str, binary: str) -> None:

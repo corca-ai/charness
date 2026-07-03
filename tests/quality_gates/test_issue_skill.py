@@ -6,20 +6,17 @@ import runpy
 import subprocess
 from pathlib import Path
 
-from tests.quality_gates.support import ROOT, run_script, write_issue_adapter_with_backend
+from tests.quality_gates.support import (
+    ROOT,
+    fake_gh_env,
+    run_script,
+    write_argv_logging_fake,
+    write_issue_adapter_with_backend,
+)
 
 ISSUE_SKILL = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
-
-
-def _fake_gh_env(tmp_path: Path) -> dict[str, str]:
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir(exist_ok=True)
-    fake = bin_dir / "gh"
-    fake.write_text("#!/usr/bin/env sh\nif [ \"$1\" = auth ]; then exit 0; fi\nexit 0\n", encoding="utf-8")
-    fake.chmod(0o755)
-    return {**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 
 def test_issue_target_uses_default_org_for_bare_repo(tmp_path: Path) -> None:
@@ -73,24 +70,14 @@ def test_issue_read_uses_comments_in_default_gh_view(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, os, sys",
-                "from pathlib import Path",
-                "log = Path(os.environ['GH_LOG'])",
-                "entries = json.loads(log.read_text()) if log.exists() else []",
-                "entries.append(sys.argv[1:])",
-                "log.write_text(json.dumps(entries))",
-                "print(json.dumps({'number': 42, 'title': 'Demo', 'body': 'Body', 'comments': [{'body': 'comment'}], 'labels': [], 'state': 'OPEN', 'url': 'https://example.test/42'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_argv_logging_fake(
+        bin_dir,
+        "gh",
+        "GH_LOG",
+        [
+            "print(json.dumps({'number': 42, 'title': 'Demo', 'body': 'Body', 'comments': [{'body': 'comment'}], 'labels': [], 'state': 'OPEN', 'url': 'https://example.test/42'}))",
+        ],
     )
-    fake.chmod(0o755)
 
     result = run_script(
         SCRIPT,
@@ -184,26 +171,16 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, os, sys",
-                "from pathlib import Path",
-                "log = Path(os.environ['GH_LOG'])",
-                "entries = json.loads(log.read_text()) if log.exists() else []",
-                "entries.append(sys.argv[1:])",
-                "log.write_text(json.dumps(entries))",
-                "if 'comment' in sys.argv: print('commented')",
-                "if 'close' in sys.argv: print('closed')",
-                "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_argv_logging_fake(
+        bin_dir,
+        "gh",
+        "GH_LOG",
+        [
+            "if 'comment' in sys.argv: print('commented')",
+            "if 'close' in sys.argv: print('closed')",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+        ],
     )
-    fake.chmod(0o755)
     body = tmp_path / "body.md"
     body.write_text("Multi-line\nclose comment.\n", encoding="utf-8")
 
@@ -321,24 +298,14 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "acme-log.json"
-    fake = bin_dir / "acme"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, os, sys",
-                "from pathlib import Path",
-                "log = Path(os.environ['ACME_LOG'])",
-                "entries = json.loads(log.read_text()) if log.exists() else []",
-                "entries.append(sys.argv[1:])",
-                "log.write_text(json.dumps(entries))",
-                "if 'view' in sys.argv: print(json.dumps({'number': 7, 'state': 'CLOSED', 'url': 'https://example.test/7'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_argv_logging_fake(
+        bin_dir,
+        "acme",
+        "ACME_LOG",
+        [
+            "if 'view' in sys.argv: print(json.dumps({'number': 7, 'state': 'CLOSED', 'url': 'https://example.test/7'}))",
+        ],
     )
-    fake.chmod(0o755)
     write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
@@ -457,24 +424,14 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "acme-log.json"
-    fake = bin_dir / "acme"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, os, sys",
-                "from pathlib import Path",
-                "log = Path(os.environ['ACME_LOG'])",
-                "entries = json.loads(log.read_text()) if log.exists() else []",
-                "entries.append(sys.argv[1:])",
-                "log.write_text(json.dumps(entries))",
-                "if 'view' in sys.argv: print(json.dumps({'number': 11, 'state': 'CLOSED', 'url': 'https://example.test/11'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_argv_logging_fake(
+        bin_dir,
+        "acme",
+        "ACME_LOG",
+        [
+            "if 'view' in sys.argv: print(json.dumps({'number': 11, 'state': 'CLOSED', 'url': 'https://example.test/11'}))",
+        ],
     )
-    fake.chmod(0o755)
     write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
@@ -631,7 +588,7 @@ def test_issue_plan_resolve_exposes_backend_refs_and_classification_actions(tmp_
         "resolve",
         "--",
         "42",
-        env=_fake_gh_env(tmp_path),
+        env=fake_gh_env(tmp_path),
     )
 
     assert result.returncode == 0, result.stderr
@@ -658,7 +615,7 @@ def test_issue_plan_resolve_without_selector_selects_github_next_action(tmp_path
         str(tmp_path),
         "--intent",
         "resolve",
-        env=_fake_gh_env(tmp_path),
+        env=fake_gh_env(tmp_path),
     )
 
     assert result.returncode == 0, result.stderr
@@ -680,7 +637,7 @@ def test_issue_plan_reports_invalid_adapter_before_planning(tmp_path: Path) -> N
         str(tmp_path),
         "--intent",
         "resolve",
-        env=_fake_gh_env(tmp_path),
+        env=fake_gh_env(tmp_path),
     )
 
     assert result.returncode == 1
@@ -699,7 +656,7 @@ def test_issue_plan_reports_invalid_resolve_invocation_flag(tmp_path: Path) -> N
         "resolve",
         "--",
         "--bogus",
-        env=_fake_gh_env(tmp_path),
+        env=fake_gh_env(tmp_path),
     )
 
     assert result.returncode == 2

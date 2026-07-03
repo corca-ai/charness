@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
-from .support import ROOT, run_script
+from .support import ROOT, fake_gh_env, run_script
 
 SKILL = ROOT / "skills" / "public" / "issue" / "SKILL.md"
 CLOSEOUT = ROOT / "skills" / "public" / "issue" / "references" / "closeout-discipline.md"
@@ -17,15 +16,6 @@ def _read(path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _fake_gh_env(tmp_path: Path) -> dict[str, str]:
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir(exist_ok=True)
-    fake = bin_dir / "gh"
-    fake.write_text("#!/usr/bin/env sh\nif [ \"$1\" = auth ]; then exit 0; fi\nexit 0\n", encoding="utf-8")
-    fake.chmod(0o755)
-    return {**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"}
-
-
 def _issue_plan(tmp_path: Path, *args: str) -> dict:
     result = run_script(
         SCRIPT,
@@ -33,7 +23,7 @@ def _issue_plan(tmp_path: Path, *args: str) -> dict:
         "--repo-root",
         str(tmp_path),
         *args,
-        env=_fake_gh_env(tmp_path),
+        env=fake_gh_env(tmp_path),
     )
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)

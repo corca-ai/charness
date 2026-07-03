@@ -10,7 +10,11 @@ from tests.quality_gates.issue_closeout_support import (
     load_verify_module,
     seed_commit,
 )
-from tests.quality_gates.support import run_script, write_issue_adapter_with_backend
+from tests.quality_gates.support import (
+    run_script,
+    write_argv_logging_fake,
+    write_issue_adapter_with_backend,
+)
 
 
 def test_issue_verify_closeout_rejects_missing_direct_commit_close_keyword(tmp_path: Path) -> None:
@@ -281,25 +285,15 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "acme-log.json"
-    fake = bin_dir / "acme"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, os, sys",
-                "from pathlib import Path",
-                "log = Path(os.environ['ACME_LOG'])",
-                "entries = json.loads(log.read_text()) if log.exists() else []",
-                "entries.append(sys.argv[1:])",
-                "log.write_text(json.dumps(entries))",
-                "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_argv_logging_fake(
+        bin_dir,
+        "acme",
+        "ACME_LOG",
+        [
+            "if 'view' in sys.argv:",
+            "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
+        ],
     )
-    fake.chmod(0o755)
     write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
     adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
     adapter_path.write_text(
@@ -413,25 +407,15 @@ def test_issue_verify_closeout_uses_default_gh_comments_for_manual_fallback(tmp_
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, os, sys",
-                "from pathlib import Path",
-                "log = Path(os.environ['GH_LOG'])",
-                "entries = json.loads(log.read_text()) if log.exists() else []",
-                "entries.append(sys.argv[1:])",
-                "log.write_text(json.dumps(entries))",
-                "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_argv_logging_fake(
+        bin_dir,
+        "gh",
+        "GH_LOG",
+        [
+            "if 'view' in sys.argv:",
+            "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
+        ],
     )
-    fake.chmod(0o755)
     body = tmp_path / "closeout.md"
     body_text = (
         bug_closeout_body(close_line="Manual close comment.")
