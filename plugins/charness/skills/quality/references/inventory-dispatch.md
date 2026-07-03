@@ -80,7 +80,7 @@ does not return an empty scan.
   `$SKILL_DIR/scripts/inventory_standing_test_economics.py --summary`
 - executable-spec runtime and dup economics:
   `references/executable-spec-economics.md`
-- duplicate discovery and broad scanner waste:
+- duplicate discovery, broad scanner waste, and intra-test repeated reads:
   `$SKILL_DIR/scripts/inventory_structural_waste.py`
 - release-only sentinel coverage:
   `$SKILL_DIR/scripts/inventory_release_only_sentinels.py --summary`

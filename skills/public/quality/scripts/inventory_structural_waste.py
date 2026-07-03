@@ -30,7 +30,8 @@ def _print_text(payload: dict) -> None:
         f"{payload['command_snippet_count']} command snippet(s), "
         f"{payload['python_source_count']} Python source file(s), "
         f"{len(payload['duplicate_discovery_candidates'])} duplicate-discovery candidate(s), "
-        f"{len(payload['broad_scanner_candidates'])} broad-scanner candidate(s)."
+        f"{len(payload['broad_scanner_candidates'])} broad-scanner candidate(s), "
+        f"{len(payload['intra_test_reread_candidates'])} intra-test repeated-read candidate(s)."
     )
     for finding in payload["findings"]:
         print(f"{finding['severity'].upper()} {finding['type']}: {finding['recommended_action']}")
@@ -43,6 +44,11 @@ def _print_text(payload: dict) -> None:
         print(
             f"  scanner {candidate['path']}:{candidate['line']} "
             f"({candidate['parser_token']}): {candidate['recommended_action']}"
+        )
+    for candidate in payload["intra_test_reread_candidates"]:
+        print(
+            f"  reread {candidate['path']} :: {candidate['read_target']} "
+            f"(x{candidate['read_count']}): {candidate['recommended_action']}"
         )
     interpretation = payload["interpretation"]
     print(

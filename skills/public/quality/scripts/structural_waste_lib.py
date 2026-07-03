@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import re
 import subprocess
@@ -9,6 +10,8 @@ from typing import Any
 PYTEST_COLLECT_RE = re.compile(r"\bpytest\b[^\n]*(?:--collect-only|--collectonly|--co)(?:\s|$)")
 BROAD_SCAN_RE = re.compile(r"(?:rglob\(|glob\(|git[^\\n]{0,40}ls-files|Path\.walk|os\.walk)")
 PARSER_RE = re.compile(r"\bast\.parse\b")
+INTRA_TEST_READ_THRESHOLD = 2
+TEST_ROOT_DIR = "tests"
 PREFILTER_RE = re.compile(
     r"(?:\b|_)(?:candidate|prefilter|needle|token|substring|grep|ripgrep|rg|contains)(?:\b|_)",
     re.IGNORECASE,
@@ -17,10 +20,10 @@ PYTHON_SOURCE_DIRS = ("scripts", "skills/public", "skills/support")
 IGNORED_PARTS = {"__pycache__", ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", "mutants"}
 
 INTERPRETATION = {
-    "measures": "command snippets that repeat broad test discovery and Python helper code that combines broad file discovery with parser work",
-    "proxy_for": "quality-gate runtime waste from duplicated discovery/collection or parsing files before a cheap candidate prefilter",
-    "blind_spots": "token evidence is conservative and advisory: a broad parser can be justified by correctness, a prefilter can be hidden in a helper, and the inventory does not measure wall-clock by itself",
-    "interpretation_question": "is this candidate doing broad discovery or parser work that duplicates an already-owned runner/target list, or should it stay broad for correctness?",
+    "measures": "command snippets that repeat broad test discovery, Python helper code that combines broad file discovery with parser work, and test files that re-read the same ROOT-anchored stable repo file multiple times",
+    "proxy_for": "quality-gate runtime waste from duplicated discovery/collection or parsing files before a cheap candidate prefilter, and duplicated read boilerplate that inflates test LOC without adding coverage",
+    "blind_spots": "token evidence is conservative and advisory: a broad parser can be justified by correctness, a prefilter can be hidden in a helper, the inventory does not measure wall-clock by itself, and the intra-test read scan (AST-based) counts only real `read_text()` calls with a literal `ROOT / \"seg\" / ...` receiver (reads via an intermediate variable, non-`ROOT` anchors, `read_bytes`, per-test tmp fixtures, and duplicated inline fixture setup are not counted)",
+    "interpretation_question": "is this candidate doing broad discovery or parser work that duplicates an already-owned runner/target list, or re-reading a stable file that one module-level constant should own — or should it stay as-is for correctness?",
 }
 
 
@@ -66,6 +69,72 @@ def _python_sources(repo_root: Path) -> list[Path]:
         if path.suffix == ".py" and rel.parts and rel.parts[0] in PYTHON_SOURCE_DIRS and not _is_ignored(rel):
             sources.append(path)
     return sorted(sources)
+
+
+def _test_sources(repo_root: Path) -> list[Path]:
+    sources = []
+    for path in _tracked_files(repo_root):
+        try:
+            rel = path.relative_to(repo_root)
+        except ValueError:
+            continue
+        if path.suffix == ".py" and rel.parts and rel.parts[0] == TEST_ROOT_DIR and not _is_ignored(rel):
+            sources.append(path)
+    return sorted(sources)
+
+
+def _root_read_target(call: ast.Call) -> str | None:
+    """Return the ROOT-anchored relative path a `(ROOT / ...).read_text(...)` call
+    reads, or None if the receiver is not a literal `ROOT / "seg" / ...` expression.
+    AST-based so the pattern is only counted as a real call, never when it appears
+    inside a string literal (e.g. test fixture data)."""
+    receiver = call.func.value if isinstance(call.func, ast.Attribute) else None
+    parts: list[str] = []
+    anchored_at_root = False
+
+    def walk(node: ast.AST) -> None:
+        nonlocal anchored_at_root
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+            walk(node.left)
+            walk(node.right)
+        elif isinstance(node, ast.Name) and node.id == "ROOT":
+            anchored_at_root = True
+        elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+            parts.append(node.value)
+
+    if receiver is not None:
+        walk(receiver)
+    if anchored_at_root and parts:
+        return "/".join(parts)
+    return None
+
+
+def _intra_test_reread_candidates(repo_root: Path) -> list[dict[str, Any]]:
+    candidates = []
+    for path in _test_sources(repo_root):
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (UnicodeDecodeError, SyntaxError):
+            continue
+        counts: dict[str, int] = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "read_text":
+                target = _root_read_target(node)
+                if target is not None:
+                    counts[target] = counts.get(target, 0) + 1
+        rel_path = path.relative_to(repo_root).as_posix()
+        for target, count in sorted(counts.items()):
+            if count >= INTRA_TEST_READ_THRESHOLD:
+                candidates.append(
+                    {
+                        "type": "intra_test_repeated_read",
+                        "path": rel_path,
+                        "read_target": target,
+                        "read_count": count,
+                        "recommended_action": "Hoist this repeated ROOT-anchored read_text into a module-level constant read once, or record why re-reading the same stable file is required.",
+                    }
+                )
+    return candidates
 
 
 def _canonical_runner_candidates(snippets: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -146,6 +215,7 @@ def inventory(repo_root: Path) -> dict[str, Any]:
     canonical = [*_canonical_runner_candidates(snippets), *_repo_runner_candidates(repo_root)]
     duplicate_candidates = _duplicate_discovery_candidates(snippets, canonical)
     scanner_candidates = _broad_scanner_candidates(repo_root)
+    reread_candidates = _intra_test_reread_candidates(repo_root)
     findings: list[dict[str, Any]] = []
     if duplicate_candidates:
         has_canonical_duplicate = any(candidate["canonical_runner_count"] for candidate in duplicate_candidates)
@@ -176,6 +246,16 @@ def inventory(repo_root: Path) -> dict[str, Any]:
                 "recommended_action": "Filter candidate paths or source text before AST/parser work when that preserves correctness.",
             }
         )
+    if reread_candidates:
+        findings.append(
+            {
+                "type": "intra_test_repeated_read",
+                "severity": "advisory",
+                "message": "One or more test files re-read the same ROOT-anchored stable repo file multiple times; a single module-level constant removes the duplicated read boilerplate.",
+                "candidate_count": len(reread_candidates),
+                "recommended_action": "Hoist each repeated ROOT-anchored read into a module-level constant read once, unless re-reading is required for the test's contract.",
+            }
+        )
     return {
         "repo_root": str(repo_root),
         "command_snippet_count": len(snippets),
@@ -183,6 +263,7 @@ def inventory(repo_root: Path) -> dict[str, Any]:
         "canonical_runner_candidates": canonical,
         "duplicate_discovery_candidates": duplicate_candidates,
         "broad_scanner_candidates": scanner_candidates,
+        "intra_test_reread_candidates": reread_candidates,
         "findings": findings,
         "interpretation": dict(INTERPRETATION),
     }

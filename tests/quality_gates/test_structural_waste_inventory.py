@@ -166,6 +166,129 @@ def test_structural_waste_accepts_token_regex_prefilter_name(tmp_path: Path) -> 
     assert payload["findings"] == []
 
 
+def test_structural_waste_reports_intra_test_repeated_read(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write(
+        repo / "tests" / "test_dup.py",
+        "\n".join(
+            [
+                "from pathlib import Path",
+                "ROOT = Path(__file__).resolve().parents[2]",
+                "def test_a():",
+                '    assert "x" in (ROOT / "skills" / "demo" / "SKILL.md").read_text(encoding="utf-8")',
+                "def test_b():",
+                '    assert "y" in (ROOT / "skills" / "demo" / "SKILL.md").read_text(encoding="utf-8")',
+            ]
+        )
+        + "\n",
+    )
+
+    payload = _run_json(repo)
+
+    candidate = payload["intra_test_reread_candidates"][0]
+    assert candidate["type"] == "intra_test_repeated_read"
+    assert candidate["path"] == "tests/test_dup.py"
+    assert candidate["read_target"] == "skills/demo/SKILL.md"
+    assert candidate["read_count"] == 2
+    assert any(finding["type"] == "intra_test_repeated_read" for finding in payload["findings"])
+
+
+def test_structural_waste_does_not_flag_single_test_read(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write(
+        repo / "tests" / "test_single.py",
+        "\n".join(
+            [
+                "from pathlib import Path",
+                "ROOT = Path(__file__).resolve().parents[2]",
+                "def test_a():",
+                '    assert "x" in (ROOT / "skills" / "demo" / "SKILL.md").read_text(encoding="utf-8")',
+            ]
+        )
+        + "\n",
+    )
+
+    payload = _run_json(repo)
+
+    assert payload["intra_test_reread_candidates"] == []
+    assert not any(finding["type"] == "intra_test_repeated_read" for finding in payload["findings"])
+
+
+def test_structural_waste_text_output_prints_intra_test_reread(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write(
+        repo / "tests" / "test_dup.py",
+        "\n".join(
+            [
+                "from pathlib import Path",
+                "ROOT = Path(__file__).resolve().parents[2]",
+                "def test_a():",
+                '    assert "x" in (ROOT / "skills" / "demo" / "SKILL.md").read_text(encoding="utf-8")',
+                "def test_b():",
+                '    assert "y" in (ROOT / "skills" / "demo" / "SKILL.md").read_text(encoding="utf-8")',
+            ]
+        )
+        + "\n",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "intra-test repeated-read candidate(s)" in result.stdout
+    assert "  reread tests/test_dup.py :: skills/demo/SKILL.md (x2)" in result.stdout
+
+
+def test_structural_waste_does_not_flag_read_pattern_inside_string_literal(tmp_path: Path) -> None:
+    # Regression: an AST-based scan must not count the read_text pattern when it
+    # appears inside a STRING LITERAL (e.g. test fixture data), only as a real call.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    fixture_line = '(ROOT / "skills" / "demo" / "SKILL.md").read_text(encoding="utf-8")'
+    _write(
+        repo / "tests" / "test_fixture_strings.py",
+        "from pathlib import Path\n"
+        "ROOT = Path(__file__).resolve().parents[2]\n"
+        f"SAMPLE = [{fixture_line!r}, {fixture_line!r}, {fixture_line!r}]\n"
+        "def test_a():\n"
+        "    assert SAMPLE\n",
+    )
+
+    payload = _run_json(repo)
+
+    assert payload["intra_test_reread_candidates"] == []
+    assert not any(finding["type"] == "intra_test_repeated_read" for finding in payload["findings"])
+
+
+def test_structural_waste_intra_test_read_normalizes_path_forms(tmp_path: Path) -> None:
+    # Embedded-slash `(ROOT / "a/b")` and segmented `(ROOT / "a" / "b")` reads of the
+    # same file must resolve to the same target and count together.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write(
+        repo / "tests" / "test_mixed.py",
+        "from pathlib import Path\n"
+        "ROOT = Path(__file__).resolve().parents[2]\n"
+        "def test_a():\n"
+        '    assert (ROOT / "skills/demo/SKILL.md").read_text(encoding="utf-8")\n'
+        "def test_b():\n"
+        '    assert (ROOT / "skills" / "demo" / "SKILL.md").read_text(encoding="utf-8")\n',
+    )
+
+    payload = _run_json(repo)
+
+    candidate = payload["intra_test_reread_candidates"][0]
+    assert candidate["read_target"] == "skills/demo/SKILL.md"
+    assert candidate["read_count"] == 2
+
+
 def test_structural_waste_text_output_carries_interpretation(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
