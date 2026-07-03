@@ -272,7 +272,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
     brief = _quality_brief(repo_root, catalog)
     phase_barriers = [
         "Read required_reads (also exposed as required_primer_refs for compatibility) before broad gates.",
-        "The brief carries the load-bearing classification/automation/maintainer-enforcement discipline inline; apply it and open a brief detail_ref only when its trigger fires.",
+        "The brief carries the load-bearing classification/automation/maintainer-enforcement discipline and the inventory-dispatch routing index (concern area -> inventories + detail_refs) inline; apply it and open a brief detail_ref only when its trigger fires.",
         "Run deterministic gates as evidence packets, then analyze the report against the primer refs before fixing.",
         "Use gate trust_model/cost_tier/parallel_group to decide whether to trust, parallelize, or manually inspect a packet.",
         "Open on-demand refs only when a concrete gate, inventory, source, or operator finding matches their trigger.",
@@ -335,6 +335,14 @@ def format_human(plan: dict[str, Any]) -> str:
             lines.append(f"  - maintainer-local: {mle['prompt']}")
         if mle.get("field_discipline"):
             lines.append(f"    field: {mle['field_discipline']}")
+        idp = brief.get("inventory_dispatch", {})
+        if idp.get("areas"):
+            lines.append(
+                f"  - inventory dispatch ({len(idp['areas'])} concern areas; open {idp.get('detail_ref', '')} on trigger):"
+            )
+            for area in idp["areas"]:
+                inv = ", ".join(area.get("inventories", [])) or "(detail_refs only)"
+                lines.append(f"    - {area['area']}: {inv}")
     lines.append("- gate_packets:")
     lines.extend(
         f"  - {gate['id']}: {gate['cost_tier']} / {gate['trust_model']}"

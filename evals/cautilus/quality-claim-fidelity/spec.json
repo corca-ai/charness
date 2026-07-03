@@ -149,9 +149,9 @@
       "trigger": "installable CLI probe, doctor, help, or lifecycle ownership review"
     },
     "inventory-dispatch.md": {
-      "engagement": "engage-always",
-      "rationale": "The quality workflow routes focused inventories through this dispatch layer before broad recommendations.",
-      "claimRole": "core_workflow_reference"
+      "engagement": "on-demand",
+      "rationale": "Demoted from engage-always (mirrors the 2026-07-02 prune-brief pilot): the dispatch routing — concern area -> inventory scripts + companion detail_refs plus the inventory-consumption discipline (>=2-field engagement, --summary triage) — is now the machine-readable `brief.inventory_dispatch` block in catalog.yaml that plan_quality_run.py surfaces inline, so a run picks the right focused inventory from the always-loaded planner brief without opening this ~297-line doc up front. The doc stays as on-demand DEPTH for a concern's per-inventory review discipline prose and the clone-family structural-signal taxonomy.",
+      "trigger": "a concern area needs its per-inventory review discipline or the clone-family/structural-signal depth beyond the planner brief's dispatch index"
     },
     "lint-ignore-discipline.md": {
       "engagement": "on-demand",

@@ -12,7 +12,6 @@ gates.
 ## Required And Scope Primers
 
 - `references/quality-lenses.md` — four-lens judgment frame.
-- `references/inventory-dispatch.md` — focused inventory routing table.
 - `references/proposal-flow.md` — sourced, proportional recommendation discipline.
 - `references/operability-signals.md` — setup, runtime, CI, and maintenance signals.
 - `references/skill-quality.md` — skill packages as quality artifacts.
@@ -39,6 +38,7 @@ gates.
 - `references/executable-spec-economics.md` — executable-spec cost and layering.
 - `references/gate-classification.md` — full gate-state + weak-vs-missing discipline behind the planner brief.
 - `references/installable-cli-probes.md` — installable CLI probe ownership.
+- `references/inventory-dispatch.md` — full per-inventory routing and review discipline behind the planner brief's dispatch index.
 - `references/lint-ignore-discipline.md` — lint suppression pressure review.
 - `references/maintainer-local-enforcement.md` — full pre-push/CI-parity/gate-policy-marker detail behind the planner brief.
 - `references/mutation-testing.md` — mutation-testing workflow and sampling.

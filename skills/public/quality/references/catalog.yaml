@@ -4,8 +4,8 @@ references:
     role: required-primer
     why: Interpret every quality packet through concept, behavior, security, and operability.
   - path: references/inventory-dispatch.md
-    role: required-primer
-    why: Choose focused inventories without preloading every reference.
+    role: on-demand
+    trigger: a concern area needs its per-inventory review discipline or the clone-family/structural-signal depth beyond the planner brief's dispatch index
   - path: references/proposal-flow.md
     role: required-primer
     why: Keep recommendations concrete, sourced, and proportionate.
@@ -145,12 +145,104 @@ gates:
 # brief: load-bearing residue of demoted required-primers, carried inline in the
 # planner stdout so a run keeps the discipline without a mandatory prose read.
 # The planner (plan_quality_run.py:_quality_brief) injects the final-gate probe
-# result into maintainer_local_enforcement; everything else is static data. Open
-# a block's detail_ref only when its catalog trigger fires.
+# result into maintainer_local_enforcement; everything else (including the
+# inventory_dispatch routing index) is static data. Open a block's detail_ref
+# only when its catalog trigger fires.
 brief:
   purpose: >-
     load-bearing residue of demoted primers, carried inline so a run keeps the
     discipline without a mandatory prose read; open detail_ref only on trigger
+  inventory_dispatch:
+    detail_ref: references/inventory-dispatch.md
+    consumption: >-
+      Run a focused inventory only when the quality question brings its surface
+      into scope; advisory inventories are review prompts, not mandates. Use
+      --summary as the first-read triage and switch to --json only when a finding
+      needs full attribution or disposition. An inventory cited in the artifact's
+      `## Commands Run` must engage >=2 declared non-headline fields (one is
+      enough when only one is declared; validate-inventory-consumption enforces).
+      Inventory scripts resolve under `$SKILL_DIR/scripts/`; detail_refs under
+      `references/`.
+    areas:
+      - area: cli-operator-surface
+        scope: repo ships or changes an operator CLI, command registry, or installable entrypoint
+        inventories:
+          - inventory_cli_ergonomics.py
+          - inventory_cli_side_effect_probes.py
+        detail_refs:
+          - cli-ergonomics-smells.md
+          - installable-cli-probes.md
+      - area: docs-readability
+        scope: first-touch/entrypoint docs or reader-facing public specs are in scope
+        inventories:
+          - inventory_entrypoint_docs_ergonomics.py
+          - inventory_public_spec_quality.py
+        detail_refs:
+          - entrypoint-docs-ergonomics.md
+          - public-spec-layering.md
+      - area: skills
+        scope: the repo authors public or support skills
+        inventories:
+          - inventory_skill_ergonomics.py
+          - suggest_public_skill_dogfood.py
+        detail_refs:
+          - skill-quality.md
+          - skill-ergonomics.md
+      - area: runtime-test-economics
+        scope: slow tests, runtime cost, budgets, or broad test/spec economics are in scope
+        inventories:
+          - inventory_standing_gate_verbosity.py
+          - inventory_standing_test_economics.py
+          - inventory_structural_waste.py
+          - inventory_ci_recoverable_gates.py
+          - render_runtime_summary.py
+        detail_refs:
+          - standing-gate-verbosity.md
+          - testability-and-selection.md
+          - executable-spec-economics.md
+          - ci-recoverable-gate-triage.md
+      - area: agent-production-runtime
+        scope: repo evidence shows a production LLM/agent serving path (serving-path client, model routing/fallback, runtime telemetry); never eval fixtures, skill docs, or offline scaffolding
+        inventories:
+          - recommend_behavior_test.py
+        detail_refs:
+          - agent-production-runtime.md
+          - behavior-testing.md
+      - area: source-hygiene
+        scope: dual implementations, clone families, brittle source guards, lint suppressions, dead code, gitignore hygiene, or boundary-bypass ratchets are in scope
+        inventories:
+          - inventory_dual_implementation.py
+          - inventory_brittle_source_guards.py
+          - inventory_lint_ignores.py
+          - inventory_nose_clones.py
+          - inventory_gitignore_scan_hygiene.py
+          - run_dead_code_advisory.py
+        detail_refs:
+          - dual-implementation-parity.md
+          - brittle-source-guards.md
+          - lint-ignore-discipline.md
+          - dup-ratchet.md
+          - boundary-bypass-ratchet.md
+          - quality-signal-scorecard.md
+      - area: language-adapter
+        scope: domain-language alignment or adapter/gate design is in scope
+        inventories:
+          - inventory_ubiquitous_language.py
+          - inventory_adapter_gate_design.py
+        detail_refs:
+          - adapter-gate-review.md
+      - area: security-supply-chain
+        scope: security posture or supply-chain proof separation is in scope
+        detail_refs:
+          - security-overview.md
+          - security-npm.md
+          - security-pnpm.md
+          - security-uv.md
+      - area: coverage-eval-depth
+        scope: coverage floors, prompt/content assets, or eval depth are in scope
+        detail_refs:
+          - coverage-floor-policy.md
+          - prompt-asset-policy.md
   gate_classification:
     closeout_states:
       healthy: present, runnable, high-signal for the seam it covers

@@ -177,7 +177,7 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     plan = _run_plan(repo)
 
     triggers = plan["on_demand_trigger_map"]
-    assert len(triggers) == 33
+    assert len(triggers) == 34
     assert "references/adapter-contract.md" in triggers
     assert "references/dup-ratchet.md" in triggers
     assert "references/security-npm.md" in triggers
@@ -189,6 +189,7 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     assert "references/gate-classification.md" in triggers
     assert "references/automation-promotion.md" in triggers
     assert "references/maintainer-local-enforcement.md" in triggers
+    assert "references/inventory-dispatch.md" in triggers
     assert any(
         read["path"] == "references/dup-ratchet.md"
         and "scanner skew" in read["trigger"]
@@ -206,11 +207,12 @@ def test_quality_run_plan_brief_carries_demoted_primer_discipline(tmp_path: Path
     plan = _run_plan(repo)
     brief = plan["brief"]
 
-    # The three demoted primers are NOT mandatory reads any more...
+    # The demoted primers are NOT mandatory reads any more...
     reads = {read["path"] for read in plan["required_reads"]}
     assert "references/gate-classification.md" not in reads
     assert "references/automation-promotion.md" not in reads
     assert "references/maintainer-local-enforcement.md" not in reads
+    assert "references/inventory-dispatch.md" not in reads
 
     # ...but their load-bearing residue rides in the brief.
     gc = brief["gate_classification"]
@@ -228,6 +230,16 @@ def test_quality_run_plan_brief_carries_demoted_primer_discipline(tmp_path: Path
     assert "DETECTED" in mle["prompt"]
     assert "missing" in mle["field_discipline"]
     assert mle["detail_ref"] == "references/maintainer-local-enforcement.md"
+
+    # inventory-dispatch was demoted the same way: the routing index rides in the
+    # brief so the run picks a focused inventory without opening the ~297-line doc.
+    idp = brief["inventory_dispatch"]
+    assert idp["detail_ref"] == "references/inventory-dispatch.md"
+    assert "--summary" in idp["consumption"]
+    areas = {area["area"] for area in idp["areas"]}
+    assert {"skills", "source-hygiene", "runtime-test-economics"} <= areas
+    # each area routes to at least one detail_ref (some also name inventory scripts)
+    assert all(area.get("detail_refs") for area in idp["areas"])
 
 
 def test_quality_run_plan_brief_standing_maintainer_prompt_without_final_gate(tmp_path: Path) -> None:
