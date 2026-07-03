@@ -13,7 +13,9 @@ one classifier reads the tests **and the source under test**, judges value again
 repo's real quality model, then the top delete/merge candidates get an adversarial
 "find a surviving mutant" verify pass. Whole-suite mechanical scans (main loop) cross-checked
 the numbers. Every applied deletion additionally got a pre-delete inspection + a mandated
-bounded fresh-eye review — both of which caught real errors in the audit (see Correction Trail).
+bounded fresh-eye review. Those layers also surfaced a **false premise this operator had
+seeded into the audit context** — see **Coverage-Model Correction** below, which supersedes
+the original "subprocess = 0% covered" reasoning.
 
 ## Bottom line
 
@@ -29,6 +31,33 @@ structural problem.** 3,855 test functions / 360 files / 93,643 test LOC.
 Calibration: of 36 top candidates adversarially verified, **4 (~11%) were rejected as
 load-bearing** and many "delete" claims shrank to "merge, relocate one assert first." So the
 un-verified tail erodes similarly — hence a range, not a number.
+
+## Coverage-Model Correction (this operator seeded a false premise)
+
+During the audit this operator asserted — in the workflow context handed to all 46 classifiers,
+the verifiers, and both fresh-eye reviewers — that *"a source line reached only via
+`subprocess.run` is 0% covered, so a subprocess test provides no coverage/kill attribution."*
+**That is coverage.py's generic default, but it is FALSE for this repo.** `scripts/mutation_sampling_lib.py`
+enables subprocess coverage capture for the changed-line gate's probe: a generated `sitecustomize.py`
+calls `coverage.process_startup()`; `coverage_subprocess_env` exports `COVERAGE_PROCESS_START` +
+`COVERAGE_RCFILE` + a PYTHONPATH pointing at that sitecustomize; the rcfile sets `parallel = True`;
+per-process data is combined on export. Any child Python process that **inherits `os.environ`** is
+therefore traced — and because cosmic-ray mutates source and a subprocess test's child runs the
+mutated code and fails, subprocess tests also **kill mutants**.
+
+Empirically confirmed: running the probe on ONLY `test_retro_scaffold_reports_validator_and_template`
+(a subprocess test) shows `scaffold_retro_artifact.py:64` `covered=True` while its in-process twin
+did not run.
+
+**Consequence:** the "load-bearing trap #1" below and the first Correction-Trail entries were
+**over-caution from this false premise**, not real saves. The three tests they protected were later
+deleted (commit `8e3e5225`) after the premise was empirically disproven. The net direction of the
+error was safe — nothing unsafe was ever deleted — but the reasoning is corrected here.
+
+**Residual nuance (still true):** a subprocess spawned with a *scrubbed* env (`env={...}` without
+`os.environ`) does NOT inherit `COVERAGE_PROCESS_START` and is untraced; and the repo keeps some
+in-process "twins" as attribution robust to env propagation. So "prefer in-process for attribution"
+is a defensible *robustness* heuristic — just not the absolute "subprocess = 0%" rule asserted.
 
 ## Why the premise is wrong here (the challenge)
 
@@ -64,10 +93,13 @@ slice-6 budget — deleted in batch A). The suite's authors already converged on
 
 ## What is load-bearing (do NOT cut) — 4 verify-rejected traps
 
-1. **In-process "twins" of subprocess tests are NOT redundant.** The changed-line mutation gate
-   treats a source line reached only via `subprocess.run` as **0% covered**; the in-process
-   drive is the intended attribution. Bulk-deleting "in-process duplicates" breaks the gate on
-   the next diff touching those lines. (This trap bit the audit twice — see Correction Trail.)
+1. **In-process "twins" — case-by-case, NOT an absolute rule.** *(CORRECTED — see Coverage-Model
+   Correction.)* The original claim that "subprocess = 0% covered → the in-process twin is the only
+   attribution" is FALSE here: subprocess children that inherit `os.environ` ARE traced and DO kill
+   mutants. An in-process twin is only load-bearing when its subprocess counterpart spawns with a
+   scrubbed env or asserts less. Verify env-inheritance before treating a twin as unique — three
+   tests wrongly kept under this trap were later deleted (`8e3e5225`). The remaining three traps
+   below stand on their own evidence.
 2. **Template/render snapshots over commented-out YAML** — doctor-block templates are YAML
    comments, invisible to `yaml.safe_load`, so the snapshot is the only coverage of the
    default-vs-lefthook branch.
@@ -89,28 +121,35 @@ slice-6 budget — deleted in batch A). The suite's authors already converged on
 pin the class not the case; when it's a new input, parametrize not duplicate; when in doubt
 against 0.9734, don't.*
 
-## Correction Trail — the audit was wrong twice; both caught at the boundary
+## Correction Trail — a false premise, caught and corrected
 
-Adversarial verification is necessary but not sufficient. Two "confirmed_waste" verdicts were
-false and were caught by a **different observer on a different evidence channel** (north-star):
+The failure mode here was not a bad deletion — it was **over-caution from a premise this operator
+seeded** ("subprocess = 0% covered"; see Coverage-Model Correction). It made the audit's verify pass,
+a fresh-eye reviewer, and this operator wrongly *keep* three redundant tests:
 
-- **`test_retro_scaffold.py::…persisted_section_in_process`** — caught by pre-delete inspection.
-  Its in-file "twin" reads `template` from the **subprocess payload**, so the deleted test was the
-  only in-process attribution for `render_template`. KEPT.
-- **`test_quality_tool_recommendations.py::…emit_blocking_runtime_routes`** — caught by the bounded
-  fresh-eye review of commit `b06af11e`. Retained in-process twins use `recommendation_role
-  "validation"` (different branch); the claimed runtime twin is subprocess-only. It was the sole
-  in-process driver of `why_recommended()`'s `runtime` branch. RESTORED in commit `33fc01e2`.
+- `test_retro_scaffold.py::…persisted_section_in_process` — kept in batch A because its subprocess
+  twin was assumed to give no attribution.
+- `test_quality_tool_recommendations.py::…emit_blocking_runtime_routes` — deleted in `b06af11e`,
+  then RESTORED (`33fc01e2`) when a fresh-eye review flagged it under the same premise.
+- `test_setup_seed_usage_episodes.py::test_seed_usage_episodes_force_overwrites` — kept in batch B.
 
-Both are the same "load-bearing trap #1" the synthesis had pre-declared. Lesson: for any test
-whose redundancy argument leans on a "twin," verify the twin drives the same source **in-process**,
-not via subprocess — the mutation gate does not credit subprocess-only lines.
+All three were empirically shown redundant — their subprocess twins inherit `os.environ` (traced →
+kill mutants) — and DELETED in `8e3e5225`. Net direction throughout was safe: no test that should
+have been kept was ever deleted. Lesson: verify the *actual* coverage config before reasoning about
+attribution; do not import coverage.py's default behavior as a repo invariant.
 
-## Applied so far
+## Applied
 
-- `a855ce74` — removed the issue-57 design-study renderer orphan (script + test + plugin mirror).
-- `b06af11e` + `33fc01e2` — **batch A: 12 net verified-safe deletions** (13 removed, 1 restored by
-  fresh-eye review). Standing suite 3909 passed; collection 3995 → 3983.
+- `a855ce74` — issue-57 design-study renderer orphan (script + test + plugin mirror). **−2 tests.**
+- `b06af11e` + `33fc01e2` — **batch A**: 12 net verified-safe deletions.
+- `70cd0f2b` — this audit artifact + `quality/latest.md` pointer.
+- `047cf769` — **batch B**: 3 subprocess-redundant deletions (doc-link + 2 seed refuse). **−3.**
+- `8e3e5225` — **coverage-model correction**: deleted the 3 tests wrongly kept under the false
+  premise. **−3.**
+
+**Total: 20 test functions removed** (issue-57 −2, A −12, B −3, correction −3). Standing suite
+green (3903); collection 3997 → 3977. No unsafe deletion shipped — every removed test's source
+branch is still covered by a retained sibling.
 
 ## Deferred (need separate judgment)
 
@@ -118,8 +157,10 @@ not via subprocess — the mutation gate does not credit subprocess-only lines.
   0 production callers; deleting the test needs removing the dead source fn too (else vulture flags it).
 - `test_sync_support.py::…rejects_upstream_skill_file_path` — command-bootstrap-proof nuance.
 - `test_goal_artifact_lib.py::…closeout_evidence_placeholders` — cross-*producer* twin, not same path.
-- **Batch B** (order-dependent merges): seed-adapter 3-file refuse/force, plugin-copy smokes,
-  doc-link absolute-path pair — each requires relocating a unique assert before delete.
+- **Plugin bundle smokes** (`test_usage_episodes_report.py::test_plugin_usage_episode_report_smoke`
+  + `…product_review_smoke` + `test_usage_episodes_validator.py::…validator_smoke`) — the only
+  end-to-end proof the shipped plugin BUNDLE runs (the byte-parity gate proves `.py` identity;
+  import-smoke only imports; neither runs the bundle). Kept deliberately.
 - **Batch C** (prose-pin cluster): parametrize/rewrite doc-substring tests that exercise no Python
   source — count↓, coverage identical. Larger, separate slice.
 
