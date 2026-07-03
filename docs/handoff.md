@@ -21,18 +21,23 @@
 - Batch C skipped 4 non-homogeneous anchors by design (rationale in the audit
   §"Deferred"). One BORDERLINE optional remains: a ~6–8 fn "dispatch + one lens ref"
   subset of [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py) could fold, but the win is marginal.
-- Reference-compaction/churn track (separate, still live): deletion track CLOSED
-  (0 delete-safe); churn sweep remaining — see its contract in References.
+- **Reference-compaction diagnosis DONE this session (2 threads closed, do not re-open):**
+  redundancy = 0/17 delete-safe (census stale, mislabels RCF floors); apparatus =
+  claim-fidelity floors 76%+ well-shaped, RCF→RSF token fix DEAD (0/9 trivially-green),
+  and the mis-checks are *measurement-validity, NOT a runtime tax* (faithful runs ignore
+  the floors, gather 0/8) — substance-judge redesign optional/non-urgent. See
+  [apparatus-floor-audit.md](../charness-artifacts/reference-compaction/apparatus-floor-audit.md),
+  [compaction-plan.md](../charness-artifacts/reference-compaction/compaction-plan.md).
 
 ## Next Session
 
-1. Read the reference-compaction
-   [contract](../charness-artifacts/reference-compaction/contract.md) +
-   [intent.md](../charness-artifacts/reference-compaction/intent.md) for churn-sweep scope.
-2. If instead continuing test packaging: the only remaining Batch C candidate is the
-   borderline [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py) subset above — first confirm it is genuinely
-   cleaner (declarative, LOC-neutral, not procedure-in-data), else skip and record why.
-3. Closeout any batch with a fresh-eye review + commit; append to the owning artifact.
+1. **Churn sweep (primary, the live-agent lever):** issue/achieve/hotl static confirm
+   (predicted ABSENT) + persist-helper transfer + debug-memory RCF. Scope:
+   [anti-churn-patterns.md](../charness-artifacts/reference-compaction/anti-churn-patterns.md).
+   Note: churn found was trim-loop/scaffold-ceiling, NOT ritual doc-open (runs ignore those).
+2. Held-open frontier (intent): systemic context-tax per-artifact audits can't see.
+3. Optional test-packaging tail: the borderline [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py)
+   subset — confirm genuinely cleaner (declarative, LOC-neutral) else skip; fresh-eye + commit each batch.
 
 ## Discuss
 
