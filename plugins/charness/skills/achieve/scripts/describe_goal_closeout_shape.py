@@ -138,6 +138,18 @@ def _evidence_unsatisfied(ev: dict[str, Any], name: str) -> str | None:
     for entry in ev.get("binding_failures", []):
         if entry.get("name") == name:
             return "evidence file does not bind to this goal's slug"
+    if name == "early_close_report":
+        # A present, bound report can still refuse the flip on section-body shape
+        # (``apply_report_shape`` -> ``invalid_early_close_reports`` -> ok=False).
+        # That refusal is name-scoped nowhere else, so surface it here or the row
+        # falsely reads "present and well-formed" while the flip is refused.
+        failures = [
+            f"{f['section']} ({f['reason']})"
+            for entry in ev.get("invalid_early_close_reports", [])
+            for f in entry.get("failures", [])
+        ]
+        if failures:
+            return "report section shape invalid — " + "; ".join(failures)
     return None
 
 

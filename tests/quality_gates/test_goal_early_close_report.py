@@ -147,3 +147,37 @@ def test_report_stub_cli_prints_stub(capsys, monkeypatch) -> None:
     out = capsys.readouterr().out
     assert "# Early Close Report — cli-goal" in out
     assert "## Waste and retro" in out
+
+
+cga = _load("check_goal_artifact")
+
+
+def test_hollow_report_names_the_section_in_cli_message(tmp_path: Path) -> None:
+    # The complete-flip refusal for a hollow early-close report must NAME the hollow
+    # section in the human-facing CLI tail. Before the reader fix, `apply_report_shape`
+    # set ok=False but `_evidence_missing_bits` had no branch for it, so a hollow
+    # report as the sole failure printed a dangling "…evidence not satisfied — " with
+    # no reason and forced the author to reverse-engineer it from raw JSON.
+    report_path = tmp_path / "charness-artifacts/goals" / "2026-05-28-g-early-close-report.md"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    # The realistic false-green case: all three headings present (looks well-formed),
+    # but one section body is terse (`None.`) -> `required section body is hollow`.
+    report_path.write_text(
+        "# Early Close Report — g\n\n"
+        "## Why early closeout was chosen\n\nNo safe next slice remained; only unsafe work was left.\n\n"
+        "## What user decisions are needed\n\nWhether to push or defer the carrier commit.\n\n"
+        "## Waste and retro\n\nNone.\n",
+        encoding="utf-8",
+    )
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _goal(
+            tmp_path,
+            include_report=False,
+            report_line=f"Early close report: {report_path.relative_to(tmp_path)}\n",
+        ),
+    )
+    assert report["ok"] is False
+    joined = "; ".join(cga._evidence_missing_bits(report))
+    assert "early-close report shape" in joined and "waste_retro" in joined and "hollow" in joined
+    assert joined.strip()  # never a dangling em-dash tail

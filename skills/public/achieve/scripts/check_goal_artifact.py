@@ -109,6 +109,15 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
             "operator-decision-queue floor: "
             + evidence_report["operator_decision_queue"]["reason"]
         )
+    if evidence_report.get("invalid_early_close_reports"):
+        bits.append(
+            "early-close report shape: "
+            + "; ".join(
+                f"{failure['section']} ({failure['reason']})"
+                for entry in evidence_report["invalid_early_close_reports"]
+                for failure in entry.get("failures", [])
+            )
+        )
     return bits
 
 

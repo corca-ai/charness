@@ -163,6 +163,61 @@ def test_evidence_unsatisfied_covers_every_refusal_branch() -> None:
     assert desc._evidence_unsatisfied(ev, "not_present") is None
 
 
+def test_evidence_unsatisfied_surfaces_hollow_early_close_report() -> None:
+    # A present, bound early-close report can still refuse the flip on section-body
+    # shape (`apply_report_shape` -> invalid_early_close_reports -> ok=False). That
+    # refusal channel is name-scoped nowhere in the other refusal sets, so without
+    # this branch the row falsely reads "present and well-formed" while the flip is
+    # refused with no reason (the describe/gate drift a fresh-eye caught).
+    ev = {
+        "invalid_early_close_reports": [
+            {"path": "r.md", "failures": [{"section": "waste_retro", "reason": "required section body is hollow"}]}
+        ],
+    }
+    detail = desc._evidence_unsatisfied(ev, "early_close_report")
+    assert detail is not None and "waste_retro" in detail and "hollow" in detail
+    # the report-scoped refusal must not leak into a different floor's row
+    assert desc._evidence_unsatisfied(ev, "retro_artifact") is None
+
+
+def test_goal_conditional_surfaces_hollow_early_close_report(tmp_path: Path) -> None:
+    # Integration: a triggered early-close goal whose report is PRESENT + BOUND but
+    # has a hollow section must land in the goal-conditional MISSING set (with the
+    # shape reason), not read as a satisfied "present and well-formed" floor.
+    slug, created = "hollow-early", "2026-06-14"
+    retro = tmp_path / "charness-artifacts/retro" / f"{created}-{slug}.md"
+    probe = tmp_path / "charness-artifacts/probe" / f"{created}-{slug}.json"
+    report_file = tmp_path / "charness-artifacts/goals" / f"{created}-{slug}-early-close-report.md"
+    hollow_report = (
+        f"# Early Close Report — {slug}\n\n"
+        "## Why early closeout was chosen\n\nNo safe next slice remained; only unsafe work was left.\n\n"
+        "## What user decisions are needed\n\nWhether to push or defer the carrier commit.\n\n"
+        "## Waste and retro\n\nNone.\n"  # terse body -> `required section body is hollow`
+    )
+    for target, body in (
+        (retro, f"# Retro for {slug}\n\nbody\n"),
+        (probe, f'{{"goal":"{slug}"}}\n'),
+        (report_file, hollow_report),
+    ):
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body, encoding="utf-8")
+    text = _preamble(slug, created) + (
+        "## Goal\n\nReal outcome.\n\n"
+        "## Final Verification\n\n"
+        "No safe next slice: only unsafe release work remains and user confirmation is required first.\n"
+        f"Retro: {retro.relative_to(tmp_path)}\n"
+        f"Host log probe: {probe.relative_to(tmp_path)}\n"
+        f"Early close report: {report_file.relative_to(tmp_path)}\n\n"
+        "## Auto-Retro\n\napplied: no deferred report gap remains\n"
+    )
+    report = desc.goal_conditional_shape(tmp_path, text)
+    assert "early_close_report" in _missing_keys(report)
+    row = next(r for r in report["missing"] if r["floor"] == "early_close_report")
+    assert "shape invalid" in row["detail"] and "waste_retro" in row["detail"] and "hollow" in row["detail"]
+    # the false-green wording must be gone from a genuinely-hollow report
+    assert "present and well-formed" not in row["detail"]
+
+
 def test_render_shows_missing_none_and_satisfied_block() -> None:
     report = {
         "triggered": [
