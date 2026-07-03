@@ -146,23 +146,30 @@ attribution; do not import coverage.py's default behavior as a repo invariant.
 - `047cf769` — **batch B**: 3 subprocess-redundant deletions (doc-link + 2 seed refuse). **−3.**
 - `8e3e5225` — **coverage-model correction**: deleted the 3 tests wrongly kept under the false
   premise. **−3.**
+- `6e0347a7` — corrected this artifact (the false subprocess premise).
+- `ae442a88` — **deferred items resolved**: removed the 3 deferred tests + the dead `is_available()`
+  source functions (2 stage modules + plugin mirrors). **−3 tests, −2 dead source fns.**
 
-**Total: 20 test functions removed** (issue-57 −2, A −12, B −3, correction −3). Standing suite
-green (3903); collection 3997 → 3977. No unsafe deletion shipped — every removed test's source
-branch is still covered by a retained sibling.
+**Total: 23 test functions removed** (issue-57 −2, A −12, B −3, correction −3, deferred −3) plus
+2 dead source functions. Standing suite green (3900); collection 3997 → 3974. No unsafe deletion
+shipped — every removed test's source branch is still covered by a retained sibling; all deletions
+passed a bounded fresh-eye review.
 
-## Deferred (need separate judgment)
+## Deferred — resolved / remaining
 
-- `test_web_fetch_trace_quality.py::test_optional_stage_availability_checks` — `is_available()` has
-  0 production callers; deleting the test needs removing the dead source fn too (else vulture flags it).
-- `test_sync_support.py::…rejects_upstream_skill_file_path` — command-bootstrap-proof nuance.
-- `test_goal_artifact_lib.py::…closeout_evidence_placeholders` — cross-*producer* twin, not same path.
+The three original deferred items were reviewed and all removed in `ae442a88` (see Applied). What
+remains deliberately KEPT or explicitly out of scope:
+
 - **Plugin bundle smokes** (`test_usage_episodes_report.py::test_plugin_usage_episode_report_smoke`
-  + `…product_review_smoke` + `test_usage_episodes_validator.py::…validator_smoke`) — the only
-  end-to-end proof the shipped plugin BUNDLE runs (the byte-parity gate proves `.py` identity;
-  import-smoke only imports; neither runs the bundle). Kept deliberately.
-- **Batch C** (prose-pin cluster): parametrize/rewrite doc-substring tests that exercise no Python
-  source — count↓, coverage identical. Larger, separate slice.
+  + `…product_review_smoke` + `test_usage_episodes_validator.py::…validator_smoke`) — **KEPT**: the
+  only end-to-end proof the shipped plugin BUNDLE runs (the byte-parity gate proves `.py` identity;
+  import-smoke only imports; neither runs the bundle).
+- **Batch C** (prose-pin cluster) — **NEXT SESSION**: parametrize/rewrite doc-substring tests that
+  exercise no Python source — count↓, coverage identical. Larger, separate slice. Candidate anchors
+  from the audit: `test_skill_lesson_durability.py` (~8 fns / ~51 substring asserts),
+  `test_source_bound_records_guidance.py`, `test_quality_skill_docs.py`, `test_issue_skill.py`,
+  `test_issue_closeout_discipline.py`, `test_closeout_discipline_propagation.py`. Whole-suite there
+  are 2,382 exact-string `==` asserts — most brittle-pin value lives here, not in deletions.
 
 ## Blind spots
 
