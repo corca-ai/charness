@@ -261,7 +261,7 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
         _packet(
             "debug-artifact-scaffold",
             "deterministic scaffold payload; trust write target and validator command",
-            command="python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root . --json",
+            command="python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .",
             artifact_path=scaffold["artifact_path"],
             write_artifact_path=scaffold["write_artifact_path"],
             write_artifact_role=scaffold["write_artifact_role"],
@@ -304,7 +304,7 @@ def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
         )
     return {
         "kind": "scaffold-debug-artifact",
-        "command": "python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root . --json",
+        "command": "python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .",
         "instruction": "write the emitted template to write_artifact_path before broad search or repair",
         "write_artifact_path": artifact["write_path"],
     }

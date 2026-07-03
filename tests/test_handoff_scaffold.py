@@ -47,7 +47,7 @@ def test_handoff_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     _write_adapter(repo, "demo")
 
-    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--json")
+    result = run_script(SCAFFOLD, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "docs/handoff.md"
@@ -81,7 +81,7 @@ def test_handoff_scaffold_reports_validator_and_template(tmp_path: Path) -> None
 def test_handoff_scaffold_guards_custom_title(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _write_adapter(repo, "demo")
-    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Auth Migration", "--json")
+    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Auth Migration")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     # A custom title without "handoff" still yields a validator-passing `# ... Handoff` line.
@@ -103,7 +103,7 @@ def test_exported_handoff_scaffold_validator_command_runs_from_consumer_repo(tmp
     consumer = tmp_path / "consumer"
     _write_adapter(consumer, "consumer")
 
-    result = run_script(str(scaffold), "--repo-root", str(consumer), "--json")
+    result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_role"] == "rolling"

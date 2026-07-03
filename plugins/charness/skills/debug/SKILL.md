@@ -28,7 +28,7 @@ Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/plan_debug_run.py" --repo-root . --json
-python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root .
 ```
 
 By default, `debug` writes durable artifacts to

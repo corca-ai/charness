@@ -227,7 +227,7 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
         _packet(
             "retro-artifact-scaffold",
             "deterministic scaffold payload; trust write target and validator command",
-            command="python3 $SKILL_DIR/scripts/scaffold_retro_artifact.py --repo-root . --json",
+            command="python3 $SKILL_DIR/scripts/scaffold_retro_artifact.py --repo-root .",
             write_artifact_path=scaffold["write_artifact_path"],
             validator_command=scaffold["validator_command"],
         ),
@@ -253,7 +253,7 @@ def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
         }
     return {
         "kind": "scaffold-retro-artifact",
-        "command": "python3 $SKILL_DIR/scripts/scaffold_retro_artifact.py --repo-root . --json",
+        "command": "python3 $SKILL_DIR/scripts/scaffold_retro_artifact.py --repo-root .",
         "instruction": "open the required_reads (incl. expert-lens.md for the briefed lens), scaffold the artifact, then write the retro",
         "write_artifact_path": artifact["path"],
     }

@@ -285,7 +285,7 @@ def _next_action(
     if not artifact["exists"]:
         return {
             "kind": "scaffold_missing_artifact",
-            "command": 'python3 "$SKILL_DIR/scripts/scaffold_handoff_artifact.py" --repo-root . --json',
+            "command": 'python3 "$SKILL_DIR/scripts/scaffold_handoff_artifact.py" --repo-root .',
             "why": "the adapter-resolved handoff artifact is missing",
         }
     if intent["resolved"] == "chunked_routing":

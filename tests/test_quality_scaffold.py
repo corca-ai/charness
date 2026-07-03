@@ -145,7 +145,7 @@ def test_exported_quality_scaffold_validator_command_runs_from_consumer_repo(tmp
     consumer = tmp_path / "consumer"
     _write_adapter(consumer, "consumer")
 
-    result = run_script(str(scaffold), "--repo-root", str(consumer), "--json")
+    result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_role"] == "current_pointer"

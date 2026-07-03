@@ -53,7 +53,7 @@ sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
 sed -n '1,220p' "$SKILL_DIR/../retro/SKILL.md" 2>/dev/null || true
 
 # 4. scaffold the ideation record to write (validator-passing skeleton)
-python3 "$SKILL_DIR/scripts/scaffold_ideation_artifact.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/scaffold_ideation_artifact.py" --repo-root .
 ```
 
 If the repo already contains a design or concept doc, preserve it and sharpen it

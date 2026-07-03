@@ -6,18 +6,16 @@ sits on a statement coverage.py never recorded as executed. The recurring
 offenders are the public-skill ``scaffold_*_artifact.py`` CLI scripts, which
 were exercised ONLY through ``subprocess.run(["python3", SCAFFOLD, ...])`` in
 ``tests/test_*_scaffold.py``. Even when the subprocess child's coverage is
-captured, those tests only walk the ``--json`` happy path with an ancestor
-``scripts/`` validator present, so two branches per scaffold stay uncovered:
+captured, those tests walk the happy path with an ancestor ``scripts/``
+validator present, so the ``repo_local`` validator fallback + its
+``FileNotFoundError`` raise (only reachable when no ancestor
+``scripts/<validator>.py`` exists) stays uncovered.
 
-  * the non-``--json`` ``main()`` print path, and
-  * the ``repo_local`` validator fallback + its ``FileNotFoundError`` raise
-    (only reachable when no ancestor ``scripts/<validator>.py`` exists).
-
-A changed line landing on either branch reads as uncovered and re-files the
+A changed line landing on that branch reads as uncovered and re-files the
 auto-issue. These tests import each scaffold IN-PROCESS (so the normal
-pytest+coverage run records the lines) and drive BOTH the happy and fallback
-branches, making the changed-line coverage probe honest for this class without
-demoting the gate. The companion gate test
+pytest+coverage run records the lines) and drive the ``main()`` output path and
+the fallback branch, making the changed-line coverage probe honest for this
+class without demoting the gate. The companion gate test
 ``tests/quality_gates/test_scaffold_changed_line_coverage.py`` asserts the
 recurring lines now read as covered through the gate's own coverage probe.
 """
@@ -83,30 +81,21 @@ def _call_validator(module, repo_root: Path) -> str:
 
 
 @pytest.mark.parametrize("slug", SCAFFOLDS)
-def test_scaffold_main_runs_both_output_branches_in_process(slug: str, tmp_path: Path, monkeypatch) -> None:
+def test_scaffold_main_emits_json_payload_in_process(slug: str, tmp_path: Path, monkeypatch) -> None:
     module = _load_scaffold(slug)
     repo = tmp_path / "consumer"
     repo.mkdir()
 
-    # Non-json branch: writes the rendered template to stdout.
+    # main() has a single output path: it always emits the full structured
+    # payload as JSON (the run reads `template` plus the sibling contract fields).
+    # There is no flag and no bare rendered-template branch to cover.
     monkeypatch.setattr(sys, "argv", ["scaffold", "--repo-root", str(repo)])
     out = io.StringIO()
     monkeypatch.setattr(sys, "stdout", out)
     assert module.main() == 0
-    template_text = out.getvalue()
-    assert template_text.startswith("# "), template_text[:40]
-    assert template_text.rstrip().endswith(template_text.rstrip().splitlines()[-1])
-
-    # JSON branch: emits a payload with the canonical scaffold keys.
-    monkeypatch.setattr(sys, "argv", ["scaffold", "--repo-root", str(repo), "--json"])
-    out_json = io.StringIO()
-    monkeypatch.setattr(sys, "stdout", out_json)
-    assert module.main() == 0
-    payload = json.loads(out_json.getvalue())
-    assert payload["template"].startswith("# ")
+    payload = json.loads(out.getvalue())
+    assert payload["template"].startswith("# "), payload["template"][:40]
     assert "validator_command" in payload
-    # The non-json template and the json payload template must agree.
-    assert payload["template"] == template_text
 
 
 @pytest.mark.parametrize("slug", SCAFFOLDS)

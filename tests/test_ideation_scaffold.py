@@ -29,7 +29,7 @@ def test_ideation_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--json")
+    result = run_script(SCAFFOLD, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_path"].startswith("charness-artifacts/ideation/")
@@ -81,7 +81,7 @@ def test_exported_ideation_scaffold_validator_command_runs_from_consumer_repo(tm
     consumer = tmp_path / "consumer"
     consumer.mkdir()
 
-    result = run_script(str(scaffold), "--repo-root", str(consumer), "--json")
+    result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_role"] == "record"

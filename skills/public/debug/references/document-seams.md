@@ -20,7 +20,7 @@ Do not reconstruct the artifact skeleton from memory when the repo already
 ships the contract helper:
 
 ```bash
-python3 skills/public/debug/scripts/scaffold_debug_artifact.py --repo-root . --json
+python3 skills/public/debug/scripts/scaffold_debug_artifact.py --repo-root .
 # then run the emitted validator_command
 ```
 

@@ -92,12 +92,13 @@ def emit_payload_main(
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help=f"Repo root to scaffold the {artifact_label} artifact into")
     parser.add_argument("--title", help=f"Title for the scaffolded {artifact_label} artifact")
-    parser.add_argument("--json", action="store_true", help="Emit the payload as JSON instead of the rendered template")
     args = parser.parse_args()
 
+    # Always emit the full structured payload — the run reads the template from
+    # `payload["template"]` and the write target, validator command, and
+    # size_budget as sibling fields. There is no bare rendered-template mode: a
+    # single output shape removes the "forgot --json → the budget/write-path never
+    # reached the run" footgun that a flag-gated structured mode invites.
     payload = payload_for(args.repo_root.resolve(), title=args.title)
-    if args.json:
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-    else:
-        sys.stdout.write(str(payload["template"]))
+    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     return 0

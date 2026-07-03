@@ -78,7 +78,7 @@ def test_installed_like_scaffold_prefers_repo_local_validator_when_repo_owns_one
         encoding="utf-8",
     )
 
-    result = run_script(str(scaffold), "--repo-root", str(repo), "--json")
+    result = run_script(str(scaffold), "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     command = payload["validator_command"]

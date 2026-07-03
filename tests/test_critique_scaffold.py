@@ -29,7 +29,7 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--json")
+    result = run_script(SCAFFOLD, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_path"].startswith("charness-artifacts/critique/")
@@ -88,7 +88,7 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
     round-trip on a value the scaffold told them was allowed."""
     from scripts import validate_critique_artifacts as validator
 
-    result = run_script(SCAFFOLD, "--repo-root", str(tmp_path), "--json")
+    result = run_script(SCAFFOLD, "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
     enums = json.loads(result.stdout)["allowed_enums"]
 
@@ -115,7 +115,7 @@ def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tm
     consumer = tmp_path / "consumer"
     consumer.mkdir()
 
-    result = run_script(str(scaffold), "--repo-root", str(consumer), "--json")
+    result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_role"] == "record"

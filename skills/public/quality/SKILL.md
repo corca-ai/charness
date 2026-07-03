@@ -59,10 +59,10 @@ git status --short
    candidate floor that has passed the north-star and floor-addition-restraint
    checks.
 8. Scaffold the quality artifact FIRST with
-   `scaffold_quality_artifact.py --repo-root . --json` (it emits a skeleton that
-   already passes the validator) and fill real findings into that payload's
-   `template` instead of hand-writing the section format. Use the payload as the
-   artifact contract: write to fit its `size_budget.max_lines` on the first pass
+   `scaffold_quality_artifact.py --repo-root .` (it emits the artifact contract as
+   a JSON payload whose `template` already passes the validator) and fill real
+   findings into that `template` instead of hand-writing the section format. Use
+   the payload as the artifact contract: write to fit its `size_budget.max_lines` on the first pass
    and heed `size_budget.guidance` on the judgment-heavy sections, rather than
    writing long and then trimming to fit against a ceiling the validator only
    reveals at the end. Validate once with `validate_quality_artifact.py` — it
