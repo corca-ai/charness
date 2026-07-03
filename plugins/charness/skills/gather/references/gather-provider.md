@@ -15,23 +15,31 @@ gather_provider:
   github:
     mode: direct-cli
   google_workspace:
-    mode: none
+    mode: direct-cli
   slack:
-    mode: direct-cli
+    mode: none        # credentialless default; set host-mediated or direct-cli to enable
   notion:
-    mode: direct-cli
+    mode: none        # credentialless default; set host-mediated or direct-cli to enable
 ```
 
 `mode` accepts:
 
-- `direct-cli` (default): use the maintainer-local CLI or checked-in support
-  runtime when one exists (`gh`, Slack bot token, Notion token). Google
-  Workspace intentionally has no repo-owned direct CLI provider.
+- `direct-cli`: use the maintainer-local CLI or checked-in support runtime when
+  one exists (`gh`, Slack, Notion). This is the default only for `github`
+  (standard dev tooling); Google Workspace intentionally has no repo-owned
+  direct CLI provider.
 - `host-mediated`: the host advertises a `<provider>` capability command;
   the skill instructs the agent to use the host's shape rather than
   invoking the direct CLI/token path.
 - `none`: the source is unavailable in this runtime. The skill stops with
   a missing-capability explanation instead of attempting a fallback.
+
+Plain gather is credentialless by default: the credentialed org providers that
+ship a charness-owned wrapper (`slack`, `notion`) default to `none`, so an
+installed skill never advertises a provider CLI route until a repo adapter opts
+in. Enable a credentialed provider by declaring `host-mediated` (route through
+the runtime's own capability) or `direct-cli` (only when the maintainer owns the
+grant).
 
 ## Sources
 
@@ -67,14 +75,14 @@ for a direct CLI under a worker runtime.
 
 ## Why Adapter-Driven
 
-In maintainer-local repos the default `direct-cli` preserves authenticated
-`gh` plus Slack/Notion support paths. In worker-runtime hosts that
-gate provider access behind a host-mediated capability surface (such as
-`acme github`), the adapter declares the relevant sources as
-`host-mediated` (or `none`) and the public `gather` skill stops teaching
-agents to reach for a direct CLI or token. The same skill body works
-across both host modes without baking host-specific identifiers into
-charness.
+Plain gather stays credentialless by default so an installed skill never
+teaches agents to reach for a credentialed provider CLI a consuming runtime did
+not authorize. A maintainer-local repo that owns the grants opts into
+`direct-cli` for `slack`/`notion` in its own adapter; a worker-runtime host that
+gates provider access behind a capability surface (such as `acme github`)
+declares the relevant sources as `host-mediated`. Either way the credentialed
+route is a repo-declared opt-in, and the same skill body works across host modes
+without baking host-specific identifiers into charness.
 
 ## Adapter Slot Boundary
 

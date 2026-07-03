@@ -102,16 +102,40 @@ def test_gather_skill_description_names_concrete_source_triggers() -> None:
 
 def test_gather_skill_contract_names_browser_mediated_private_source_ladder() -> None:
     assert "advise_slack_path.py" in GATHER_SKILL
-    assert "support/gather-slack/scripts/export-thread.sh" in GATHER_SKILL
+    # Plain gather is credentialless by default; the generic body must NOT
+    # hard-name a credentialed provider CLI path (the discovery leak #417 fixes).
+    assert "credentialless by default" in GATHER_SKILL
+    assert "support/gather-slack/scripts/export-thread.sh" not in GATHER_SKILL
     assert "browser-mediated fallback through `agent-browser`" in GATHER_SKILL
     assert "official API/export docs before browser automation" in GATHER_SKILL
     assert "- `Access Mode`" in GATHER_SKILL
     assert "- `Captured vs Human Confirmation`" in GATHER_SKILL
 
 
-def test_advise_slack_path_points_to_gather_slack_wrapper(tmp_path: Path) -> None:
+def test_advise_slack_path_defaults_to_credentialless_none(tmp_path: Path) -> None:
+    # No adapter → plain gather is credentialless: Slack resolves to `none` and
+    # stops clean instead of surfacing the charness-owned wrapper.
     repo = tmp_path / "repo"
     repo.mkdir()
+
+    payload = _advise_slack_path.payload_for(repo)
+
+    assert payload["provider"] == "gather-slack"
+    assert payload["provider_mode"] == "none"
+    assert payload["doctor_status"] == "skipped"
+    assert "missing-capability" in payload["operator_prompt"]
+    assert "credentialless default" in payload["operator_prompt"]
+
+
+def test_advise_slack_path_points_to_gather_slack_wrapper_when_opted_in(tmp_path: Path) -> None:
+    # Explicit direct-cli opt-in (maintainer owns the grant) still routes to the
+    # checked-in wrapper — the opt-in convenience is preserved.
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "gather-adapter.yaml").write_text(
+        "version: 1\ngather_provider:\n  slack:\n    mode: direct-cli\n",
+        encoding="utf-8",
+    )
 
     payload = _advise_slack_path.payload_for(repo)
 
@@ -138,7 +162,7 @@ def test_advise_slack_path_cli_emits_json(tmp_path: Path, monkeypatch, capsys) -
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["provider"] == "gather-slack"
-    assert payload["provider_mode"] == "direct-cli"
+    assert payload["provider_mode"] == "none"
 
 
 def test_advise_slack_path_honors_host_mediated_adapter(tmp_path: Path) -> None:

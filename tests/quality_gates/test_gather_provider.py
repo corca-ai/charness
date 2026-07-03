@@ -18,15 +18,22 @@ def _load_gather_module(name: str):
     return module
 
 
-def test_gather_adapter_defaults_all_sources_to_direct_cli(tmp_path: Path) -> None:
+def test_gather_adapter_defaults_are_credentialless(tmp_path: Path) -> None:
+    # Plain gather is credentialless by default: the org providers that ship a
+    # charness-owned wrapper (slack, notion) default to `none` so an installed
+    # skill never advertises a credentialed provider route until a repo opts in.
+    # github stays direct-cli (dev tooling); google_workspace stays direct-cli
+    # (no repo-owned CLI → host/export/browser guidance, no wrapper to leak).
     resolve = _load_gather_module("resolve_adapter")
     payload = resolve.load_adapter(tmp_path)
 
     assert payload["valid"] is True
     provider = payload["data"]["gather_provider"]
     assert set(provider) == {"github", "google_workspace", "slack", "notion"}
-    for source, entry in provider.items():
-        assert entry == {"mode": "direct-cli"}, source
+    assert provider["github"] == {"mode": "direct-cli"}
+    assert provider["google_workspace"] == {"mode": "direct-cli"}
+    assert provider["slack"] == {"mode": "none"}
+    assert provider["notion"] == {"mode": "none"}
 
 
 def test_gather_adapter_parses_per_source_modes(tmp_path: Path) -> None:

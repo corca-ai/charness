@@ -3,26 +3,42 @@
 This document corrects the ownership model for provider-specific runtime under
 the public `gather` skill.
 
+## Default Boundary: credentialless generic gather, opt-in credentialed access
+
+Plain `gather` is credentialless by default. It targets public URLs, local
+files, and other sources that need no organizational credential. Credentialed
+org data — Slack, Notion, Google Workspace, Drive, or similar — is **not**
+reached through a charness-prescribed provider CLI by default; it is reached
+through the **consuming runtime's** first-class capability/connector surface,
+declared as a repo adapter opt-in (`gather_provider.<source>.mode`).
+
+The shipped defaults encode this: `slack` and `notion` default to `none`, so an
+installed skill never advertises a credentialed provider route until a maintainer
+who owns the grant opts in. The optional charness-owned provider runtime below is
+a convenience for that opt-in path, not the generic behavior.
+
 ## Goal
 
-Consumers should be able to use `charness` gather providers without
-reimplementing provider scripts in each consumer repo.
+When a consumer *opts into* a credentialed provider, they should not have to
+reimplement provider scripts in each consumer repo.
 
 That means:
 
-- if `gather` needs provider-specific runtime to talk to Slack, Notion, or a
-  similar API, `charness` should own that runtime
-- consumers should only need to choose adapters, grants, env fallback, or
-  approved binaries
+- if an opted-in `direct-cli` `gather` route needs provider-specific runtime to
+  talk to Slack, Notion, or a similar API, `charness` may own that optional
+  runtime so consumers who choose it do not rebuild it
+- consumers choose the boundary: a host/runtime-owned capability
+  (`host-mediated`), the maintainer-owned grant path (`direct-cli`), or `none`
 - consumer repos should not need to recreate Slack API helpers or other
-  provider scripts just because they installed `charness`
+  provider scripts when they deliberately opt into the charness-owned route
 
 ## Correct Ownership Split
 
 ### `charness` owns
 
-- public `gather` behavior
-- provider-specific support/runtime that makes `gather` actually usable
+- public `gather` behavior (credentialless by default)
+- the optional, opt-in provider-specific support/runtime for a `direct-cli`
+  credentialed route
 - capability requirements and degradation rules
 - support skills and helper scripts that hide repeated provider bootstrap
 - provenance notes when another repo informed the implementation
@@ -148,7 +164,9 @@ When a consumer wants provider-backed gather:
 
 1. Keep Google on a host/export/browser-mediated path until a concrete runtime
    contract is stable enough to consume.
-2. Treat Slack and Notion as `charness`-owned provider runtime, not external
-   plugin dependencies.
+2. Treat the Slack and Notion provider runtime as an optional, opt-in
+   `charness`-owned convenience (not an external plugin dependency and not the
+   generic default): plain gather stays credentialless, and the runtime is
+   consumed only when a repo adapter declares `direct-cli`.
 3. Keep capability metadata honest while the support/runtime home lands under
    `skills/support/`.

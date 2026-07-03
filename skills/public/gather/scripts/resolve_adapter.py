@@ -36,10 +36,25 @@ ARTIFACT_CLASS = "history"
 GATHER_PROVIDER_SOURCES = ("github", "google_workspace", "slack", "notion")
 GATHER_PROVIDER_MODES = ("direct-cli", "host-mediated", "none")
 DEFAULT_GATHER_PROVIDER_MODE = "direct-cli"
+# Plain gather is credentialless by default. Credentialed org providers that
+# would otherwise surface a charness-owned wrapper (`slack`, `notion`) stay
+# `none` until a repo adapter opts in, so an installed skill never advertises a
+# provider CLI route by default. `github` is standard dev tooling; Google
+# Workspace has no repo-owned direct CLI and already routes to host/export/browser
+# guidance, so both keep `direct-cli`.
+DEFAULT_GATHER_PROVIDER_MODES = {
+    "github": "direct-cli",
+    "google_workspace": "direct-cli",
+    "slack": "none",
+    "notion": "none",
+}
 
 
 def default_gather_provider() -> dict[str, dict[str, str]]:
-    return {source: {"mode": DEFAULT_GATHER_PROVIDER_MODE} for source in GATHER_PROVIDER_SOURCES}
+    return {
+        source: {"mode": DEFAULT_GATHER_PROVIDER_MODES.get(source, DEFAULT_GATHER_PROVIDER_MODE)}
+        for source in GATHER_PROVIDER_SOURCES
+    }
 
 
 def _parse_gather_provider(raw: Any, errors: list[str]) -> dict[str, dict[str, str]]:

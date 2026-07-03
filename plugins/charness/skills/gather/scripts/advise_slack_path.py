@@ -62,7 +62,7 @@ def dependency_status() -> tuple[str, list[str]]:
 def payload_for(repo_root: Path) -> dict[str, object]:
     adapter_data = load_gather_adapter(repo_root)["data"]
     provider = adapter_data.get("gather_provider") or {}
-    mode = (provider.get(SOURCE_ID) or {}).get("mode", "direct-cli")
+    mode = (provider.get(SOURCE_ID) or {}).get("mode", "none")
     support_root = find_support_root()
     support_skill = support_root / "SKILL.md"
     runtime_contract = support_root / "references" / "runtime-contract.md"
@@ -77,12 +77,14 @@ def payload_for(repo_root: Path) -> dict[str, object]:
             "runtime_contract_path": portable(runtime_contract, repo_root),
             "wrapper_path": portable(wrapper, repo_root),
             "operator_prompt": (
-                "Adapter declares gather_provider.slack.mode=none. Stop with a "
-                "missing-capability explanation instead of trying browser or unrelated helpers."
+                "gather_provider.slack.mode=none (credentialed Slack is not enabled in this "
+                "runtime; this is the credentialless default until a repo adapter opts in). "
+                "Stop with a missing-capability explanation instead of trying browser or unrelated helpers."
             ),
             "next_steps": [
                 "Surface the missing Slack capability to the operator.",
-                "If the operator has Slack access, update gather_provider.slack.mode in .agents/gather-adapter.yaml.",
+                "To enable credentialed Slack, set gather_provider.slack.mode in .agents/gather-adapter.yaml: "
+                "host-mediated to route through the runtime's Slack capability, or direct-cli when the maintainer owns the grant.",
             ],
         }
 

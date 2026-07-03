@@ -10,6 +10,6 @@ gather_provider:
   google_workspace:
     mode: direct-cli
   slack:
-    mode: direct-cli
+    mode: none        # credentialless default; set host-mediated or direct-cli to enable
   notion:
-    mode: direct-cli
+    mode: none        # credentialless default; set host-mediated or direct-cli to enable

@@ -27,7 +27,11 @@ By default, durable records live under
 `<repo-root>/charness-artifacts/gather/` with `latest.md` as the current pointer.
 Repos may override the directory with `.agents/gather-adapter.yaml`.
 
-For Slack and Google Workspace, use the repo-owned path advisers before trying
+Plain `gather` is credentialless by default: it targets public and local
+sources. Credentialed org sources (Slack, Notion, Google Workspace, Drive) are
+off until a repo adapter opts in, and are reached through a host/runtime-owned
+capability the adapter declares — never a charness-prescribed provider CLI. Use
+the repo-owned path advisers to resolve the adapter-declared route before trying
 unrelated private-source helpers:
 
 ```bash
@@ -35,8 +39,10 @@ python3 "$SKILL_DIR/scripts/advise_slack_path.py" --repo-root .
 python3 "$SKILL_DIR/scripts/advise_google_workspace_path.py" --repo-root .
 ```
 
-The Slack direct-cli path points at `support/gather-slack/scripts/export-thread.sh`.
-For Google Workspace and private SaaS, read official API/export docs before browser automation.
+The advisers stop with a missing-capability explanation until the adapter
+declares a route (`host-mediated` for a runtime capability, or an explicit
+`direct-cli` when the maintainer owns the grant). For Google Workspace and
+private SaaS, read official API/export docs before browser automation.
 
 For arbitrary public URLs, let the public URL helper consume `support/web-fetch`
 and preserve route, attempts, selected proof, typed verdict, and open gaps:
