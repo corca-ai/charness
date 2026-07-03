@@ -186,6 +186,82 @@ def test_quality_tool_recommendations_filter_role_by_next_skill(tmp_path: Path, 
     assert payload["tool_recommendations"] == []
 
 
+def test_quality_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Path, monkeypatch, capsys) -> None:
+    _write_manifest(
+        tmp_path,
+        "glow.json",
+        {
+            "schema_version": "1",
+            "tool_id": "glow",
+            "kind": "external_binary",
+            "display_name": "glow",
+            "summary": "Markdown renderer.",
+            "upstream_repo": "charmbracelet/glow",
+            "homepage": "https://github.com/charmbracelet/glow",
+            "lifecycle": {
+                "install": {
+                    "mode": "manual",
+                    "docs_url": "https://github.com/charmbracelet/glow",
+                    "install_url": "https://github.com/charmbracelet/glow#installation",
+                    "notes": ["Install glow."],
+                },
+                "update": {"mode": "manual", "docs_url": "https://github.com/charmbracelet/glow/releases", "notes": ["Update glow."]},
+            },
+            "checks": {
+                "detect": {"commands": ["glow --version"], "success_criteria": ["exit_code:0"]},
+                "healthcheck": {"commands": ["glow --help"], "success_criteria": ["exit_code:0"]},
+            },
+            "access_modes": ["binary", "degraded"],
+            "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+            "supports_public_skills": ["narrative", "quality"],
+            "recommendation_role": "runtime",
+        },
+    )
+
+    payload = _run_quality_recommendations(
+        monkeypatch,
+        capsys,
+        tmp_path,
+        "--recommendation-role",
+        "runtime",
+        "--next-skill-id",
+        "quality",
+    )
+    assert payload == {
+        "recommendation_role": "runtime",
+        "next_skill_id": "quality",
+        "tool_recommendations": [
+            {
+                "tool_id": "glow",
+                "display_name": "glow",
+                "kind": "external_binary",
+                "summary": "Markdown renderer.",
+                "why_recommended": "Recommended because `quality` can use this tool as a supported runtime path.",
+                "supports_public_skills": ["narrative", "quality"],
+                "recommendation_role": "runtime",
+                "recommendation_status": "install-needed",
+                "doctor_status": "missing",
+                "support_state": "integration-only",
+                "support_sync_status": "not-tracked",
+                "detect_ok": False,
+                "healthcheck_ok": False,
+                "readiness_ok": True,
+                "install": {
+                    "mode": "manual",
+                    "commands": [],
+                    "docs_url": "https://github.com/charmbracelet/glow",
+                    "install_url": "https://github.com/charmbracelet/glow#installation",
+                    "notes": ["Install glow."],
+                },
+                "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id glow",
+                "next_skill_id": "quality",
+                "manifest_origin": "user-repo",
+                "staged": None,
+            }
+        ],
+    }
+
+
 def test_narrative_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Path) -> None:
     _write_manifest(
         tmp_path,
