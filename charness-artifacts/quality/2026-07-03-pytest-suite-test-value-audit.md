@@ -221,6 +221,14 @@ remains deliberately KEPT or explicitly out of scope:
   full-path figure. And `read_text` is only ONE axis — inline fixture-script duplication (e.g. the
   fake `gh` block rewritten ~5× in `test_issue_skill.py`) is real duplication this scan cannot see.
   This is a concrete instance of intent.md's Goodhart warning: reducing function *count* was
-  LOC-neutral because the real LOC waste (duplication) is orthogonal to count. Cleanup deferred
-  pending an approach/scope decision — standing advisory signal (extend `inventory_structural_waste`)
-  vs manual extract-constant on the concentrated files vs full 16-file sweep.
+  LOC-neutral because the real LOC waste (duplication) is orthogonal to count.
+  - **RESOLVED (full sweep + structural prevention).** `5d1684ac` hoisted the 66 ROOT-anchored
+    re-reads across 15 files to module constants (**−111 LOC, −78 `read_text` calls**, coverage
+    byte-identical: distinct string-set + assert counts preserved, collection 3974, standing suite
+    green; done as a 15-agent Workflow fan-out + bounded fresh-eye review). `22ebc31a` deduped the
+    fixture axis — `fake_gh_env` (identical ×2) and the argv-logging fake preamble (×6) → shared
+    `support.py` helpers (**−34 LOC**, every assert byte-identical, fresh-eye reviewed). `e2b32f14`
+    closed the tool gap: an **AST-based `intra_test_reread_candidates`** detector in the advisory
+    `inventory_structural_waste` inventory catches this class going forward (a fresh-eye review caught
+    the first regex version false-positiving on its own fixtures; the AST version returns 0 on the
+    cleaned repo). Production code needed no change (already clean).

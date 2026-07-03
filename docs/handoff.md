@@ -43,9 +43,10 @@
 - Batch C lesson: `parametrize` does NOT cut collected-item count (each case is an item);
   its lever is test-FUNCTION count + declarativeness, not "count↓". Fold only genuinely
   homogeneous clusters; a multi-column flag schema is "procedure hidden in data".
-- OPEN follow-up (logged in audit §"Blind spots"): a duplication scan found 66 same-file
-  re-reads across 16 test files (prod clean) — extract-constant candidates. Awaiting an
-  approach/scope pick (standing advisory signal vs manual extract vs full sweep).
+- DONE (was an open follow-up; audit §"Blind spots"): test-suite duplication swept —
+  `5d1684ac` (66 read_text re-reads → module constants, −111 LOC), `22ebc31a` (fixture
+  helpers, −34 LOC), `e2b32f14` (AST `intra_test_reread` detector so the class is caught
+  going forward). Coverage byte-identical; prod code was already clean.
 
 ## References
 
