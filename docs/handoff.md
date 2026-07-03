@@ -16,8 +16,8 @@
   source fns; Batch C (`7a2f8892`) folded the 2 genuinely-homogeneous prose-pin
   clusters into `parametrize` (−9 test fns, **0 collected-item delta**, LOC ~neutral).
   Standing suite green (3974); every change fresh-eye reviewed. Owning artifact:
-  [test-value-audit](../charness-artifacts/quality/2026-07-03-pytest-suite-test-value-audit.md)
-  (= `quality/latest.md`).
+  [test-value-audit](../charness-artifacts/quality/history/2026-07-03-pytest-suite-test-value-audit.md)
+  (archived to `history/`; `quality/latest.md` now = the 0.59.0 release quality review).
 - Batch C skipped 4 non-homogeneous anchors by design (rationale in the audit
   §"Deferred"). One BORDERLINE optional remains: a ~6–8 fn "dispatch + one lens ref"
   subset of [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py) could fold, but the win is marginal.
@@ -50,4 +50,4 @@
 
 ## References
 
-- pickup: [test-value-audit](../charness-artifacts/quality/2026-07-03-pytest-suite-test-value-audit.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) · [reference-compaction contract](../charness-artifacts/reference-compaction/contract.md)
+- pickup: [test-value-audit](../charness-artifacts/quality/history/2026-07-03-pytest-suite-test-value-audit.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) · [reference-compaction contract](../charness-artifacts/reference-compaction/contract.md)

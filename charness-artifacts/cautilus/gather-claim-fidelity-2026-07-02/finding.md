@@ -45,7 +45,7 @@ independent `claude -p` judge) → **scored 4/4, pass_rate 1.0, 0 skipped, 0 err
 output extraction handle a committing run — exactly what a naive `output_glob` would
 have false-failed (the recent-lessons `preserve_outputs` trap).
 
-## Remaining (does NOT close #411's public-URL default)
+## Non-Claims & Follow-up (does NOT close #411's public-URL default)
 
 The RCF flip is blocked by `claim_fidelity_lib.py:172` (at least one of RCF/RSF must
 be non-empty — "a spec with no floor asserts nothing"). Dropping the refuted doc-opens
