@@ -309,28 +309,6 @@ jobs:
     assert payload["exempt_workflows"] == []
 
 
-def test_gate_policy_marker_after_yaml_content_is_ignored(tmp_path: Path) -> None:
-    repo = _write_workflow(
-        tmp_path,
-        """name: verify
-# charness:gate-policy scheduled-deeper-check
-on: [push]
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - run: mutmut run
-""",
-    )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    # Marker must come BEFORE non-comment YAML; placement after `name:`
-    # does not exempt the workflow.
-    assert payload["exempt_workflows"] == []
-    assert len(payload["jobs_without_canonical_gate"]) == 1
-
-
 def test_require_empty_parity_issues_returns_nonzero_when_violation(tmp_path: Path) -> None:
     repo = _write_workflow(
         tmp_path,

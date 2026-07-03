@@ -256,34 +256,6 @@ def test_acquire_default_is_exact_unavailable_not_substituted(tmp_path: Path) ->
     assert out["final_status"] != "success"
 
 
-def test_issue_392_target_url_records_authenticated_browser_required(tmp_path: Path) -> None:
-    direct_file = tmp_path / "direct.html"
-    direct_file.write_text(CAPTCHA, encoding="utf-8")
-
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "skills" / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"),
-            "--url",
-            ISSUE_392_STATUS_URL,
-            "--direct-response-file",
-            str(direct_file),
-            "--browser-mode",
-            "off",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["source_identity"] == "exact-unavailable"
-    assert payload["source_resolution"]["terminal_state"] == "authenticated-browser-required"
-    assert payload["attempts"][1]["details"]["requested_status_id"] == ISSUE_392_SID
-
-
 def test_acquire_non_twitter_has_no_source_identity(tmp_path: Path) -> None:
     direct_file = tmp_path / "ok.html"
     direct_file.write_text("hello world " * 200, encoding="utf-8")

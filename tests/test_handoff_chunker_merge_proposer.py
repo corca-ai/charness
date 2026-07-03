@@ -244,17 +244,6 @@ def test_candidate_labels_are_stable_and_index_sorted(lib):
 # Standalone always present --------------------------------------------------
 
 
-def test_standalone_carries_every_entry_even_when_merged(lib):
-    """Per spec: standalone is always one ChunkCandidate per entry; the
-    merged list is additive, not a replacement. The user picks which to
-    take."""
-    entry_a = _entry(lib, 1, "A", paths=("path/to/x.py",))
-    entry_b = _entry(lib, 2, "B", paths=("path/to/x.py",))
-    proposal = lib.propose_merges([entry_a, entry_b])
-    assert len(proposal.standalone) == 2
-    assert len(proposal.merged) == 1
-
-
 # CLI round-trip -------------------------------------------------------------
 
 

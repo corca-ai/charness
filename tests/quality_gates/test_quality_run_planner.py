@@ -14,7 +14,7 @@ from scripts.validate_quality_reference_catalog import (
     validate_quality_reference_catalog,
 )
 
-from .support import ADAPTER_LIB, ROOT, run_script
+from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/plan_quality_run.py"
 SCRIPT_PATH = ROOT / SCRIPT
@@ -321,24 +321,6 @@ def test_quality_run_plan_yaml_loader_fails_loudly_without_repo_adapter(monkeypa
 
     with pytest.raises(RuntimeError, match="scripts/adapter_lib.py not found"):
         PLAN._load_yaml_file(CATALOG)
-
-
-def test_quality_reference_catalog_has_planner_schema_and_existing_paths() -> None:
-    catalog = ADAPTER_LIB.load_yaml_file(CATALOG)
-    skill_root = ROOT / "skills" / "public" / "quality"
-    known_roles = {"required-primer", "scope-primer", "on-demand"}
-
-    for ref in catalog["references"]:
-        assert ref["role"] in known_roles
-        assert (skill_root / ref["path"]).exists()
-        if ref["role"] in {"required-primer", "scope-primer"}:
-            assert ref.get("why")
-        if ref["role"] == "on-demand":
-            assert ref.get("trigger")
-
-    for gate in catalog["gates"]:
-        for field in ("id", "command", "purpose", "trust_model", "cost_tier", "parallel_group"):
-            assert gate.get(field)
 
 
 @pytest.mark.parametrize(

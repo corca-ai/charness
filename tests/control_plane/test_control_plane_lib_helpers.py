@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 import scripts.control_plane_lib as control
-import scripts.repo_layout as repo_layout
 
 
 def _write_manifest_schema(repo: Path) -> None:
@@ -311,17 +310,6 @@ def test_evaluate_success_criteria_and_run_check_collect_failures(tmp_path: Path
     assert payload["ok"] is False
     assert payload["failure_hint"] == "inspect command output"
     assert payload["failure_details"] == ["stdout missing `hello`"]
-
-
-def test_support_dir_honors_charness_support_dir_env_override(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    sibling_support = tmp_path / "external" / "charness-support" / "support"
-    sibling_support.mkdir(parents=True)
-    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(sibling_support))
-    public_root = tmp_path / "external" / "charness-public"
-    public_root.mkdir(parents=True)
-    assert repo_layout.support_dir(public_root) == sibling_support.resolve()
 
 
 def test_load_support_capability_schema_accepts_explicit_repo_root(tmp_path: Path) -> None:

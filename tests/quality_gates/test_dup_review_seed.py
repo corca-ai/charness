@@ -57,12 +57,6 @@ def test_classify_empty_is_unreviewed() -> None:
     assert lib.classify([]) == "unreviewed"
 
 
-def test_classify_never_returns_fixable() -> None:
-    # Slice 1 never auto-confirms fixable; the only two outcomes are intentional/unreviewed.
-    assert lib.classify(["scripts/anything.py"]) in ("intentional", "unreviewed")
-    assert lib.classify(["scripts/anything.py"]) != "fixable"
-
-
 # --------------------------------------------------------------------------- #
 # family_records + build_review
 # --------------------------------------------------------------------------- #

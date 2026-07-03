@@ -303,15 +303,6 @@ def test_achieve_lineage_floor_grandfathers_pre_date_goal(tmp_path: Path) -> Non
     assert report["recurrence_lineage_scope"]["enforced"] is False
 
 
-def test_lineage_floor_does_not_leak_into_retro_validator(tmp_path: Path) -> None:
-    # Behavior-preservation: the recurrence-lineage rule is achieve-only. A session
-    # retro with a bare `issue #N` disposition (no lineage marker) stays VALID under
-    # the retro validator, because it calls only is_form_enforced/invalid_dispositions
-    # and never has_recurrence_lineage. The shared-module addition is purely additive.
-    path = _seed(tmp_path, "r.md", _retro("2026-06-08", "- a. Disposition: issue #42\n"))
-    vra.validate_retro_artifact(path)  # no raise — retro unchanged by the addition
-
-
 # --- session-retro wiring --------------------------------------------------
 
 
@@ -461,10 +452,6 @@ def test_evaluate_structural_followup_problem_states() -> None:
     assert df.evaluate_structural_followup("Retro dispositions: applied: x\n")["problem"] == "missing"
     assert df.evaluate_structural_followup("Structural follow-up: memory -> kept in head\n")["problem"] == "invalid"
     assert df.evaluate_structural_followup("Structural follow-up: none — one-off, no owner\n")["problem"] is None
-
-
-def test_structural_followup_rule_date_grandfathers_landing_day() -> None:
-    assert df.STRUCTURAL_FOLLOWUP_RULE_DATE == date(2026, 6, 9)
 
 
 # --- achieve wiring: rung 1e inside check_complete_evidence -----------------

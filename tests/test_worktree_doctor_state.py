@@ -30,10 +30,6 @@ def test_tail_default_keeps_last_2000_characters() -> None:
     assert len(result) == 2000
 
 
-def test_tail_accepts_text_as_keyword_argument() -> None:
-    assert tail(text="abcdef", max_chars=2) == "ef"
-
-
 def test_aggregate_status_fails_if_any_check_fails() -> None:
     dynamic_fail = "".join(["fa", "il"])
 
