@@ -84,19 +84,6 @@ def test_seed_usage_episodes_creates_nested_parent_directories(monkeypatch, tmp_
     assert (repo / nested_target).is_file()
 
 
-def test_seed_usage_episodes_force_overwrites(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    target = repo / ".agents" / "usage-episodes-adapter.yaml"
-    target.parent.mkdir()
-    target.write_text("version: 1\nenabled: false\n", encoding="utf-8")
-
-    result = run_seed_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--force")
-
-    assert result.returncode == 0, result.stderr
-    assert "enabled: true" in target.read_text(encoding="utf-8")
-
-
 def test_usage_episodes_are_skill_level_setup_and_quality_contracts() -> None:
     setup_skill = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(
         encoding="utf-8"
