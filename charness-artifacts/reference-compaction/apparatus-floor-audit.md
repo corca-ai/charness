@@ -70,29 +70,47 @@ decision," skip the mechanical sweep. **My audit's gather tokens walked straight
 that trap.** The audit tested "is the content load-bearing" but NOT "is the proposed
 token NON-TRIVIAL" (would a hollow run FAIL to emit it) — a real gap.
 
-### Corrected status of all 9 (each token needs a non-triviality capture, not just emission)
+### Sort result — adversarial non-triviality test of the 6 non-gather tokens (0 survived)
 
-| skill / floor | proposed token | verdict now |
+Each token was attacked: could a HOLLOW template-only run emit it? **0 of 6 survived as
+clean migrations.** Combined with gather's 3 (empirically refuted), **all 9 fail the
+mechanical token fix:**
+
+| floor | sort verdict | honest fix |
 |---|---|---|
-| gather ×3 (capability-contract, source-priority, browser-mediated) | Access Mode:/Source: | **REFUTED — trivially green; needs `outcome-assertions` redesign or skip** |
-| setup greenfield-flow | `Repo mode: GREENFIELD` | unverified — sibling `normalization` used `Repo mode:`; check triviality |
-| setup agent-docs-policy | `AGENTS scaffolded` | unverified — can a hollow run emit it? |
-| release version-policy | `Bump: <part> — because <effect>` | unverified — rationale more substantive; capture |
-| debug debug-memory | `Related Prior Incidents` (cite incident or explicit none) | unverified — capture for non-triviality |
-| handoff workflow-trigger | `## Workflow Trigger` section | unverified — section header may be trivial |
-| ideation concept-architecture | `Candidate Direction`/`Recommended Current Decision` | unverified — output-shape label may be trivial |
+| gather ×3 (capability/source/browser) | REFUTED (live capture) | substance judge (`outcome-assertions.json`) or skip |
+| setup greenfield-flow | TRIVIAL — `Repo mode: GREENFIELD` is prompt-dictated + mandated closeout label | greenfield-scenario substance judge |
+| setup agent-docs-policy | TRIVIAL — `AGENTS scaffolded` is a mandated per-surface label a boilerplate dump also emits | artifact-substance judge |
+| debug debug-memory | TRIVIAL — the `none related` escape-hatch is a free default | **KEEP doc-open** + NEW substance assertion for memory-consumption |
+| handoff workflow-trigger | TRIVIAL — mandated Output-Shape section; captured closeouts show 0 occurrences | substance judge naming a concrete installed workflow |
+| ideation concept-architecture | TRIVIAL — `Recommended Current Decision` is a mandated Output-Shape label | substance judge on the sharpened direction |
+| release version-policy | **KEEP_DOCOPEN** — token trivial AND doc-open is planner-forced/honest | none — Phase 2's MIGRATE was wrong; keep the floor |
 
-## Honest plan (corrected — the capture-gate killed the naive fix before it shipped)
+## Final conclusion (correcting several of my own earlier claims)
 
-- The mechanical "RCF→RSF literal-token swap" is the **WRONG default** — it risks
-  trivially-green floors (gather proves it). **Do NOT batch-edit specs.**
-- The honest fix for deliverable-claim floors is a **substance instrument**
-  (`outcome-assertions.json`: artifact-existence + judge), a per-skill REDESIGN — bigger
-  than a sweep, and an operator decision (the gather finding already said so).
-- Cheap next step PER floor: one capture that tests token NON-TRIVIALITY (a hollow run
-  must FAIL it) before any edit. Several will likely fail like gather → route to the
-  substance-judge redesign instead of a token.
-- **The 28 KEEP stay untouched.** The audit's real value stands: it located the 9
-  mis-checks AND — via this reconciliation — killed a naive token-swap fix before it
-  shipped a hollow floor. Correct scope of the *smarter+leaner* win is a per-skill
-  substance-instrument redesign, not a mechanical sweep.
+1. **The mechanical RCF→RSF token sweep is DEAD for deliverable-claim skills.** A
+   `requiredSummaryFragment` is emitted by the TEMPLATE, and hollow runs follow the
+   template too — so a summary token cannot verify output QUALITY/fidelity; only a judge
+   reading the produced artifact can. (impl's `ran-pass` worked because it is a binary
+   FACT, not a quality claim.) **0/9 clean migrations.**
+2. **The apparatus is even more well-shaped than the audit's 76%:** release + debug keep
+   their doc-open (Phase 2's MIGRATE was too aggressive). The genuinely mis-shaped set is
+   ≈6 floors (gather×3, setup×2, handoff, ideation), and each needs a per-skill
+   **substance-judge redesign** (`outcome-assertions.json`) — MORE apparatus, a deliberate
+   design investment, NOT a lean quick win.
+3. **These floors are a MEASUREMENT-VALIDITY issue, not a runtime tax — this disconfirms
+   my own hypothesis.** Captures show faithful runs IGNORE the doc-open floors (gather
+   0/8), so they are NOT forcing runtime ritual/churn; they only produce latent
+   false-FAILED *capture* verdicts. Fixing them serves honest measurement, NOT a smarter
+   LIVE agent.
+
+## What this means for the north star
+
+Against "smarter + efficient + intelligent LIVE skills," the apparatus floor-fix is a
+measurement-honesty investment that **does not touch the runtime agent** — worthwhile but
+NOT the smarter-agent lever, and not lean. Recommend: record it (optionally file a
+substance-judge-redesign follow-up as a deliberate future slice), and put energy on levers
+that DO touch the live agent — the churn sweep and the intent's held-open systemic
+context-tax question. The apparatus-first detour earned its cost by **disconfirming that
+the apparatus is a runtime drain** and by catching three over-eager fixes (Phase-1
+over-reach, the naive token swap, the runtime-churn hypothesis) before any shipped.
