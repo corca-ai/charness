@@ -4,8 +4,8 @@
 
 - Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
   runs chunked routing over handoff + open issues.
-- **Reference-compaction: churn sweep + rationale-accuracy audit CLOSED; the live frontier is the
-  SKILLS-WIDE pass tail** — context-tax measurement design + inventory-dispatch demote (see Next
+- **Reference-compaction: churn sweep + rationale-accuracy audit + inventory-dispatch demote CLOSED;
+  the live frontier is the LAST open item — systemic context-tax measurement DESIGN** (see Next
   Session), grounded in [skill-anatomy-map.md](../charness-artifacts/reference-compaction/skill-anatomy-map.md)
   and [intent.md](../charness-artifacts/reference-compaction/intent.md) §"Held open".
 
@@ -20,23 +20,23 @@
   intent · body support · 185 refs grouped engage-always/on-demand/gate-sufficient). Fresh-eye
   delete-safety on 6 INLINE/DEPTH candidates = **0/6 delete-safe** — the inlining is SOUND (gist in
   body, real trigger-gated depth in the doc; not DUP), re-confirming the 0/17 finding.
-- **Rationale-accuracy audit DONE (1b):** all 15 INLINE-ref spec rationales grep-verified vs their
-  SKILL.md body (fan-out + adversarial verify + fresh-eye). **4 FIXED** (achieve/coordination,
-  announcement/adapter-contract, impl/review-gate, spec/fixed-probe-defer), 1 refuted, 10 accurate.
-  Drift is locator/attribution, not fabricated gist; census INLINE calls all sound. Record:
-  [rationale-accuracy-audit.md](../charness-artifacts/reference-compaction/rationale-accuracy-audit.md).
+- **This session DONE (both pass-tail items):** (1) **rationale-accuracy audit** — 15 INLINE-ref
+  rationales grep-verified vs body; **4 FIXED** (drift is locator/attribution, not fabricated gist),
+  1 refuted, 10 accurate ([rationale-accuracy-audit.md](../charness-artifacts/reference-compaction/rationale-accuracy-audit.md)).
+  (2) **inventory-dispatch demote** — quality's ~297-line always-load moved required-primer->on-demand
+  via a machine-readable `brief.inventory_dispatch` routing index the planner surfaces (prune-brief
+  pilot pattern; consumer contract unchanged). **Deferred follow-up:** single-source the doc — trim the
+  routing now duplicated in the brief; updates the 4 tests that pin its strings (mirror pilot 87922a7e).
 
 ## Next Session
 
-1. **Reference-compaction pass tail (primary, grounded in the anatomy map):**
-   a. **Systemic context-tax** — how a skill's overhead taxes reasoning across a WHOLE session (the
-      symptom capture can't see); measurement approach still unsolved — design it (intent §"Held open").
-   b. **inventory-dispatch demote** — quality's 297-line always-load is DEPTH, not deletable; add a
-      machine-readable `scripts:` routing layer to catalog.yaml so the planner briefs the routing, then
-      the doc demotes (mirror the prune-brief pilot). Touches skills broadly.
-2. Optional test-packaging tail: the borderline ~6-8 fn
-   [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py) subset — confirm
-   cleaner (declarative, LOC-neutral) else skip; fresh-eye + commit each batch.
+1. **Systemic context-tax measurement (primary — the LAST open item; DESIGN, not code):** how a skill's
+   overhead taxes reasoning across a WHOLE session (the single-run capture can't see); approach still
+   unsolved (intent §"Held open"). A thinking pass — guard against building the measurement apparatus
+   the intent warns is itself the overhead disease. Recommend running it as its own design session.
+2. Optional: (a) the deferred inventory-dispatch doc single-source (Current State); (b) the borderline
+   ~6-8 fn [test_quality_skill_docs.py](../tests/quality_gates/test_quality_skill_docs.py) test-packaging
+   subset — confirm cleaner (declarative, LOC-neutral) else skip; fresh-eye + commit each batch.
 
 ## Discuss
 
