@@ -126,6 +126,7 @@ def command_close_with_comment(args: argparse.Namespace) -> int:
         args,
         lambda resolved: CLOSE.close_with_comment(
             args.repo, args.number, args.body_file.resolve(),
+            repo_root=args.repo_root.resolve(), classification=args.classification,
             backend=resolved["backend"], reason=args.reason,
         ),
         lambda _result: 0,
@@ -286,6 +287,12 @@ def build_parser() -> argparse.ArgumentParser:
     close.add_argument("--repo", required=True, help="Target repository in owner/repo form")
     close.add_argument("--number", type=int, required=True, help="Issue number to close")
     close.add_argument("--body-file", type=Path, required=True, help="Path to the closing comment body file")
+    close.add_argument(
+        "--classification", choices=VERIFY.CLASSIFICATIONS, required=True,
+        help="Fix-unit classification recorded for the closeout; drives the rung-1 presence "
+        "floor (behavioral verdict, resolution critique, source preservation) checked before "
+        "any GitHub mutation",
+    )
     close.add_argument("--reason", default="completed", help="Close reason passed to the backend (default: completed)")
     close.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     close.set_defaults(func=command_close_with_comment)

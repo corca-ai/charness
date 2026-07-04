@@ -29,7 +29,6 @@ exists, bootstrap a small current-slice contract first.
 # 1. current contract and nearby context
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
-sed -n '1,220p' "$SKILL_DIR/../spec/SKILL.md" 2>/dev/null || true
 
 # 2. impl adapter resolution and verification survey
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
@@ -111,21 +110,16 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    over code inspection, resolve runtime support via `find-skills`, and when
    runtime proof is unavailable say explicitly that it did not run.
    - for validation-shaped review, closeout, or operator reading work, run
-     deterministic gates first; query evaluator tools only for explicit behavior
-     evaluation, prompt regression, baseline compare, or insufficient local proof
+     deterministic gates first; the repo's cautilus adapter and
+     `../quality/references/cautilus-on-demand.md` own when evaluator proof
+     is warranted — generic review or closeout wording must not silently launch Cautilus
    - skill self-tests and delegated workflows follow
      `../../shared/references/prescribed-path-self-test.md`; label a worker →
      host → provider seam at its highest executed proof level per
      `../../shared/references/external-capability-proof-ladder.md`
-   - if the slice changes repo-owned instruction or prompt surfaces (`AGENTS.md`,
-     public/support `SKILL.md`, behavior-steering references, adapter prompt
-     wording), let the repo's cautilus adapter decide prompt/evaluator proof
-     policy; generic review or closeout wording must not silently launch Cautilus
-   - keep deterministic validation local; use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>`
-     only for explicit log-backed behavior proof, pair behavior-improving claims
-     with `cautilus evaluate observation --input <observed.json>` baseline
-     compare, and treat source/wiring/guidance checks as mechanism-only — not
-     proof of future semantic quality
+   - when that policy calls for a run, use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>`
+     or `cautilus evaluate observation --input <observed.json>`; treat
+     source/wiring/guidance checks as mechanism-only, not runtime proof
 5. Sync truth surfaces and re-read the contract before closeout.
    - if the slice changed user-visible capability, operating philosophy,
      supported integrations, install/usage surface, or honest stage claims,
@@ -169,11 +163,6 @@ Emittable-verbatim closeout tokens (validator substring-matches these); WHY-pros
 
 ## Guardrails
 
-- The Workflow steps and referenced ladders own the positive form of each rule
-  the guardrails would otherwise restate — contract honesty, no silent scope creep,
-  truth-surface/`<repo-root>/README.md` freshness, the forced-debug-interrupt hold,
-  proving (not inspecting) user-facing branches, stronger-proof-over-downgrade, and
-  `Lint Gate` recording per `## Closeout Vocabulary`.
 - Do not call a same-agent review a critique. If the required critique is
   blocked, stop instead of downgrading to a local substitute and still calling
   the slice reviewed.
@@ -188,6 +177,7 @@ Emittable-verbatim closeout tokens (validator substring-matches these); WHY-pros
 - `references/sequence-discipline.md`
 - `references/review-gate.md`
 - `references/spec-loop.md`
+- `../quality/references/cautilus-on-demand.md`
 - `../../shared/references/source-bound-records.md`
 - `../../shared/references/prescribed-path-self-test.md`
 - `../../shared/references/external-capability-proof-ladder.md`

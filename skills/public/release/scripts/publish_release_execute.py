@@ -34,7 +34,10 @@ def _prepare_release_attempt(
     cli.run(cli.backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     expected_release_url = cli.expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_release_url
-    cli.preflight_release_issues(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run)
+    cli.preflight_release_issues(
+        repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
+        behavior_lines=args.close_issue_behavior,
+    )
     cli.run_release_adapter_preflight(repo_root, adapter_preflight_payload, run_command=cli.run)
     cli.run_bump(args, repo_root)
     cli.ensure_release_surface(repo_root, next_version)
@@ -103,7 +106,7 @@ def _commit_release_artifact(
     cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     cli.run(["git", "add", "-A"], cwd=repo_root)
     commit_command = ["git", "commit", "-m", payload["commit_message"]]
-    for body_line in cli.release_commit_body(payload, args.close_issue):
+    for body_line in cli.release_commit_body(payload, args.close_issue, args.close_issue_behavior):
         commit_command.extend(["-m", body_line])
     cli.run(commit_command, cwd=repo_root)
     fresh_checkout_payload = _runtime.timed(
@@ -212,6 +215,7 @@ def _publish_and_finalize(
         lambda: cli.confirm_release_via_distinct_channel(
             repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
             tag_name=tag_name, expected_release_url=expected_release_url,
+            backend=backend, backend_command=cli.backend_command,
         ),
     )
     if not cli.evaluate_release_distinct_channel(payload)["ok"]:
@@ -226,7 +230,8 @@ def _publish_and_finalize(
         payload,
         "issue_closeout",
         lambda: cli.ensure_release_issues_closed(
-            repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run
+            repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
+            behavior_lines=args.close_issue_behavior,
         ),
     )
     payload["install_refresh"] = _runtime.timed(

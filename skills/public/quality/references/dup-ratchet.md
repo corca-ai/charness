@@ -101,6 +101,17 @@ the false-block slice 4 removed.)
    surfaces an algo-skew WARNING so the drifted fingerprints read as re-baseline.
 4. **Reviewed batch accept.** You genuinely accept new fixable families after review.
 
+**Prefer the scoped mode for routine churn.** `--write-baseline` is a full-scan
+overwrite: it silently re-accepts every current family, including any unreviewed
+new one, wholesale — the exact erosion a re-baseline should not cause. For triggers
+1–3 above, use `--accept-rotation OLD_ID=NEW_ID` (repeatable) and/or
+`--accept-family NEW_ID` (repeatable) instead: it starts from the existing baseline,
+applies ONLY the named pairs/ids, and refuses (listing them) any other live delta —
+so an unrelated new family riding along with a rotation still hard-blocks instead of
+being silently absorbed. `--write-baseline` remains for first-time bootstrap (trigger
+4, a genuine reviewed batch accept) and prints a WARN naming the scoped mode whenever
+it overwrites an existing baseline.
+
 Re-baseline **both fingerprint baselines together**: the gate baseline
 (`dup-ratchet-baseline.json`) and the clone-advisory baseline (`nose-baseline.json`)
 key on the same fingerprint set in lockstep, so updating only the one that blocked

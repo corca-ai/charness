@@ -43,7 +43,7 @@ def test_closeout_discipline_is_cited_across_consumer_skills() -> None:
 # asserted substring is preserved, so collection count is unchanged.
 SKILL_ANCHOR_GUARDS = [
     ("release", ("verified release ledger", "target_unavailable")),
-    ("announcement", ("verified delivery ledger", "external-source identity")),
+    ("announcement", ("verification-carrying ledger", "external-source identity")),
     ("gather", ("verified gathered-asset ledger", "reuse the resolved source")),
     ("narrative", ("external originating context", "canonical source identity")),
     ("handoff", ("external originating context", "canonical source identity")),

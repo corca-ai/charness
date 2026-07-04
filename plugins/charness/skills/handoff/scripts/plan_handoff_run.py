@@ -11,17 +11,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-MAX_ARTIFACT_LINES = 70
-NEAR_LIMIT_LINES = 60
-# floor-addition-restraint: this mirrors scripts/validate_handoff_artifact.py for
-# planner diagnosis only; it does not add a new blocking floor.
-REQUIRED_SECTIONS = (
-    "## Workflow Trigger",
-    "## Current State",
-    "## Next Session",
-    "## Discuss",
-    "## References",
-)
 INTENT_REFERENCE_READS = {
     "chunked_routing": (
         ("references/chunked-routing.md", "deterministic trigger says route backlog before pickup"),
@@ -56,6 +45,20 @@ chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
+
+# Single-source the line ceiling and required sections from the validator (the
+# one authority the gate enforces) so planner diagnosis cannot drift from what
+# actually fails the gate; degrade to the same defaults if the validator module
+# cannot load (e.g. a portable install without scripts/) — floor-addition-
+# restraint: this is diagnosis only, never a new blocking floor.
+try:
+    _handoff_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_handoff_artifact")
+    MAX_ARTIFACT_LINES = int(_handoff_validator.MAX_ARTIFACT_LINES)
+    REQUIRED_SECTIONS = tuple(_handoff_validator.REQUIRED_SECTIONS)
+except Exception:
+    MAX_ARTIFACT_LINES = 70
+    REQUIRED_SECTIONS = ("## Workflow Trigger", "## Current State", "## Next Session", "## Discuss", "## References")
+NEAR_LIMIT_LINES = MAX_ARTIFACT_LINES - 10
 
 
 def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict[str, Any]:

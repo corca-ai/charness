@@ -19,8 +19,9 @@ the same gate-and-intelligence split the disposition/coordination floors use):
 
 The closeout-state taxonomy (``impl-local``, ``carrier``, ``pushed-ci``,
 ``instance-synced``, ``live``, ``issue-closed``) is the documented vocabulary
-in ``references/lifecycle.md`` and ``references/goal-artifact.md``; this gate does
-not require those exact tokens, only that each checklist item is resolved.
+in ``references/lifecycle-after.md`` and ``references/goal-artifact.md``; this
+gate does not require those exact tokens, only that each checklist item is
+resolved.
 """
 from __future__ import annotations
 

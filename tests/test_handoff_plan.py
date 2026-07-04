@@ -7,9 +7,12 @@ from pathlib import Path
 
 import pytest
 
+from runtime_bootstrap import import_repo_module
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = "skills/public/handoff/scripts/plan_handoff_run.py"
 SCRIPT_PATH = ROOT / SCRIPT
+_handoff_validator = import_repo_module(ROOT / "scripts" / "validate_handoff_artifact.py", "scripts.validate_handoff_artifact")
 
 
 def load_plan_module():
@@ -183,15 +186,49 @@ def test_handoff_plan_does_not_chunk_explicit_task_directive() -> None:
     assert plan["next_action"]["kind"] != "run_chunked_routing"
 
 
-def test_handoff_plan_derives_refresh_and_pickup_from_invocation_text() -> None:
-    refresh = run_plan("--repo-root", ".", "--invocation-text", "update the handoff")
-    pickup = run_plan("--repo-root", ".", "--invocation-text", "resume from handoff after reading trigger")
+def test_handoff_plan_derives_refresh_and_pickup_from_invocation_text(tmp_path: Path) -> None:
+    # Seeded ("ok"-status) repo, not the live repo root: intent/next_action here
+    # must not depend on the live handoff's line count (#10 handoff test brittleness).
+    repo = seed_repo(tmp_path, handoff_body())
+    refresh = run_plan("--repo-root", str(repo), "--invocation-text", "update the handoff")
+    pickup = run_plan("--repo-root", str(repo), "--invocation-text", "resume from handoff after reading trigger")
 
     assert refresh["intent"]["resolved"] == "refresh"
     assert refresh["intent"]["reason"] == "refresh/update wording in invocation"
     assert pickup["intent"]["resolved"] == "pickup"
     assert pickup["intent"]["reason"] == "pickup/resume wording in invocation"
     assert pickup["next_action"]["kind"] == "follow_workflow_trigger"
+
+
+def test_handoff_plan_constants_single_sourced_from_validator() -> None:
+    # Drift-guard: the planner's MAX_ARTIFACT_LINES/REQUIRED_SECTIONS must never
+    # silently diverge from what scripts/validate_handoff_artifact.py enforces.
+    module = load_plan_module()
+    assert module.MAX_ARTIFACT_LINES == _handoff_validator.MAX_ARTIFACT_LINES
+    assert module.REQUIRED_SECTIONS == tuple(_handoff_validator.REQUIRED_SECTIONS)
+
+
+def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The module-level try/except degrades to a fixed default (never a crash at
+    # import time) when scripts.validate_handoff_artifact cannot load -- e.g. a
+    # portable install without scripts/ vendored. load_repo_module_from_skill_script
+    # reaches this via `importlib.import_module`, so forcing THAT call to fail for
+    # only this one module name (not resolve_adapter/chunked_routing_lib, which use
+    # a different loader) exercises the except branch on a fresh import of the
+    # real file.
+    real_import_module = importlib.import_module
+
+    def fake_import_module(name, *args, **kwargs):
+        if name == "scripts.validate_handoff_artifact":
+            raise ModuleNotFoundError(name)
+        return real_import_module(name, *args, **kwargs)
+
+    monkeypatch.setattr(importlib, "import_module", fake_import_module)
+    module = load_plan_module()
+    assert module.MAX_ARTIFACT_LINES == 70
+    assert module.REQUIRED_SECTIONS == (
+        "## Workflow Trigger", "## Current State", "## Next Session", "## Discuss", "## References",
+    )
 
 
 def test_handoff_plan_reports_artifact_statuses_that_require_repair(tmp_path: Path) -> None:

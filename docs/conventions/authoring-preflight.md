@@ -75,8 +75,11 @@ gates this buffer at the commit boundary for *changed* SKILL.md files (it runs i
 `run_slice_closeout.py --predict-commit`), instead of only in the broad gate. It
 is a ratchet: a change that drops a core below the 4-line buffer is blocked, but a
 skill already under buffer is grandfathered until an edit erodes it further. Check
-headroom before authoring, and on a block move prose into `references/` or a
-helper `scripts/` file rather than trimming to the hard limit:
+headroom before authoring. On a block, separate a concept into its own surface or
+delete one — never shave lines or displace overflow into `references/` just to
+dodge the cap (P2: moving a genuinely separate concept to its own reference file
+is fine; stashing overflow there just to fit is not). Procedural detail can still
+move to a helper `scripts/` file when that is its natural home:
 
 ```bash
 python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md

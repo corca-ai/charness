@@ -74,6 +74,17 @@ def test_public_body_shape_rejects_unknown_values(tmp_path: Path) -> None:
     assert any("public_body_shape" in error for error in errors)
 
 
+def test_delivery_kind_rejects_unknown_value(tmp_path: Path) -> None:
+    # `_apply_simple_fields` only checks that `delivery_kind` is a string, so an
+    # arbitrary string reaches `_delivery_warnings` unchanged. The deprecated
+    # `command` alias remaps first (a different branch); anything else outside
+    # DELIVERY_KINDS must be flagged as an error, not silently accepted.
+    _validated, errors, _warnings = validate_announcement_adapter_data(
+        {"delivery_kind": "webhook"}, tmp_path
+    )
+    assert any("delivery_kind must be one of" in error for error in errors)
+
+
 def test_init_adapter_scaffolds_public_body_shape(tmp_path: Path) -> None:
     result = subprocess.run(
         [
@@ -209,3 +220,14 @@ def test_message_size_limit_rejects_negative_int(tmp_path: Path) -> None:
     data = {"message_size_limit": -5}
     _validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)
     assert any("message_size_limit" in error for error in errors)
+
+
+def test_post_delivery_readback_probe_defaults_empty_and_is_settable(tmp_path: Path) -> None:
+    defaulted, errors, _warnings = validate_announcement_adapter_data({}, tmp_path)
+    assert errors == []
+    assert defaulted["post_delivery_readback_probe"] == ""
+
+    data = {"post_delivery_readback_probe": "slack-cli chat history --ts {delivery_handle}"}
+    validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert errors == []
+    assert validated["post_delivery_readback_probe"] == "slack-cli chat history --ts {delivery_handle}"

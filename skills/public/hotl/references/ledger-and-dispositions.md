@@ -101,7 +101,7 @@ by re-reading that same proxy is not `verified` — that is the re-examination
 failure that *P4* of the authoring-repo-internal `docs/design-north-star.md`
 names. When this audit runs inside an
 `achieve` issue-bundle closeout, the distinct fresh-eye disposition reviewer owns
-the per-issue confirmation (achieve `lifecycle.md`, *Disposition Gate - Two
+the per-issue confirmation (achieve `lifecycle-after.md`, *Disposition Gate - Two
 Rungs*).
 
 ## Ledger tooling ownership

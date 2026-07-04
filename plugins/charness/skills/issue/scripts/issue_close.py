@@ -10,6 +10,7 @@ _BACKEND = _load_local("issue_backend", "issue_close_backend")
 _run_backend = _BACKEND.run_backend
 _resolve_op = _BACKEND.resolve_op
 BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
+_CLOSE_COMMENT_FLOOR = _load_local("issue_close_comment_floor")
 
 GH_COMMENT_DEFAULT = [
     "issue",
@@ -50,12 +51,21 @@ def close_with_comment(
     number: int,
     body_file: Path,
     *,
+    repo_root: Path,
+    classification: str,
     backend: dict[str, Any] | None = None,
     reason: str = "completed",
 ) -> dict[str, Any]:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
     if not body_file.is_file():
         raise RuntimeError(f"close-comment body file not found: {body_file}")
+    body = body_file.read_text(encoding="utf-8")
+    floor_report = _CLOSE_COMMENT_FLOOR.evaluate_close_comment_floor(
+        repo_root=repo_root, body=body, classification=classification, number=number
+    )
+    if not floor_report["ok"]:
+        # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
+        raise RuntimeError(_CLOSE_COMMENT_FLOOR.format_close_comment_floor_failure(floor_report))
     comment_argv = _resolve_op(
         backend,
         "comment",
@@ -120,6 +130,11 @@ def close_with_comment(
             raise RuntimeError(
                 f"close state verification failed: {repo}#{number} is {verified_state.get('state')!r}"
             )
+    # floor-addition-restraint: irreversible-boundary P5, forces-question-only --
+    # advisory only (exit stays 0); a question/decision-needed close has nothing
+    # live to confirm, so the only obligation is surfacing that the
+    # classification-driven exemption applied, never blocking on it.
+    review_advisory = _CLOSE_COMMENT_FLOOR.review_advisory_for_classification(classification)
     return {
         "ok": True,
         "repo": repo,
@@ -129,4 +144,5 @@ def close_with_comment(
         "view_argv": view_argv,
         "verified_state": verified_state,
         "reason": reason,
+        "review_advisory": review_advisory,
     }

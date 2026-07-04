@@ -187,9 +187,16 @@ def test_changed_artifacts_passes_scaffold_roundtrip() -> None:
     # boundary (round-trip), proving the shape-by-construction arm is real.
     stub_text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("critique"))
     assert code == 0
+    # The stub's `## Fresh-Eye Satisfaction` line is deliberately NOT a typed
+    # value (an unedited stub must not satisfy that floor — a same-observer
+    # rubber stamp for free), so round-trip here fills it in first, proving
+    # the shape an author actually submits, not the untouched stub.
+    head, heading, _ = stub_text.partition("## Fresh-Eye Satisfaction")
+    assert heading, "critique stub must still carry the Fresh-Eye Satisfaction heading"
+    filled_in_stub = f"{head}{heading}\n\nparent-delegated.\n"
     target = ROOT / "charness-artifacts" / "critique" / "_preflight_roundtrip_selftest.md"
     try:
-        target.write_text(stub_text, encoding="utf-8")
+        target.write_text(filled_in_stub, encoding="utf-8")
         rel = target.relative_to(ROOT).as_posix()
         report = preflight.changed_artifacts(ROOT, [rel])
         assert report["status"] == "ok", report

@@ -22,7 +22,7 @@ rg --files . | sed -n '1,200p'
 sed -n '1,220p' README.md 2>/dev/null || true
 sed -n '1,220p' AGENTS.md 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
-sed -n '1,220p' "$SKILL_DIR/../ideation/SKILL.md" 2>/dev/null || true
+sed -n '1,220p' "$SKILL_DIR/../ideation/references/spec-boundary.md" 2>/dev/null || true
 
 # 2. existing concept/spec/design docs
 rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint" .
@@ -30,8 +30,6 @@ python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --jso
 
 # 3. implementation-side neighbors and current acceptance reality
 rg -n "test|spec|fixture|scenario|acceptance|success criteria|operator|takeover|smoke|integration" .
-sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
-sed -n '1,220p' "$SKILL_DIR/../impl/SKILL.md" 2>/dev/null || true
 ```
 
 If an ideation document already exists, refine it instead of restating the full
@@ -39,7 +37,9 @@ discovery history. If executable acceptance artifacts already exist, treat them
 as part of the spec surface and keep them at the acceptance boundary. Distinguish
 `public executable contract` from `maintenance lint / implementation guard`.
 Use `references/public-executable-contracts.md` and `references/design-lenses.md`
-for the detailed shaping rules.
+for the detailed shaping rules. Read `create-skill` or `impl`'s SKILL.md
+directly only when this spec's target is a new skill package or an active
+implementation handoff, not as a default bootstrap read.
 
 ## Worktree Readiness
 

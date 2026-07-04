@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import re
 from pathlib import Path
 from typing import Callable
@@ -154,6 +155,44 @@ def host_surface_reference_findings(repo_root: Path, skill_dir: Path) -> list[di
         heuristic="portable_package_host_surface_reference",
         pattern=HOST_SURFACE_REFERENCE_RE,
     )
+
+
+def _add_argument_calls_missing_help(path: Path) -> list[int]:
+    """`argparse.add_argument(...)` call sites in one script with no `help=`
+    keyword. AST-based (not line-regex) because a real call site routinely
+    spans multiple lines; a per-line pattern would miss most of them."""
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, SyntaxError):
+        return []
+    return [
+        node.lineno
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "add_argument"
+        and not any(keyword.arg == "help" for keyword in node.keywords)
+    ]
+
+
+def argparse_missing_help_findings(repo_root: Path, skill_dir: Path) -> list[dict[str, object]]:
+    scripts_dir = skill_dir / "scripts"
+    if not scripts_dir.is_dir():
+        return []
+    findings: list[dict[str, object]] = []
+    for path in sorted(scripts_dir.rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
+        for lineno in _add_argument_calls_missing_help(path):
+            findings.append(
+                {
+                    "heuristic": "argparse_missing_help",
+                    "path": str(path.relative_to(repo_root)),
+                    "line": lineno,
+                    "excerpt": "add_argument(...) call has no help= string",
+                }
+            )
+    return findings
 
 
 def _h2_section_lines(contents: str, heading: str) -> list[str]:

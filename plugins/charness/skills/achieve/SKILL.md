@@ -38,10 +38,10 @@ lifecycle instead of starting a new one.
 ## Workflow
 
 `achieve` runs one goal as three phases. `check_goal_artifact.py` emits a
-`phase_brief` naming the `references/lifecycle.md` section (`## Before` /
-`## During` / `## After`) and `references/goal-artifact.md` depth for the
-goal's current status; read those named sections, not the full docs, and
-follow the brief's `closeout_handoff` note when starting closeout.
+`phase_brief` naming the goal's current-phase file (one of the three phase
+files `references/lifecycle.md` points to) plus `references/goal-artifact.md`
+depth; read that phase file, not the full three-phase contract, and follow the
+brief's `closeout_handoff` note when starting closeout.
 
 1. Before — shape and save.
    - interview from prose with a few high-leverage questions; if the request is
@@ -99,7 +99,7 @@ follow the brief's `closeout_handoff` note when starting closeout.
    - record high-confidence / live proof, or state explicitly that it was not run
    - write final self-verification, residual risks, non-claims, and user
      verification instructions
-   - if a timeboxed goal stops early, follow `references/lifecycle.md`
+   - if a timeboxed goal stops early, follow `references/lifecycle-after.md`
    - run `retro` for the automatic efficiency review
    - for a long goal with host timing data, record the goal window and render the
      provider-safe metrics block per `references/goal-artifact.md`, not by hand
@@ -112,14 +112,13 @@ follow the brief's `closeout_handoff` note when starting closeout.
    - when a disposition routes to a tracked issue, it carries the generalized
      `Structural pattern:`+`Triggering instance(s):` and a resolved `Destination:`
      per `../../shared/references/retro-issue-destination-split.md`.
-   - **disposition gate, for goals created after the rule landed:** block blank
-     Auto-Retro; require a bound `Disposition review:` line; and when a retro
-     names transferable waste, require a `Structural follow-up:` destination.
-     Presence/binding-only, never a content classifier; pre-rule grandfathered.
-   - **coordination floors:** for in-scope goals, recorded phase work needs
-     `Routing:`; external sources need `Gather:`; release surfaces need
-     `Release:`; tracked issue closeout needs `Issue closeout:`.
-     Presence-only, grandfathered.
+   - the closeout-shape script's missing-line set is the contract for every
+     conditional floor (disposition, coordination, timebox, and the rest):
+     `describe_goal_closeout_shape.py --goal-path <artifact>` renders each one
+     live from the validator, so nothing here is re-derived or restated.
+     Worked example: a goal that names and closes a tracked issue sees
+     `issue_closeout` MISSING until `## Coordination Cues` carries
+     `Issue closeout: <ref>` (or an `n/a — <reason>` opt-out).
    - run `check_goal_artifact.py`, then flip status to `complete`
    - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
      the SHA match the live `git rev-parse HEAD` result or mark it historical

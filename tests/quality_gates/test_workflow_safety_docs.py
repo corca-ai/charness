@@ -8,7 +8,9 @@ def _read(path: str) -> str:
 
 
 def test_achieve_lifecycle_classifies_post_checkpoint_commits() -> None:
-    lifecycle = _read("skills/public/achieve/references/lifecycle.md")
+    # Post-Checkpoint Commit Classification lives in the After-phase file
+    # (lifecycle.md was split by phase into lifecycle-before/-during/-after.md).
+    lifecycle = _read("skills/public/achieve/references/lifecycle-after.md")
     normalized = " ".join(lifecycle.split())
 
     assert "Post-Checkpoint Commit Classification" in lifecycle

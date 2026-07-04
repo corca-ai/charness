@@ -129,6 +129,29 @@ def test_scaffold_validator_command_repo_local_fallback(slug: str, tmp_path: Pat
         _call_validator(module, empty_repo)
 
 
+# `ideation` is deliberately self-contained (no adapter, no scripts package),
+# so it carries no `_load_skill_runtime_bootstrap()` shim to force -- unlike the
+# other five scaffolds, which all resolve an adapter through SKILL_RUNTIME.
+SCAFFOLDS_WITH_BOOTSTRAP_SHIM = [slug for slug in SCAFFOLDS if slug != "ideation"]
+
+
+@pytest.mark.parametrize("slug", SCAFFOLDS_WITH_BOOTSTRAP_SHIM)
+def test_scaffold_shim_not_found_raises_import_error(slug: str, tmp_path: Path, monkeypatch) -> None:
+    """Cover the canonical bootstrap shim's `raise ImportError` guard (mirrors
+    ``tests/test_adapter_shim_inprocess_coverage.py``'s forcing technique). Every
+    shim-carrying scaffold has its own copy of ``_load_skill_runtime_bootstrap()``,
+    and the happy path always finds ``skill_runtime_bootstrap.py`` walking up from
+    THIS repo, so the not-found branch never executes unless ``__file__`` is
+    pointed at an isolated tree with no ancestor bootstrap.
+    """
+    module = _load_scaffold(slug)
+    isolated = tmp_path / "deep" / "nest" / "scaffold.py"
+    isolated.parent.mkdir(parents=True)
+    monkeypatch.setattr(module, "__file__", str(isolated))
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
+        module._load_skill_runtime_bootstrap()
+
+
 @pytest.mark.parametrize("slug", CURRENT_POINTER_SCAFFOLDS)
 def test_scaffold_current_pointer_symlink_branches(slug: str, tmp_path: Path) -> None:
     """Cover _current_pointer_write_path / _portable_path symlink branches.

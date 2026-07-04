@@ -56,10 +56,47 @@ def _is_skill_md(rel: str) -> bool:
     )
 
 
-def changed_skill_md(repo_root: Path) -> list[str]:
+def _is_skill_surface_path(rel: str) -> bool:
+    """SKILL.md or a references/*.md contract home under a public/support skill,
+    OR a skills/shared/references/*.md cross-skill contract.
+
+    Scoped to the deletion-finding pass only (``deleted_skill_surfaces``) --
+    ``skills/shared`` has no per-skill SKILL.md layer (it is
+    ``skills/shared/references/*.md`` directly, cited by many skills), so a
+    deleted shared reference is just as irreversible to lose as a deleted
+    public/support one, but ``_is_skill_md`` and the CORE/PACKAGE contract checks
+    stay public/support-only since ``skills/shared`` has no SKILL.md to key on.
+    """
+    parts = Path(rel).parts
+    if len(parts) < 2 or parts[0] != "skills":
+        return False
+    if parts[1] == "shared":
+        return len(parts) >= 4 and parts[2] == "references" and parts[-1].endswith(".md")
+    if parts[1] not in {"public", "support"}:
+        return False
+    if _is_skill_md(rel):
+        return True
+    return len(parts) >= 5 and parts[3] == "references" and parts[-1].endswith(".md")
+
+
+def changed_skill_md(repo_root: Path, *, staged: bool = False) -> list[str]:
     """Changed (non-deleted) public/support SKILL.md paths in the diff vs HEAD."""
-    rows = _prose_pin.changed_status(repo_root)
+    rows = _prose_pin.changed_status(repo_root, staged=staged)
     return sorted({new for code, _old, new in rows if code != "D" and _is_skill_md(new)})
+
+
+def deleted_skill_surfaces(repo_root: Path, *, staged: bool = False) -> list[str]:
+    """Deleted (git status ``D``) public/support skill surfaces -- SKILL.md or a
+    references/*.md contract home -- in the diff vs HEAD.
+
+    ``changed_skill_md`` filters ``code != "D"``, so a whole-file deletion never
+    reaches the default target list; a maximal cut (delete the whole skill) then
+    silently produced zero findings. This is the deliberate second pass over the
+    SAME diff that a deletion cannot structurally escape: each path returned here
+    becomes a forced REVIEW question, never a silent pass.
+    """
+    rows = _prose_pin.changed_status(repo_root, staged=staged)
+    return sorted({old for code, old, _new in rows if code == "D" and _is_skill_surface_path(old)})
 
 
 def _package_reference_text(repo_root: Path, rel: str) -> str:
@@ -164,12 +201,23 @@ def test_pin_breaks(repo_root: Path, rel: str, test_roots: list[Path]) -> list[d
     return breaks
 
 
+def deletion_findings(repo_root: Path, rel: str, test_roots: list[Path]) -> list[dict[str, Any]]:
+    """Findings for a deleted skill surface: any surviving test-pin break (a real
+    deterministic block, unaffected by the file being gone) plus an unconditional
+    REVIEW -- a maximal cut must never fall through to zero findings."""
+    findings = test_pin_breaks(repo_root, rel, test_roots)
+    findings.append({"severity": "review", "kind": "deleted-surface", "phrase": rel})
+    return findings
+
+
 def build_report(
     repo_root: Path,
     paths: list[str] | None,
     test_roots: list[Path],
+    *,
+    staged: bool = False,
 ) -> dict[str, Any]:
-    targets = paths if paths is not None else changed_skill_md(repo_root)
+    targets = paths if paths is not None else changed_skill_md(repo_root, staged=staged)
     targets = sorted({Path(p).as_posix() for p in targets})
     skills: list[dict[str, Any]] = []
     for rel in targets:
@@ -190,6 +238,15 @@ def build_report(
                 "reviews": reviews,
             }
         )
+    if paths is None:
+        # #<north-star> structural-skip fix: a deletion is invisible to
+        # `changed_skill_md` (it filters `code != "D"`), so it needs its own pass
+        # over the same diff -- otherwise a maximal cut yields zero findings.
+        for rel in deleted_skill_surfaces(repo_root, staged=staged):
+            findings = deletion_findings(repo_root, rel, test_roots)
+            blocks = [f for f in findings if f["severity"] == "block"]
+            reviews = [f for f in findings if f["severity"] == "review"]
+            skills.append({"path": rel, "status": "blocked" if blocks else "review", "blocks": blocks, "reviews": reviews})
     any_block = any(s["blocks"] for s in skills)
     any_review = any(s["reviews"] for s in skills)
     status = "blocked" if any_block else ("review" if any_review else "clean")
@@ -212,10 +269,16 @@ def format_human(report: dict[str, Any]) -> str:
             else:
                 lines.append(f"  BLOCK {block['kind']} no longer satisfied: \"{block['phrase']}\"")
         for review in skill["reviews"]:
-            lines.append(
-                f"  REVIEW {review['kind']} (confirm no-op deletion or re-home): "
-                f"\"{review['phrase']}\""
-            )
+            if review["kind"] == "deleted-surface":
+                lines.append(
+                    f"  REVIEW deleted-surface (confirm justified deletion or re-home "
+                    f"the contract): \"{review['phrase']}\""
+                )
+            else:
+                lines.append(
+                    f"  REVIEW {review['kind']} (confirm no-op deletion or re-home): "
+                    f"\"{review['phrase']}\""
+                )
     if report["status"] == "blocked":
         lines.append(
             "A removed phrase is pinned by a contract or test. Restore it (a CORE pin "
@@ -223,11 +286,19 @@ def format_human(report: dict[str, Any]) -> str:
             "pinned test literal before cutting."
         )
     elif report["status"] == "review":
-        lines.append(
-            "No contract/test pin broke. Each REVIEW line vanished without a reference "
-            "home: confirm it is a justified no-op deletion (the §5 no-op test) or "
-            "re-home its content into a reference."
-        )
+        any_deleted = any(r["kind"] == "deleted-surface" for s in report["skills"] for r in s["reviews"])
+        if any_deleted:
+            lines.append(
+                "No contract/test pin broke. A deleted-surface REVIEW means a whole SKILL.md "
+                "or reference was removed: confirm the deletion is intentional or re-home its "
+                "contract before this lands, since a merged deletion is not reversible."
+            )
+        else:
+            lines.append(
+                "No contract/test pin broke. Each REVIEW line vanished without a reference "
+                "home: confirm it is a justified no-op deletion (the §5 no-op test) or "
+                "re-home its content into a reference."
+            )
     return "\n".join(lines)
 
 
@@ -249,14 +320,19 @@ def main() -> int:
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="Also exit non-zero on REVIEW (reference-home) gaps, not only BLOCKs.",
+        help="Also exit non-zero on REVIEW (reference-home / deleted-surface) gaps, not only BLOCKs.",
+    )
+    parser.add_argument(
+        "--staged",
+        action="store_true",
+        help="Diff the staged index vs HEAD (--cached) instead of the working tree vs HEAD.",
     )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     test_root_names = args.tests_root if args.tests_root else ["tests"]
     test_roots = [repo_root / name for name in test_root_names]
-    report = build_report(repo_root, args.path, test_roots)
+    report = build_report(repo_root, args.path, test_roots, staged=args.staged)
 
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))

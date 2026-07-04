@@ -27,7 +27,8 @@ different clone or CI job may read later.
 
 Public-skill cites to authoring-repo-only docs, tests, or source-tree skill
 paths must be either skill-relative to files that ship with the vendored skill
-or explicitly marked `authoring-repo-internal` / `not vendored` near the cite.
+or explicitly marked `authoring-repo-internal` / `not vendored` near the cite
+— checked by `scripts/validate_skills.py`'s author-repo-cite scan.
 
 ## Skill Brief
 
@@ -327,15 +328,10 @@ CI on a heuristic.
 
 ## Argparse Help Rule
 
-Every `argparse.add_argument(...)` call in a skill script must pass an explicit
-`help="..."` string — for positional arguments too, not just flags. The first
-caller of any skill script is an LLM with no shared context with the author;
-without `help=` text, `--help` lists flag names only, and the model is forced
-into a guess-then-grep-source loop on first use, as observed in live agent
-runtimes.
-
-A short imperative phrase is enough. The bar is: "an LLM caller can pick the
-right value on first read of `--help`." Example:
+Every `argparse.add_argument(...)` call in a skill script — positional
+arguments too, not just flags — needs an explicit `help="..."` string: the
+first caller is an LLM with no shared context, and without `help=` text
+`--help` lists flag names only, forcing a guess-then-grep-source loop.
 
 ```python
 # Wrong — `--help` shows the flag with no description.
@@ -345,8 +341,11 @@ parser.add_argument("--workspace")
 parser.add_argument("--workspace", help="Workspace id the run targets (e.g. C0123ABC).")
 ```
 
-This applies to skill scripts, not arbitrary repo scripts; the bar is the
-agent caller, not the human author.
+Checked by the `argparse_missing_help` skill-ergonomics rule (opt-in via
+`skill_ergonomics_gate_rules`) in
+`skills/public/quality/scripts/validate_skill_ergonomics.py`; survey the whole
+repo with
+`python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root .`.
 
 ## Cross-Skill Propagation Rule
 

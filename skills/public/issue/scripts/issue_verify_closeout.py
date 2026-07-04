@@ -63,6 +63,7 @@ _first_field = _BODY._first_field
 _has_substantive_value = _BODY._has_substantive_value
 _missing_ledger_fields = _BODY._missing_ledger_fields
 _missing_close_keywords = _BODY._missing_close_keywords
+iter_close_keyword_refs = _BODY.iter_close_keyword_refs
 evaluate_source_preservation = _BODY.evaluate_source_preservation
 evaluate_behavioral_verdict = _BODY.evaluate_behavioral_verdict
 evaluate_hotl_dispositions = _BODY.evaluate_hotl_dispositions

@@ -3,12 +3,15 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+
+from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import ROOT, init_git_repo, run_script, run_shell_script, write_executable
 
@@ -63,6 +66,35 @@ def test_check_markdown_fails_when_git_listing_fails(tmp_path: Path) -> None:
     assert "exit_code: 42" in result.stderr
     assert "forced git listing failure" in result.stderr
     assert "No tracked markdown files to lint." not in result.stdout
+
+
+@pytest.mark.release_only
+def test_check_markdown_demotes_wrapped_inline_code_to_warn(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    # North-star P1: a wrapped inline-code span's rendered output is admittedly
+    # correct, so the commit boundary must WARN (exit 0), not block, on it.
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+    fixture = repo / "docs" / "_check_markdown_demotion_fixture.md"
+    fixture.write_text(
+        "# Fixture\n\nUse `cautilus eval test\n--repo-root .` for proof.\n", encoding="utf-8"
+    )
+    subprocess.run(
+        ["git", "add", "docs/_check_markdown_demotion_fixture.md"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    )
+    bin_dir = repo / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    write_executable(bin_dir / "markdownlint-cli2", "#!/usr/bin/env bash\nexit 0\n")
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"}
+
+    result = run_shell_script(repo / "scripts" / "check-markdown.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    combined = result.stdout + result.stderr
+    assert "WARN:" in combined
+    assert "wraps across line" in combined
+    assert "_check_markdown_demotion_fixture.md:3" in combined
 
 
 def test_check_links_internal_fails_when_git_listing_fails(tmp_path: Path) -> None:
@@ -767,3 +799,25 @@ def test_check_python_lengths_paths_mode_checks_only_listed_paths(tmp_path: Path
     assert "WARN:" not in result.stdout
     assert "trap.py" not in result.stdout
     assert "trap.py" not in result.stderr
+
+
+def test_check_python_lengths_over_limit_message_teaches_split_or_delete(tmp_path: Path) -> None:
+    # Operator mandate (charness-artifacts/gather/2026-07-04-enforcing-quality-of-
+    # ai-generated-code.md): the max-file-length constraint STAYS blocking; the
+    # improvement is that the message teaches the north-star response instead of
+    # leaving the _extra_lib/_lib evasion path implicit.
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    (helper_dir / "over.py").write_text("\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8")
+    result = run_script(
+        "scripts/check_python_lengths.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/demo/scripts/over.py",
+    )
+    assert result.returncode == 1
+    assert "Python code lines 361 exceed limit 360" in result.stderr
+    assert "Split the file into a cohesive new module or delete code" in result.stderr
+    assert "do not mechanically spill into an _extra_lib/_lib companion" in result.stderr

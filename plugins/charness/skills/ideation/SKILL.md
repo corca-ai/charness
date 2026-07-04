@@ -48,16 +48,15 @@ sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 # 2. existing concept, design, and acceptance signals when they exist
 rg -n "idea|concept|design|entity|stage|workflow|user|customer|problem|acceptance|constraint|success criteria" .
 
-# 3. adjacent charness skill boundaries
-sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
-sed -n '1,220p' "$SKILL_DIR/../retro/SKILL.md" 2>/dev/null || true
-
-# 4. scaffold the ideation record to write (validator-passing skeleton)
+# 3. scaffold the ideation record to write (validator-passing skeleton)
 python3 "$SKILL_DIR/scripts/scaffold_ideation_artifact.py" --repo-root .
 ```
 
 If the repo already contains a design or concept doc, preserve it and sharpen it
-instead of starting a parallel artifact by default.
+instead of starting a parallel artifact by default. Read `create-skill` or
+`retro`'s SKILL.md directly only when the concept genuinely is about building a
+new skill package or synthesizing a retrospective, not as a default bootstrap
+read.
 
 If the concept keeps evolving across turns, update the working documents
 incrementally instead of leaving the model only in chat.

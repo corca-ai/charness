@@ -13,14 +13,6 @@ Use this when the user is asking:
 - whether a capability is native, support-driven, or external
 - how to extend the harness for a recurring task
 
-Do not treat ordinary design or workflow decision-shaped prompts as capability
-discovery only because several public skills are nearby. Questions like "what do
-we need to decide?", "what decision issues are still open?", "뭘 결정해야 하죠?",
-or "결정할 쟁점은?" usually need an `ideation` or `spec` decision frame with
-options, tradeoffs, a recommendation, and a next step. Use `find-skills` when
-the user explicitly asks which skill, support capability, helper, or integration
-should handle the task, or names one directly.
-
 When the user names a capability directly, including phrases like `X skill`,
 `X 스킬`, `X support`, `support/X`, `X helper`, or `X integration`, run
 `find-skills` before `find`, `ls`, or `grep` filesystem discovery. Support
@@ -145,10 +137,8 @@ explicitly allows it.
    - what is already shipped
    - what is not yet shipped
    - whether an external skill ecosystem search is allowed by the current host
-7. Drive the routed workflow from the result (the pickup → `charness:handoff`
-   path lives in `## Drive The Routed Workflow`).
+7. Drive the routed workflow from the result per `## Drive The Routed Workflow`.
    - on a named-capability request, start the matched durable work skill
-   - only a pure "which skill handles X?" question ends at the inventory answer
 
 ## Output Shape
 
@@ -176,9 +166,8 @@ The result should usually include:
   skill.
 - If nothing suitable exists yet, say so directly and classify the missing
   capability instead of hand-waving.
-- Do not stop after emitting the inventory when the session opened on a pickup
-  or named a concrete workflow; drive the routed workflow per
-  `## Drive The Routed Workflow`. Stopping at the map is the routing miss this
+- Do not stop after emitting the inventory; drive the routed workflow per
+  `## Drive The Routed Workflow` — stopping at the map is the routing miss this
   skill exists to prevent.
 - If the `artifacts` payload reports `requires_repo_closeout: true`, apply the
   host repo's commit or closeout policy for meaningful durable artifact changes

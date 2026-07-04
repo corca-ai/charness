@@ -60,7 +60,19 @@ if [ "${#markdown_files[@]}" -eq 0 ]; then
   exit 0
 fi
 
-python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT"
+# Advisory (north-star P1): a wrapped inline-code span's rendered output is
+# admittedly correct (see the check_markdown_inline_code.py docstring); it only
+# risks a literal grep/assertion against the source, a reversible-work smell,
+# not a commit-blocking defect. WARN instead of failing this gate so the
+# commit boundary no longer bears that burden; the script itself keeps its own
+# exit-code semantics for direct callers.
+inline_code_log="$listing_dir/inline-code.log"
+if ! python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT" >"$inline_code_log" 2>&1; then
+  echo "WARN: inline code span check found issue(s) (advisory; rendered output is correct, not blocking):"
+  cat "$inline_code_log"
+else
+  cat "$inline_code_log"
+fi
 # The markdownlint-cli2 banner emits a single `Finding: <space-separated paths>`
 # line listing every file it is about to lint. On this repo that line is
 # ~50KB (485+ tracked markdown paths), which floods agent context on every

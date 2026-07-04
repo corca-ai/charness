@@ -19,8 +19,8 @@ run_processes_in_order = _subprocess_guard.run_processes_in_order
 MAX_SKILL_MD_LINES = 200
 # Non-blocking near-cap warning floor (#350): at or above this total, an added
 # line (e.g. a reciprocal propagation line from an adjacent skill's author) may
-# not land without a deliberate trim of reviewed prose, so surface the trap
-# before prose is written instead of at validator rejection.
+# not land unless a concept is split out or deleted, so surface the trap before
+# prose is written instead of at validator rejection.
 NEAR_CAP_WARN_LINES = 195
 MAX_CORE_NONEMPTY_LINES = 160
 # A changed SKILL.md must keep at least this many core_nonempty lines of headroom
@@ -291,9 +291,9 @@ def format_changed_human(report: dict[str, Any]) -> str:
     if report["status"] == "blocked":
         lines.append(
             "Changed SKILL.md core dropped below the core_nonempty headroom "
-            f"buffer ({CORE_NONEMPTY_HEADROOM_BUFFER} lines). Move prose into "
-            "references/ or scripts/ to restore headroom before the broad gate "
-            "core-headroom test fails late."
+            f"buffer ({CORE_NONEMPTY_HEADROOM_BUFFER} lines). Split a concept "
+            "into its own surface or delete one — do not shave lines to fit; "
+            "fix this before the broad gate core-headroom test fails late."
         )
     return "\n".join(lines)
 
@@ -435,9 +435,10 @@ def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_check
                 "id": "near_cap",
                 "message": (
                     f"SKILL.md total {current_total}/{MAX_SKILL_MD_LINES} is at/above the "
-                    f"{NEAR_CAP_WARN_LINES}-line near-cap floor: an added line may not land "
-                    "without a deliberate trim of reviewed prose. Trim deliberately or file "
-                    "an issue; never silently drop a reciprocal/propagation line."
+                    f"{NEAR_CAP_WARN_LINES}-line near-cap floor: an added line may not land. "
+                    "Split a concept into its own surface or delete one — do not shave lines "
+                    "to fit; file an issue if neither fits now, and never silently drop a "
+                    "reciprocal/propagation line."
                 ),
             }
         )

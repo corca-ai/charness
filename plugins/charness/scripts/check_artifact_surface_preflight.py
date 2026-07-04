@@ -221,12 +221,35 @@ def _run_shape_command(repo_root: Path, surface: Surface, *, stub: bool) -> tupl
     )
 
 
+def _run_scaffold_template(repo_root: Path, scaffold: str) -> tuple[str, int]:
+    """Run a scaffold script and return the rendered artifact text.
+
+    Most scaffolds (critique/ideation/retro/debug/quality/handoff) go through
+    ``scripts/scaffold_artifact_lib.emit_payload_main``, which emits one JSON
+    envelope with a `template` key holding the real markdown; unwrap that key
+    rather than treating the raw JSON as the artifact text (the prior behavior
+    here) — writing the JSON blob in place of markdown only round-tripped
+    through an owning validator by coincidence, as long as no enforced marker
+    string leaked into the JSON's structural text. Presence of the literal
+    string `parent-delegated` in a scaffolded placeholder exposed this. A
+    scaffold outside that convention (e.g. `goal_artifact_early_close_report.py`,
+    which prints plain markdown) fails `json.loads` and falls through to the raw
+    stdout unchanged — this stays a strict improvement, never a new failure mode.
+    """
+    proc = _run(repo_root, ["python3", scaffold, "--repo-root", str(repo_root)])
+    if proc.returncode != 0 or not proc.stdout.strip():
+        return f"(could not render scaffold {scaffold}: {proc.stderr.strip() or 'no output'})", 1
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return proc.stdout, 0
+    template = payload.get("template") if isinstance(payload, dict) else None
+    return (template, 0) if isinstance(template, str) else (proc.stdout, 0)
+
+
 def _shape_text(repo_root: Path, surface: Surface) -> str:
     if surface.scaffold:
-        proc = _run(repo_root, ["python3", surface.scaffold, "--repo-root", str(repo_root)])
-        if proc.returncode == 0 and proc.stdout.strip():
-            return proc.stdout
-        return f"(could not render scaffold {surface.scaffold}: {proc.stderr.strip() or 'no output'})"
+        return _run_scaffold_template(repo_root, surface.scaffold)[0]
     # Non-scaffold sources accumulate: a surface may pair a template block (the
     # lines to author into) with a shape_command (the enforced FORMS read live
     # from the owning validator). Each present source contributes one part.
@@ -314,10 +337,7 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
 
 def emit_stub(repo_root: Path, surface: Surface) -> tuple[str, int]:
     if surface.scaffold:
-        proc = _run(repo_root, ["python3", surface.scaffold, "--repo-root", str(repo_root)])
-        if proc.returncode == 0:
-            return proc.stdout, 0
-        return (proc.stderr or proc.stdout), 1
+        return _run_scaffold_template(repo_root, surface.scaffold)
     parts: list[str] = []
     code = 0
     if surface.template_section or surface.template_preamble:

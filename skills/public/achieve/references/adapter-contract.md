@@ -114,9 +114,9 @@ Claude `/goal` Stop-hook and the Codex thread-goal slot are host primitives
 `achieve` coordinates but does not reimplement. The portable draft-vs-active
 contract is uniform across every host and therefore needs no adapter knob: the
 Before-phase is artifact-only and never consumes the host slot, and
-`/goal @artifact` pursuit is the only point that does (see `lifecycle.md`
-*Drafting does not consume the host goal slot*). Deliberately, no
-`goal_slot.*` adapter field exists — a configurable knob here would only be a
-no-op that fakes portability. A host that auto-activates the slot on artifact
-creation is a host-runtime limitation to record as a non-claim, not an
-adapter-configurable behavior.
+`/goal @artifact` pursuit is the only point that does (see
+`lifecycle-before.md` *Drafting does not consume the host goal slot*).
+Deliberately, no `goal_slot.*` adapter field exists — a configurable knob here
+would only be a no-op that fakes portability. A host that auto-activates the
+slot on artifact creation is a host-runtime limitation to record as a
+non-claim, not an adapter-configurable behavior.

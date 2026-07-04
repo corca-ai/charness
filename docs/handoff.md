@@ -8,47 +8,47 @@
 
 ## Current State
 
-- **Efficiency plan items 1-3 all DONE this session (operator-approved "123"):**
-  1. **achieve phase-brief demote** (`d14ec985`): `check_goal_artifact.py` emits an
-     advisory `phase_brief` routing runs to the current-phase lifecycle/goal-artifact
-     sections instead of the 52KB+16KB full-doc mandate.
-  2. **A/B proof** (`a5b6f9a0`): pre/post, n=3/arm, judge wired — outcome parity 3/3
-     both arms; pre runs opened lifecycle.md 0/3 (silent non-compliance), post runs did
-     section-scoped reads 3/3 (~11KB). Means honestly ~null at n=3; see
-     [finding.md](../charness-artifacts/efficiency/achieve-phase-brief-ab/finding.md).
-  3. **Session-start front-load** (`1c455ad9`): hook directive now carries the 3-branch
-     routing (pickup→handoff / discovery→find-skills / otherwise→matching skill);
-     find-skills is no longer a mandatory every-session invocation. #240 protections
-     carried over; contract + arithmetic in find-skills `session-start-routing.md`.
-- **ACTIVATION LAG (item 3): not live yet.** The user-level hook runs from the managed
-  checkout at v0.60.0 — the new directive activates only after a **release +
-  `charness update`**. Cutting a release is the natural next step.
-- Context-tax measurement design remains CLOSED and gated (see
-  [context-tax-measurement-design.md](../charness-artifacts/reference-compaction/context-tax-measurement-design.md));
-  build only on a new symptom-ledger entry + operator approval.
+- **Branch `north-star-p123` (PR open): north-star P1-P3 sweep.** 24
+  counterweight-verified findings implemented by 14 bounded subagents + 3
+  fresh-eye critique reviewers; all critique blockers fixed in-branch. Key
+  moves: mechanism-keyed issue-close floors (colon/comma keyword forms
+  covered), release behavioral floor + `state-verified` rename + same-proxy
+  probe flag, critique fresh-eye typed-presence floor (fail-closed undatable,
+  2-name legacy allowlist), announcement verification ledger with adapter
+  cross-check, cut-safety deletion REVIEW wiring (incl. `skills/shared/`),
+  achieve lifecycle split (861 -> index + 3 phase files, phase_brief routes
+  per-phase), impl/find-skills/setup/AGENTS.md dedup, scaffold shim
+  unification, dup-ratchet scoped re-baseline mode.
+- Operator inputs honored: `check_test_production_ratio` KEPT (restored after
+  an in-flight miss), `check_python_lengths` KEPT blocking (message now
+  teaches split-or-delete); governing reference gathered at
+  [enforcing-quality-of-ai-generated-code](../charness-artifacts/gather/2026-07-04-enforcing-quality-of-ai-generated-code.md).
+- Gate audit artifact:
+  [gate-reclassification](../charness-artifacts/audit/2026-07-04-gate-reclassification.md);
+  critique record:
+  [sweep critique](../charness-artifacts/critique/2026-07-04-north-star-p1-p3-sweep-branch-north-star-p123.md).
 
 ## Next Session
 
-1. **Cut a release** (`charness:release`) to activate the session-start front-load and
-   ship the achieve demote; then `charness update` refreshes the managed checkout.
-2. Optional (operator listed as item 4, not yet approved): one baseline-vs-skill
-   OUTCOME contrast for a top-traffic skill (impl or quality) to test whether the
-   skill beats body-only — the effectiveness question the A/B harness can now answer.
-3. Deferred follow-ups (fire on recurrence/evidence, not proactively): latest.*
-   staleness validator (pattern named in session-start-routing.md §Boundary);
-   whole-repo-routing eval fixture new-shape case; quality inventory-dispatch doc
-   single-source (4 pinning tests, mirror 87922a7e).
+1. Review/merge the `north-star-p123` PR; post-merge, `charness update`
+   refreshes the managed checkout (also activates the earlier session-start
+   front-load, handoff item from v0.61.0 era).
+2. Audit Follow-ups worth their own slices: wire `vulture` (configured, never
+   run — dead-code gap vs the operator toolset); 81-site argparse-help debt
+   (opt-in ergonomics rule landed, default-off); dup_ratchet module split
+   (both files in WARN band).
+3. Deferred: nested-delegated evidence-linking (accepted gap, own
+   floor-addition call); shared closeout-contract extraction across
+   impl/spec/setup (pinned-string coupling made it unsafe this round).
 
 ## Discuss
 
-- Demote lever largely exhausted after achieve: debug's unconditional reads total
-  ~11KB (not worth it); the next efficiency frontier is per-skill effectiveness, not
-  reference load.
-- Brittle: [test_handoff_plan.py](../tests/test_handoff_plan.py) reds broad pytest on
-  any >=60-line handoff — keep THIS file under 60 lines.
-- A/B lesson: the decisive evidence was the per-run trace (section-scoped awk reads),
-  not the means — read trace-digests before trusting aggregate deltas at n=3.
+- test_handoff_plan.py live-root brittleness is FIXED (fixtures + validator
+  constants single-sourced) — the old "keep this file under 60 lines"
+  workaround no longer applies.
+- Lesson: mid-run operator overrides crossed agent inboxes twice; verify
+  override receipt with the owning agent before integration, not after.
 
 ## References
 
-- pickup: [finding.md](../charness-artifacts/efficiency/achieve-phase-brief-ab/finding.md) · [session-start-routing.md](../skills/public/find-skills/references/session-start-routing.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
+- pickup: [gate-reclassification](../charness-artifacts/audit/2026-07-04-gate-reclassification.md) · [sweep critique](../charness-artifacts/critique/2026-07-04-north-star-p1-p3-sweep-branch-north-star-p123.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)

@@ -137,7 +137,10 @@ def test_publish_release_does_not_close_issues_when_post_create_verification_fai
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     env["FAKE_GH_RELEASE_CREATE_WITHOUT_VIEW"] = "1"
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
-    result = _run_publish_patch(repo, env, "--close-issue", "44")
+    result = _run_publish_patch(
+        repo, env, "--close-issue", "44",
+        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+    )
 
     assert result.returncode == 1
     state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
@@ -159,7 +162,10 @@ def test_publish_release_records_distinct_channel_confirmation_before_issue_clos
     env = _release_env(tmp_path, bin_dir)
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
-    result = _run_publish_patch(repo, env, "--close-issue", "44")
+    result = _run_publish_patch(
+        repo, env, "--close-issue", "44",
+        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+    )
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -186,7 +192,10 @@ def test_publish_release_records_distinct_channel_disposition_and_still_closes(t
     env["FAKE_DISTINCT_CHANNEL_RESULT"] = "fail"
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
-    result = _run_publish_patch(repo, env, "--close-issue", "44")
+    result = _run_publish_patch(
+        repo, env, "--close-issue", "44",
+        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+    )
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -204,13 +213,17 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     env = _release_env(tmp_path, bin_dir)
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
-    result = _run_publish_patch(repo, env, "--close-issue", "44")
+    result = _run_publish_patch(
+        repo, env, "--close-issue", "44",
+        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+    )
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["issue_closeout_preflight"]["status"] == "verified"
     assert payload["issue_closeout_preflight"]["issues"][0]["state"] == "OPEN"
-    assert payload["issue_closeout"]["status"] == "verified"
+    assert payload["issue_closeout_behavioral_verdict"]["ok"] is True
+    assert payload["issue_closeout"]["status"] == "state-verified"
     assert payload["issue_closeout"]["issues"][0]["state"] == "CLOSED"
     assert payload["issue_closeout"]["issues"][0]["preflight_state"] == "OPEN"
     assert payload["issue_closeout"]["issues"][0]["carrier"] == "direct_release_commit_body"
@@ -218,7 +231,7 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     assert payload["issue_closeout_commit_sha"]
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "## Issue Closeout" in artifact_text
-    assert "Issue closeout verification: `verified`." in artifact_text
+    assert "Issue closeout verification: `state-verified`." in artifact_text
     assert "Issue #44: `CLOSED`" in artifact_text
     assert "carrier: `direct_release_commit_body`" in artifact_text
     assert "manual fallback used: `True`" in artifact_text
@@ -230,6 +243,7 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
         text=True,
     ).stdout
     assert "Close #44." in commit_body
+    assert "Behavior #44: confirmed via fresh checkout install" in commit_body
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert ["issue", "view", "44", "--repo", "example/demo", "--json", "number,state,url"] in gh_log
     assert any(entry[:5] == ["issue", "close", "44", "--repo", "example/demo"] for entry in gh_log)

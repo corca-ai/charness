@@ -2,10 +2,10 @@
 
 `check_goal_artifact.py` runs at every achieve invocation and already knows the
 goal's `status`. It now attaches a declarative `phase_brief` naming exactly
-which `references/lifecycle.md` section (## Before/## During/## After) and
-which `references/goal-artifact.md` sections are relevant to that status, so
-SKILL.md can route a run to the phase-scoped depth instead of the full docs.
-This is advisory routing only -- never a blocking floor.
+which `references/lifecycle-<phase>.md` file (and its H2 heading) and which
+`references/goal-artifact.md` sections are relevant to that status, so
+SKILL.md can route a run to the phase-scoped file instead of the full
+three-phase contract. This is advisory routing only -- never a blocking floor.
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def _load(name: str):
 brief_lib = _load("goal_artifact_phase_brief")
 gal = _load("goal_artifact_lib")
 
-_REQUIRED_KEYS = {"phase", "lifecycle_section", "goal_artifact_sections", "note"}
+_REQUIRED_KEYS = {"phase", "lifecycle_file", "lifecycle_section", "goal_artifact_sections", "note"}
 
 
 # --- phase_brief() unit coverage ---------------------------------------------
@@ -42,6 +42,8 @@ def test_every_valid_status_gets_a_non_none_brief_with_required_keys() -> None:
         assert brief is not None, status
         assert _REQUIRED_KEYS.issubset(brief.keys()), (status, brief)
         assert brief["phase"] in ("before", "during", "after")
+        assert brief["lifecycle_file"].startswith("references/lifecycle-")
+        assert (_ROOT / "skills/public/achieve" / brief["lifecycle_file"]).is_file()
         assert brief["lifecycle_section"].startswith("## ")
         assert brief["goal_artifact_sections"], status
         for section in brief["goal_artifact_sections"]:
@@ -81,12 +83,19 @@ def _heading_present(heading: str, real_lines: list[str]) -> bool:
 
 
 def test_lifecycle_sections_are_real_unfenced_h2_headings() -> None:
-    lifecycle_text = (_REFERENCES / "lifecycle.md").read_text(encoding="utf-8")
-    real_lines = _real_h2_lines(lifecycle_text)
-    named = {brief["lifecycle_section"] for brief in brief_lib.PHASE_BRIEFS.values()}
-    assert named, "expected at least one lifecycle_section to check"
-    for heading in named:
-        assert _heading_present(heading, real_lines), (heading, real_lines)
+    # Each brief's `lifecycle_section` heading must be a real H2 inside its own
+    # `lifecycle_file` (lifecycle.md was split by phase; the heading no longer
+    # lives in one monolithic file).
+    for brief in brief_lib.PHASE_BRIEFS.values():
+        phase_text = (_ROOT / "skills/public/achieve" / brief["lifecycle_file"]).read_text(
+            encoding="utf-8"
+        )
+        real_lines = _real_h2_lines(phase_text)
+        assert _heading_present(brief["lifecycle_section"], real_lines), (
+            brief["lifecycle_file"],
+            brief["lifecycle_section"],
+            real_lines,
+        )
 
 
 def test_goal_artifact_sections_are_real_unfenced_h2_headings() -> None:

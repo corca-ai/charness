@@ -40,5 +40,8 @@ The rung-1 floor is record presence only: a confirmation and a typed
 non-verified disposition both satisfy the form floor. The human release
 closeout judges whether the verdict is actually acceptable.
 
-Never use a second `gh release view` readback as the distinct channel when the
-release backend already used `gh release view` for visibility.
+A mechanical check in `confirm_release_via_distinct_channel`
+(`publish_release_post_create.py`) flags a configured probe that matches the
+release backend's own `release_view` command shape as `same-proxy-flagged`
+rather than `confirmed`; run `plan_release_run.py` first and repoint a flagged
+probe at a genuinely distinct channel.

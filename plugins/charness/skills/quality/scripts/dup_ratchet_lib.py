@@ -199,6 +199,67 @@ def validate_gate_baseline(data: Any) -> list[str]:
 
 
 # --------------------------------------------------------------------------- #
+# Scoped re-baseline (routine rotation churn — never a silent full-corpus accept)
+# --------------------------------------------------------------------------- #
+def parse_rotations(raw_rotations: list[str]) -> tuple[list[tuple[str, str]], list[str]]:
+    """Parse repeated ``OLD_ID=NEW_ID`` strings. Returns ``(pairs, malformed_raw)``."""
+    pairs: list[tuple[str, str]] = []
+    malformed: list[str] = []
+    for raw in raw_rotations:
+        old_id, sep, new_id = raw.partition("=")
+        old_id, new_id = old_id.strip(), new_id.strip()
+        if not sep or not old_id or not new_id:
+            malformed.append(raw)
+            continue
+        pairs.append((old_id, new_id))
+    return pairs, malformed
+
+
+def plan_scoped_rebaseline(
+    *,
+    existing_ids: set[str],
+    live_ids: set[str],
+    rotations: list[tuple[str, str]],
+    accept_families: list[str],
+) -> dict[str, Any]:
+    """Pure planner for a scoped re-baseline: apply ONLY the named rotation pairs
+    and named new-family accepts onto ``existing_ids``, and refuse (never silently
+    absorb) any other delta between ``live_ids`` and the result. This is the teeth
+    fix for ``--write-baseline``'s full-scan overwrite, which re-accepts every
+    unreviewed new family wholesale on routine rotation churn. Returns ``ok`` plus
+    either ``updated_ids`` (the new accepted set) or ``errors``/``refused_added``.
+    """
+    errors: list[str] = []
+    seen_old: set[str] = set()
+    for old_id, new_id in rotations:
+        if old_id in seen_old:
+            errors.append(f"--accept-rotation names {old_id!r} more than once")
+        seen_old.add(old_id)
+        if old_id not in existing_ids:
+            errors.append(f"--accept-rotation OLD_ID {old_id!r} is not in the current baseline")
+        if new_id not in live_ids:
+            errors.append(f"--accept-rotation NEW_ID {new_id!r} is not in the live scan")
+    for family_id in accept_families:
+        if family_id not in live_ids:
+            errors.append(f"--accept-family {family_id!r} is not in the live scan")
+        elif family_id in existing_ids:
+            errors.append(f"--accept-family {family_id!r} is already in the baseline")
+    if errors:
+        return {"ok": False, "errors": errors, "refused_added": [], "updated_ids": None}
+
+    updated_ids = set(existing_ids)
+    for old_id, new_id in rotations:
+        updated_ids.discard(old_id)
+        updated_ids.add(new_id)
+    updated_ids.update(accept_families)
+
+    refused_added = sorted(live_ids - updated_ids)
+    if refused_added:
+        return {"ok": False, "errors": [], "refused_added": refused_added, "updated_ids": None}
+    return {"ok": True, "errors": [], "refused_added": [], "updated_ids": updated_ids}
+
+
+# --------------------------------------------------------------------------- #
 # Git seams (injectable per FD5; evaluate takes the distance, never inlines git)
 # --------------------------------------------------------------------------- #
 def _git_output(repo_root: Path, args: list[str]) -> tuple[int, str]:

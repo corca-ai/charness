@@ -180,7 +180,17 @@ def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | No
     """
     limit = file_limit_for(path, root)
     if code_lines > limit:
-        raise ValidationError(f"{path}: Python code lines {code_lines} exceed limit {limit}")
+        # Operator-endorsed teeth (charness-artifacts/gather/2026-07-04-enforcing-
+        # quality-of-ai-generated-code.md): a max-file-length linter constraint stays
+        # blocking even on reversible work. The message still teaches the north-star
+        # response instead of leaving the evasion path implicit: split the file into
+        # a cohesion-scoped module or delete dead code -- do NOT mechanically spill
+        # into an _extra_lib/_lib companion just to dodge the cap.
+        raise ValidationError(
+            f"{path}: Python code lines {code_lines} exceed limit {limit}. Split the file "
+            "into a cohesive new module or delete code; do not mechanically spill into an "
+            "_extra_lib/_lib companion to dodge the cap (docs/deferred-decisions.md D33)."
+        )
     warn = file_warn_for(path, root)
     if code_lines >= warn:
         relative = path.relative_to(root)

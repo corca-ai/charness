@@ -7,7 +7,7 @@ def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
     lines = ["", "## Issue Closeout", ""]
     if issue_closeout is None:
         return lines + ["- Issue closeout verification: pending or not requested."]
-    if issue_closeout.get("status") != "verified":
+    if issue_closeout.get("status") != "state-verified":
         return lines + [f"- Issue closeout verification: `{issue_closeout.get('status')}`."]
     lines.append(f"- Issue closeout verification: `{issue_closeout.get('status')}`.")
     if repo := issue_closeout.get("repo"):

@@ -602,6 +602,32 @@ def test_predict_commit_accepts_clean_staged_python(tmp_path: Path) -> None:
     assert [step["returncode"] for step in payload["executed_commands"]] == [0, 0, 0, 0, 0, 0]
 
 
+def test_predict_commit_forces_review_on_staged_skill_deletion(tmp_path: Path) -> None:
+    # North-star P5 (finding 3): `collect_staged_paths` filters to A/C/M only, so a
+    # pure SKILL.md deletion never appears in the gate-plan's `changed_paths` --
+    # the advisory provider must independently catch it and force a REVIEW
+    # question in `advisories`, at exit 0 (never a hard block on the deletion).
+    repo = tmp_path / "repo"
+    skill_md = repo / "skills" / "public" / "demo" / "SKILL.md"
+    skill_md.parent.mkdir(parents=True)
+    skill_md.write_text("---\nname: demo\n---\n\n# Demo\n", encoding="utf-8")
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    )
+    subprocess.run(["git", "rm", "-q", "skills/public/demo/SKILL.md"], cwd=repo, check=True, capture_output=True, text=True)
+
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json")
+
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0, result.stderr
+    assert payload["changed_paths"] == []  # the deletion is invisible to the ACM-filtered set
+    assert any(line.startswith("REVIEW:") for line in payload["advisories"])
+    assert any("skills/public/demo/SKILL.md" in line for line in payload["advisories"])
+
+
 def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
     # #314 acceptance (1): the fast skill-ergonomics checker must run in the
     # skill-packages surface verify_commands so portable-package issue anchors,

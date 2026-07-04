@@ -196,10 +196,16 @@ These lines are plain markdown so a fresh session can continue the clock without
 host memory. The early-close reason may still be `No safe next slice:`,
 `Early close rationale:`, or a supported `Stop condition:` line; the candidate
 ledger and sufficiency check decide whether that reason is enough before the
-reserve window. When an early-close reason is recorded, `## Final Verification`
-must also include `Early close report: <path>` pointing at a checked-in report
-that explains why the run stopped early, what decisions require the user, and
-what waste/retro findings should shape the next run.
+reserve window. Valid candidate decisions are `defer`, `blocked`, `unsafe`,
+`user-decision`, and `out-of-scope`; `continue` is deliberately invalid before
+the reserve window. Valid sufficiency statuses are `sufficient`,
+`accepted-low-yield`, and `blocked-by-user-decision`. When an early-close
+reason is recorded, `## Final Verification` must also include
+`Early close report: <path>` pointing at a checked-in report that explains why
+the run stopped early, what decisions require the user, and what waste/retro
+findings should shape the next run; the report is required even when the
+early stop is correct, because correctness does not remove the communication
+duty.
 
 When changing the goal artifact shape, update every goal producer that emits a
 new artifact, not only the primary `achieve` template. The current producer
@@ -230,13 +236,13 @@ lane, and **no lane may be self-classified runnable** — a runnable lane means 
 goal should stay `active` and continue it, not block the whole goal. The floor is
 presence + no-runnable-contradiction only (Created-date grandfathered); whether a
 lane is *truly* runnable is the agent's and the operator's call, not the floor's.
-See `references/lifecycle.md` *Remaining-boundary matrix before `blocked`*.
+See `references/lifecycle-during.md` *Remaining-boundary matrix before `blocked`*.
 
 ## Closeout Delegation (optional, orchestrated mode)
 
 A goal stays **standalone** by default — it owns all closeout proof itself and
 needs no extra section. A goal only adds `## Closeout Delegation` when it runs in
-orchestrated mode (`references/lifecycle.md` *Orchestrated closeout*). Absence of
+orchestrated mode (`references/lifecycle-after.md` *Orchestrated closeout*). Absence of
 the section, or `Closeout mode: standalone`, keeps the strict standalone default.
 
 A **sub-goal** that delegates external proof to a named orchestrator:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shlex
 import time
 import urllib.error
 import urllib.request
@@ -9,7 +10,12 @@ from typing import Any
 # Rung-2 distinct-channel verdict vocabulary. A `confirmed`, or a typed
 # non-`verified` disposition — never a `gh release view` re-read standing in for
 # confirmation (the same-proxy re-examination P4 of design-north-star.md forbids).
-DISTINCT_CHANNEL_STATUSES = ("confirmed", "not-confirmed", "blocked-needs-capability", "skipped")
+# `same-proxy-flagged` is the mechanical form-check verdict (see
+# `_probe_matches_release_view_shape`) for an adapter probe that turned out to be
+# that same proxy under a different label.
+DISTINCT_CHANNEL_STATUSES = (
+    "confirmed", "not-confirmed", "blocked-needs-capability", "skipped", "same-proxy-flagged",
+)
 
 
 def run_post_publish_install_refresh(
@@ -97,6 +103,22 @@ def _http_release_probe(url: str, *, timeout: float = 10.0) -> dict[str, Any]:
     }
 
 
+def _probe_matches_release_view_shape(
+    rendered_command: str, *, backend: dict[str, Any], backend_command, tag_name: str
+) -> bool:
+    """Data-driven same-proxy check (P4): True when the rendered probe command's
+    leading tokens equal the backend's OWN ``release_view`` command -- the exact
+    command ``verify_release_visible`` already used for tag/version visibility --
+    derived from the backend config via ``backend_command``, never an enumerated
+    list of forbidden command strings. This also catches a custom adapter
+    backend's own ``release_view`` template, not just the literal default
+    ``gh release view``.
+    """
+    view_tokens = backend_command(backend, "release_view", ["gh", "release", "view", "{tag}"], tag=tag_name)
+    probe_tokens = shlex.split(rendered_command)
+    return bool(view_tokens) and probe_tokens[: len(view_tokens)] == view_tokens
+
+
 def confirm_release_via_distinct_channel(
     repo_root: Path,
     payload: dict[str, Any],
@@ -106,6 +128,8 @@ def confirm_release_via_distinct_channel(
     tag_name: str,
     expected_release_url: str | None,
     http_probe=_http_release_probe,
+    backend: dict[str, Any] | None = None,
+    backend_command=None,
 ) -> dict[str, Any]:
     """Rung-2 distinct-channel observer (P4): confirm the PUBLISHED release through
     a channel DISTINCT FROM ``gh release view``, recording the verdict on the
@@ -114,19 +138,37 @@ def confirm_release_via_distinct_channel(
     (``{tag}``/``{url}`` substituted); otherwise the default is an HTTP fetch of the
     public release URL. The verdict is a recorded observable the human rung-2 audit
     reads at closeout — **never an automated proceed-gate (F2a)**.
+
+    When ``backend``/``backend_command`` are supplied, a configured probe that
+    matches the backend's own ``release_view`` command shape is mechanically
+    flagged ``same-proxy-flagged`` and never run — prose alone let this same-proxy
+    probe masquerade as a distinct channel (design-north-star.md P4).
     """
     probe_command = str(adapter_data.get("post_publish_distinct_channel_probe", "") or "").strip()
     if probe_command:
         rendered = probe_command.replace("{tag}", tag_name).replace("{url}", expected_release_url or "")
-        result = run_shell(rendered, cwd=repo_root, check=False)
-        record: dict[str, Any] = {
-            "channel": "adapter-probe", "command": rendered,
-            "status": "confirmed" if result.returncode == 0 else "not-confirmed",
-            "returncode": result.returncode,
-        }
-        if result.returncode != 0:
-            tail = (result.stderr or result.stdout or "").strip()[-1500:]
-            record["reason"] = tail or "distinct-channel probe returned a nonzero exit"
+        if backend is not None and backend_command is not None and _probe_matches_release_view_shape(
+            rendered, backend=backend, backend_command=backend_command, tag_name=tag_name
+        ):
+            record = {
+                "channel": "adapter-probe", "command": rendered, "status": "same-proxy-flagged",
+                "reason": (
+                    "configured post_publish_distinct_channel_probe matches this backend's own "
+                    "`release_view` command -- the SAME proxy `verify_release_visible` already used, "
+                    "not a channel distinct from it. Point the probe at a genuinely distinct channel "
+                    "(deploy readback, artifact download, consumer-side check)."
+                ),
+            }
+        else:
+            result = run_shell(rendered, cwd=repo_root, check=False)
+            record: dict[str, Any] = {
+                "channel": "adapter-probe", "command": rendered,
+                "status": "confirmed" if result.returncode == 0 else "not-confirmed",
+                "returncode": result.returncode,
+            }
+            if result.returncode != 0:
+                tail = (result.stderr or result.stdout or "").strip()[-1500:]
+                record["reason"] = tail or "distinct-channel probe returned a nonzero exit"
     elif expected_release_url:
         record = http_probe(expected_release_url)
     else:

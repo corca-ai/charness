@@ -56,6 +56,10 @@ VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset(
         *DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
         "portable_package_host_surface_reference",
         "reference_discoverability_gap",
+        # floor-addition-restraint: P5 form-only ergonomics check, operator-
+        # approved display-copy track. Opt-in only (not in DEFAULT) so adopting
+        # it stays a repo's explicit choice rather than a silent new default.
+        "argparse_missing_help",
     ]
 )
 

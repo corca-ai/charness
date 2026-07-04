@@ -3,28 +3,34 @@ from __future__ import annotations
 
 import datetime as dt
 import re
-import sys
+import runpy
 from pathlib import Path
+from types import SimpleNamespace
 
-SKILL_RUNTIME_PATH = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
-if SKILL_RUNTIME_PATH is None:
-    raise ImportError("skill_runtime_bootstrap.py not found")
-sys_path_root = str(SKILL_RUNTIME_PATH.parent)
-if sys_path_root not in sys.path:
-    sys.path.insert(0, sys_path_root)
-import skill_runtime_bootstrap as SKILL_RUNTIME  # noqa: E402
 
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 
 # The critique validator (scripts/validate_critique_artifacts.py) is opt-in but
 # enforces real schemas when their sections appear: `## Structured Findings`
-# enums/follow-ups, `## Reviewer Tier Evidence` fields/host-exposure-state, and a
-# fresh-eye satisfaction status that must cite a signal when it is blocked. The
-# scaffold emits all three so the dogfood validation exercises them, with the
-# fresh-eye line deliberately free of the literal "blocked" token (which would
-# otherwise demand a host/tool signal).
+# enums/follow-ups, `## Reviewer Tier Evidence` fields/host-exposure-state, and
+# (once dated on/after its enforce-from date) a `Fresh-eye satisfaction:` line
+# that must open with a typed value. The scaffold emits all three so the
+# dogfood validation exercises them, but the fresh-eye line is deliberately
+# NOT a typed value by default — the floor exists to stop an unedited artifact
+# from silently claiming a review happened (a same-observer rubber stamp); a
+# scaffold that pre-fills a real typed token would hand every author exactly
+# that loophole for free. It also stays free of the literal "blocked" token
+# (which would otherwise demand a host/tool signal).
 
 
 # Allowed enum values the critique validator enforces, surfaced at author time so
@@ -115,7 +121,18 @@ def render_template(*, title: str, date_text: str) -> str:
         [
             "## Fresh-Eye Satisfaction",
             "",
-            "TODO record the reviewer verdict and the concrete signal behind it.",
+            # Deliberately NOT a typed value (see the module comment above): the
+            # validator requires this line to OPEN with `parent-delegated` /
+            # `nested-delegated` / a signal-bearing typed value once dated
+            # on/after its enforce-from date, and it also rejects a typed value
+            # whose remainder still carries an unedited `todo`. Pre-filling a
+            # real typed token here (even with a trailing TODO) would let every
+            # unedited scaffold silently claim a review happened; this text
+            # cannot satisfy the floor until the author replaces it with a real
+            # typed value after the reviewer actually runs. Stays free of the
+            # literal "blocked" token for the same reason as the module comment.
+            "TODO: replace with `parent-delegated`, `nested-delegated`, or a citation of "
+            "the concrete signal that stopped delegation — after the reviewer actually runs.",
             "",
         ]
     )

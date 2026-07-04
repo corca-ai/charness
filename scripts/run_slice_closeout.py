@@ -48,6 +48,7 @@ block_on_structural_sweep = _staged_commit_gate_plan.block_on_structural_sweep
 structural_sweep_planned_commands = _staged_commit_gate_plan.structural_sweep_planned_commands
 _slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
 _rca_link_advisory = import_repo_module(__file__, "scripts.rca_link_advisory")
+_skill_cut_safety_advisory = import_repo_module(__file__, "scripts.skill_cut_safety_advisory")
 _mutation_coverage_producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
 _slice_closeout_reporting = import_repo_module(__file__, "scripts.slice_closeout_reporting")
 _slice_closeout_run_command = import_repo_module(__file__, "scripts.slice_closeout_run_command")
@@ -412,6 +413,15 @@ def _attach_closeout_telemetry(repo_root: Path, payload: dict[str, object]) -> N
     payload["closeout_telemetry"] = emit_closeout_telemetry_for_slice(repo_root, payload)
 
 
+def _predict_commit_advisories(repo_root: Path, selected_paths: list[str]) -> list[str]:
+    """Compose every non-blocking predict-commit advisory: the RCA-link nudge and
+    the skill-deletion REVIEW nudge (#floor-addition-restraint site). Each source
+    is independently exit-0-only; run_predict_commit takes a single provider."""
+    return _rca_link_advisory.provider(repo_root, selected_paths) + _skill_cut_safety_advisory.provider(
+        repo_root, selected_paths
+    )
+
+
 def main() -> int:
     args = _build_parser().parse_args()
     repo_root = args.repo_root.resolve()
@@ -425,7 +435,7 @@ def main() -> int:
             plan_only=args.plan_only,
             run_command=run_command,
             emit_payload=_emit_payload,
-            advisory_provider=_rca_link_advisory.provider,
+            advisory_provider=_predict_commit_advisories,
         )
 
     _advise_staged_reversion(repo_root)

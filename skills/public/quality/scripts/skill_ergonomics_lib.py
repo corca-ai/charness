@@ -124,11 +124,13 @@ def inventory_skill(
     package_dated_findings: list[dict[str, object]] = []
     host_surface_findings: list[dict[str, object]] = []
     reference_findings: list[dict[str, object]] = []
+    argparse_help_findings: list[dict[str, object]] = []
     if skill_type in {"public", "support"}:
         package_issue_findings = tqlib.issue_anchor_package_findings(repo_root, skill_dir)
         package_dated_findings = tqlib.dated_incident_package_findings(repo_root, skill_dir)
         host_surface_findings = tqlib.host_surface_reference_findings(repo_root, skill_dir)
         reference_findings = tqlib.reference_discoverability_findings(repo_root, skill_path, body)
+        argparse_help_findings = tqlib.argparse_missing_help_findings(repo_root, skill_dir)
     heuristics: list[str] = []
     if len(nonempty_lines) > max_core_lines:
         heuristics.append("long_core")
@@ -154,6 +156,11 @@ def inventory_skill(
         heuristics.append("portable_package_host_surface_reference")
     if skill_type in {"public", "support"} and reference_findings:
         heuristics.append("reference_discoverability_gap")
+    # floor-addition-restraint: P5 form-only ergonomics check, operator-approved
+    # display-copy track (portable-authoring.md "Argparse Help Rule" moved from
+    # restated prose to a checkable form here).
+    if skill_type in {"public", "support"} and argparse_help_findings:
+        heuristics.append("argparse_missing_help")
     subcheck_counts = {
         "core_overfill": 1 if "long_core" in heuristics else 0,
         "mode_option_pressure": (
@@ -166,6 +173,7 @@ def inventory_skill(
         "package_dated_incident": len(package_dated_findings),
         "host_surface_reference": len(host_surface_findings),
         "reference_discoverability": len(reference_findings),
+        "argparse_missing_help": len(argparse_help_findings),
     }
     review_prompts = RUNTIME_INSTALL_REVIEW_PROMPTS if skill_type == "runtime_install" else DEFAULT_REVIEW_PROMPTS
     review_topic_ids = (
@@ -190,6 +198,8 @@ def inventory_skill(
         "host_surface_reference_findings": host_surface_findings,
         "unlisted_reference_count": len(reference_findings),
         "unlisted_reference_files": reference_findings,
+        "argparse_missing_help_count": len(argparse_help_findings),
+        "argparse_missing_help_findings": argparse_help_findings,
         "subcheck_counts": subcheck_counts,
         "heuristics": heuristics,
         "review_topic_ids": review_topic_ids,

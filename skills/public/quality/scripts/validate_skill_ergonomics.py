@@ -41,6 +41,7 @@ RULE_HEURISTICS = {
     "portable_package_dated_incident": ("portable_package_dated_incident",),
     "portable_package_host_surface_reference": ("portable_package_host_surface_reference",),
     "reference_discoverability_gap": ("reference_discoverability_gap",),
+    "argparse_missing_help": ("argparse_missing_help",),
 }
 
 RULE_SKILL_TYPES = {
@@ -55,6 +56,7 @@ RULE_SKILL_TYPES = {
     "portable_package_dated_incident": {"public", "support"},
     "portable_package_host_surface_reference": {"public", "support"},
     "reference_discoverability_gap": {"public", "support"},
+    "argparse_missing_help": {"public", "support"},
 }
 
 RULE_MESSAGES = {
@@ -98,6 +100,11 @@ RULE_MESSAGES = {
     "reference_discoverability_gap": (
         "Skill package has reference files that are not listed from SKILL.md. "
         "Add a discoverable reference/index path or remove stale references."
+    ),
+    "argparse_missing_help": (
+        "A skill script's `argparse.add_argument(...)` call has no `help=` string. "
+        "The first caller is an LLM with no shared context; add an explicit help= "
+        "so `--help` alone answers what the flag controls."
     ),
 }
 
@@ -165,6 +172,8 @@ def _checked_skill_item(item: dict[str, Any]) -> dict[str, Any]:
         "host_surface_reference_findings": item.get("host_surface_reference_findings", []),
         "unlisted_reference_count": item.get("unlisted_reference_count", 0),
         "unlisted_reference_files": item.get("unlisted_reference_files", []),
+        "argparse_missing_help_count": item.get("argparse_missing_help_count", 0),
+        "argparse_missing_help_findings": item.get("argparse_missing_help_findings", []),
         "subcheck_counts": item.get("subcheck_counts", {}),
     }
 
@@ -175,6 +184,7 @@ def _rule_findings(item: dict[str, Any], rule: str) -> list[dict[str, Any]]:
         "portable_package_dated_incident": item.get("package_dated_incident_findings", []),
         "portable_package_host_surface_reference": item.get("host_surface_reference_findings", []),
         "reference_discoverability_gap": item.get("unlisted_reference_files", []),
+        "argparse_missing_help": item.get("argparse_missing_help_findings", []),
     }
     return findings_by_rule.get(rule, [])
 

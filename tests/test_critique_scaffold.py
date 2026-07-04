@@ -65,9 +65,21 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     assert enums["structured_findings"]["bin"]
     assert "host-confirmed:" in " ".join(enums["couplings"])
 
+    # The scaffold's `## Fresh-Eye Satisfaction` placeholder is deliberately
+    # NOT a typed value (scaffold_critique_artifact.py's module comment) — an
+    # unedited stub must not satisfy the floor, or every author could ship a
+    # same-observer rubber-stamp for free. Round-trip validation here exercises
+    # the FILLED-IN shape (what an author submits after the reviewer actually
+    # runs), which is what "shape-by-construction" is meant to prove; the
+    # raw-stub-fails-once-post-cutoff case has its own dedicated test in
+    # tests/quality_gates/test_critique_fresh_eye_presence.py.
+    head, heading, _ = template.partition("## Fresh-Eye Satisfaction")
+    assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
+    filled_in_template = f"{head}{heading}\n\nparent-delegated.\n"
+
     artifact_path = repo / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
-    artifact_path.write_text(template, encoding="utf-8")
+    artifact_path.write_text(filled_in_template, encoding="utf-8")
     validation = subprocess.run(
         shlex.split(payload["validator_command"]),
         cwd=repo,
@@ -122,9 +134,17 @@ def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tm
     assert str(plugin_root / "scripts") in payload["validator_command"]
     assert "validate_critique_artifacts.py" in payload["validator_command"]
 
+    # Same fill-in-before-validate rationale as test_critique_scaffold_reports_
+    # validator_and_template above: the raw stub's Fresh-Eye Satisfaction line
+    # is deliberately not a typed value, so round-trip here proves the FILLED-
+    # IN shape validates through the exported plugin's copy of the validator.
+    head, heading, _ = payload["template"].partition("## Fresh-Eye Satisfaction")
+    assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
+    filled_in_template = f"{head}{heading}\n\nparent-delegated.\n"
+
     artifact_path = consumer / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
-    artifact_path.write_text(payload["template"], encoding="utf-8")
+    artifact_path.write_text(filled_in_template, encoding="utf-8")
     validation = subprocess.run(
         shlex.split(payload["validator_command"]),
         cwd=consumer,

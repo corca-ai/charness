@@ -38,6 +38,7 @@ STRING_FIELDS = (
     "post_command_template",
     "delivery_capability",
     "format_rules_path",
+    "post_delivery_readback_probe",
 )
 LIST_FIELDS = ("sections", "audience_tags", "omission_lenses")
 INT_FIELDS = ("message_size_limit",)
@@ -47,6 +48,17 @@ ARTIFACT_CLASS = "history"
 RECORD_FILENAME = "announcements.jsonl"
 
 VALID_DELIVERY_ROLES = {"single", "parent", "thread_reply"}
+
+# Canonical delivery-kind vocabulary. Shared with record_announcement.py's
+# --delivery-kind CLI choices so a self-attested record can only ever name a
+# kind this adapter contract recognizes (case/alias-normalized first).
+DELIVERY_KINDS = ("none", "release-notes", "human-backend")
+DEPRECATED_DELIVERY_KIND_ALIASES = {"command": "human-backend"}
+
+
+def normalize_delivery_kind(value: str) -> str:
+    normalized = (value or "").strip().lower()
+    return DEPRECATED_DELIVERY_KIND_ALIASES.get(normalized, normalized)
 
 
 def _validate_outputs(value: Any, errors: list[str]) -> list[dict[str, Any]] | None:
@@ -182,6 +194,7 @@ def infer_announcement_defaults(repo_root: Path) -> dict[str, Any]:
         "post_command_template": "",
         "delivery_capability": "",
         "format_rules_path": "",
+        "post_delivery_readback_probe": "",
         "message_size_limit": 0,
         "public_body_shape": "chat_update",
         "outputs": [],
@@ -232,8 +245,8 @@ def _delivery_warnings(
     if validated["delivery_kind"] == "command":
         validated["delivery_kind"] = "human-backend"
         warnings.append("delivery_kind `command` is deprecated; rename it to `human-backend`.")
-    if validated["delivery_kind"] not in ("none", "release-notes", "human-backend"):
-        errors.append("delivery_kind must be one of: none, release-notes, human-backend")
+    if validated["delivery_kind"] not in DELIVERY_KINDS:
+        errors.append(f"delivery_kind must be one of: {', '.join(DELIVERY_KINDS)}")
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
     if not validated["audience_tags"]:

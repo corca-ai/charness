@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -66,6 +67,47 @@ DELEGATION_CONTRACT_MARKERS = (
 SIGNAL_HEADINGS = ("host signal", "tool signal")
 PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na", "blocked"}
 
+# Distinct-observer presence floor (counterweight-verified: an artifact with no
+# `Fresh-eye satisfaction:` line skips every observer check below — the #386
+# same-observer rubber stamp in file form). Enforce-from-date mirrors the
+# established `disposition_form.DISPOSITION_FORM_RULE_DATE` /
+# `validate_retro_artifact.RECURRENCE_LINEAGE_RULE_DATE` shape: this floor lands
+# 2026-07-04, so enforcement begins the next day and every artifact dated
+# on/before the landing day is grandfathered. Clone-safe: an in-file constant,
+# not mtime.
+FRESH_EYE_PRESENCE_RULE_DATE = date(2026, 7, 5)
+# `nested-delegated` has no downstream evidence-linking check today (unlike
+# `parent-delegated` -> Reviewer Tier Evidence, `blocked` -> host/tool signal
+# detail) — presence/form-only per this floor's own boundary, so this is a
+# known, accepted gap rather than a missed one; adding a required nested-run
+# citation is a separate floor-addition call, not folded in here.
+FRESH_EYE_TYPED_VALUES = ("parent-delegated", "nested-delegated", "blocked")
+FRESH_EYE_TYPED_VALUES_SUMMARY = "`parent-delegated` / `nested-delegated` / `blocked <host-signal>`"
+# Adversarial-review finding: a typed value whose remainder still carries an
+# unedited `todo` (e.g. a scaffolded `parent-delegated (TODO confirm ...)`)
+# must not satisfy the floor — that is an unedited stub silently claiming
+# delegation, the exact same-observer rubber stamp (#386) this floor exists to
+# stop. Mirrors this file's own `PLACEHOLDER_VALUES`/`"missing "` treatment.
+FRESH_EYE_TODO_MARKER = "todo"
+# Closed, explicit allowlist — NOT a fail-open default. Every other undatable
+# critique artifact is now enforced as if post-cutoff (a new artifact with no
+# parseable date is itself the anomaly); only these two legacy prepare-packets,
+# frozen before this floor existed and never carrying a `Fresh-eye
+# satisfaction:` line, are named exceptions. Extending this set requires the
+# same care as extending a `boundary-bypass-exemptions.txt` entry: one
+# artifact, one reason (this file has both — no date, pre-floor legacy).
+LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset(
+    {
+        "release-0-55-0-full-packet.md",
+        "release-0-55-1-packet.md",
+    }
+)
+_CRITIQUE_DATE_LINE = re.compile(r"^date:\s*(\d{4}-\d{2}-\d{2})\b")
+# Leading markdown/quote markup stripped before matching a typed token, so a
+# backtick-wrapped or bulleted value (`` `parent-delegated`. `` — the observed
+# in-corpus convention) still matches; mirrors `disposition_form._MARKDOWN_LEAD`.
+_LEADING_MARKUP_RE = re.compile(r"^[\s`*_\"'>\-]+")
+
 
 def changed_paths(repo_root: Path) -> list[str]:
     return git_changed_paths(repo_root, artifact_label="critique")
@@ -89,6 +131,39 @@ def has_repo_delegation_contract(repo_root: Path) -> bool:
         return False
     text = agents_path.read_text(encoding="utf-8").lower()
     return all(marker in text for marker in DELEGATION_CONTRACT_MARKERS)
+
+
+def _date_from_filename(path: Path) -> date | None:
+    """The leading ``YYYY-MM-DD`` of the artifact filename, ``None`` when absent."""
+    match = re.match(r"(\d{4}-\d{2}-\d{2})", path.name)
+    if not match:
+        return None
+    try:
+        return date.fromisoformat(match.group(1))
+    except ValueError:
+        return None
+
+
+def _date_from_body(text: str) -> date | None:
+    """The in-body ``Date: YYYY-MM-DD`` line (first 5 lines), ``None`` when absent."""
+    for line in text.splitlines()[:5]:
+        match = _CRITIQUE_DATE_LINE.match(line.strip().lower())
+        if match:
+            try:
+                return date.fromisoformat(match.group(1))
+            except ValueError:
+                return None
+    return None
+
+
+def critique_observed_date(path: Path, text: str) -> date | None:
+    """The artifact's effective date for grandfathering: the in-body ``Date:``
+    line, else the leading ``YYYY-MM-DD`` of the filename — same fallback order
+    as ``validate_retro_artifact._retro_observed_date``. ``None`` when neither is
+    parseable. Callers must NOT treat ``None`` as fail-open by default: only the
+    explicit ``LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS`` allowlist is grandfathered
+    on absence; every other undatable artifact is enforced as if post-cutoff."""
+    return _date_from_body(text) or _date_from_filename(path)
 
 
 def fresh_eye_satisfaction_status(text: str) -> str | None:
@@ -261,6 +336,25 @@ def _section_field_map(text: str, heading: str) -> dict[str, str]:
     return fields
 
 
+def has_typed_fresh_eye_value(status_lowered: str) -> bool:
+    """Whether ``status_lowered`` opens with one of the typed fresh-eye tokens
+    (after stripping backtick/quote/bullet markup) AND the remainder is not
+    still an unedited placeholder. Presence/form only — it proves the artifact
+    committed to a falsifiable observer claim *type*, never whether that
+    delegation actually happened (that stays reviewer judgment, same boundary
+    as `disposition_form`'s enum checks). The `todo`-in-remainder rejection is
+    the narrow exception: a scaffolded `parent-delegated (TODO confirm ...)`
+    is not a claim at all, it is a stub the author never touched — accepting
+    it would let an unedited default silently satisfy the floor (the exact
+    same-observer rubber stamp, #386, this floor exists to stop)."""
+    token = _LEADING_MARKUP_RE.sub("", status_lowered)
+    matched = next((value for value in FRESH_EYE_TYPED_VALUES if token.startswith(value)), None)
+    if matched is None:
+        return False
+    remainder = token[len(matched) :]
+    return FRESH_EYE_TODO_MARKER not in remainder
+
+
 def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
     fields = _section_field_map(text, REVIEWER_TIER_HEADING)
     missing = [field for field in REVIEWER_TIER_REQUIRED_FIELDS if not fields.get(field)]
@@ -285,6 +379,33 @@ def validate_critique_artifact(
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
     status_lowered = status.lower() if status is not None else ""
+    observed_date = critique_observed_date(path, text)
+
+    def _check_fresh_eye_typed_presence() -> None:
+        # Grandfather is narrow, not fail-open: a dated artifact before the
+        # cutoff is grandfathered; an undatable artifact is grandfathered ONLY
+        # by the explicit legacy allowlist. Every other undatable artifact —
+        # including any new artifact that never picks up a `Date:` line or a
+        # dated filename — is enforced exactly as if dated post-cutoff, since
+        # an undatable NEW artifact is itself the anomaly, not a safe default.
+        if observed_date is not None and observed_date < FRESH_EYE_PRESENCE_RULE_DATE:
+            return
+        if observed_date is None and path.name in LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS:
+            return
+        # floor-addition-restraint: irreversible-boundary P4 floor, typed-presence-only
+        if not status_lowered:
+            raise ValidationError(
+                f"{path}: critique artifact has no `Fresh-eye satisfaction:` line; every "
+                f"critique artifact must record one of {FRESH_EYE_TYPED_VALUES_SUMMARY} — an "
+                "omitted line otherwise skips every distinct-observer check below (the #386 "
+                "same-observer rubber stamp in file form)."
+            )
+        if not has_typed_fresh_eye_value(status_lowered):
+            raise ValidationError(
+                f"{path}: `Fresh-eye satisfaction` value `{status_lowered[:80]}` does not open with "
+                f"one of the typed values {FRESH_EYE_TYPED_VALUES_SUMMARY}, or still carries an "
+                "unedited `todo` after the typed value — either way it is not a real record."
+            )
 
     def _check_forbidden_blocker_phrases() -> None:
         if not repo_has_delegation_contract:
@@ -313,6 +434,7 @@ def validate_critique_artifact(
             validate_reviewer_tier_evidence(path, text)
 
     checks = (
+        _check_fresh_eye_typed_presence,
         _check_forbidden_blocker_phrases,
         _check_blocked_signal_detail,
         lambda: validate_structured_findings(path, text),

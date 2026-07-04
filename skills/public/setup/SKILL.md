@@ -88,13 +88,10 @@ Then load only the references needed for the detected state:
 2. Stabilize the host-facing instruction surface first.
    - for a narrow "host docs only" or "AGENTS.md only" request, run
      `normalize_host_docs.py --repo-root .` as the dry-run plan, then rerun with
-     `--execute` only after that narrow host-docs path is the intended mutation
-     so the deterministic AGENTS/CLAUDE cases stay intact instead of
-     hand-writing only one file
-   - if both `<repo-root>/AGENTS.md` and `CLAUDE.md` are missing, create `<repo-root>/AGENTS.md` and
-     make `CLAUDE.md` a symlink to it
-   - if `<repo-root>/AGENTS.md` exists and `CLAUDE.md` is missing, create the symlink
-   - if `CLAUDE.md` already symlinks to `<repo-root>/AGENTS.md`, keep it
+     `--execute` only after that narrow host-docs path is the intended
+     mutation; its `actions`/`blocked` output owns every deterministic
+     AGENTS/CLAUDE create-or-keep-symlink case, so do not hand-write those
+     cases in prose
    - if `CLAUDE.md` is a real file with meaningful content, stop and ask the
      user before promoting or merging it into `<repo-root>/AGENTS.md`
 3. Run a short ideation pass when needed.

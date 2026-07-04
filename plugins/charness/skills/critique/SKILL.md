@@ -23,12 +23,10 @@ When this standalone `critique` skill runs, it always means a fresh bounded
 subagent review. `bounded` limits scope and time box, not execution mode. There
 is no same-agent or local standalone `critique` variant.
 
-Delegated reviewer fast path: if the current assignment says you are a bounded
-angle reviewer, counterweight reviewer, or fresh-eye reviewer spawned by a
-parent, perform that assigned lens directly and return the requested triage.
-Do not run host capability checks or require nested spawn access.
-Do not report blocked for missing nested subagents unless the parent asked for recursion.
-Honor `<repo-root>/AGENTS.md` `Subagent Delegation` — required bounded review is already delegated — and consult `../../shared/references/fresh-eye-subagent-review.md` before treating the canonical path as blocked.
+Delegated reviewer fast path: if you are a bounded angle/counterweight/fresh-eye
+reviewer spawned by a parent, see
+`../../shared/references/disposition-reviewer-brief.md` *Delegated Reviewer
+Fast Path* before treating the canonical path as blocked.
 
 Caller contract:
 

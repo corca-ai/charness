@@ -727,3 +727,89 @@ def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(
     payload = _evaluate(repo)
     assert _returncode(payload) == 1
     assert payload["violations"][0]["rule"] == "portable_helper_path_ambiguity"
+
+
+def test_skill_ergonomics_gate_fails_when_opted_in_argparse_missing_help_rule_matches(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    scripts_dir = repo / "skills" / "public" / "demo" / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - argparse_missing_help",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (scripts_dir / "run_demo.py").write_text(
+        "\n".join(
+            [
+                "import argparse",
+                "",
+                "parser = argparse.ArgumentParser()",
+                "parser.add_argument('--workspace')",
+                "parser.add_argument('--verbose', help='Print extra diagnostics.')",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 1
+    assert payload["violations"][0]["rule"] == "argparse_missing_help"
+    assert payload["violations"][0]["findings"][0]["path"] == "skills/public/demo/scripts/run_demo.py"
+    assert payload["checked_skills"][0]["argparse_missing_help_count"] == 1
+
+
+def test_skill_ergonomics_gate_passes_argparse_missing_help_rule_when_all_args_documented(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    scripts_dir = repo / "skills" / "public" / "demo" / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - argparse_missing_help",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (scripts_dir / "run_demo.py").write_text(
+        "\n".join(
+            [
+                "import argparse",
+                "",
+                "parser = argparse.ArgumentParser()",
+                "parser.add_argument(",
+                "    '--workspace',",
+                "    help='Workspace id the run targets.',",
+                ")",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _evaluate(repo)
+    assert _returncode(payload) == 0
+    assert payload["violations"] == []

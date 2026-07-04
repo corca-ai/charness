@@ -26,6 +26,7 @@ def _load(name: str):
 
 _POST_CREATE = _load("publish_release_post_create")
 _EXECUTE = _load("publish_release_execute")
+_HELPERS = _load("publish_release_helpers")
 
 
 def _shell_result(returncode: int, stdout: str = "", stderr: str = ""):
@@ -112,6 +113,79 @@ def test_observer_never_uses_gh_release_view() -> None:
     )
 
 
+# --- north-star finding: same-proxy probe is mechanically flagged, not `confirmed` --
+
+
+def test_observer_flags_probe_matching_release_view_shape_as_same_proxy() -> None:
+    def run_shell_never_called(*_args, **_kwargs):
+        raise AssertionError("a same-proxy-flagged probe must never be run")
+
+    payload: dict = {}
+    backend = {"id": "gh", "commands": None}
+    _POST_CREATE.confirm_release_via_distinct_channel(
+        Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": "gh release view {tag}"},
+        run_shell=run_shell_never_called, tag_name="v1.2.3", expected_release_url="https://x/v1.2.3",
+        backend=backend, backend_command=_HELPERS.backend_command,
+    )
+    record = payload["distinct_channel_verification"]
+    assert record["status"] == "same-proxy-flagged"
+    assert record["status"] != "confirmed"
+
+
+def test_observer_confirms_genuinely_distinct_probe_with_backend_supplied() -> None:
+    calls: list[str] = []
+
+    def fake_run_shell(command, *, cwd, check):
+        calls.append(command)
+        return _shell_result(0)
+
+    payload: dict = {}
+    backend = {"id": "gh", "commands": None}
+    _POST_CREATE.confirm_release_via_distinct_channel(
+        Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": "distinct-channel-probe {tag}"},
+        run_shell=fake_run_shell, tag_name="v1.2.3", expected_release_url="https://x/v1.2.3",
+        backend=backend, backend_command=_HELPERS.backend_command,
+    )
+    assert payload["distinct_channel_verification"]["status"] == "confirmed"
+    assert calls == ["distinct-channel-probe v1.2.3"]
+
+
+def test_observer_flags_probe_matching_custom_backend_release_view_shape() -> None:
+    # Data-driven: the check derives the forbidden shape from THIS backend's own
+    # `release_view` template, not a hardcoded `gh release view` string.
+    backend = {"id": "custom-release", "commands": {"release_view": ["custom-release", "release", "view", "{tag}"]}}
+
+    def run_shell_never_called(*_args, **_kwargs):
+        raise AssertionError("a same-proxy-flagged probe must never be run")
+
+    payload: dict = {}
+    _POST_CREATE.confirm_release_via_distinct_channel(
+        Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": "custom-release release view {tag}"},
+        run_shell=run_shell_never_called, tag_name="v9", expected_release_url="https://x/v9",
+        backend=backend, backend_command=_HELPERS.backend_command,
+    )
+    assert payload["distinct_channel_verification"]["status"] == "same-proxy-flagged"
+
+
+def test_observer_without_backend_kwargs_skips_the_same_proxy_check() -> None:
+    # Back-compat: the mechanical check activates only when a caller supplies
+    # `backend`/`backend_command` (every production call site now does). Callers
+    # that omit them keep the pre-fix behavior instead of silently misbehaving.
+    calls: list[str] = []
+
+    def fake_run_shell(command, *, cwd, check):
+        calls.append(command)
+        return _shell_result(0)
+
+    payload: dict = {}
+    _POST_CREATE.confirm_release_via_distinct_channel(
+        Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": "gh release view {tag}"},
+        run_shell=fake_run_shell, tag_name="v1", expected_release_url="https://x/v1",
+    )
+    assert payload["distinct_channel_verification"]["status"] == "confirmed"
+    assert calls == ["gh release view v1"]
+
+
 # --- integration wiring: refuse on silence, proceed on presence -----------
 
 
@@ -148,7 +222,7 @@ def test_wiring_refuses_issue_close_on_silent_observer() -> None:
     def silent_observer(repo_root, payload, **kwargs):
         return None  # records NOTHING — simulates a regression that skips the observer
 
-    args = SimpleNamespace(remote="origin", close_issue=[])
+    args = SimpleNamespace(remote="origin", close_issue=[], close_issue_behavior=[])
     cli = _base_cli(silent_observer, recorder)
     with pytest.raises(SystemExit, match="rung-1 floor refused issue closeout"):
         _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
@@ -162,7 +236,7 @@ def test_wiring_proceeds_to_issue_close_on_recorded_disposition() -> None:
     def disposing_observer(repo_root, payload, **kwargs):
         payload["distinct_channel_verification"] = {"channel": "none", "status": "skipped", "reason": "x"}
 
-    args = SimpleNamespace(remote="origin", close_issue=[44])
+    args = SimpleNamespace(remote="origin", close_issue=[44], close_issue_behavior=["Behavior #44: x"])
     cli = _base_cli(disposing_observer, recorder)
     _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
     # F2a: a typed disposition (not a confirmation) still advances the close.

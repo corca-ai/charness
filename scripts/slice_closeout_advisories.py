@@ -300,11 +300,15 @@ def over_slice_run(repo_root: Path) -> tuple[int, int]:
 
 # --- floor-addition restraint nudge (spec achieve-efficiency, follow-up:floor- ---
 # addition-restraint-nudge). A conservative before/after detector: it fires only
-# when a diff ADDS a new blocking floor (a new `report["ok"] = False` site, or a
-# new member in a REQUIRED_*/_SECTIONS/_EVIDENCE_NAMES set) without a recorded
-# Floor-Addition Restraint call. Deliberately conservative (a probe): exotic floor
-# shapes may not be caught — better a missed nudge than a false one that trains
-# token-theater, and a *blocking* gate is rejected as the exact reflex D names.
+# when a diff ADDS a new blocking floor (a new `report["ok"] = False` site, a
+# new member in a REQUIRED_*/_SECTIONS/_EVIDENCE_NAMES set, or a brand-new
+# scripts/check_*.py / scripts/validate_*.py gate script FILE — the gate-script
+# mass grew 259->270 files between 2026-06-20 and 2026-07-04 while the two
+# content-shape detectors above stayed silent on any new file whose body never
+# matches their patterns) without a recorded Floor-Addition Restraint call.
+# Deliberately conservative (a probe): exotic floor shapes may not be caught —
+# better a missed nudge than a false one that trains token-theater, and a
+# *blocking* gate is rejected as the exact reflex D names.
 # Anchored to line-start-after-indentation so it counts only an actual assignment
 # STATEMENT — a `report["ok"] = False` mentioned mid-line in a comment, docstring,
 # or print string (including this module's own) is not a floor and is not counted.
@@ -322,6 +326,12 @@ _FLOOR_SET_NEGATIVE = ("OPTIONAL", "ADVISORY", "EXEMPT", "NARRATION", "RECORDED_
 _RESTRAINT_MARKER = re.compile(
     r"^[\s>#*-]*floor[- ]addition[- ]restraint\s*:\s*\S", re.IGNORECASE | re.MULTILINE
 )
+# A brand-new top-level gate script is floor-addition on its own, independent of
+# its internal shape — a `sys.exit`-style gate never trips the content detectors
+# above. Scoped to `scripts/` (not `scripts/**/`) to match the two documented
+# naming families; a nested gate helper under a subpackage is a different,
+# unlisted shape and is intentionally left to the conservative-probe miss.
+_GATE_SCRIPT_NAME = re.compile(r"^scripts/(?:check|validate)_[A-Za-z0-9_]+\.py$")
 
 
 def _is_floor_set_name(name: str) -> bool:
@@ -379,6 +389,23 @@ def detect_new_floors(base_text: str, new_text: str, path: str) -> list[dict]:
     return findings
 
 
+def new_gate_script_findings(repo_root: Path, changed_paths: list[str], base: str) -> list[dict]:
+    """Findings for a brand-new ``scripts/check_*.py`` / ``scripts/validate_*.py``
+    FILE — a new gate script is floor-addition even when its body never matches
+    the `report["ok"] = False` / REQUIRED_* shape `detect_new_floors` scans for.
+    Complements that content-diff detector rather than replacing it: editing an
+    EXISTING gate file stays covered above; this covers the file's existence."""
+    candidates = [p for p in changed_paths if _GATE_SCRIPT_NAME.match(p)]
+    if not candidates:
+        return []
+    added = sorted(set(_added_vs_base(repo_root, candidates, base=base)))
+    return [
+        {"path": path, "kind": "new_gate_script",
+         "detail": "new gate script file (scripts/check_*.py or scripts/validate_*.py)"}
+        for path in added
+    ]
+
+
 def restraint_call_recorded(added_text: str) -> bool:
     """True when added diff lines carry a `Floor-Addition Restraint:` colon-form
     call (a line or `# floor-addition-restraint:` comment), not a bare mention."""
@@ -395,10 +422,23 @@ def _added_diff_lines(repo_root: Path, base: str, paths: list[str]) -> str:
         return ""
     res = subprocess.run(["git", "diff", "--unified=0", base, "--", *paths],
                          cwd=repo_root, capture_output=True, text=True)
-    if res.returncode != 0:
-        return ""
-    return "\n".join(line[1:] for line in res.stdout.splitlines()
-                     if line.startswith("+") and not line.startswith("+++"))
+    diff_added = ""
+    if res.returncode == 0:
+        diff_added = "\n".join(line[1:] for line in res.stdout.splitlines()
+                               if line.startswith("+") and not line.startswith("+++"))
+    # `git diff` is blind to an UNTRACKED file (no baseline to diff against) even
+    # once it is a real `changed_paths` entry (collect_changed_paths includes
+    # `ls-files --others`) — a same-file restraint marker in a brand-new,
+    # not-yet-staged gate script would otherwise never be seen, false-firing the
+    # advisory this rule exists to avoid. Read such a file's raw content instead;
+    # every line in it is "added" by definition.
+    new_texts = []
+    for path in _added_vs_base(repo_root, paths, base=base):
+        try:
+            new_texts.append((repo_root / path).read_text(encoding="utf-8"))
+        except OSError:
+            continue
+    return "\n".join([diff_added, *new_texts])
 
 
 def advise_floor_addition_restraint(repo_root: Path, changed_paths: list[str], base: str = "origin/main") -> None:
@@ -419,6 +459,7 @@ def advise_floor_addition_restraint(repo_root: Path, changed_paths: list[str], b
         except OSError:
             continue
         findings.extend(detect_new_floors(_git_show(repo_root, f"{base}:{path}"), new_text, path))
+    findings.extend(new_gate_script_findings(repo_root, changed_paths, base))
     if not findings:
         return
     marker_paths = [p for p in changed_paths if p != _FLOOR_RESTRAINT_RULE_DOC]

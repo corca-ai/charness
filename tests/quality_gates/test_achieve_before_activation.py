@@ -10,10 +10,22 @@ def _norm(path: Path) -> str:
     return " ".join(path.read_text(encoding="utf-8").split())
 
 
+# lifecycle.md was split by phase (lifecycle-before.md / lifecycle-during.md /
+# lifecycle-after.md, plus a thin lifecycle.md index); these tests pin phrases
+# from across all three phases against one `lifecycle` string, so read the
+# full split contract back as one normalized string to keep every existing
+# assertion valid regardless of which phase file now carries the phrase.
+_LIFECYCLE_FILES = ("lifecycle.md", "lifecycle-before.md", "lifecycle-during.md", "lifecycle-after.md")
+
+
+def _lifecycle_full() -> str:
+    return " ".join(_norm(ACHIEVE / "references" / name) for name in _LIFECYCLE_FILES)
+
+
 def test_achieve_before_phase_pins_mode_disambiguation_question() -> None:
     """#239: ambiguous mode (artifact-only vs implementation-continuation) gets a question."""
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
 
     # The mode-ambiguity question rule is stated in the skill body. (The bare
     # word "mode" is intentionally avoided in the SKILL.md body to satisfy the
@@ -30,7 +42,7 @@ def test_achieve_before_phase_pins_mode_disambiguation_question() -> None:
 def test_achieve_before_phase_pins_activation_closeout_clarity() -> None:
     """#239: the activation line + inert-until-/goal status must be impossible to miss."""
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
 
     # The skill body names the closeout shape (Goal file: / Activation: / inert).
     assert "`Goal file:`" in skill
@@ -46,7 +58,7 @@ def test_goal_activation_is_pursue_only_and_failfast() -> None:
     `/goal` fail-fasts on an unshaped goal instead of shaping it. Pin the contract
     on both surfaces so it cannot silently regress to shape-then-run."""
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
 
     # /goal pursues only; the lifecycle states it verbatim.
     assert "pure pursue" in lifecycle
@@ -60,7 +72,7 @@ def test_goal_activation_is_pursue_only_and_failfast() -> None:
 def test_consequential_defaults_need_discussion_before_activation() -> None:
     """Structural pursue-readiness cannot hide operator decisions."""
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
 
     assert "Discuss before activation:" in skill
     assert "Discuss before activation:" in lifecycle
@@ -77,7 +89,7 @@ def test_consequential_defaults_need_discussion_before_activation() -> None:
 def test_host_goal_completion_is_downstream_of_artifact_closeout() -> None:
     """#268: host green status cannot replace the checked goal artifact floor."""
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
 
     assert "before any host-level goal completion" in skill
     assert "Status: complete" in skill
@@ -93,7 +105,7 @@ def test_drafting_does_not_consume_host_goal_slot() -> None:
     Pin it on the skill, lifecycle, and adapter-contract surfaces so it cannot
     silently regress back to draft-consumes-slot friction."""
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
     adapter = _norm(ACHIEVE / "references" / "adapter-contract.md")
 
     # SKILL.md core names the rule and the pursue-only consumption point.
@@ -113,7 +125,7 @@ def test_drafting_does_not_consume_host_goal_slot() -> None:
 
 def test_long_goal_efficiency_contract_is_explicit() -> None:
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
     artifact = _norm(ACHIEVE / "references" / "goal-artifact.md")
 
     assert "Active Operating Frame" in skill
@@ -129,7 +141,7 @@ def test_long_goal_efficiency_contract_is_explicit() -> None:
 
 def test_timebox_goal_contract_is_explicit() -> None:
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
     artifact = _norm(ACHIEVE / "references" / "goal-artifact.md")
 
     assert "Timebox:" in skill and "Timebox:" in lifecycle and "Timebox:" in artifact
@@ -149,7 +161,7 @@ def test_external_side_effect_approval_is_phase_scoped() -> None:
     and the goal-artifact template's ## Boundaries seed.
     """
     skill = _norm(ACHIEVE / "SKILL.md")
-    lifecycle = _norm(ACHIEVE / "references" / "lifecycle.md")
+    lifecycle = _lifecycle_full()
     template = _norm(ACHIEVE / "scripts" / "goal_artifact_template.md")
 
     # (1) Phase/bundle-scoped approval that does not carry forward.

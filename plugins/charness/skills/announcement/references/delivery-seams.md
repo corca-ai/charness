@@ -204,3 +204,61 @@ literal.
 The resolver still emits warnings for miswired chaining, but the load-bearing
 machine signal is `delivery_contract.status`: `thread_reply` configurations are
 either executable or explicitly draft-only before any backend post is attempted.
+
+## Post-Delivery Verification
+
+`human-backend` delivery is the only announcement delivery kind that writes to
+a system this repo does not control (Slack, a chat backend, etc.). `none`
+(draft only) and `release-notes` (a checked-in, git-reversible file) are
+outside this floor.
+
+`scripts/record_announcement.py` refuses to append a `human-backend` record
+until a verification is recorded: a `confirmed` status, or a typed
+non-`verified` disposition (`not-confirmed`, `blocked-needs-capability`,
+`skipped`) -- never absent. This reuses the release skill's rung-2
+distinct-channel verdict vocabulary verbatim, from the authoring-repo-internal
+`skills/public/release/scripts/publish_release_post_create.py`, so the same
+status means the same thing everywhere in the harness. A `confirmed` verdict
+and a typed non-`verified` disposition satisfy the floor equally; the floor
+forces the question, it never demands a fake confirmation.
+
+Two ways to produce the verification:
+
+1. **Adapter-declared readback probe.** Set `post_delivery_readback_probe` to
+   a shell command template. `{delivery_target}` and `{delivery_handle}` are
+   substituted before it runs (after delivery, as a check distinct from the
+   post itself). Exit 0 records `confirmed`; a nonzero exit records
+   `not-confirmed` with the command's stderr/stdout tail as `reason`. Example:
+
+   ```yaml
+   post_delivery_readback_probe: "slack-cli chat history --channel {delivery_target} --ts {delivery_handle}"
+   ```
+
+2. **Manual typed disposition.** When no probe is declared, pass
+   `--verification-status`, `--verification-channel`, and
+   `--verification-reason` to `record_announcement.py` by hand, choosing one
+   of the four typed statuses above. This is the expected path for a
+   backend without a cheap readback (or when the agent already confirmed the
+   post visually). Every status except `confirmed` requires a non-empty
+   `--verification-reason` -- `skipped`/`not-confirmed`/`blocked-needs-capability`
+   are dispositions, not shrugs.
+
+When both a probe template and manual flags are supplied, the probe's verdict
+wins; the manual flags are the fallback, not an override.
+
+`--delivery-kind` is not free-form self-attestation: it accepts only `none`,
+`release-notes`, `human-backend` (case-insensitive; the deprecated `command`
+alias normalizes to `human-backend`), and when the resolved adapter declares
+`delivery_kind: human-backend`, a record whose `--delivery-kind` disagrees is
+refused naming both values -- closing the loophole where a delivering agent
+understates the kind to dodge the floor above. When the adapter cannot be
+resolved at record time, the CLI falls back to `choices=`-validated trust and
+records that fact (`delivery_kind_check.adapter_resolved: false`) rather than
+silently skipping the cross-check.
+
+The recorded record carries `delivery_handle` (opaque, backend-defined --
+the same string chaining uses, see Chaining Outputs), a `verification`
+object `{channel, status, reason?}`, and a `delivery_kind_check` object
+recording the adapter cross-check outcome. Closeout should render from this
+verification-carrying record, not from `delivery_kind`/`delivery_target`
+alone.

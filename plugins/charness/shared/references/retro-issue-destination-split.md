@@ -105,7 +105,7 @@ structural-follow-up **destination**. This shared section is the single source o
 that vocabulary: `retro` records it per transferable waste item, `achieve`'s
 disposition review classifies it, and the achieve disposition gate (rung 1e in
 `goal_artifact_disposition.py`) enforces a valid form is present. The inline
-four-form list in achieve `lifecycle.md` (rung 1e) is a display copy for the gate
+four-form list in achieve `lifecycle-after.md` (rung 1e) is a display copy for the gate
 contract, not a second source — it points here. One vocabulary, four forms:
 
 - `applied: <gate/hook/validator/test/contract change>` — teeth landed this run.

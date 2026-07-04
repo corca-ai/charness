@@ -95,7 +95,7 @@ the gather/release rule landing date; issue closeout and phase routing each
 apply on or after their own landing dates. They are operator-side cues
 `achieve` plans into the artifact — `impl`, `debug`, `quality`, `gather`,
 `release`, and `issue` stay useful standalone, with no `achieve`-only branch. See
-`references/lifecycle.md` After-phase for the full contract.
+`references/lifecycle-after.md` for the full contract.
 
 ## Activation
 

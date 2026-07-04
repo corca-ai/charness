@@ -118,7 +118,10 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # current target. The original attempt already passed the file-triggered
     # adapter/real-host preflights on this unchanged worktree, so resume re-runs the
     # gates that can flake at push time, not those one-time file-delta checks.
-    cli.preflight_release_issues(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run)
+    cli.preflight_release_issues(
+        repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
+        behavior_lines=args.close_issue_behavior,
+    )
     payload["requested_review_gate"] = _runtime.timed(
         payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
     )
@@ -181,6 +184,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         lambda: cli.confirm_release_via_distinct_channel(
             repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
             tag_name=tag_name, expected_release_url=expected_release_url,
+            backend=backend, backend_command=cli.backend_command,
         ),
     )
     if not cli.evaluate_release_distinct_channel(payload)["ok"]:
@@ -195,7 +199,8 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         payload,
         "issue_closeout",
         lambda: cli.ensure_release_issues_closed(
-            repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run
+            repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
+            behavior_lines=args.close_issue_behavior,
         ),
     )
     # A resumed publish is still a verified publish: auto-run the adapter-declared

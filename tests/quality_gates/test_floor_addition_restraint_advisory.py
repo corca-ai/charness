@@ -2,9 +2,10 @@
 follow-up:floor-addition-restraint-nudge).
 
 A non-blocking advisory that flags a new blocking floor (a new
-`report["ok"] = False` site, or a new REQUIRED_*/_SECTIONS/_EVIDENCE_NAMES
-member) added without a recorded Floor-Addition Restraint call. Both polarities
-are demonstrable: it fires on a synthetic new-floor diff and stays silent on an
+`report["ok"] = False` site, a new REQUIRED_*/_SECTIONS/_EVIDENCE_NAMES member,
+or a brand-new scripts/check_*.py / scripts/validate_*.py gate script FILE)
+added without a recorded Floor-Addition Restraint call. Both polarities are
+demonstrable: it fires on a synthetic new-floor diff and stays silent on an
 unchanged diff or when the restraint call is recorded.
 """
 from __future__ import annotations
@@ -90,6 +91,17 @@ def test_restraint_call_recorded_distinguishes_call_from_mention() -> None:
     assert not adv.restraint_call_recorded("record the call (a `Floor-Addition Restraint:` line in the commit)")
 
 
+def test_gate_script_name_pattern_scoped_to_top_level_scripts() -> None:
+    assert adv._GATE_SCRIPT_NAME.match("scripts/check_widget.py")
+    assert adv._GATE_SCRIPT_NAME.match("scripts/validate_widget.py")
+    # "checker_" is not the "check_" prefix the two documented families use
+    assert not adv._GATE_SCRIPT_NAME.match("scripts/checker_widget.py")
+    # scoped to top-level scripts/ only — a nested gate helper is a different,
+    # unlisted shape left to the conservative-probe miss (see module comment)
+    assert not adv._GATE_SCRIPT_NAME.match("scripts/subdir/check_widget.py")
+    assert not adv._GATE_SCRIPT_NAME.match("skills/public/quality/scripts/check_widget.py")
+
+
 # --- git integration: both polarities -----------------------------------------
 
 
@@ -139,6 +151,73 @@ def test_advise_silent_when_no_new_floor(tmp_path: Path, capsys) -> None:
     assert capsys.readouterr().err == ""
 
 
+def test_new_gate_script_findings_ignores_non_matching_new_file(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/helper_widget.py").write_text("def helper():\n    return 1\n", encoding="utf-8")
+    assert adv.new_gate_script_findings(tmp_path, ["scripts/helper_widget.py"], base="HEAD") == []
+
+
+def test_new_gate_script_findings_detects_new_check_and_validate_files(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/check_widget.py").write_text("x = 1\n", encoding="utf-8")
+    (tmp_path / "scripts/validate_widget.py").write_text("x = 1\n", encoding="utf-8")
+    findings = adv.new_gate_script_findings(
+        tmp_path, ["scripts/check_widget.py", "scripts/validate_widget.py"], base="HEAD"
+    )
+    assert {f["path"] for f in findings} == {"scripts/check_widget.py", "scripts/validate_widget.py"}
+    assert all(f["kind"] == "new_gate_script" for f in findings)
+
+
+def test_new_gate_script_findings_silent_when_file_already_existed(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/check_widget.py").write_text("x = 1\n", encoding="utf-8")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "add existing gate script")
+    assert adv.new_gate_script_findings(tmp_path, ["scripts/check_widget.py"], base="HEAD") == []
+
+
+def test_advise_fires_on_new_gate_script_with_no_floor_shaped_content(tmp_path: Path, capsys) -> None:
+    # a sys.exit-style gate never trips report["ok"]=False / REQUIRED_* — the
+    # file's EXISTENCE as a new check_*.py is the thing this detector adds.
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/check_widget.py").write_text(
+        "import sys\ndef main():\n    print('bad')\n    sys.exit(1)\n", encoding="utf-8"
+    )
+    adv.advise_floor_addition_restraint(tmp_path, ["scripts/check_widget.py"], base="HEAD")
+    err = capsys.readouterr().err
+    assert "new blocking floor added without a recorded Floor-Addition Restraint call" in err
+    assert "new gate script file" in err
+
+
+def test_advise_silent_new_gate_script_with_recorded_call(tmp_path: Path, capsys) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/check_widget.py").write_text(
+        "# floor-addition-restraint: single recurrence; advisory was not enough\n"
+        "import sys\ndef main():\n    sys.exit(1)\n", encoding="utf-8"
+    )
+    adv.advise_floor_addition_restraint(tmp_path, ["scripts/check_widget.py"], base="HEAD")
+    assert capsys.readouterr().err == ""
+
+
+def test_advise_silent_for_non_gate_named_new_script(tmp_path: Path, capsys) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/helper_widget.py").write_text("def helper():\n    return 1\n", encoding="utf-8")
+    adv.advise_floor_addition_restraint(tmp_path, ["scripts/helper_widget.py"], base="HEAD")
+    assert capsys.readouterr().err == ""
+
+
+def test_advise_silent_when_gate_script_edit_is_not_new(tmp_path: Path, capsys) -> None:
+    # editing an EXISTING gate script must not trip the new-FILE detector; a new
+    # floor inside it (if any) is the content-diff detector's job, not this one.
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/check_widget.py").write_text("def main():\n    return 0\n", encoding="utf-8")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "add existing gate script")
+    (tmp_path / "scripts/check_widget.py").write_text("def main():\n    print('v2')\n    return 0\n", encoding="utf-8")
+    adv.advise_floor_addition_restraint(tmp_path, ["scripts/check_widget.py"], base="HEAD")
+    assert capsys.readouterr().err == ""
+
+
 def test_balanced_segment_unbalanced_returns_to_end() -> None:
     # no matching close bracket -> the loop never hits depth 0 -> returns to EOF
     assert adv._balanced_segment("(no close here", 0) == "(no close here"
@@ -149,6 +228,20 @@ def test_git_show_and_added_diff_lines_degrade_off_git(tmp_path: Path) -> None:
     assert adv._added_diff_lines(tmp_path, "HEAD", []) == ""  # no paths -> ""
     # git diff against an unresolvable base in a non-repo -> returncode != 0 -> ""
     assert adv._added_diff_lines(tmp_path, "HEAD", ["x.py"]) == ""
+
+
+def test_added_diff_lines_skips_unreadable_added_path(tmp_path: Path) -> None:
+    # `_added_vs_base` only checks the BASE tree, so a path absent from HEAD but
+    # also never materialized on disk (e.g. added-then-deleted, or a caller
+    # naming a path that was never written) makes `read_text()` raise OSError
+    # inside the "added" loop -- it must `continue` past it rather than crash,
+    # and a sibling added path that DOES read cleanly still contributes.
+    _seed_repo(tmp_path)
+    (tmp_path / "scripts/marker.py").write_text(
+        "# floor-addition-restraint: recorded via a same-file addition\n", encoding="utf-8"
+    )
+    result = adv._added_diff_lines(tmp_path, "HEAD", ["scripts/marker.py", "scripts/ghost_missing.py"])
+    assert "floor-addition-restraint" in result
 
 
 def test_advise_skips_unreadable_source_file(tmp_path: Path, capsys) -> None:

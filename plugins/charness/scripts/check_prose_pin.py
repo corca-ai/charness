@@ -55,13 +55,20 @@ def _is_doc_path(path: str) -> bool:
     return path.endswith(DOC_SUFFIXES)
 
 
-def changed_status(repo_root: Path) -> list[tuple[str, str, str]]:
-    """``(status, old_path, new_path)`` rows for the uncommitted diff vs HEAD.
+def changed_status(repo_root: Path, *, staged: bool = False) -> list[tuple[str, str, str]]:
+    """``(status, old_path, new_path)`` rows for the diff vs HEAD.
 
     Rename detection (-M) is on, so a moved doc surfaces as an ``R`` row carrying
-    both the gone-away source and the destination.
+    both the gone-away source and the destination. ``staged=False`` (default)
+    diffs the working tree vs HEAD (this module's own authoring-time use);
+    ``staged=True`` diffs the staged index vs HEAD (``--cached``) -- what a
+    pre-commit gate is actually about to commit.
     """
-    out = _git(repo_root, "diff", "--name-status", "-M", "HEAD")
+    args = ["diff", "--name-status", "-M"]
+    if staged:
+        args.append("--cached")
+    args.append("HEAD")
+    out = _git(repo_root, *args)
     if out is None:
         return []
     rows: list[tuple[str, str, str]] = []

@@ -61,6 +61,7 @@ def test_inventory_skill_ergonomics_summary_keeps_review_payload_compact(tmp_pat
                 "package_dated_incident": 0,
                 "host_surface_reference": 0,
                 "reference_discoverability": 0,
+                "argparse_missing_help": 0,
             },
         }
     ]

@@ -81,10 +81,17 @@ accumulated debt rather than the gather change; repaired this session.
 
 ## Recommended Next Quality Moves
 
-- active dup-ratchet rotation churn — capability_needed=stop clone `family_id` rotation
-  from unrelated edits forcing repeated re-baselines; next_center=deferred-decision D30;
-  transformation=structural id-stability, not per-edit re-baseline; proof_boundary=a
-  release delta that edits scanned files yields 0 new families; enforcement_posture=advisory.
+- active dup-ratchet residual churn — capability_needed=stop conflating D30 (RESOLVED
+  2026-06-27, Slice 4) with its still-open residuals; next_center=D30's named residual
+  reopen triggers S4-Defer-1 (in-place comment/whitespace edits inside a duplicated
+  span still rotate the v1 rstrip-only fingerprint) and S4-Defer-3 (a membership-shrink
+  still forces a full re-baseline instead of a reduction diff), plus the accepted-corpus
+  shrink lever (refactor down the accepted clone-family baseline count instead of only
+  re-accepting more into it); transformation=token/comment-aware normalization for
+  S4-Defer-1, a subset-aware reduction diff for S4-Defer-3, or a corpus-reduction pass
+  on the largest accepted families; proof_boundary=an in-place comment edit or a
+  membership-shrink edit inside a duplicated span no longer forces `--write-baseline`;
+  enforcement_posture=advisory.
 - passive concept-boundary checkpoint (#414/#416/#408) — no gate yet because it is not
   yet designed; capability_needed=repo-owned producer/consumer boundary discipline;
   next_center=reference-compaction sweep; transformation=extend the existing portability

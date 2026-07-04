@@ -11,67 +11,14 @@ binary is on PATH.
 
 ## Adapter Field
 
-Set `issue_backend` in `.agents/issue-adapter.yaml`:
+Set `issue_backend` in `.agents/issue-adapter.yaml` to route through a
+host-mediated backend (e.g. `acme`) instead of the default `gh` CLI.
+`adapter.example.yaml` (ships with this skill) has a full worked
+`issue_backend` example wired to every required operation below. Seed a
+starting adapter file with:
 
-```yaml
-version: 1
-issue_backend:
-  id: acme-github
-  binary: acme
-  commands:
-    create:
-      - github
-      - issue
-      - create
-      - "-R"
-      - "{repo}"
-      - "--title"
-      - "{title}"
-      - "--body-file"
-      - "{body_file}"
-      - "--reason"
-      - "{reason}"
-      - "--json"
-    view:
-      - github
-      - issue
-      - view
-      - "-R"
-      - "{repo}"
-      - "{number}"
-      - "--json"
-      - "{json_fields}"
-    close:
-      - github
-      - issue
-      - close
-      - "-R"
-      - "{repo}"
-      - "{number}"
-      - "--reason"
-      - "{reason}"
-    comment:
-      - github
-      - issue
-      - comment
-      - "-R"
-      - "{repo}"
-      - "{number}"
-      - "--body-file"
-      - "{body_file}"
-      - "--reason"
-      - "{reason}"
-    search_newest_open:
-      - github
-      - issue
-      - list
-      - "-R"
-      - "{repo}"
-      - "--state"
-      - "open"
-      - "--limit"
-      - "1"
-      - "--json"
+```bash
+python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
 ```
 
 ## Defaults
@@ -184,8 +131,15 @@ declares `commands.comment` and `commands.close`):
 
 ```bash
 python3 "$SKILL_DIR/scripts/issue_tool.py" close-with-comment \
-  --repo <full_name> --number <n> --body-file <path>
+  --repo <full_name> --number <n> --body-file <path> --classification <classification>
 ```
+
+`--classification` drives a rung-1 presence floor (behavioral verdict or a typed
+non-verified disposition, resolution-critique binding, source preservation) that
+runs against `--body-file` before any GitHub mutation; a silent body is refused
+before the comment or close command is invoked. This mirrors `verify-closeout`'s
+existing checks so the manual-fallback carrier cannot mutate the issue on
+evidence-free text.
 
 Adapter templates for `comment` accept `{repo}`, `{number}`, `{body_file}`,
 and `{reason}` placeholders. Templates for `close` accept `{repo}`, `{number}`,

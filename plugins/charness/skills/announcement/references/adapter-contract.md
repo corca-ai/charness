@@ -39,6 +39,8 @@ Search order:
   Supported placeholders and Chaining Outputs)
 - `delivery_capability`
 - `format_rules_path`
+- `post_delivery_readback_probe` (optional rung-2 verification probe; see
+  `delivery-seams.md` Post-Delivery Verification)
 - `message_size_limit`
 - `public_body_shape`
 - `outputs`
@@ -66,6 +68,9 @@ Search order:
 - `delivery_capability`: empty string
 - `format_rules_path`: empty string (skill applies built-in baseline rules
   when the delivery seam targets a chat backend)
+- `post_delivery_readback_probe`: empty string. When unset, `human-backend`
+  delivery still requires a verification, recorded as a manual typed
+  disposition (see `delivery-seams.md` Post-Delivery Verification)
 - `message_size_limit`: `0` (disables splitting; positive integer enables
   per-message size-aware split)
 - `public_body_shape`: `chat_update` for ordinary human-backend or draft-only

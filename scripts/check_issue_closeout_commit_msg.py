@@ -11,10 +11,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-_CLOSE_RE = re.compile(
-    r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+"
-    r"(?:(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+))?#(?P<number>\d+)\b"
-)
 _CLASSIFICATION_RE = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?classification\s*:\s*"
     r"(?P<classification>bug|feature|deferred-work|question|decision-needed)\s*$"
@@ -71,13 +67,31 @@ def _strip_code_fences(body: str) -> str:
     return "\n".join(lines)
 
 
-def _issue_closeout_artifacts(repo_root: Path) -> list[dict[str, Any]]:
+def _bare_close_keyword_numbers(sanitized_body: str, covered: set[int], iter_refs: Any) -> list[int]:
+    """Issue numbers the commit message itself close-keywords, minus numbers
+    already covered by a staged closeout artifact.
+
+    GitHub auto-closes on a close keyword landing on the default branch
+    regardless of whether any ``charness-artifacts/issue/*.md`` was staged.
+    Re-keying the floor to this mechanism (not only the artifact-staging
+    convention) closes the escape where a bare ``Fixes #123`` commit message
+    auto-closes an issue with no floor anywhere. ``iter_refs`` is the shared
+    ``issue_verify_closeout.iter_close_keyword_refs`` scanner (covers the plain,
+    colon, and single-keyword comma-list close-keyword forms) so this module
+    keeps no second copy of the close-keyword regex.
+    """
+    plain = _strip_code_fences(sanitized_body)
+    found = {number for _repo, number in iter_refs(plain)}
+    return sorted(number for number in found if number not in covered)
+
+
+def _issue_closeout_artifacts(repo_root: Path, iter_refs: Any) -> list[dict[str, Any]]:
     artifacts: list[dict[str, Any]] = []
     for path in _staged_paths(repo_root):
         if not (path.startswith("charness-artifacts/issue/") and path.endswith(".md")):
             continue
         body = _strip_code_fences(_staged_file(repo_root, path))
-        numbers = sorted({int(match.group("number")) for match in _CLOSE_RE.finditer(body)})
+        numbers = sorted({number for _repo, number in iter_refs(body)})
         if not numbers:
             continue
         artifacts.append(
@@ -104,15 +118,40 @@ def _infer_classification(body: str) -> str:
     return "bug"
 
 
-def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any]:
-    artifacts = _issue_closeout_artifacts(repo_root)
-    if not artifacts:
-        return {"ok": True, "status": "not_applicable", "artifacts": []}
+def _bare_classification(body: str) -> str:
+    """Classification for a bare close-keyword commit message (no staged
+    artifact backing it).
 
+    Honors an explicit ``Classification:`` line exactly like
+    ``_infer_classification`` — that is a deliberate assertion, not inference.
+    Unlike ``_infer_classification`` it never falls through to the loose
+    ``decision:``/``answer:`` substring heuristic, which could otherwise hand a
+    bare commit the fully-exempt ``question``/``decision-needed`` classification
+    (skipping the behavioral-verdict and resolution-critique floors) on nothing
+    more than an incidental word in the message. Absent an explicit line, a bare
+    close keyword defaults to ``bug`` — the strictest classification — so the
+    floor stays live; only a staged closeout artifact may carry an *inferred*
+    ``question``/``decision-needed`` exemption.
+    """
+    explicit = _CLASSIFICATION_RE.search(body)
+    if explicit is not None:
+        return explicit.group("classification")
+    return "bug"
+
+
+def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any]:
     issue_verify_closeout = _load_issue_verify_closeout()
+    iter_refs = issue_verify_closeout.iter_close_keyword_refs
+    artifacts = _issue_closeout_artifacts(repo_root, iter_refs)
     commit_msg_file = commit_msg_file.resolve()
     raw_body = commit_msg_file.read_text(encoding="utf-8")
     sanitized_body = _strip_commit_comments(raw_body)
+    covered = {number for artifact in artifacts for number in artifact["numbers"]}
+    # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
+    bare_numbers = _bare_close_keyword_numbers(sanitized_body, covered, iter_refs)
+    if not artifacts and not bare_numbers:
+        return {"ok": True, "status": "not_applicable", "artifacts": []}
+
     sanitized_file = commit_msg_file.with_suffix(commit_msg_file.suffix + ".charness-closeout-body")
     sanitized_file.write_text(sanitized_body, encoding="utf-8")
     reports: list[dict[str, Any]] = []
@@ -130,6 +169,20 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
             report["carrier"] = "commit-msg"
             report["source_artifact"] = artifact["path"]
             reports.append(report)
+        if bare_numbers:
+            bare_report = issue_verify_closeout.verify_closeout(
+                repo_root=repo_root,
+                repo=repo,
+                numbers=bare_numbers,
+                classification=_bare_classification(sanitized_body),
+                carrier="pr-body",
+                backend={"id": "gh"},
+                body_file=sanitized_file,
+            )
+            bare_report["carrier"] = "commit-msg"
+            bare_report["source_artifact"] = None
+            bare_report["trigger"] = "bare-close-keyword"
+            reports.append(bare_report)
     finally:
         try:
             sanitized_file.unlink()
@@ -141,18 +194,23 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
         "ok": ok,
         "status": "verified" if ok else "failed",
         "artifacts": artifacts,
+        "bare_close_numbers": bare_numbers,
         "reports": reports,
     }
 
 
 def _format_failure(report: dict[str, Any]) -> str:
     lines = [
-        "charness commit-msg: issue closeout artifact is staged, but the commit message is not a valid closeout carrier.",
+        "charness commit-msg: this commit closes an issue (staged closeout artifact and/or a "
+        "GitHub close keyword in the message) without a valid closeout carrier.",
     ]
     for item in report.get("reports", []):
-        source = item.get("source_artifact", "<unknown>")
+        source = item.get("source_artifact")
         numbers = ", ".join(f"#{number}" for number in item.get("numbers", []))
-        lines.append(f"- {source}: {numbers}")
+        if source is None:
+            lines.append(f"- commit message close keyword (no staged closeout artifact): {numbers}")
+        else:
+            lines.append(f"- {source}: {numbers}")
         if item.get("missing_close_keywords"):
             missing = ", ".join(f"#{number}" for number in item["missing_close_keywords"])
             lines.append(f"  missing close keywords: {missing}")
@@ -171,7 +229,12 @@ def _format_failure(report: dict[str, Any]) -> str:
         provenance = item.get("ai_provenance", {})
         if provenance.get("applies") and not provenance.get("ok", True):
             lines.append("  missing `AI-provenance:` marker on the agent-authored carrier")
-    lines.append("Put the close keywords and closeout ledger in the commit body, or unstage the issue closeout artifact.")
+    lines.append(
+        "Put the close keywords and closeout ledger in the commit body, or unstage the issue "
+        "closeout artifact. If a close keyword above has no staged artifact and you do not want "
+        "to carry the full closeout ledger in this commit, rewrite the keyword to a bare `#N` "
+        "reference (e.g. `close #123` -> `#123`) so GitHub does not auto-close the issue on push."
+    )
     return "\n".join(lines)
 
 

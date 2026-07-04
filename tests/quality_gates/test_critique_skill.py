@@ -34,6 +34,9 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     handoff_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(
         encoding="utf-8"
     )
+    reviewer_brief_text = (
+        ROOT / "skills" / "shared" / "references" / "disposition-reviewer-brief.md"
+    ).read_text(encoding="utf-8")
 
     assert "counterweight" in skill_text
     assert "Deliberately Not Doing" in skill_text
@@ -61,8 +64,11 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "`host signal:` or `tool signal:`" in capability_text
     assert "wrong next action" in handoff_text
     assert "likely implementer misread" in SPEC_SKILL
+    # The delegated-reviewer fast path body was relocated to the shared
+    # reviewer brief (#12); critique's SKILL.md keeps a one-line pointer.
     assert "Delegated reviewer fast path" in skill_text
-    assert "Do not report blocked for missing nested subagents" in skill_text
+    assert "disposition-reviewer-brief.md" in skill_text
+    assert "Do not report blocked for missing nested subagents" in reviewer_brief_text
     assert "First branch for delegated reviewers" in capability_text
     assert "do not run this capability check" in capability_text
     assert "return the requested findings or triage" in capability_text
@@ -258,6 +264,16 @@ def test_critique_artifact_validator_requires_reviewer_tier_evidence_when_packet
         "\n".join(
             [
                 "# Demo Critique",
+                "",
+                # A pre-cutoff `Date:` line grandfathers this artifact via the
+                # general date path, so the fresh-eye typed-presence floor is
+                # a no-op here and this fixture stays isolated to the
+                # packet-consumed -> reviewer-tier-evidence requirement it
+                # actually tests. Without a date, this filename (`demo.md`) is
+                # an undatable, unlisted artifact, which fails-closed under
+                # the fresh-eye floor before this fixture's real assertion
+                # ever runs (the adversarial-review fix).
+                "Date: 2026-06-01",
                 "",
                 "Packet Consumed: charness-artifacts/critique/demo-packet.md",
                 "",

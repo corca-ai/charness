@@ -151,10 +151,12 @@ repo had already declared them.
      the gap and require explicit user confirmation before delivery
 8. Record the result after delivery or explicit draft finalization.
    - append a JSONL record so the next run can continue from the current head
-   - render closeout only from the verified delivery ledger (which channel,
-     thread/permalink, recorded head); reuse the resolved delivery target on
-     retry; include external-source identity when drafting from a Slack
-     thread, doc, or gathered artifact, per
+   - for `human-backend` delivery, record a typed verification (see
+     `references/delivery-seams.md` Post-Delivery Verification) before the
+     record is appended; render closeout from the verification-carrying
+     ledger (channel, status, thread/permalink, recorded head); reuse the
+     resolved delivery target on retry; include external-source identity
+     when drafting from a Slack thread, doc, or gathered artifact, per
      `../../shared/references/closeout-discipline.md`
 
 ## Output Shape

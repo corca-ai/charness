@@ -8,10 +8,31 @@ from __future__ import annotations
 
 import re
 
-_CLOSING_KEYWORD_RE = re.compile(
-    r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+"
-    r"(?:(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+))?#(?P<number>\d+)\b"
+_CLOSING_KEYWORD_LAUNCH_RE = re.compile(
+    r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
+    r"(?P<refs>(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+"
+    r"(?:\s*,\s*(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+)*)"
 )
+_CLOSING_KEYWORD_REF_RE = re.compile(r"(?:(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+))?#(?P<number>\d+)")
+
+
+def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
+    """Every ``(repo_or_None, issue_number)`` a GitHub close keyword references
+    in ``text``. This is the single canonical close-keyword scanner; the
+    commit-msg checker (``scripts/check_issue_closeout_commit_msg.py``) reuses
+    it through the loaded ``issue_verify_closeout`` module rather than keeping
+    a second copy, so the two surfaces cannot drift.
+
+    Covers the plain form (``Closes #10``), GitHub's documented colon form
+    (``Closes: #10``), and the single-keyword comma-list form GitHub also
+    recognizes (``Closes #10, #11, #12``) so a bundled reference is not missed
+    just because the keyword was not repeated per issue.
+    """
+    refs: list[tuple[str | None, int]] = []
+    for launch in _CLOSING_KEYWORD_LAUNCH_RE.finditer(text):
+        for ref in _CLOSING_KEYWORD_REF_RE.finditer(launch.group("refs")):
+            refs.append((ref.group("repo"), int(ref.group("number"))))
+    return refs
 _HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<name>.+?)\s*$")
 _FIELD_RE = re.compile(r"^\s*(?:[-*]\s*)?(?P<name>[A-Za-z][A-Za-z -]{1,40}):\s*(?P<value>.*)$")
 _PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na"}
@@ -197,11 +218,11 @@ def evaluate_source_preservation(text: str) -> dict:
 def _missing_close_keywords(text: str, numbers: list[int], repo: str) -> list[int]:
     found: set[int] = set()
     selected_repo = repo.lower()
-    for match in _CLOSING_KEYWORD_RE.finditer("\n".join(_strip_code_fences(text))):
-        qualified_repo = match.group("repo")
+    plain = "\n".join(_strip_code_fences(text))
+    for qualified_repo, number in iter_close_keyword_refs(plain):
         if qualified_repo is not None and qualified_repo.lower() != selected_repo:
             continue
-        found.add(int(match.group("number")))
+        found.add(number)
     return [number for number in numbers if number not in found]
 
 

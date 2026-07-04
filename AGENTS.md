@@ -5,14 +5,12 @@
 ## Start Here
 
 - [docs/design-north-star.md](./docs/design-north-star.md) is the governing design standard: the harness briefs a capable judge and keeps teeth only where a wrong answer escapes. Default to judgment on reversible work; at irreversible boundaries (issue/PR close, release publish, external writes, deletions) success is provisional — confirm with a different observer and a different evidence channel, never a terminal green. When a gate, doc, or contract conflicts with this, the north star wins and the conflicting surface is what gets fixed.
-- Route the session opening per the session-start brief: a pickup follows the handoff-named workflow, capability discovery goes to `charness:find-skills`, and other tasks start the matching durable work skill. Use [charness-artifacts/find-skills/latest.md](./charness-artifacts/find-skills/latest.md) as the local capability map — invoke `find-skills` when it is missing or stale or the route is unclear — and keep task-specific recommendation probes read-only unless deliberately refreshing the canonical inventory.
+- Session-opening routing, capability discovery, the `gather` rule for external sources, and validation-before-`hitl` routing are all owned by `## Skill Routing` below.
 - Load matching skills before improvising, and continue active repo work from [docs/handoff.md](./docs/handoff.md).
-- Route external URLs or source links that should become repo working context through `gather` before summarizing, implementing, or deciding from them.
-- Cautilus is eval-only and ask-before-run: before any `cautilus evaluate ...`, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json` and refuse on `next_action: "none"` (or `must_ask_before_running` without a named failing-log path); use the repo wrapper `python3 scripts/run_cautilus_eval.py`, never bare `cautilus evaluate`. Full eval-only/disabled-surface contract: [skills/public/quality/references/cautilus-on-demand.md](./skills/public/quality/references/cautilus-on-demand.md).
+- Cautilus is eval-only and ask-before-run: before any `cautilus evaluate ...`, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json` and use the repo wrapper `python3 scripts/run_cautilus_eval.py` instead of a bare `cautilus evaluate` call. Full eval-only/disabled-surface contract: [skills/public/quality/references/cautilus-on-demand.md](./skills/public/quality/references/cautilus-on-demand.md).
 - Read [charness-artifacts/retro/recent-lessons.md](./charness-artifacts/retro/recent-lessons.md) before changing repo operating contracts, prompt or skill surfaces, exports, or artifacts.
 - Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.
 - Prefer validators and scripts over prose rituals; leave structured state when a tool cannot finish end-to-end.
-- Route evaluator-backed validation through `quality` before `hitl` or same-agent manual review.
 
 ## Skill Routing
 

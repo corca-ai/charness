@@ -92,6 +92,8 @@ closing anything.
 
 ## References
 
+- `adapter.example.yaml` - full worked `issue_backend` example for a
+  host-mediated backend.
 - `references/resolve-flow.md` - resolve sequencing, GitHub source-of-truth
   selection, classification routing, and auto-close preference.
 - `references/issue-shaping.md` - problem-first issue bodies, labels,

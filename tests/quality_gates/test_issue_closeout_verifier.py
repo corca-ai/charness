@@ -592,3 +592,72 @@ def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path
     assert result.returncode == 2, result.stdout
     payload = json.loads(result.stdout)
     assert payload["manual_comment_missing"] == [42]
+
+
+def test_issue_verify_closeout_accepts_colon_close_keyword_form(tmp_path: Path) -> None:
+    """GitHub's documented colon form (`Closes: #42`) must count as a close
+    keyword exactly like the plain space form."""
+    seed_commit(tmp_path, bug_closeout_body(close_line="Closes: #42."))
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+    )
+
+    assert result.returncode == 0, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["missing_close_keywords"] == []
+
+
+def test_issue_verify_closeout_accepts_single_keyword_comma_list(tmp_path: Path) -> None:
+    """A single keyword followed by a comma list (`Close #42, #43.`) must bind
+    every listed number, not only the first."""
+    seed_commit(
+        tmp_path,
+        bug_closeout_body(
+            close_line="Close #42, #43.",
+            critique_line=(
+                "Critique #42 #43: blocked synthetic-test-harness: this test does not "
+                "spawn a real resolution critique subagent"
+            ),
+            behavior_line=(
+                "Behavior #42 #43: exercised through the shared test fixture "
+                "(distinct channel from CLOSED)"
+            ),
+        ),
+    )
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--number",
+        "43",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+    )
+
+    assert result.returncode == 0, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["missing_close_keywords"] == []

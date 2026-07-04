@@ -34,14 +34,10 @@ skipped.
 ## Configuration
 
 The check is config-driven through the quality adapter
-(`.agents/quality-adapter.yaml`), block `standing_doc_provenance`:
-
-- `standing_docs` — globs of the standing-rule docs to scan. **Empty → inert**
-  (stack-neutral default; a consuming repo opts in by listing its rule docs).
-- `tracking_allowlist` — globs excluded even when a `standing_docs` glob matches
-  them. Tracking ledgers (follow-up / deferred-decisions / metrics) go here.
-- `inline_allow_marker` — per-line escape-hatch substring (default
-  `provenance-allow`).
+(`.agents/quality-adapter.yaml`), block `standing_doc_provenance`. Field
+types, semantics, and defaults for `standing_docs`, `tracking_allowlist`, and
+`inline_allow_marker` are documented once in `adapter-contract.md`'s
+`standing_doc_provenance` field list; this file does not duplicate them.
 
 ## Running It
 
