@@ -1,0 +1,10 @@
+{
+  "_comment": "Clean variant-A-vs-B: achieve before (d14ec985~1) vs after (d14ec985) the phase-brief demote. Same /charness:achieve prompt (spec.json default) so find-skills routing cancels; the delta isolates the demote commit. Judge wired (auditable-goal-substance) so a leaner number that did LESS cannot pass silently. Honest expectation recorded up front: the Slice-7 capture showed faithful shaping runs open ZERO of the demoted docs, so a ~null efficiency delta with outcome parity is a plausible honest result — the demote's value is then contract honesty (a compliant run now has a cheap path) rather than mean-token reduction.",
+  "name": "achieve-phase-brief-ab",
+  "spec_path": "evals/cautilus/achieve-claim-fidelity/spec.json",
+  "runs": 3,
+  "arms": [
+    {"name": "pre-demote", "ref": "d14ec985~1"},
+    {"name": "post-demote", "ref": "d14ec985"}
+  ]
+}

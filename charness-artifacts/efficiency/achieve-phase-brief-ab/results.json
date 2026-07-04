@@ -1,0 +1,214 @@
+{
+  "config": {
+    "_comment": "Clean variant-A-vs-B: achieve before (d14ec985~1) vs after (d14ec985) the phase-brief demote. Same /charness:achieve prompt (spec.json default) so find-skills routing cancels; the delta isolates the demote commit. Judge wired (auditable-goal-substance) so a leaner number that did LESS cannot pass silently. Honest expectation recorded up front: the Slice-7 capture showed faithful shaping runs open ZERO of the demoted docs, so a ~null efficiency delta with outcome parity is a plausible honest result \u2014 the demote's value is then contract honesty (a compliant run now has a cheap path) rather than mean-token reduction.",
+    "name": "achieve-phase-brief-ab",
+    "spec_path": "evals/cautilus/achieve-claim-fidelity/spec.json",
+    "runs": 3,
+    "arms": [
+      {
+        "name": "pre-demote",
+        "ref": "d14ec985~1"
+      },
+      {
+        "name": "post-demote",
+        "ref": "d14ec985"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "arm": "pre-demote",
+      "ref": "d14ec985~1",
+      "run": 0,
+      "total_tokens": 4597968,
+      "output_tokens": 77350,
+      "tool_count": 49,
+      "waste_smell_count": 2,
+      "duration_ms": 726156,
+      "outcome": "passed",
+      "output_lines": 389
+    },
+    {
+      "arm": "pre-demote",
+      "ref": "d14ec985~1",
+      "run": 1,
+      "total_tokens": 3670981,
+      "output_tokens": 114341,
+      "tool_count": 40,
+      "waste_smell_count": 2,
+      "duration_ms": 626416,
+      "outcome": "passed",
+      "output_lines": 323
+    },
+    {
+      "arm": "pre-demote",
+      "ref": "d14ec985~1",
+      "run": 2,
+      "total_tokens": 4664865,
+      "output_tokens": 71127,
+      "tool_count": 55,
+      "waste_smell_count": 2,
+      "duration_ms": 736602,
+      "outcome": "passed",
+      "output_lines": 391
+    },
+    {
+      "arm": "post-demote",
+      "ref": "d14ec985",
+      "run": 0,
+      "total_tokens": 3895700,
+      "output_tokens": 82790,
+      "tool_count": 42,
+      "waste_smell_count": 2,
+      "duration_ms": 545436,
+      "outcome": "passed",
+      "output_lines": 320
+    },
+    {
+      "arm": "post-demote",
+      "ref": "d14ec985",
+      "run": 1,
+      "total_tokens": 4346574,
+      "output_tokens": 64253,
+      "tool_count": 44,
+      "waste_smell_count": 2,
+      "duration_ms": 592269,
+      "outcome": "passed",
+      "output_lines": 370
+    },
+    {
+      "arm": "post-demote",
+      "ref": "d14ec985",
+      "run": 2,
+      "total_tokens": 6223796,
+      "output_tokens": 86644,
+      "tool_count": 66,
+      "waste_smell_count": 2,
+      "duration_ms": 731790,
+      "outcome": "passed",
+      "output_lines": 355
+    }
+  ],
+  "aggregate": {
+    "pre-demote": {
+      "n": 3,
+      "pass_rate": 1.0,
+      "total_tokens": {
+        "mean": 4311271.3,
+        "median": 4597968,
+        "min": 3670981,
+        "max": 4664865,
+        "n": 3
+      },
+      "output_tokens": {
+        "mean": 87606,
+        "median": 77350,
+        "min": 71127,
+        "max": 114341,
+        "n": 3
+      },
+      "duration_ms": {
+        "mean": 696391.3,
+        "median": 726156,
+        "min": 626416,
+        "max": 736602,
+        "n": 3
+      },
+      "tool_count": {
+        "mean": 48,
+        "median": 49,
+        "min": 40,
+        "max": 55,
+        "n": 3
+      },
+      "waste_smell_count": {
+        "mean": 2,
+        "median": 2,
+        "min": 2,
+        "max": 2,
+        "n": 3
+      },
+      "output_lines": {
+        "mean": 367.7,
+        "median": 389,
+        "min": 323,
+        "max": 391,
+        "n": 3
+      }
+    },
+    "post-demote": {
+      "n": 3,
+      "pass_rate": 1.0,
+      "total_tokens": {
+        "mean": 4822023.3,
+        "median": 4346574,
+        "min": 3895700,
+        "max": 6223796,
+        "n": 3
+      },
+      "output_tokens": {
+        "mean": 77895.7,
+        "median": 82790,
+        "min": 64253,
+        "max": 86644,
+        "n": 3
+      },
+      "duration_ms": {
+        "mean": 623165,
+        "median": 592269,
+        "min": 545436,
+        "max": 731790,
+        "n": 3
+      },
+      "tool_count": {
+        "mean": 50.7,
+        "median": 44,
+        "min": 42,
+        "max": 66,
+        "n": 3
+      },
+      "waste_smell_count": {
+        "mean": 2,
+        "median": 2,
+        "min": 2,
+        "max": 2,
+        "n": 3
+      },
+      "output_lines": {
+        "mean": 348.3,
+        "median": 355,
+        "min": 320,
+        "max": 370,
+        "n": 3
+      }
+    }
+  },
+  "outcome": {
+    "pre-demote": {
+      "eval_id": "achieve-claim-fidelity",
+      "runs_graded": 3,
+      "grade_failed": 0,
+      "pass_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n": 3
+      },
+      "skipped": 0,
+      "errors": 0
+    },
+    "post-demote": {
+      "eval_id": "achieve-claim-fidelity",
+      "runs_graded": 3,
+      "grade_failed": 0,
+      "pass_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n": 3
+      },
+      "skipped": 0,
+      "errors": 0
+    }
+  }
+}

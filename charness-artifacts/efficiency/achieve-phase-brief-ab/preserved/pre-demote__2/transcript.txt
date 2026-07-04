@@ -1,0 +1,22 @@
+I'll start with the required `find-skills` bootstrap, then run the achieve Before-phase for this goal.
+
+Now validate the artifact, then run the pre-activation plan critique.
+
+Now record the critique findings with provenance:
+
+Validators are green and the artifact is pursue-ready. Per repo phase rules, meaningful `charness-artifacts/` changes commit with the work — committing the draft now.
+
+목표를 잡아 커밋까지 완료했습니다 (`f8806388`). 실행은 하지 않았고, `/goal`로 활성화하기 전까지는 inert 상태의 draft입니다.
+
+**Goal file:** `charness-artifacts/goals/2026-07-04-scripts-json-output-mode.md`
+**Activation:** `/goal @charness-artifacts/goals/2026-07-04-scripts-json-output-mode.md`
+
+**목표 요지** — 실측 기반으로 범위를 잡았습니다: `scripts/`의 argparse CLI 엔트리포인트 148개 중 75개는 `--json`이 아예 없고, 73개는 제각각의 `json.dumps`를 손으로 호출합니다. 목표는 (1) 공유 헬퍼 `scripts/json_output_lib.py`(emit 함수 + `--json` argparse 등록기) + 단위 테스트, (2) 엔트리포인트를 열거해 미지원/비헬퍼 스크립트를 0까지 줄이는 baseline-ratchet 강제 테스트(기존 `check_boundary_bypass_ratchet.py` 패턴 재사용), (3) 10–15개 단위의 배치 슬라이스 마이그레이션입니다. 셸 스크립트와 CLI 없는 `_lib` 모듈은 Non-Goal이고, push/release 없이 전부 repo-local입니다.
+
+**Fresh-eye 플랜 크리틱(bounded reviewer)이 4개 블로커를 잡아서 모두 반영했습니다.** 가장 중요한 것: 제 초기 전제였던 "`sort_keys=True`가 지배적 관용구"가 틀렸습니다(73개 중 23개만 사용). 그래서 "바이트 동일 출력 보장"과 "단일 직렬화 계약"이 양립 불가였고, 경계를 **parsed-object equality**(`json.loads` 전후 동일, 키 순서 변경 허용 + 텍스트로 출력을 읽는 소비자는 grep으로 찾아 green 증명)로 재정의했습니다. 나머지: changed-line mutation 게이트 때문에 스크립트별 호출 레시피 레지스트리 슬라이스를 추가(부작용 있는 스크립트는 사유 기록 후 allowlist, `run_cautilus_eval.py`는 ask-before-run 계약상 처음부터 smoke 제외), plugin mirror 동기화와 export-safe import 제약을 Boundaries에 명시, 잘못된 집계(78→73) 수정.
+
+**활성화 전 확인해 주실 것 두 가지** (artifact의 Discuss Before Activation에 기본값으로 resolve해 두었습니다):
+1. **범위 해석** — "모든 repo 스크립트" = Python argparse 엔트리포인트 148개. 셸 스크립트까지 의도하셨다면 `/achieve @`로 재조정이 필요합니다.
+2. **출력 호환 기준** — 기존 73개 스크립트의 JSON은 파싱 결과 동일 보장이되 키 순서는 바뀔 수 있습니다. 바이트 단위 동결이 필요하면 이 기본값을 뒤집어야 합니다(그 경우 헬퍼 일원화 범위가 줄어듭니다).
+
+두 기본값이 맞으면 위 activation 라인을 실행하는 것만으로 pursue가 시작됩니다 (`check_goal_artifact.py --pursue-ready` 통과 확인 완료).

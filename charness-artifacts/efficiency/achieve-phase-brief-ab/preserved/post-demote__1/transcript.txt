@@ -1,0 +1,23 @@
+I'll start with the session-start routing requirement: invoking `find-skills` once, then proceed with the achieve bootstrap.
+
+The draft is fully shaped. Per the repo's pre-approved bounded-review contract, I'm now spawning a fresh-eye plan critique on the draft before reporting it.
+
+Draft validates green: `ok: true`, `pursue_ready: true`, activation discussion resolved, zero placeholders. Closing out per the operating contract — quick check of commit discipline, then commit.
+
+`core.hooksPath` points at a deliberately empty hooks directory in this worktree, so `--no-verify` skipped nothing — the commit is clean at `82330c9e`.
+
+## Goal draft shaped and saved
+
+**Goal file:** `charness-artifacts/goals/2026-07-04-json-output-mode.md` (committed, `Status: draft`, passes `check_goal_artifact.py` and the `--pursue-ready` activation check with zero placeholders).
+
+**What the goal is.** Every Python CLI under repo-root `scripts/` gets a consistent `--json` mode through one shared helper (`scripts/json_output_lib.py`: `add_json_flag(parser)` + an `emit(...)` that carries stream and exit-code semantics), with unit tests, and "all scripts" is held durably by a conformance gate with a burn-down baseline (the repo's existing ratchet idiom) rather than a one-time sweep. Slice sequence: inventory & written contract → helper + tests → ratchet gate (with a red/green demo that detects the emit call, not just the flag) → prioritized migration waves of ~15–25 scripts until the baseline is empty or a stop condition fires.
+
+**Scope decision you should read before activating** (recorded as the resolved `Discuss before activation:` line): "모든 repo 스크립트" was reshaped — the surface is 286 files (~148 argparse CLIs, ≤78 with ad-hoc `--json` today), so the goal excludes shell scripts (8, honestly noted as not all thin wrappers), library modules, and portable plugin-skill scripts (portability boundary), and achieves "all" via the ratchet rather than guaranteeing 100% hand-migration in one run. If you want literal-all or skill scripts included, reshape via `/achieve @...` before activating.
+
+**Fresh-eye plan critique ran** (bounded read-only subagent, per the repo's standing delegation) and found three real blockers, all folded: a false shell-script fact; the helper API missing stderr/exit-code semantics (~36 of 78 `--json` scripts touch stderr; `check_github_actions.py` emits JSON to stderr with rc=1 and a quality-gate test asserts it); and an envelope-vs-compatibility contradiction, settled so the 78 already-JSON scripts stay byte-compatible for their ~232 test-file consumers. Findings and provenance are preserved in the artifact's `## Plan Critique Findings`.
+
+**Non-claims:** nothing has executed — no helper, gate, or migration exists yet; no external/live proof lane is planned inside the goal (local gates and broad pytest are the ceiling).
+
+**Activation:** `/goal @charness-artifacts/goals/2026-07-04-json-output-mode.md`
+
+The file is inert until you run that command.

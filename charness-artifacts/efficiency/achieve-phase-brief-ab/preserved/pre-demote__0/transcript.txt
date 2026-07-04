@@ -1,0 +1,23 @@
+I'll bootstrap the session per the repo contract: first `find-skills`, then run the achieve Before-phase for this goal.
+
+The scaffold is in place. Quick look at how existing `--json` flags are implemented, to shape the consistency contract and slices realistically.
+
+The validator loads fine (the error was just my zsh `====` echo). Now I'll fill in the Before-phase sections of the draft.
+
+Now the coordination cues, activation discussion, context sources, and interview decisions.
+
+One count correction remains in the Boundaries "consumers first" bullet, then validate.
+
+목표를 잡아서 커밋까지 마쳤습니다. 검증(`check_goal_artifact.py` 풀 체크 + `--pursue-ready`) 모두 통과했고, 활성화 전까지는 inert 상태의 draft입니다.
+
+**Goal file:** `charness-artifacts/goals/2026-07-04-json-output-shared-helper.md` (commit `0ede7c65`)
+**Activation:** `/goal @charness-artifacts/goals/2026-07-04-json-output-shared-helper.md`
+**Status:** draft — 활성화 전에는 아무 슬라이스도 실행하지 않습니다.
+
+목표의 골자:
+
+- **범위 해석(중요, 거부권 있음):** "모든 repo 스크립트" = `scripts/` 아래 `__main__` 블록이 있는 Python 엔트리포인트 146개. 셸 스크립트 8개, `agent-runtime/*.mjs` 9개, import 전용 모듈 ~123개, 스킬 소유 스크립트(`skills/{public,support}/*/scripts/`)는 Non-Goals로 제외했습니다. 스킬 스크립트 후속 goal 여부는 Operator Decision Queue에 올려뒀습니다.
+- **설계:** 공유 헬퍼 `scripts/json_output_lib.py` + 전용 유닛 테스트, 그리고 기존 boundary-bypass ratchet을 본뜬 **줄어들기만 하는 baseline conformance gate**로 "전부"를 구조적으로 강제합니다. 슬라이스 5개: 계약+헬퍼 → 인벤토리+게이트 → Wave A(기존 `--json` 65개 이관) → Wave B(나머지 ~81개 추가) → closeout.
+- **Fresh-eye 계획 크리틱 반영(블로커 1, should-fix 8):** 가장 큰 것은 changed-line mutation gate가 `scripts/*.py` 전체에 걸린다는 점 — conformance 테스트를 in-process로 설계하도록 계획에 박았습니다. 크리틱이 수치도 교정했습니다: 실제 argparse 연결된 `--json`은 78이 아니라 65개, Wave B는 ~81개. 플래그 없이 항상 JSON을 내는 스크립트 ~9개(예: mutation gate — `run_slice_closeout.py`가 stdout을 파싱)는 "헬퍼 사용, 플래그 없음"이 준수 상태이며 플래그로 감추면 소비자가 깨지므로 별도 sub-batch로 분리했습니다.
+
+활성화 전에 확인하면 좋은 두 가지 (막지는 않음): ① Timebox — 8h는 제안값이고, 크리틱 판단으로는 8h면 헬퍼+게이트+Wave A까지이고 Wave B는 분할됩니다(ratchet이 부분 진행을 보존). 한 번에 끝내려면 더 큰 박스를 지정하세요. ② 위 범위 해석에 이견이 있으면 `/goal` 전에 말씀해 주세요.

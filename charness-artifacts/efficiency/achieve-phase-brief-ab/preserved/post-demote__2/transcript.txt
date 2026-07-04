@@ -1,0 +1,20 @@
+I'll start by invoking `find-skills` per the session-start routing contract, then run the achieve bootstrap.
+
+Scope is now grounded: 144 argparse CLIs in `scripts/`, 74 lacking `--json`, ~70 with ad-hoc `--json` and no shared emit helper anywhere. Now I'll scaffold the goal artifact:
+
+The goal is shaped, critiqued, validated, and committed as a draft (`d1db9564`). Nothing executes until you activate it.
+
+- **Goal file:** `charness-artifacts/goals/2026-07-04-script-json-output-mode.md`
+- **Activation:** `/goal @charness-artifacts/goals/2026-07-04-script-json-output-mode.md`
+- **Status:** draft — inert until you run the activation line; `check_goal_artifact.py --pursue-ready` already reports it shaped and activation-ready.
+
+**What the goal commits to.** A shared helper (`scripts/json_output_lib.py`) owning one JSON envelope, `--json` added to the 74 argparse CLIs that lack it (batched 29 `validate_*` / 18 `check_*` / 27 remainder), a checked-in ratchet baseline so the non-compliant list only shrinks, helper unit tests plus one parametrized in-process smoke test. Scope was grounded by scan, not assumption: 144 argparse CLIs total, 72 existing emitters with heterogeneous shapes (`status` in 38, `ok` in 15 — there is no dominant convention today, so slice 1 decides the envelope from a survey).
+
+**Consequential decisions I resolved by default** (recorded in the artifact's Discuss Before Activation; activating confirms them):
+- Broad scope (74 scripts) is accepted via homogeneous batches with a ratchet safe-stop at every slice boundary — delete batch rows before `/goal` if you want it smaller.
+- Existing 72 emitters' output shapes are **frozen** (backward compat is a hard boundary); converging them onto the helper is queued as an operator decision, not bundled.
+- Proof ceiling is local deterministic tests — explicit non-claim of any provider/live proof.
+
+**Fresh-eye plan critique** (bounded reviewer, per the repo's standing delegation) found 4 blockers, all folded before commit: the smoke test must run in-process or it would add ~74 keys to the boundary-bypass ratchet; my original "resolve_adapter-style dominant convention" anchor was factually wrong and was replaced with measured data; `docs/generated/cli-reference.md` doesn't cover `scripts/*.py` so the helper docstring is the contract surface instead; and side-effectful scripts (`run_cautilus_eval.py`, installers, mutators) get `excluded-from-exec` dispositions in a recipe table rather than blind execution. It also flagged that `run_skill_efficiency_ab.py` sits at 479/480 lines and needs a split or exclusion before its batch.
+
+**Left for you in the Operator Decision Queue:** whether to later converge the 72 existing emitters, whether to extend the convention to skill-owned scripts, and whether to approve a ratchet exemption if in-process smoke invocation hits a dead end.
