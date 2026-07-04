@@ -8,47 +8,39 @@
 
 ## Current State
 
-- **Branch `north-star-p123` (PR open): north-star P1-P3 sweep.** 24
-  counterweight-verified findings implemented by 14 bounded subagents + 3
-  fresh-eye critique reviewers; all critique blockers fixed in-branch. Key
-  moves: mechanism-keyed issue-close floors (colon/comma keyword forms
-  covered), release behavioral floor + `state-verified` rename + same-proxy
-  probe flag, critique fresh-eye typed-presence floor (fail-closed undatable,
-  2-name legacy allowlist), announcement verification ledger with adapter
-  cross-check, cut-safety deletion REVIEW wiring (incl. `skills/shared/`),
-  achieve lifecycle split (861 -> index + 3 phase files, phase_brief routes
-  per-phase), impl/find-skills/setup/AGENTS.md dedup, scaffold shim
-  unification, dup-ratchet scoped re-baseline mode.
-- Operator inputs honored: `check_test_production_ratio` KEPT (restored after
-  an in-flight miss), `check_python_lengths` KEPT blocking (message now
-  teaches split-or-delete); governing reference gathered at
-  [enforcing-quality-of-ai-generated-code](../charness-artifacts/gather/2026-07-04-enforcing-quality-of-ai-generated-code.md).
-- Gate audit artifact:
-  [gate-reclassification](../charness-artifacts/audit/2026-07-04-gate-reclassification.md);
-  critique record:
-  [sweep critique](../charness-artifacts/critique/2026-07-04-north-star-p1-p3-sweep-branch-north-star-p123.md).
+- **PR #419 (north-star P1-P3 sweep) MERGED to main; released `v0.62.0`.**
+  Public surface distinct-channel verified (https-fetch HTTP 200), install
+  refreshed `0.61.0 -> 0.62.0`, auto-retro persisted, worktree clean.
+- **Post-merge boundary fix landed (commit `5aa3f3fd`).** Adversarial
+  verification of PR #419 found the issue-close commit-msg gate fence-stripped
+  the commit message before scanning, so a fenced close keyword auto-closed an
+  issue while the gate reported `not_applicable` (irreversible-boundary
+  escape). Fix: scan the raw message (GitHub treats backticks as literal).
+  Also corrected a stale achieve `SKILL.md` pointer to `goal-artifact.md`.
+  Critique: [pr419-adversarial-fix-closeout](../charness-artifacts/critique/2026-07-04-pr419-adversarial-fix-closeout.md).
 
 ## Next Session
 
-1. Review/merge the `north-star-p123` PR; post-merge, `charness update`
-   refreshes the managed checkout (also activates the earlier session-start
-   front-load, handoff item from v0.61.0 era).
-2. Audit Follow-ups worth their own slices: wire `vulture` (configured, never
-   run — dead-code gap vs the operator toolset); 81-site argparse-help debt
-   (opt-in ergonomics rule landed, default-off); dup_ratchet module split
-   (both files in WARN band).
-3. Deferred: nested-delegated evidence-linking (accepted gap, own
-   floor-addition call); shared closeout-contract extraction across
-   impl/spec/setup (pinned-string coupling made it unsafe this round).
+1. **D36 (operator-scheduled): single-source the question/decision-needed close
+   exemption advisory** so the commit-msg carrier surfaces it like
+   `close-with-comment`. The direct copy was reverted (dup-ratchet P2 block);
+   the real fix needs a shared owner both carriers import — full plan in
+   [deferred-decisions.md D36](./deferred-decisions.md).
+2. Audit follow-ups worth their own slices: wire `vulture` (configured, never
+   run); 81-site argparse-help debt (opt-in rule landed, default-off);
+   `dup_ratchet` module split (WARN band).
+3. Optional CI hygiene: the non-required "Changed-line mutation coverage (PR
+   mirror)" check is environment-red — `test_quality_runner` hardcodes `-n 16`
+   (fails on <16-core runners) and a release test rejects CI's detached HEAD;
+   both pass locally. Relax to core-relative + guard detached HEAD to get CI green.
 
 ## Discuss
 
-- test_handoff_plan.py live-root brittleness is FIXED (fixtures + validator
-  constants single-sourced) — the old "keep this file under 60 lines"
-  workaround no longer applies.
-- Lesson: mid-run operator overrides crossed agent inboxes twice; verify
-  override receipt with the owning agent before integration, not after.
+- **D34 (announcement self-attest independence) and D35 (release probe
+  shape-match) DECLINED** by the operator (2026-07-04) — accepted as disclosed
+  presence-floor residuals, not pursued; reopen only if the recorded failure
+  materializes (see [deferred-decisions.md](./deferred-decisions.md)).
 
 ## References
 
-- pickup: [gate-reclassification](../charness-artifacts/audit/2026-07-04-gate-reclassification.md) · [sweep critique](../charness-artifacts/critique/2026-07-04-north-star-p1-p3-sweep-branch-north-star-p123.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
+- pickup: [pr419-adversarial-fix-closeout](../charness-artifacts/critique/2026-07-04-pr419-adversarial-fix-closeout.md) · [deferred-decisions.md](./deferred-decisions.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
