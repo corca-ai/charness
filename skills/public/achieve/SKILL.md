@@ -37,8 +37,11 @@ lifecycle instead of starting a new one.
 
 ## Workflow
 
-`achieve` runs one goal as three phases. See `references/lifecycle.md` and
-`references/goal-artifact.md` for the full contract.
+`achieve` runs one goal as three phases. `check_goal_artifact.py` emits a
+`phase_brief` naming the `references/lifecycle.md` section (`## Before` /
+`## During` / `## After`) and `references/goal-artifact.md` depth for the
+goal's current status; read those named sections, not the full docs, and
+follow the brief's `closeout_handoff` note when starting closeout.
 
 1. Before — shape and save.
    - interview from prose with a few high-leverage questions; if the request is

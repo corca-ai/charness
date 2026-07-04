@@ -23,6 +23,14 @@ adapter_policy = SKILL_RUNTIME.load_local_skill_module(__file__, "achieve_adapte
 # The proof-mismatch floor is a portable top-level module (reused by issue
 # closeout); loaded via the repo-module path so its `from scripts.` imports resolve.
 proof_mismatch = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
+phase_brief_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_phase_brief")
+
+
+def _attach_phase_brief(payload: dict, status: str | None) -> None:
+    """Advisory routing only: names which reference section covers this phase."""
+    brief = phase_brief_lib.phase_brief(status)
+    if brief is not None:
+        payload["phase_brief"] = brief
 
 
 def _resolve_goal_path(args) -> Path:
@@ -134,10 +142,12 @@ def main() -> int:
         deploy_vocab = adapter_policy.resolve_discussion_deploy_vocab(args.repo_root.expanduser().resolve()) or None
         report = goal_lib.pursue_readiness(text, deploy_vocab=deploy_vocab)
         report["path"] = str(path)
+        _attach_phase_brief(report, goal_lib.read_status(text))
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if report["pursue_ready"] else 1
     result = goal_lib.check_goal(text)
     result["path"] = str(path)
+    _attach_phase_brief(result, result.get("status"))
     freshness_report = head_freshness.check_head_freshness(
         text,
         head_sha=head_freshness.current_head(args.repo_root.expanduser().resolve()),
