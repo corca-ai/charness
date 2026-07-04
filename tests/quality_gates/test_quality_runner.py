@@ -183,6 +183,40 @@ def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, s
     assert "Quality summary: 4 passed, 0 failed" in result.stdout
 
 
+def test_dead_code_advisory_gate_is_default_off(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    # Default-off: a normal run (no opt-in env var, label set that does not name it)
+    # must NOT queue the vulture-backed dead-code advisory.
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "dead-code-advisory" not in result.stdout
+
+
+def test_dead_code_advisory_gate_runs_when_opted_in_via_env(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    # Opt-in via env var runs it regardless of label scoping (mirrors the
+    # agent-browser-runtime gate) and it is advisory — the run stays green.
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills"
+    env["CHARNESS_QUALITY_DEAD_CODE"] = "1"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS dead-code-advisory" in result.stdout
+
+
+def test_dead_code_advisory_gate_runs_when_explicitly_labeled(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    # The triage-follow-up entry point: name only this gate to run just it.
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "dead-code-advisory"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS dead-code-advisory" in result.stdout
+
+
 def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     real_python = subprocess.run(

@@ -202,10 +202,27 @@ def main() -> int:
     if args.summary:
         print(json.dumps(summarize(payload), ensure_ascii=False, indent=2))
         return 0
+    review_candidates = [
+        finding for finding in sweep["findings"] if finding["classification"] == "review_candidate"
+    ]
+    if review_candidates:
+        # Surface through run-quality.sh's ADVISORY attention filter so the opt-in
+        # gate's findings are visible without --verbose. This never blocks: the gate
+        # always exits 0. Only the review_candidate class is called out here; the
+        # framework-convention / test-protocol noise classes stay in the detail below.
+        print(
+            f"ADVISORY: vulture flagged {len(review_candidates)} dead-code review_candidate "
+            f"finding(s) of {len(sweep['findings'])} total for separate triage (advisory only, never blocks)."
+        )
     print(f"Primary ({args.primary_confidence}%): {primary['status']} ({len(primary['findings'])} findings)")
     print(f"Sweep ({args.sweep_confidence}%): {sweep['status']} ({len(sweep['findings'])} findings)")
-    if sweep["classification_counts"]:
-        counts = ", ".join(f"{name}={count}" for name, count in sweep["classification_counts"].items())
+    # `.get`: the vulture-missing run dict has no `classification_counts` key (only
+    # the ran-clean/findings/error dicts do). Keying it directly here crashed the human
+    # path (exit 1) when vulture was absent, so an opted-in advisory gate falsely turned
+    # the run red — the gate must stay exit-0 advisory even with the tool missing.
+    classification_counts = sweep.get("classification_counts") or {}
+    if classification_counts:
+        counts = ", ".join(f"{name}={count}" for name, count in classification_counts.items())
         print(f"Sweep classifications: {counts}")
     ordered = sorted(
         sweep["findings"],

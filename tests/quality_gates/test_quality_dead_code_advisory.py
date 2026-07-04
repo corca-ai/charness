@@ -14,7 +14,7 @@ from .support import ROOT, init_git_repo
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "run_dead_code_advisory.py"
 
 
-def _run_dead_code_advisory(monkeypatch, bin_dir: Path, *args: str) -> dict:
+def _run_dead_code_advisory_stdout(monkeypatch, bin_dir: Path, *args: str) -> str:
     spec = importlib.util.spec_from_file_location("run_dead_code_advisory_cli_under_test", SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -24,7 +24,28 @@ def _run_dead_code_advisory(monkeypatch, bin_dir: Path, *args: str) -> dict:
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ.get('PATH', '')}")
     with contextlib.redirect_stdout(buffer):
         assert module.main() == 0
-    return json.loads(buffer.getvalue())
+    return buffer.getvalue()
+
+
+def _run_dead_code_advisory(monkeypatch, bin_dir: Path, *args: str) -> dict:
+    return json.loads(_run_dead_code_advisory_stdout(monkeypatch, bin_dir, *args))
+
+
+def _seed_fake_vulture(bin_dir: Path, *, sweep_finding: str | None) -> None:
+    """Write a fake `vulture` that emits ``sweep_finding`` (exit 3) at confidence
+    <= 60 and is clean (exit 0) otherwise, or is always clean when ``sweep_finding``
+    is None."""
+    lines = [
+        "#!/usr/bin/env python3",
+        "import sys",
+        "confidence = int(sys.argv[sys.argv.index('--min-confidence') + 1])",
+    ]
+    if sweep_finding is not None:
+        lines += ["if confidence <= 60:", f"    print({sweep_finding!r})", "    raise SystemExit(3)"]
+    lines.append("raise SystemExit(0)")
+    fake = bin_dir / "vulture"
+    fake.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    fake.chmod(0o755)
 
 
 def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path, monkeypatch) -> None:
@@ -116,6 +137,65 @@ def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Pa
             "classification": "review_candidate",
         }
     ]
+
+
+def test_dead_code_advisory_human_output_surfaces_advisory_for_review_candidate(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # A review_candidate finding must produce a first-line `ADVISORY:` marker so
+    # run-quality.sh's attention filter surfaces the opt-in gate without --verbose.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _seed_fake_vulture(bin_dir, sweep_finding="scripts/example.py:3: unused function 'old_helper' (60% confidence, 2 lines)")
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "example.py").write_text("def old_helper():\n    pass\n", encoding="utf-8")
+
+    output = _run_dead_code_advisory_stdout(monkeypatch, bin_dir, "--repo-root", str(repo))
+
+    first_line = output.splitlines()[0]
+    assert first_line.startswith("ADVISORY:")
+    assert "review_candidate" in first_line
+    assert "never blocks" in first_line
+
+
+def test_dead_code_advisory_human_output_omits_advisory_when_no_review_candidate(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # A clean sweep must emit no ADVISORY line, so the gate stays silent when there
+    # is nothing to triage.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _seed_fake_vulture(bin_dir, sweep_finding=None)
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "example.py").write_text("KEEP = True\n", encoding="utf-8")
+
+    output = _run_dead_code_advisory_stdout(monkeypatch, bin_dir, "--repo-root", str(repo))
+
+    assert "ADVISORY:" not in output
+
+
+def test_dead_code_advisory_human_output_survives_missing_vulture(tmp_path: Path, monkeypatch) -> None:
+    # Regression: with vulture absent, run_vulture() returns a "missing" dict that has
+    # no `classification_counts` key. The human output path must NOT crash on it — an
+    # opted-in advisory gate has to stay exit-0 even when the tool is not installed,
+    # otherwise it turns the quality run red (a blocker the fresh-eye review caught).
+    spec = importlib.util.spec_from_file_location("run_dead_code_advisory_missing_vulture", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module.shutil, "which", lambda _name: None)
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "example.py").write_text("KEEP = True\n", encoding="utf-8")
+    buffer = io.StringIO()
+    monkeypatch.setattr(sys, "argv", ["run_dead_code_advisory.py", "--repo-root", str(repo)])
+    with contextlib.redirect_stdout(buffer):
+        assert module.main() == 0
+    out = buffer.getvalue()
+    assert "missing" in out
+    assert "ADVISORY:" not in out
 
 
 def test_dead_code_advisory_scans_untracked_nonignored_python(tmp_path: Path) -> None:

@@ -8,45 +8,39 @@
 
 ## Current State
 
-- **D36 RESOLVED this session (uncommitted at handoff write; commit lands with this
-  work).** Single-sourced the question/decision-needed floor-exemption advisory into
-  `issue_verify_closeout_body.review_advisory_for_classification` (unified
-  `(classification, *, numbers, source)` signature), re-exported through
-  `issue_verify_closeout.py`, `issue_close_comment_floor.py` reduced to a re-export;
-  the commit-msg carrier now surfaces it non-blocking (exit 0). No new authored dup
-  (dup-ratchet clean for changed files; one collateral clustering-rotation family
-  scoped-accepted among untouched files). Fresh-eye SHIP, all six angles
-  execution-confirmed. Critique:
-  [d36-close-exemption-advisory-single-source](../charness-artifacts/critique/2026-07-04-d36-close-exemption-advisory-single-source.md).
-- **CI hygiene DONE this session (commits land with the work).** `test_quality_runner`
-  now asserts the core-relative worker count via `choose_xdist_workers(env)` instead of a
-  hardcoded `16` (a <16-core runner computes a smaller `-n`, so the literal failed);
-  `test_release_real_host` pins `current_branch` so the phase-barrier structural test no
-  longer depends on CI's detached HEAD (`current_branch` raises `detached HEAD is not
-  supported` on a detached checkout). Test-only, no product/gate behavior changed; the
-  non-required "Changed-line mutation coverage (PR mirror)" check should go green next CI run.
-- **PR #419 (north-star P1-P3 sweep) MERGED to main; released `v0.62.0`.**
-  Public surface distinct-channel verified (https-fetch HTTP 200), install
-  refreshed `0.61.0 -> 0.62.0`, auto-retro persisted, worktree clean.
-- **Post-merge boundary fix landed (commit `5aa3f3fd`).** Adversarial
-  verification of PR #419 found the issue-close commit-msg gate fence-stripped
-  the commit message before scanning, so a fenced close keyword auto-closed an
-  issue while the gate reported `not_applicable` (irreversible-boundary
-  escape). Fix: scan the raw message (GitHub treats backticks as literal).
-  Also corrected a stale achieve `SKILL.md` pointer to `goal-artifact.md`.
-  Critique: [pr419-adversarial-fix-closeout](../charness-artifacts/critique/2026-07-04-pr419-adversarial-fix-closeout.md).
+- **This session (commits land with the work):**
+  - **D36 RESOLVED** — single-sourced the question/decision-needed floor-exemption
+    advisory into `issue_verify_closeout_body.review_advisory_for_classification`
+    (`(classification, *, numbers, source)`), re-exported through `issue_verify_closeout.py`;
+    the commit-msg carrier now surfaces it non-blocking. No new authored dup (one collateral
+    clustering rotation scoped-accepted among untouched files). Fresh-eye SHIP. Critique:
+    [d36](../charness-artifacts/critique/2026-07-04-d36-close-exemption-advisory-single-source.md).
+  - **vulture dead-code advisory WIRED** into `run-quality.sh` as a DEFAULT-OFF opt-in
+    advisory gate (`CHARNESS_QUALITY_DEAD_CODE=1` / `CHARNESS_QUALITY_LABELS=dead-code-advisory`),
+    never blocks, surfaces an `ADVISORY:` line. End-to-end verified (33 findings); triage deferred.
+  - **CI hygiene** — `test_quality_runner` asserts core-relative workers via
+    `choose_xdist_workers(env)` (was hardcoded `16`); `test_release_real_host` pins
+    `current_branch` so it no longer breaks on CI's detached HEAD. Test-only.
+- **PR #419 (north-star P1-P3 sweep) MERGED; released `v0.62.0`;** post-merge boundary fix
+  `5aa3f3fd` (issue-close gate now scans the raw commit message). Critique:
+  [pr419](../charness-artifacts/critique/2026-07-04-pr419-adversarial-fix-closeout.md).
 
 ## Next Session
 
 Advantageous order designed this session (signal-first → boundary-while-gate-stable →
-batched baseline-rotating work → largest sweep last). Slice 1 (D36) is DONE; remaining:
+batched baseline-rotating work → largest sweep last). D36 + CI hygiene + vulture wiring
+are DONE; remaining:
 
-1. **Audit follow-ups (own slices).** wire `vulture` (configured, never run, land
-   advisory/default-off then triage findings separately); `dup_ratchet` module split
-   (WARN band) — batch with the D30 residuals (S4-Defer-1/-3) so the ratchet engine is
-   opened once and re-baselined once; 81-site argparse-help debt (default-off, biggest
-   churn) as its own batch LAST so its baseline rotation does not contaminate other review.
-2. **Trip-wire (not scheduled): D33** — `run_skill_efficiency_ab.py` is at 479/480; any
+1. **vulture findings triage (follow-up to the wiring).** The gate now flags 33
+   review_candidate dead-code findings (of 43 total) on a real run. Triage them:
+   delete genuine dead code, or add `# noqa`-style vulture allowlist entries / raise
+   `[tool.vulture] min_confidence` for confirmed false positives. Run it with
+   `CHARNESS_QUALITY_LABELS=dead-code-advisory ./scripts/run-quality.sh`.
+2. **Remaining audit follow-ups (own slices).** `dup_ratchet` module split (WARN band)
+   — batch with the D30 residuals (S4-Defer-1/-3) so the ratchet engine is opened once
+   and re-baselined once; 81-site argparse-help debt (default-off, biggest churn) as its
+   own batch LAST so its baseline rotation does not contaminate other review.
+3. **Trip-wire (not scheduled): D33** — `run_skill_efficiency_ab.py` is at 479/480; any
    slice that touches it MUST extract a module first before appending.
 
 ## Discuss

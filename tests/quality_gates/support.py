@@ -233,6 +233,7 @@ QUALITY_PYTHON_STUBS = (
     ("run-evals", "run_evals.py"),
 )
 QUALITY_RUNTIME_STUBS = (
+    ("dead-code-advisory", "run_dead_code_advisory.py"),
     ("measure-startup-probes", "measure_startup_probes.py"),
     ("inventory-sloc", "inventory_sloc.py"),
     ("inventory-ci-local-gate-parity", "inventory_ci_local_gate_parity.py"),

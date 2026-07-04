@@ -383,6 +383,15 @@ queue_selected "validate-quality-reference-catalog" python3 scripts/validate_qua
 queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
 queue_selected "validate-usage-episodes" python3 scripts/validate_usage_episodes.py --repo-root "$REPO_ROOT"
 queue_selected "report-usage-episodes" python3 scripts/report_usage_episodes.py --repo-root "$REPO_ROOT"
+# Dead-code advisory (vulture-backed): DEFAULT-OFF opt-in. Two full vulture passes
+# are slow and the findings need per-item triage, so it never runs in the default
+# battery and never blocks (advisory only — the script always exits 0 and surfaces an
+# ADVISORY line for review_candidates). Opt in with CHARNESS_QUALITY_DEAD_CODE=1 (runs
+# regardless of label scoping, mirroring the agent-browser-runtime gate) or
+# CHARNESS_QUALITY_LABELS=dead-code-advisory to run just this gate.
+if [[ "${CHARNESS_QUALITY_DEAD_CODE:-0}" == "1" ]] || label_is_explicitly_selected "dead-code-advisory"; then
+  queue_timed "dead-code-advisory" python3 skills/public/quality/scripts/run_dead_code_advisory.py --repo-root "$REPO_ROOT"
+fi
 queue_selected "check-cli-skill-surface" python3 scripts/check_cli_skill_surface.py --repo-root "$REPO_ROOT" --run-probes
 queue_selected "validate-surfaces" python3 scripts/validate_surfaces.py --repo-root "$REPO_ROOT"
 queue_selected "validate-inference-interpretation" python3 scripts/validate_inference_interpretation.py --repo-root "$REPO_ROOT" --require-git-file-listing
