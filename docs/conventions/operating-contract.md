@@ -131,3 +131,8 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 - If the user correctly points out a missed issue, broken assumption, or
   missing gate that should likely have been caught, run a brief retro before
   continuing and say whether that retro was persisted.
+- If the operator expresses the "agent got dumber" / context-tax symptom
+  mid-session, append one line to
+  [symptom-ledger.md](../../charness-artifacts/reference-compaction/symptom-ledger.md)
+  (a pointer, not a gate; contract in
+  [context-tax-measurement-design.md](../../charness-artifacts/reference-compaction/context-tax-measurement-design.md)).
