@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -127,7 +129,15 @@ def test_release_real_host_proof_fails_loud_on_unresolved_surface_id(tmp_path: P
     assert "Fix the typo" in payload["remediation"]
 
 
-def test_release_skill_enforces_phase_barriers_for_mutating_commands() -> None:
+def test_release_skill_enforces_phase_barriers_for_mutating_commands(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Guard against CI's detached HEAD. This test asserts the planner's static
+    # phase-barrier / gate structure, not branch resolution, but `build_plan`
+    # calls the real `current_branch(ROOT)`, which raises "detached HEAD is not
+    # supported" on a detached checkout (GitHub Actions) while passing locally on
+    # a named branch. Pin it to a named branch, mirroring test_release_run_planner.
+    monkeypatch.setattr(_PLANNER, "current_branch", lambda _repo: "main")
     payload = _PLANNER.build_plan(
         SimpleNamespace(
             repo_root=ROOT,

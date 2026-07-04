@@ -5,6 +5,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from scripts.run_standing_pytest import choose_xdist_workers
+
 from .support import (
     ROOT,
     clone_quality_runner_repo,
@@ -223,7 +225,11 @@ def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_qua
     assert "/charness/pytest-tmp/" in payload["temproot"]
     assert "--basetemp" in payload["args"]
     assert "-n" in payload["args"]
-    assert "16" in payload["args"]
+    # core-relative: assert the worker count run_standing_pytest actually computes
+    # for THIS machine (min(cpu_count, cap)) rather than a hardcoded "16" that only
+    # holds on a >=16-core box — CI runners with fewer cores compute a smaller -n
+    # and were failing this assertion while the runner behaved correctly.
+    assert choose_xdist_workers(env) in payload["args"]
     assert "tests/charness_cli" in payload["args"]
     basetemp = payload["args"][payload["args"].index("--basetemp") + 1]
     assert basetemp.startswith(payload["temproot"] + "/pytest-of-")

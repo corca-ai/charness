@@ -18,6 +18,13 @@
   scoped-accepted among untouched files). Fresh-eye SHIP, all six angles
   execution-confirmed. Critique:
   [d36-close-exemption-advisory-single-source](../charness-artifacts/critique/2026-07-04-d36-close-exemption-advisory-single-source.md).
+- **CI hygiene DONE this session (commits land with the work).** `test_quality_runner`
+  now asserts the core-relative worker count via `choose_xdist_workers(env)` instead of a
+  hardcoded `16` (a <16-core runner computes a smaller `-n`, so the literal failed);
+  `test_release_real_host` pins `current_branch` so the phase-barrier structural test no
+  longer depends on CI's detached HEAD (`current_branch` raises `detached HEAD is not
+  supported` on a detached checkout). Test-only, no product/gate behavior changed; the
+  non-required "Changed-line mutation coverage (PR mirror)" check should go green next CI run.
 - **PR #419 (north-star P1-P3 sweep) MERGED to main; released `v0.62.0`.**
   Public surface distinct-channel verified (https-fetch HTTP 200), install
   refreshed `0.61.0 -> 0.62.0`, auto-retro persisted, worktree clean.
@@ -39,11 +46,7 @@ batched baseline-rotating work → largest sweep last). Slice 1 (D36) is DONE; r
    (WARN band) — batch with the D30 residuals (S4-Defer-1/-3) so the ratchet engine is
    opened once and re-baselined once; 81-site argparse-help debt (default-off, biggest
    churn) as its own batch LAST so its baseline rotation does not contaminate other review.
-2. **Optional CI hygiene (cheap, independent — do as a warm-up whenever).** the
-   non-required "Changed-line mutation coverage (PR mirror)" check is environment-red —
-   `test_quality_runner` hardcodes `-n 16` (fails on <16-core runners) and a release test
-   rejects CI's detached HEAD; both pass locally. Relax to core-relative + guard detached HEAD.
-3. **Trip-wire (not scheduled): D33** — `run_skill_efficiency_ab.py` is at 479/480; any
+2. **Trip-wire (not scheduled): D33** — `run_skill_efficiency_ab.py` is at 479/480; any
    slice that touches it MUST extract a module first before appending.
 
 ## Discuss
