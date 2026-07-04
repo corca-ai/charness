@@ -39,8 +39,6 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-import subprocess
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -54,18 +52,14 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _ratchet = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_lib")
-_inventory = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_nose_clones")
+_ratchet_git = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_git")
+_scan = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_scan")
 _nose_report = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
 _fingerprint = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
 _quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
 
-DOC_INVENTORY = Path(__file__).resolve().parent / "inventory_doc_duplicates.py"
 DEFAULT_REVIEW_REL = "charness-artifacts/quality/dup-review.json"
 DEFAULT_GATE_BASELINE_REL = "charness-artifacts/quality/dup-ratchet-baseline.json"
-# Full enumeration: high --top, no nose --baseline (the gate baseline seed must
-# carry EVERY family_id, or unenumerated families false-block later).
-FULL_SCAN_TOP = 1_000_000
-FULL_SCAN_MIN_SIZE = 24
 # C: --write-baseline guardrail. A re-baseline whose added+removed family_id count
 # exceeds this requires an explicit --confirm-baseline-delta (a deliberate nose
 # scanner-version swing or a reviewed batch accept is the legitimate large case).
@@ -74,142 +68,12 @@ FULL_SCAN_MIN_SIZE = 24
 DEFAULT_BASELINE_DELTA_THRESHOLD = 50
 
 
-def _safe_read(path: Path) -> str | None:
-    try:
-        return path.read_text(encoding="utf-8")
-    except OSError:
-        return None
-
-
-def _load_json(path: Path):
-    text = _safe_read(path)
-    if text is None:
-        return None
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        return None
-
-
-def _families_from_text(text: str | None) -> list | None:
-    if text is None:
-        return None
-    try:
-        payload = json.loads(text) if text.strip() else {}
-    except json.JSONDecodeError:
-        return None
-    if not isinstance(payload, dict):
-        return None
-    families = payload.get("families")
-    return families if isinstance(families, list) else []
-
-
-def _scan_code_fingerprints(repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
-    nose_bin = _inventory.resolve_nose_bin()
-    if nose_bin is None:
-        return set(), "nose binary not found; code clone scan skipped", ""
-    paths = [str(path) for path in (scope_paths or _inventory.DEFAULT_PATHS)]
-    # Full enumeration via the pinned `nose query` resolver: one nose `--root` multi-root
-    # query over the whole scope (a cross-root clone is grouped, not split per root), high
-    # top= so every family is recorded. `collect_families` stamps each family's offset/path-
-    # independent content fingerprint (slice 4); the gate keys newness on that, not the
-    # offset/path-folding family_id (resolves D30).
-    result = _nose_report.collect_families(
-        repo_root, nose_bin, paths, mode=_inventory.DEFAULT_MODE,
-        min_size=FULL_SCAN_MIN_SIZE, top=FULL_SCAN_TOP, sort="extractability",
-    )
-    live_version = result.get("tool_version", "")
-    if result.get("status") == "error":
-        return set(), f"nose code scan error: {result.get('stderr', '')[:160]}", live_version
-    families = [fam for fam in result.get("families", []) if isinstance(fam, dict)]
-    # A family with no stamped fingerprint had an unreadable member span (file changed
-    # between scan and read, etc.). Degrade the WHOLE gate to advisory (FD8) — never a
-    # false block, never a silently dropped family that would read as "removed".
-    missing = [fam for fam in families if not fam.get("family_fingerprint")]
-    if missing:
-        return (
-            set(),
-            f"{len(missing)} clone family(ies) had an unreadable member span; "
-            "content fingerprint degraded (whole gate advisory)",
-            live_version,
-        )
-    fingerprints = {str(fam["family_fingerprint"]) for fam in families}
-    return {fp for fp in fingerprints if fp}, None, live_version
-
-
-def _payload_tool_version(text: str | None) -> str:
-    """Top-level nose tool_version stamped into an injected inventory --json payload,
-    or ``""`` when absent/unreadable. The injected scan's version is the live scanner
-    version for skew detection against the gate baseline's stamped version."""
-    try:
-        payload = json.loads(text) if text and text.strip() else {}
-    except json.JSONDecodeError:
-        return ""
-    version = payload.get("tool_version") if isinstance(payload, dict) else None
-    return version if isinstance(version, str) else ""
-
-
-def _code_fingerprints(args, repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
-    if args.code_inventory is not None:
-        text = _safe_read(args.code_inventory)
-        families = _families_from_text(text)
-        if families is None:
-            return set(), f"injected code inventory unreadable ({args.code_inventory})", ""
-        # Test seam: an injected family carries `family_fingerprint` directly (symmetric
-        # with the pre-slice-4 injected `family_id`); else compute it from injected raw
-        # `locations` so an injected nose-shaped inventory also works.
-        fingerprints: set[str] = set()
-        for fam in families:
-            if not isinstance(fam, dict):
-                continue
-            fingerprint = fam.get("family_fingerprint")
-            if not fingerprint and fam.get("locations"):
-                fingerprint = _fingerprint.family_content_fingerprint(fam, repo_root)
-            if fingerprint:
-                fingerprints.add(str(fingerprint))
-        return fingerprints, None, _payload_tool_version(text)
-    return _scan_code_fingerprints(repo_root, scope_paths)
-
-
-def _run_doc_inventory(repo_root: Path) -> str:
-    completed = subprocess.run(
-        [sys.executable, str(DOC_INVENTORY), "--repo-root", str(repo_root), "--json"],
-        cwd=repo_root, check=False, capture_output=True, text=True,
-    )
-    return completed.stdout
-
-
-def _doc_drift_signatures(args, repo_root: Path) -> tuple[set[str], str | None]:
-    if args.doc_inventory is not None:
-        text = _safe_read(args.doc_inventory)
-        if text is None:
-            return set(), f"injected doc inventory missing ({args.doc_inventory})"
-    else:
-        text = _run_doc_inventory(repo_root)
-    try:
-        payload = json.loads(text) if text and text.strip() else {}
-    except json.JSONDecodeError:
-        return set(), "doc inventory JSON unreadable"
-    if not isinstance(payload, dict):
-        return set(), "doc inventory payload malformed"
-    if payload.get("status") in {"missing", "version-too-old", "error"}:
-        return set(), f"doc inventory degraded (status={payload.get('status')})"
-    families = payload.get("families")
-    if not isinstance(families, list):
-        return set(), None
-    signatures = {
-        fam["signature"] for fam in families
-        if isinstance(fam, dict) and isinstance(fam.get("signature"), str) and fam.get("signature")
-    }
-    return signatures, None
-
-
 def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | None, str | None, bool]:
     if args.stagnation is not None:
         return args.stagnation, "<injected>", True
-    anchor = _ratchet.resolve_anchor(repo_root, review_rel)
-    is_ancestor = _ratchet.anchor_is_ancestor(repo_root, anchor)
-    stagnation = _ratchet.stagnation_commits(repo_root, anchor) if is_ancestor else None
+    anchor = _ratchet_git.resolve_anchor(repo_root, review_rel)
+    is_ancestor = _ratchet_git.anchor_is_ancestor(repo_root, anchor)
+    stagnation = _ratchet_git.stagnation_commits(repo_root, anchor) if is_ancestor else None
     return stagnation, anchor, is_ancestor
 
 
@@ -224,7 +88,7 @@ def _write_gate_baseline(out: Path, ids, live_version: str) -> None:
 def _write_baseline(repo_root: Path, config: dict, args) -> dict:
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
-    ids, reason, live_version = _code_fingerprints(args, repo_root, scope_paths)
+    ids, reason, live_version = _scan.code_fingerprints(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "write-baseline-failed",
                 "messages": [f"cannot write gate baseline: {reason}"]}
@@ -234,7 +98,7 @@ def _write_baseline(repo_root: Path, config: dict, args) -> dict:
     # a reviewed batch accept) is the legitimate large-delta case — it proceeds with
     # --confirm-baseline-delta. This is the maintenance command refusing a silent
     # overwrite; it never touches the gate evaluate path, so it cannot false-block a push.
-    existing_ids = _ratchet.load_gate_baseline_ids(_load_json(out))
+    existing_ids = _ratchet.load_gate_baseline_ids(_scan.load_json(out))
     delta_note = None
     if existing_ids is not None:
         added, removed = ids - existing_ids, existing_ids - ids
@@ -281,12 +145,12 @@ def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
     out = repo_root / baseline_rel
-    existing_ids = _ratchet.load_gate_baseline_ids(_load_json(out))
+    existing_ids = _ratchet.load_gate_baseline_ids(_scan.load_json(out))
     if existing_ids is None:
         return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
                 "messages": [f"no readable gate baseline at {baseline_rel}; run --write-baseline "
                              "once to seed one before using scoped accepts."]}
-    live_ids, reason, live_version = _code_fingerprints(args, repo_root, scope_paths)
+    live_ids, reason, live_version = _scan.code_fingerprints(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
                 "messages": [f"cannot compute live fingerprints: {reason}"]}
@@ -340,10 +204,10 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
             "falls back to nose DEFAULT_PATHS (likely the wrong tree). Set scope_paths "
             "to this repo's code roots."
         )
-    overlay = _load_json(repo_root / review_rel)
+    overlay = _scan.load_json(repo_root / review_rel)
     if overlay is None:
         degraded.append(f"overlay missing/unreadable ({review_rel})")
-    raw_baseline = _load_json(repo_root / baseline_rel)
+    raw_baseline = _scan.load_json(repo_root / baseline_rel)
     baseline_ids = _ratchet.load_gate_baseline_ids(raw_baseline)
     baseline_version = _ratchet.load_gate_baseline_tool_version(raw_baseline)
     baseline_algo = _ratchet.load_gate_baseline_algo_version(raw_baseline)
@@ -355,7 +219,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         # but wired to nothing; fold it in here so a silent integrity drift surfaces
         # as advisory through the existing dup-ratchet phase. Advisory only (FD8).
         degraded.append(f"gate baseline integrity ({baseline_rel}): " + "; ".join(integrity))
-    code_ids, code_reason, live_version = _code_fingerprints(args, repo_root, scope_paths)
+    code_ids, code_reason, live_version = _scan.code_fingerprints(args, repo_root, scope_paths)
     if code_reason:
         degraded.append(code_reason)
     elif args.code_inventory is None and not code_ids and baseline_ids:
@@ -367,7 +231,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
             f"code scan returned 0 families but the gate baseline has {len(baseline_ids)}; "
             "likely a broken scan or misconfigured scope_paths"
         )
-    doc_signatures, doc_reason = _doc_drift_signatures(args, repo_root)
+    doc_signatures, doc_reason = _scan.doc_drift_signatures(args, repo_root)
     if doc_reason:
         degraded.append(doc_reason)
 

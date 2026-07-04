@@ -43,6 +43,8 @@ def _load(name: str):
 
 
 lib = _load("dup_ratchet_lib")
+gitmod = _load("dup_ratchet_git")
+scan = _load("dup_ratchet_scan")
 nose_report = _load("nose_report_lib")
 fingerprint = _load("nose_fingerprint_lib")
 # check_dup_ratchet is loaded in-process (not only via subprocess) so its CLI/run
@@ -264,17 +266,17 @@ def test_git_seams_anchor_stagnation_and_reset(tmp_path: Path) -> None:
     for index in range(3):
         _git(repo, "commit", "--allow-empty", "-m", f"work {index}")
 
-    assert lib.resolve_anchor(repo, "q/dup-review.json") == anchor
-    assert lib.anchor_is_ancestor(repo, anchor) is True
-    assert lib.stagnation_commits(repo, anchor) == 3
+    assert gitmod.resolve_anchor(repo, "q/dup-review.json") == anchor
+    assert gitmod.anchor_is_ancestor(repo, anchor) is True
+    assert gitmod.stagnation_commits(repo, anchor) == 3
 
     # Editing the overlay (a review) advances the anchor and resets the clock.
     overlay.write_text('{"reviewed": 1}\n', encoding="utf-8")
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "lower the ceiling")
     new_anchor = _git(repo, "rev-parse", "HEAD").stdout.strip()
-    assert lib.resolve_anchor(repo, "q/dup-review.json") == new_anchor
-    assert lib.stagnation_commits(repo, new_anchor) == 0
+    assert gitmod.resolve_anchor(repo, "q/dup-review.json") == new_anchor
+    assert gitmod.stagnation_commits(repo, new_anchor) == 0
 
 
 def test_git_seams_orphan_and_missing(tmp_path: Path) -> None:
@@ -285,11 +287,11 @@ def test_git_seams_orphan_and_missing(tmp_path: Path) -> None:
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "init")
     # A bogus/orphaned anchor is not an ancestor, and stagnation is unknowable.
-    assert lib.anchor_is_ancestor(repo, "0" * 40) is False
-    assert lib.stagnation_commits(repo, "0" * 40) is None
-    assert lib.anchor_is_ancestor(repo, None) is False
+    assert gitmod.anchor_is_ancestor(repo, "0" * 40) is False
+    assert gitmod.stagnation_commits(repo, "0" * 40) is None
+    assert gitmod.anchor_is_ancestor(repo, None) is False
     # A path never committed has no anchor.
-    assert lib.resolve_anchor(repo, "q/never.json") is None
+    assert gitmod.resolve_anchor(repo, "q/never.json") is None
 
 
 # --------------------------------------------------------------------------- #
@@ -702,11 +704,11 @@ def test_inproc_write_baseline_failed_on_unreadable_inventory(tmp_path: Path) ->
 
 
 def test_inproc_families_from_text_handles_bad_inputs() -> None:
-    assert check._families_from_text(None) is None
-    assert check._families_from_text("not json{") is None
-    assert check._families_from_text("[1, 2]") is None  # not a dict
-    assert check._families_from_text('{"families": "x"}') == []  # families not a list
-    assert check._families_from_text("") == []
+    assert scan.families_from_text(None) is None
+    assert scan.families_from_text("not json{") is None
+    assert scan.families_from_text("[1, 2]") is None  # not a dict
+    assert scan.families_from_text('{"families": "x"}') == []  # families not a list
+    assert scan.families_from_text("") == []
 
 
 def test_inproc_missing_overlay_and_baseline_degrade(tmp_path: Path) -> None:
@@ -737,49 +739,49 @@ def test_inproc_doc_inventory_status_degrades(tmp_path: Path) -> None:
 # (the #393 subprocess-only class — the injected-inventory branch carries the version).
 # --------------------------------------------------------------------------- #
 def test_payload_tool_version_reads_or_empty() -> None:
-    assert check._payload_tool_version('{"tool_version": "0.14.0"}') == "0.14.0"
-    assert check._payload_tool_version('{"families": []}') == ""  # unstamped
-    assert check._payload_tool_version("") == ""
-    assert check._payload_tool_version(None) == ""
-    assert check._payload_tool_version("not json{") == ""
-    assert check._payload_tool_version('{"tool_version": 14}') == ""  # non-string
-    assert check._payload_tool_version("[1, 2]") == ""  # not a dict
+    assert scan.payload_tool_version('{"tool_version": "0.14.0"}') == "0.14.0"
+    assert scan.payload_tool_version('{"families": []}') == ""  # unstamped
+    assert scan.payload_tool_version("") == ""
+    assert scan.payload_tool_version(None) == ""
+    assert scan.payload_tool_version("not json{") == ""
+    assert scan.payload_tool_version('{"tool_version": 14}') == ""  # non-string
+    assert scan.payload_tool_version("[1, 2]") == ""  # not a dict
 
 
 def test_scan_code_fingerprints_threads_live_version(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
-        check._nose_report, "collect_families",
+        scan._nose_report, "collect_families",
         lambda *_a, **_k: {"status": "findings", "families": [{"family_fingerprint": "x"}], "tool_version": "0.14.0"},
     )
-    ids, reason, version = check._scan_code_fingerprints(tmp_path, ["scripts"])
+    ids, reason, version = scan.scan_code_fingerprints(tmp_path, ["scripts"])
     assert ids == {"x"} and reason is None and version == "0.14.0"
 
 
 def test_scan_code_fingerprints_unreadable_member_degrades_whole_gate(monkeypatch, tmp_path: Path) -> None:
     # A family with no stamped fingerprint (unreadable member span) degrades the WHOLE
     # scan to a reason -> advisory (FD8), never a dropped family.
-    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
-        check._nose_report, "collect_families",
+        scan._nose_report, "collect_families",
         lambda *_a, **_k: {"status": "findings",
                            "families": [{"family_fingerprint": "x"}, {"family_id": "noFP"}],
                            "tool_version": "0.15.0"},
     )
-    ids, reason, version = check._scan_code_fingerprints(tmp_path, ["scripts"])
+    ids, reason, version = scan.scan_code_fingerprints(tmp_path, ["scripts"])
     assert ids == set() and "unreadable member span" in reason and version == "0.15.0"
 
 
 def test_scan_code_fingerprints_error_and_missing_nose_carry_version(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: "nose")
+    monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
-        check._nose_report, "collect_families",
+        scan._nose_report, "collect_families",
         lambda *_a, **_k: {"status": "error", "stderr": "boom", "families": [], "tool_version": "0.14.0"},
     )
-    ids, reason, version = check._scan_code_fingerprints(tmp_path, ["scripts"])
+    ids, reason, version = scan.scan_code_fingerprints(tmp_path, ["scripts"])
     assert ids == set() and "boom" in reason and version == "0.14.0"  # error still carries the live version
-    monkeypatch.setattr(check._inventory, "resolve_nose_bin", lambda: None)
-    ids, reason, version = check._scan_code_fingerprints(tmp_path, [])
+    monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: None)
+    ids, reason, version = scan.scan_code_fingerprints(tmp_path, [])
     assert ids == set() and "nose binary not found" in reason and version == ""
 
 
@@ -789,10 +791,10 @@ def test_code_fingerprints_injected_threads_version_and_unreadable(tmp_path: Pat
         json.dumps({"families": [{"family_fingerprint": "a"}], "tool_version": "0.14.0"}), encoding="utf-8"
     )
     args = check.parse_args(["--code-inventory", str(inv_path)])
-    ids, reason, version = check._code_fingerprints(args, tmp_path, [])
+    ids, reason, version = scan.code_fingerprints(args, tmp_path, [])
     assert ids == {"a"} and reason is None and version == "0.14.0"
     missing = check.parse_args(["--code-inventory", str(tmp_path / "absent.json")])
-    ids, reason, version = check._code_fingerprints(missing, tmp_path, [])
+    ids, reason, version = scan.code_fingerprints(missing, tmp_path, [])
     assert ids == set() and "unreadable" in reason and version == ""
 
 

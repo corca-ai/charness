@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Boy-scout duplicate ratchet — pure policy + gate-baseline + git seams (item 5, slice 2).
+"""Boy-scout duplicate ratchet — pure policy + gate-baseline seams (item 5, slice 2).
 
 Slice 1 built the reviewed-fixable overlay (``dup_review_lib`` / ``dup-review.json``).
 This module is the ratchet's teeth: given the current duplicate families, the
@@ -37,7 +37,8 @@ Two arms (spec Fixed Decision 1 + Slice 2 D1–D3):
 Stagnation is measured from git, not a stored counter or self-SHA (FD5): the anchor
 is the commit that last touched the overlay; stagnation = ``rev-list --count
 <anchor>..HEAD``. ``evaluate`` takes the stagnation distance *injected* (the git
-seams below are separate and injectable) so the policy stays pure and testable.
+seams live in ``dup_ratchet_git`` and are separate and injectable) so the policy
+stays pure and testable.
 An anchor that is not an ancestor of HEAD (rebase/squash/force-push orphaned it)
 softens the boy-scout arm to advisory ("re-baseline needed"); it never blocks on a
 phantom. Overlay/baseline/nose missing => degraded advisory, never a block (FD8).
@@ -45,8 +46,6 @@ phantom. Overlay/baseline/nose missing => degraded advisory, never a block (FD8)
 
 from __future__ import annotations
 
-import subprocess
-from pathlib import Path
 from typing import Any, Iterable
 
 GATE_BASELINE_SCHEMA_VERSION = "charness.quality.dup_ratchet_baseline.v2"
@@ -257,47 +256,6 @@ def plan_scoped_rebaseline(
     if refused_added:
         return {"ok": False, "errors": [], "refused_added": refused_added, "updated_ids": None}
     return {"ok": True, "errors": [], "refused_added": [], "updated_ids": updated_ids}
-
-
-# --------------------------------------------------------------------------- #
-# Git seams (injectable per FD5; evaluate takes the distance, never inlines git)
-# --------------------------------------------------------------------------- #
-def _git_output(repo_root: Path, args: list[str]) -> tuple[int, str]:
-    try:
-        result = subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True)
-    except OSError:
-        return 1, ""
-    return result.returncode, result.stdout.strip()
-
-
-def resolve_anchor(repo_root: Path, review_artifact_rel: str, head: str = "HEAD") -> str | None:
-    """The commit that last touched the overlay (``git log -1 --format=%H``). The
-    anchor advancing (an overlay edit, e.g. lowering the ceiling) resets stagnation."""
-    rc, out = _git_output(repo_root, ["log", "-1", "--format=%H", head, "--", review_artifact_rel])
-    if rc != 0 or not out:
-        return None
-    return out.splitlines()[0].strip() or None
-
-
-def anchor_is_ancestor(repo_root: Path, anchor: str | None, head: str = "HEAD") -> bool:
-    if not anchor:
-        return False
-    rc, _ = _git_output(repo_root, ["merge-base", "--is-ancestor", anchor, head])
-    return rc == 0
-
-
-def stagnation_commits(repo_root: Path, anchor: str | None, head: str = "HEAD") -> int | None:
-    """Commits over ``<anchor>..<head>`` (FD5). ``None`` when the anchor is unknown
-    or git cannot answer — the caller degrades the boy-scout arm to advisory."""
-    if not anchor:
-        return None
-    rc, out = _git_output(repo_root, ["rev-list", "--count", f"{anchor}..{head}"])
-    if rc != 0:
-        return None
-    try:
-        return int(out.strip())
-    except ValueError:
-        return None
 
 
 # --------------------------------------------------------------------------- #

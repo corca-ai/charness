@@ -9,6 +9,17 @@
 ## Current State
 
 - **This session (commits land with the work):**
+  - **dup_ratchet module split DONE** — extracted `dup_ratchet_scan.py` (live
+    fingerprint/drift-signature collection) and `dup_ratchet_git.py` (git stagnation
+    seams) as leaf modules; both WARN-band helpers back under 330 (check 357→250,
+    lib 340→309). Triage kept **S4-Defer-1/-3 DEFERRED** (reopen triggers unmaterialized:
+    post-Slice-4 baseline rotations track real code edits, not phantom comment edits).
+    The mechanical rename touched accepted cloned spans → 2 internal-boilerplate
+    fingerprints rotated, scoped-accepted (+2/-0). Caught+fixed a moved-code
+    attention-state-declaration regression (`skipped` relocated to `dup_ratchet_scan.py`).
+    Fresh-eye SHIP. Critique:
+    [dup-ratchet-split](../charness-artifacts/critique/2026-07-04-dup-ratchet-module-split.md).
+- **Prior session (already committed):**
   - **D36 RESOLVED** — single-sourced the question/decision-needed floor-exemption
     advisory into `issue_verify_closeout_body.review_advisory_for_classification`
     (`(classification, *, numbers, source)`), re-exported through `issue_verify_closeout.py`;
@@ -36,10 +47,12 @@ are DONE; remaining:
    delete genuine dead code, or add `# noqa`-style vulture allowlist entries / raise
    `[tool.vulture] min_confidence` for confirmed false positives. Run it with
    `CHARNESS_QUALITY_LABELS=dead-code-advisory ./scripts/run-quality.sh`.
-2. **Remaining audit follow-ups (own slices).** `dup_ratchet` module split (WARN band)
-   — batch with the D30 residuals (S4-Defer-1/-3) so the ratchet engine is opened once
-   and re-baselined once; 81-site argparse-help debt (default-off, biggest churn) as its
-   own batch LAST so its baseline rotation does not contaminate other review.
+2. **Remaining audit follow-ups (own slices).** `dup_ratchet` module split **DONE** this
+   session (see Current State); S4-Defer-1/-3 kept **DEFERRED** (triage: reopen triggers
+   unmaterialized — reopen only when an in-place-comment false-rotation or membership-shrink
+   friction is actually observed). Remaining: 81-site argparse-help debt (default-off,
+   biggest churn) as its own batch LAST so its baseline rotation does not contaminate other
+   review.
 3. **Trip-wire (not scheduled): D33** — `run_skill_efficiency_ab.py` is at 479/480; any
    slice that touches it MUST extract a module first before appending.
 
