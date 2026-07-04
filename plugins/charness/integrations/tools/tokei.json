@@ -16,19 +16,19 @@
     "install": {
       "mode": "script",
       "commands": [
-        "if command -v cargo >/dev/null 2>&1; then cargo install tokei; else echo 'Install tokei from https://github.com/XAMPPRocky/tokei#installation'; exit 1; fi"
+        "if command -v cargo >/dev/null 2>&1; then cargo install tokei; elif command -v brew >/dev/null 2>&1; then brew install tokei; else echo 'Install tokei from https://github.com/XAMPPRocky/tokei#installation'; exit 1; fi"
       ],
       "docs_url": "https://github.com/XAMPPRocky/tokei#installation",
       "install_url": "https://github.com/XAMPPRocky/tokei#installation",
       "notes": [
-        "Prefer `cargo install tokei` when Rust is already on the machine; otherwise download a release binary from the upstream repo.",
+        "Prefer `cargo install tokei` when Rust is already on the machine; otherwise use `brew install tokei` on macOS or download a release binary from the upstream repo.",
         "After installation, ensure the install bin directory is on PATH and verify with `tokei --version` before trusting any quality SLOC inventory output."
       ]
     },
     "update": {
       "mode": "script",
       "commands": [
-        "if command -v cargo >/dev/null 2>&1; then cargo install tokei --force; else echo 'Update tokei from https://github.com/XAMPPRocky/tokei#installation'; exit 1; fi"
+        "if command -v cargo >/dev/null 2>&1; then cargo install tokei --force; elif command -v brew >/dev/null 2>&1; then brew upgrade tokei; else echo 'Update tokei from https://github.com/XAMPPRocky/tokei#installation'; exit 1; fi"
       ],
       "docs_url": "https://github.com/XAMPPRocky/tokei/releases",
       "notes": [

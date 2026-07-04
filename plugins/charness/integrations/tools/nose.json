@@ -21,6 +21,7 @@
       "install_url": "https://github.com/corca-ai/nose#install",
       "notes": [
         "Preferred arbitrary-machine path is the upstream release installer, which downloads a prebuilt binary.",
+        "Homebrew users may install with `brew install corca-ai/tap/nose`.",
         "Use `NOSE_BIN` only as a maintainer-local override when testing a sibling checkout."
       ]
     },
@@ -32,7 +33,8 @@
       "docs_url": "https://github.com/corca-ai/nose/releases",
       "install_url": "https://github.com/corca-ai/nose#install",
       "notes": [
-        "Rerun the upstream release installer to update release-managed installs."
+        "Rerun the upstream release installer to update release-managed installs.",
+        "If installed by Homebrew, update through `brew upgrade nose` instead."
       ]
     }
   },
