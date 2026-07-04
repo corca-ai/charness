@@ -8,48 +8,44 @@
 
 ## Current State
 
-- **This session (commits land with the work):**
-  - **vulture dead-code triage DONE** — triaged all 33 `review_candidate` findings:
-    deleted 15 zero-reference dead symbols + 2 cascade orphans + 1 dead P4 duplicate
-    (`has_ai_provenance_marker`; live floor `evaluate_ai_provenance` untouched) + 1
-    vestigial 0-test file; fixed 7 test-local mock/protocol params. ≈−135 lines. PRIMARY
-    advisory pass now CLEAN; SWEEP 33→10 (all benign). The attention-state pre-commit gate
-    caught + blocked an over-deletion (2 marker consts in `report_usage_product_review.py`
-    are gate-required, not dead) — restored + commented. Fresh-eye SHIP. Critique:
-    [vulture-triage](../charness-artifacts/critique/2026-07-05-vulture-dead-code-triage.md).
-  - **dup_ratchet module split DONE** — extracted `dup_ratchet_scan.py` + `dup_ratchet_git.py`
-    leaf modules; both WARN-band helpers back under 330 (check 357→250, lib 340→309). Kept
-    **S4-Defer-1/-3 DEFERRED** (reopen triggers unmaterialized). 2 boilerplate fingerprints
-    rotated → scoped-accepted (+2/-0). Fresh-eye SHIP. Critique:
-    [dup-ratchet-split](../charness-artifacts/critique/2026-07-04-dup-ratchet-module-split.md).
-- **Prior (committed):** D36 close-exemption advisory single-sourced; vulture advisory WIRED
-  (default-off); CI hygiene (core-relative xdist workers, pinned release branch). PR #419
-  north-star P1-P3 sweep MERGED, released `v0.62.0` (post-merge boundary fix `5aa3f3fd`).
+- **This session (all pushed to origin/main; three issues CLOSED):**
+  - **#404 mutation regression CLOSED + CI-verified** — the "StrykerJS JSON
+    missing" auto-comment was a symptom: a hardcoded `'16'` xdist assertion failed
+    cosmic-ray's baseline probe, short-circuiting the `&&` so StrykerJS never ran.
+    The fix (`2c0d5c7c`) was committed-but-unpushed; published the 5-commit stack
+    after clearing a `dup-ratchet` blocker (`_package_root` bootstrap → intentional,
+    `94d37223`). `workflow_dispatch` run `28722214682` = **success**.
+  - **#415 matcher honesty CLOSED** — `collectCommandLog` no longer counts
+    `Agent`/`Task` spawn-prompt strings, so an RCF doc-open floor cannot pass on a
+    name-mention (`06c122ff`). Regression test + fresh-eye SHIP.
+  - **#411 gather floor CLOSED** — public-URL RCF doc-opens retired → substance
+    floor, both tagged INLINE (`51a40874`); rode the already-proven 2026-07-02
+    capture + framework support `325909f7`, no new capture.
+- **Prior work now published:** the vulture triage, dup_ratchet split, vulture
+  wiring, and D36 advisory commits were local-only (origin/main was 5 behind); this
+  session's push published them.
 
 ## Next Session
 
-Advantageous order designed earlier (signal-first → boundary-while-gate-stable →
-batched baseline-rotating work → largest sweep last). DONE: D36, CI hygiene, vulture
-wiring, vulture triage, dup_ratchet split. Remaining:
-
-1. **81-site argparse-help debt (the largest, churn-heavy batch, run LAST).** Default-off;
-   its baseline rotation is designed to run alone so it does not contaminate other review.
-   This is the last scheduled audit follow-up. (`dup_ratchet` split and vulture triage are
-   both DONE — see Current State; S4-Defer-1/-3 stay **DEFERRED** until a reopen trigger is
-   actually observed.)
-2. **Optional follow-up (unscheduled):** silence the 10 residual vulture SWEEP
-   review_candidates via a classifier allowlist — deferred as a disproportionate default-off
-   gate-contract change; only worth it if a maintainer wants a fully-quiet sweep.
-3. **Trip-wire (not scheduled): D33** — `run_skill_efficiency_ab.py` is at 479/480; any
-   slice that touches it MUST extract a module first before appending.
+1. **#410 remaining RCF→RSF sweep (heavyweight, ask-before-run captures).** The
+   doc-opening skills `handoff`×4 + `hotl/ledger-and-dispositions` need fresh
+   ask-before-run Cautilus captures to OBSERVE an honest RSF token before flipping
+   (capture-before-pin; each capture ~1M tokens); `setup`×4 is #413 (same
+   substance-floor shape as gather). Queue + method:
+   [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
+2. **#416 / #414 / #408 concept-boundary discipline (operator design interview).**
+   Shape an adapter-owned boundary checkpoint for the lifecycle skills
+   (impl/critique/issue/quality/spec/achieve), keeping Charness portable (no
+   repo-local taxonomy). Design conversation first; no code until agreed.
+3. **81-site argparse-help debt (largest, churn-heavy, run LAST).** Default-off;
+   baseline rotation runs alone. Trip-wire **D33**: `run_skill_efficiency_ab.py` at
+   479/480 — extract a module before appending.
 
 ## Discuss
 
-- **D34 (announcement self-attest independence) and D35 (release probe
-  shape-match) DECLINED** by the operator (2026-07-04) — accepted as disclosed
-  presence-floor residuals, not pursued; reopen only if the recorded failure
-  materializes (see [deferred-decisions.md](./deferred-decisions.md)).
+- **D34/D35 DECLINED** (2026-07-04) — disclosed presence-floor residuals; reopen
+  only if the recorded failure materializes. See [deferred-decisions.md](./deferred-decisions.md).
 
 ## References
 
-- pickup: [pr419-adversarial-fix-closeout](../charness-artifacts/critique/2026-07-04-pr419-adversarial-fix-closeout.md) · [deferred-decisions.md](./deferred-decisions.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
+- [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md) · [deferred-decisions.md](./deferred-decisions.md) · [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
