@@ -23,6 +23,13 @@
   },
   {
    "class": "intentional",
+   "id": "13e8858d018f0304",
+   "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
+   "reviewed_at": "2026-07-05",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
    "id": "18cd4c2abe1fdf16",
    "note": "portable-path helper family rotated after HITL scratchpad template extraction; helpers intentionally stay local because fallback behavior differs by surface and shared import coupling would exceed the value",
    "reviewed_at": "2026-06-27",
