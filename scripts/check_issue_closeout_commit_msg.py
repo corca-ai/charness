@@ -147,6 +147,30 @@ def _bare_classification(body: str) -> str:
     return "bug"
 
 
+def _exemption_advisories(reports: list[dict[str, Any]], advisory_fn: Any) -> list[str]:
+    """Non-blocking REVIEW advisories for any report whose self-classification
+    exempts it from the behavioral-verdict and resolution-critique floors.
+
+    Mirrors the ``close-with-comment`` carrier (``issue_close.py`` surfaces the
+    same advisory through its ``review_advisory`` field) so a ``question`` /
+    ``decision-needed`` close is not the *silent* path on the commit-msg carrier
+    the way it already is not on ``close-with-comment`` (D36). ``advisory_fn`` is
+    the shared owner ``issue_verify_closeout.review_advisory_for_classification``;
+    passing ``numbers``/``source`` lets the single advisory name which close it
+    applies to. Never affects ``ok``/exit status — advisory only.
+    """
+    lines: list[str] = []
+    for report in reports:
+        lines.extend(
+            advisory_fn(
+                report.get("classification", ""),
+                numbers=report.get("numbers", []),
+                source=report.get("source_artifact"),
+            )
+        )
+    return lines
+
+
 def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any]:
     issue_verify_closeout = _load_issue_verify_closeout()
     iter_refs = issue_verify_closeout.iter_close_keyword_refs
@@ -158,7 +182,7 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
     # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
     bare_numbers = _bare_close_keyword_numbers(sanitized_body, covered, iter_refs)
     if not artifacts and not bare_numbers:
-        return {"ok": True, "status": "not_applicable", "artifacts": []}
+        return {"ok": True, "status": "not_applicable", "artifacts": [], "review_advisory": []}
 
     sanitized_file = commit_msg_file.with_suffix(commit_msg_file.suffix + ".charness-closeout-body")
     sanitized_file.write_text(sanitized_body, encoding="utf-8")
@@ -204,6 +228,9 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
         "artifacts": artifacts,
         "bare_close_numbers": bare_numbers,
         "reports": reports,
+        "review_advisory": _exemption_advisories(
+            reports, issue_verify_closeout.review_advisory_for_classification
+        ),
     }
 
 
@@ -246,6 +273,19 @@ def _format_failure(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _emit_human_output(report: dict[str, Any]) -> None:
+    """Non-JSON stderr rendering: the failure detail when the floor fails, plus
+    any non-blocking exemption advisory. A ``question``/``decision-needed`` close
+    self-exempts from the behavioral/critique floors; surfacing that here (it
+    mirrors ``close-with-comment``'s ``review_advisory``) keeps the exemption from
+    being the silent path on the commit-msg carrier, without ever changing exit.
+    """
+    if not report["ok"]:
+        print(_format_failure(report), file=sys.stderr)
+    for line in report.get("review_advisory", []):
+        print(f"charness commit-msg: {line}", file=sys.stderr)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -258,8 +298,8 @@ def main() -> int:
     report = evaluate(repo_root, args.commit_msg_file, args.repo)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
-    elif not report["ok"]:
-        print(_format_failure(report), file=sys.stderr)
+    else:
+        _emit_human_output(report)
     return 0 if report["ok"] else 1
 
 

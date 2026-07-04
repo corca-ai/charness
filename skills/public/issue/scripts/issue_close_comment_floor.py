@@ -18,29 +18,12 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique", "issue_close_comment_floor_critique")
 
-# Classifications with no live user-facing behavior to confirm — mirrors
-# issue_verify_closeout_body.BEHAVIORAL_VERDICT_CLASSIFICATIONS's complement.
-_FLOOR_EXEMPT_CLASSIFICATIONS = ("question", "decision-needed")
-
-
-def review_advisory_for_classification(classification: str) -> list[str]:
-    """REVIEW-severity advisory for a close whose classification exempts it
-    from the behavioral-verdict and resolution-critique floors.
-
-    Mirrors ``scripts/skill_cut_safety_advisory.py``'s pattern: forces a
-    question for whoever reads the close output, never fails the command. The
-    classification is caller-supplied with no independent check on it, so a
-    `question`/`decision-needed` close silently bypasses two of the three floor
-    checks; this line makes that bypass visible instead of silent.
-    """
-    if classification not in _FLOOR_EXEMPT_CLASSIFICATIONS:
-        return []
-    return [
-        f"REVIEW: classification '{classification}' exempts this close from the "
-        "behavioral-verdict and resolution-critique floors (only source preservation still "
-        "applies); confirm the classification is correct before treating this issue as "
-        "resolved (advisory only, never blocks)."
-    ]
+# The floor-exemption advisory now has a single carrier-neutral owner in
+# ``issue_verify_closeout_body`` (D36). Re-export it so this module's existing
+# caller (``issue_close.py``'s ``_CLOSE_COMMENT_FLOOR.review_advisory_for_classification``)
+# keeps working while the commit-msg carrier shares the same implementation — no
+# duplicated advisory body to drift between carriers or trip the dup-ratchet gate.
+review_advisory_for_classification = _BODY.review_advisory_for_classification
 
 
 def evaluate_close_comment_floor(

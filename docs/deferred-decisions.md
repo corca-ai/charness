@@ -349,9 +349,30 @@ Reopen trigger:
 ### D36. Surface the question/decision-needed exemption on the commit-msg close carrier
 
 - Question: Should [`check_issue_closeout_commit_msg.py`](../scripts/check_issue_closeout_commit_msg.py) surface a non-blocking REVIEW advisory when a close self-classifies `question`/`decision-needed` (mirroring [`issue_close_comment_floor.review_advisory_for_classification`](../skills/public/issue/scripts/issue_close_comment_floor.py)), so the floor exemption is not the silent path on the commit-message carrier the way it already is not on `close-with-comment`?
-- Current choice: Defer — SCHEDULED for the next session (2026-07-04, operator direction). Surfaced by the PR #419 adversarial verification (minor, additive-visibility). A first attempt was authored, fresh-eye-reviewed CLEAN, then reverted because the repo dup-ratchet gate blocked it as P2 displaced duplication of the existing close-comment advisory. Doing it right needs a single shared owner both carriers import (candidate: `review_advisory_for_classification` moved into `issue_verify_closeout_body.py`, re-exported through `issue_verify_closeout.py`, and consumed by both), unifying the list-vs-string return and the `number` vs `numbers`/`source` signatures — a boundary-surface refactor that deserves its own slice + fresh-eye pass, not a pre-release ride-along.
-- Impact surfaces: [check_issue_closeout_commit_msg.py](../scripts/check_issue_closeout_commit_msg.py), [issue_close_comment_floor.py](../skills/public/issue/scripts/issue_close_comment_floor.py), [issue_verify_closeout_body.py](../skills/public/issue/scripts/issue_verify_closeout_body.py), [issue_verify_closeout.py](../skills/public/issue/scripts/issue_verify_closeout.py), and their plugin mirrors + tests.
-- Reopen trigger: A commit-message close self-classifies `question`/`decision-needed` and skips the behavioral/critique floors with no reviewer noticing, or the shared close advisory is touched for another reason.
+- Resolution: RESOLVED (2026-07-04, this session) exactly as the deferral named.
+  `review_advisory_for_classification` now has a single carrier-neutral owner in
+  `issue_verify_closeout_body.py` (`FLOOR_EXEMPT_CLASSIFICATIONS` + a unified
+  `(classification, *, numbers=None, source=None)` signature), re-exported through
+  `issue_verify_closeout.py`, with `issue_close_comment_floor.py` reduced to a
+  re-export (no duplicated body). `check_issue_closeout_commit_msg.py` surfaces the
+  advisory via `_exemption_advisories` + `_emit_human_output` and a `review_advisory`
+  JSON field — non-blocking, exit stays 0. The classification-only close-with-comment
+  call is byte-identical to before (scope suffix empty when `numbers` is None). No new
+  authored duplication: dup-ratchet stayed clean for the changed files; the one accepted
+  baseline family (`97ac3e8f904686f5`, scoped `--accept-family`) is a collateral nose
+  global-clustering rotation among UNTOUCHED files (`check_prose_pin`/`check_skill_cut_safety`
+  gained `render_critique_section_changed_surfaces` as a third member) triggered because the
+  `main()` thinning removed a pre-existing clone — verified by fingerprint set-diff and an
+  independent fresh-eye subagent (SHIP, all six angles execution-confirmed). Critique:
+  [d36-close-exemption-advisory-single-source](../charness-artifacts/critique/2026-07-04-d36-close-exemption-advisory-single-source.md).
+- Why deferral was right at the time: doing it as a pre-release ride-along on PR #419 would
+  have shipped either the dup-ratchet-blocked copy or a rushed shared-owner refactor at an
+  irreversible boundary; the shared-owner seam + its fresh-eye pass earned their own slice.
+- Impact surfaces (migrated in lockstep): [check_issue_closeout_commit_msg.py](../scripts/check_issue_closeout_commit_msg.py), [issue_close_comment_floor.py](../skills/public/issue/scripts/issue_close_comment_floor.py), [issue_verify_closeout_body.py](../skills/public/issue/scripts/issue_verify_closeout_body.py), [issue_verify_closeout.py](../skills/public/issue/scripts/issue_verify_closeout.py), their plugin mirrors, the gate baseline [dup-ratchet-baseline.json](../charness-artifacts/quality/dup-ratchet-baseline.json), and tests ([test_issue_close_exemption_advisory.py](../tests/test_issue_close_exemption_advisory.py), the commit-msg in-process + hook suites).
+- Residual reopen trigger: a commit-message close self-classifies `question`/`decision-needed`
+  and skips the behavioral/critique floors with no reviewer noticing, or the shared close
+  advisory is touched for another reason. Orphan baseline fingerprints (`3d4af4`, `d38941`)
+  left by the additive scoped-accept are the known D30 residual churn, not a D36 regression.
 
 ## Next Action Contract
 

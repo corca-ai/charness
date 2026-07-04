@@ -43,6 +43,52 @@ _PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na"}
 # resolution-critique classification gate).
 BEHAVIORAL_VERDICT_CLASSIFICATIONS = ("bug", "feature", "deferred-work")
 
+# Classifications with no live user-facing behavior to confirm — the exact
+# complement of BEHAVIORAL_VERDICT_CLASSIFICATIONS within the closeout
+# classification set. Single canonical home for BOTH close carriers (the
+# ``close-with-comment`` floor and the commit-msg carrier) so the floor-exemption
+# advisory and its exempt set cannot drift between them (D36).
+FLOOR_EXEMPT_CLASSIFICATIONS = ("question", "decision-needed")
+
+
+def review_advisory_for_classification(
+    classification: str,
+    *,
+    numbers: list[int] | None = None,
+    source: str | None = None,
+) -> list[str]:
+    """REVIEW-severity advisory for a close whose classification exempts it from
+    the behavioral-verdict and resolution-critique floors.
+
+    Carrier-neutral single owner (D36). ``close-with-comment`` calls it with just
+    a ``classification`` (single close, no scope suffix — the historical form, so
+    that carrier's output is byte-identical to before). The commit-msg carrier
+    passes the issue ``numbers`` and the staged-artifact ``source`` (or ``None``
+    for a bare commit-message close keyword) so the same advisory names which
+    close it applies to.
+
+    Mirrors ``scripts/skill_cut_safety_advisory.py``'s pattern: forces a question
+    for whoever reads the close output, never fails the command. The
+    classification is caller-supplied with no independent check on it, so a
+    ``question`` / ``decision-needed`` close silently bypasses two of the three
+    floor checks; this line makes that bypass visible instead of silent on BOTH
+    carriers (advisory only, never blocks).
+    """
+    if classification not in FLOOR_EXEMPT_CLASSIFICATIONS:
+        return []
+    scope = ""
+    if numbers:
+        refs = ", ".join(f"#{number}" for number in numbers)
+        where = source or "commit-message close keyword"
+        scope = f" ({refs} via {where})"
+    return [
+        f"REVIEW: classification '{classification}'{scope} exempts this close from the "
+        "behavioral-verdict and resolution-critique floors (only source preservation still "
+        "applies); confirm the classification is correct before treating this issue as "
+        "resolved (advisory only, never blocks)."
+    ]
+
+
 # Per-issue behavioral-verdict line grammar, mirroring the ``Critique #N:`` /
 # ``Critique:`` shorthand: ``Behavior #N: <distinct-channel or disposition>`` per
 # issue, with a single-issue ``Behavior: <…>`` shorthand.

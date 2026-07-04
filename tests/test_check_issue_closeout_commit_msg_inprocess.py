@@ -41,3 +41,31 @@ def test_format_failure_renders_bare_close_keyword_line_when_no_artifact() -> No
     report = {"reports": [{"source_artifact": None, "numbers": [10, 11]}]}
     rendered = checker._format_failure(report)
     assert "- commit message close keyword (no staged closeout artifact): #10, #11" in rendered
+
+
+def _advisory_fn():
+    # Exercise the real load + re-export chain (D36): the commit-msg carrier
+    # resolves the shared advisory owner through `issue_verify_closeout`.
+    return checker._load_issue_verify_closeout().review_advisory_for_classification
+
+
+def test_exemption_advisories_surface_for_exempt_classification() -> None:
+    reports = [
+        {"classification": "question", "numbers": [42], "source_artifact": "charness-artifacts/issue/x.md"},
+    ]
+    lines = checker._exemption_advisories(reports, _advisory_fn())
+    assert len(lines) == 1
+    assert "#42" in lines[0]
+    assert "charness-artifacts/issue/x.md" in lines[0]
+
+
+def test_exemption_advisories_bare_keyword_names_default_scope() -> None:
+    reports = [{"classification": "decision-needed", "numbers": [7], "source_artifact": None}]
+    lines = checker._exemption_advisories(reports, _advisory_fn())
+    assert len(lines) == 1
+    assert "commit-message close keyword" in lines[0]
+
+
+def test_exemption_advisories_empty_for_nonexempt_classification() -> None:
+    reports = [{"classification": "bug", "numbers": [42], "source_artifact": None}]
+    assert checker._exemption_advisories(reports, _advisory_fn()) == []

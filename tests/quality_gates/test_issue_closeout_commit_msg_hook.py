@@ -271,6 +271,54 @@ def test_commit_msg_gate_staged_artifact_question_inference_is_unaffected(tmp_pa
     assert payload["reports"][0]["missing_fields"] == []
 
 
+def test_commit_msg_gate_surfaces_exemption_advisory_for_question_close(tmp_path: Path) -> None:
+    """D36: a `question`/`decision-needed` close self-exempts from the
+    behavioral-verdict and resolution-critique floors. On the commit-msg carrier
+    that exemption must be SURFACED (non-blocking, exit 0) exactly as it already
+    is on `close-with-comment`, so it is never the silent path. Falsifiable pair:
+    the exempt close surfaces the advisory here; the bug-close case below does
+    not."""
+    _init_repo(tmp_path)
+    body = "\n\n".join(
+        [
+            "Close #55.",
+            "JTBD: decide whether to ship the change.",
+            "Answer: yes, proceed.",
+        ]
+    )
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "verified"
+    assert len(payload["review_advisory"]) == 1
+    assert "#55" in payload["review_advisory"][0]
+    assert "exempts this close" in payload["review_advisory"][0]
+
+    human_readable = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    assert human_readable.returncode == 0, human_readable.stderr
+    assert "exempts this close" in human_readable.stderr
+    assert "#55" in human_readable.stderr
+
+
+def test_commit_msg_gate_bug_close_surfaces_no_exemption_advisory(tmp_path: Path) -> None:
+    """Falsifiable counterpart: a `bug` close has live behavior to confirm, so it
+    is NOT floor-exempt and surfaces no exemption advisory."""
+    _init_repo(tmp_path)
+    _stage_issue_closeout(tmp_path, _bug_closeout_body())
+    message = tmp_path / "message.txt"
+    message.write_text(_bug_closeout_body(), encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "verified"
+    assert payload["review_advisory"] == []
+
+
 def test_commit_msg_gate_fenced_close_keyword_in_message_still_triggers_floor(tmp_path: Path) -> None:
     """Regression: GitHub parses the raw commit message for close keywords and
     treats backticks as literal, so a close keyword inside a ``` code fence in
