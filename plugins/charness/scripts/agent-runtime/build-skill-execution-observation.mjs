@@ -37,8 +37,9 @@ const FILE_PATH_KEYS = ["file_path", "notebook_path"];
 // A real run routes to a reference as often via `sed -n` / `cat` / `rg` as via the
 // Read tool, so coverage that counts only FILE_PATH_KEYS under-reports (the retro
 // captures missed sed-read references this way). The floor matcher
-// (requiredCommandFragments) is unaffected — it already substring-matches the full
-// command log; this only sharpens the secondary coverage metric.
+// (requiredCommandFragments) is unaffected by this coverage sharpening — it
+// substring-matches the command log (which excludes subagent-spawn input; see
+// collectCommandLog); this only sharpens the secondary coverage metric.
 const READ_COMMANDS = new Set(["cat", "sed", "head", "tail", "less", "nl", "rg", "grep", "awk"]);
 // Read commands whose FIRST non-flag operand is a script/pattern, NOT a file. We
 // drop that operand so `grep "expert-lens.md" SKILL.md` counts SKILL.md and never
@@ -126,11 +127,28 @@ function toolUseBlocks(event) {
 // Bash commands, Read/Edit/Write paths, etc. Fragment matchers run against this,
 // so a routed reference read shows up as its absolute path containing the
 // reference basename.
+// Subagent-spawn tools. Their input (`prompt`/`description`) is the PARENT
+// MENTIONING a doc or command in the spawned instruction, not the parent opening
+// or running it. See collectCommandLog for why those strings are excluded (#415).
+const SUBAGENT_SPAWN_TOOLS = new Set(["Agent", "Task"]);
+
 export function collectCommandLog(events) {
 	const parts = [];
 	for (const event of events) {
 		for (const block of toolUseBlocks(event)) {
-			parts.push(String(block.name ?? ""));
+			const name = String(block.name ?? "");
+			parts.push(name);
+			// A subagent-spawn tool's input is the parent MENTIONING a doc/command in
+			// the spawned prompt, not the parent opening or running it. Counting those
+			// strings let an RCF doc-open floor (a requiredCommandFragments entry naming
+			// a reference basename) pass on a spawn-prompt name-drop with no genuine
+			// Read (#415). The spawned subagent's OWN reads live as its own tool_use
+			// blocks in this same event tree (parent + subagents/*.jsonl), so excluding
+			// the parent's spawn input never hides a genuine read — it only removes the
+			// dishonest mention path. The tool name itself is still pushed above.
+			if (SUBAGENT_SPAWN_TOOLS.has(name)) {
+				continue;
+			}
 			const input = block.input ?? {};
 			for (const value of Object.values(input)) {
 				if (typeof value === "string") {

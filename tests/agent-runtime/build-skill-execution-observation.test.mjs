@@ -330,6 +330,40 @@ test("buildExecutionObservation passes and counts coverage when a subagent reads
 	assert.deepEqual(report.coverage.coveredRefs, ["quality-lenses.md"]);
 });
 
+test("a spawn-prompt name-drop does not satisfy an RCF doc-open floor without a genuine read (#415)", () => {
+	// The parent MENTIONING a reference basename inside a spawned Agent/Task prompt
+	// is not an open — collectCommandLog must not surface it to the floor matcher.
+	const spawnOnly = [
+		assistantToolUse([
+			{ name: "Agent", input: { description: "apply triage", prompt: "...apply references/counterweight-triage.md when scoring..." } },
+		]),
+	];
+	assert.doesNotMatch(collectCommandLog(spawnOnly), /counterweight-triage\.md/);
+	assert.doesNotMatch(
+		collectCommandLog([assistantToolUse([{ name: "Task", input: { prompt: "open counterweight-triage.md" } }])]),
+		/counterweight-triage\.md/,
+	);
+
+	// So an RCF floor naming that basename FAILS when nothing actually opened it,
+	// even though a spawned subagent's prompt name-dropped it.
+	const spec = {
+		skillId: "critique",
+		evaluationId: "execution-critique",
+		targetId: "critique",
+		prompt: "/charness:critique",
+		requiredCommandFragments: ["counterweight-triage.md"],
+	};
+	assert.equal(buildExecutionObservation({ spec, events: spawnOnly }).packet.evaluations[0].outcome, "failed");
+
+	// A genuine subagent Read of the same ref still PASSES: the fix removes the
+	// dishonest mention path, not the real read path (which lives in the subagent track).
+	const spawnThenRead = [
+		assistantToolUse([{ name: "Agent", input: { prompt: "read references/counterweight-triage.md" } }]),
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/references/counterweight-triage.md" } }], { isSidechain: true }),
+	];
+	assert.equal(buildExecutionObservation({ spec, events: spawnThenRead }).packet.evaluations[0].outcome, "passed");
+});
+
 test("coverage denominator counts DEPTH refs only; INLINE/DUP stay advisory and declaredAll keeps the full count", () => {
 	const spec = {
 		skillId: "impl",
