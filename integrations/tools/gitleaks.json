@@ -15,7 +15,7 @@
     "install": {
       "mode": "script",
       "commands": [
-        "if command -v go >/dev/null 2>&1; then go install github.com/gitleaks/gitleaks/v8@latest && mkdir -p \"$HOME/.local/bin\" && ln -sf \"$(go env GOPATH)/bin/gitleaks\" \"$HOME/.local/bin/gitleaks\"; elif command -v brew >/dev/null 2>&1; then brew upgrade gitleaks || brew install gitleaks; else echo 'Update gitleaks from https://github.com/gitleaks/gitleaks#installing'; exit 1; fi"
+        "if command -v go >/dev/null 2>&1; then go install github.com/gitleaks/gitleaks/v8@latest && mkdir -p \"$HOME/.local/bin\" && ln -sf \"$(go env GOPATH)/bin/gitleaks\" \"$HOME/.local/bin/gitleaks\"; else echo 'Update gitleaks from https://github.com/gitleaks/gitleaks#installing'; exit 1; fi"
       ],
       "docs_url": "https://github.com/gitleaks/gitleaks#installing",
       "notes": [
@@ -26,7 +26,7 @@
     "update": {
       "mode": "script",
       "commands": [
-        "if command -v go >/dev/null 2>&1; then go install github.com/gitleaks/gitleaks/v8@latest && mkdir -p \"$HOME/.local/bin\" && ln -sf \"$(go env GOPATH)/bin/gitleaks\" \"$HOME/.local/bin/gitleaks\"; elif command -v brew >/dev/null 2>&1; then brew upgrade gitleaks || brew install gitleaks; else echo 'Update gitleaks from https://github.com/gitleaks/gitleaks#installing'; exit 1; fi"
+        "if command -v go >/dev/null 2>&1; then go install github.com/gitleaks/gitleaks/v8@latest && mkdir -p \"$HOME/.local/bin\" && ln -sf \"$(go env GOPATH)/bin/gitleaks\" \"$HOME/.local/bin/gitleaks\"; else echo 'Update gitleaks from https://github.com/gitleaks/gitleaks#installing'; exit 1; fi"
       ],
       "docs_url": "https://github.com/gitleaks/gitleaks/releases",
       "notes": [
