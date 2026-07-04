@@ -39,7 +39,7 @@ def _disable_plugin_fallback_manifests(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
 
 
-def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+def pytest_sessionfinish(session: pytest.Session) -> None:
     if os.environ.get("PYTEST_XDIST_WORKER"):
         return
     guard = _REPO_ROOT / "scripts" / "agent_browser_runtime_guard.py"

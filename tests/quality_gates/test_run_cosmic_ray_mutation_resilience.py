@@ -207,7 +207,7 @@ def test_restore_module_paths_best_effort_when_git_missing(tmp_path: Path) -> No
 def test_restore_module_paths_continues_past_one_file_failure(tmp_path: Path) -> None:
     attempted: list[str] = []
 
-    def fake_run(cmd, cwd, check, capture_output, text):  # noqa: ANN001
+    def fake_run(cmd, **_kwargs):  # noqa: ANN001
         attempted.append(cmd[-1])
         rc = 1 if cmd[-1].endswith("a.py") else 0
         return subprocess.CompletedProcess(args=cmd, returncode=rc, stderr="boom")

@@ -109,7 +109,7 @@ def test_manifest_without_base_line_is_an_error(tmp_path: Path) -> None:
 
 # Run-facts resolution (gh) --------------------------------------------------
 def test_facts_from_run_parses_gh_payload(monkeypatch) -> None:
-    def fake_run(command, capture_output, text):
+    def fake_run(command, **_kwargs):
         assert command[:3] == ["gh", "run", "view"]
         assert "--repo" in command and "corca-ai/charness" in command
         return subprocess_result(0, json.dumps({"event": "workflow_dispatch", "conclusion": "success"}), "")
@@ -120,7 +120,7 @@ def test_facts_from_run_parses_gh_payload(monkeypatch) -> None:
 
 
 def test_facts_from_run_omits_repo_flag_and_raises_on_failure(monkeypatch) -> None:
-    def fake_run(command, capture_output, text):
+    def fake_run(command, **_kwargs):
         assert "--repo" not in command
         return subprocess_result(1, "", "run not found")
 

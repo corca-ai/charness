@@ -419,7 +419,7 @@ def test_patchright_default_renderer_stays_headless_and_collects_network(monkeyp
         def __enter__(self) -> Playwright:
             return Playwright()
 
-        def __exit__(self, exc_type, exc, tb) -> None:
+        def __exit__(self, _exc_type, _exc, _tb) -> None:
             return None
 
     fake_sync_api = types.ModuleType("patchright.sync_api")
@@ -478,7 +478,7 @@ def test_patchright_default_renderer_closes_browser_after_render_error(monkeypat
         def __enter__(self) -> Playwright:
             return Playwright()
 
-        def __exit__(self, exc_type, exc, tb) -> None:
+        def __exit__(self, _exc_type, _exc, _tb) -> None:
             return None
 
     fake_sync_api = types.ModuleType("patchright.sync_api")

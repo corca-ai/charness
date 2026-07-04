@@ -236,11 +236,6 @@ def next_slice_number(text: str) -> int:
     return (max(numbers) + 1) if numbers else 1
 
 
-def missing_portability_sections(text: str) -> list[str]:
-    present = {match.group(1).strip() for match in _H2.finditer(_mask_fences(text))}
-    return [section for section in PORTABILITY_SECTIONS if section not in present]
-
-
 def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | None = None) -> dict[str, Any]:
     """Whether a goal is shaped enough to *pursue* via ``/goal``.
 

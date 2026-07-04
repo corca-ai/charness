@@ -19,7 +19,6 @@ from .support import ROOT, run_script
 SCRIPT = "skills/public/quality/scripts/plan_quality_run.py"
 SCRIPT_PATH = ROOT / SCRIPT
 CATALOG = ROOT / "skills" / "public" / "quality" / "references" / "catalog.yaml"
-INDEX = ROOT / "skills" / "public" / "quality" / "references" / "index.md"
 
 PLAN_SPEC = importlib.util.spec_from_file_location("quality_run_plan_under_test", SCRIPT_PATH)
 assert PLAN_SPEC is not None and PLAN_SPEC.loader is not None

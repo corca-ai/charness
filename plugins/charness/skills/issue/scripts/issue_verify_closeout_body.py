@@ -108,19 +108,6 @@ AI_PROVENANCE_MARKER = (
 )
 
 
-def has_ai_provenance_marker(text: str) -> bool:
-    """True when the body carries a substantive ``AI-provenance:`` marker.
-
-    Presence/form only. Enforced by the closeout floor (``verify-closeout`` /
-    ``validate-closeout-draft``) on the agent-authored carrier — for a
-    manual-fallback close that carrier *is* the comment body, and the documented
-    flow runs ``validate-closeout-draft`` before ``close_with_comment``, so an
-    agent-posted comment cannot be published unmarked without bypassing the
-    draft-validation step.
-    """
-    return _has_substantive_value(_first_field(_body_fields(text), _PROVENANCE_ALIASES))
-
-
 def _strip_code_fences(text: str) -> list[str]:
     lines: list[str] = []
     in_fence = False

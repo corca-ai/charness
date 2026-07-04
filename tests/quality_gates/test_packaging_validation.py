@@ -110,20 +110,6 @@ def make_demo_packaging_repo(
     return repo
 
 
-def init_committed_repo(repo: Path) -> None:
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "seed repo"], cwd=repo, check=True, capture_output=True, text=True)
-
-
 @pytest.mark.release_only
 def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)

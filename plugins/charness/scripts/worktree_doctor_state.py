@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Iterable
 
 MANIFEST_RELATIVE_PATH = Path(".agents/worktree-adapter.yaml")
-SCHEMA_RELATIVE_PATH = Path("integrations/worktree/manifest.schema.json")
 EXAMPLE_RELATIVE_PATH = Path("integrations/worktree/adapter.example.yaml")
 CANONICAL_CHECK_IDS = ("git_common_dir", "hooks_path", "lefthook_shim", "husky_dir")
 PASS = "pass"

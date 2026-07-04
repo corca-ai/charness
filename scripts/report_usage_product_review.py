@@ -32,6 +32,13 @@ from usage_episode_product_review import (
 from runtime_bootstrap import repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
+
+# Attention-state-visibility markers. This reporter's exit-0 attention states are
+# surfaced via the imported `_missing_adapter_payload` / `_disabled_payload` /
+# `_no_records_payload` builders; the term strings are declared here in-file so the
+# `validate_attention_state_visibility` gate can detect them (it scans this file, not
+# the sibling builders). Intentionally retained though not read by runtime code — the
+# dead-code advisory flags them as unused, but deleting them breaks the visibility gate.
 ATTENTION_STATES = ("no_adapter", "disabled", "no_records")
 ATTENTION_EVIDENCE_TERMS = (
     "usage_episodes_adapter_missing",

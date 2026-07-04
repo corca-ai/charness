@@ -126,15 +126,6 @@ def event_identity(record: dict[str, object]) -> tuple[str, ...] | None:
     return values  # type: ignore[return-value]
 
 
-def has_existing_event_identity(
-    events: list[dict[str, object]], record: dict[str, object]
-) -> bool:
-    identity = event_identity(record)
-    if identity is None:
-        return False
-    return any(event_identity(event) == identity for event in events)
-
-
 def ledger_contains_event_identity(ledger_path: Path, record: dict[str, object]) -> bool:
     identity = event_identity(record)
     if identity is None or not ledger_path.is_file():

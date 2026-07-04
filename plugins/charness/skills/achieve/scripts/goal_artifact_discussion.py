@@ -6,8 +6,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-DISCUSSION_LABEL = "Discuss before activation"
-
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _SUMMARY_HEADING = re.compile(r"^(#{2,4})[ \t]+Discuss before activation\b.*$", re.IGNORECASE | re.MULTILINE)
 _SUMMARY_LINE = re.compile(r"^[ \t]*(?:[-*][ \t]*)?Discuss before activation:[ \t]*(.+)$", re.IGNORECASE | re.MULTILINE)

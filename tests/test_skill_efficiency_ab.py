@@ -383,7 +383,7 @@ def test_run_one_captures_observes_and_returns_metrics(tmp_path: Path, monkeypat
         return _completed(cmd, 0)
 
     monkeypatch.setattr(ab.subprocess, "run", fake_run)
-    monkeypatch.setattr(ab, "_git_added_lines", lambda wt, base="HEAD": 7)
+    monkeypatch.setattr(ab, "_git_added_lines", lambda _wt, base="HEAD": 7)
     metrics = ab.run_one(tmp_path, "HEAD", "do the task", spec, out_dir, 600)
     assert metrics["outcome"] == "passed"
     assert metrics["total_tokens"] == 100

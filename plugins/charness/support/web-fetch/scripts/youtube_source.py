@@ -20,7 +20,6 @@ from url_reader import read_url  # noqa: E402
 
 STAGE_ID = "domain-specific-route"
 UI_STAGE_ID = "youtube-browser-transcript-ui"
-YOUTUBE_HOSTS = {"youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com", "music.youtube.com"}
 
 
 def normalized_host(url: str) -> str:

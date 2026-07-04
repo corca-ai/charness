@@ -10,7 +10,6 @@ from scripts.eval_registry import scenario_ids
 from scripts.public_skill_validation_lib import ValidationError, load_policy, validate_policy
 
 REGISTRY_PATH = Path("evals/cautilus/scenarios.json")
-WHOLE_REPO_ROUTING_FIXTURE_PATH = Path("evals/cautilus/whole-repo-routing.fixture.json")
 ADAPTER_PATH = Path(".agents/cautilus-adapter.yaml")
 CHATBOT_PROPOSAL_INPUTS_PATH = Path("evals/cautilus/chatbot-scenario-proposal-inputs.json")
 CHATBOT_ADAPTER_PATH = Path(".agents/cautilus-adapters/chatbot-proposals.yaml")
@@ -41,10 +40,6 @@ def load_instruction_surface_fixture(repo_root: Path, path: Path) -> dict[str, o
     if not isinstance(data, dict):
         raise ValidationError(f"{path}: top-level JSON value must be an object")
     return data
-
-
-def load_whole_repo_routing_fixture(repo_root: Path) -> dict[str, object]:
-    return load_instruction_surface_fixture(repo_root, WHOLE_REPO_ROUTING_FIXTURE_PATH)
 
 
 def instruction_surface_fixture_paths(repo_root: Path) -> list[Path]:
@@ -145,10 +140,6 @@ def _validate_instruction_surface_case_expectations(evaluation_path: Path, evalu
         raise ValidationError(
             f"{evaluation_path}: `{evaluation_id}` `instructionSurface.files` must be a non-empty list"
         )
-
-
-def validate_whole_repo_routing_fixture(repo_root: Path) -> dict[str, object]:
-    return validate_instruction_surface_fixture(repo_root, WHOLE_REPO_ROUTING_FIXTURE_PATH)
 
 
 def _load_json_object(path: Path) -> dict[str, object]:

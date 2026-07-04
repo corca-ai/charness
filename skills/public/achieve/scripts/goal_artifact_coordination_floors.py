@@ -21,7 +21,6 @@ MIN_OPTOUT_REASON = 30
 
 COORDINATION_SECTION = "Coordination Cues"
 CONTEXT_SOURCES_SECTION = "Context Sources"
-AUTO_RETRO_SECTION = "Auto-Retro"
 RECORDED_WORK_SECTIONS = ("Slice Log", "Final Verification")
 
 _EXTERNAL_URL = re.compile(r"https?://\S", re.IGNORECASE)

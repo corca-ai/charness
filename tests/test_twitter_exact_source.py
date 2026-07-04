@@ -20,8 +20,6 @@ import twitter_exact_source as tes  # noqa: E402
 SID = "1799999999999999999"
 STATUS_URL = f"https://x.com/acme/status/{SID}"
 SYND_URL = f"https://cdn.syndication.twimg.com/tweet-result?id={SID}&lang=en"
-ISSUE_392_SID = "2063032701087883647"
-ISSUE_392_STATUS_URL = f"https://x.com/jenzhuscott/status/{ISSUE_392_SID}"
 
 
 def test_module_bootstrap_inserts_script_dir_when_absent(monkeypatch) -> None:

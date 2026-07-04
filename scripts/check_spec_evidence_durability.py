@@ -52,13 +52,6 @@ class ValidationError(Exception):
     pass
 
 
-def normalize_target(candidate: str) -> str:
-    target = candidate.strip().split("#", 1)[0]
-    while target.startswith("./"):
-        target = target[2:]
-    return target.rstrip("/")
-
-
 def looks_like_repo_path(candidate: str) -> bool:
     target = candidate.lstrip("./").split("#", 1)[0].strip()
     if target.startswith(REPO_REFERENCE_PREFIXES):
