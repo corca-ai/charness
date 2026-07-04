@@ -10,30 +10,49 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_find_skills.py"
 
-# The find-skills SessionStart trigger is installed at USER level
+# The session-start routing trigger is installed at USER level
 # (~/.claude/settings.json, ~/.codex/config.toml) pointing at the released
 # plugin script, not committed into this repo. These tests pin the script's
 # behavior (the portable mechanism); the host wiring is per-machine config.
+#
+# 2026-07-04 contract inversion: the original #240 fix kept this hook "dumb"
+# (it only pointed at `charness:find-skills`, which owned the pickup ->
+# handoff decision). That design was replaced by a front-load: the hook now
+# carries the routing rule directly, so pickup-drive protection moved INTO
+# the directive text itself instead of living solely in the find-skills
+# skill. `test_directive_is_dumb_and_points_at_find_skills` below used to
+# assert the directive must NOT mention "handoff"/"pickup"; it is inverted
+# here to assert the directive DOES name the pickup -> `charness:handoff`
+# route, `docs/handoff.md`, `charness:find-skills` for capability discovery,
+# and the `charness-artifacts/find-skills/latest.md` capability map. See
+# `skills/public/find-skills/references/session-start-routing.md` for the
+# full history and the three carried-over #240 protections.
 
 
-def test_directive_is_dumb_and_points_at_find_skills() -> None:
-    """The directive triggers find-skills and defers ALL routing to that skill.
+def test_directive_front_loads_pickup_discovery_and_otherwise_routes() -> None:
+    """The directive now states the routing rule directly, not just a pointer.
 
-    It must not re-encode routing rules: find-skills owns the pickup -> handoff
-    decision (see find-skills/references/session-start-routing.md), so the hook
-    text stays fully decoupled from `handoff` and the handoff doc.
+    Carries over the #240 protections: (1) a pickup deterministically drives
+    into the handoff-named workflow, (2) capability discovery stays owned by
+    `find-skills`, (3) the capability map is named so a missing/stale map or
+    an unclear route still falls back to `find-skills`.
     """
     directive = hook.build_additional_context()
-    # Triggers find-skills.
-    assert "charness:find-skills" in directive
-    # Stays dumb: the routing decision lives in the skill, not the hook text.
-    assert "routing decision lives in that skill" in directive
-    # Decoupled: the hook must not name handoff, pickup, or the handoff doc —
-    # that routing lives entirely in find-skills.
     lowered = directive.lower()
-    assert "handoff" not in lowered
-    assert "pickup" not in lowered
-    assert "docs/handoff" not in lowered
+    # (1) Pickup route: names the handoff doc, its Workflow Trigger, and the
+    # concrete skill to invoke -- this used to live only in find-skills.
+    assert "pickup" in lowered
+    assert "docs/handoff.md" in directive
+    assert "workflow trigger" in lowered
+    assert "charness:handoff" in directive
+    # (2) Capability-discovery route: still owned by find-skills.
+    assert "charness:find-skills" in directive
+    assert "capability discovery" in lowered
+    # (3) Capability map + fallback: names the map artifact and the
+    # missing/stale/unclear conditions that still send it to find-skills.
+    assert "charness-artifacts/find-skills/latest.md" in directive
+    assert "missing or stale" in lowered
+    assert "genuinely unclear" in lowered
 
 
 def test_render_output_claude_emits_session_start_additional_context() -> None:

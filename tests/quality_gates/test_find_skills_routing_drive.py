@@ -10,12 +10,15 @@ FIND_SKILLS_SKILL = (
 
 
 def test_find_skills_skill_pins_routing_drive_contract() -> None:
-    """find-skills must own driving the routed workflow, not stop at the inventory.
+    """find-skills must still drive the routed workflow whenever it is invoked.
 
-    This is the load-bearing contract for #240: a SessionStart hook can only
-    inject a directive to call find-skills; the "what next" (pickup ->
-    charness:handoff) must live in the skill. Removing the contract line fails
-    this gate.
+    This is the load-bearing contract carried over from #240 into the
+    2026-07-04 front-load revision: the `SessionStart` hook now front-loads
+    the pickup/discovery/otherwise routing rule directly, so `find-skills` is
+    invoked mainly for capability discovery or a genuinely unclear route --
+    but whenever it IS invoked, it must still drive the routed workflow
+    rather than stop at the inventory. Removing the contract line fails this
+    gate.
     """
     routing_ref = (
         ROOT / "skills" / "public" / "find-skills" / "references" / "session-start-routing.md"
@@ -34,12 +37,19 @@ def test_find_skills_skill_pins_routing_drive_contract() -> None:
     assert "SessionStart" in skill_text
     # The guardrail names the miss this skill prevents.
     assert "routing miss this" in skill_text
-    # The reference the skill points to carries the pickup decision path and the
-    # honest hook ceiling (a hook cannot invoke a Skill tool for the agent).
+    # The reference the skill points to carries the pickup decision path.
     assert "references/session-start-routing.md" in skill_text
     assert "Pickup decision path" in routing_ref
     assert "charness:handoff" in routing_ref
-    assert "cannot" in routing_ref and "invoke a Skill tool" in routing_ref
+    # The 2026-07-04 revision section names why the front-load design was
+    # adopted and carries the three #240 protections forward explicitly,
+    # replacing the old "honest ceiling ... deliberately not chosen" pin
+    # (that design is no longer the one in force).
+    assert "2026-07-04 revision" in routing_ref
+    assert "protections carried over" in routing_ref
+    assert "deterministically drive into the handoff-named" in routing_ref
+    assert "discovery stays owned by" in routing_ref
+    assert "still drives the routed workflow" in routing_ref
 
 
 def test_find_skills_routing_drive_contract_is_distinct_from_discovery_only() -> None:

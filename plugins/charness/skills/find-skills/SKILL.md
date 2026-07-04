@@ -50,12 +50,13 @@ lifecycle boundaries visible.
 ## Drive The Routed Workflow
 
 The inventory is the means, not the end: **drive the routed workflow from your
-result** rather than stopping at the capability map. A `SessionStart` trigger or
-a bare `@docs/handoff.md`-style mention with no explicit task is a **pickup** —
-follow the handoff `Workflow Trigger` and invoke the workflow it names (for the
-default charness handoff, `charness:handoff`; invoke the skill, do not just
-re-read the file). A pure "which skill handles X?" question is the exception:
-the inventory answer is the deliverable. The routing-miss class is inventory
+result** rather than stopping at the capability map. A bare
+`@docs/handoff.md`-style mention with no explicit task is a **pickup** — follow
+the handoff `Workflow Trigger` into `charness:handoff` (invoke the skill, do
+not just re-read the file). Since 2026-07-04 the `SessionStart` hook routes
+this directly; `find-skills` still drives it when discovery invokes the skill
+anyway. A pure "which skill handles X?" question is the exception: the
+inventory answer is the deliverable. The routing-miss class is inventory
 running while the routed workflow does not — owning the "what next" here is the
 fix. See `references/session-start-routing.md`.
 

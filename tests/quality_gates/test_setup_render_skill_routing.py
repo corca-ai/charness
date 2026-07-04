@@ -33,7 +33,22 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path, mon
     assert payload["skill_routing_mode_source"] == "default"
     assert "find-skills" in payload["public_skills"]
     assert payload["listed_skill_ids"] == ["find-skills"]
-    assert "At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration" in payload["markdown"]
+    # 2026-07-04 revision: session start routes directly instead of always
+    # invoking find-skills first; find-skills is invoked for capability
+    # discovery or a missing/stale/unclear route.
+    assert (
+        "At session start in this repo, route directly: a pickup follows "
+        "docs/handoff.md `## Workflow Trigger`, capability discovery invokes "
+        "the shared/public charness skill `find-skills`, and other requests "
+        "start the durable work skill that best matches."
+        in payload["markdown"]
+    )
+    assert (
+        "Invoke `find-skills` when the capability map "
+        "(`charness-artifacts/find-skills/latest.*`) is missing or stale, or "
+        "when the route is genuinely unclear."
+        in payload["markdown"]
+    )
     assert "default map of installed public skills, support skills, synced support surfaces, and integrations" in payload["markdown"]
     # #238: name find-skills as a skill, not a bare PATH command.
     assert "ask the `find-skills` skill to recommend a route for the task" in payload["markdown"]
@@ -44,7 +59,7 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path, mon
     assert "find-skills --recommend-for-task" not in payload["markdown"]
     assert "find-skills --" not in payload["markdown"]
     assert "the shared/public charness skill `find-skills`" in payload["markdown"]
-    assert "choose the durable work skill that best matches the request" in payload["markdown"]
+    assert "start the durable work skill that best matches" in payload["markdown"]
     assert "External URLs or source links that should become working context" in payload["markdown"]
     assert "route through `gather` before summarizing, implementing, or deciding" in payload["markdown"]
     assert "release-note style summary or chat-ready human update" not in payload["markdown"]
@@ -83,6 +98,12 @@ def test_setup_render_skill_routing_reviews_drifted_existing_block(
     assert payload["skill_routing_matches_compact_block"] is False
     assert payload["recommended_action"] == "review_existing_skill_routing"
     assert (
-        "At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration."
+        "At session start in this repo, route directly: a pickup follows "
+        "docs/handoff.md `## Workflow Trigger`, capability discovery invokes "
+        "the shared/public charness skill `find-skills`, and other requests "
+        "start the durable work skill that best matches. Invoke "
+        "`find-skills` when the capability map "
+        "(`charness-artifacts/find-skills/latest.*`) is missing or stale, or "
+        "when the route is genuinely unclear."
         in payload["missing_expected_snippets"]
     )

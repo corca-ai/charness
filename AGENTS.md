@@ -5,7 +5,7 @@
 ## Start Here
 
 - [docs/design-north-star.md](./docs/design-north-star.md) is the governing design standard: the harness briefs a capable judge and keeps teeth only where a wrong answer escapes. Default to judgment on reversible work; at irreversible boundaries (issue/PR close, release publish, external writes, deletions) success is provisional — confirm with a different observer and a different evidence channel, never a terminal green. When a gate, doc, or contract conflicts with this, the north star wins and the conflicting surface is what gets fixed.
-- Always call `charness:find-skills` once at the start of each task-oriented session; use [charness-artifacts/find-skills/latest.md](./charness-artifacts/find-skills/latest.md) as the local capability map, and keep task-specific recommendation probes read-only unless deliberately refreshing the canonical inventory.
+- Route the session opening per the session-start brief: a pickup follows the handoff-named workflow, capability discovery goes to `charness:find-skills`, and other tasks start the matching durable work skill. Use [charness-artifacts/find-skills/latest.md](./charness-artifacts/find-skills/latest.md) as the local capability map — invoke `find-skills` when it is missing or stale or the route is unclear — and keep task-specific recommendation probes read-only unless deliberately refreshing the canonical inventory.
 - Load matching skills before improvising, and continue active repo work from [docs/handoff.md](./docs/handoff.md).
 - Route external URLs or source links that should become repo working context through `gather` before summarizing, implementing, or deciding from them.
 - Cautilus is eval-only and ask-before-run: before any `cautilus evaluate ...`, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json` and refuse on `next_action: "none"` (or `must_ask_before_running` without a named failing-log path); use the repo wrapper `python3 scripts/run_cautilus_eval.py`, never bare `cautilus evaluate`. Full eval-only/disabled-surface contract: [skills/public/quality/references/cautilus-on-demand.md](./skills/public/quality/references/cautilus-on-demand.md).
@@ -16,13 +16,11 @@
 
 ## Skill Routing
 
-At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration.
+At session start in this repo, route directly: a pickup follows docs/handoff.md `## Workflow Trigger`, capability discovery invokes the shared/public charness skill `find-skills`, and other requests start the durable work skill that best matches. Invoke `find-skills` when the capability map (`charness-artifacts/find-skills/latest.*`) is missing or stale, or when the route is genuinely unclear.
 
-Use its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.
+Use `charness-artifacts/find-skills/latest.*` as the default map of installed public skills, support skills, synced support surfaces, and integrations.
 
 When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, ask the `find-skills` skill to recommend a route for the task before ad hoc shell or tool use; recommendation-shaped probes are read-only by default, while plain inventory refreshes own `charness-artifacts/find-skills/latest.*`.
-
-After that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.
 
 External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.
 

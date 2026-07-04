@@ -7,8 +7,12 @@ module adds a second SessionStart hook — adapter-gated and opt-in via the
 `find_skills_routing` intent — installed *parallel* to usage-episodes through the
 same primitives in `host_hook_install_lib` (carved into its own file to keep that
 module under the Python-length budget, the same split as
-`host_hook_codex_toml_lib`). The dumb-hook / skill-owns-routing split is
-unchanged: this only wires the script; routing intelligence stays in the skill.
+`host_hook_codex_toml_lib`). This only wires the script; the 2026-07-04
+session-start-routing revision moved the pickup/discovery/otherwise routing
+rule into the wired script's directive text itself (see
+`skills/public/find-skills/references/session-start-routing.md`), so
+`find-skills` is invoked mainly for capability discovery or a genuinely
+unclear route rather than on every session open.
 """
 
 from __future__ import annotations

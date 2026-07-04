@@ -224,9 +224,9 @@ def run_setup_compact_skill_routing_discoverability(
             )
         markdown = compact.get("markdown", "")
         expected_snippets = (
-            "At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration",
+            "At session start in this repo, route directly: a pickup follows docs/handoff.md",
             "default map of installed public skills, support skills, synced support surfaces, and integrations",
-            "After that bootstrap pass, choose the durable work skill",
+            "start the durable work skill that best matches",
         )
         for snippet in expected_snippets:
             if snippet not in markdown:

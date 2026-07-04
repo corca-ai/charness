@@ -2,8 +2,9 @@
 
 ## Workflow Trigger
 
-- Pickup = `charness:find-skills` -> **invoke `charness:handoff`**; bare `/handoff`
-  runs chunked routing over handoff + open issues.
+- Pickup = session start with no explicit task -> **invoke `charness:handoff`**
+  directly (the session-start hook routes it now, not `find-skills`); bare
+  `/handoff` runs chunked routing over handoff + open issues.
 - **Reference-compaction: the LAST open item (systemic context-tax measurement) is now
   DESIGNED and CLOSED as a frontier item** — the effort's open questions are all resolved
   or explicitly gated; see Current State.
