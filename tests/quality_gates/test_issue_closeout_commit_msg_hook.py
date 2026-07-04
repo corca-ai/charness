@@ -271,6 +271,26 @@ def test_commit_msg_gate_staged_artifact_question_inference_is_unaffected(tmp_pa
     assert payload["reports"][0]["missing_fields"] == []
 
 
+def test_commit_msg_gate_fenced_close_keyword_in_message_still_triggers_floor(tmp_path: Path) -> None:
+    """Regression: GitHub parses the raw commit message for close keywords and
+    treats backticks as literal, so a close keyword inside a ``` code fence in
+    the COMMIT MESSAGE still auto-closes the issue. The bare-close floor must not
+    strip fences from the message — doing so reported `not_applicable` while
+    GitHub closed the issue with no floor anywhere (the escape this floor exists
+    to close)."""
+    _init_repo(tmp_path)
+    message = tmp_path / "message.txt"
+    message.write_text("```\nFixes #123\n```\n", encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "failed"
+    assert payload["bare_close_numbers"] == [123]
+    assert payload["reports"][0]["source_artifact"] is None
+
+
 def test_commit_msg_checker_resolves_exported_plugin_skill_layout(tmp_path: Path) -> None:
     plugin = tmp_path / "plugin"
     shutil.copytree(Path(__file__).resolve().parents[2] / "plugins" / "charness", plugin)

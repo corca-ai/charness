@@ -79,9 +79,17 @@ def _bare_close_keyword_numbers(sanitized_body: str, covered: set[int], iter_ref
     ``issue_verify_closeout.iter_close_keyword_refs`` scanner (covers the plain,
     colon, and single-keyword comma-list close-keyword forms) so this module
     keeps no second copy of the close-keyword regex.
+
+    Scans the raw ``sanitized_body`` (commit comments already removed, exactly as
+    git strips them from the stored message) and deliberately does NOT strip code
+    fences: GitHub parses the raw commit-message text for close keywords and
+    treats backticks as literal characters, so a fenced ``Fixes #123`` still
+    auto-closes #123. Stripping fences here reported ``not_applicable`` while
+    GitHub closed the issue with no floor anywhere — the exact escape this floor
+    exists to close (an agent quoting a log/diff that contains a close keyword,
+    or deliberately fencing one to dodge the floor).
     """
-    plain = _strip_code_fences(sanitized_body)
-    found = {number for _repo, number in iter_refs(plain)}
+    found = {number for _repo, number in iter_refs(sanitized_body)}
     return sorted(number for number in found if number not in covered)
 
 

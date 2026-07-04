@@ -88,7 +88,7 @@ brief's `closeout_handoff` note when starting closeout.
    - keep critique slice-level, not commit-level
    - file off-goal findings through `issue`; record only the reference and
      reason in the artifact
-   - before `blocked`, render the `## Remaining Boundary Matrix` classifying every external/live proof lane (lifecycle.md; `upsert_goal.py` refuses the flip if a lane is runnable); on blocker or `No safe next slice:` closeout, record reason and report artifacts
+   - before `blocked`, render the `## Remaining Boundary Matrix` classifying every external/live proof lane (`references/goal-artifact.md` owns the line form; `upsert_goal.py` refuses the flip if a lane is runnable); on blocker or `No safe next slice:` closeout, record reason and report artifacts
 3. After — prove and reflect.
    - **closeout preflight (describe-first):** before drafting closeout evidence,
      run `describe_goal_closeout_shape.py --goal-path <artifact>` for this goal's
