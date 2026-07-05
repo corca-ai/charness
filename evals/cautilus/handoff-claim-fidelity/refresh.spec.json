@@ -1,5 +1,5 @@
 {
-  "_comment": "SLICE-7 CENSUS RECONCILIATION (2026-07-01) — SUPERSEDES THE CAPTURE-ONLY FRAMING BELOW WHERE IT CONTRADICTS census.json. Reconciled verdicts: state-selection.md=MOVE (census INLINE; Compression Rule inlined at SKILL.md 54/64/111; one stranded keep-list token → inline into step 4, not a floor). spill-targets.md=MOVE (census INLINE; owning-path routing gist inlined). 'refresh opened BOTH → PROVEN' below is the method error — opening an INLINE doc is redundant. Replacement RSF is capture-gated (no substance judge for handoff). Full adversarial (analyze→verify) resolution + capture-gated queue: charness-artifacts/reference-compaction/slice7-census-reconciliation.md. classTag/RCF are intentionally NOT flipped here: claim_fidelity_lib forbids DUP/INLINE-tagging a live RCF floor, so the tag/RCF flip rides with the capture-gated MOVE (no substance judge + no retained stream ⇒ each MOVE needs a fresh ask-before-run capture). --- ORIGINAL SPEC COMMENT: Claim-fidelity spec for the handoff skill, REFRESH scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`run a refresh pass`) that bypasses the chunker plus refresh wording (`refresh`/`write`), so `plan_handoff_run.py` deterministically resolves intent=refresh, whose planner _required_reads are state-selection.md + spill-targets.md (the RCF). Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget. SLICE 7 (2026-07-01) CAPTURE — floor PROVEN: the refresh run opened BOTH RCF docs state-selection.md + spill-targets.md (coverage 2/7, outcome=passed), so #410's 'drop the refresh docs -> RSF' is REFUTED — both are load-bearing planner reads. document-seams.md removed + deleted (DUP). thresholds.max_duration_ms set from this passing baseline (273120ms, ~2x).",
+  "_comment": "SLICE 8 MOVE (2026-07-05, #410) — state-selection.md RETIRED to an emitted-token RSF floor, capture-gated. CORRECTION of the Slice-7 'refresh opened BOTH RCF docs → PROVEN load-bearing' framing: that was the documented method error — a planner-forced open of an INLINE doc is a redundant re-read, not proof of depth (charness-artifacts/reference-compaction/slice7-census-reconciliation.md '## The method error'). Driver = census INLINE for state-selection.md (Compression Rule inlined at SKILL.md step 2, step 4 keep-enumeration, guardrails). Honest MOVE: plan_handoff_run.py no longer forces references/state-selection.md on a refresh; SKILL.md '## Closeout Vocabulary' makes the refresh emit `Refresh kept:` + `Refresh non-claims:`; the eval floors on those OBSERVED tokens instead of the redundant re-read. spill-targets.md STAYS the doc-open RCF floor: its exact owning-path routing table is genuine depth absent from SKILL.md (census evidence itself notes SKILL.md 'does NOT name the target paths') — the over-relaxation guard. RSF is a FORM floor (handoff has no substance judge): the gist stays inlined and the token re-pins harder if a capture shows a hollow echo. pickup/pickup-ambiguous NOT flipped (a faithful pickup hands off to the invoked workflow, so its closeout token is fragile — deferred). CAPTURE STATUS: PROVEN (2026-07-05, ask-before-run, operator-authorized). Fresh capture at 60434368 OBSERVED both tokens in the closeout with honest substance AND opened spill-targets.md; the run did NOT re-read state-selection.md (Read=0 — compaction achieved), keeping only next-action state from the inlined Compression Rule gist. Grade vs this flipped spec = passed. Bundle: charness-artifacts/cautilus/handoff-refresh-move-2026-07-05/ (observed.v1.json, finding.md, trace-digest.jsonl, transcript.txt). Footnote: the same stream also passed the OLD spec, but via a Write-content filename mention (the refresh described this refactor commit), not a genuine read — extra evidence the doc-open RCF was mention-satisfiable. --- ORIGINAL SPEC COMMENT: Claim-fidelity spec for the handoff skill, REFRESH scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`run a refresh pass`) that bypasses the chunker plus refresh wording (`refresh`/`write`), so `plan_handoff_run.py` deterministically resolves intent=refresh. declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds.max_duration_ms retained from the 2026-07-01 passing baseline (273120ms, ~2x).",
   "skillId": "handoff",
   "scenarioId": "refresh",
   "skillDisplayName": "handoff",
@@ -8,10 +8,12 @@
   "targetId": "handoff",
   "prompt": "/charness:handoff run a refresh pass and write the next-session state, spilling durable detail to its owning artifact and keeping only what changes the next action",
   "requiredCommandFragments": [
-    "state-selection.md",
     "spill-targets.md"
   ],
-  "requiredSummaryFragments": [],
+  "requiredSummaryFragments": [
+    "Refresh kept:",
+    "Refresh non-claims:"
+  ],
   "declaredReferences": [
     "adapter-contract.md",
     "chunked-routing.md",
@@ -41,8 +43,10 @@
       "rationale": "A refresh-intent UNCONDITIONAL planner required read: governs what durable detail moves to its owning artifact versus what stays, so a refresh that only prunes inline would not follow its own routing."
     },
     "state-selection.md": {
-      "engagement": "engage-always",
-      "rationale": "A refresh-intent UNCONDITIONAL planner required read: the governing rubric for keeping only facts that change the next action when rewriting the handoff."
+      "engagement": "on-demand",
+      "classTag": "INLINE",
+      "rationale": "RETIRED from requiredCommandFragments (reference-compaction MOVE, 2026-07-05): census INLINE — the Compression Rule ('keep only facts that change the next action') is inlined in SKILL.md (step 2, step 4 keep-enumeration, guardrails), so plan_handoff_run.py no longer forces a refresh to re-read this doc. The claim is now carried by the emitted-token RSF floor (`Refresh kept:` + `Refresh non-claims:`), OBSERVED by a fresh ask-before-run capture. Retained as a declared reference for on-demand depth.",
+      "trigger": "authoring depth on the keep/drop rubric beyond the inlined Compression Rule gist."
     },
     "workflow-trigger.md": {
       "engagement": "on-demand",

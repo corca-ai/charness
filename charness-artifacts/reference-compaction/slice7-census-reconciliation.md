@@ -148,9 +148,23 @@ don't retire the doc.
   scenario forces `browser-mediated-private-sources.md` (PROVEN, genuine judgment open); corrects #411
   (not a substance judge — a missing scenario); 2 of 4 census-DEPTH docs are script-resolved. Remaining
   gather: the public-URL default's output-floor + retire its INLINE RCF (the narrowed #411).
-- ⏳ **setup + handoff** — re-examine by the corrected per-condition method (above), NOT the coarse
-  MOVE/substance-judge reading: design a scenario per genuinely-DEPTH condition; retire only truly-inlined
-  docs. hotl/ledger MIXED token-lift stays deferred (no floor depends on it).
+- ✅ **handoff/refresh — state-selection.md** (2026-07-05, `handoff-refresh-move-2026-07-05`): RCF
+  `[state-selection.md, spill-targets.md]` → `[spill-targets.md]` + RSF `[Refresh kept:, Refresh non-claims:]`.
+  `plan_handoff_run.py` no longer forces the state-selection.md re-read on refresh; a fresh ask-before-run
+  capture PROVED the refresh keeps only next-action state from the inlined Compression Rule gist
+  (`Read(state-selection.md)=0` — real compaction) and emits both tokens with honest substance, while
+  `spill-targets.md` stays a genuinely-opened DEPTH floor (its owning-path routing table is absent from
+  SKILL.md — the over-relaxation guard). Skill change `60434368`; flip + bundle rides after the proof.
+  This is the per-condition method applied: the capture tested (not assumed) that refresh works without the
+  forced read, confirming the census-INLINE verdict for state-selection.md.
+- ⏳ **handoff (remaining) + setup** — handoff/refresh spill-targets.md kept as the doc-open floor
+  (census-INLINE overall, but its owning-path routing table is genuinely absent from SKILL.md, so the
+  re-read is still load-bearing; a routing-table inline or a spill-conditional scenario is its own future
+  slice). handoff
+  pickup/pickup-ambiguous (workflow-trigger.md) NOT flipped: a faithful pickup hands off to the invoked
+  workflow, so its closeout RSF token is fragile — deferred until a stable pickup token is designed.
+  setup/greenfield needs a fresh-sandbox capture (#413, not in-repo capturable). hotl/ledger MIXED
+  token-lift stays deferred (no floor depends on it).
 
 Clean-MOVE rule proven this session: a pure retirement that leaves an already-genuinely-opened DEPTH
 floor is provable from existing captures at zero new cost; only floor-REPLACEMENT (new RSF/judge) needs
