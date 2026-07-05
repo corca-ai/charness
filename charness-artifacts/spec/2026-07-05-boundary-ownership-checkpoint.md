@@ -109,9 +109,13 @@ seam designed to extend later to `issue` / `quality` / `spec` / `achieve`
    #408 incident took, because the objective path-match escalates the change into
    the durable-critique path where the floor bites. WITHOUT a probe, a rung-2
    self-judged close is caught only by the taxonomy-free brief (judgment), not by
-   teeth — a named residual (DBD-4). Charness's own dogfood configures the probe,
-   so the deterministic override is exercised here. The design does NOT claim the
-   silent skip is closed for probe-less consumers.
+   teeth — a named residual (DBD-4). **This slice ships charness's own probe OFF
+   (opt-in empty):** choosing charness's cross-surface glob set is a separate
+   design task (DBD-4), so the override is proven here by the AC2/AC3/AC7 unit
+   fixtures, NOT by charness's live CI — charness itself is currently a probe-less
+   consumer relying on the always-brief + presence-floor + authoring-lens. The
+   design does NOT claim the silent skip is closed for probe-less consumers,
+   charness included, until a probe is configured.
 7. **Disposition schema (one axis).** Fields: `producer`, `consumer`,
    `owning-surface` (repo-defined free label), `verdict`. `verdict` enum =
    `{single-surface, owned-correctly, moved-to-owner, escalated-to-issue-spec}`.
@@ -176,7 +180,11 @@ seam designed to extend later to `issue` / `quality` / `spec` / `achieve`
   deterministic override would need the taxonomy (leak). Reopen trigger: a
   probe-less consumer reproduces the #408 failure mode often enough to justify a
   stronger portable default (e.g. shipping a conservative default cross-surface
-  glob set that consumers narrow, rather than opt-in).
+  glob set that consumers narrow, rather than opt-in). Concrete follow-up:
+  charness ships probe-off in this slice; adopting charness's own cross-surface
+  glob set — plus wiring the escalated critique's `--changed-ref` validation into
+  run-quality so the 5b tooth fires in charness CI — is the next boundary-checkpoint
+  slice, gated on choosing globs that do not false-positive on every commit.
 
 ## Non-Goals
 

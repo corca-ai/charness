@@ -140,9 +140,10 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
      owns the producer/consumer questions and the disposition this closeout records
    - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --json`; if
      it reports `triggered: true`, the changed paths matched the repo's cross-surface
-     probe — escalate this slice to a standalone `critique` so the boundary-ownership
-     disposition is recorded and typed-validated in a durable artifact, even if you
-     judged the slice small (the objective probe overrides a self-assessed small slice)
+     probe — escalate this slice to a standalone `critique`, and validate that durable
+     artifact with the critique validator's `--changed-ref <base>` so the cross-surface
+     `single-surface` rejection actually fires (the objective probe overrides a
+     self-assessed small slice; presence-only validation would let it through)
 7. End with execution status.
    - what changed, what was verified, what truth surfaces moved, what the
      critique found, what contract updates were made, and what remains for the

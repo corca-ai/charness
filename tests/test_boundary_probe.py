@@ -83,3 +83,35 @@ def test_probe_config_tolerates_absent_and_bad_values() -> None:
 # The impl stop-gate hook's in-process tests (AC7) live in
 # tests/quality_gates/test_critique_boundary_ownership_presence.py so they reuse
 # that file's single critique-adapter fixture writer instead of a second copy.
+
+
+# --- AC8: the portable brief is reachable from the reviewer surfaces ----------
+
+
+def test_brief_linked_from_reviewer_surfaces() -> None:
+    """check_doc_links only fails a BROKEN link, not a MISSING one, so this guards
+    against a regression that silently drops the brief from a reviewer surface."""
+    brief = "boundary-ownership-brief.md"
+    for rel in (
+        "skills/public/impl/references/review-gate.md",
+        "skills/public/critique/references/code-critique.md",
+        "skills/public/critique/references/spec-critique.md",
+    ):
+        assert brief in (ROOT / rel).read_text(encoding="utf-8"), f"{rel} must link {brief}"
+
+
+# --- AC9: impl carries the emit-only Boundary Ownership token -----------------
+
+
+def test_impl_skill_carries_boundary_ownership_token() -> None:
+    skill = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+    # Header-keyed section split (the string "## Closeout Vocabulary" also appears
+    # inline inside Output Shape, so a plain substring split picks the wrong span).
+    sections = {}
+    for chunk in ("\n" + skill).split("\n## ")[1:]:
+        sections[chunk.split("\n", 1)[0].strip()] = chunk
+    assert "Boundary Ownership" in sections["Output Shape"]
+    vocab = sections["Closeout Vocabulary"]
+    assert "Boundary Ownership" in vocab
+    for verdict in ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec"):
+        assert verdict in vocab
