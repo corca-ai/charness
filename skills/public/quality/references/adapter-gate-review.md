@@ -15,6 +15,11 @@ recommended, acknowledged, or migrated.
   not adopted newer optional fields or defaults.
 - `brittle_hard_gate_smell`: phrase matching or prose heuristics are close to
   becoming hard failures without a low-noise invariant.
+- `boundary_taxonomy_leak`: portable skill or reference prose encodes a consumer
+  repo's concrete owner labels (a specific repo's surface names) that belong in
+  that repo's adapter, preset, or repo-local docs. A judgment check, not a hard
+  gate: ask whether the text would read the same in any consumer. See the
+  [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md).
 
 ## Enforcement Tiers
 

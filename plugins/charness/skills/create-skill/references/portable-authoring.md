@@ -120,6 +120,16 @@ Use the `create-skill` adapter for repo-local topology vocabulary and
 verification hints. Keep consumer-specific placement models out of portable
 Charness guidance.
 
+## Boundary Taxonomy Rule
+
+Portable skill prose must not carry a consumer repo's ownership taxonomy — the
+concrete owner labels a given repo gives its surfaces. When authoring or
+reviewing a portable skill or reference, ask: does this text encode one repo's
+specific owner names, or would it read the same in any consumer? A load-bearing
+owner label belongs in that repo's adapter, preset, or repo-local docs; the
+skill body carries only the portable question and the adapter-supplied seam. See
+the [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md).
+
 ## Reasoned Proposal Rule
 
 When proposing a non-blocking default, also state why.
