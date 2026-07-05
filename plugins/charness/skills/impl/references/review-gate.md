@@ -9,7 +9,9 @@ intent and verification boundary, never merely a small diff — is owned by
 
 - contract closeout honesty
 - runtime behavior and branch reachability
-- boundary honesty and ownership
+- [boundary honesty and ownership](../../../shared/references/boundary-ownership-brief.md)
+  — run its producer/consumer question set when the slice touches shared, generic,
+  or cross-surface code
 - docs/spec synchronization
 
 ## Stronger Gate

@@ -37,7 +37,10 @@ hidden coupling:
   Current Slice section.
 - **Gerald Weinberg (diagnostic)** — moderate. Is the *real* problem in
   the layer the spec targets, or somewhere else? Pulls back from
-  "interesting design" to "is this where the pain lives".
+  "interesting design" to "is this where the pain lives". When the spec assigns
+  ownership across surfaces, run the
+  [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md)
+  producer/consumer questions so a mislocated owner is caught before `impl`.
 - **Atul Gawande (checklist / operational)** — moderate. Will the
   Acceptance Checks actually run? Are they validator-shaped or prose-only?
   What operator-visible step does the slice add?

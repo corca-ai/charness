@@ -30,7 +30,11 @@ For code under review, anchor weighting is asymmetric:
   scope creep often hides here.
 - **Gerald Weinberg (diagnostic)** — strong default. Is the bug actually
   where the diff puts the fix, or is this a fix at the symptom layer? Pulls
-  back from "looks reasonable" to "is the cause located".
+  back from "looks reasonable" to "is the cause located". When the diff touches
+  shared, generic, or cross-surface code, run the
+  [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md)
+  producer/consumer questions and record its disposition — a symptom caught in
+  the wrong layer is exactly the failure this angle exists to locate.
 - **Atul Gawande (checklist / operational)** — moderate. What operator step
   changes? Does the diff add a silent failure mode (no error path, no
   rollback, no doctor signal)?
