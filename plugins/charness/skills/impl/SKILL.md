@@ -135,7 +135,14 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - if the required critique is blocked because the host cannot provide
      subagents after the capability check, stop and record `Critique: blocked <host-signal>`
    - run a fresh-eye review for runtime behavior, boundary honesty, and
-     docs/spec synchronization
+     docs/spec synchronization; the
+     [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)
+     owns the producer/consumer questions and the disposition this closeout records
+   - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --json`; if
+     it reports `triggered: true`, the changed paths matched the repo's cross-surface
+     probe — escalate this slice to a standalone `critique` so the boundary-ownership
+     disposition is recorded and typed-validated in a durable artifact, even if you
+     judged the slice small (the objective probe overrides a self-assessed small slice)
 7. End with execution status.
    - what changed, what was verified, what truth surfaces moved, what the
      critique found, what contract updates were made, and what remains for the
@@ -151,7 +158,7 @@ The closeout should usually include:
 
 `Implemented`, `Capability Delivered`, `Contract Source`, `Verification` naming
 code/fixture and runtime/evaluator proof, `Lint Gate` per
-`## Closeout Vocabulary`, `Truth Surface Sync`, `Critique`,
+`## Closeout Vocabulary`, `Truth Surface Sync`, `Boundary Ownership`, `Critique`,
 `Contract Updates`, `Residual Risks`, `Next Slice`.
 
 ## Closeout Vocabulary
@@ -160,6 +167,7 @@ Emittable-verbatim closeout tokens (validator substring-matches these); WHY-pros
 
 - `Lint Gate` status is one of `ran-pass <command>` / `ran-fail-fixed <command>` / `ran-fail-deferred <command> <issue|anchor>` / `not-detected` / `skipped <reason>`.
 - Completion-report categories are `durable` / `external-writes` / `test-only` / `verification` (proof + level `worker_queued`/`provider_roundtrip`/`agent_choice`) / `unverified-future`.
+- `Boundary Ownership` verdict is one of `single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec` — emit-only / eval-judged (impl keeps no durable validator; the typed floor lives in the escalated standalone `critique`).
 
 ## Guardrails
 

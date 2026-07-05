@@ -24,3 +24,14 @@ packet_sections:
       - "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined."
       - "- Charness does not enforce packet content correctness — the validator owns shape only."
       - "- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment."
+# Repo-owned cross-surface probe for the boundary-ownership checkpoint. When a
+# changed path matches one of these globs (or a source/derived path of one of the
+# named surfaces in .agents/surfaces.json), the critique validator's
+# --changed-ref/--changed-path mode rejects a bare `single-surface` verdict and
+# the impl stop-gate escalation hook (skills/public/impl/scripts/
+# check_boundary_escalation.py) forces a standalone critique. Empty = opt-in off:
+# this repo has not yet adopted a specific cross-surface path set (its own probe
+# globs are a separate design choice), so it keeps the always-brief + closeout
+# presence-floor without the objective override.
+boundary_cross_surface_globs: []
+boundary_cross_surface_surfaces: []

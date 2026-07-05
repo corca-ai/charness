@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 from .support import ROOT, run_script
@@ -144,6 +145,64 @@ def test_boundary_validator_grandfathers_missing_section_on_landing_day(tmp_path
     assert result.returncode == 0, result.stderr
 
 
+def _write_adapter_with_globs(repo: Path, *globs: str) -> None:
+    adapter = repo / ".agents" / "critique-adapter.yaml"
+    adapter.parent.mkdir(parents=True, exist_ok=True)
+    body = "version: 1\nrepo: demo\n" + "boundary_cross_surface_globs:\n" + "".join(
+        f'  - "{g}"\n' for g in globs
+    )
+    adapter.write_text(body, encoding="utf-8")
+
+
+def _write_with_verdict(repo: Path, name: str, verdict: str) -> str:
+    return _write(
+        repo,
+        name,
+        _FRESH_EYE_OK,
+        "",
+        "## Boundary Ownership",
+        "",
+        f"- Verdict: {verdict}",
+    )
+
+
+def test_probe_rejects_single_surface_on_cross_surface_hit(tmp_path: Path) -> None:
+    """The #408 objective override: a changed path matching the repo cross-surface
+    probe rejects a bare `single-surface` verdict even though the presence floor
+    alone would accept it."""
+    repo = tmp_path / "repo"
+    _write_adapter_with_globs(repo, "scripts/*.py")
+    relpath = _write_with_verdict(repo, "2026-07-06-demo.md", "single-surface")
+
+    result = _run(repo, relpath, "--changed-path", "scripts/reducer.py")
+
+    assert result.returncode == 1
+    assert "cross-surface probe" in result.stderr
+    assert "single-surface" in result.stderr and "rejected" in result.stderr
+
+
+def test_probe_accepts_moved_to_owner_on_cross_surface_hit(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_adapter_with_globs(repo, "scripts/*.py")
+    relpath = _write_with_verdict(repo, "2026-07-06-demo.md", "moved-to-owner")
+
+    result = _run(repo, relpath, "--changed-path", "scripts/reducer.py")
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_probe_accepts_single_surface_without_hit(tmp_path: Path) -> None:
+    """No probe match -> `single-surface` stays acceptable (the floor is presence
+    only when the objective override does not fire)."""
+    repo = tmp_path / "repo"
+    _write_adapter_with_globs(repo, "scripts/*.py")
+    relpath = _write_with_verdict(repo, "2026-07-06-demo.md", "single-surface")
+
+    result = _run(repo, relpath, "--changed-path", "docs/readme.md")
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_boundary_scaffold_default_stub_fails_validation_post_cutoff(tmp_path: Path) -> None:
     """The scaffold's own unedited `## Boundary Ownership` Verdict stub must NOT
     satisfy the boundary floor once dated post-cutoff — defense-in-depth against
@@ -166,3 +225,41 @@ def test_boundary_scaffold_default_stub_fails_validation_post_cutoff(tmp_path: P
     assert result.returncode == 1
     assert "Boundary Ownership" in result.stderr
     assert "single-surface" in result.stderr
+
+
+# --- impl stop-gate escalation hook, in-process (AC7); reuses this file's
+# --- single _write_adapter_with_globs fixture writer.
+
+
+def _load_hook():
+    hook_dir = ROOT / "skills" / "public" / "impl" / "scripts"
+    if str(hook_dir) not in sys.path:
+        sys.path.insert(0, str(hook_dir))
+    import check_boundary_escalation
+
+    return check_boundary_escalation
+
+
+def test_hook_triggers_on_cross_surface_change(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_adapter_with_globs(repo, "scripts/*.py")
+
+    payload = _load_hook().build_payload(repo, ["scripts/reducer.py"], None)
+    assert payload["triggered"] is True
+    assert "escalate" in payload["reason"]
+
+
+def test_hook_silent_without_probe_config(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_adapter_with_globs(repo)  # no globs -> empty probe
+
+    payload = _load_hook().build_payload(repo, ["scripts/reducer.py"], None)
+    assert payload["triggered"] is False
+
+
+def test_hook_no_hit_on_unrelated_change(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_adapter_with_globs(repo, "scripts/*.py")
+
+    payload = _load_hook().build_payload(repo, ["docs/readme.md"], None)
+    assert payload["triggered"] is False

@@ -217,6 +217,19 @@ def validate_adapter_data(
         if tiers is not None:
             validated["reviewer_tiers"] = tiers
 
+    # Repo-owned cross-surface probe for the boundary-ownership checkpoint
+    # (#408). Both the critique validator's severity upgrade and the impl
+    # stop-gate escalation hook read these through this one adapter. Keys mirror
+    # scripts/boundary_probe_lib.py (BOUNDARY_GLOBS_KEY / BOUNDARY_SURFACES_KEY).
+    for key in ("boundary_cross_surface_globs", "boundary_cross_surface_surfaces"):
+        raw_list = data.get(key)
+        if raw_list is None:
+            continue
+        if isinstance(raw_list, list) and all(isinstance(item, str) for item in raw_list):
+            validated[key] = list(raw_list)
+        else:
+            errors.append(f"{key} must be a list of strings")
+
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
 

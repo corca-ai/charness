@@ -21,6 +21,9 @@ run_validation_checks = _artifact_validator.run_validation_checks
 selected_changed_paths = _artifact_validator.selected_changed_paths
 selected_artifact_paths = _artifact_validator.selected_artifact_paths
 
+# Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
+_boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
+
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
 STRUCTURED_BINS = frozenset({"act-before-ship", "bundle-anyway", "over-worry", "valid-but-defer"})
@@ -90,29 +93,21 @@ FRESH_EYE_TYPED_VALUES_SUMMARY = "`parent-delegated` / `nested-delegated` / `blo
 # stop. Mirrors this file's own `PLACEHOLDER_VALUES`/`"missing "` treatment.
 FRESH_EYE_TODO_MARKER = "todo"
 # Boundary-ownership presence floor (#408/#414/#416): every critique artifact
-# records a typed boundary-ownership `Verdict:` so a producer/consumer ownership
-# decision cannot be silently skipped (the symptom-caught-in-the-wrong-layer
-# trap #408 took). Presence + typed-value only, never correctness — the reviewer
-# judges whether the named owner is right, the same boundary as the fresh-eye
-# floor above and the D34 announcement presence posture. Same
-# `RULE_DATE = landing_day + 1` grandfather shape as the fresh-eye floor: this
-# floor lands 2026-07-05, so enforcement begins the next day and every artifact
-# dated on/before the landing day is grandfathered. Clone-safe in-file constant,
-# not mtime. See skills/shared/references/boundary-ownership-brief.md.
+# records a typed `Verdict:` so a producer/consumer ownership decision cannot be
+# silently skipped. Presence + typed-value only; correctness stays reviewer
+# judgment (same boundary as the fresh-eye floor + the D34 announcement posture).
+# `RULE_DATE = landing_day + 1` grandfather shape (lands 2026-07-05, enforced the
+# next day). See skills/shared/references/boundary-ownership-brief.md.
 BOUNDARY_OWNERSHIP_RULE_DATE = date(2026, 7, 6)
 BOUNDARY_OWNERSHIP_HEADING = "## Boundary Ownership"
 BOUNDARY_VERDICT_VALUES = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
 BOUNDARY_VERDICT_SUMMARY = (
     "`single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec`"
 )
-# Undatable critique artifacts present when the boundary floor landed. Like the
-# fresh-eye `LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS` set this is a closed, explicit
-# allowlist — NOT a fail-open default: a NEW undatable artifact is still enforced
-# (the scaffold always emits a dated filename, so a datable new artifact is the
-# norm). This set is broader than the fresh-eye one because the boundary floor
-# lands later, when a third undatable release critique already exists; it is kept
-# separate so grandfathering here never weakens the fresh-eye floor's own
-# undatable-enforcement of these files.
+# Undatable critique artifacts present when the boundary floor landed — a closed
+# allowlist, NOT fail-open (a NEW undatable artifact is still enforced; the
+# scaffold always emits a dated filename). Kept separate from the fresh-eye
+# allowlist so grandfathering here never weakens that floor's own enforcement.
 BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset(
     {
         "release-0-55-0-full-packet.md",
@@ -384,16 +379,6 @@ def _opens_with_typed_value(value: str, allowed: tuple[str, ...]) -> bool:
     return FRESH_EYE_TODO_MARKER not in token[len(matched) :]
 
 
-def has_typed_fresh_eye_value(status_lowered: str) -> bool:
-    """The fresh-eye floor's typed-presence check — see ``_opens_with_typed_value``."""
-    return _opens_with_typed_value(status_lowered, FRESH_EYE_TYPED_VALUES)
-
-
-def has_typed_boundary_verdict(verdict: str) -> bool:
-    """The boundary floor's typed-verdict check — see ``_opens_with_typed_value``."""
-    return _opens_with_typed_value(verdict, BOUNDARY_VERDICT_VALUES)
-
-
 def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
     fields = _section_field_map(text, REVIEWER_TIER_HEADING)
     missing = [field for field in REVIEWER_TIER_REQUIRED_FIELDS if not fields.get(field)]
@@ -412,13 +397,15 @@ def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
         )
 
 
-def check_boundary_ownership_typed_presence(path: Path, text: str, observed_date: date | None) -> None:
+def check_boundary_ownership_typed_presence(
+    path: Path, text: str, observed_date: date | None, *, cross_surface_hit: bool = False
+) -> None:
     """The boundary-ownership presence floor. Module-level (not a nested closure)
     so it does not add to ``validate_critique_artifact``'s cyclomatic complexity.
-    Same narrow grandfather as the fresh-eye floor: a dated artifact before the
-    cutoff is grandfathered; an undatable artifact only via the boundary legacy
-    allowlist; every other undatable artifact is enforced as post-cutoff.
-    Typed-presence only — correctness stays reviewer judgment."""
+    Grandfather mirrors the fresh-eye floor (dated-before-cutoff or legacy-undatable
+    allowlist). Typed-presence only — EXCEPT that when ``cross_surface_hit`` is True
+    the repo probe matched the changed paths, so a bare ``single-surface`` verdict
+    is rejected: the objective path-match overrides the self-assertion (#408)."""
     if observed_date is not None and observed_date < BOUNDARY_OWNERSHIP_RULE_DATE:
         return
     if observed_date is None and path.name in BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS:
@@ -432,16 +419,29 @@ def check_boundary_ownership_typed_presence(path: Path, text: str, observed_date
             "skills/shared/references/boundary-ownership-brief.md) — an omitted disposition "
             "silently skips the producer/consumer ownership question (#408)."
         )
-    if not has_typed_boundary_verdict(verdict):
+    if not _opens_with_typed_value(verdict, BOUNDARY_VERDICT_VALUES):
         raise ValidationError(
             f"{path}: `## Boundary Ownership` verdict `{verdict[:80]}` does not open with one of "
             f"{BOUNDARY_VERDICT_SUMMARY}, or still carries an unedited `todo` after the typed value "
             "— either way it is not a real disposition."
         )
+    normalized = _LEADING_MARKUP_RE.sub("", verdict.strip().lower())
+    if cross_surface_hit and normalized.startswith("single-surface"):
+        raise ValidationError(
+            f"{path}: the changed paths match this repo's cross-surface probe, so a bare "
+            "`single-surface` boundary verdict is rejected — record `owned-correctly` / "
+            "`moved-to-owner` / `escalated-to-issue-spec` (the #408 objective override). See "
+            "skills/shared/references/boundary-ownership-brief.md."
+        )
 
 
 def validate_critique_artifact(
-    path: Path, *, repo_has_delegation_contract: bool, require_tier_evidence: bool, collect_all: bool = False
+    path: Path,
+    *,
+    repo_has_delegation_contract: bool,
+    require_tier_evidence: bool,
+    collect_all: bool = False,
+    cross_surface_hit: bool = False,
 ) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
@@ -467,7 +467,7 @@ def validate_critique_artifact(
                 "omitted line otherwise skips every distinct-observer check below (the #386 "
                 "same-observer rubber stamp in file form)."
             )
-        if not has_typed_fresh_eye_value(status_lowered):
+        if not _opens_with_typed_value(status_lowered, FRESH_EYE_TYPED_VALUES):
             raise ValidationError(
                 f"{path}: `Fresh-eye satisfaction` value `{status_lowered[:80]}` does not open with "
                 f"one of the typed values {FRESH_EYE_TYPED_VALUES_SUMMARY}, or still carries an "
@@ -502,7 +502,9 @@ def validate_critique_artifact(
 
     checks = (
         _check_fresh_eye_typed_presence,
-        lambda: check_boundary_ownership_typed_presence(path, text, observed_date),
+        lambda: check_boundary_ownership_typed_presence(
+            path, text, observed_date, cross_surface_hit=cross_surface_hit
+        ),
         _check_forbidden_blocker_phrases,
         _check_blocked_signal_detail,
         lambda: validate_structured_findings(path, text),
@@ -511,6 +513,18 @@ def validate_critique_artifact(
     run_validation_checks(
         checks, collect_all=collect_all, artifact_label="critique artifact", error_cls=ValidationError
     )
+
+
+def _resolve_cross_surface_hit(
+    repo_root: Path, changed_ref: str | None, changed_path: list[str] | None
+) -> bool:
+    """False unless --changed-ref/--changed-path was passed AND those paths match
+    this repo's configured probe (the #408 override; logic in boundary_probe_lib)."""
+    if not changed_ref and not changed_path:
+        return False
+    return _boundary_probe_lib.resolve_hit(
+        repo_root, changed_path=changed_path, changed_ref=changed_ref
+    )[0]
 
 
 def main() -> int:
@@ -525,9 +539,20 @@ def main() -> int:
         action="store_true",
         help="Report every rule violation per artifact in one pass instead of failing on the first.",
     )
+    parser.add_argument(
+        "--changed-ref",
+        help="Git ref/range whose changed paths are tested against the repo cross-surface probe; "
+        "a hit rejects a bare `single-surface` boundary verdict (#408 override).",
+    )
+    parser.add_argument(
+        "--changed-path",
+        nargs="*",
+        help="Explicit changed paths for the cross-surface probe (bypasses git; wins over --changed-ref).",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    cross_surface_hit = _resolve_cross_surface_hit(repo_root, args.changed_ref, args.changed_path)
     explicit_paths = args.paths is not None
     paths = selected_changed_paths(args, repo_root, changed_paths_fn=changed_paths)
     artifacts = selected_artifact_paths(
@@ -545,6 +570,7 @@ def main() -> int:
             repo_has_delegation_contract=repo_has_delegation_contract,
             require_tier_evidence=explicit_paths or relpath in require_tier_paths,
             collect_all=args.report_all,
+            cross_surface_hit=cross_surface_hit,
         )
     print(f"Validated {len(artifacts)} critique artifact(s).")
     return 0
