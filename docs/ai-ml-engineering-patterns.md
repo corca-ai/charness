@@ -32,7 +32,7 @@ usage signal, not product-success proof.
 
 | Pattern area | Current Charness state | Posture |
 | --- | --- | --- |
-| Evaluation | Deterministic gates are strong; Cautilus is eval-only and adapter-disabled unless planner proof asks for it. Public-skill dogfood, quality artifacts, bounded fresh-eye review, and HITL surfaces preserve behavior-review state. | Strong for local proof and judgment-heavy closeout; weak for product outcome measurement. |
+| Evaluation | Deterministic gates are strong; Cautilus is eval-only and ask-gated — it runs only when the proof planner justifies a named failing log/path. Public-skill dogfood, quality artifacts, bounded fresh-eye review, and HITL surfaces preserve behavior-review state. | Strong for local proof and judgment-heavy closeout; weak for product outcome measurement. |
 | Experimentation | Specs, issues, critiques, retros, and release artifacts record workflow, prompt, adapter, and policy changes. Runtime metrics exist for quality gates. | Strong for repo experiments; model/search/sampling experiments must be named in an owning spec when Charness gains that runtime surface. |
 | Data and feedback | Debug artifacts preserve RCA, detection gaps, and sibling scans. Retros turn corrections into lessons. Usage episodes now have validator and report consumers, with capture gaps made visible. | Strong for incidents and local usage episodes; not a labeled training or eval dataset. |
 | Operations and observability | Quality runtime signals, release proof, tool doctor, integration manifests, and handoff docs make operator state visible. | Strong for maintainer-local operations; release real-host proof and cost/latency claims remain deferred unless captured by host/runtime artifacts. |

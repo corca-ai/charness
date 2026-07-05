@@ -29,14 +29,18 @@ contract and see proof for each acceptance criterion. The report should include:
 - deterministic executable checks for local scripts, docs, and CLI behavior;
 - historical Cautilus behavioral proof at
   [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md);
-- future Cautilus claim-discovery and claim-validation outputs after the repo
-  adapter is deliberately re-enabled and those packets become stable checked
+- future Cautilus claim-discovery and claim-validation outputs, once repo policy
+  re-enables those broader surfaces and those packets become stable checked
   artifacts.
 
-While the root Cautilus adapter is `disabled`, do not run claim discovery or
-evaluation commands. After the adapter is deliberately re-enabled, use the
-normal distributed binary surface; if that is not available yet, the historical
-implementation-checkout command shape was:
+Cautilus evaluation surfaces (`fixture`/`observation`/`skill-experiment`) run
+ask-gated through [`run_cautilus_eval.py`](../scripts/run_cautilus_eval.py) per the planner consult
+contract; claim discovery and the other broader surfaces remain disabled by repo
+policy (see
+[`cautilus-on-demand.md`](../skills/public/quality/references/cautilus-on-demand.md)).
+Do not run claim discovery. If those broader surfaces are later re-enabled, use
+the normal distributed binary surface; if that is not available yet, the
+historical implementation-checkout command shape was:
 
 ```bash
 ../cautilus/bin/cautilus discover claims \
