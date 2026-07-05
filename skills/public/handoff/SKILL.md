@@ -89,6 +89,10 @@ Assume a competent next operator can follow one good link.
    - incorporate only concrete clarity fixes, not speculative churn
 7. Finish with a clean baton pass.
    - the next operator should know what to do first without interpretation
+   - on a refresh, close with the `## Closeout Vocabulary` tokens: `Refresh kept:`
+     naming the state retained because it changes the next action, and
+     `Refresh non-claims:` naming what was dropped as non-actionable, spilled to an
+     owning artifact, or not proven (or `Refresh non-claims: none`)
 
 ## Output Shape
 
@@ -100,6 +104,17 @@ The handoff should usually contain:
 - `Next Session`
 - `Discuss`
 - `References`
+
+## Closeout Vocabulary
+
+Emittable-verbatim refresh closeout tokens (the claim-fidelity floor
+substring-matches these); the compression and spill WHY-prose stays in
+`references/state-selection.md` and `references/spill-targets.md`.
+
+- `Refresh kept:` — the state retained because removing it would change the next
+  operator's first action (the state-selection Compression Rule outcome).
+- `Refresh non-claims:` — what was dropped as non-actionable, spilled to an owning
+  artifact, or left unproven; or `Refresh non-claims: none`.
 
 ## Guardrails
 

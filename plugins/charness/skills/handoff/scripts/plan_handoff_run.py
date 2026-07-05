@@ -20,7 +20,13 @@ INTENT_REFERENCE_READS = {
         ("references/continuation-sequence.md", "order the next move as continuation, not history"),
     ),
     "refresh": (
-        ("references/state-selection.md", "refresh keeps only state that changes the next action"),
+        # state-selection.md retired from the forced refresh reads (census
+        # INLINE): the Compression Rule gist is inlined in SKILL.md (step 2,
+        # step 4 keep-enumeration, guardrails), so the run keeps only
+        # next-action state from core and the eval floors on the emitted
+        # `Refresh kept:`/`Refresh non-claims:` closeout tokens instead of the
+        # redundant re-read. spill-targets.md stays a forced read: its exact
+        # owning-path routing table is genuine depth absent from SKILL.md.
         ("references/spill-targets.md", "spill durable detail instead of growing a diary"),
     ),
     "judge_from_user_request": (

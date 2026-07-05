@@ -130,7 +130,13 @@ def test_handoff_plan_reports_artifact_gates_and_required_reads() -> None:
 
     read_paths = {read["path"] for read in plan["required_reads"]}
     assert "docs/handoff.md" in read_paths
-    assert "references/state-selection.md" in read_paths
+    # state-selection.md is retired from the forced refresh reads (census INLINE
+    # MOVE): its Compression Rule gist is inlined in SKILL.md, so the run keeps
+    # only next-action state from core and the eval floors on the emitted
+    # closeout tokens instead of a redundant re-read. spill-targets.md stays a
+    # forced read (its owning-path routing table is genuine depth absent from
+    # SKILL.md).
+    assert "references/state-selection.md" not in read_paths
     assert "references/spill-targets.md" in read_paths
 
     gates = {packet["id"]: packet for packet in plan["gate_packets"]}
