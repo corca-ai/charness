@@ -86,32 +86,43 @@ def test_probe_config_tolerates_absent_and_bad_values() -> None:
 
 
 # --- AC8: the portable brief is reachable from the reviewer surfaces ----------
+# First three surfaces are the First Slice (critique + impl); the last four are
+# DBD-2's extension into issue / spec / achieve / quality (#414/#416).
+_BRIEF_SURFACES = (
+    "skills/public/impl/references/review-gate.md",
+    "skills/public/critique/references/code-critique.md",
+    "skills/public/critique/references/spec-critique.md",
+    "skills/public/issue/references/causal-review.md",
+    "skills/public/spec/references/design-lenses.md",
+    "skills/public/achieve/references/coordination.md",
+    "skills/public/quality/references/quality-lenses.md",
+)
+_VERDICTS = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
 
 
 def test_brief_linked_from_reviewer_surfaces() -> None:
-    """check_doc_links only fails a BROKEN link, not a MISSING one, so this guards
-    against a regression that silently drops the brief from a reviewer surface."""
-    brief = "boundary-ownership-brief.md"
-    for rel in (
-        "skills/public/impl/references/review-gate.md",
-        "skills/public/critique/references/code-critique.md",
-        "skills/public/critique/references/spec-critique.md",
-    ):
-        assert brief in (ROOT / rel).read_text(encoding="utf-8"), f"{rel} must link {brief}"
+    # check_doc_links fails only a BROKEN link, not a MISSING one; guard the brief surfaces + issue disposition line.
+    for rel in _BRIEF_SURFACES:
+        assert "boundary-ownership-brief.md" in (ROOT / rel).read_text("utf-8"), rel
+    assert "Boundary #N:" in (ROOT / "skills/public/issue/references/causal-review.md").read_text("utf-8")
 
 
-# --- AC9: impl carries the emit-only Boundary Ownership token -----------------
+# --- AC9: the emit-only Boundary Ownership token is carried at closeout --------
 
 
-def test_impl_skill_carries_boundary_ownership_token() -> None:
-    skill = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-    # Header-keyed section split (the string "## Closeout Vocabulary" also appears
-    # inline inside Output Shape, so a plain substring split picks the wrong span).
-    sections = {}
-    for chunk in ("\n" + skill).split("\n## ")[1:]:
-        sections[chunk.split("\n", 1)[0].strip()] = chunk
-    assert "Boundary Ownership" in sections["Output Shape"]
-    vocab = sections["Closeout Vocabulary"]
-    assert "Boundary Ownership" in vocab
-    for verdict in ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec"):
-        assert verdict in vocab
+def _sections(rel: str) -> dict[str, str]:
+    # Header-keyed split — "## Closeout Vocabulary" also appears inline in Output Shape.
+    out: dict[str, str] = {}
+    for chunk in ("\n" + (ROOT / rel).read_text("utf-8")).split("\n## ")[1:]:
+        out[chunk.split("\n", 1)[0].strip()] = chunk
+    return out
+
+
+def test_impl_and_spec_skills_carry_boundary_ownership_token() -> None:
+    # impl (First Slice) + spec (DBD-2 #414/#416): impl-archetype emit-only token.
+    # issue's emit-only `Boundary #N:` close-comment line is prose (not validator-
+    # enforced), covered by the brief-reachability surface above; no separate test.
+    for rel in ("skills/public/impl/SKILL.md", "skills/public/spec/SKILL.md"):
+        s = _sections(rel)
+        assert "Boundary Ownership" in s["Output Shape"] and "Boundary Ownership" in s["Closeout Vocabulary"], rel
+        assert all(v in s["Closeout Vocabulary"] for v in _VERDICTS), rel

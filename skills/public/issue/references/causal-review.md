@@ -196,6 +196,12 @@ Pass the following fields when delegating to `critique`:
   reviewers do not redo the root cause analysis)
 - `framing_question`: "what would let this class of issue, and the siblings
   surfaced at step 4, come back"
+- `boundary_ownership`: when the fix touches shared, generic, or cross-surface
+  code, run the
+  [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md)
+  producer/consumer questions inside the delegated `critique` — it is the carrier
+  that floors the typed disposition, so `issue` records it (see the close-comment
+  `Boundary` line below) rather than growing its own boundary floor
 - `success`: the fix is committed, sibling decisions are recorded, and any
   bundled prevention is wired into a guard, test, doc, or tool
 - `out_of_scope`: re-litigating the root cause; redesigning the fix;
@@ -236,6 +242,12 @@ For `bug`:
   risk; keep the proof level visible separately from the decision
 - the structural recurrence-prevention move (guard, test, doc, tool) and
   what is deliberately not addressed yet
+- `Boundary #N: <verdict>` — the boundary-ownership disposition the delegated
+  `critique` recorded (`single-surface` / `owned-correctly` / `moved-to-owner` /
+  `escalated-to-issue-spec`), surfacing the producer/consumer decision at the
+  issue closeout; single-issue shorthand `Boundary:`. Emit-only — the bound
+  `Critique #N:` artifact is where the typed floor bites, so `verify-closeout`
+  does not re-floor this line.
 
 For `feature` or `deferred-work`:
 
@@ -243,6 +255,8 @@ For `feature` or `deferred-work`:
 - what was implemented (capability + entry point)
 - any critique-bundled prevention; "no recurrence prevention applicable" is a
   valid line for greenfield features
+- `Boundary #N: <verdict>` — same emit-only boundary-ownership disposition as the
+  `bug` shape, carried from the delegated `critique`
 
 For `question` or `decision-needed`:
 

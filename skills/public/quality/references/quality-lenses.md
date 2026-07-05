@@ -7,7 +7,14 @@
 Use a concept-integrity lens:
 
 - stable concepts
-- ownership honesty
+- ownership honesty — when reviewing a change that touches shared, generic, or
+  cross-surface code, run the
+  [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md)
+  producer/consumer questions (a symptom caught deterministically in the wrong
+  layer is the failure this locates); this is the change-side complement to the
+  `boundary_taxonomy_leak` authoring-lens in
+  [adapter-gate-review.md](./adapter-gate-review.md), which guards portable prose
+  against a consumer repo's owner labels
 - source-of-truth clarity
 - domain-language alignment across user-facing docs, business concepts,
   CLI/config names, code terms, and artifacts

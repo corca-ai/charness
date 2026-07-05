@@ -145,6 +145,7 @@ The final spec should usually include:
 - `Constraints`
 - `Success Criteria`
 - `Acceptance Checks`
+- `Boundary Ownership`
 - `Critique`
 - `Canonical Artifact`
 - `First Implementation Slice`
@@ -157,6 +158,7 @@ as `Entities` or `Stages` instead of recreating them under new names.
 Emittable-verbatim acceptance-check tokens (a reader/validator substring-matches these); the teaching prose stays in `references/acceptance-checks.md`.
 
 - Verification type is one of `manual` / `unit` / `integration` / `e2e` / `eval` / `specdown`.
+- `Boundary Ownership` verdict is one of `single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec` — emit-only / eval-judged (`spec` keeps no durable validator; the typed floor lives in the bounded `critique` this skill runs before finalizing).
 
 ## Guardrails
 

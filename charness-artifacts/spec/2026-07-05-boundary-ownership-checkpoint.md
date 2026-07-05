@@ -169,6 +169,49 @@ seam designed to extend later to `issue` / `quality` / `spec` / `achieve`
   each stage's carrier (does it have a durable artifact? an emitted token?) needs
   the same critique-vs-impl analysis done here. Reopen trigger: the critique+impl
   slice lands and a second lifecycle stage needs the discipline.
+  - **Resolution (2026-07-05) — extended; all four resolve to the impl archetype
+    (DBD-2 closed, #414/#416).** The critique-vs-impl carrier analysis the First
+    Slice did for critique+impl was repeated per stage (carrier maps captured by
+    two bounded read-only reviewers). The load-bearing finding: the
+    boundary-ownership **disposition is a per-*change* artifact**, and every change
+    flows through a `critique` — directly, or via impl's step-6. So the
+    validated-teeth home stays `critique` alone; **no stage grows its own
+    change-disposition floor** (Fixed Decision 8's "no validator by reflex"
+    generalizes past impl). The reach — the brief (the "place to ask") plus a
+    surfaced disposition — is what extends. Per-stage wiring:
+    - **issue** (impl-archetype). Its resolve flow already BINDS a resolution
+      `critique` (`Critique #N:`) whose artifact floors the disposition. DBD-2
+      surfaces the producer/consumer brief in `references/causal-review.md` (the
+      resolution-critique handoff + workflow-boundary overlay) and emits a
+      `Boundary #N:` disposition line in the close-comment shape — **emit-only**:
+      the bound critique carries the teeth, so `verify-closeout` gains NO boundary
+      floor (it would duplicate the bound critique's already-enforced disposition).
+    - **spec** (impl-archetype). Has NO closeout validator (only a citation lint)
+      and leans on the `critique` it runs before finalizing — structurally identical
+      to impl. DBD-2 adds a boundary-ownership lens to `references/design-lenses.md`
+      and a `Boundary Ownership` emit-only token to `## Output Shape` +
+      `## Closeout Vocabulary` (the token slot already existed).
+    - **achieve** (impl-archetype via coordination). Coordinates a per-slice
+      `critique` that **records** each slice's disposition — floored when that
+      critique writes a durable artifact or the probe fires, else reviewer judgment
+      (the DBD-4 residual; the `critique` role is a recommendation, not one of
+      achieve's four closeout floors). DBD-2 surfaces the brief in the `critique`
+      coordination role (`references/coordination.md`) — **no 5th coordination
+      floor**: a goal-level floor would need the per-change diff, not the goal
+      aggregate, so it would not close the DBD-4 residual either, and achieve owns
+      no change outside its `impl` slices. The honest closeout claim is "recorded
+      via the coordinated critique," never "floored at the goal level."
+    - **quality** (authoring-lens, already shipped in the First Slice). A quality
+      *review* is an inspection, not an ownership-moving change, so the
+      change-disposition enum does not fit its carrier. Quality's boundary form is
+      the #416 authoring-lens (`boundary_taxonomy_leak`, judgment-only per DBD-1).
+      DBD-2 adds the producer/consumer brief link to the `ownership honesty` concept
+      lens (`references/quality-lenses.md`) for when quality reviews cross-surface
+      changes; `validate_quality_artifact.py` gains no boundary floor.
+    - Reachability is proven by extending AC8
+      (`tests/test_boundary_probe.py::test_brief_linked_from_reviewer_surfaces`) to
+      the four new reviewer surfaces, plus an AC9-style token test for the spec
+      SKILL. Portability: zero consumer taxonomy nouns added anywhere (AC6 re-grep).
 - **DBD-3 — probe command variant (P1 tail).** If no first consumer needs a
   cross-surface *command* probe, ship globs/IDs only and defer the command
   executor wiring.

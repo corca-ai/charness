@@ -13,7 +13,7 @@ artifact. Each coordinated skill must still be useful standalone; do not add
 | `debug` | for a bug-class goal, drive a falsifiable root-cause *before* the fix slice; record the hypothesis or debug-artifact path in the Slice Plan |
 | `quality` | design verification up front, run cheap checks during, broad gates near final |
 | `issue` | record off-goal findings (reference + reason only); **and**, when the goal resolves a tracked issue, close it through `issue` at closeout (see *Resolving A Tracked Issue*) |
-| `critique` | review the goal plan before activation, substantial slices, and final proof |
+| `critique` | review the goal plan before activation, substantial slices, and final proof — when a slice touches shared, generic, or cross-surface code, its `critique` runs the [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md) producer/consumer questions and records the typed disposition (floored when that critique writes a durable artifact or the repo probe fires; see the boundary note below) |
 | `retro` | produce the automatic after-action review focused on time/token/waste |
 
 ## Resolving A Tracked Issue
@@ -85,6 +85,17 @@ alone gets skipped under context pressure and the miss is silent and costly:
   recorded work sections (`## Slice Log` / `## Final Verification`) carry a
   close keyword, the run records an `Issue closeout:` step (or
   `Issue closeout: n/a — <reason>`).
+
+Boundary-ownership is deliberately **not** a fifth floor here: it is a
+per-*change* disposition. A goal owns no change outside its `impl` slices, and a
+slice's boundary disposition is **recorded** by the `critique` that slice runs
+(see the `critique` role above) — with *teeth* only when that critique writes a
+durable standalone artifact (the `validate_critique_artifacts.py` presence floor
+bites) or the repo's cross-surface probe fires; a probe-less rung-2 inline
+critique leaves it reviewer judgment (the named DBD-4 residual, not something a
+goal-level floor closes: that floor would need the per-change diff, not the goal
+aggregate). Surface the brief through the coordinated critique; do not add a
+goal-artifact boundary floor by reflex.
 
 The gather/release/issue floors are enforced by
 `goal_artifact_coordination_floors.py`; phase routing is enforced by
