@@ -49,6 +49,13 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     # The fresh-eye status must not carry the literal "blocked" token, which
     # would otherwise demand a host/tool signal citation.
     assert "blocked" not in template.lower()
+    # The boundary-ownership presence floor's section + verdict legend, with the
+    # `Verdict:` deliberately NOT a typed value (same rubber-stamp rationale as
+    # the fresh-eye stub — proven raw-fails-post-cutoff in
+    # tests/quality_gates/test_critique_boundary_ownership_presence.py).
+    assert "## Boundary Ownership" in template
+    assert "single-surface" in template and "escalated-to-issue-spec" in template
+    assert "boundary-ownership-brief.md" in template
 
     # The scaffold surfaces the validator's allowed enums at author time as an
     # inline legend, so an author substituting a value picks from the valid set
@@ -75,7 +82,14 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     # tests/quality_gates/test_critique_fresh_eye_presence.py.
     head, heading, _ = template.partition("## Fresh-Eye Satisfaction")
     assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
-    filled_in_template = f"{head}{heading}\n\nparent-delegated.\n"
+    # Fill BOTH date-gated floors (fresh-eye + boundary ownership); the boundary
+    # section renders after Fresh-Eye Satisfaction, so the partition drops the
+    # scaffold's TODO stub and we re-add a filled one. This proves the filled
+    # shape validates regardless of the machine date.
+    filled_in_template = (
+        f"{head}{heading}\n\nparent-delegated.\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+    )
 
     artifact_path = repo / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -110,6 +124,7 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
     assert set(enums["reviewer_tier_host_exposure_state"]) == set(
         validator.REVIEWER_TIER_HOST_STATES
     )
+    assert set(enums["boundary_ownership"]["verdict"]) == set(validator.BOUNDARY_VERDICT_VALUES)
 
 
 def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:
@@ -140,7 +155,11 @@ def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tm
     # IN shape validates through the exported plugin's copy of the validator.
     head, heading, _ = payload["template"].partition("## Fresh-Eye Satisfaction")
     assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
-    filled_in_template = f"{head}{heading}\n\nparent-delegated.\n"
+    # Same both-floors fill as the in-repo round-trip above.
+    filled_in_template = (
+        f"{head}{heading}\n\nparent-delegated.\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+    )
 
     artifact_path = consumer / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)

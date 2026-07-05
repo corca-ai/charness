@@ -89,6 +89,37 @@ FRESH_EYE_TYPED_VALUES_SUMMARY = "`parent-delegated` / `nested-delegated` / `blo
 # delegation, the exact same-observer rubber stamp (#386) this floor exists to
 # stop. Mirrors this file's own `PLACEHOLDER_VALUES`/`"missing "` treatment.
 FRESH_EYE_TODO_MARKER = "todo"
+# Boundary-ownership presence floor (#408/#414/#416): every critique artifact
+# records a typed boundary-ownership `Verdict:` so a producer/consumer ownership
+# decision cannot be silently skipped (the symptom-caught-in-the-wrong-layer
+# trap #408 took). Presence + typed-value only, never correctness — the reviewer
+# judges whether the named owner is right, the same boundary as the fresh-eye
+# floor above and the D34 announcement presence posture. Same
+# `RULE_DATE = landing_day + 1` grandfather shape as the fresh-eye floor: this
+# floor lands 2026-07-05, so enforcement begins the next day and every artifact
+# dated on/before the landing day is grandfathered. Clone-safe in-file constant,
+# not mtime. See skills/shared/references/boundary-ownership-brief.md.
+BOUNDARY_OWNERSHIP_RULE_DATE = date(2026, 7, 6)
+BOUNDARY_OWNERSHIP_HEADING = "## Boundary Ownership"
+BOUNDARY_VERDICT_VALUES = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
+BOUNDARY_VERDICT_SUMMARY = (
+    "`single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec`"
+)
+# Undatable critique artifacts present when the boundary floor landed. Like the
+# fresh-eye `LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS` set this is a closed, explicit
+# allowlist — NOT a fail-open default: a NEW undatable artifact is still enforced
+# (the scaffold always emits a dated filename, so a datable new artifact is the
+# norm). This set is broader than the fresh-eye one because the boundary floor
+# lands later, when a third undatable release critique already exists; it is kept
+# separate so grandfathering here never weakens the fresh-eye floor's own
+# undatable-enforcement of these files.
+BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset(
+    {
+        "release-0-55-0-full-packet.md",
+        "release-0-55-1-packet.md",
+        "release-0-55-1-critique.md",
+    }
+)
 # Closed, explicit allowlist — NOT a fail-open default. Every other undatable
 # critique artifact is now enforced as if post-cutoff (a new artifact with no
 # parseable date is itself the anomaly); only these two legacy prepare-packets,
@@ -336,23 +367,31 @@ def _section_field_map(text: str, heading: str) -> dict[str, str]:
     return fields
 
 
-def has_typed_fresh_eye_value(status_lowered: str) -> bool:
-    """Whether ``status_lowered`` opens with one of the typed fresh-eye tokens
-    (after stripping backtick/quote/bullet markup) AND the remainder is not
-    still an unedited placeholder. Presence/form only — it proves the artifact
-    committed to a falsifiable observer claim *type*, never whether that
-    delegation actually happened (that stays reviewer judgment, same boundary
-    as `disposition_form`'s enum checks). The `todo`-in-remainder rejection is
-    the narrow exception: a scaffolded `parent-delegated (TODO confirm ...)`
-    is not a claim at all, it is a stub the author never touched — accepting
-    it would let an unedited default silently satisfy the floor (the exact
-    same-observer rubber stamp, #386, this floor exists to stop)."""
-    token = _LEADING_MARKUP_RE.sub("", status_lowered)
-    matched = next((value for value in FRESH_EYE_TYPED_VALUES if token.startswith(value)), None)
+def _opens_with_typed_value(value: str, allowed: tuple[str, ...]) -> bool:
+    """Whether ``value`` opens with one of ``allowed`` (after stripping
+    backtick/quote/bullet markup) AND the remainder is not still an unedited
+    ``todo`` placeholder. The shared presence/form check behind both the
+    fresh-eye and boundary-ownership floors: it proves the artifact committed to
+    a falsifiable claim *type*, never whether the claim is true — that stays
+    reviewer judgment. The ``todo``-in-remainder rejection is the narrow
+    exception: a scaffolded ``<typed> (TODO ...)`` is an unedited stub, not a
+    claim, and accepting it would let an unedited default silently satisfy the
+    floor (the same-observer rubber stamp, #386, these floors exist to stop)."""
+    token = _LEADING_MARKUP_RE.sub("", value.strip().lower())
+    matched = next((candidate for candidate in allowed if token.startswith(candidate)), None)
     if matched is None:
         return False
-    remainder = token[len(matched) :]
-    return FRESH_EYE_TODO_MARKER not in remainder
+    return FRESH_EYE_TODO_MARKER not in token[len(matched) :]
+
+
+def has_typed_fresh_eye_value(status_lowered: str) -> bool:
+    """The fresh-eye floor's typed-presence check — see ``_opens_with_typed_value``."""
+    return _opens_with_typed_value(status_lowered, FRESH_EYE_TYPED_VALUES)
+
+
+def has_typed_boundary_verdict(verdict: str) -> bool:
+    """The boundary floor's typed-verdict check — see ``_opens_with_typed_value``."""
+    return _opens_with_typed_value(verdict, BOUNDARY_VERDICT_VALUES)
 
 
 def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
@@ -370,6 +409,34 @@ def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
         raise ValidationError(
             f"{path}: reviewer tier evidence may use `applied` only with "
             "`Application state: host-confirmed: <signal>`"
+        )
+
+
+def check_boundary_ownership_typed_presence(path: Path, text: str, observed_date: date | None) -> None:
+    """The boundary-ownership presence floor. Module-level (not a nested closure)
+    so it does not add to ``validate_critique_artifact``'s cyclomatic complexity.
+    Same narrow grandfather as the fresh-eye floor: a dated artifact before the
+    cutoff is grandfathered; an undatable artifact only via the boundary legacy
+    allowlist; every other undatable artifact is enforced as post-cutoff.
+    Typed-presence only — correctness stays reviewer judgment."""
+    if observed_date is not None and observed_date < BOUNDARY_OWNERSHIP_RULE_DATE:
+        return
+    if observed_date is None and path.name in BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS:
+        return
+    verdict = _section_field_map(text, BOUNDARY_OWNERSHIP_HEADING).get("verdict", "")
+    if not verdict:
+        raise ValidationError(
+            f"{path}: critique artifact has no `## Boundary Ownership` section with a typed "
+            f"`Verdict:` line; every critique artifact must record one of {BOUNDARY_VERDICT_SUMMARY} "
+            "(run the producer/consumer brief at "
+            "skills/shared/references/boundary-ownership-brief.md) — an omitted disposition "
+            "silently skips the producer/consumer ownership question (#408)."
+        )
+    if not has_typed_boundary_verdict(verdict):
+        raise ValidationError(
+            f"{path}: `## Boundary Ownership` verdict `{verdict[:80]}` does not open with one of "
+            f"{BOUNDARY_VERDICT_SUMMARY}, or still carries an unedited `todo` after the typed value "
+            "— either way it is not a real disposition."
         )
 
 
@@ -435,6 +502,7 @@ def validate_critique_artifact(
 
     checks = (
         _check_fresh_eye_typed_presence,
+        lambda: check_boundary_ownership_typed_presence(path, text, observed_date),
         _check_forbidden_blocker_phrases,
         _check_blocked_signal_detail,
         lambda: validate_structured_findings(path, text),

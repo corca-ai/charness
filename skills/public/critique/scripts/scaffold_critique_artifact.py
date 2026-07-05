@@ -23,13 +23,15 @@ _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scri
 # The critique validator (scripts/validate_critique_artifacts.py) is opt-in but
 # enforces real schemas when their sections appear: `## Structured Findings`
 # enums/follow-ups, `## Reviewer Tier Evidence` fields/host-exposure-state, and
-# (once dated on/after its enforce-from date) a `Fresh-eye satisfaction:` line
-# that must open with a typed value. The scaffold emits all three so the
-# dogfood validation exercises them, but the fresh-eye line is deliberately
-# NOT a typed value by default — the floor exists to stop an unedited artifact
-# from silently claiming a review happened (a same-observer rubber stamp); a
-# scaffold that pre-fills a real typed token would hand every author exactly
-# that loophole for free. It also stays free of the literal "blocked" token
+# (once dated on/after their enforce-from dates) a `Fresh-eye satisfaction:` line
+# that must open with a typed value AND a `## Boundary Ownership` `Verdict:` line
+# that must open with a typed boundary verdict. The scaffold emits all of these
+# so the dogfood validation exercises them, but both the fresh-eye line and the
+# boundary `Verdict:` are deliberately NOT typed values by default — those floors
+# exist to stop an unedited artifact from silently claiming a review or a
+# "no cross-surface concern" happened (a same-observer rubber stamp); a scaffold
+# that pre-fills a real typed token would hand every author exactly that loophole
+# for free. The fresh-eye line also stays free of the literal "blocked" token
 # (which would otherwise demand a host/tool signal).
 
 
@@ -50,6 +52,11 @@ ALLOWED_HOST_EXPOSURE_STATES = (
     "unsupported",
     "applied",
 )
+# Boundary-ownership verdict enum the validator's presence floor enforces once an
+# artifact is dated on/after its enforce-from date. MUST stay equal to the
+# validator's BOUNDARY_VERDICT_VALUES (drift test pins the equality). See
+# skills/shared/references/boundary-ownership-brief.md.
+ALLOWED_BOUNDARY_VERDICTS = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
 VALIDATOR_SCRIPT_NAMES = ("validate_critique_artifacts.py", "validate-critique-artifacts.py")
 
 
@@ -62,6 +69,7 @@ def allowed_enums() -> dict[str, object]:
             "action": list(ALLOWED_ACTIONS),
         },
         "reviewer_tier_host_exposure_state": list(ALLOWED_HOST_EXPOSURE_STATES),
+        "boundary_ownership": {"verdict": list(ALLOWED_BOUNDARY_VERDICTS)},
         "couplings": [
             "action: file-issue requires a parseable follow-up: (issue URL or 'deferred <handoff-anchor>')",
             "Host exposure state: applied requires Application state: host-confirmed: <signal>",
@@ -133,6 +141,30 @@ def render_template(*, title: str, date_text: str) -> str:
             # literal "blocked" token for the same reason as the module comment.
             "TODO: replace with `parent-delegated`, `nested-delegated`, or a citation of "
             "the concrete signal that stopped delegation — after the reviewer actually runs.",
+            "",
+        ]
+    )
+    verdict_legend = " | ".join(ALLOWED_BOUNDARY_VERDICTS)
+    lines.extend(
+        [
+            "## Boundary Ownership",
+            "",
+            f"<!-- allowed Verdict (substitute only these): {verdict_legend}. Run the "
+            "producer/consumer brief at skills/shared/references/boundary-ownership-brief.md. -->",
+            "- Producer: TODO who produces this fact or state.",
+            "- Consumer: TODO the final consumer.",
+            "- Owning surface: TODO the surface that should own the change (a repo-defined label).",
+            # Deliberately NOT a typed verdict (same rationale as the Fresh-Eye
+            # Satisfaction placeholder above): the validator requires the
+            # `Verdict:` value to OPEN with one of the typed tokens once dated
+            # on/after its enforce-from date, and rejects a typed value whose
+            # remainder still carries an unedited `todo`. Pre-filling a real
+            # verdict here (e.g. `single-surface`) would let every unedited
+            # scaffold silently claim "no cross-surface concern" for free — the
+            # same rubber stamp the fresh-eye floor stops. The author replaces
+            # this with a real verdict after running the brief.
+            f"- Verdict: TODO replace with one of {verdict_legend} after running the "
+            "producer/consumer brief.",
             "",
         ]
     )
