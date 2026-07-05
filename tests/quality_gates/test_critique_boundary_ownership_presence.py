@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 from .support import ROOT, run_script
 
 # The boundary-ownership typed-presence floor (#408/#414/#416): every critique
@@ -43,93 +45,44 @@ def _run(repo: Path, relpath: str, *extra: str) -> object:
     )
 
 
-def test_boundary_validator_rejects_missing_section_post_cutoff(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    relpath = _write(repo, "2026-07-06-demo.md", _FRESH_EYE_OK)
-
-    result = _run(repo, relpath)
-
+# The post-cutoff presence/typed-value floor, table-driven. A typed prefix is not
+# enough if the remainder is still an unedited TODO — a stub silently claiming a
+# disposition (the loophole the default scaffold Verdict line avoids); a missing
+# section and an untyped verdict reject the same way.
+@pytest.mark.parametrize(
+    "body, errors",
+    [
+        ((_FRESH_EYE_OK,), ("no `## Boundary Ownership` section", "single-surface", "escalated-to-issue-spec")),
+        (
+            (_FRESH_EYE_OK, "", "## Boundary Ownership", "", "- Verdict: reviewed carefully, seems fine."),
+            ("does not open with one of", "Boundary Ownership"),
+        ),
+        (
+            (_FRESH_EYE_OK, "", "## Boundary Ownership", "", "- Verdict: single-surface (TODO confirm no producer-owned state is touched)."),
+            ("unedited `todo`",),
+        ),
+    ],
+)
+def test_boundary_validator_rejects_post_cutoff(tmp_path: Path, body: tuple, errors: tuple) -> None:
+    result = _run(tmp_path / "repo", _write(tmp_path / "repo", "2026-07-06-demo.md", *body))
     assert result.returncode == 1
-    assert "no `## Boundary Ownership` section" in result.stderr
-    assert "single-surface" in result.stderr
-    assert "escalated-to-issue-spec" in result.stderr
+    for token in errors:
+        assert token in result.stderr
 
 
-def test_boundary_validator_rejects_untyped_verdict_post_cutoff(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    relpath = _write(
-        repo,
-        "2026-07-06-demo.md",
-        _FRESH_EYE_OK,
-        "",
-        "## Boundary Ownership",
-        "",
-        "- Verdict: reviewed carefully, seems fine.",
-    )
-
-    result = _run(repo, relpath)
-
-    assert result.returncode == 1
-    assert "does not open with one of" in result.stderr
-    assert "Boundary Ownership" in result.stderr
-
-
-def test_boundary_validator_rejects_typed_verdict_with_unedited_todo(tmp_path: Path) -> None:
-    """A typed prefix is not enough if the remainder is still an unedited TODO —
-    that is a stub silently claiming a disposition (the exact loophole the
-    default scaffold Verdict line is written to avoid), mirrors the fresh-eye
-    floor's todo-remainder rejection."""
-    repo = tmp_path / "repo"
-    relpath = _write(
-        repo,
-        "2026-07-06-demo.md",
-        _FRESH_EYE_OK,
-        "",
-        "## Boundary Ownership",
-        "",
-        "- Verdict: single-surface (TODO confirm no producer-owned state is touched).",
-    )
-
-    result = _run(repo, relpath)
-
-    assert result.returncode == 1
-    assert "unedited `todo`" in result.stderr
-
-
-def test_boundary_validator_accepts_single_surface_post_cutoff(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    relpath = _write(
-        repo,
-        "2026-07-06-demo.md",
-        _FRESH_EYE_OK,
-        "",
-        "## Boundary Ownership",
-        "",
-        "- Producer: the request handler.",
-        "- Consumer: the renderer.",
-        "- Owning surface: request-layer.",
-        "- Verdict: single-surface",
-    )
-
-    result = _run(repo, relpath)
-
-    assert result.returncode == 0, result.stderr
-
-
-def test_boundary_validator_accepts_moved_to_owner_post_cutoff(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    relpath = _write(
-        repo,
-        "2026-07-06-demo.md",
-        _FRESH_EYE_OK,
-        "",
-        "## Boundary Ownership",
-        "",
-        "- Verdict: `moved-to-owner`; relocated the fact to its producer plus generic rendering.",
-    )
-
-    result = _run(repo, relpath)
-
+@pytest.mark.parametrize(
+    "body",
+    [
+        (
+            _FRESH_EYE_OK, "", "## Boundary Ownership", "",
+            "- Producer: the request handler.", "- Consumer: the renderer.",
+            "- Owning surface: request-layer.", "- Verdict: single-surface",
+        ),
+        (_FRESH_EYE_OK, "", "## Boundary Ownership", "", "- Verdict: `moved-to-owner`; relocated the fact to its producer plus generic rendering."),
+    ],
+)
+def test_boundary_validator_accepts_post_cutoff(tmp_path: Path, body: tuple) -> None:
+    result = _run(tmp_path / "repo", _write(tmp_path / "repo", "2026-07-06-demo.md", *body))
     assert result.returncode == 0, result.stderr
 
 
@@ -263,3 +216,68 @@ def test_hook_no_hit_on_unrelated_change(tmp_path: Path) -> None:
 
     payload = _load_hook().build_payload(repo, ["docs/readme.md"], None)
     assert payload["triggered"] is False
+
+
+# --- charness dogfoods its own probe (DBD-4) --------------------------------
+# These guard the self-adoption against silent regression: emptying the globs or
+# dropping --changed-ref would turn the #408 5b tooth back off in charness CI
+# (fixture-proven but not live), which is exactly the residual DBD-4 closed.
+
+
+def test_charness_dogfoods_its_own_cross_surface_probe() -> None:
+    from scripts import boundary_probe_lib, critique_adapter_lib
+
+    probe = boundary_probe_lib.probe_config_from_adapter(
+        critique_adapter_lib.load_adapter(ROOT)["data"]
+    )
+    assert probe["globs"], "charness must configure its own boundary_cross_surface_globs (DBD-4 dogfood)"
+    # A change to a root shared lib must hit; a doc/test change must not.
+    assert boundary_probe_lib.cross_surface_hit(ROOT, ["scripts/surfaces_lib.py"], globs=probe["globs"])
+    assert not boundary_probe_lib.cross_surface_hit(ROOT, ["docs/handoff.md"], globs=probe["globs"])
+    assert not boundary_probe_lib.cross_surface_hit(ROOT, ["tests/test_x.py"], globs=probe["globs"])
+
+
+def test_run_quality_wires_changed_ref_range_for_cross_surface_probe() -> None:
+    run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    critique_line = next(
+        line for line in run_quality.splitlines() if "validate-critique-artifacts" in line
+    )
+    assert "--changed-ref" in critique_line, (
+        "run-quality.sh must pass --changed-ref to validate-critique-artifacts so the "
+        "cross-surface 5b tooth fires in charness CI, not just unit fixtures (DBD-4)"
+    )
+    # A BARE ref resolves to that one commit's diff-tree (the fork point), not the
+    # unpushed range — silently mis-targeting the tooth. Require the RANGE form.
+    assert "..HEAD" in critique_line or "..HEAD" in run_quality, (
+        "the --changed-ref value must be a range (base..HEAD); a bare sha resolves to "
+        "the fork-point commit's own diff, not the change under review (DBD-4 wiring bug)"
+    )
+
+
+def test_changed_ref_range_fires_tooth_end_to_end(tmp_path: Path) -> None:
+    # End-to-end proof of the run-quality wiring: a `base..HEAD` range whose
+    # committed change touches a `scripts/*_lib.py` path rejects a bare
+    # `single-surface` verdict — exactly the CI path. Fails if the wiring regresses
+    # to a bare sha (which resolves the fork-point's own diff, not the range).
+    import subprocess
+
+    repo = tmp_path / "repo"
+    _write_adapter_with_globs(repo, "scripts/*_lib.py")
+    (repo / "scripts").mkdir(exist_ok=True)
+    (repo / "scripts" / "keep.py").write_text("x = 1\n", encoding="utf-8")
+
+    def g(*a: str) -> str:
+        return subprocess.run(["git", "-C", str(repo), *a], check=True, capture_output=True, text=True).stdout
+
+    for cmd in (["init"], ["config", "user.email", "t@t"], ["config", "user.name", "t"], ["add", "-A"], ["commit", "-qm", "base"]):
+        g(*cmd)
+    base = g("rev-parse", "HEAD").strip()
+
+    (repo / "scripts" / "foo_lib.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    relpath = _write_with_verdict(repo, "2026-07-06-demo.md", "single-surface")
+    g("add", "-A")
+    g("commit", "-qm", "change")
+
+    result = _run(repo, relpath, "--changed-ref", f"{base}..HEAD")
+    assert result.returncode == 1
+    assert "cross-surface probe" in result.stderr

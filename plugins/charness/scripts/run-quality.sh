@@ -418,7 +418,21 @@ queue_selected "validate-inventory-consumption" python3 scripts/validate_invento
 queue_selected "validate-inventory-consumption-declaration" python3 scripts/validate_inventory_consumption_declaration.py --repo-root "$REPO_ROOT"
 queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inventory_declaration_coverage.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
-queue_selected "validate-critique-artifacts" python3 scripts/validate_critique_artifacts.py --repo-root "$REPO_ROOT" --report-all
+# Base for the changed-path probes below — the merge-base with origin/main (the
+# unpushed range). Empty (no origin/main base) makes the probes non-blocking by
+# construction. Shared by the critique cross-surface probe (--changed-ref, the
+# #408 5b tooth: a bare `single-surface` verdict is rejected when the unpushed
+# range touches a boundary_cross_surface_globs path) and the changed-line
+# mutation-coverage gate below.
+CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
+# Pass a RANGE (base..HEAD) so surfaces_lib routes it through `git diff <range>`
+# (the changed set of the unpushed range). A BARE sha would instead resolve to
+# that single commit's OWN diff-tree — the fork-point's history, not the change
+# under review — silently mis-targeting the 5b tooth. Empty base -> empty ref ->
+# the validator short-circuits cross_surface_hit to False (non-blocking).
+CRITIQUE_CHANGED_REF=""
+[ -n "$CHANGED_LINE_BASE_SHA" ] && CRITIQUE_CHANGED_REF="${CHANGED_LINE_BASE_SHA}..HEAD"
+queue_selected "validate-critique-artifacts" python3 scripts/validate_critique_artifacts.py --repo-root "$REPO_ROOT" --report-all --changed-ref "$CRITIQUE_CHANGED_REF"
 queue_selected "validate-ideation-artifact" python3 scripts/validate_ideation_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-retro-artifact" python3 scripts/validate_retro_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-current-pointer-freshness" python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"
@@ -483,7 +497,8 @@ fi
 # origin/main base, it is non-blocking by construction. The producer that writes fresh
 # coverage + the `.fingerprint` marker is the closeout step
 # `run_slice_closeout.py --produce-mutation-coverage` (run with --verification-lock).
-CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
+# CHANGED_LINE_BASE_SHA is defined above (hoisted so the critique cross-surface
+# probe shares the same merge-base anchor).
 queue_selected "check-changed-line-mutation-coverage" python3 scripts/check_changed_line_mutation_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --head-sha HEAD --reuse-coverage --skip-if-no-coverage --require-fresh-coverage
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory

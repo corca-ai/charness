@@ -185,6 +185,25 @@ seam designed to extend later to `issue` / `quality` / `spec` / `achieve`
   glob set — plus wiring the escalated critique's `--changed-ref` validation into
   run-quality so the 5b tooth fires in charness CI — is the next boundary-checkpoint
   slice, gated on choosing globs that do not false-positive on every commit.
+  - **Resolution (2026-07-05) — charness ADOPTS a narrow probe (DBD-4 closed).**
+    The self-adoption slice was implemented after a corrected measurement. (A first
+    measurement pass claimed broad globs were ~100% false-positive; that was a
+    methodology bug — `git log -n 60 -- <path>` returns the 60 most-recent commits
+    *touching* the path, capped at 60, not a rate. A fresh-eye resolution critique
+    caught it.) Corrected hit-rate over the actual last 60 commits, using the probe's
+    own matcher: `scripts/*_lib.py` = 5%, `skills/shared/**` = 5% (union 8%),
+    `skills/public/**` = 33%, `scripts/*.py` = 13%. So a NARROW set is viable, not
+    a false-positive machine. It also matters because charness's own loop had NO
+    deterministic #408-class coverage: the content-scanning guards
+    (`skill_issue_anchor_scan.py`, `post_edit_skill_anchor_guard.py`) catch prose
+    issue-anchors and non-portable path/command cites — NOT caller-specific *code*
+    landing in a shared library (#408's actual class), and NOT the taxonomy nouns
+    (those are judgment-only per DBD-1). Decision (operator, 2026-07-05): adopt
+    `boundary_cross_surface_globs: [scripts/*_lib.py, skills/shared/**]` (8% hit) and
+    wire `--changed-ref` into `run-quality.sh` so the 5b tooth fires in charness CI.
+    Verified end-to-end: the configured probe rejects a bare `single-surface` verdict
+    when the changed set touches a glob path and passes otherwise. #408's mechanism
+    acceptance (fixtures) is now backed by charness's own live dogfood.
 
 ## Non-Goals
 

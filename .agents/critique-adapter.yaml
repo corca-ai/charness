@@ -29,9 +29,18 @@ packet_sections:
 # named surfaces in .agents/surfaces.json), the critique validator's
 # --changed-ref/--changed-path mode rejects a bare `single-surface` verdict and
 # the impl stop-gate escalation hook (skills/public/impl/scripts/
-# check_boundary_escalation.py) forces a standalone critique. Empty = opt-in off:
-# this repo has not yet adopted a specific cross-surface path set (its own probe
-# globs are a separate design choice), so it keeps the always-brief + closeout
-# presence-floor without the objective override.
-boundary_cross_surface_globs: []
+# check_boundary_escalation.py) forces a standalone critique.
+#
+# Charness dogfoods its own probe (DBD-4). The set is deliberately NARROW — the
+# shared generic-routine surfaces where charness's own #408 failure class
+# (caller-specific logic leaking into a shared library) would land: root shared
+# libs (scripts/*_lib.py) and the cross-skill shared surface (skills/shared/**).
+# Measured hit-rate over the last 60 commits: 5/60 (8%), so it prompts the
+# ownership question only when a genuinely-shared surface changes, not on every
+# commit. Broader sets were rejected (skills/public/** = 33%). The run-quality.sh
+# --changed-ref wiring is what makes the 5b tooth fire in charness CI, not just
+# unit fixtures.
+boundary_cross_surface_globs:
+  - "scripts/*_lib.py"
+  - "skills/shared/**"
 boundary_cross_surface_surfaces: []
