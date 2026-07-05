@@ -89,7 +89,17 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
             encoding="utf-8",
         )
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    # Isolate the pytest-temp footprint probe to this fixture's own (session-free)
+    # temp root. Without this the probe scans the machine's real pytest temp root,
+    # where retained failed-session dirs surface an extra `pytest_temp_footprint`
+    # finding and break the exact-set assertion below (environmental, not a repo
+    # signal). The sibling footprint tests isolate the same way.
+    result = _run_inventory_cli(
+        "--repo-root",
+        str(repo),
+        "--summary",
+        env={**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)},
+    )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 

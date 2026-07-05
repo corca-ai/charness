@@ -129,36 +129,52 @@ def test_spec_and_narrative_preserve_rejected_alternatives() -> None:
     assert "Deliberately Not Doing" in narrative_text
 
 
+# Every fixture below is an undatable `demo.md`, which the boundary-ownership
+# presence floor enforces fail-closed (an undatable NEW artifact is the anomaly).
+# So each fixture that should reach a check *past* the boundary floor carries a
+# valid `*_BOUNDARY_OWNERSHIP` section — the same shape a real post-floor critique
+# artifact must record. Fixtures that fail before the floor (changed-path
+# discovery) or are date-grandfathered do not need it.
+_BOUNDARY_OWNERSHIP = (
+    "## Boundary Ownership",
+    "",
+    "- Verdict: single-surface",
+)
+_DELEGATION_AGENTS_MD = "\n".join(
+    [
+        "## Subagent Delegation",
+        "",
+        "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract.",
+        "",
+    ]
+)
+
+
+def _seed_critique(tmp_path: Path, *lines: str, agents_md: str | None = None) -> Path:
+    """Write a `demo.md` critique fixture under a fresh repo and return the repo."""
+    repo = tmp_path / "repo"
+    repo.mkdir(exist_ok=True)
+    if agents_md is not None:
+        (repo / "AGENTS.md").write_text(agents_md, encoding="utf-8")
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return repo
+
+
 def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
     tmp_path: Path,
 ) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "AGENTS.md").write_text(
-        "\n".join(
-            [
-                "## Subagent Delegation",
-                "",
-                "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "## Fresh-Eye Satisfaction",
-                "",
-                "blocked because the current developer instruction only permits spawning subagents when the user explicitly asks.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "## Fresh-Eye Satisfaction",
+        "",
+        "blocked because the current developer instruction only permits spawning subagents when the user explicitly asks.",
+        "",
+        *_BOUNDARY_OWNERSHIP,
+        agents_md=_DELEGATION_AGENTS_MD,
     )
 
     result = run_script(
@@ -176,40 +192,23 @@ def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
 def test_critique_artifact_validator_allows_parent_delegated_artifact_with_blocked_domain_content(
     tmp_path: Path,
 ) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "AGENTS.md").write_text(
-        "\n".join(
-            [
-                "## Subagent Delegation",
-                "",
-                "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "Fresh-Eye Satisfaction: parent-delegated.",
-                "",
-                "## Reviewer Tier Evidence",
-                "",
-                "- **Requested tier**: `high-leverage`",
-                "- **Requested spawn fields**: `model=gpt-5.5`",
-                "- **Host exposure state**: `requested_fields_sent`",
-                "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
-                "",
-                "The runtime still has blocked JSON endpoints; this is domain content, not a subagent blocker.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "Fresh-Eye Satisfaction: parent-delegated.",
+        "",
+        "## Reviewer Tier Evidence",
+        "",
+        "- **Requested tier**: `high-leverage`",
+        "- **Requested spawn fields**: `model=gpt-5.5`",
+        "- **Host exposure state**: `requested_fields_sent`",
+        "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
+        "",
+        "The runtime still has blocked JSON endpoints; this is domain content, not a subagent blocker.",
+        "",
+        *_BOUNDARY_OWNERSHIP,
+        agents_md=_DELEGATION_AGENTS_MD,
     )
 
     result = run_script(
@@ -227,19 +226,13 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
 def test_critique_artifact_validator_requires_reviewer_tier_evidence_for_parent_delegated(
     tmp_path: Path,
 ) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "Fresh-Eye Satisfaction: parent-delegated.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "Fresh-Eye Satisfaction: parent-delegated.",
+        "",
+        *_BOUNDARY_OWNERSHIP,
     )
 
     result = run_script(
@@ -257,29 +250,20 @@ def test_critique_artifact_validator_requires_reviewer_tier_evidence_for_parent_
 def test_critique_artifact_validator_requires_reviewer_tier_evidence_when_packet_consumed(
     tmp_path: Path,
 ) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                # A pre-cutoff `Date:` line grandfathers this artifact via the
-                # general date path, so the fresh-eye typed-presence floor is
-                # a no-op here and this fixture stays isolated to the
-                # packet-consumed -> reviewer-tier-evidence requirement it
-                # actually tests. Without a date, this filename (`demo.md`) is
-                # an undatable, unlisted artifact, which fails-closed under
-                # the fresh-eye floor before this fixture's real assertion
-                # ever runs (the adversarial-review fix).
-                "Date: 2026-06-01",
-                "",
-                "Packet Consumed: charness-artifacts/critique/demo-packet.md",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    # A pre-cutoff `Date:` line grandfathers this artifact via the general date
+    # path, so BOTH the fresh-eye and boundary-ownership presence floors are
+    # no-ops here and the fixture stays isolated to the packet-consumed ->
+    # reviewer-tier-evidence requirement it actually tests. Without a date, this
+    # filename (`demo.md`) is an undatable, unlisted artifact that fails-closed
+    # under those floors before this fixture's real assertion ever runs.
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "Date: 2026-06-01",
+        "",
+        "Packet Consumed: charness-artifacts/critique/demo-packet.md",
+        "",
     )
 
     result = run_script(
@@ -295,23 +279,17 @@ def test_critique_artifact_validator_requires_reviewer_tier_evidence_when_packet
 
 
 def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "## Fresh-Eye Satisfaction",
-                "",
-                "blocked.",
-                "",
-                "host signal: agent-count budget exhausted before the bounded reviewer could be spawned.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "## Fresh-Eye Satisfaction",
+        "",
+        "blocked.",
+        "",
+        "host signal: agent-count budget exhausted before the bounded reviewer could be spawned.",
+        "",
+        *_BOUNDARY_OWNERSHIP,
     )
 
     result = run_script(
@@ -327,26 +305,20 @@ def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: P
 
 
 def test_critique_artifact_validator_accepts_reviewer_tier_evidence(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "Fresh-Eye Satisfaction: parent-delegated.",
-                "",
-                "## Reviewer Tier Evidence",
-                "",
-                "- **Requested tier**: `high-leverage`",
-                "- **Requested spawn fields**: `model=gpt-5.5, reasoning_effort=medium, service_tier=priority`",
-                "- **Host exposure state**: `requested_fields_sent`",
-                "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "Fresh-Eye Satisfaction: parent-delegated.",
+        "",
+        "## Reviewer Tier Evidence",
+        "",
+        "- **Requested tier**: `high-leverage`",
+        "- **Requested spawn fields**: `model=gpt-5.5, reasoning_effort=medium, service_tier=priority`",
+        "- **Host exposure state**: `requested_fields_sent`",
+        "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
+        "",
+        *_BOUNDARY_OWNERSHIP,
     )
 
     result = run_script(
@@ -362,26 +334,20 @@ def test_critique_artifact_validator_accepts_reviewer_tier_evidence(tmp_path: Pa
 def test_critique_artifact_validator_rejects_applied_without_host_confirmation(
     tmp_path: Path,
 ) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "Fresh-Eye Satisfaction: parent-delegated.",
-                "",
-                "## Reviewer Tier Evidence",
-                "",
-                "- **Requested tier**: `high-leverage`",
-                "- **Requested spawn fields**: `model=gpt-5.5`",
-                "- **Host exposure state**: `applied`",
-                "- **Application state**: `fields were sent`",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "Fresh-Eye Satisfaction: parent-delegated.",
+        "",
+        "## Reviewer Tier Evidence",
+        "",
+        "- **Requested tier**: `high-leverage`",
+        "- **Requested spawn fields**: `model=gpt-5.5`",
+        "- **Host exposure state**: `applied`",
+        "- **Application state**: `fields were sent`",
+        "",
+        *_BOUNDARY_OWNERSHIP,
     )
 
     result = run_script(
@@ -396,25 +362,19 @@ def test_critique_artifact_validator_rejects_applied_without_host_confirmation(
 
 
 def test_critique_artifact_validator_accepts_signal_section_with_body(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "## Fresh-Eye Satisfaction",
-                "",
-                "blocked.",
-                "",
-                "## Host Signal",
-                "",
-                "agent-count budget exhausted before the bounded reviewer could be spawned.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "## Fresh-Eye Satisfaction",
+        "",
+        "blocked.",
+        "",
+        "## Host Signal",
+        "",
+        "agent-count budget exhausted before the bounded reviewer could be spawned.",
+        "",
+        *_BOUNDARY_OWNERSHIP,
     )
 
     result = run_script(
@@ -430,23 +390,19 @@ def test_critique_artifact_validator_accepts_signal_section_with_body(tmp_path: 
 
 
 def test_critique_artifact_validator_rejects_empty_signal_section(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "## Fresh-Eye Satisfaction",
-                "",
-                "blocked.",
-                "",
-                "## Host Signal",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    # `## Host Signal` sits before `## Boundary Ownership`, so its (empty) body is
+    # bounded by the trailing section — still empty, still rejected.
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "## Fresh-Eye Satisfaction",
+        "",
+        "blocked.",
+        "",
+        "## Host Signal",
+        "",
+        *_BOUNDARY_OWNERSHIP,
     )
 
     result = run_script(
@@ -462,25 +418,20 @@ def test_critique_artifact_validator_rejects_empty_signal_section(tmp_path: Path
 
 
 def test_critique_artifact_validator_rejects_marker_only_signal_section(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "## Fresh-Eye Satisfaction",
-                "",
-                "blocked.",
-                "",
-                "## Tool Signal",
-                "",
-                "-",
-                ".",
-            ]
-        ),
-        encoding="utf-8",
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "## Fresh-Eye Satisfaction",
+        "",
+        "blocked.",
+        "",
+        "## Tool Signal",
+        "",
+        "-",
+        ".",
+        "",
+        *_BOUNDARY_OWNERSHIP,
     )
 
     result = run_script(
@@ -498,19 +449,14 @@ def test_critique_artifact_validator_rejects_marker_only_signal_section(tmp_path
 def test_critique_artifact_validator_fails_closed_when_changed_path_discovery_fails(
     tmp_path: Path,
 ) -> None:
-    repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Demo Critique",
-                "",
-                "Fresh-Eye Satisfaction: parent-delegated.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    # No `--paths` and no git: changed-path discovery fails-closed before the
+    # artifact is validated, so this fixture never reaches the boundary floor.
+    repo = _seed_critique(
+        tmp_path,
+        "# Demo Critique",
+        "",
+        "Fresh-Eye Satisfaction: parent-delegated.",
+        "",
     )
 
     result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo))
@@ -537,6 +483,10 @@ _STRUCTURED_PRELUDE = (
     "- **Requested spawn fields**: `model=gpt-5.5`\n"
     "- **Host exposure state**: `requested_fields_sent`\n"
     "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`\n"
+    "\n"
+    "## Boundary Ownership\n"
+    "\n"
+    "- Verdict: single-surface\n"
     "\n"
 )
 
@@ -652,3 +602,7 @@ def test_validate_critique_structured_findings_rejects_bare_deferred_followup(tm
     _seed_structured_critique(repo, body)
     result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
+    # Pin the rejection to the structured-findings check (`follow-up:`), so a
+    # future regression to `_STRUCTURED_PRELUDE`'s boundary section — which also
+    # returns 1 — cannot silently mask this assertion.
+    assert "follow-up:" in result.stderr

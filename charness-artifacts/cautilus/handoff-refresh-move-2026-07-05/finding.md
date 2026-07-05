@@ -1,5 +1,7 @@
 # handoff refresh RCF→RSF MOVE — state-selection.md (#410)
 
+## What ran
+
 **2026-07-05, ask-before-run capture, operator-authorized.** Skill change under
 test committed at `60434368`; captured via `capture-skill-run.sh --ref HEAD` on an
 isolated worktree (the run resolves `/charness:handoff` from the worktree's
@@ -18,7 +20,7 @@ Corrects the Slice-7 "refresh opened both docs → PROVEN load-bearing" framing,
 which was the documented method error: a planner-forced open of a census-INLINE
 doc is a redundant re-read, not proof of depth.
 
-## Verification (all from the captured stream, honest not assumed)
+## Outcome — verification against the flipped spec (all from the captured stream, honest not assumed)
 
 - **Grade vs flipped spec: `passed`.** All declared claims met — both RSF tokens
   observed in the closeout AND `spill-targets.md` in the command log.
@@ -51,7 +53,7 @@ only because this run happened to name the file in its output.
 The RSF is a FORM floor (handoff has no substance judge): the gist stays inlined in
 SKILL.md and the token re-pins harder if a future capture shows a hollow echo.
 `pickup` / `pickup-ambiguous` NOT flipped — a faithful pickup hands off to the
-invoked workflow, so its closeout token is fragile (deferred).
+invoked workflow, so its closeout token is fragile (deferred follow-up).
 
 Run metrics: 1,564,095 total tokens, 207,634 ms wall. Bundle: `observed.v1.json`
 (flipped-spec PASS), `observed.old-spec-mention.v1.json` (mention footnote),
