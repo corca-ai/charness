@@ -30,6 +30,12 @@
 
 ## Next Session
 
+0. **Activate the drafted improvement goal** —
+   `/goal @charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack.md`:
+   five decided slices, hard order R → (V/B/G) → D; plan-critiqued (folds
+   applied). Corrects item 3 below: #371 is NOT self-contained (ceal raw
+   tool-call path is upstream #1334; Tier 1 only, issue stays open). Briefs:
+   [design-studies](../charness-artifacts/design-studies/2026-07-08-retro-informed-improvement-briefs.md).
 1. **#410 remaining handoff flips (capture-gated, ~1.7-2.4M tokens each).**
    pickup / pickup-ambiguous (`workflow-trigger.md`) need a stable closeout token
    designed first; `spill-targets.md` needs its owning-path routing table inlined.
