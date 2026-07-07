@@ -35,6 +35,7 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - **DO NOT SUBSTITUTE A SAME-AGENT PASS.** Fresh-eye review means a different agent context. A same-agent review fails the contract regardless of effort.
 - If the host blocks subagent spawning at the runtime level (Agent tool absent, API-level rejection), stop and report the concrete host signal explicitly. Soft permission prompts are not blockers — pass through them.
 - Bounded reviewers run in the **shared parent worktree**: inspect prior versions read-only (`git show <ref>:<path>`) and never run index- or worktree-mutating git ops (`git checkout`/`restore`/`reset`/`stash`, or `git add` of files touched only to inspect them). Staging a base reversion silently corrupts the closeout commit (#258); the canonical rule lives in [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
+- **Coding tasks run on a lower-power model in a subagent (user standing request).** For all coding tasks, use your judgment to pick an appropriate lower-power model and run the implementation in a subagent on that model (e.g. the Agent tool's model option), keeping the main loop for design, review, and synthesis. When the task genuinely needs the top tier, or the host exposes no per-subagent model selection, proceed anyway and state the reason.
 
 ## Dynamic Workflows
 
