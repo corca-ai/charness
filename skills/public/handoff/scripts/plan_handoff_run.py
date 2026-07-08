@@ -15,8 +15,17 @@ INTENT_REFERENCE_READS = {
     "chunked_routing": (
         ("references/chunked-routing.md", "deterministic trigger says route backlog before pickup"),
     ),
+    # workflow-trigger.md retired from the forced pickup reads (census INLINE):
+    # its trigger-first gist is inlined in SKILL.md (step 2 authoritative-trigger
+    # rule, step 5 keep-the-trigger-explicit, the session-open guardrail), and
+    # the live trigger TEXT lives in the artifact's `## Workflow Trigger`
+    # section, which the planner already forces as the first required read.
+    # Forcing the reference re-read was the redundant doc-open proxy this
+    # compaction retires; the honest pickup floor is the substance judge
+    # (evals/cautilus/handoff-claim-fidelity/outcome-assertions.json). It STAYS
+    # forced for judge_from_user_request (deciding pickup-vs-refresh is a
+    # different, still-load-bearing purpose).
     "pickup": (
-        ("references/workflow-trigger.md", "pickup starts from the named workflow trigger"),
         ("references/continuation-sequence.md", "order the next move as continuation, not history"),
     ),
     "refresh": (

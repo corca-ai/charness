@@ -340,7 +340,7 @@ def test_handoff_plan_pickup_requires_continuation_when_ambiguous(tmp_path: Path
     reads = _pickup_reads(repo, "resume from the current state")
     # Several plausible pickups + no pinned task -> continuation-sequence.md orders them.
     assert "references/continuation-sequence.md" in reads
-    assert "references/workflow-trigger.md" in reads
+    assert "references/workflow-trigger.md" not in reads  # retired from forced pickup reads (#410 Slice 9): gist inlined, artifact carries the trigger
 
 
 def test_handoff_plan_pickup_skips_continuation_when_single_plausible_pickup(tmp_path: Path) -> None:
@@ -348,7 +348,7 @@ def test_handoff_plan_pickup_skips_continuation_when_single_plausible_pickup(tmp
     reads = _pickup_reads(repo, "resume from the current state")
     # Only one plausible pickup -> no sequencing choice, so the planner does not force it.
     assert "references/continuation-sequence.md" not in reads
-    assert "references/workflow-trigger.md" in reads
+    assert "references/workflow-trigger.md" not in reads
 
 
 def test_handoff_plan_pickup_skips_continuation_when_task_pinned(tmp_path: Path) -> None:
@@ -377,7 +377,7 @@ def test_handoff_plan_pickup_skips_continuation_when_file_path_pinned(tmp_path: 
     # among the plausible pickups -> continuation-sequence.md is not forced.
     reads = _pickup_reads(repo, "resume work on skills/public/impl/SKILL.md")
     assert "references/continuation-sequence.md" not in reads
-    assert "references/workflow-trigger.md" in reads
+    assert "references/workflow-trigger.md" not in reads
 
 
 def test_artifact_summary_counts_zero_when_entry_parse_raises(
