@@ -226,6 +226,22 @@ def test_surface_marker_lib_skips_unreadable_files(tmp_path: Path, monkeypatch) 
     assert lib.nested_cli_files(repo, [nested_path]) == []
     assert lib.module_release_only_files(repo, [release_path.name]) == []
 
+    # An unreadable file ordered BEFORE a matching readable file must not
+    # short-circuit the scan: the unreadable entry should only be skipped
+    # (`continue`), not abort the loop (`break`), so the later match is still
+    # found.
+    matching_nested = repo / "test_nested_match.py"
+    matching_nested.write_text("import subprocess\nsubprocess.run(['true'])\n", encoding="utf-8")
+    assert lib.nested_cli_files(repo, [nested_path, matching_nested]) == [
+        matching_nested.relative_to(repo).as_posix()
+    ]
+
+    matching_release = repo / "test_release_match.py"
+    matching_release.write_text("pytestmark = pytest.mark.release_only\n", encoding="utf-8")
+    assert lib.module_release_only_files(repo, [release_path.name, matching_release.name]) == [
+        matching_release.name
+    ]
+
 
 def test_standing_test_economics_ignores_generated_mutant_tree(tmp_path: Path) -> None:
     repo = tmp_path / "repo"

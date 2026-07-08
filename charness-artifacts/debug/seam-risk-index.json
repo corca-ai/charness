@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 74,
-  "indexed_artifact_count": 62,
+  "source_artifact_count": 75,
+  "indexed_artifact_count": 63,
   "risk_class_counts": {
     "contract-freeze-risk": 23,
     "external-seam": 1,
     "host-disproves-local": 2,
-    "none": 14,
+    "none": 15,
     "operator-visible-recovery": 21,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 2,
-    "monitor": 57,
+    "monitor": 58,
     "none": 3
   },
   "entries": [
@@ -871,6 +871,20 @@
       "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-07-08-issue-421-nightly-mutation-gate-red.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-421-nightly-gate-red",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-07-08-fix-421-mutation-regression.md",
       "forced": false
     },
     {

@@ -333,6 +333,22 @@ test("extracts Claude telemetry from JSON envelopes and model fallback", () => {
 	assert.equal(extractClaudeTelemetry("42"), null);
 });
 
+test("rejects a non-plain-object usage value even when it is truthy and carries token-shaped properties", () => {
+	// `isObjectRecord` requires `typeof value === "object"`, not just
+	// truthiness + non-array. A function is truthy, is not an array, and (like
+	// any object) can carry arbitrary own properties — this is the one shape
+	// that distinguishes the typeof check from a truthiness-only check: those
+	// properties must NOT leak into the telemetry, or `usage` is being treated
+	// as if it were a record when it is not.
+	const usageLikeFunction = () => {};
+	usageLikeFunction.input_tokens = 7;
+	usageLikeFunction.output_tokens = 3;
+
+	assert.deepEqual(extractClaudeTelemetry({ usage: usageLikeFunction }), {
+		provider: "anthropic",
+	});
+});
+
 test("omits invalid Claude telemetry counters without fabricating totals", () => {
 	const arrayUsage = [];
 	arrayUsage.input_tokens = 9;

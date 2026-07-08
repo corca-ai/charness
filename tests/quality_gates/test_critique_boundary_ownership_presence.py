@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import runpy
 import sys
 from pathlib import Path
 
@@ -216,6 +218,107 @@ def test_hook_no_hit_on_unrelated_change(tmp_path: Path) -> None:
 
     payload = _load_hook().build_payload(repo, ["docs/readme.md"], None)
     assert payload["triggered"] is False
+
+
+# --- impl stop-gate escalation hook CLI: bootstrap shim, parse_args, main (#421)
+
+
+def test_hook_shim_not_found_raises_import_error(tmp_path: Path, monkeypatch) -> None:
+    """Cover check_boundary_escalation._load_skill_runtime_bootstrap()'s "not
+    found" raise (mirrors the scaffold family's forcing technique in
+    tests/test_scaffold_inprocess_coverage.py): pointing __file__ at an isolated
+    tree with no ancestor skill_runtime_bootstrap.py forces the ancestor walk to
+    miss, since the real repo always finds one."""
+    hook = _load_hook()
+    isolated = tmp_path / "deep" / "nest" / "check_boundary_escalation.py"
+    isolated.parent.mkdir(parents=True)
+    monkeypatch.setattr(hook, "__file__", str(isolated))
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
+        hook._load_skill_runtime_bootstrap()
+
+
+def test_hook_parse_args_reads_flags(monkeypatch) -> None:
+    hook = _load_hook()
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "check_boundary_escalation.py",
+            "--changed-path",
+            "a.py",
+            "b.py",
+            "--changed-ref",
+            "base..HEAD",
+            "--json",
+        ],
+    )
+    args = hook.parse_args()
+    assert args.changed_path == ["a.py", "b.py"]
+    assert args.changed_ref == "base..HEAD"
+    assert args.json is True
+    assert args.repo_root == hook.REPO_ROOT
+
+
+def test_hook_parse_args_defaults_to_no_flags(monkeypatch) -> None:
+    hook = _load_hook()
+    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py"])
+    args = hook.parse_args()
+    assert args.changed_path is None
+    assert args.changed_ref is None
+    assert args.json is False
+
+
+def test_hook_main_json_output(monkeypatch, capsys) -> None:
+    hook = _load_hook()
+    fake_payload = {
+        "triggered": True,
+        "changed_paths": ["scripts/reducer.py"],
+        "probe": {"globs": ["scripts/*.py"], "surfaces": []},
+        "reason": "escalate this slice to a standalone critique",
+    }
+    monkeypatch.setattr(hook, "build_payload", lambda repo_root, changed_path, changed_ref: fake_payload)
+    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py", "--json"])
+    assert hook.main() == 0
+    assert json.loads(capsys.readouterr().out) == fake_payload
+
+
+def test_hook_main_plain_output(monkeypatch, capsys) -> None:
+    hook = _load_hook()
+    fake_payload = {
+        "triggered": True,
+        "changed_paths": ["scripts/reducer.py"],
+        "probe": {"globs": ["scripts/*.py"], "surfaces": []},
+        "reason": "escalate this slice to a standalone critique",
+    }
+    monkeypatch.setattr(hook, "build_payload", lambda repo_root, changed_path, changed_ref: fake_payload)
+    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py"])
+    assert hook.main() == 0
+    out = capsys.readouterr().out
+    assert out == "escalate this slice to a standalone critique\ntriggered: true\n"
+
+
+def test_hook_module_main_guard_executes(monkeypatch, capsys) -> None:
+    """Cover `if __name__ == "__main__": raise SystemExit(main())` in-process via
+    runpy (mirrors check_artifact_surface_preflight's test_module_main_guard_executes),
+    not a subprocess, so the script stays off the boundary-bypass ratchet.
+    `--changed-path docs/x.md` bypasses git and matches none of the real repo's
+    configured boundary_cross_surface_globs (scripts/*_lib.py, skills/shared/**),
+    so `triggered: false` is deterministic regardless of real working-tree state.
+    Dormant coupling (fresh-eye 2026-07-08): this reads the LIVE critique
+    adapter; `boundary_cross_surface_surfaces` is empty today, but the
+    `repo-markdown` surface declares `docs/*.md`, so adding it to the probe
+    surfaces would flip this to `triggered: true` — if that happens, switch
+    this test to an isolated tmp-repo adapter rather than another path."""
+    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py", "--changed-path", "docs/x.md"])
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(
+            str(ROOT / "skills" / "public" / "impl" / "scripts" / "check_boundary_escalation.py"),
+            run_name="__main__",
+        )
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert "no cross-surface probe hit" in out
+    assert "triggered: false" in out
 
 
 # --- charness dogfoods its own probe (DBD-4) --------------------------------

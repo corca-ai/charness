@@ -80,6 +80,43 @@ def test_probe_config_tolerates_absent_and_bad_values() -> None:
     ) == {"globs": ["a/*"], "surfaces": ["s1"]}
 
 
+# --- resolve_changed_paths: explicit / ref / working-tree fallback (#421) ----
+
+
+def test_resolve_changed_paths_explicit_path_wins(tmp_path: Path, monkeypatch) -> None:
+    # Explicit changed_path bypasses both git branches entirely.
+    def _boom(*_a, **_k):
+        raise AssertionError("must not touch git when changed_path is explicit")
+
+    monkeypatch.setattr(boundary_probe_lib._surfaces_lib, "collect_changed_paths_for_ref", _boom)
+    monkeypatch.setattr(boundary_probe_lib._surfaces_lib, "collect_changed_paths", _boom)
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, ["a.py", "b.py"], "some-ref") == ["a.py", "b.py"]
+    # An empty explicit list is still "not None" -> still wins, still returns [].
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, [], "some-ref") == []
+
+
+def test_resolve_changed_paths_uses_changed_ref_when_no_explicit_path(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        boundary_probe_lib._surfaces_lib,
+        "collect_changed_paths_for_ref",
+        lambda repo_root, ref: [f"ref:{repo_root}:{ref}"],
+    )
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, None, "base..HEAD") == [
+        f"ref:{tmp_path}:base..HEAD"
+    ]
+
+
+def test_resolve_changed_paths_falls_back_to_working_tree_diff(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        boundary_probe_lib._surfaces_lib,
+        "collect_changed_paths",
+        lambda repo_root: [f"wt:{repo_root}"],
+    )
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, None, None) == [f"wt:{tmp_path}"]
+    # A falsy (empty-string) changed_ref also falls through to the working-tree diff.
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, None, "") == [f"wt:{tmp_path}"]
+
+
 # The impl stop-gate hook's in-process tests (AC7) live in
 # tests/quality_gates/test_critique_boundary_ownership_presence.py so they reuse
 # that file's single critique-adapter fixture writer instead of a second copy.

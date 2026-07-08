@@ -105,6 +105,24 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     assert "Validated 1 critique artifact" in validation.stdout
 
 
+def test_critique_scaffold_title_with_no_alnum_chars_falls_back_to_critique_slug(tmp_path: Path) -> None:
+    # `_slug` normalizes a title down to `[a-z0-9]` runs joined by `-`, then
+    # strips leading/trailing dashes. A title with no alnum characters
+    # normalizes to an empty string, so `_slug` must fall back to "critique"
+    # (`slug or "critique"`) rather than writing a path with an empty/blank
+    # slug component.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "!!!")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    assert payload["title"] == "!!!"
+    assert payload["write_artifact_path"].endswith("-critique.md")
+    assert payload["artifact_path"] == payload["write_artifact_path"]
+
+
 def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> None:
     """By-construction single-source-of-truth: the enums the scaffold surfaces at
     author time MUST equal the validator's enforced frozensets, so the legend can

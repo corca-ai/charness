@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-08",
-  "source_artifact_count": 285,
-  "candidate_count": 1313,
+  "source_artifact_count": 286,
+  "candidate_count": 1320,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -785,6 +785,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:54462ece25f4",
+      "kind": "current_focus",
+      "lesson": "Session pickup ran handoff chunked routing over 8 backlog entries; the operator selected the live-issue chunk and the session executed the achieve goal `fix-421-mutation-regression` (charness-artifacts/goals/2026-07-08-fix-421-mutation-regression.md) end to end: root-caused the recurring nightly mutation-gate red, covered the 16 changed-line proof targets, audited the post-push judgment range, and triaged all 16 survived mutants.",
+      "normalized_key": "session pickup ran handoff chunked routing over 8 backlog entries the operator selected the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3962e722787a",
+      "kind": "next_improvement",
+      "lesson": "#422 — the mutation gate should name a baseline-pytest abort (failing nodeids) instead of reporting the downstream missing-report symptom.",
+      "normalized_key": "422 the mutation gate should name a baseline pytest abort failing nodeids instead of",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1d40f272f217",
       "kind": "next_improvement",
       "lesson": "none — no missing tool surfaced; the existing aggregates caught everything the producer missed, just later than ideal.",
@@ -799,6 +839,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
+          "date": "2026-07-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6d8b97def855",
+      "kind": "next_improvement",
+      "lesson": "the pre-push changed-line consumer runs its own full-coverage producer when the marker is stale; budget ~10 minutes and never run it concurrently with test-file edits.",
+      "normalized_key": "the pre push changed line consumer runs its own full coverage producer when the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
           "date": "2026-07-08",
           "section": "Next Improvements"
         }
@@ -845,6 +905,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:01f30ab36439",
+      "kind": "next_improvement",
+      "lesson": "when repairing an inherited red test, check whether the same red explains any open CI regression issue before treating them as separate signals (this session found `38219d95` already fixed #421's live failure).",
+      "normalized_key": "when repairing an inherited red test check whether the same red explains any open",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:1ea8cf2d6fab",
       "kind": "repeat_trap",
       "lesson": "Slice B repeated a narrower form of the same trap: its focused proof ran only the slice's own test file, and the `args.repo_root` regression in a sibling test file (`test_web_fetch_route_and_classify.py`) was caught by the critique reviewer, not the producer.",
@@ -881,86 +961,6 @@
           "artifact_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
           "date": "2026-07-08",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:53f6313fb623",
-      "kind": "repeat_trap",
-      "lesson": "The Slice V pre-lock closeout skipped broad pytest and missed the quality-runner stub registration; the miss surfaced only in Slice B's critique broad run and cost a separate debt-fix commit (`30e3dd11`).",
-      "normalized_key": "the slice v pre lock closeout skipped broad pytest and missed the quality runner",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
-      "latest_source_date": "2026-07-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
-          "date": "2026-07-08",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:cbab99481a98",
-      "kind": "repeat_trap",
-      "lesson": "Two proof-record errors were caught by reviewers rather than self-caught: the Slice R \"bare --json exits 0\" claim (a pipe to `head` hid the exit code) and the Slice D docstring calling dropped INDENT/DEDENT \"whitespace noise\".",
-      "normalized_key": "two proof record errors were caught by reviewers rather than self caught the slice",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
-      "latest_source_date": "2026-07-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
-          "date": "2026-07-08",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:46f4c26d8499",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.61.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 61 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-04",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md",
-          "date": "2026-07-04",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:92cf67654e7e",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.62.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 62 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-04",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md",
-          "date": "2026-07-04",
-          "section": "Context"
         }
       ]
     }
@@ -1737,6 +1737,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:54462ece25f4",
+      "kind": "current_focus",
+      "lesson": "Session pickup ran handoff chunked routing over 8 backlog entries; the operator selected the live-issue chunk and the session executed the achieve goal `fix-421-mutation-regression` (charness-artifacts/goals/2026-07-08-fix-421-mutation-regression.md) end to end: root-caused the recurring nightly mutation-gate red, covered the 16 changed-line proof targets, audited the post-push judgment range, and triaged all 16 survived mutants.",
+      "normalized_key": "session pickup ran handoff chunked routing over 8 backlog entries the operator selected the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3962e722787a",
+      "kind": "next_improvement",
+      "lesson": "#422 — the mutation gate should name a baseline-pytest abort (failing nodeids) instead of reporting the downstream missing-report symptom.",
+      "normalized_key": "422 the mutation gate should name a baseline pytest abort failing nodeids instead of",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1d40f272f217",
       "kind": "next_improvement",
       "lesson": "none — no missing tool surfaced; the existing aggregates caught everything the producer missed, just later than ideal.",
@@ -1751,6 +1791,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
+          "date": "2026-07-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6d8b97def855",
+      "kind": "next_improvement",
+      "lesson": "the pre-push changed-line consumer runs its own full-coverage producer when the marker is stale; budget ~10 minutes and never run it concurrently with test-file edits.",
+      "normalized_key": "the pre push changed line consumer runs its own full coverage producer when the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
           "date": "2026-07-08",
           "section": "Next Improvements"
         }
@@ -1797,6 +1857,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:01f30ab36439",
+      "kind": "next_improvement",
+      "lesson": "when repairing an inherited red test, check whether the same red explains any open CI regression issue before treating them as separate signals (this session found `38219d95` already fixed #421's live failure).",
+      "normalized_key": "when repairing an inherited red test check whether the same red explains any open",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:1ea8cf2d6fab",
       "kind": "repeat_trap",
       "lesson": "Slice B repeated a narrower form of the same trap: its focused proof ran only the slice's own test file, and the `args.repo_root` regression in a sibling test file (`test_web_fetch_route_and_classify.py`) was caught by the critique reviewer, not the producer.",
@@ -1831,6 +1911,66 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
+          "date": "2026-07-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bc1a512cb9f3",
+      "kind": "repeat_trap",
+      "lesson": "The first root-cause hypothesis (base==head empty-range sampler bug) was wrong and would have burned a slice; the plan-critique reviewer's empirical falsification (running the sampler) redirected the debug to CI logs before any code was written. Residual waste: one drafted-then-rewritten Goal section.",
+      "normalized_key": "the first root cause hypothesis base head empty range sampler bug was wrong and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:635b018a27bf",
+      "kind": "repeat_trap",
+      "lesson": "The gate's misleading failure body (\"StrykerJS report missing\") cost three days of twice-daily red before this session and one wrong hypothesis inside it — the structural fix is #422, not memory.",
+      "normalized_key": "the gate s misleading failure body strykerjs report missing cost three days of twice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+          "date": "2026-07-08",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:798ab72d2fcb",
+      "kind": "repeat_trap",
+      "lesson": "The pre-push consumer silently ran its own ~10-minute producer (full standing pytest) when invoked with `--skip-if-no-coverage`; not knowing that cost one blocked foreground slot and a concurrent-edit flake risk.",
+      "normalized_key": "the pre push consumer silently ran its own 10 minute producer full standing pytest",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
+      "latest_source_date": "2026-07-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
           "date": "2026-07-08",
           "section": "Waste"
         }

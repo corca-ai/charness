@@ -74,7 +74,14 @@ def test_main_returns_zero_when_all_valid(tmp_path: Path, capsys: pytest.Capture
 def test_main_returns_one_and_reports_on_problem(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
     _make_set(tmp_path, "demo", {"evalId": "x", "assertions": []})
     assert v.main(["--repo-root", str(tmp_path)]) == 1
-    assert "FAIL" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "FAIL" in err
+    # The per-problem detail loop must actually run (not be skipped): each
+    # reported problem gets its own `  - <err>` line under the FAIL header.
+    # The `  - ` prefix is owned here; the message text is owned by
+    # grade_skill_outcome.validate_assertion_set, so pin the prefix plus a
+    # stable semantic fragment instead of the full foreign-owned sentence.
+    assert "  - " in err and "non-empty list" in err
 
 
 def test_main_no_sets_is_clean(tmp_path: Path) -> None:
@@ -87,6 +94,17 @@ def test_main_json_mode_reports_problems(tmp_path: Path, capsys: pytest.CaptureF
     rc = v.main(["--repo-root", str(tmp_path), "--json"])
     payload = json.loads(capsys.readouterr().out)
     assert rc == 1 and payload["problems"]
+
+
+def test_main_json_mode_clean_path_returns_exact_zero(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    # Pins BOTH ternary branches of `return 1 if problems else 0` in --json
+    # mode: the problems branch is exercised above (rc == 1); this covers the
+    # clean branch, which had no dedicated exact-value assertion before.
+    _make_set(tmp_path, "demo", _good_set())
+    rc = v.main(["--repo-root", str(tmp_path), "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert payload["problems"] == {}
 
 
 def test_shipped_assertion_sets_all_conform() -> None:
