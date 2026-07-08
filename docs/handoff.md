@@ -43,8 +43,9 @@
    [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
 2. **#413 setup/greenfield** RCF→RSF — needs a fresh-sandbox capture (charness
    detects NORMALIZE in-repo, not GREENFIELD; substance judge already exists).
-3. **#371 (agent-browser orphaned-chromium leak)** — open bug-class backlog item,
-   not yet queued; self-contained (causal review → fix → resolution critique).
+3. **#371 (agent-browser orphaned-chromium leak)** — NOT self-contained: the ceal raw tool-call path is upstream
+   (`vercel-labs/agent-browser#1334`). Charness-owned Tier 1 (SIGTERM/SIGINT/atexit teardown in the gather
+   browser path) landed via the 5pack goal; issue stays open with a partial-resolution comment pending.
 4. **81-site argparse-help debt (run LAST).** Default-off; baseline rotation runs
    alone. Trip-wire **D33**: `run_skill_efficiency_ab.py` at 479/480 — extract a
    module before appending.

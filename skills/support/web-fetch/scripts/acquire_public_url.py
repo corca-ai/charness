@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
+import os
+import signal
 import sys
 import time
 from pathlib import Path
@@ -54,6 +57,45 @@ _invalid_scheme_payload = acquire_public_url_payloads.invalid_scheme_payload
 _payload_for = acquire_public_url_payloads.payload_for
 _read_direct = acquire_public_url_io.read_direct
 _run_command = acquire_public_url_io.run_command
+
+# Best-effort SIGTERM/SIGINT/atexit teardown of a live agent-browser session
+# only. SIGKILL is backstopped by the runtime-guard reaper; the raw host
+# tool-call self-daemonizing leak path is upstream, in agent-browser itself.
+_LIVE_BROWSER_SESSION: dict | None = None
+
+
+def _register_live_session(args: argparse.Namespace) -> None:
+    global _LIVE_BROWSER_SESSION
+    _LIVE_BROWSER_SESSION = {"url": args.url, "timeout": args.timeout, "repo_root": args.repo_root}
+
+
+def _clear_live_session() -> None:
+    global _LIVE_BROWSER_SESSION
+    _LIVE_BROWSER_SESSION = None
+
+
+def _teardown_live_session() -> None:
+    """Best-effort close of a live agent-browser session; never raises.
+
+    Clears the registry first so re-entry (a second signal, or atexit after a
+    signal already tore the session down) is a no-op rather than a double-close.
+    """
+    global _LIVE_BROWSER_SESSION
+    session = _LIVE_BROWSER_SESSION
+    _LIVE_BROWSER_SESSION = None
+    if session is None:
+        return
+    try:
+        teardown_args = argparse.Namespace(**session)
+        browser_fallback_stages._close_cleanup_error(teardown_args, script_dir=SCRIPT_DIR, run_command=_run_command)
+    except Exception:
+        pass
+
+
+def _handle_teardown_signal(signum: int, _frame: object) -> None:
+    _teardown_live_session()
+    signal.signal(signum, signal.SIG_DFL)
+    os.kill(os.getpid(), signum)
 
 
 def _positive_int(raw: str) -> int:
@@ -136,15 +178,19 @@ def _domain_first_payload(args, route, attempts, *, proof_required):
 def _try_youtube_browser_payload(args, route, attempts, *, proof_required):
     should_try, skip_reason = _should_try_youtube_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
     if should_try:
-        return browser_fallback_stages.run_youtube_browser_stage(
-            args,
-            route,
-            attempts,
-            proof_required=proof_required,
-            script_dir=SCRIPT_DIR,
-            run_command=_run_command,
-            payload_for=_payload_for,
-        )
+        _register_live_session(args)
+        try:
+            return browser_fallback_stages.run_youtube_browser_stage(
+                args,
+                route,
+                attempts,
+                proof_required=proof_required,
+                script_dir=SCRIPT_DIR,
+                run_command=_run_command,
+                payload_for=_payload_for,
+            )
+        finally:
+            _clear_live_session()
     if skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, youtube_browser_ui.UI_STAGE_ID):
         attempts.append(skip_attempt(youtube_browser_ui.UI_STAGE_ID, "agent-browser", reason=skip_reason))
     return None
@@ -222,15 +268,19 @@ def _try_patchright_payload(args, route, attempts, *, proof_required):
 def _try_generic_browser_payload(args, route, attempts, *, proof_required):
     should_try, skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
     if should_try:
-        return browser_fallback_stages.run_generic_browser_stage(
-            args,
-            route,
-            attempts,
-            proof_required=proof_required,
-            script_dir=SCRIPT_DIR,
-            run_command=_run_command,
-            payload_for=_payload_for,
-        )
+        _register_live_session(args)
+        try:
+            return browser_fallback_stages.run_generic_browser_stage(
+                args,
+                route,
+                attempts,
+                proof_required=proof_required,
+                script_dir=SCRIPT_DIR,
+                run_command=_run_command,
+                payload_for=_payload_for,
+            )
+        finally:
+            _clear_live_session()
     if skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):
         attempts.append(skip_attempt("agent-browser-render-recon", "agent-browser", reason=skip_reason))
         if args.intent == "collect" and has_stage(route, "agent-browser-network-recon"):
@@ -306,6 +356,9 @@ def main() -> int:
     parser.add_argument("--include-selected-content", action="store_true")
     parser.add_argument("--selected-content-max-chars", type=_positive_int, default=200_000)
     args = parser.parse_args()
+    signal.signal(signal.SIGTERM, _handle_teardown_signal)
+    signal.signal(signal.SIGINT, _handle_teardown_signal)
+    atexit.register(_teardown_live_session)
     print(json.dumps(acquire(args), ensure_ascii=False, indent=2))
     return 0
 

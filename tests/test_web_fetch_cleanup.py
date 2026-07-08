@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
+import time
 from pathlib import Path
+from types import SimpleNamespace
 
 from tests.repo_copy import REPO_COPY_IGNORE
 from tests.script_main import load_script_module, run_loaded_script_main
@@ -296,3 +299,84 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
     assert attempt["status"] == "error"
     assert attempt["details"]["cleanup"] == "failed"
     assert "orphan daemon remains" in attempt["error"]
+
+
+def test_acquire_closes_session_on_sigterm_mid_render(tmp_path: Path) -> None:
+    # #371 Tier 1: a host SIGTERM mid-browser-stage must still close the live
+    # agent-browser session (best-effort) instead of leaking the daemon.
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "calls.log"
+    (bin_dir / "agent-browser").write_text(
+        "#!/bin/sh\n"
+        f'printf "%s\\n" "$*" >> "{log}"\n'
+        'case "$*" in\n'
+        '  *" open "*) sleep 25 ;;\n'
+        "  *) exit 0 ;;\n"
+        "esac\n",
+        encoding="utf-8",
+    )
+    (bin_dir / "agent-browser").chmod(0o755)
+    direct = tmp_path / "direct.html"
+    direct.write_text(SPA_HTML, encoding="utf-8")
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
+    proc = subprocess.Popen(
+        [
+            sys.executable,
+            str(WEB_FETCH_SCRIPTS / "acquire_public_url.py"),
+            "--url", "https://example.com/app",
+            "--repo-root", str(ROOT),
+            "--direct-response-file", str(direct),
+            "--expect-text", "target proof",
+            "--browser-mode", "auto",
+        ],
+        cwd=tmp_path,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if log.is_file() and any(" open " in line for line in log.read_text(encoding="utf-8").splitlines()):
+                break
+            time.sleep(0.1)
+        else:
+            raise AssertionError(
+                "fake agent-browser never logged an open call: "
+                + (log.read_text(encoding="utf-8") if log.is_file() else "<no log>")
+            )
+        proc.send_signal(signal.SIGTERM)
+        proc.wait(timeout=30)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+            proc.wait(timeout=5)
+    assert proc.returncode in (-signal.SIGTERM, 128 + signal.SIGTERM), proc.returncode
+    assert _close_was_attempted(log), log.read_text(encoding="utf-8") if log.is_file() else "no log"
+
+
+def test_teardown_no_session_is_idempotent_noop(monkeypatch) -> None:
+    _ACQUIRE._clear_live_session()
+
+    def _must_not_be_called(*_args, **_kwargs):
+        raise AssertionError("_close_cleanup_error must not run when no session is registered")
+
+    monkeypatch.setattr(_ACQUIRE.browser_fallback_stages, "_close_cleanup_error", _must_not_be_called)
+    _ACQUIRE._teardown_live_session()
+    _ACQUIRE._teardown_live_session()
+
+    calls: list[object] = []
+
+    def _recorder(*args, **kwargs):
+        calls.append((args, kwargs))
+        return None
+
+    monkeypatch.setattr(_ACQUIRE.browser_fallback_stages, "_close_cleanup_error", _recorder)
+    _ACQUIRE._register_live_session(SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT))
+    _ACQUIRE._teardown_live_session()
+    _ACQUIRE._teardown_live_session()
+    assert len(calls) == 1

@@ -9,16 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: V (`validate_scenario_conditional_reads`, blocking + seeded
-  waivers, handoff-only extractor v1). Slice R landed at `6415175b`.
-- Current slice intent: new blocking validator over
-  `cross_check_conditional_reads()` in `claim_fidelity_lib.py`; per-skill
-  flagged = planner_forceable − engage_always_union − waived; seeded waivers
-  for the two known real findings; wired after run-quality.sh
-  validate-claim-fidelity-specs; Floor-Addition Restraint call recorded; one
-  reviewable intent unit spanning the Slice V commit (meaningful-slice-cadence).
-- Next action: implement Slice V, synthetic + incident-reconstruction tests,
-  critique, pre-lock closeout, slice log, commit; then B, G; D last.
+- Current slice: B (#371 Tier 1 signal-safe teardown, gather browser path).
+  Landed: R `6415175b`, V `6440b24d`.
+- Current slice intent: SIGTERM/SIGINT handlers + atexit in
+  `acquire_public_url.py` main(); module-level live-session registry populated
+  around the two agent-browser stages; best-effort teardown via the existing
+  `_close_cleanup_error` chain (idempotent, never raises, no-op without a
+  session, normal-exit disposition unchanged); red/green fake-CLI SIGTERM
+  subprocess test; correct the `docs/handoff.md` item-3 "self-contained"
+  mislabel; draft (not post) the #371 partial-resolution comment. One
+  reviewable intent unit spanning the Slice B commit (meaningful-slice-cadence).
+- Next action: implement Slice B, red/green proof, critique, pre-lock
+  closeout (run the aggregate EARLY — Slice V lesson), slice log, commit;
+  then G; D last.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -290,6 +293,20 @@ applies.
 - Off-goal findings: docs/handoff.md Discuss bullet ('pinned at ~1.0') goes stale — owned by closeout handoff refresh (critique F5-adjacent, recorded, not filed).
 - Lessons carried forward: Do not pipe a proof command into head — the pipe hides the exit code; record the exact gate-lane invocation as proof, not a lookalike.
 - Metrics: 1 impl subagent (sonnet) + 1 fresh-eye critique subagent; ~2 focused pytest runs + 1 pre-lock closeout.
+
+### Slice 2: Slice V — validate_scenario_conditional_reads (blocking + seeded waivers)
+
+- Objective: Machine-catch the 7/2 incident class: flag planner-forceable conditional required-reads no scenario engage-always forces; blocking with classTag DUP/INLINE + allowlist waiver channels; v1 handoff-only extractor.
+- Why this approach: Decided slice; retro next-time checklist explicitly queued this validator; two real findings already known and waived-with-reason per the drafting decision.
+- Commits: 6440b24d
+- What changed: scripts/claim_fidelity_lib.py (+~145: extractor registry, allowlist loader, cross_check_conditional_reads, dup_inline_tags key, missing-planner guard); new scripts/validate_scenario_conditional_reads.py + .allowlist.txt (seeded adapter-contract waiver); run-quality.sh wiring after validate-claim-fidelity-specs; new tests/quality_gates/test_scenario_conditional_reads.py (10 tests); validator-timing-layers.md verdict row; plugins mirror resync.
+- Alternatives rejected: Advisory-first posture (rejected at drafting: recorded ignored-precedent undeclared_on_disk); fixturing the two findings as new scenarios (rejected: widens v1, adapter-health hard to fixture healthy); importing the planner module (rejected: import runs adapter bootstrap — AST literal scan instead).
+- Targeted verification: 10 focused tests green incl. directed no-extractor advisory branch (critique F3) + incident reconstruction (deleting pickup-ambiguous.spec.json flags continuation-sequence.md — User Acceptance line proven at test level); live validator exit 0 with exactly the two seeded waivers; validate_packaging green after mirror sync; full pre-lock run_slice_closeout PASS.
+- Test duplication pressure: check_dup_ratchet at slice R boundary was clean; new thin script may grow a portable-boilerplate family — deferred to Slice D review-then-accept re-baseline per goal Boundaries (dup gate is broad-path only, cannot trip pre-D).
+- Critique: Fresh-eye bounded reviewer: REVISE -> folded. Must-fix: plugins/ mirror not regenerated (mutate->sync barrier miss; validate-packaging exit 1) — synced. Hardening folded: missing-planner clean ValidationError. Named non-claims confirmed: extractor false-negative axis (computed/f-string paths escape both pin and cross-check); allowlist waiver is skill+ref-grained (a future differently-caused flag on a waived ref stays absorbed). check_test_repo_copy_invariants + check_timing_layer_completeness fired post-critique; fixed via REPO_COPY_IGNORE subtree idiom + timing-table row.
+- Off-goal findings: none
+- Lessons carried forward: The slice proof set must include the surface-matched closeout aggregate, not a hand-picked gate list — validate-packaging and the timing meta-gate only fired in the aggregate; run the aggregate earlier next slice.
+- Metrics: 1 impl subagent (sonnet) + 1 fresh-eye critique subagent; 3 pre-lock closeout runs (2 gate-fix iterations).
 
 ## Context Sources
 

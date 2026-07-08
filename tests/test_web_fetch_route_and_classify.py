@@ -83,6 +83,7 @@ def test_acquire_helper_browser_branch_payloads(monkeypatch) -> None:
         intent="single",
         url="https://www.youtube.com/watch?v=abc",
         timeout=1,
+        repo_root=Path("."),
     )
     route = {"route_id": "yt-dlp-metadata", "acquisition_plan": [{"stage_id": "youtube-browser-transcript-ui"}]}
     attempts: list[AcquisitionAttempt] = []
