@@ -187,13 +187,22 @@ def test_changed_artifacts_passes_scaffold_roundtrip() -> None:
     # boundary (round-trip), proving the shape-by-construction arm is real.
     stub_text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("critique"))
     assert code == 0
-    # The stub's `## Fresh-Eye Satisfaction` line is deliberately NOT a typed
-    # value (an unedited stub must not satisfy that floor — a same-observer
-    # rubber stamp for free), so round-trip here fills it in first, proving
-    # the shape an author actually submits, not the untouched stub.
-    head, heading, _ = stub_text.partition("## Fresh-Eye Satisfaction")
+    # The stub's typed floors (`## Fresh-Eye Satisfaction`, the Boundary
+    # Ownership `Verdict:` line) are deliberately NOT pre-filled (an unedited
+    # stub must not satisfy them — a same-observer rubber stamp for free), so
+    # round-trip here fills them in PLACE, keeping every later stub section,
+    # proving the shape an author actually submits. A truncating fill would
+    # silently drop any floor section added after Fresh-Eye (that drift shipped
+    # once: the Boundary Ownership floor landed and this test stayed truncating).
+    head, heading, rest = stub_text.partition("## Fresh-Eye Satisfaction")
     assert heading, "critique stub must still carry the Fresh-Eye Satisfaction heading"
-    filled_in_stub = f"{head}{heading}\n\nparent-delegated.\n"
+    _body, sep, tail = rest.partition("\n## ")
+    filled_in_stub = f"{head}{heading}\n\nparent-delegated\n{sep}{tail}"
+    verdict_lines = [
+        line for line in filled_in_stub.splitlines() if line.startswith("- Verdict: TODO")
+    ]
+    assert verdict_lines, "critique stub must still carry the Boundary Ownership Verdict TODO"
+    filled_in_stub = filled_in_stub.replace(verdict_lines[0], "- Verdict: single-surface")
     target = ROOT / "charness-artifacts" / "critique" / "_preflight_roundtrip_selftest.md"
     try:
         target.write_text(filled_in_stub, encoding="utf-8")
