@@ -14,6 +14,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
 load_manifests = _scripts_control_plane_lib_module.load_manifests
 now_iso = _scripts_control_plane_lib_module.now_iso
+read_lock = _scripts_control_plane_lib_module.read_lock
 run_shell = _scripts_control_plane_lib_module.run_shell
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 _scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
@@ -29,6 +30,7 @@ _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.i
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
 package_manager_update_action = _scripts_install_provenance_lib_module.package_manager_update_action
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
+observed_version_from_detect = _scripts_upstream_release_lib_module.observed_version_from_detect
 probe_release = _scripts_upstream_release_lib_module.probe_release
 
 
@@ -36,6 +38,24 @@ def capture_provenance(manifest: dict[str, object]) -> dict[str, object]:
     provenance = detect_install_provenance(manifest)
     provenance["checked_at"] = now_iso()
     return provenance
+
+
+def previous_observed_version(repo_root: Path, tool_id: str) -> str | None:
+    try:
+        prior_lock = read_lock(repo_root, tool_id)
+    except (OSError, json.JSONDecodeError):
+        prior_lock = None
+    if not isinstance(prior_lock, dict):
+        return None
+    doctor = prior_lock.get("doctor")
+    version = doctor.get("version") if isinstance(doctor, dict) else None
+    observed = version.get("observed_version") if isinstance(version, dict) else None
+    if isinstance(observed, str) and observed:
+        return observed
+    update = prior_lock.get("update")
+    if isinstance(update, dict):
+        return observed_version_from_detect(update.get("detect"))
+    return None
 
 
 def readiness_after_successful_checks(
@@ -70,8 +90,9 @@ def update_payload(
     readiness_result: dict[str, object],
     package_manager: object = None,
     package_name: object = None,
+    version_transition: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    return {
+    payload = {
         "updated_at": now_iso(),
         "update_status": status,
         "mode": mode,
@@ -82,6 +103,9 @@ def update_payload(
         "package_manager": package_manager,
         "package_name": package_name,
     }
+    if version_transition is not None:
+        payload["version_transition"] = version_transition
+    return payload
 
 
 def passive_update(
@@ -186,6 +210,10 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         status = "updated" if readiness_result["ok"] else "updated-not-ready"
     else:
         status = "failed"
+    version_transition = {
+        "from": previous_observed_version(repo_root, manifest["tool_id"]),
+        "to": observed_version_from_detect(detect_result),
+    }
     payload = update_payload(
         status=status,
         mode=mode,
@@ -195,6 +223,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         readiness_result=readiness_result,
         package_manager=update_action.get("package_manager"),
         package_name=update_action.get("package_name"),
+        version_transition=version_transition,
     )
     persist_update_lock(repo_root, manifest, release=release, provenance=provenance, payload=payload)
     result = {
@@ -207,6 +236,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         "readiness": readiness_result,
         "package_manager": payload["package_manager"],
         "package_name": payload["package_name"],
+        "version_transition": payload["version_transition"],
     }
     return attach_release_metadata(result, provenance=provenance, release=release)
 

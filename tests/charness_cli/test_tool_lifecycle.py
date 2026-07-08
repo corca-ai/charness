@@ -13,7 +13,11 @@ from pathlib import Path
 
 import pytest
 
-from scripts.control_plane_lifecycle_lib import update_advisory_line
+from scripts.control_plane_lifecycle_lib import (
+    print_tool_statuses,
+    update_advisory_line,
+    version_transition_suffix,
+)
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
@@ -93,6 +97,56 @@ def test_update_advisory_line_without_manifest_route_uses_doctor_install_route_u
     assert line is not None
     assert "manual update required; see https://github.com/cli/cli/releases" in line
     assert "manifest install/update route" not in line
+
+
+def test_version_transition_suffix_renders_from_and_to_when_different() -> None:
+    assert version_transition_suffix(
+        {"status": "updated", "version_transition": {"from": "0.17.0", "to": "0.18.0"}}
+    ) == " 0.17.0 -> 0.18.0"
+
+
+def test_version_transition_suffix_renders_to_only_when_from_matches_to() -> None:
+    assert version_transition_suffix(
+        {"status": "updated", "version_transition": {"from": "0.18.0", "to": "0.18.0"}}
+    ) == " 0.18.0"
+
+
+def test_version_transition_suffix_renders_to_only_when_from_missing() -> None:
+    assert version_transition_suffix(
+        {"status": "updated", "version_transition": {"from": None, "to": "0.18.0"}}
+    ) == " 0.18.0"
+
+
+def test_version_transition_suffix_reports_version_unknown_for_updated_without_transition() -> None:
+    assert version_transition_suffix({"status": "updated"}) == " (version unknown)"
+    assert version_transition_suffix({"status": "updated-not-ready"}) == " (version unknown)"
+
+
+def test_version_transition_suffix_empty_for_other_statuses_without_transition() -> None:
+    assert version_transition_suffix({"status": "manual"}) == ""
+    assert version_transition_suffix({"status": "noop"}) == ""
+
+
+def test_version_transition_suffix_renders_transition_for_failed_status() -> None:
+    assert version_transition_suffix(
+        {"status": "failed", "version_transition": {"from": "1.0.0", "to": "2.0.0"}}
+    ) == " 1.0.0 -> 2.0.0"
+
+
+def test_print_tool_statuses_renders_version_transition(capsys) -> None:
+    print_tool_statuses(
+        [
+            {
+                "tool_id": "nose",
+                "status": "updated",
+                "version_transition": {"from": "0.17.0", "to": "0.18.0"},
+                "healthcheck": {"status": "not-configured"},
+            }
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert "nose: updated 0.17.0 -> 0.18.0 healthcheck=not-configured" in output
 
 
 def enable_cautilus_adapter(repo_root: Path) -> None:
@@ -430,6 +484,7 @@ def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_p
     assert browser["update"]["mode"] == "script"
     assert browser["update"]["commands"][0]["command"] == "npm install -g agent-browser@latest"
     assert browser["update"]["release"]["latest_tag"] == "v0.25.3"
+    assert browser["update"]["version_transition"] == {"from": "0.9.2", "to": "0.25.3"}
     assert browser["support"]["status"] == "synced"
     assert browser["doctor"]["doctor_status"] == "ok"
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
@@ -437,6 +492,7 @@ def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_p
     assert lock_payload["update"]["update_status"] == "updated"
     assert lock_payload["update"]["mode"] == "script"
     assert lock_payload["update"]["commands"][0]["command"] == "npm install -g agent-browser@latest"
+    assert lock_payload["update"]["version_transition"] == {"from": "0.9.2", "to": "0.25.3"}
     assert lock_payload["support"]["materialized_paths"] == ["support/agent-browser"]
     assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
     assert lock_payload["doctor"]["doctor_status"] == "ok"

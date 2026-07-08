@@ -121,9 +121,28 @@ def healthcheck_attention_suffix(payload: dict[str, Any]) -> str:
     return ""
 
 
+def version_transition_suffix(result: dict[str, Any]) -> str:
+    version_transition = result.get("version_transition")
+    from_version = None
+    to_version = None
+    if isinstance(version_transition, dict):
+        from_version = version_transition.get("from")
+        to_version = version_transition.get("to")
+    if isinstance(to_version, str) and to_version:
+        if isinstance(from_version, str) and from_version and from_version != to_version:
+            return f" {from_version} -> {to_version}"
+        return f" {to_version}"
+    if result.get("status") in {"updated", "updated-not-ready"}:
+        return " (version unknown)"
+    return ""
+
+
 def print_tool_statuses(results: list[dict[str, Any]], *, status_key: str = "status") -> None:
     for result in results:
-        print(f"{result['tool_id']}: {result[status_key]}{healthcheck_attention_suffix(result)}")
+        print(
+            f"{result['tool_id']}: {result[status_key]}"
+            f"{version_transition_suffix(result)}{healthcheck_attention_suffix(result)}"
+        )
 
 
 def update_advisory_line(result: dict[str, Any]) -> str | None:

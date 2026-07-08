@@ -69,9 +69,9 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert "-> None" not in update_result.stdout
     assert "SCOPE: all" in update_result.stdout
     assert "TOOLS:" in update_result.stdout
-    assert "agent-browser=updated" in update_result.stdout
-    assert "cautilus=manual" in update_result.stdout
-    assert "nose=updated healthcheck=not-configured" in update_result.stdout
+    assert "  - agent-browser: updated 0.25.3 (script)" in update_result.stdout
+    assert "  - cautilus: manual" in update_result.stdout
+    assert "  - nose: updated 0.17.0 (script) healthcheck=not-configured" in update_result.stdout
 
 
 def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) -> None:
@@ -88,9 +88,27 @@ def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) 
                     "cautilus": {"update": {"status": "manual"}},
                     "agent-browser": {"update": {"status": "updated"}},
                     "nose": {
-                        "doctor": {
-                            "doctor_status": "updated",
-                            "healthcheck": {"status": "not-configured"},
+                        "update": {
+                            "status": "updated",
+                            "mode": "script",
+                            "version_transition": {"from": "0.17.0", "to": "0.18.0"},
+                        }
+                    },
+                    "specdown": {"doctor": {"doctor_status": "ok", "healthcheck": {"status": "not-configured"}}},
+                    "tokei": {
+                        "update": {
+                            "status": "updated",
+                            "mode": "script",
+                            "version_transition": {"from": "1.1.0", "to": "1.1.0"},
+                        }
+                    },
+                    "github-gh": {
+                        "update": {
+                            "status": "updated",
+                            "mode": "package_manager",
+                            "package_manager": "npm",
+                            "package_name": "gh-cli",
+                            "version_transition": {"from": "2.0.0", "to": "2.1.0"},
                         }
                     },
                 }
@@ -102,4 +120,85 @@ def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) 
     assert "VERSION: None" not in output
     assert "-> None" not in output
     assert "SCOPE: all" in output
-    assert "TOOLS: agent-browser=updated, cautilus=manual, nose=updated healthcheck=not-configured" in output
+    assert "TOOLS:" in output
+    assert "  - agent-browser: updated (version unknown)" in output
+    assert "  - cautilus: manual" in output
+    assert "  - nose: updated 0.17.0 -> 0.18.0 (script)" in output
+    assert "  - specdown: ok healthcheck=not-configured" in output
+    assert "  - tokei: updated 1.1.0 (script)" in output
+    assert "  - github-gh: updated 2.0.0 -> 2.1.0 (npm: gh-cli)" in output
+
+
+def test_tool_update_lines_empty_results_render_nothing(capsys) -> None:
+    module = load_charness_module("charness_tool_update_lines_empty_under_test")
+
+    assert module._tool_update_lines({"results": {}}) == []
+    assert module._tool_update_lines({}) == []
+
+    module.print_update_human_summary(
+        {
+            "package_id": "charness",
+            "checkout": {"pulled": False, "repo_root": "/tmp/charness"},
+            "scope": "all",
+            "tool_update": {"results": {}},
+        }
+    )
+
+    output = capsys.readouterr().out
+    assert "TOOLS:" not in output
+
+
+def test_package_manager_tool_next_step_includes_version_transition() -> None:
+    module = load_charness_module("charness_package_manager_next_step_under_test")
+
+    next_step = module._package_manager_tool_next_step(
+        "nose",
+        {
+            "mode": "package_manager",
+            "package_manager": "cargo",
+            "package_name": "nose-cli",
+            "status": "updated",
+            "version_transition": {"from": "0.17.0", "to": "0.18.0"},
+        },
+    )
+
+    assert next_step == "`nose` was updated via `cargo` package `nose-cli` (0.17.0 -> 0.18.0)."
+
+    plain_next_step = module._package_manager_tool_next_step(
+        "nose",
+        {
+            "mode": "package_manager",
+            "package_manager": "cargo",
+            "package_name": "nose-cli",
+            "status": "updated",
+        },
+    )
+
+    assert plain_next_step == "`nose` was updated via `cargo` package `nose-cli`."
+
+
+def test_print_next_actions_labels_repo_onboarding_primary_and_merges(capsys) -> None:
+    module = load_charness_module("charness_next_actions_unit_under_test")
+
+    module._print_next_actions(
+        {
+            "next_action": {
+                "kind": "repo-init",
+                "host": None,
+                "source": "repo_onboarding",
+                "message": "Run charness setup in this repo.",
+            },
+            "repo_onboarding": {"message": "Run charness setup in this repo."},
+            "claude_host_guidance": {"message": "Restart Claude Code."},
+            "codex_host_guidance": {"message": "Restart Codex."},
+        }
+    )
+
+    output = capsys.readouterr().out
+    assert output.count("NEXT_ACTION:") == 1
+    assert output.count("  - repo: Run charness setup in this repo.") == 1
+    assert "  - claude: Restart Claude Code." in output
+    assert "  - codex: Restart Codex." in output
+    assert "CODEX_NEXT_STEP" not in output
+    assert "CLAUDE_NEXT_STEP" not in output
+    assert "REPO_NEXT_STEP" not in output

@@ -42,10 +42,18 @@ def test_charness_doctor_prints_primary_next_action(
     )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
+    assert "NEXT_ACTION:" in doctor_result.stdout
     assert (
-        "NEXT_ACTION: claude: Claude host install markers are present. Restart Claude Code to load or refresh charness."
+        "  - claude: Claude host install markers are present. Restart Claude Code to load or refresh charness."
         in doctor_result.stdout
     )
+    assert doctor_result.stdout.count(
+        "Claude host install markers are present. Restart Claude Code to load or refresh charness."
+    ) == 1
+    assert doctor_result.stdout.count("NEXT_ACTION:") == 1
+    assert "CODEX_NEXT_STEP" not in doctor_result.stdout
+    assert "CLAUDE_NEXT_STEP" not in doctor_result.stdout
+    assert "REPO_NEXT_STEP" not in doctor_result.stdout
 
 
 @pytest.mark.release_only

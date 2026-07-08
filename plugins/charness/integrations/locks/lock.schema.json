@@ -208,6 +208,28 @@
         }
       }
     },
+    "versionTransition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "versionResult": {
       "type": "object",
       "additionalProperties": false,
@@ -736,6 +758,9 @@
             "string",
             "null"
           ]
+        },
+        "version_transition": {
+          "$ref": "#/definitions/versionTransition"
         }
       }
     }

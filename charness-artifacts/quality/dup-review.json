@@ -86,6 +86,13 @@
     },
     {
       "class": "intentional",
+      "id": "48bf9d9e90c97d9e",
+      "note": "nose subdag artifact inside check_coverage_lib.py: exercise_control_plane_scenarios grew new version_transition scenario calls (#424) and now shares a 2-node subdag with _basic_manifest in the same file; a scenario-call list and a manifest builder are unrelated units with no extractable shared helper",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "4e87147b48902263",
       "note": "low-value git subprocess error-handling family rotated after setup worktree template extraction; extracting it would add cross-surface coupling for no behavior gain",
       "reviewed_at": "2026-06-27",

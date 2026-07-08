@@ -125,6 +125,12 @@ def exercise_control_plane_scenarios() -> None:
     lifecycle.print_tool_statuses(
         [{"tool_id": "demo", "status": "ok", "healthcheck": {"status": "not-configured"}}]
     )
+    lifecycle.print_tool_statuses(
+        [{"tool_id": "demo", "status": "updated", "version_transition": {"from": "1.0.0", "to": "2.0.0"}}]
+    )
+    lifecycle.version_transition_suffix({"status": "updated"})
+    lifecycle.version_transition_suffix({"status": "updated", "version_transition": {"from": "1.0.0", "to": "1.0.0"}})
+    lifecycle.version_transition_suffix({"status": "noop"})
     lifecycle.healthcheck_attention_suffix({"healthcheck": {"skipped": True}})
     lifecycle.has_any_status(selected, status_key="tool_id", statuses={"demo"})
     with mock.patch.object(lifecycle, "run_check", return_value={"ok": False}):

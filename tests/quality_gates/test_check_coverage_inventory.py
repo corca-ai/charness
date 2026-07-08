@@ -20,6 +20,13 @@ assert EXTRA_SPEC is not None and EXTRA_SPEC.loader is not None
 CHECK_COVERAGE_EXTRA = importlib.util.module_from_spec(EXTRA_SPEC)
 EXTRA_SPEC.loader.exec_module(CHECK_COVERAGE_EXTRA)
 
+LIB_SPEC = importlib.util.spec_from_file_location(
+    "check_coverage_lib_under_test", ROOT / "scripts" / "check_coverage_lib.py"
+)
+assert LIB_SPEC is not None and LIB_SPEC.loader is not None
+CHECK_COVERAGE_LIB = importlib.util.module_from_spec(LIB_SPEC)
+LIB_SPEC.loader.exec_module(CHECK_COVERAGE_LIB)
+
 
 def test_per_file_floor_report_classifies_floor_violations() -> None:
     report = CHECK_COVERAGE.build_per_file_floor_report(
@@ -127,6 +134,10 @@ def test_check_coverage_agent_browser_probe_ignores_ambient_orphans(monkeypatch,
 
 def test_control_plane_extra_coverage_probe_runs() -> None:
     CHECK_COVERAGE_EXTRA.exercise_control_plane_helper_scenarios()
+
+
+def test_exercise_control_plane_scenarios_executes_cleanly() -> None:
+    CHECK_COVERAGE_LIB.exercise_control_plane_scenarios()
 
 
 def test_check_coverage_fixture_npm_does_not_touch_real_global_install(tmp_path) -> None:

@@ -2259,20 +2259,36 @@ def _print_next_actions(payload: dict[str, object]) -> None:
         root_surface = preamble.get("root_install_surface", {})
         ok = root_surface.get("ok")
         print(f"INSTALL_SURFACE: {'ok' if ok else 'warning'}")
+    candidates: list[tuple[str | None, str]] = []
     next_action = payload.get("next_action")
     if isinstance(next_action, dict) and isinstance(next_action.get("message"), str):
         host = next_action.get("host")
-        prefix = f"{host}: " if isinstance(host, str) and host else ""
-        print(f"NEXT_ACTION: {prefix}{next_action['message']}")
+        label = host if isinstance(host, str) and host else None
+        if label is None and next_action.get("source") == "repo_onboarding":
+            label = "repo"
+        candidates.append((label, next_action["message"]))
     host_guidance = payload.get("codex_host_guidance")
     if isinstance(host_guidance, dict) and isinstance(host_guidance.get("message"), str):
-        print(f"CODEX_NEXT_STEP: {host_guidance['message']}")
+        candidates.append(("codex", host_guidance["message"]))
     claude_guidance = payload.get("claude_host_guidance")
     if isinstance(claude_guidance, dict) and isinstance(claude_guidance.get("message"), str):
-        print(f"CLAUDE_NEXT_STEP: {claude_guidance['message']}")
+        candidates.append(("claude", claude_guidance["message"]))
     repo_onboarding = payload.get("repo_onboarding")
     if isinstance(repo_onboarding, dict) and isinstance(repo_onboarding.get("message"), str):
-        print(f"REPO_NEXT_STEP: {repo_onboarding['message']}")
+        candidates.append(("repo", repo_onboarding["message"]))
+    seen_messages: set[str] = set()
+    lines: list[str] = []
+    for label, message in candidates:
+        if message in seen_messages:
+            continue
+        seen_messages.add(message)
+        prefix = f"{label}: " if label else ""
+        lines.append(f"  - {prefix}{message}")
+    if not lines:
+        return
+    print("NEXT_ACTION:")
+    for line in lines:
+        print(line)
 
 
 def print_human_summary(payload: dict[str, object]) -> None:
@@ -2309,11 +2325,41 @@ def emit_progress(message: str, *, json_mode: bool) -> None:
     print(message, file=stream, flush=True)
 
 
-def _tool_update_summary(payload: dict[str, object]) -> str | None:
+def _version_transition_suffix(update: dict[str, object] | None, status: str) -> str:
+    version_transition = update.get("version_transition") if isinstance(update, dict) else None
+    from_version = None
+    to_version = None
+    if isinstance(version_transition, dict):
+        from_version = version_transition.get("from")
+        to_version = version_transition.get("to")
+    if isinstance(to_version, str) and to_version:
+        if isinstance(from_version, str) and from_version and from_version != to_version:
+            return f" {from_version} -> {to_version}"
+        return f" {to_version}"
+    if status in {"updated", "updated-not-ready"}:
+        return " (version unknown)"
+    return ""
+
+
+def _tool_update_mode_suffix(update: dict[str, object] | None) -> str:
+    if not isinstance(update, dict):
+        return ""
+    mode = update.get("mode")
+    if mode == "script":
+        return " (script)"
+    if mode == "package_manager":
+        package_manager = update.get("package_manager")
+        package_name = update.get("package_name")
+        if isinstance(package_manager, str) and package_manager and isinstance(package_name, str) and package_name:
+            return f" ({package_manager}: {package_name})"
+    return ""
+
+
+def _tool_update_lines(payload: dict[str, object]) -> list[str]:
     results = payload.get("results")
     if not isinstance(results, dict) or not results:
-        return None
-    parts: list[str] = []
+        return []
+    lines: list[str] = []
     for tool_id in sorted(results):
         result = results.get(tool_id)
         if not isinstance(result, dict):
@@ -2328,13 +2374,17 @@ def _tool_update_summary(payload: dict[str, object]) -> str | None:
         support = result.get("support")
         if status is None and isinstance(support, dict) and isinstance(support.get("status"), str):
             status = support["status"]
+        status = status or "unknown"
+        update = update if isinstance(update, dict) else None
+        version_suffix = _version_transition_suffix(update, status)
+        mode_suffix = _tool_update_mode_suffix(update)
         healthcheck_suffix = ""
         if isinstance(update, dict):
             healthcheck_suffix = _healthcheck_attention_suffix(update)
         if not healthcheck_suffix and isinstance(doctor, dict):
             healthcheck_suffix = _healthcheck_attention_suffix(doctor)
-        parts.append(f"{tool_id}={status or 'unknown'}{healthcheck_suffix}")
-    return ", ".join(parts) if parts else None
+        lines.append(f"  - {tool_id}: {status}{version_suffix}{mode_suffix}{healthcheck_suffix}")
+    return lines
 
 
 def _healthcheck_attention_suffix(payload: dict[str, object]) -> str:
@@ -2371,9 +2421,11 @@ def print_update_human_summary(payload: dict[str, object]) -> None:
     _print_latest_release(payload.get("latest_release_check"))
     tool_update = payload.get("tool_update")
     if isinstance(tool_update, dict):
-        summary = _tool_update_summary(tool_update)
-        if summary:
-            print(f"TOOLS: {summary}")
+        lines = _tool_update_lines(tool_update)
+        if lines:
+            print("TOOLS:")
+            for line in lines:
+                print(line)
     _print_session_staleness(payload.get("session_staleness"))
     _print_next_actions(payload)
 
@@ -2969,6 +3021,21 @@ def _package_manager_tool_next_step(tool_id: str, action_result: dict[str, objec
     if not isinstance(package_manager, str) or not isinstance(package_name, str):
         return None
     if action_result.get("status") == "updated":
+        version_transition = action_result.get("version_transition")
+        if isinstance(version_transition, dict):
+            from_version = version_transition.get("from")
+            to_version = version_transition.get("to")
+            if (
+                isinstance(from_version, str)
+                and from_version
+                and isinstance(to_version, str)
+                and to_version
+                and from_version != to_version
+            ):
+                return (
+                    f"`{tool_id}` was updated via `{package_manager}` package `{package_name}` "
+                    f"({from_version} -> {to_version})."
+                )
         return f"`{tool_id}` was updated via `{package_manager}` package `{package_name}`."
     return f"`{tool_id}` can be refreshed via `{package_manager}` package `{package_name}`."
 
