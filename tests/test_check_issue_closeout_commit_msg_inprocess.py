@@ -1,12 +1,12 @@
-"""In-process coverage for `scripts/check_issue_closeout_commit_msg.py`'s pure
-helpers. `tests/quality_gates/test_issue_closeout_commit_msg_hook.py` drives
-this script ONLY via `subprocess.run(["python3", SCRIPT, ...])`
-(`tests/quality_gates/support.run_script`), so coverage.py never attributes
-lines inside its helper functions to the source file -- the #393
-subprocess-only-attribution class. These tests call `_bare_classification`
-and `_format_failure` directly (no subprocess) so the normal pytest+coverage
-run records the lines, without re-testing the CLI contract the subprocess
-suite already owns.
+"""In-process pins for `scripts/check_issue_closeout_commit_msg.py`'s pure
+helpers, complementing the subprocess CLI suite in
+`tests/quality_gates/test_issue_closeout_commit_msg_hook.py`. Note the
+subprocess suite IS coverage-traced here (children inherit os.environ, so
+sitecustomize + COVERAGE_PROCESS_START propagate — see the 2026-07-03
+test-value audit's Coverage-Model Correction); these in-process tests exist
+for the helper branches the CLI contract does not pin directly, not for
+attribution. Redundant attribution-only twins were removed by the 2026-07-08
+delta rotation.
 """
 from __future__ import annotations
 
@@ -20,11 +20,6 @@ def test_bare_classification_honors_explicit_classification_line() -> None:
     # default for a bare (no staged artifact) close-keyword commit.
     body = "Fixes #77\n\nJTBD: ship the fix.\n\nClassification: question\n"
     assert checker._bare_classification(body) == "question"
-
-
-def test_bare_classification_defaults_to_bug_without_explicit_line() -> None:
-    body = "Fixes #77\n\nAnswer: yes, ship it.\n"
-    assert checker._bare_classification(body) == "bug"
 
 
 def test_format_failure_renders_staged_artifact_source_line() -> None:
@@ -64,8 +59,3 @@ def test_exemption_advisories_bare_keyword_names_default_scope() -> None:
     lines = checker._exemption_advisories(reports, _advisory_fn())
     assert len(lines) == 1
     assert "commit-message close keyword" in lines[0]
-
-
-def test_exemption_advisories_empty_for_nonexempt_classification() -> None:
-    reports = [{"classification": "bug", "numbers": [42], "source_artifact": None}]
-    assert checker._exemption_advisories(reports, _advisory_fn()) == []

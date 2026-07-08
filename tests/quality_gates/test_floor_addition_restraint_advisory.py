@@ -199,13 +199,6 @@ def test_advise_silent_new_gate_script_with_recorded_call(tmp_path: Path, capsys
     assert capsys.readouterr().err == ""
 
 
-def test_advise_silent_for_non_gate_named_new_script(tmp_path: Path, capsys) -> None:
-    _seed_repo(tmp_path)
-    (tmp_path / "scripts/helper_widget.py").write_text("def helper():\n    return 1\n", encoding="utf-8")
-    adv.advise_floor_addition_restraint(tmp_path, ["scripts/helper_widget.py"], base="HEAD")
-    assert capsys.readouterr().err == ""
-
-
 def test_advise_silent_when_gate_script_edit_is_not_new(tmp_path: Path, capsys) -> None:
     # editing an EXISTING gate script must not trip the new-FILE detector; a new
     # floor inside it (if any) is the content-diff detector's job, not this one.

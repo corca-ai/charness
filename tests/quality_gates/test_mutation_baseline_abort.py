@@ -365,28 +365,6 @@ def test_check_mutation_score_marker_used_when_marker_is_newer_than_stats(tmp_pa
     assert "tests/x.py::test_y" in summary
 
 
-def test_check_mutation_score_marker_present_writes_summary_and_fails(tmp_path: Path) -> None:
-    _write_adapter(tmp_path)
-    marker_path = tmp_path / "reports" / "mutation" / "baseline-abort.json"
-    marker_path.parent.mkdir(parents=True)
-    write_baseline_abort_marker(
-        marker_path,
-        exit_code=1,
-        test_command="python3 -m pytest -q tests",
-        failing_nodeids=["tests/x.py::test_y"],
-        log_tail=[],
-    )
-
-    result = run_loaded_script_main(
-        "check_mutation_score.py", check_mutation_score, "--repo-root", str(tmp_path)
-    )
-
-    assert result.returncode == 2
-    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
-    assert "Blocking signal: coverage baseline pytest failed" in summary
-    assert "tests/x.py::test_y" in summary
-
-
 def test_check_mutation_score_marker_present_falls_back_to_log_tail_when_no_nodeids(
     tmp_path: Path,
 ) -> None:
