@@ -553,15 +553,6 @@
       ]
     },
     {
-      "fingerprint": "22307e80628a109e",
-      "member_hashes": [
-        "4e37c1133ee25965",
-        "4e37c1133ee25965",
-        "4e37c1133ee25965",
-        "4e37c1133ee25965"
-      ]
-    },
-    {
       "fingerprint": "228a77811014e16f",
       "member_hashes": [
         "1b02cc6d5c7a3f39",
@@ -1113,25 +1104,6 @@
         "4c534deee9d2bdb9",
         "ab66d1d6651ef209",
         "b6cc7a0957a440ab"
-      ]
-    },
-    {
-      "fingerprint": "449b016cce9382b6",
-      "member_hashes": [
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "0ff3cd6c74dbc8b2",
-        "1ef2d3033157d22b",
-        "1ef2d3033157d22b",
-        "62ca301c901be8ea",
-        "79751410bf2af99b",
-        "cac8e90a75765611"
       ]
     },
     {
@@ -1954,6 +1926,13 @@
       ]
     },
     {
+      "fingerprint": "71f4435c833629a5",
+      "member_hashes": [
+        "1449dd4dc961cbf8",
+        "e37026404c50b80e"
+      ]
+    },
+    {
       "fingerprint": "72986dd6007b5a86",
       "member_hashes": [
         "76c67ea49f31362b",
@@ -2095,13 +2074,6 @@
       ]
     },
     {
-      "fingerprint": "795189eaa3bc6476",
-      "member_hashes": [
-        "208fa813be74bbe6",
-        "bbcf00fdc28c480f"
-      ]
-    },
-    {
       "fingerprint": "7968f9df25209804",
       "member_hashes": [
         "0e0b2d6262fa35ab",
@@ -2132,14 +2104,6 @@
         "5fa1aa4e860809da",
         "8b254761559f0068",
         "da968071a665ee35"
-      ]
-    },
-    {
-      "fingerprint": "7bae0ed263525d88",
-      "member_hashes": [
-        "509e4fe69c211ee4",
-        "509e4fe69c211ee4",
-        "509e4fe69c211ee4"
       ]
     },
     {
@@ -2820,13 +2784,6 @@
       "member_hashes": [
         "673266365e4ca8f0",
         "6a43c68c0bd47c1d"
-      ]
-    },
-    {
-      "fingerprint": "a3e4de6e4b07a396",
-      "member_hashes": [
-        "885324145abfb47c",
-        "b78a5cdaf811d8fb"
       ]
     },
     {
@@ -4240,13 +4197,6 @@
       ]
     },
     {
-      "fingerprint": "fba5b0dd854c84ab",
-      "member_hashes": [
-        "da543474238e9e35",
-        "e37026404c50b80e"
-      ]
-    },
-    {
       "fingerprint": "fc1347ae7049f038",
       "member_hashes": [
         "d241e56f1d15ecd9",
@@ -4329,5 +4279,5 @@
   "fingerprint_algo_version": "2",
   "note": "Accepted code clone content fingerprints for the boy-scout dup ratchet (item 5, slice 4+D). A code family fingerprint present now but absent here (and not 'intentional' in dup-review.json) is a NEW fixable-eligible family and hard-blocks. Keyed by a gate-computed, offset/path-INDEPENDENT content fingerprint (sha256 over the sorted, duplicate-preserving normalized member spans; see nose_fingerprint_lib) from a FULL `nose query` over the scope — NOT nose's offset/path-folding family_id (slice 4 re-key, resolving deferred decision D30). Schema v3 stores each accepted family as {fingerprint, member_hashes} (`code_families`, sorted list) rather than a bare fingerprint list: the per-family member hashes let the CLI classify a membership REDUCTION (a vanished family's member multiset properly containing a candidate-new family's) as advisory, not a hard block, before evaluate() ever sees it. CHURN CAVEAT: the fingerprint is STABLE across pure line-shifts (inserting lines above an unchanged span no longer rotates it) and, under algo v2, across an in-place comment or internal-whitespace edit inside a Python span (falls back to v1 rstrip-only per member on any tokenize failure); incidental member-file edits do not force a re-baseline. Re-baseline deliberately on: a reviewed new/changed family, a genuine membership change NOT classified as a reduction, a nose-version bump that regroups families, OR a fingerprint_algo_version bump. The baseline stamps the producing nose tool_version AND fingerprint_algo_version; the gate WARNS (never degrades) on either skew, so a silent bump's drift reads as re-baseline, not new dup. Docs key on the doc-nose-baseline signature.",
   "schemaVersion": "charness.quality.dup_ratchet_baseline.v3",
-  "tool_version": "0.17.0"
+  "tool_version": "0.18.0"
 }
