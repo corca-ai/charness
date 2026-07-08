@@ -29,3 +29,7 @@ whitespace before matching. This is a fallback, not the preferred fix.
 When `quality` recommends a prose formatting policy, check whether a repo-owned
 tool exists to enforce or apply it. A policy without an enforcement tool should
 stay visible as follow-up work rather than disappearing into prose guidance.
+
+The mirror failure — a permanent *negative* wording assertion that passes
+vacuously once the prose drifts — is owned by
+[`unit-test-quality.md`](./unit-test-quality.md) section 7.

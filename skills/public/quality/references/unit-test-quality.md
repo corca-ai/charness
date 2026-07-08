@@ -80,3 +80,24 @@ cause and effect; prefer a small named helper over a clever grammar.
 > `order(items=[item(qty=0)])` shows the scenario — the zero quantity — at a
 > glance. `OrderBuilder().withDefaults().withItem(...).build()` hides which field
 > the test actually turns on. Name the variation; default the rest.
+
+## 7. Forbidden-string assertions over rendered prose
+
+A permanent `assert "<wording>" not in <rendered prose>` locks the test to
+human-authored wording, not behavior: when the wording drifts, the assertion
+passes vacuously — it now guards the absence of a string nobody writes anymore.
+Assert the positive scope claim instead. Permanent negative assertions —
+prose-level or otherwise — are legitimate where absence IS the contract:
+secret/PII leak invariants,
+quiet-mode output contracts, structural key-absence in a payload, crash-free
+smokes. Wording-level negatives are acceptable only as temporary migration
+sentinels with a named removal trigger. (A detector for this class was
+considered and rejected — the harmful/legitimate split is semantic, not
+syntactic; if vacuous-pass regressions recur, an advisory ratchet is the
+escalation path.)
+
+> `assert "Slack thread" not in description` still passes after someone
+> re-adds the capability as "Slack channel export" — the guard outlived the
+> wording, not the behavior. Assert the scope the description must state
+> (`"public-source only" in description`) so the test fails when the actual
+> contract changes.

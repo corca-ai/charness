@@ -9,19 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: B (#371 Tier 1 signal-safe teardown, gather browser path).
-  Landed: R `6415175b`, V `6440b24d`.
-- Current slice intent: SIGTERM/SIGINT handlers + atexit in
-  `acquire_public_url.py` main(); module-level live-session registry populated
-  around the two agent-browser stages; best-effort teardown via the existing
-  `_close_cleanup_error` chain (idempotent, never raises, no-op without a
-  session, normal-exit disposition unchanged); red/green fake-CLI SIGTERM
-  subprocess test; correct the `docs/handoff.md` item-3 "self-contained"
-  mislabel; draft (not post) the #371 partial-resolution comment. One
-  reviewable intent unit spanning the Slice B commit (meaningful-slice-cadence).
-- Next action: implement Slice B, red/green proof, critique, pre-lock
-  closeout (run the aggregate EARLY — Slice V lesson), slice log, commit;
-  then G; D last.
+- Current slice: G (#408 item 4 — forbidden-string prose principle).
+  Landed: R `6415175b`, V `6440b24d` (+debt fix `30e3dd11`), B `cf7e6f47`.
+- Current slice intent: one prose principle + worked example as a new section
+  in `skills/public/quality/references/unit-test-quality.md`, cross-linked
+  (one line) from `brittle-source-guards.md`; blesses the legitimate permanent
+  negative classes; names the rejected ratchet as the recurrence-triggered
+  escalation path. Doc-arm dup trips resolve via dup-review classification in
+  this slice, not D. One reviewable intent unit (meaningful-slice-cadence).
+- Next action: skill-surface preflight, author, verify, bounded critique,
+  pre-lock closeout, slice log, commit; then D (last, single re-baseline);
+  then repair the pre-goal red test (preflight roundtrip) before the final
+  verification lock.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -211,8 +210,21 @@ Seeded at drafting:
 - Owner: operator (external write, confirm-before-post)
 - Why deferred: local slices proceed without it; the comment is the last step
   of Slice B
-- Unblock action: approve the drafted comment text at Slice B closeout
-- Revisit trigger: Slice B closeout
+- Unblock action: approve the drafted comment text below (drafted at Slice B,
+  cf7e6f47) and post via `gh issue comment 371`
+- Revisit trigger: goal closeout (Slice B landed; draft ready)
+- Draft: "**Partial resolution — Tier 1 landed (cf7e6f47).** Charness now
+  installs SIGTERM/SIGINT handlers plus an `atexit` hook around the
+  `acquire_public_url.py` gather-browser path: a module-level live-session
+  registry is populated while an `agent-browser` stage is in flight, and a
+  host SIGTERM/SIGINT now triggers a best-effort close via the existing
+  `_close_cleanup_error` chain before the process exits with its original
+  signal disposition — verified red/green with a real-subprocess test.
+  **Stays open:** (1) the raw host tool-call path where the harness invokes
+  `agent-browser` directly and it self-daemonizes — upstream
+  vercel-labs/agent-browser#1334; (2) SIGKILL — backstopped by the
+  runtime-guard reaper, not this teardown; (3) Tier 1b profile-dir lease —
+  deferred pending a pinned-CLI capability probe."
 
 - Decision: whether the standing test-debt rotation item (post-audit delta
   sweep) gets queued into handoff after Slice R lands
@@ -307,6 +319,20 @@ applies.
 - Off-goal findings: none
 - Lessons carried forward: The slice proof set must include the surface-matched closeout aggregate, not a hand-picked gate list — validate-packaging and the timing meta-gate only fired in the aggregate; run the aggregate earlier next slice.
 - Metrics: 1 impl subagent (sonnet) + 1 fresh-eye critique subagent; 3 pre-lock closeout runs (2 gate-fix iterations).
+
+### Slice 3: Slice B — #371 Tier 1 signal-safe gather-browser teardown
+
+- Objective: SIGTERM/SIGINT/atexit best-effort teardown of a live agent-browser session in acquire_public_url.py via the existing _close_cleanup_error chain; correct the handoff item-3 self-contained mislabel; draft (not post) the #371 partial-resolution comment.
+- Why this approach: Decided slice; charness-owned half of #371 (the raw tool-call path is upstream agent-browser#1334); handoff carried a wrong scope label.
+- Commits: cf7e6f47 (+ 30e3dd11 Slice V debt fix surfaced by this slice's broad run)
+- What changed: skills/support/web-fetch/scripts/acquire_public_url.py (+~89: registry, teardown, handlers) + plugins mirror; tests/test_web_fetch_cleanup.py (+2 tests); tests/test_web_fetch_route_and_classify.py (MF1 namespace fix); docs/handoff.md item 3; tests/quality_gates/support.py (V debt, separate commit).
+- Alternatives rejected: A second reaper process (rejected: existing _close_cleanup_error chain + runtime-guard reaper suffice); handling SIGKILL (impossible; reaper is the backstop); posting the #371 comment now (rejected: operator confirm-before-post boundary).
+- Targeted verification: Red run captured pre-fix (log open-without-close, exit 143) then green; directed no-session idempotent no-op fixture green; 9/9 cleanup tests; 64 tests across the three touched test files; aggregate pre-lock closeout completed; boundary-bypass classification unchanged (file already internally-spawning); runtime guard asserts no orphans after the SIGTERM test itself.
+- Test duplication pressure: No scanned clone-member files touched; dup gate remains broad-path-only until Slice D.
+- Critique: Fresh-eye bounded reviewer: REVISE -> folded. MF1 (real regression): _register_live_session reads args.repo_root, breaking a sibling SimpleNamespace test — fixed by adding repo_root (sibling test at :124 already had it). Reviewer confirmed red/green independently in a detached worktree. Answers: atexit is currently-unreachable-but-kept backstop; teardown delay bounded ~3x timeout; SIGTERM test flake risk <1%; handoff at 70/70 acceptable (zero headroom noted); no reentrancy hazard.
+- Off-goal findings: Pre-existing red (predates goal, fails at cbfc8b8a in a clean worktree): tests/quality_gates/test_check_artifact_surface_preflight.py::test_changed_artifacts_passes_scaffold_roundtrip — critique-stub roundtrip blocked by validate_critique_artifacts (#408 disposition line). Must be repaired before the final verification lock; queued for the closeout phase.
+- Lessons carried forward: The V lesson was under-applied: the pre-lock aggregate still skips broad pytest, and MF1 lived exactly there. For remaining slices, run the focused pytest of ALL modules importing the changed surface (grep the import), not only the slice's own test file.
+- Metrics: 1 impl subagent (sonnet) + 1 fresh-eye critique subagent; red/green captured pre/post fix; 2 commits.
 
 ## Context Sources
 
