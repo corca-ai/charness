@@ -9,15 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: R (remove live hard ratio bound; advisory-only posture).
-- Current slice intent: replace the live-repo hard asserts at
-  `tests/quality_gates/test_test_production_ratio.py:25-26` with
-  degenerate-zero sanity checks and add the missing under-threshold rc0
-  synthetic fixture; one reviewable intent unit spanning the Slice R commit.
-  Critique and broad proof do not re-fire within one unchanged intent
-  (meaningful-slice-cadence).
-- Next action: implement Slice R, focused pytest + pre-lock closeout, slice
-  log, commit; then V/B/G in any order; D last among code slices.
+- Current slice: V (`validate_scenario_conditional_reads`, blocking + seeded
+  waivers, handoff-only extractor v1). Slice R landed at `6415175b`.
+- Current slice intent: new blocking validator over
+  `cross_check_conditional_reads()` in `claim_fidelity_lib.py`; per-skill
+  flagged = planner_forceable − engage_always_union − waived; seeded waivers
+  for the two known real findings; wired after run-quality.sh
+  validate-claim-fidelity-specs; Floor-Addition Restraint call recorded; one
+  reviewable intent unit spanning the Slice V commit (meaningful-slice-cadence).
+- Next action: implement Slice V, synthetic + incident-reconstruction tests,
+  critique, pre-lock closeout, slice log, commit; then B, G; D last.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -275,6 +276,20 @@ applies.
   path are explicit non-claims (Tier 1 scope only).
 
 ## Slice Log
+
+### Slice 1: Slice R — live hard ratio pin removed (advisory-only)
+
+- Objective: Remove the live-repo hard test/production-ratio bound (test_test_production_ratio.py:25-26) so the posture is advisory-only; add the missing under-threshold rc-0 synthetic per-branch fixture.
+- Why this approach: Decided slice (goal Interview Decisions); hard live pin at 5-line headroom blocked every later test-adding slice, so R lands first.
+- Commits: 6415175b
+- What changed: tests/quality_gates/test_test_production_ratio.py (live asserts -> degenerate-zero sanity checks + comment; new in-process test_cli_under_threshold_returns_zero_on_synthetic_repo); goal artifact frame/routing.
+- Alternatives rejected: Soft no_increase ratchet and hard sub-target ratio (re-Goodhart, rejected at drafting); subprocess-based new fixture (would flip boundary-bypass classification).
+- Targeted verification: Focused pytest 8/8; run_slice_closeout --skip-broad-pytest all PASS; live ratio now 1.0002 and suite green (this test-adding diff itself would have tripped the old pin — acceptance shown); bare CLI exit 1 over max by design, --advisory gate lane exit 0; grep confirms run-quality.sh:504 is the only gate caller.
+- Test duplication pressure: check_dup_ratchet.py: OK, no new fixable-eligible families, fixable_ceiling=0; net +1 synthetic test (~23 LOC), -2 live asserts.
+- Critique: Fresh-eye bounded reviewer: REVISE -> folded. Must-fix was a false proof record (bare --json exits 1, not 0 — advisory lives only at the run-quality gate); two comment-wording overstatements fixed; boundary-bypass token set verified unchanged; no other live ratio pin exists in repo.
+- Off-goal findings: docs/handoff.md Discuss bullet ('pinned at ~1.0') goes stale — owned by closeout handoff refresh (critique F5-adjacent, recorded, not filed).
+- Lessons carried forward: Do not pipe a proof command into head — the pipe hides the exit code; record the exact gate-lane invocation as proof, not a lookalike.
+- Metrics: 1 impl subagent (sonnet) + 1 fresh-eye critique subagent; ~2 focused pytest runs + 1 pre-lock closeout.
 
 ## Context Sources
 

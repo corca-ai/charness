@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 from pathlib import Path
+from typing import Callable
 
 from scripts.public_skill_validation_lib import ValidationError, public_skill_ids
 
@@ -219,6 +221,7 @@ def validate_spec(repo_root: Path, skill_id: str, scenario_id: str, spec_path: s
         "declared": len(declared),
         "engage_always": sorted(engage_always),
         "undeclared_on_disk": sorted(fs_refs - set(declared)),
+        "dup_inline_tags": sorted(ref for ref, tag in class_tags.items() if tag in ("DUP", "INLINE")),
     }
 
 
@@ -261,3 +264,141 @@ def validate_registry(repo_root: Path) -> dict[str, object]:
         raise ValidationError(f"{REGISTRY_PATH}: registered skills are not public skills with references: {unknown}")
 
     return {"registry": registry, "results": results}
+
+
+# --- Conditional-reads cross-check -----------------------------------------
+#
+# A planner script can FORCE a reference read down a conditional branch (e.g.
+# handoff's plan_handoff_run.py forces adapter-contract.md only when the
+# adapter is missing/warned/invalid). Past incident: a planner conditionalized
+# a forced read and no eval scenario forced that branch, so a regression on
+# that branch would have escaped every eval. This section cross-checks every
+# planner-forceable reference against the registry's engage-always coverage,
+# tolerating a DUP/INLINE classTag or a recorded allowlist waiver.
+
+_HANDOFF_PLANNER_SCRIPT = Path("skills/public/handoff/scripts/plan_handoff_run.py")
+_REFERENCE_LITERAL_RE = re.compile(r"^references/([a-z0-9-]+\.md)$")
+
+
+def _handoff_planner_forceable(repo_root: Path) -> set[str]:
+    """AST-scan (never import — importing the planner module runs adapter
+    bootstrap) plan_handoff_run.py for every string literal that names a
+    reference path it could force a read of, regardless of which branch."""
+    path = repo_root / _HANDOFF_PLANNER_SCRIPT
+    if not path.is_file():
+        raise ValidationError(
+            f"conditional-reads cross-check: planner script `{_HANDOFF_PLANNER_SCRIPT}` is missing; "
+            "the handoff forced-read extractor cannot run (remove or replace its "
+            "PLANNER_FORCED_READ_EXTRACTORS entry if the planner moved)"
+        )
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    basenames: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            match = _REFERENCE_LITERAL_RE.match(node.value)
+            if match:
+                basenames.add(match.group(1))
+    return basenames
+
+
+# Per-planner forced-read extractor registry. v1 covers handoff only; a public
+# skill whose planner is not registered here is surfaced under
+# `not_yet_covered` (advisory) and never silently treated as clean.
+PLANNER_FORCED_READ_EXTRACTORS: dict[str, Callable[[Path], set[str]]] = {
+    "handoff": _handoff_planner_forceable,
+}
+
+ALLOWLIST_PATH = Path("scripts/validate_scenario_conditional_reads.allowlist.txt")
+
+
+def load_conditional_reads_allowlist(path: Path) -> dict[str, dict[str, str]]:
+    """Load `<skill-id>:<reference-basename>:<reason>` waiver lines into
+    skill_id -> {ref_basename: reason}. A malformed line or an empty reason
+    raises: a silent or reason-less waiver would let an unforced conditional
+    required-read escape the cross-check for free."""
+    if not path.is_file():
+        return {}
+    waivers: dict[str, dict[str, str]] = {}
+    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(":", 2)
+        if len(parts) != 3 or not all(part.strip() for part in parts):
+            raise ValidationError(
+                f"{path}:{lineno}: malformed allowlist entry (expected "
+                f"`<skill-id>:<reference-basename>:<reason>`): {raw!r}"
+            )
+        skill_id, ref, reason = (part.strip() for part in parts)
+        waivers.setdefault(skill_id, {})[ref] = reason
+    return waivers
+
+
+def cross_check_conditional_reads(
+    repo_root: Path,
+    *,
+    registry_result: dict[str, object] | None = None,
+    extractors: dict[str, Callable[[Path], set[str]]] | None = None,
+    allowlist_path: Path | None = None,
+) -> dict[str, object]:
+    if registry_result is None:
+        registry_result = validate_registry(repo_root)
+    if extractors is None:
+        extractors = PLANNER_FORCED_READ_EXTRACTORS
+    if allowlist_path is None:
+        allowlist_path = repo_root / ALLOWLIST_PATH
+    allowlist = load_conditional_reads_allowlist(allowlist_path)
+
+    by_skill: dict[str, list[dict[str, object]]] = {}
+    for entry in registry_result["results"]:
+        by_skill.setdefault(str(entry["skill_id"]), []).append(entry)
+
+    skills: dict[str, dict[str, object]] = {}
+    stale_allowlist: list[dict[str, str]] = []
+    flagged_skills: dict[str, list[str]] = {}
+    for skill_id, extractor in extractors.items():
+        forceable = extractor(repo_root)
+        engage_always_union: set[str] = set()
+        dup_inline_union: set[str] = set()
+        for entry in by_skill.get(skill_id, []):
+            engage_always_union.update(entry.get("engage_always", []))
+            dup_inline_union.update(entry.get("dup_inline_tags", []))
+        # The set that would be flagged absent any allowlist waiver.
+        would_need_waiver = forceable - engage_always_union - dup_inline_union
+        skill_allowlist = allowlist.get(skill_id, {})
+        allowlist_waived = set(skill_allowlist)
+        flagged = sorted(would_need_waiver - allowlist_waived)
+        skills[skill_id] = {
+            "skill_id": skill_id,
+            "forceable": sorted(forceable),
+            "engage_always": sorted(engage_always_union),
+            "waived_class_tag": sorted(forceable & dup_inline_union),
+            "waived_allowlist": sorted(would_need_waiver & allowlist_waived),
+            "flagged": flagged,
+        }
+        if flagged:
+            flagged_skills[skill_id] = flagged
+        for ref, reason in skill_allowlist.items():
+            if ref not in would_need_waiver:
+                stale_allowlist.append({"skill_id": skill_id, "ref": ref, "reason": reason})
+
+    report = {
+        "skills": skills,
+        "not_yet_covered": sorted(set(by_skill) - set(extractors)),
+        "stale_allowlist": stale_allowlist,
+    }
+    if flagged_skills:
+        # floor-addition-restraint: keep (new blocking floor) — an unforced
+        # conditional required-read lets a planner-branch regression escape
+        # every eval (north-star "wrong answer escapes"); advisory rejected:
+        # advisory output has a recorded ignored-precedent (undeclared_on_disk);
+        # the classTag+allowlist waiver channel bounds authoring churn; goal
+        # 2026-07-08-retro-informed-improvement-5pack Slice V.
+        details = "; ".join(f"`{skill_id}`: {refs}" for skill_id, refs in sorted(flagged_skills.items()))
+        raise ValidationError(
+            "conditional-reads cross-check: planner-forceable reference(s) with no engage-always "
+            f"scenario coverage and no classTag/allowlist waiver: {details}. Fix by either adding a "
+            "scenario that engage-always forces the reference, or adding a waiver line to "
+            f"{ALLOWLIST_PATH} with a reason."
+        )
+    return report

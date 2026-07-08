@@ -1,0 +1,9 @@
+# Format: <skill-id>:<reference-basename>:<reason>
+# Each entry waives ONE planner-forceable reference (see
+# PLANNER_FORCED_READ_EXTRACTORS in scripts/claim_fidelity_lib.py) from the
+# conditional-reads cross-check when no eval scenario forces it via an
+# engage-always referenceEngagement and it carries no DUP/INLINE classTag
+# either. A waiver that is no longer needed is surfaced as a stale-allowlist
+# advisory, never silently dropped.
+
+handoff:adapter-contract.md:adapter-health branch (adapter missing/warned/invalid) is genuinely hard to fixture healthy -- decided waiver+reason 2026-07-08, not a new scenario (goal 5pack Slice V)
