@@ -190,8 +190,9 @@ the operator's prose ("실구현은 다음 세션").
 
 ## Operator Decision Queue
 
-Two operator decisions are queued open at closeout (both deferred because
-local slices proceeded safely without them):
+Both queued decisions were RESOLVED by the operator on 2026-07-08 (post-close
+discussion); the push/remote-CI lane was explicitly HELD by the operator and
+carries in the handoff as Next Session item 1:
 
 - Decision: exact wording/scope of the #371 partial-resolution comment (names
   what Tier 1 fixes, what stays upstream at #1334)
@@ -201,6 +202,9 @@ local slices proceeded safely without them):
 - Unblock action: approve the drafted comment text below (drafted at Slice B,
   cf7e6f47) and post via `gh issue comment 371`
 - Revisit trigger: goal closeout (Slice B landed; draft ready)
+- RESOLVED 2026-07-08: approved as drafted and POSTED —
+  corca-ai/charness#371 issuecomment-4911427366; readback confirmed the
+  comment body and issue state OPEN (no state change, boundary honored)
 - Draft: "**Partial resolution — Tier 1 landed (cf7e6f47).** Charness now
   installs SIGTERM/SIGINT handlers plus an `atexit` hook around the
   `acquire_public_url.py` gather-browser path: a module-level live-session
@@ -221,6 +225,10 @@ local slices proceeded safely without them):
   needs a call
 - Unblock action: yes/no at goal closeout
 - Revisit trigger: goal closeout handoff refresh
+- RESOLVED 2026-07-08: YES — queued as `docs/handoff.md` Next Session item 2
+  (post-audit delta scope, mutation-coverage proof + fresh-eye review per
+  deletion, never headroom-pressured). External quality-skill dogfood on
+  another repo was discussed and explicitly NOT queued (revisit on demand).
 
 ## Coordination Cues
 

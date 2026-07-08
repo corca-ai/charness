@@ -31,21 +31,24 @@
 
 ## Next Session
 
-1. **Operator lane first**: push `main` + one remote CI pass over the bundled
-   state; approve/post the queued #371 partial-resolution comment (draft in
-   the goal artifact's `## Operator Decision Queue`); decide the test-debt
-   rotation placement (same queue, item 2).
-2. **#410 remaining handoff flips (capture-gated, ~1.7-2.4M tokens each).**
+1. **Operator lane**: push `main` + one remote CI pass over the bundled state
+   (held 2026-07-08 by operator; local proof complete). The #371
+   partial-resolution comment is POSTED (issuecomment-4911427366).
+2. **Test-debt rotation (standing, value-motivated)**: sweep the
+   post-2026-07-03-audit test-LOC delta (~+3.2k) for consolidation; every
+   deletion needs mutation-coverage proof + fresh-eye review; never
+   headroom-pressured (ratio is advisory-only by decision).
+3. **#410 remaining handoff flips (capture-gated, ~1.7-2.4M tokens each).**
    pickup / pickup-ambiguous (`workflow-trigger.md`) need a stable closeout
    token designed first; `spill-targets.md` needs its owning-path routing
    table inlined. Method + queue:
    [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
-3. **#413 setup/greenfield** RCF→RSF — needs a fresh-sandbox capture (charness
+4. **#413 setup/greenfield** RCF→RSF — needs a fresh-sandbox capture (charness
    detects NORMALIZE in-repo, not GREENFIELD; substance judge already exists).
-4. **#371 residuals (open by decision)** — upstream
+5. **#371 residuals (open by decision)** — upstream
    `vercel-labs/agent-browser#1334` owns the ceal raw tool-call path; Tier 1b
    (profile-dir lease) is gated on a pinned-CLI capability probe.
-5. **81-site argparse-help debt (run LAST).** Default-off; baseline rotation
+6. **81-site argparse-help debt (run LAST).** Default-off; baseline rotation
    runs alone. Trip-wire **D33**: `run_skill_efficiency_ab.py` at 479/480 —
    extract a module before appending.
 
@@ -54,7 +57,7 @@
 - **Ratio pin RESOLVED (Slice R, 2026-07-08)**: the live hard bound is gone;
   posture is advisory-only by decision (no ratchet — re-Goodharts). Test-debt
   reduction is a value-motivated standing rotation item scoped to the
-  post-2026-07-03-audit delta — placement awaits the queued operator call.
+  post-2026-07-03-audit delta — queued as Next Session item 2 (2026-07-08).
 - **D34/D35 DECLINED** (2026-07-04) — disclosed presence-floor residuals;
   reopen only if the recorded failure materializes. See
   [deferred-decisions.md](./deferred-decisions.md).
