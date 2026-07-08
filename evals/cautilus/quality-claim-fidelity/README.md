@@ -38,7 +38,7 @@ source-coverage; this one asks whether one skill's real behavior matches what it
 out=/tmp/quality-claim-fidelity
 scripts/agent-runtime/capture-skill-run.sh \
   --ref HEAD --invocation "/charness:quality" --out-dir "$out"
-# prints SESSION_TREE=<dir>
+# prints SESSION_TREE=<dir> and RUN_BASE=<dir>
 
 # 2. score the run into an observed packet (full tree -> claim matchers + coverage)
 node scripts/agent-runtime/build-skill-execution-observation.mjs \
@@ -57,6 +57,12 @@ Step 3 runs `cautilus evaluate observation`, which is eval-only/ask-before-run:
 operator authorizes the run. Steps 1–2 are host-owned and need no gate; step 2's
 observed packet already carries the deterministic claim/coverage verdict, so the
 cautilus step is the recommendation rollup + budget degrade, not the evidence.
+
+Cleanup: run-visible state lives under `RUN_BASE` (a neutral mktemp dir, #423),
+not under `$out`: `git worktree remove --force "$(cat "$out/run-base.txt")"/<repo-basename>`
+then `rm -rf "$(cat "$out/run-base.txt")" "$out"`. Step 2's stream auto-resolve
+follows the run-base symlink `capture-skill-run.sh` leaves behind; pass
+`--stream "$out/stream.jsonl"` explicitly once the run base is already gone.
 
 ## 2026-06-22 baseline
 

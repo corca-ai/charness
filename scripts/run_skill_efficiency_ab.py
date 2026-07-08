@@ -47,7 +47,6 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import statistics
 import subprocess
 import sys
 import tempfile
@@ -56,6 +55,11 @@ from pathlib import Path
 import grade_skill_outcome
 import skill_outcome_wiring as outcome
 
+# relative_deltas: not called directly here (build_report uses it internally) but re-exported
+# ("as" re-import) because tests exercise it via this module's attribute (ab.relative_deltas).
+from skill_efficiency_report import aggregate_metrics, build_report, ranks_worse
+from skill_efficiency_report import relative_deltas as relative_deltas
+
 from runtime_bootstrap import repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -63,126 +67,11 @@ AGENT_RUNTIME = Path("scripts/agent-runtime")
 CAPTURE_SCRIPT = AGENT_RUNTIME / "capture-skill-run.sh"
 OBSERVE_SCRIPT = AGENT_RUNTIME / "build-skill-execution-observation.mjs"
 
-# Metrics aggregated and compared across runs. "lower is leaner" for every key
-# here — the comparison reads a positive delta as the arm spending more.
-METRIC_KEYS = (
-    "total_tokens",
-    "output_tokens",
-    "duration_ms",
-    "tool_count",
-    "waste_smell_count",
-    "output_lines",
-)
 
-
-# --- pure aggregation / comparison (unit-tested) --------------------------------
-
-
-def aggregate_metrics(runs: list[dict]) -> dict:
-    """Per-metric mean/median/min/max + pass_rate across one arm's runs."""
-    agg: dict = {"n": len(runs)}
-    if runs:
-        passed = sum(1 for r in runs if r.get("outcome") == "passed")
-        agg["pass_rate"] = round(passed / len(runs), 3)
-    else:
-        agg["pass_rate"] = None
-    for key in METRIC_KEYS:
-        vals = [r[key] for r in runs if isinstance(r.get(key), (int, float)) and not isinstance(r.get(key), bool)]
-        if not vals:
-            agg[key] = None
-            continue
-        agg[key] = {
-            "mean": round(statistics.mean(vals), 1),
-            "median": statistics.median(vals),
-            "min": min(vals),
-            "max": max(vals),
-            "n": len(vals),
-        }
-    return agg
-
-
-def relative_deltas(baseline_agg: dict, arm_agg: dict) -> dict:
-    """Percent change of each metric's mean vs the baseline arm (None when either
-    side is missing or the baseline mean is zero)."""
-    out: dict = {}
-    for key in METRIC_KEYS:
-        base = baseline_agg.get(key)
-        arm = arm_agg.get(key)
-        if not isinstance(base, dict) or not isinstance(arm, dict) or not base.get("mean"):
-            out[key] = None
-            continue
-        out[key] = round((arm["mean"] - base["mean"]) / base["mean"] * 100.0, 1)
-    return out
-
-
-def ranks_worse(lean_metrics: dict, wasteful_metrics: dict, keys: tuple[str, ...]) -> list[str]:
-    """Keys on which `wasteful` is NOT strictly greater than `lean`. Empty list
-    means the instruments correctly ranked the wasteful run worse on every key —
-    the self-test gate."""
-    failed = []
-    for key in keys:
-        lean = lean_metrics.get(key)
-        waste = wasteful_metrics.get(key)
-        if not isinstance(lean, (int, float)) or not isinstance(waste, (int, float)) or not waste > lean:
-            failed.append(key)
-    return failed
-
-
-def _fmt_metric(stat: dict | None) -> str:
-    if not isinstance(stat, dict):
-        return "n/a"
-    return f"{stat['mean']:g} [{stat['min']:g}–{stat['max']:g}]"
-
-
-def _fmt_scalar(value: object) -> str:
-    return "n/a" if value is None else str(value)
-
-
-def build_report(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = None) -> str:
-    """Markdown comparison: per-arm mean [min–max] table + deltas vs the first arm,
-    plus the advisory outcome-grade section when an eval has an assertion set."""
-    arms = list(agg_by_arm.keys())
-    lines = [
-        f"# Efficiency A/B — {config.get('name', 'unnamed')}",
-        "",
-        "Advisory efficiency comparison (NOT a pass/fail verdict). Lower is leaner.",
-        "",
-        "## Per-arm (mean [min–max])",
-        "",
-        "| metric | " + " | ".join(arms) + " |",
-        "| --- | " + " | ".join(["---"] * len(arms)) + " |",
-        "| n | " + " | ".join(str(agg_by_arm[a]["n"]) for a in arms) + " |",
-        "| pass_rate | " + " | ".join(_fmt_scalar(agg_by_arm[a]["pass_rate"]) for a in arms) + " |",
-    ]
-    for key in METRIC_KEYS:
-        row = f"| {key} | " + " | ".join(_fmt_metric(agg_by_arm[a].get(key)) for a in arms) + " |"
-        lines.append(row)
-    if len(arms) >= 2:
-        baseline = arms[0]
-        lines += ["", f"## Deltas vs `{baseline}` (mean %, + = spends more)", ""]
-        others = arms[1:]
-        lines.append("| metric | " + " | ".join(others) + " |")
-        lines.append("| --- | " + " | ".join(["---"] * len(others)) + " |")
-        for key in METRIC_KEYS:
-            cells = []
-            for arm in others:
-                delta = relative_deltas(agg_by_arm[baseline], agg_by_arm[arm]).get(key)
-                cells.append("n/a" if delta is None else f"{delta:+g}%")
-            lines.append(f"| {key} | " + " | ".join(cells) + " |")
-    section = outcome.render_outcome_section(outcome_by_arm) if outcome_by_arm else ""
-    if section:
-        lines.append(section)
-    lines += [
-        "",
-        "## Honest caveats",
-        "",
-        f"- n={config.get('runs')} per arm — read the [min–max] range, not just the mean; small-n means overlap is common.",
-        "- output_lines is best-effort (added lines in the worktree vs the capture base ref, including any in-run commit's slice).",
-        "- No LLM judge yet (over-build / completeness deferred) — these are process + size metrics only.",
-        "- Cross-ref arms hold project CLAUDE.md / find-skills routing constant, so a delta is the ref difference. A same-ref 'baseline' plain prompt still runs in the charness worktree and can auto-route to the skill (CONTAMINATION) — verify via each arm's Skill/tool trace before trusting a baseline-vs-skill delta.",
-        "",
-    ]
-    return "\n".join(lines)
+# --- pure aggregation / comparison (unit-tested) ---------------------------------
+# Moved to skill_efficiency_report.py (length cap, D33): aggregate_metrics,
+# relative_deltas, ranks_worse, build_report (+ METRIC_KEYS, _fmt_metric,
+# _fmt_scalar) live there now and are imported above.
 
 
 # --- live orchestration (capture -> observe -> metrics) -------------------------
@@ -355,10 +244,20 @@ def run_one(repo_root: Path, ref: str, invocation: str, spec_path: Path, out_dir
 
 
 def _cleanup_run(repo_root: Path, out_dir: Path) -> None:
+    # out_dir/worktree is a symlink into the neutral run base (#423); resolve it for
+    # `git worktree remove`, then drop the whole run base recorded in run-base.txt.
+    worktree = out_dir / "worktree"
+    target = worktree.resolve() if worktree.exists() else worktree
     subprocess.run(
-        ["git", "-C", str(repo_root), "worktree", "remove", "--force", str(out_dir / "worktree")],
+        ["git", "-C", str(repo_root), "worktree", "remove", "--force", str(target)],
         capture_output=True, text=True, check=False,
     )
+    try:
+        run_base = Path((out_dir / "run-base.txt").read_text(encoding="utf-8").strip())
+        if str(run_base) not in ("", ".") and run_base.is_dir():
+            shutil.rmtree(run_base, ignore_errors=True)
+    except OSError:
+        pass
     shutil.rmtree(out_dir, ignore_errors=True)
 
 

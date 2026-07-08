@@ -344,11 +344,11 @@ Reopen trigger:
 ### D33. Split run_skill_efficiency_ab.py at the next module-growing change
 
 - Question: [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py) sits at 479 tokei code lines (hard limit 480, **1 left** after the D32 summary-path fix added the `--stream` observe arg). Should it be split now or at the next change?
-- Current choice: Defer the split ONE more time — but the runway is gone. The file is still a single cohesive harness (aggregate/compare → live orchestration → self-test → CLI), an honest cohesive unit near its limit, not a grab-bag to split reactively; splitting mid-bugfix (twice now) would be the reactive churn the length advisory itself warns against. The **next** code-line addition exceeds the hard limit, so the following change MUST extract a module first (candidate seam: the live-capture orchestration `run_one`/`_capture_base`/`preserve_outputs` block into a `skill_capture.py` sibling), not append.
+- Current choice: Defer the split ONE more time — but the runway is gone. The file is still a single cohesive harness (aggregate/compare → live orchestration → self-test → CLI), an honest cohesive unit near its limit, not a grab-bag to split reactively; splitting mid-bugfix (twice now) would be the reactive churn the length advisory itself warns against. The **next** code-line addition exceeds the hard limit, so the following change MUST extract a module first (candidate seam: the live-capture orchestration `run_one`/`_capture_base`/`preserve_outputs` block into a `skill_capture.py` sibling), not append. RESOLVED 2026-07-09 by the #423 slice: the pure aggregation/report section was extracted to [scripts/skill_efficiency_report.py](../scripts/skill_efficiency_report.py) (384 code lines remain), a different seam than the self-test candidate named below — chosen because it was the cleanest pure boundary and test-compat re-exports kept the harness intact.
 - Why now: Splitting touches the custom `load_script_module` test harness and risks a circular import between the main module and an extracted self-test module (`selftest` imports `ranks_worse`/`_metrics_from_packet`; `main` imports `selftest`) — real risk that does not belong in a correctness bugfix.
 - Extraction candidate: the self-test section (`_event`/`_result`/`_ts`/`_write_lean`/`_write_wasteful`/`_dump`/`_SELFTEST_SPEC`/`SELFTEST_KEYS`/`_observe`/`selftest`, ~100 lines) into a sibling module, importing the shared pure helpers explicitly.
 - Impact surfaces: [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py), [tests/test_skill_efficiency_ab.py](../tests/test_skill_efficiency_ab.py), [scripts/check_python_lengths.py](../scripts/check_python_lengths.py) warn band.
-- Reopen trigger: The next change that adds net code lines to this file (it will hard-fail the 480 gate), or the self-test section is touched for another reason.
+- Reopen trigger: The next change that adds net code lines to this file (it will hard-fail the 480 gate), or the self-test section is touched for another reason. Fired and satisfied on 2026-07-09: the #423 slice added net code lines and the 480 gate hard-failed, resolved by the extraction above.
 
 ### D34. Announcement delivery `confirmed` accepts a same-observer self-attestation
 
@@ -391,6 +391,14 @@ Reopen trigger:
   and skips the behavioral/critique floors with no reviewer noticing, or the shared close
   advisory is touched for another reason. Orphan baseline fingerprints (`3d4af4`, `d38941`)
   left by the additive scoped-accept are the known D30 residual churn, not a D36 regression.
+
+### D37. Post-capture identity-leak assertion in the scoring path
+
+- Question: should the scoring path ([`build-skill-execution-observation.mjs`](../scripts/agent-runtime/build-skill-execution-observation.mjs) / [`run_skill_efficiency_ab.py`](../scripts/run_skill_efficiency_ab.py) outcome grading) hard-assert that the captured transcript contains no eval-identity tokens (out-dir basename, grader filenames), rather than relying on the capture script's advisory stderr canary?
+- Current choice: DEFER. #423 closed the leak structurally (neutral mktemp run base; behavioral pytest executes the script and asserts the invariant from outside) and the in-script canary is advisory by floor-addition restraint (promote only on recorded recurrence). A scoring-path floor would need a token list contract and risks false-fires on legitimate repo content.
+- Why now: bundling a new blocking floor into the leak fix is the validator-post-hoc-churn reflex; the behavioral test covers the regression class the floor would target.
+- Impact surfaces: [capture-skill-run.sh](../scripts/agent-runtime/capture-skill-run.sh) (canary), [build-skill-execution-observation.mjs](../scripts/agent-runtime/build-skill-execution-observation.mjs), [run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py), [test_skill_efficiency_ab.py](../tests/test_skill_efficiency_ab.py) (behavioral test).
+- Reopen trigger: a capture is observed reasoning from its eval identity DESPITE the neutral run base (canary fires or transcript shows it), or the scoring path is reworked for another reason.
 
 ## Next Action Contract
 

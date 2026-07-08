@@ -829,10 +829,11 @@ to stderr.
 requiredSummaryFragments match the run's CLOSEOUT (final parent assistant text).
 The on-disk session tree can drop that final flushed block on a committing/clean
 run (#409 Gap 2), so the summary is read from the authoritative capture stdout:
-pass --stream <stream.jsonl>, or omit it and the capture harness's sibling
-stream.jsonl (out-dir/stream.jsonl, three levels up from a config/projects/<proj>
-tree dir) is auto-resolved. The tree still owns coverage/trace/tokens. Synthetic
-trees with no sibling stream fall back to the tree summary unchanged.
+pass --stream <stream.jsonl>, or omit it and the capture run base's stream.jsonl
+(three levels up from the config/projects/<proj> tree; capture-skill-run.sh leaves
+a post-run symlink there — the durable copy lives in out-dir, #423) is
+auto-resolved. The tree still owns coverage/trace/tokens. Synthetic trees with no
+sibling stream fall back to the tree summary unchanged.
 
 It also writes a per-tool-call efficiency trace (\`trace-digest.jsonl\`, default
 next to --output) and runs a deterministic, advisory waste lens, printing any
@@ -881,8 +882,9 @@ export function runCli(argv, { readFile = readJson } = {}) {
 	}
 	const events = parseEventsFromFiles(files);
 	// Authoritative closeout source (#409 Gap 2): prefer an explicit --stream, else
-	// auto-resolve the capture harness's sibling stream.jsonl (out-dir/stream.jsonl,
-	// three levels up from the config/projects/<proj> session tree). The on-disk tree
+	// auto-resolve the capture run base's stream.jsonl (three levels up from the
+	// config/projects/<proj> session tree; capture-skill-run.sh leaves a post-run
+	// symlink there — the durable copy lives in out-dir, #423). The on-disk tree
 	// can drop the final flushed closeout block that requiredSummaryFragments match
 	// against, so a tree-only summary is a false MISS on a passing run.
 	let streamPath = options.stream ? resolve(options.stream) : null;

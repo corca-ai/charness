@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -257,6 +258,93 @@ def test_capture_script_run_cwd_defaults_to_worktree_and_guards_missing_dir() ->
     assert 'cd "$run_dir"' in text, "the captured run must execute in run_dir, not a hardcoded cwd"
 
 
+def test_capture_script_keeps_run_visible_state_out_of_out_dir() -> None:
+    # Recurrence guard for #423: a descriptive out-dir name (e.g.
+    # "handoff-pickup-slice9-2026-07-09") must never appear in any path the captured
+    # agent can see — its cwd, its worktree, its config dir, its hooks dir, or the
+    # redirect targets a `readlink /proc/self/fd/1` could expose. All run-visible
+    # state must live under a neutral `mktemp -d` base instead.
+    text = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(encoding="utf-8")
+    assert 'run_base="$(mktemp -d)"' in text
+    assert 'wt="$run_base/' in text and 'wt="$out_dir/worktree"' not in text
+    assert 'cfg="$run_base/config"' in text and 'cfg="$out_dir/config"' not in text
+    assert 'empty_hooks="$run_base/empty-hooks"' in text and 'empty_hooks="$out_dir/empty-hooks"' not in text
+    assert '> "$run_base/stream.jsonl"' in text, "the captured run's redirect target must be neutral"
+    assert 'ln -sfn "$wt" "$out_dir/worktree"' in text, "grader-side exposure happens via a post-run symlink"
+
+
+def test_capture_script_refuses_run_cwd_under_out_dir() -> None:
+    # #423: --run-cwd under --out-dir would let the captured run read grader
+    # siblings (justification.md) via `..` and see its own eval identity in cwd.
+    text = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(encoding="utf-8")
+    assert '--run-cwd must not live under --out-dir' in text
+    assert "warning: --run-cwd path contains the out-dir name" in text
+
+
+def test_capture_script_behavioral_no_identity_in_run_view(tmp_path: Path) -> None:
+    """Executes the real (fixed) capture script end-to-end with a PATH-shimmed fake
+    `claude`, and asserts the #423 no-identity-leak invariant from OUTSIDE the script —
+    string tripwires alone stay green through a refactor that moves state back."""
+    repo = tmp_path / "srcrepo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    (repo / "seed.txt").write_text("s\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+
+    shim_bin = tmp_path / "bin"
+    shim_bin.mkdir()
+    claude_shim = shim_bin / "claude"
+    claude_shim.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '{\"cwd\":\"%s\",\"cfg\":\"%s\",\"hooks\":\"%s\",\"fd1\":\"%s\"}\\n' "
+        '"$PWD" "$CLAUDE_CONFIG_DIR" "$GIT_CONFIG_VALUE_0" "$(readlink /proc/$$/fd/1)"\n'
+        "ls .. 1>&2\n"
+        'mkdir -p "$CLAUDE_CONFIG_DIR/projects/fake-proj"\n',
+        encoding="utf-8",
+    )
+    claude_shim.chmod(0o755)
+
+    # Grader-sibling layout that pre-#423 leaked via `..` from the run cwd: a
+    # justification.md both next to out_dir's contents and inside out_dir itself.
+    out_dir = tmp_path / "descriptive-eval-name-slice9"
+    out_dir.mkdir()
+    (tmp_path / "justification.md").write_text("grading notes\n", encoding="utf-8")
+    (out_dir / "justification.md").write_text("grading notes\n", encoding="utf-8")
+
+    neutral_tmp = tmp_path / "neutral-tmp"
+    neutral_tmp.mkdir()
+
+    result = subprocess.run(
+        ["bash", str(ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh"),
+         "--ref", "HEAD", "--invocation", "x", "--out-dir", str(out_dir),
+         "--repo-root", str(repo), "--timeout-sec", "60"],
+        env={**os.environ, "PATH": f"{shim_bin}:{os.environ['PATH']}", "TMPDIR": str(neutral_tmp)},
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, f"stdout={result.stdout!r} stderr={result.stderr!r}"
+
+    record = json.loads((out_dir / "stream.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    for value in record.values():
+        assert "descriptive-eval-name-slice9" not in value, record
+
+    assert "justification.md" not in (out_dir / "stderr.log").read_text(encoding="utf-8")
+    assert (out_dir / "stream.jsonl").is_file() and not (out_dir / "stream.jsonl").is_symlink()
+
+    run_base = Path((out_dir / "run-base.txt").read_text(encoding="utf-8").strip())
+    assert (run_base / "stream.jsonl").is_symlink()
+
+    ab._cleanup_run(repo, out_dir)
+    assert not run_base.exists()
+    assert not out_dir.exists()
+    worktree_list = subprocess.run(
+        ["git", "-C", str(repo), "worktree", "list"], capture_output=True, text=True, check=True,
+    ).stdout.strip().splitlines()
+    assert len(worktree_list) == 1
+
+
 def _commit_base_then_slice(tmp_path: Path, slice_files: dict[str, str]) -> tuple[Path, str]:
     """A git worktree with a base commit, then a SECOND commit (the run's slice) on top —
     the impl-style committing run that advances HEAD past the checkout base (#409 Gap 1).
@@ -497,4 +585,20 @@ def test_cleanup_run_removes_the_out_dir(tmp_path: Path, monkeypatch: pytest.Mon
     (out_dir / "worktree").mkdir(parents=True)
     monkeypatch.setattr(ab.subprocess, "run", lambda cmd, **_k: _completed(cmd, 0))
     ab._cleanup_run(tmp_path, out_dir)
+    assert not out_dir.exists()
+
+
+def test_cleanup_run_removes_neutral_run_base(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # #423: out_dir/worktree is now a symlink into a neutral mktemp run base recorded
+    # in run-base.txt; cleanup must remove that whole run base, not just out_dir.
+    out_dir = tmp_path / "work" / "a__0"
+    out_dir.mkdir(parents=True)
+    base = tmp_path / "neutral"
+    (base / "repo").mkdir(parents=True)
+    (base / "repo" / "marker.txt").write_text("x\n", encoding="utf-8")
+    (out_dir / "run-base.txt").write_text(str(base), encoding="utf-8")
+    (out_dir / "worktree").symlink_to(base / "repo")
+    monkeypatch.setattr(ab.subprocess, "run", lambda cmd, **_k: _completed(cmd, 1, stderr="not a worktree"))
+    ab._cleanup_run(tmp_path, out_dir)
+    assert not base.exists()
     assert not out_dir.exists()
