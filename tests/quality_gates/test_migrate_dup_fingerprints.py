@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import shutil
 from pathlib import Path
 
 import pytest
@@ -154,6 +156,10 @@ def test_review_migration_skips_non_dict_entries_defensively() -> None:
     assert result["entries"] == [] and result["dropped_ids"] == []
 
 
+@pytest.mark.skipif(
+    shutil.which("nose") is None and not os.environ.get("NOSE_BIN"),
+    reason="nose binary required for the live-scan CLI dry-run pin",
+)
 def test_cli_dry_run_reports_plan_without_writing(monkeypatch, capsys) -> None:
     # In-process pin of the CLI surface (argv/stdout/exit contract) in dry-run
     # mode: it must print the collision check and per-artifact plan and write
