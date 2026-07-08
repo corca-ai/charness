@@ -23,6 +23,11 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts import check_mutation_score_summary_lib as mutation_score_summary  # noqa: E402
+from scripts.mutation_baseline_abort_lib import (  # noqa: E402
+    DEFAULT_BASELINE_ABORT_MARKER,
+    read_baseline_abort_marker,
+    resolve_baseline_abort_marker,
+)
 from scripts.mutation_sample_manifest_score_lib import (  # noqa: E402
     changed_scope_gap_section_lines,
     sample_manifest_scope_gap_details,
@@ -58,6 +63,12 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("reports/mutation/sample.json"),
         help="Path to the sample manifest emitted by sample_mutation_files.py.",
+    )
+    parser.add_argument(
+        "--baseline-abort-marker",
+        type=Path,
+        default=DEFAULT_BASELINE_ABORT_MARKER,
+        help="Path to the coverage-baseline abort marker emitted by sample_mutation_files.py.",
     )
     return parser.parse_args()
 
@@ -226,6 +237,22 @@ def mutation_file_completion(
     return not incomplete, incomplete
 
 
+def _baseline_abort_summary_lines(marker: dict) -> list[str]:
+    lines = [
+        "# Mutation Testing Summary",
+        "",
+        "- Status: **FAIL**",
+        "- Blocking signal: coverage baseline pytest failed before mutation sampling; no mutants ran.",
+    ]
+    failing_nodeids = marker.get("failing_nodeids") or []
+    if failing_nodeids:
+        lines.append("- Failing baseline tests:")
+        lines.extend(f"  - `{nodeid}`" for nodeid in failing_nodeids)
+    else:
+        lines.extend(["", "```", *(marker.get("log_tail") or []), "```"])
+    return lines
+
+
 def _read_timeout_marker(marker_path: Path) -> tuple[bool, int | None]:
     if not marker_path.is_file():
         return False, None
@@ -241,10 +268,38 @@ def _read_timeout_marker(marker_path: Path) -> tuple[bool, int | None]:
     return timed_out, seconds
 
 
+def _marker_is_stale(marker_path: Path, stats_path: Path) -> bool:
+    """Return True when `stats_path` is at least as fresh as `marker_path`.
+
+    Locally `reports/mutation/` persists across runs, so an abort marker left
+    over from an earlier aborted attempt must not mask the results of a
+    newer mutation run that produced a fresher stats file.
+    """
+    if not stats_path.is_file():
+        return False
+    return stats_path.stat().st_mtime >= marker_path.stat().st_mtime
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     stats_path = args.stats if args.stats.is_absolute() else (repo_root / args.stats)
+    baseline_abort_marker_path = resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
+    marker = read_baseline_abort_marker(baseline_abort_marker_path)
+    if marker is not None and not _marker_is_stale(baseline_abort_marker_path, stats_path):
+        config = load_mutation_config(repo_root)
+        if config is not None:
+            _score_break, summary_path = config
+            summary_path.parent.mkdir(parents=True, exist_ok=True)
+            summary_path.write_text(
+                "\n".join(_baseline_abort_summary_lines(marker)) + "\n", encoding="utf-8"
+            )
+            sys.stderr.write(
+                "mutation coverage baseline pytest failed before mutation sampling; "
+                "see summary for failing nodeids.\n"
+            )
+            return 2
+
     if not stats_path.is_file():
         sys.stderr.write(
             f"mutation stats not found at {stats_path}. Run `cosmic-ray dump` first.\n"

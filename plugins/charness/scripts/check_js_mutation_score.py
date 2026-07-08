@@ -12,6 +12,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.mutation_baseline_abort_lib import (  # noqa: E402
+    DEFAULT_BASELINE_ABORT_MARKER,
+    read_baseline_abort_marker,
+    resolve_baseline_abort_marker,
+)
 from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 
 
@@ -19,6 +24,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--report-json", type=Path, default=Path("reports/mutation/stryker-js.json"))
+    parser.add_argument(
+        "--baseline-abort-marker",
+        type=Path,
+        default=DEFAULT_BASELINE_ABORT_MARKER,
+        help="Path to the coverage-baseline abort marker emitted by sample_mutation_files.py.",
+    )
     return parser.parse_args()
 
 
@@ -98,15 +109,23 @@ def append_summary(summary_path: Path, metrics: dict[str, object], score_break: 
     summary_path.write_text(existing.rstrip() + "\n" + "\n".join(lines) + "\n", encoding="utf-8")
 
 
-def append_missing_report_summary(summary_path: Path, report_path: Path) -> None:
+def append_missing_report_summary(
+    summary_path: Path, report_path: Path, *, baseline_abort_marker: dict | None = None
+) -> None:
     lines = [
         "",
         "## StrykerJS Mutation Slice",
         "",
         "- Status: **FAIL** (StrykerJS JSON report missing)",
         f"- Missing report: `{report_path}`",
-        "- Blocking signal: JS mutation full mode did not produce a fresh JSON report.",
     ]
+    if baseline_abort_marker is not None:
+        lines.append(
+            "- Blocking signal: collateral — the sampler aborted on its coverage "
+            "baseline before JS mutation ran (see Mutation Testing Summary above)."
+        )
+    else:
+        lines.append("- Blocking signal: JS mutation full mode did not produce a fresh JSON report.")
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     existing = summary_path.read_text(encoding="utf-8") if summary_path.is_file() else ""
     summary_path.write_text(existing.rstrip() + "\n" + "\n".join(lines) + "\n", encoding="utf-8")
@@ -121,7 +140,9 @@ def main() -> int:
     score_break, summary_path = config
     report_path = args.report_json if args.report_json.is_absolute() else repo_root / args.report_json
     if not report_path.is_file():
-        append_missing_report_summary(summary_path, report_path)
+        baseline_abort_marker_path = resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
+        marker = read_baseline_abort_marker(baseline_abort_marker_path)
+        append_missing_report_summary(summary_path, report_path, baseline_abort_marker=marker)
         sys.stderr.write(f"StrykerJS report not found at {report_path}; failing JS mutation summary.\n")
         return 1
     metrics = summarize_report(report_path)

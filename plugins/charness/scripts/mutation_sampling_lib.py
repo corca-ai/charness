@@ -186,7 +186,17 @@ def run_test_coverage(
     clear_stale_coverage_data(data_file)
     command = coverage_run_command(test_command, data_file)
     env = coverage_subprocess_env(rcfile, sitecustomize_dir)
-    subprocess.run(command, cwd=repo_root, check=True, env=env)
+    # Captured (not streamed) so a failure can be inspected for failing nodeids
+    # by the caller; teed back to stdout/stderr to preserve CI step-log fidelity.
+    result = subprocess.run(
+        command, cwd=repo_root, check=False, env=env, capture_output=True, text=True
+    )
+    sys.stdout.write(result.stdout)
+    sys.stderr.write(result.stderr)
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            result.returncode, command, output=result.stdout, stderr=result.stderr
+        )
     combine_and_export_coverage(
         repo_root, rcfile, data_file, coverage_json, env, show_contexts=dynamic_context
     )

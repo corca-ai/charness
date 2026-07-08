@@ -46,3 +46,23 @@ def test_mutation_coverage_ignores_deleted_sources_outside_repo(tmp_path: Path) 
     payload = json.loads(coverage_json.read_text(encoding="utf-8"))
     assert "scripts/repo_target.py" in payload["files"]
     assert all("deleted_source.py" not in path for path in payload["files"])
+
+
+def test_run_test_coverage_failure_raises_with_captured_output(tmp_path: Path) -> None:
+    pytest.importorskip("coverage", reason="coverage package required for mutation coverage probe")
+    import subprocess
+
+    repo = tmp_path / "repo"
+    test_file = repo / "tests" / "test_failing_target.py"
+    test_file.parent.mkdir(parents=True)
+    test_file.write_text(
+        "def test_always_red() -> None:\n    assert False, 'armed'\n",
+        encoding="utf-8",
+    )
+
+    coverage_json = repo / "reports" / "mutation" / "coverage.json"
+    with pytest.raises(subprocess.CalledProcessError) as excinfo:
+        run_test_coverage(repo, "python3 -m pytest -q tests/test_failing_target.py", coverage_json)
+
+    combined = f"{excinfo.value.output or ''}{excinfo.value.stderr or ''}"
+    assert "test_always_red" in combined

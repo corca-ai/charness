@@ -19,6 +19,14 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.mutation_baseline_abort_lib import (  # noqa: E402
+    DEFAULT_BASELINE_ABORT_MARKER,
+    delete_stale_baseline_abort_marker,
+    log_tail_lines,
+    parse_failed_nodeids,
+    resolve_baseline_abort_marker,
+    write_baseline_abort_marker,
+)
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     classify_changed_sample_scope,
 )
@@ -162,6 +170,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Skip test-command coverage collection. Intended for narrow unit tests only.",
     )
+    parser.add_argument(
+        "--baseline-abort-marker",
+        type=Path,
+        default=DEFAULT_BASELINE_ABORT_MARKER,
+        help="Path to write when the coverage-baseline pytest run aborts sampling.",
+    )
     return parser.parse_args()
 
 
@@ -187,6 +201,7 @@ def select_eligible_for_mutation(
     coverage_json: Path,
     test_command: str,
     min_file_coverage: float,
+    baseline_abort_marker_path: Path,
 ) -> tuple[
     list[str],
     list[str],
@@ -198,9 +213,19 @@ def select_eligible_for_mutation(
     try:
         run_test_coverage(repo_root, test_command, coverage_json)
     except subprocess.CalledProcessError as exc:
-        raise SystemExit(
-            f"test-command coverage probe failed with exit {exc.returncode}: {test_command}"
-        ) from exc
+        combined_output = f"{exc.output or ''}{exc.stderr or ''}"
+        failing_nodeids = parse_failed_nodeids(combined_output)
+        write_baseline_abort_marker(
+            baseline_abort_marker_path,
+            exit_code=exc.returncode,
+            test_command=test_command,
+            failing_nodeids=failing_nodeids,
+            log_tail=[] if failing_nodeids else log_tail_lines(combined_output),
+        )
+        message = f"test-command coverage probe failed with exit {exc.returncode}: {test_command}"
+        if failing_nodeids:
+            message += "\nfailing nodeids:\n" + "\n".join(f"  - {nodeid}" for nodeid in failing_nodeids)
+        raise SystemExit(message) from exc
 
     covered_lines = load_covered_lines(repo_root, coverage_json)
     statement_lines = load_file_statement_lines(repo_root, coverage_json)
@@ -351,6 +376,8 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     config_path = args.config if args.config.is_absolute() else repo_root / args.config
+    baseline_abort_marker_path = resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
+    delete_stale_baseline_abort_marker(baseline_abort_marker_path)
     max_files = positive_int(os.environ.get("MUTATION_SAMPLE_MAX_FILES"), DEFAULT_MAX_FILES)
     changed_quota = min(
         positive_int(os.environ.get("MUTATION_SAMPLE_CHANGED_QUOTA"), DEFAULT_CHANGED_QUOTA),
@@ -378,6 +405,7 @@ def main() -> int:
         coverage_json=coverage_json,
         test_command=test_command,
         min_file_coverage=min_file_coverage,
+        baseline_abort_marker_path=baseline_abort_marker_path,
     )
     if not eligible:
         report_no_eligible(coverage_enabled, test_command)
