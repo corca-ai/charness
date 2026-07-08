@@ -16,14 +16,16 @@
   was ALREADY local (`38219d95`); the #421 proof targets are now covered
   (100% both files); the post-push judgment range `57af3d2b..HEAD` audits
   clean; 8 mutants killed, 8 accepted with empirical equivalence proofs.
-  #422 filed (gate misreports baseline-pytest aborts). `main` still ahead of
-  `origin/main`, **NOT pushed**.
+  #422 filed (gate misreports baseline-pytest aborts). `main` PUSHED to
+  origin same day (operator lane released).
 
 ## Next Session
 
-1. **Operator lane**: push `main`; the next scheduled mutation run
-   (`17 */12 * * *`) judges `57af3d2b..HEAD`, expected green, and
-   auto-closes #421 (machine-owned close; do not close manually).
+1. **Watch #421 auto-close**: `main` PUSHED 2026-07-08 (`4b266777`,
+   push-triggered Quality Core green). The next scheduled mutation run
+   (`17 */12 * * *` UTC) judges `57af3d2b..4b266777`, expected green, and
+   auto-closes #421 (machine-owned close; do not close manually). If red,
+   read step conclusions first (#422).
 2. **#420 close**: already resolved by Slice R (`6415175b`, advisory-only
    ratio); verify + resolution critique + comment/close via `issue`.
 3. **Test-debt rotation (standing)**: sweep the post-2026-07-03-audit
