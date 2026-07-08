@@ -1,0 +1,112 @@
+Good — `.githooks/` is committed and tracked. Let me check docs for how this hook is normally installed (setup script) and confirm the guard scan logic + existing test coverage before designing the proof.
+
+---
+
+Good, executable bit is preserved in git. Now let me write the proof packet before executing anything live.
+
+---
+
+Let me check the current `latest.md` ledger state and the proof-rules reference before writing the packet.
+
+---
+
+Now writing the proof packet as the durable record artifact before any live execution.
+
+---
+
+Proof packet written. Now running the existing local deterministic test coverage as the first success-criteria check.
+
+---
+
+All 72 existing local unit/integration tests pass. Now for the more rigorous check — a real `git commit` roundtrip in a disposable clone, since the live session's `core.hooksPath` is redirected away from `.githooks`.
+
+---
+
+`/tmp` and `/home` are different filesystems, hence the cross-device link error. I'll clone with `--no-hardlinks` instead, or place the clone under `/home`.
+
+---
+
+That command combined multiple risky-looking operations. Let me retry with a simpler, single-purpose command that stays in `/tmp` (avoiding the cross-device hardlink issue via `--no-hardlinks` instead of relocating outside `/tmp`), without any `rm -rf`.
+
+---
+
+Clone succeeded. Now configure the disposable clone's hooksPath and identity.
+
+---
+
+This is a real, session-wide finding: `GIT_CONFIG_COUNT`/`GIT_CONFIG_KEY_0`/`GIT_CONFIG_VALUE_0` env vars override `core.hooksPath` for *every* git invocation in this session, regardless of repo or clone — this looks like a deliberate sandbox safety measure, not something to route around. Let me update the proof packet to reflect this before proceeding, and adjust the roundtrip method to invoke the hook script directly (still against real staged diffs) rather than trying to defeat the override.
+
+---
+
+Now update the Non-Claims section to reflect this scoping precisely.
+
+---
+
+Proof packet updated. Now executing the roundtrip: stage a `#123` anchor in a portable skill file inside the disposable clone, then run `.githooks/pre-commit` directly against the real staged diff.
+
+---
+
+Mirror synced. Now re-run the pre-commit gate to see if it isolates the issue-anchor check.
+
+---
+
+Confirmed: the block traces exactly to my injected `#123` line (`skills/public/hotl/references/proof-rules.md:59`), not a pre-existing violation. Now the negative control — revert the anchor, re-sync, and confirm a clean pass.
+
+---
+
+My revert used `git checkout --` which restores from the index (already staged with the anchor), not HEAD — the anchor line is still present, contaminating the negative control. Let me hard-reset the disposable clone to HEAD (safe — it's a throwaway clone) and redo the clean edit properly.
+
+---
+
+Clean — working tree is back to HEAD, no leftover anchor or contamination. Now the proper negative control: a clean edit with no anchor.
+
+---
+
+Both directions confirmed: the guard blocks on the anchor and passes cleanly without it, with the mirror-drift confound properly isolated. Now cleaning up the disposable clone (my own scratch directory in `/tmp`, as declared in the proof packet).
+
+---
+
+The cleanup command was denied — I won't retry it. The leftover directory (`/tmp/hotl-anchor-guard-proof2.uYyYNO`, a disposable clone with two harmless test edits, no secrets) is low-risk and will clear on reboot; I'll note it in the closeout rather than force removal. Moving on to record the roundtrip evidence and finalize the ledger.
+
+---
+
+Now updating the proof packet with the executed results and writing the ledger entries.
+
+---
+
+Now appending the Executed Proof and Ledger Status sections.
+
+---
+
+Now updating the current-loop pointer `charness-artifacts/hotl/latest.md`.
+
+---
+
+Now committing the closeout artifacts.
+
+---
+
+Now let me also check the `latest.md` pointer format used by the prior closeout, and see the current `latest.md` state I already overwrote — I should verify I'm not losing useful pointer history.
+
+---
+
+Now let's commit this closeout work.
+
+---
+
+Closeout complete and committed (`188780cf`). Summary:
+
+**Loop Inventory** — Two distinct mechanisms exist for "issue-anchor guard": an edit-time PostToolUse hook (already verified in a prior loop, commit `45149187`, 2026-07-01) and the literal commit-time backstop (`.githooks/pre-commit` → `validate_skill_ergonomics.py`, gated by `portable_package_issue_anchor` in `.agents/quality-adapter.yaml`). This request names "pre-commit," which the prior closeout explicitly left unproven — this loop closes that specific gap.
+
+**Acceptance class** — Local-only deterministic test/roundtrip (proof rule 6). No external provider, credential, or listener involved.
+
+**Proof packet → Executed proof:**
+1. 72 existing unit tests green at HEAD.
+2. Found a hard sandbox constraint before spending any live budget: this session injects `GIT_CONFIG_COUNT`/`GIT_CONFIG_KEY_0`/`GIT_CONFIG_VALUE_0` that pin `core.hooksPath` to an empty directory for *every* git invocation, overriding even a disposable clone's local config — confirmed, not assumed, and deliberately **not** circumvented.
+3. Fell back to running `.githooks/pre-commit` directly (exact same argv) against real staged diffs in a disposable clone. First attempt hit a genuine confound (`staged-plugin-mirror-drift` fired before the anchor check) — fixed by syncing the plugin mirror, then re-ran.
+4. Positive case: `#123` anchor staged into a portable skill file → exit 1 at `validate-skill-ergonomics`, JSON readback pinpoints the exact injected line.
+5. Negative control: equivalent clean edit → exit 0, "ok".
+
+**Ledger status** — `verified`, scoped to "the gate script blocks/passes correctly against real staged diffs." Explicit non-claim: git's own hook-dispatch wiring (`git commit` → `.githooks/pre-commit`) was not exercised this session by design of the sandbox suppression, not a fixable gap.
+
+One residual: the disposable clone at `/tmp/hotl-anchor-guard-proof2.uYyYNO` couldn't be cleaned up — the `rm -rf` was denied — so it's left in place (harmless, will clear on reboot, or remove it yourself if you'd like). Full record: `charness-artifacts/hotl/2026-07-09-issue-anchor-precommit-guard-closeout.md`.

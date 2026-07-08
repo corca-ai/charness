@@ -20,7 +20,12 @@ set -euo pipefail
 
 usage() {
 	cat <<'EOF'
-Usage: capture-skill-run.sh --ref <git-ref> --invocation "/charness:quality" --out-dir <dir> [--repo-root <dir>] [--timeout-sec N]
+Usage: capture-skill-run.sh --ref <git-ref> --invocation "/charness:quality" --out-dir <dir> [--repo-root <dir>] [--timeout-sec N] [--run-cwd <dir>]
+
+--run-cwd runs the captured `claude -p` in <dir> instead of the worktree (the
+plugin still resolves from the worktree ref). Use for scenarios whose target
+repo must NOT be charness — e.g. setup's greenfield arm on a fresh sandbox
+repo. The caller owns creating <dir> (git init etc.) and its cleanup.
 
 Writes under <out-dir>:
   worktree/            the throwaway checkout at <git-ref>
@@ -36,7 +41,7 @@ Default timeout: 1200s. The caller owns cleanup of <out-dir> and the worktree.
 EOF
 }
 
-ref=""; invocation=""; out_dir=""; repo_root=""; timeout_sec=1200
+ref=""; invocation=""; out_dir=""; repo_root=""; timeout_sec=1200; run_cwd=""
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--ref) ref="${2:-}"; shift 2 ;;
@@ -44,6 +49,7 @@ while [[ $# -gt 0 ]]; do
 		--out-dir) out_dir="${2:-}"; shift 2 ;;
 		--repo-root) repo_root="${2:-}"; shift 2 ;;
 		--timeout-sec) timeout_sec="${2:-}"; shift 2 ;;
+		--run-cwd) run_cwd="${2:-}"; shift 2 ;;
 		-h|--help) usage; exit 0 ;;
 		*) echo "Unknown argument: $1" >&2; usage >&2; exit 1 ;;
 	esac
@@ -101,9 +107,11 @@ json.dump(
 )
 PY
 
-echo "capture: ref=$ref invocation=$invocation timeout=${timeout_sec}s" >&2
+run_dir="${run_cwd:-$wt}"
+[[ -d "$run_dir" ]] || { echo "--run-cwd dir does not exist: $run_dir" >&2; exit 1; }
+echo "capture: ref=$ref invocation=$invocation timeout=${timeout_sec}s cwd=$run_dir" >&2
 set +e
-( cd "$wt" && env "${hooks_env[@]}" CLAUDE_CONFIG_DIR="$cfg" \
+( cd "$run_dir" && env "${hooks_env[@]}" CLAUDE_CONFIG_DIR="$cfg" \
 	CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 DISABLE_TELEMETRY=1 DISABLE_AUTOUPDATER=1 DISABLE_ERROR_REPORTING=1 \
 	timeout "${timeout_sec}" claude -p "$invocation" \
 		--output-format stream-json --verbose --dangerously-skip-permissions \

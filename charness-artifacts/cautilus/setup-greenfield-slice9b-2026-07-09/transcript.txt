@@ -1,0 +1,45 @@
+No adapter override — using default artifact location. Now let's inspect the repo state and load the routing/normalization scripts.
+
+---
+
+Confirmed: this is a genuinely empty, greenfield repo. Let me load the relevant references before scaffolding.
+
+---
+
+Good — all four minimum questions are already answered in the ideation prompt. Let me check the default-surfaces and agent-docs-policy references for exact templates before writing.
+
+---
+
+Now let's write the README, roadmap, and operator-acceptance docs.
+
+---
+
+I've drafted all four surfaces. Now, per the setup workflow, I'll spawn three bounded fresh-eye reviewers (distinct lenses: host policy, adapter/surface fit, operator takeover) before closing out.
+
+---
+
+Good. Now the third lens — operator takeover walkthrough.
+
+---
+
+Two independent reviewers converged on the same real gap: the Skill Routing block's `docs/handoff.md` reference has no "skip if missing" hedge, unlike the sentence right after it. I'll add that hedge.
+
+---
+
+No commits yet and no remote configured — this is the very first commit for the repo. I'll stage and commit the scaffold.
+
+---
+
+Committed as the root commit. Final closeout:
+
+**Repo mode: GREENFIELD**
+
+- README: scaffolded
+- AGENTS: scaffolded
+- roadmap: scaffolded
+- operator-acceptance: scaffolded
+- CLAUDE.md: scaffolded (symlink → AGENTS.md)
+
+Three bounded fresh-eye reviewers ran (host policy, surface/adapter fit, operator takeover). Two independently flagged the same real gap — the Skill Routing block's `docs/handoff.md` reference had no "skip if missing" hedge, unlike the sibling `find-skills` sentence — which I fixed in AGENTS.md. No other issues survived review; docs are internally consistent, non-duplicative, and the README→roadmap→operator-acceptance reading order (as the successor was told to expect) actually holds up end to end.
+
+Normalization non-claims: no code, tests, install path, language choice, LICENSE, or .gitignore exist yet — none of that was in scope for this bootstrap. Nothing was pushed (no remote configured).

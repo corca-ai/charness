@@ -241,6 +241,22 @@ def test_capture_script_records_base_before_the_captured_run() -> None:
         f"can commit (worktree_add={worktree_add}, emit={emit}, run={run})")
 
 
+def test_capture_script_run_cwd_defaults_to_worktree_and_guards_missing_dir() -> None:
+    # Pin for the --run-cwd extension (#410 Slice 9c, greenfield fresh-sandbox captures):
+    # omitting --run-cwd must keep the historical behavior (the captured run executes in
+    # the throwaway worktree), and a nonexistent --run-cwd must refuse before spending a
+    # live `claude -p` run. No live capture exercises the default fallback, so pin both
+    # the fallback expansion and the existence guard statically.
+    text = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(encoding="utf-8")
+    assert 'run_dir="${run_cwd:-$wt}"' in text, "--run-cwd must default to the worktree"
+    assert '--run-cwd dir does not exist' in text, "a missing --run-cwd dir must refuse pre-run"
+    lines = text.splitlines()
+    fallback = next(i for i, ln in enumerate(lines) if 'run_dir="${run_cwd:-$wt}"' in ln)
+    run = next(i for i, ln in enumerate(lines) if 'claude -p "$invocation"' in ln)
+    assert fallback < run, "run_dir must resolve before the captured invocation"
+    assert 'cd "$run_dir"' in text, "the captured run must execute in run_dir, not a hardcoded cwd"
+
+
 def _commit_base_then_slice(tmp_path: Path, slice_files: dict[str, str]) -> tuple[Path, str]:
     """A git worktree with a base commit, then a SECOND commit (the run's slice) on top —
     the impl-style committing run that advances HEAD past the checkout base (#409 Gap 1).

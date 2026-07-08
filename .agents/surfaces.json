@@ -175,6 +175,22 @@
       ]
     },
     {
+      "surface_id": "claim-fidelity-capture-bundles",
+      "description": "Ask-before-run claim-fidelity capture bundles under charness-artifacts/cautilus/: per-run observed packets, trace digests, transcripts, probes, and findings that prove a floor move or keep.",
+      "source_paths": [
+        "charness-artifacts/cautilus/*/**"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for path in charness-artifacts/cautilus/*/*.json; do [ -e \"$path\" ] && { python3 -m json.tool \"$path\" >/dev/null || exit $?; }; done"
+      ],
+      "notes": [
+        "Bundles are evidence artifacts committed with the flip they prove; finding.md carries the analysis and raw captures (worktree/config/stream/credentials) stay scrubbed.",
+        "finding.md/justification.md additionally get repo-markdown lint via the repo-markdown surface; jsonl/transcript files are evidence payloads with no schema gate."
+      ]
+    },
+    {
       "surface_id": "claim-fidelity-specs",
       "description": "Per-skill Cautilus claim-fidelity specs and registry: each public skill's reference-engagement classification proving a real /charness:<skill> run honors its own reference routing.",
       "source_paths": [

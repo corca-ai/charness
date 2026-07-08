@@ -8,31 +8,28 @@
 
 ## Current State
 
-- **This session (2026-07-08): issue-backlog sweep + test-debt rotation.**
-  #420 CLOSED (advisory-only verified live); #371 CLOSED by operator decision
-  (residuals in the close comment); #413 already closed; **#422 fixed +
-  auto-CLOSED** (`8b28ab3e`) — and provider-roundtrip PROVEN: the 12:50 UTC
-  scheduled red posted the real failing nodeid instead of the
-  StrykerJS-missing collateral.
-- That 12:50 red was a new env-dependent test (`test_migrate_dup_fingerprints`
-  live-scan CLI pin; no nose binary in the mutation env) — nose-guard skipif
-  landed (`28d76718`), mirroring the sibling idiom.
-- **Test-debt rotation DONE for this cycle** (`8e1fd200`): 193 delta tests
-  judged, 4 verified-redundant deleted, 2 candidates rejected as
-  load-bearing. Full method + evidence:
-  [2026-07-08-test-debt-rotation-delta-sweep.md](../charness-artifacts/quality/2026-07-08-test-debt-rotation-delta-sweep.md).
-  Next rotation baseline = `8e1fd200`.
+- **This session (2026-07-09): #410 queue executed end-to-end and CLOSED.**
+  Handoff pickup floor moved to a substance judge (planner `e4f3626d`, flip +
+  capture proof), hotl ledger tokens lifted with the floor re-proven
+  (`8bdf9fda`), setup/greenfield captured for the first time via the new
+  `capture-skill-run.sh --run-cwd` sandbox mode → capture-PROVEN KEEP (census
+  MOVE refuted per-condition), spill-targets FINAL keep. Method + results:
+  [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
+- **#423 filed (capture eval-identity blinding leak)**: the captured agent can
+  read its own eval identity from the out-dir path; evidence in the Slice-9
+  pickup transcript. Harness-owned follow-up, not blocking.
+- Test-debt rotation baseline stays `8e1fd200` (2026-07-08 cycle done; method:
+  [2026-07-08-test-debt-rotation-delta-sweep.md](../charness-artifacts/quality/2026-07-08-test-debt-rotation-delta-sweep.md)).
 
 ## Next Session
 
-1. **Watch #421 auto-close (machine-owned; do not close manually)**: the next
-   scheduled run (`17 */12 * * *` UTC, next ~2026-07-09 00:17) judges
-   `57af3d2b..8e1fd200`, expected green. If red, the summary now names the
-   real blocking signal (#422 fix, roundtrip-proven) — read it first.
-2. **#410 remaining handoff flips (capture-gated, ~1.7-2.4M tokens each)**;
-   method + queue:
-   [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
-   The #413 setup/greenfield fresh-sandbox capture rides this queue's method.
+1. **Watch #421 auto-close (machine-owned; do not close manually)**: the
+   scheduled run (`17 */12 * * *` UTC) judges `57af3d2b..HEAD`, expected green.
+   If red, the summary names the real blocking signal (#422 fix,
+   roundtrip-proven) — read it first. As of this session's pickup capture,
+   #421 was OPEN with no new comment since 2026-07-08 13:00 UTC.
+2. **#423 capture-blinding harness fix** (genericize the run-visible directory
+   identity; keep `justification.md` out of the run-visible tree).
 3. **81-site argparse-help debt (run LAST, alone).** Trip-wire D33:
    `run_skill_efficiency_ab.py` at 479/480.
 

@@ -1,0 +1,31 @@
+{
+  "_comment": "OUTCOME assertion set for the handoff skill (companion to spec.json + pickup.spec.json + pickup-ambiguous.spec.json + refresh.spec.json). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle; ADVISORY (grades nothing, does not block), it protects the SUBSTANCE the deterministic claim-fidelity floors cannot. CONTEXT (#410 Slice 9): census.json classifies workflow-trigger.md as INLINE for handoff — its trigger-first gist is inlined in SKILL.md (step 2 authoritative-trigger rule, step 5 keep-the-trigger-explicit, the session-open guardrail), and the live trigger TEXT lives in the artifact's `## Workflow Trigger` section, which the planner forces as the FIRST required read on every run. The prior deferral reason ('a faithful pickup hands off to the invoked workflow, so its closeout RSF token is fragile') is exactly why the replacement floor is THIS substance instrument, not an emitted-token RSF: a pickup's final text belongs to the workflow it handed off to, so no closeout token is stable — but a judge reading the transcript can verify the handoff-owned behavior (trigger consulted from the artifact, named workflow actually started) regardless of who owns the final message. SCOPE: this set resolves as the sibling of the whole evals/cautilus/handoff-claim-fidelity/ dir (skill_outcome_wiring resolves spec_path.parent/outcome-assertions.json), so it applies to WHICHEVER handoff scenario is graded. Assertions are written to hold for ALL FOUR intents: a pickup PASSES by starting the artifact-named workflow/pinned task; a refresh PASSES by an honest kept/dropped accounting behind its `Refresh kept:`/`Refresh non-claims:` tokens (this judge is also the stronger backstop for the refresh RSF FORM-floor hollow-echo risk recorded in refresh.spec.json); a chunked-routing run PASSES by routing the live backlog into an explicit recommendation. COMMITTING-RUN CAVEAT (same as gather/setup): a handoff refresh writes and may commit docs/handoff.md inside the capture worktree, so deterministic output_glob checks would false-fail; the substance floors are JUDGE assertions reading the TRANSCRIPT, which a live capture MUST preserve into the bundle or the judge grades blind. Judge-kind assertions need the live judge (--judge-cmd, ask-before-run). NON-REVERSE-ENGINEERING: assertions name only the deterministic SUBJECT every run has (the artifact's own `## Workflow Trigger`/`## Next Session` state + SKILL.md's own guardrail claims), never a phrase or number from one capture — a run that reads the handoff and merely summarizes it (mention-only pickup, the guarded routing miss), echoes closeout vocabulary without the selection work, or names a workflow the artifact does not, legitimately scores low. CAPTURE-BEFORE-PIN: the pickup.spec.json deterministic floor move (RCF [workflow-trigger.md] -> [] on this substance floor; pickup-ambiguous RCF -> [continuation-sequence.md], strictly weaker, its retained floor already capture-proven genuinely opened on 2026-07-02) rides a fresh ask-before-run capture that VERIFIES this instrument grades correctly.",
+  "evalId": "handoff-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-handoff",
+      "kind": "deterministic",
+      "statement": "The captured run actually executed the handoff skill (sanity floor before grading the work).",
+      "check": {"type": "summary_contains", "value": "Execution of /handoff"},
+      "weight": 1
+    },
+    {
+      "id": "pickup-starts-named-workflow",
+      "kind": "judge",
+      "statement": "On a pickup-intent invocation (resume/pickup wording), the run treated the handoff artifact's `## Workflow Trigger` section as the authoritative next-step instruction: it identified the named workflow or the artifact's pinned next task, VERIFIED the live state behind it through at least one channel other than the handoff text itself (issue backend reads, planner/gate commands, owning artifacts), and then either STARTED that workflow/task's concrete next action or stopped EXACTLY at a repo-owned boundary (ask-before-run eval spend, operator-only decision) while explicitly NAMING that boundary as the stop reason. A self-referential trigger (the artifact routes pickup back to the handoff workflow itself) is honored by executing the artifact's `## Next Session` queue the same way. A run that only re-reads the handoff and reports a summary — no live-channel verification, no started action, and no named boundary — is the exact mention-only session-open routing miss SKILL.md's guardrail names, and FAILS. On a non-pickup intent (refresh or chunked routing), this assertion holds when the run's closeout leaves an explicit artifact-faithful continuation (a rewritten explicit trigger, or a routed backlog recommendation) instead of a diary summary.",
+      "weight": 2
+    },
+    {
+      "id": "continuation-accounting-honesty",
+      "kind": "judge",
+      "statement": "The run's closeout is an honest continuation surface FOR ITS OWN INTENT, not a diary or a vocabulary echo. ONLY a refresh run owes the `Refresh kept:` / `Refresh non-claims:` tokens, and there they must name actual retained next-action state and actually-dropped/spilled/unproven items — not generic filler. A pickup or chunked-routing run owes NO refresh tokens; for those intents this assertion grades factual honesty instead: the closeout's claims about live state (issue states, gate/planner statuses, queue items, what was checked versus merely read) match what the transcript actually verified, and unverified state is never written as fact. Emitting closeout vocabulary or state claims without the underlying verification work scores low.",
+      "weight": 2
+    },
+    {
+      "id": "trigger-fidelity-no-invention",
+      "kind": "judge",
+      "statement": "The workflow or task the run started or named in its closeout is one the handoff artifact's `## Workflow Trigger`/`## Next Session` actually names (or the user's explicitly pinned task in the invocation); the run did not substitute a different workflow, invent a trigger the artifact does not carry, or claim it followed the trigger while doing unrelated work.",
+      "weight": 1
+    }
+  ]
+}

@@ -1,5 +1,11 @@
-# Slice 7 census reconciliation — VERDICTS RESOLVED, execution queued
+# Slice 7 census reconciliation — VERDICTS RESOLVED, execution COMPLETE
 
+> **STATUS 2026-07-09: QUEUE EXECUTED.** Every remaining capture-gated item was
+> resolved (handoff pickup/pickup-ambiguous MOVE, hotl MIXED lift + confirming
+> capture, setup/greenfield capture-proven KEEP with the census verdict refuted
+> per-condition, spill-targets FINAL keep) — see the dated ✅/📌 entries at the
+> end of `### Execution progress`. #410 closes on this state.
+>
 > **STATUS 2026-07-01: RECONCILED.** All 13 contested doc-open floors were
 > re-examined census-first with an adversarial analyze→verify workflow (26 agents,
 > one analyst + one refuter per floor). Verdicts + the capture-gated queue are in
@@ -157,14 +163,35 @@ don't retire the doc.
   SKILL.md — the over-relaxation guard). Skill change `60434368`; flip + bundle rides after the proof.
   This is the per-condition method applied: the capture tested (not assumed) that refresh works without the
   forced read, confirming the census-INLINE verdict for state-selection.md.
-- ⏳ **handoff (remaining) + setup** — handoff/refresh spill-targets.md kept as the doc-open floor
-  (census-INLINE overall, but its owning-path routing table is genuinely absent from SKILL.md, so the
-  re-read is still load-bearing; a routing-table inline or a spill-conditional scenario is its own future
-  slice). handoff
-  pickup/pickup-ambiguous (workflow-trigger.md) NOT flipped: a faithful pickup hands off to the invoked
-  workflow, so its closeout RSF token is fragile — deferred until a stable pickup token is designed.
-  setup/greenfield needs a fresh-sandbox capture (#413, not in-repo capturable). hotl/ledger MIXED
-  token-lift stays deferred (no floor depends on it).
+- ✅ **handoff/pickup + pickup-ambiguous — Slice 9 MOVE (2026-07-09, `e4f3626d` + flip commit).**
+  The "stable pickup token" blocker dissolved by NOT using a token: the replacement floor is a
+  dir-scoped `outcome-assertions.json` SUBSTANCE judge (transcript-graded, so it owns the pickup
+  behavior regardless of which workflow owns the final message). Planner no longer forces
+  workflow-trigger.md for pickup (stays for judge_from_user_request); pickup RCF=[] on the
+  substance floor; pickup-ambiguous RCF=[continuation-sequence.md] via the clean-MOVE rule
+  (2026-07-02 bundle). Fresh capture (`handoff-pickup-slice9-2026-07-09`): flipped spec PASS,
+  compaction Read(workflow-trigger.md)=0, OLD spec FAILED the same faithful run (false floor),
+  substance judge 4/4 with an honestly-recorded instrument iteration (first pass 0.333 → two
+  statements re-scoped per-intent; mention-only probe still FAILS).
+- ✅ **hotl/ledger MIXED token-lift — Slice 9b (2026-07-09, `8bdf9fda`).** INLINE tokens
+  (verified_against.* / disposition.* / ODQ five-field template) lifted into SKILL.md step 5;
+  anti-proxy DEPTH stays reference-only; RCF unchanged. Confirming capture
+  (`hotl-confirm-slice9b-2026-07-09`): PASS, 2/2 DEPTH, the reference still genuinely opened
+  post-lift — the floor is not weakened.
+- ✅ **setup/greenfield — Slice 9c (2026-07-09): capture-PROVEN KEEP; the census MOVE verdicts are
+  REFUTED for this arm** (the per-condition correction above, applied). The "not in-repo capturable"
+  blocker was removed by `capture-skill-run.sh --run-cwd` (fresh non-charness sandbox). Capture 1:
+  the old ideation-less prompt dead-ends at the honest ask-and-stop (and proves greenfield-flow.md's
+  question set is genuine DEPTH the census-DUP flattening under-counted). Capture 2 (prompt now
+  carries inline ideation): PASS vs the standing RCF — all three floor docs genuinely opened,
+  four surfaces + CLAUDE.md symlink scaffolded, and the observed closeout tokens pinned as RSF
+  (`Repo mode:` / `Normalization non-claims:`). Bundles `setup-greenfield-slice9*-2026-07-09`.
+- 📌 **handoff/refresh spill-targets.md — FINAL disposition for #410: KEEP (genuine DEPTH floor).**
+  The step-4 MIXED split already happened in the refresh slice (Compression-Rule gist inlined,
+  state-selection retired); the owning-path routing table remains absent from SKILL.md and the
+  doc-open was capture-proven genuinely engaged (2026-07-05). A routing-table inline or a
+  spill-conditional scenario stays an OPTIONAL future improvement, not #410 debt — the floor is
+  honest as it stands.
 
 Clean-MOVE rule proven this session: a pure retirement that leaves an already-genuinely-opened DEPTH
 floor is provable from existing captures at zero new cost; only floor-REPLACEMENT (new RSF/judge) needs

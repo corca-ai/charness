@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "setup",
+  "skillDisplayName": "setup",
+  "evaluations": [
+    {
+      "evaluationId": "execution-setup-greenfield-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "setup",
+      "displayName": "setup",
+      "evaluationKind": "execution",
+      "prompt": "/charness:setup  bootstrap the initial operating surface for this brand-new empty repository from minimal ideation",
+      "startedAt": "2026-07-08T16:02:19.794Z",
+      "invoked": true,
+      "summary": "Execution of /setup: 3875559 total tokens (43340 output, 3607254 cache-read), 378840ms wall. Tool profile: Read=22 Bash=17 Edit=5 Write=3 Agent=3. All declared claims met. Reference coverage: 4/9 declared references opened (missing: bootstrap-seams.md, github-actions-defaults.md, operator-acceptance-synthesis.md, probe-surface.md, retro-memory-seam.md). Waste smells: 5 (duplicate_read, repeated_edit).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 3875559,
+        "output_tokens": 43340,
+        "tool_count": 50,
+        "waste_smell_count": 5,
+        "duration_ms": 378840
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      }
+    }
+  ]
+}

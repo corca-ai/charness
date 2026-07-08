@@ -63,13 +63,13 @@
       "skill_id": "handoff",
       "scenario_id": "pickup",
       "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup.spec.json",
-      "fan_out_fit": "yes — the pickup intent reads workflow-trigger.md + continuation-sequence.md; a chunked_routing or refresh run opens neither, so requiring them needs its own scenario."
+      "fan_out_fit": "yes — the pickup intent's floor is the substance judge (outcome-assertions.json: start the artifact-named workflow) plus the conditional continuation-sequence.md read on the ambiguous arm; a chunked_routing or refresh run exercises neither, so pickup needs its own scenario. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
     },
     {
       "skill_id": "handoff",
       "scenario_id": "pickup-ambiguous",
       "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json",
-      "fan_out_fit": "yes — the AMBIGUOUS arm of the conditionalized pickup planner: a generic pickup with no clearly-pinned task against >=2 plausible pickups forces both workflow-trigger.md AND continuation-sequence.md, while the clear-pickup scenario and a chunked_routing/refresh run do not — so it needs its own scenario."
+      "fan_out_fit": "yes — the AMBIGUOUS arm of the conditionalized pickup planner: a generic pickup with no clearly-pinned task against >=2 plausible pickups forces continuation-sequence.md, while the clear-pickup scenario and a chunked_routing/refresh run do not — so it needs its own scenario. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
     },
     {
       "skill_id": "handoff",

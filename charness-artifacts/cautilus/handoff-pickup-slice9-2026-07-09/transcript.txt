@@ -1,0 +1,34 @@
+I'll start by running the handoff planner script to determine the correct pickup path.
+
+---
+
+Confirmed pickup intent. Reading the handoff artifact now to find the workflow trigger.
+
+---
+
+The workflow trigger here is self-referential — it documents that pickup routes to `charness:handoff` itself, which is exactly what's running. The actual continuation work lives in the "Next Session" list. Item 1 is time-sensitive (a scheduled auto-close job that should have run by now, given today is 2026-07-09), so let me check its live status before deciding what to pick up.
+
+---
+
+Issue #421 is still open with no new comment since 2026-07-08T13:00:52Z — the scheduled 00:17 UTC run hasn't posted yet, so nothing actionable there (machine-owned, watch-only). Next Session item 3 explicitly says "run LAST, alone," so the actionable pickup is item 2: the #410 handoff-flips queue. Let me check that queue file — this session's capture name ("slice9") suggests it may point directly at the next slice.
+
+---
+
+This capture session's own name ("handoff-pickup-slice9") suggests it may literally be a Cautilus capture for one of the queued reconciliation moves. Let me check for related Slice 8/9 artifacts before assuming this is generic pickup.
+
+---
+
+Pickup complete. Summary of what I found and did:
+
+**Workflow Trigger**: for this repo, pickup routes to `charness:handoff` itself (self-referential — the trigger just documents the session-start routing rule), which is what's running now. No separate workflow name to chase down.
+
+**Live state check** (not just re-reading the doc):
+- Issue #421 (nightly mutation gate) is still **OPEN**, no new comment since 2026-07-08 13:00 UTC — the next scheduled 00:17 UTC run either hasn't fired yet or hasn't posted. This is machine-owned/watch-only; nothing for me to do here.
+- `plan_cautilus_proof.py` confirms **nothing currently requires a Cautilus proof** (`status: not-required`, `next_action: none`) — consistent with the repo's ask-before-run Cautilus policy.
+
+**Next Session queue** (docs/handoff.md):
+1. #421 watch — no action right now (above).
+2. **#410 remaining handoff/setup capture-gated flips** — the actual next work item, per `slice7-census-reconciliation.md`. Remaining pieces: handoff pickup/refresh spill-targets.md, handoff pickup workflow-trigger.md token design, and setup/greenfield's fresh-sandbox capture. Each flip is estimated **~1.7-2.4M tokens** and explicitly requires an ask-before-run Cautilus session — not something to auto-launch.
+3. 81-site argparse-help debt — explicitly marked "run LAST, alone," so it's not next.
+
+Since item 2 is the only real pending work and it's both expensive and gated behind an explicit ask-before-run request (per CLAUDE.md's Cautilus contract), I'm stopping here rather than spending 1.7-2.4M tokens unprompted. Do you want me to kick off one of the #410 capture-gated flips now (and if so, which one), or is there something else you'd rather have me pick up?

@@ -1,5 +1,5 @@
 {
-  "_comment": "SLICE 4 (2026-07-02) — the AMBIGUOUS arm of the conditionalized handoff pickup planner (#412, commit c1a66f4d). Sibling of pickup.spec.json (the CLEAR arm, RCF=[workflow-trigger.md]). This scenario's prompt is a generic pickup ('resume from the current state') carrying a task directive ('start the next workflow') to bypass the chunker into pickup intent, with NO clearly-pinned task, against a handoff with >=2 plausible Next Session pickups. plan_handoff_run.py therefore emits BOTH workflow-trigger.md AND continuation-sequence.md as required reads, so the floor requires both. FALSIFIABLE: an ambiguous pickup that skips continuation-sequence.md fails. Proven by a fresh operator-authorized ask-before-run capture (bundle charness-artifacts/cautilus/handoff-pickup-ambiguous-slice4-2026-07-02). thresholds omitted until a baseline capture sets a budget.",
+  "_comment": "SLICE 9 MOVE (2026-07-09, #410) — workflow-trigger.md RETIRED from this floor too (census INLINE; gist inlined in SKILL.md; the artifact's `## Workflow Trigger` is the planner's first forced read; plan_handoff_run.py no longer forces the reference for pickup). RCF=[continuation-sequence.md] is a STRICTLY WEAKER floor than the proven Slice-4 one and its retained ref was GENUINELY opened in the 2026-07-02 capture (planner still forces it under the ambiguous condition — that code path is unchanged), so per the clean-MOVE rule (slice7-census-reconciliation.md) this flip is provable from the existing bundle at zero new capture cost; the fresh Slice-9 CLEAR-arm capture additionally proves the planner change live. Substance backstop: sibling outcome-assertions.json. --- PRIOR: SLICE 4 (2026-07-02) — the AMBIGUOUS arm of the conditionalized handoff pickup planner (#412, commit c1a66f4d). Sibling of pickup.spec.json (the CLEAR arm, RCF was [workflow-trigger.md]). This scenario's prompt is a generic pickup ('resume from the current state') carrying a task directive ('start the next workflow') to bypass the chunker into pickup intent, with NO clearly-pinned task, against a handoff with >=2 plausible Next Session pickups. plan_handoff_run.py therefore emits BOTH workflow-trigger.md AND continuation-sequence.md as required reads, so the floor requires both. FALSIFIABLE: an ambiguous pickup that skips continuation-sequence.md fails. Proven by a fresh operator-authorized ask-before-run capture (bundle charness-artifacts/cautilus/handoff-pickup-ambiguous-slice4-2026-07-02). thresholds omitted until a baseline capture sets a budget.",
   "skillId": "handoff",
   "scenarioId": "pickup-ambiguous",
   "skillDisplayName": "handoff",
@@ -8,7 +8,6 @@
   "targetId": "handoff",
   "prompt": "/charness:handoff resume from the current state and start the next workflow before doing anything else",
   "requiredCommandFragments": [
-    "workflow-trigger.md",
     "continuation-sequence.md"
   ],
   "requiredSummaryFragments": [],
@@ -46,8 +45,10 @@
       "trigger": "refresh intent — keeping only state that changes the next action"
     },
     "workflow-trigger.md": {
-      "engagement": "engage-always",
-      "rationale": "A pickup-intent UNCONDITIONAL planner required read: a pickup starts from the named workflow trigger, so the run must consult this to invoke the next workflow directly rather than infer it."
+      "engagement": "on-demand",
+      "classTag": "INLINE",
+      "rationale": "Census INLINE (#410 Slice 9): the trigger-first gist is inlined in SKILL.md (step 2, step 5, session-open guardrail) and the live trigger text is in the artifact's `## Workflow Trigger`, already the planner's first forced read. Pickup fidelity is floored by the sibling outcome-assertions.json substance judge instead of this doc-open.",
+      "trigger": "authoring or repairing a trigger line — consulting the naming rule's WHY-prose"
     }
   }
 }
