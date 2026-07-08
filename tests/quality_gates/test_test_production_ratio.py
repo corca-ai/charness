@@ -22,8 +22,13 @@ def test_test_production_ratio_counts_source_truth_without_plugin_exports() -> N
 
     assert summary["scope"] == "python-source-truth"
     assert summary["engine"] == "splitlines"
-    assert summary["source_lines"] > summary["test_lines"]
-    assert 0 < summary["ratio"] < 1
+    # The live hard bound (test LOC < source LOC) was removed deliberately: the
+    # gate posture is advisory (run-quality.sh runs this script with --advisory;
+    # its help text owns the rationale); a hard live pin pressured against
+    # writing tests.
+    assert summary["source_lines"] > 0
+    assert summary["test_lines"] > 0
+    assert summary["ratio"] > 0
     assert "plugins" in summary["excluded_source_dirs"]
 
 
@@ -108,3 +113,27 @@ def test_splitlines_ratio_ignores_gitignored_python_files(tmp_path: Path) -> Non
 
     assert summary["source_file_count"] == 1
     assert summary["source_lines"] == 1
+
+
+def test_cli_under_threshold_returns_zero_on_synthetic_repo(tmp_path: Path, monkeypatch, capsys) -> None:
+    # The under-threshold rc-0 main() branch previously had no synthetic fixture
+    # (only the live repo exercised it, and the live ratio can sit over the
+    # threshold); the other two main() ratio branches (blocking over-threshold
+    # rc1, advisory WARN rc0) already have tests.
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / "scripts" / "app.py").write_text("print('line')\n" * 20, encoding="utf-8")
+    (repo / "tests" / "test_app.py").write_text(
+        "def test_app():\n    assert True\n", encoding="utf-8"
+    )
+    init_git_repo(repo, "scripts/app.py", "tests/test_app.py")
+
+    monkeypatch.setattr(sys, "argv", ["check_test_production_ratio.py", "--repo-root", str(repo)])
+
+    rc = RATIO.main()
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Test-production ratio:" in out
+    assert "WARN:" not in out

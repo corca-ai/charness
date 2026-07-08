@@ -1,6 +1,6 @@
 # Achieve Goal: Retro-informed autonomous improvement: 5 decided slices (ratio-A, required-reads validator, #371 Tier 1, dup-ratchet A+B, #408 item 4 prose)
 
-Status: draft
+Status: active
 Created: 2026-07-08
 Activation: `/goal @charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack.md`
 
@@ -9,14 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack.md` after confirming the draft is
-  still intended.
+- Current slice: R (remove live hard ratio bound; advisory-only posture).
+- Current slice intent: replace the live-repo hard asserts at
+  `tests/quality_gates/test_test_production_ratio.py:25-26` with
+  degenerate-zero sanity checks and add the missing under-threshold rc0
+  synthetic fixture; one reviewable intent unit spanning the Slice R commit.
+  Critique and broad proof do not re-fire within one unchanged intent
+  (meaningful-slice-cadence).
+- Next action: implement Slice R, focused pytest + pre-lock closeout, slice
+  log, commit; then V/B/G in any order; D last among code slices.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -250,7 +251,7 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: find-skills -> <skill> — <why this phase needs it>`
+- Routing: find-skills -> achieve + impl — recommendation engine (`list_capabilities.py --recommend-for-task`, 2026-07-08, read-only) matched `achieve` for operating the active goal lifecycle and `quality` for the gate-touching slices; `impl` owns each code slice per the achieve coordination contract.
 
 ## Discuss Before Activation
 
