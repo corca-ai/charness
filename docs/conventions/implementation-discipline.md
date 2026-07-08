@@ -61,6 +61,14 @@ the root instruction file but still apply to Charness maintenance work.
   enforces, such as `python3 scripts/check_spec_evidence_durability.py`, before
   paying for the producer run (see the
   [producer-rerun retro](../../charness-artifacts/retro/2026-06-07-producer-rerun-waste.md)).
+- When a slice adds a `run-quality.sh` gate, a new module, or a new argument on
+  a shared helper, the focused proof must include the registry/importer test
+  files of that surface class —
+  [test_quality_runner.py](../../tests/quality_gates/test_quality_runner.py)
+  for gates; `grep -rl` the module name under `tests/` for new modules or
+  changed helper signatures — not only the slice's own test file. Two escapes
+  in one goal (2026-07-08) lived exactly in importer/registry tests the
+  producer never ran and surfaced only in later broad runs.
 - Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.

@@ -185,63 +185,10 @@ def test_overlay_fixable_ceiling_reads_int_else_zero() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# classify_reductions (S4-Defer-3) — pure membership-reduction pre-pass.
+# classify_reductions pure-function unit coverage lives in
+# test_dup_ratchet_reductions.py (test-file length cap split). CLI-level
+# reduction/grow/genuine-new/shrink-then-recur end-to-end tests stay below.
 # --------------------------------------------------------------------------- #
-def test_classify_reductions_proper_sub_multiset_is_a_reduction() -> None:
-    # baseline {A,A,B} vanished, live {A,B} candidate -> reduction.
-    live = {"new": ["A", "B"]}
-    baseline = {"old": ["A", "A", "B"]}
-    assert lib.classify_reductions(live, baseline, {"new"}) == [
-        {"new_fingerprint": "new", "old_fingerprint": "old"}
-    ]
-
-
-def test_classify_reductions_grow_is_not_a_reduction() -> None:
-    # baseline {A,B}, live {A,A,B} -> NOT a reduction (candidate is a SUPERSET, not
-    # a proper sub-multiset) -> the CLI must hard-block it as genuine new/changed dup.
-    live = {"new": ["A", "A", "B"]}
-    baseline = {"old": ["A", "B"]}
-    assert lib.classify_reductions(live, baseline, {"new"}) == []
-
-
-def test_classify_reductions_equal_multiset_is_not_a_reduction() -> None:
-    # Equal totals is NOT "strictly smaller" -> not a proper sub-multiset (would only
-    # happen if the same fingerprint reappeared, which can't be "vanished" anyway).
-    live = {"new": ["A", "B"]}
-    baseline = {"old": ["A", "B"]}
-    assert lib.classify_reductions(live, baseline, {"new"}) == []
-
-
-def test_classify_reductions_disjoint_content_is_genuine_new() -> None:
-    live = {"new": ["X", "Y"]}
-    baseline = {"old": ["A", "B"]}
-    assert lib.classify_reductions(live, baseline, {"new"}) == []
-
-
-def test_classify_reductions_ignores_baseline_families_still_live() -> None:
-    # A baseline family still present in the live scan is not "vanished" -- it
-    # cannot be the reduction's origin even if it would otherwise superset the
-    # candidate (this is what "new_code" already excludes via gate_baseline_ids).
-    live = {"still_here": ["A", "B"], "new": ["A"]}
-    baseline = {"still_here": ["A", "B"]}
-    assert lib.classify_reductions(live, baseline, {"new"}) == []
-
-
-def test_classify_reductions_deterministic_pairing_prefers_smallest_then_lexicographic() -> None:
-    live = {"new": ["A"]}
-    baseline = {"zzz_big": ["A", "B", "C"], "aaa_small": ["A", "B"], "bbb_small": ["A", "X"]}
-    # Two vanished supersets tie at total=2 ("aaa_small", "bbb_small"); "aaa_small"
-    # wins lexicographically. The total=3 superset loses to both smaller ones.
-    assert lib.classify_reductions(live, baseline, {"new"}) == [
-        {"new_fingerprint": "new", "old_fingerprint": "aaa_small"}
-    ]
-
-
-def test_classify_reductions_candidate_absent_from_live_is_skipped_not_a_crash() -> None:
-    # A candidate name not present in live_members (should not happen in practice;
-    # the CLI only asks about fingerprints from the scan it just ran) is a no-op,
-    # never an error -- classify_reductions stays a pure best-effort classifier.
-    assert lib.classify_reductions({}, {"old": ["A"]}, {"ghost"}) == []
 
 
 # --------------------------------------------------------------------------- #
@@ -822,6 +769,26 @@ def test_code_family_members_injected_threads_version_and_unreadable(tmp_path: P
     missing = check.parse_args(["--code-inventory", str(tmp_path / "absent.json")])
     members, reason, version = scan.code_family_members(missing, tmp_path, [])
     assert members == {} and "unreadable" in reason and version == ""
+
+
+def test_code_family_members_injected_computes_hashes_from_locations(tmp_path: Path) -> None:
+    # An injected family carrying `family_fingerprint` + `locations` but WITHOUT
+    # `family_member_hashes` gets its member hashes computed from the real span
+    # (mirrors the fingerprint-from-locations fallback one line above it).
+    (tmp_path / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    inv_path = tmp_path / "c.json"
+    inv_path.write_text(
+        json.dumps({"families": [{
+            "family_fingerprint": "known_fp",
+            "locations": [{"file": "a.py", "start": 1, "end": 2}],
+        }]}),
+        encoding="utf-8",
+    )
+    args = check.parse_args(["--code-inventory", str(inv_path)])
+    members, reason, version = scan.code_family_members(args, tmp_path, [])
+    assert reason is None
+    expected_hash = fingerprint.member_fingerprint(tmp_path, "a.py", 1, 2)
+    assert members == {"known_fp": [expected_hash]}
 
 
 def test_inproc_write_baseline_stamps_tool_and_algo_version(tmp_path: Path) -> None:

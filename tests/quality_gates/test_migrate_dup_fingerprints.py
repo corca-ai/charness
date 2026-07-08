@@ -12,6 +12,10 @@ fires on an artificial collision.
 from __future__ import annotations
 
 import importlib.util
+import json
+from pathlib import Path
+
+import pytest
 
 from .support import ROOT
 
@@ -28,6 +32,9 @@ def _load(name: str):
 
 
 plan = _load("migrate_dup_fingerprints_lib")
+cli = _load("migrate_dup_fingerprints")
+baseline_lib = _load("dup_ratchet_baseline_lib")
+fingerprint = _load("nose_fingerprint_lib")
 
 
 def _entry(v1: str, v2: str, member_hashes: list[str], nose_id: str | None = None) -> dict:
@@ -145,3 +152,251 @@ def test_review_migration_passes_through_doc_entries_untouched() -> None:
 def test_review_migration_skips_non_dict_entries_defensively() -> None:
     result = plan.plan_review_migration(["not-a-dict", 5, None], [])
     assert result["entries"] == [] and result["dropped_ids"] == []
+
+
+def test_cli_dry_run_reports_plan_without_writing(monkeypatch, capsys) -> None:
+    # In-process pin of the CLI surface (argv/stdout/exit contract) in dry-run
+    # mode: it must print the collision check and per-artifact plan and write
+    # NOTHING (the live artifacts' mtimes/content stay untouched).
+    import json
+    import sys as _sys
+
+    cli = _load("migrate_dup_fingerprints")
+    gate_path = ROOT / "charness-artifacts" / "quality" / "dup-ratchet-baseline.json"
+    before = gate_path.read_bytes()
+    monkeypatch.setattr(
+        _sys, "argv", ["migrate_dup_fingerprints.py", "--repo-root", str(ROOT), "--json"]
+    )
+    rc = cli.main()
+    out = capsys.readouterr().out
+    payload = json.loads(out)
+    assert rc == 0
+    assert payload["mode"] == "dry-run"
+    assert payload["collision"]["ok"] is True
+    assert gate_path.read_bytes() == before
+
+
+def test_load_skill_runtime_bootstrap_import_error(monkeypatch, tmp_path: Path) -> None:
+    # The bootstrap shim is a byte-identical canonical block shared across every
+    # skill script (check_bootstrap_shim_consistency.py enforces this, so it cannot
+    # carry a per-file pragma comment); this test exercises its unreachable-in-
+    # practice branch directly, mirroring the same pin for inventory_nose_clones.py
+    # in tests/test_nose_inprocess_coverage.py.
+    isolated = tmp_path / "deep" / "nest" / "x.py"
+    isolated.parent.mkdir(parents=True)
+    monkeypatch.setattr(cli, "__file__", str(isolated))
+    with pytest.raises(ImportError):
+        cli._load_skill_runtime_bootstrap()
+
+
+# --------------------------------------------------------------------------- #
+# _read_old_gate_ids -- v2-flat fallback read (this tool is the one place
+# allowed to read either the pre-migration v2 shape or the v3 shape).
+# --------------------------------------------------------------------------- #
+def test_read_old_gate_ids_reads_v2_flat_shape() -> None:
+    assert cli._read_old_gate_ids({"code_family_fingerprints": ["a", "b", 5, ""]}) == {"a", "b"}
+
+
+def test_read_old_gate_ids_none_on_garbage() -> None:
+    assert cli._read_old_gate_ids(None) is None
+    assert cli._read_old_gate_ids("nope") is None
+    assert cli._read_old_gate_ids({"code_family_fingerprints": "nope"}) is None
+    assert cli._read_old_gate_ids({}) is None
+
+
+# --------------------------------------------------------------------------- #
+# build_report -- error branches (no-scope-paths / scan-failed / unreadable-
+# members / collision-check-failed), each via a monkeypatched seam.
+# --------------------------------------------------------------------------- #
+def test_build_report_no_scope_paths_refuses(tmp_path: Path) -> None:
+    args = cli.parse_args(["--repo-root", str(tmp_path)])
+    report = cli.build_report(tmp_path, {}, args)
+    assert report["ok"] is False and report["status"] == "no-scope-paths"
+
+
+def test_build_report_scan_failed(monkeypatch, tmp_path: Path) -> None:
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src"])
+    monkeypatch.setattr(cli._scan, "scan_families", lambda *_a, **_k: (None, "nose unavailable", ""))
+    report = cli.build_report(tmp_path, {}, args)
+    assert report["ok"] is False and report["status"] == "scan-failed"
+    assert "nose unavailable" in report["messages"][0]
+
+
+def test_build_report_unreadable_members(monkeypatch, tmp_path: Path) -> None:
+    # A family with a stamped fingerprint but no `locations` -> the v1 recomputation
+    # (which reads the raw span) fails -> _enrich_live_scan marks it unreadable ->
+    # build_report refuses rather than proceeding with a partial migration.
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src"])
+    monkeypatch.setattr(
+        cli._scan, "scan_families",
+        lambda *_a, **_k: (
+            [{"family_fingerprint": "x", "family_member_hashes": ["h"], "family_id": "nid"}],
+            None, "0.1.0",
+        ),
+    )
+    report = cli.build_report(tmp_path, {}, args)
+    assert report["ok"] is False and report["status"] == "unreadable-members"
+    assert report["unreadable_family_ids"] == ["nid"]
+
+
+def test_build_report_collision_check_failed(monkeypatch, tmp_path: Path) -> None:
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src"])
+    (tmp_path / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    monkeypatch.setattr(
+        cli._scan, "scan_families",
+        lambda *_a, **_k: (
+            [{
+                "family_fingerprint": "x", "family_member_hashes": ["h"], "family_id": "nid",
+                "locations": [{"file": "a.py", "start": 1, "end": 2}],
+            }],
+            None, "0.1.0",
+        ),
+    )
+    monkeypatch.setattr(
+        cli._plan, "collision_report",
+        lambda _enriched: {"ok": False, "distinct_v2_fingerprints": 1, "distinct_nose_family_ids": 2},
+    )
+    report = cli.build_report(tmp_path, {}, args)
+    assert report["ok"] is False and report["status"] == "collision-check-failed"
+
+
+# --------------------------------------------------------------------------- #
+# run() -- adapter-invalid short-circuit, and the full --execute write path.
+# --------------------------------------------------------------------------- #
+def test_run_adapter_invalid(monkeypatch, tmp_path: Path) -> None:
+    args = cli.parse_args(["--repo-root", str(tmp_path)])
+    monkeypatch.setattr(
+        cli._quality_adapter, "load_quality_adapter_strict",
+        lambda _root: {"errors": ["bad adapter"], "data": {}},
+    )
+    report = cli.run(tmp_path, args)
+    assert report["ok"] is False and report["status"] == "adapter-invalid"
+    assert "bad adapter" in report["messages"][0]
+
+
+def test_run_execute_writes_three_artifacts(monkeypatch, tmp_path: Path) -> None:
+    # Full execute-path integration on a synthetic 2-family corpus: fam_a survives
+    # (its old v1 id was accepted) and gets remapped; fam_b is a brand-new v1 id
+    # (not previously accepted) and stays requires_review/excluded. The overlay
+    # carries one surviving entry (remapped verbatim) and one orphan (dropped).
+    (tmp_path / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    (tmp_path / "b.py").write_text("def g():\n    return 2\n", encoding="utf-8")
+    fam_a = {
+        "family_fingerprint": "v2_a", "family_member_hashes": ["ha"],
+        "family_id": "nid_a", "locations": [{"file": "a.py", "start": 1, "end": 2}],
+    }
+    fam_b = {
+        "family_fingerprint": "v2_b", "family_member_hashes": ["hb"],
+        "family_id": "nid_b", "locations": [{"file": "b.py", "start": 1, "end": 2}],
+    }
+    monkeypatch.setattr(cli._scan, "scan_families", lambda *_a, **_k: ([fam_a, fam_b], None, "0.1.0"))
+    v1_a = fingerprint.family_content_fingerprint(fam_a, tmp_path, algo="1")
+
+    gate_rel, nose_rel, review_rel = "q/dup-ratchet-baseline.json", "q/nose-baseline.json", "q/dup-review.json"
+    (tmp_path / "q").mkdir()
+    (tmp_path / gate_rel).write_text(json.dumps({"code_family_fingerprints": [v1_a]}), encoding="utf-8")
+    (tmp_path / nose_rel).write_text(json.dumps({"code_family_fingerprints": [v1_a]}), encoding="utf-8")
+    (tmp_path / review_rel).write_text(json.dumps({
+        "schemaVersion": "charness.quality.dup_review.v1", "fixable_ceiling": 0,
+        "entries": [
+            {"surface": "code", "id": v1_a, "class": "intentional", "note": "kept", "reviewed_at": "d"},
+            {"surface": "code", "id": "orphan_v1", "class": "fixable", "note": "gone", "reviewed_at": "d"},
+        ],
+    }), encoding="utf-8")
+
+    config = {"scope_paths": ["src"], "review_artifact_path": review_rel, "gate_baseline_path": gate_rel}
+    monkeypatch.setattr(
+        cli._quality_adapter, "load_quality_adapter_strict",
+        lambda _root: {"errors": [], "data": {"dup_ratchet": config}},
+    )
+    args = cli.parse_args([
+        "--repo-root", str(tmp_path), "--scope-path", "src",
+        "--nose-baseline-path", nose_rel, "--execute",
+    ])
+    report = cli.run(tmp_path, args)
+    assert report["ok"] is True
+    assert any("wrote" in m and gate_rel in m for m in report["messages"])
+    assert any("wrote" in m and nose_rel in m for m in report["messages"])
+    assert any("wrote" in m and review_rel in m for m in report["messages"])
+
+    written_gate = json.loads((tmp_path / gate_rel).read_text(encoding="utf-8"))
+    assert baseline_lib.validate_gate_baseline(written_gate) == []
+    # v1_a survived (remapped to v2_a); fam_b's v1 was never accepted, so v2_b
+    # stays requires_review and is excluded from the migrated baseline.
+    assert baseline_lib.load_gate_baseline_ids(written_gate) == {"v2_a"}
+
+    written_review = json.loads((tmp_path / review_rel).read_text(encoding="utf-8"))
+    ids = {e["id"] for e in written_review["entries"]}
+    assert ids == {"v2_a"}  # orphan_v1 dropped
+    kept_entry = next(e for e in written_review["entries"] if e["id"] == "v2_a")
+    assert kept_entry["class"] == "intentional" and kept_entry["note"] == "kept"  # verbatim
+
+
+def test_apply_report_refuses_to_write_invalid_migrated_review(tmp_path: Path) -> None:
+    # plan_review_migration never validates entry CONTENT (only remaps the id), so
+    # an entry with an invalid class survives the remap verbatim; apply_report must
+    # refuse to persist an invalid dup-review.json rather than writing it silently.
+    report = {
+        "tool_version": "0.1.0", "algo_version": "2",
+        "gate_baseline": {
+            "path": "q/dup-ratchet-baseline.json", "_new_members": {"v2a": ["h1"]}, "new_family_count": 1,
+        },
+        "nose_baseline": {"path": "q/nose-baseline.json", "_new_ids": ["v2a"], "new_family_count": 1},
+        "dup_review": {
+            "path": "q/dup-review.json", "_note": None,
+            "_entries": [{"surface": "code", "id": "v2a", "class": "not-a-real-class", "note": "n", "reviewed_at": "d"}],
+        },
+    }
+    with pytest.raises(RuntimeError, match="failed validation"):
+        cli.apply_report(tmp_path, report)
+    # Gate/nose baselines are written before the review is validated (no rollback),
+    # but the invalid review itself must never land on disk.
+    assert not (tmp_path / "q" / "dup-review.json").is_file()
+
+
+# --------------------------------------------------------------------------- #
+# _print_human + main()'s text-mode branch.
+# --------------------------------------------------------------------------- #
+def test_print_human_full_report(capsys) -> None:
+    report = {
+        "ok": True, "mode": "dry-run", "tool_version": "0.1.0", "algo_version": "2",
+        "collision": {"distinct_v2_fingerprints": 3, "distinct_nose_family_ids": 3, "ok": True},
+        "gate_baseline": {
+            "path": "q/dup-ratchet-baseline.json", "old_family_count": 2, "survivor_count": 1,
+            "vanished": ["old_gone"], "accepted_new": [],
+            "requires_review": [{"v2_fingerprint": "v2_new", "files": ["a.py", "b.py"]}],
+            "new_family_count": 1,
+        },
+        "nose_baseline": {
+            "path": "q/nose-baseline.json", "old_family_count": 2, "survivor_count": 1,
+            "vanished": ["old_gone"], "new_family_count": 1,
+        },
+        "dup_review": {"path": "q/dup-review.json", "code_entries_before": 5, "dropped_ids": ["orphan1"]},
+        "messages": ["some prior message"],
+    }
+    cli._print_human(report)
+    out = capsys.readouterr().out
+    assert "some prior message" in out
+    assert "mode=dry-run tool_version=0.1.0 algo_version=2" in out
+    assert "collision check: distinct v2 fingerprints=3 distinct nose family ids=3 ok=True" in out
+    assert (
+        "gate baseline q/dup-ratchet-baseline.json: 2 old -> 1 survivor(s), "
+        "1 vanished, 0 accepted-new, 1 requires_review -> 1 new total" in out
+    )
+    assert "requires_review: v2_new (a.py, b.py)" in out
+    assert "nose baseline q/nose-baseline.json: 2 old -> 1 survivor(s), 1 vanished -> 1 new total" in out
+    assert "dup-review q/dup-review.json: 5 code entries before, 1 dropped as orphaned" in out
+
+
+def test_main_text_mode_calls_print_human(monkeypatch, capsys, tmp_path: Path) -> None:
+    import sys as _sys
+
+    monkeypatch.setattr(
+        cli, "run",
+        lambda _repo_root, _args: {"ok": False, "status": "no-scope-paths", "messages": ["refusing to scan"]},
+    )
+    monkeypatch.setattr(_sys, "argv", ["migrate_dup_fingerprints.py", "--repo-root", str(tmp_path)])
+    rc = cli.main()
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "refusing to scan" in out

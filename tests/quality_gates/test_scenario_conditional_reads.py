@@ -160,3 +160,69 @@ def test_incident_reconstruction_flags_unforced_continuation_sequence(tmp_path: 
     )
     with pytest.raises(ValidationError, match="continuation-sequence.md"):
         cross_check_conditional_reads(tmp_path)
+
+
+def test_missing_planner_script_raises_clean_validation_error(tmp_path: Path) -> None:
+    # A repo that registers the handoff extractor but ships no planner script
+    # must get a clean ValidationError, not a bare FileNotFoundError traceback.
+    entry = _scaffold_skill(tmp_path, "handoff", {"a.md": _ea()}, rcf=["a.md"])
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="plan_handoff_run"):
+        cross_check_conditional_reads(tmp_path)
+
+
+def test_validator_script_main_runs_green_on_live_repo(monkeypatch, capsys) -> None:
+    # In-process pin of the thin wrapper itself (argv/stdout contract), so the
+    # script surface carries coverage, not only the lib underneath.
+    import importlib.util
+    import sys as _sys
+
+    spec = importlib.util.spec_from_file_location(
+        "validate_scenario_conditional_reads_inproc",
+        ROOT / "scripts" / "validate_scenario_conditional_reads.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(
+        _sys, "argv", ["validate_scenario_conditional_reads.py", "--repo-root", str(ROOT)]
+    )
+    rc = module.main()
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "Validated conditional-reads cross-check" in out
+    assert "not cross-checked" in out  # not-yet-covered advisories stay visible
+
+
+def test_validator_script_prints_stale_allowlist_and_uncovered_advisories(monkeypatch, capsys) -> None:
+    # Directed pin for the per-line advisory prints: the live-repo run above only
+    # exercises "not cross-checked" (the repo currently HAS an uncovered skill), but
+    # its allowlist happens to be clean, so the stale_allowlist print line has no
+    # coverage from that run. Monkeypatch the loaded module's
+    # cross_check_conditional_reads to a canned report carrying one stale_allowlist
+    # entry + one not_yet_covered skill and assert both advisory lines print.
+    import importlib.util
+    import sys as _sys
+
+    spec = importlib.util.spec_from_file_location(
+        "validate_scenario_conditional_reads_inproc2",
+        ROOT / "scripts" / "validate_scenario_conditional_reads.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(
+        module,
+        "cross_check_conditional_reads",
+        lambda repo_root: {
+            "skills": {"alpha": {}},
+            "not_yet_covered": ["beta"],
+            "stale_allowlist": [{"skill_id": "alpha", "ref": "a.md", "reason": "no longer needed"}],
+        },
+    )
+    monkeypatch.setattr(_sys, "argv", ["validate_scenario_conditional_reads.py", "--repo-root", str(ROOT)])
+    rc = module.main()
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "`beta` has no forced-read extractor yet" in out and "not cross-checked" in out
+    assert f"{module.ALLOWLIST_PATH} entry `alpha:a.md` looks stale" in out

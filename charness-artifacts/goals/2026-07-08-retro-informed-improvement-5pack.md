@@ -1,6 +1,6 @@
 # Achieve Goal: Retro-informed autonomous improvement: 5 decided slices (ratio-A, required-reads validator, #371 Tier 1, dup-ratchet A+B, #408 item 4 prose)
 
-Status: active
+Status: complete
 Created: 2026-07-08
 Activation: `/goal @charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack.md`
 
@@ -9,18 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: G (#408 item 4 — forbidden-string prose principle).
-  Landed: R `6415175b`, V `6440b24d` (+debt fix `30e3dd11`), B `cf7e6f47`.
-- Current slice intent: one prose principle + worked example as a new section
-  in `skills/public/quality/references/unit-test-quality.md`, cross-linked
-  (one line) from `brittle-source-guards.md`; blesses the legitimate permanent
-  negative classes; names the rejected ratchet as the recurrence-triggered
-  escalation path. Doc-arm dup trips resolve via dup-review classification in
-  this slice, not D. One reviewable intent unit (meaningful-slice-cadence).
-- Next action: skill-surface preflight, author, verify, bounded critique,
-  pre-lock closeout, slice log, commit; then D (last, single re-baseline);
-  then repair the pre-goal red test (preflight roundtrip) before the final
-  verification lock.
+- Current slice: closeout. All five slices landed: R `6415175b`,
+  V `6440b24d` (+debt `30e3dd11`), B `cf7e6f47`, G `de54a977`, D `5d85de98`;
+  pre-goal red-tree repair `38219d95`.
+- Current slice intent: goal closeout — retro + dispositions bound, host-log
+  probe bound, disposition review written, final cross-slice fresh-eye review,
+  verification lock with mutation coverage, full run-quality, handoff refresh,
+  status complete. External writes still zero; #371 comment stays queued
+  confirm-before-post.
+- Next action: final verification lock (`run_slice_closeout.py
+  --verification-lock --produce-mutation-coverage`), full run-quality, handoff
+  refresh, `check_goal_artifact.py`, flip Status: complete, closeout commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -191,19 +190,8 @@ the operator's prose ("실구현은 다음 세션").
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Seeded at drafting:
+Two operator decisions are queued open at closeout (both deferred because
+local slices proceeded safely without them):
 
 - Decision: exact wording/scope of the #371 partial-resolution comment (names
   what Tier 1 fixes, what stays upstream at #1334)
@@ -268,6 +256,10 @@ closeout floors are presence-only, so no stub is seeded for them — add their l
 per the bullets above when that boundary is crossed):
 
 - Routing: find-skills -> achieve + impl — recommendation engine (`list_capabilities.py --recommend-for-task`, 2026-07-08, read-only) matched `achieve` for operating the active goal lifecycle and `quality` for the gate-touching slices; `impl` owns each code slice per the achieve coordination contract.
+- Routing: find-skills -> issue — the recommendation engine (read-only, 2026-07-08) routed the #371 partial-resolution comment staging to the `issue` skill; the comment itself stays queued confirm-before-post in `## Operator Decision Queue`, so the `issue` route executes at the operator-approved post step, not in this run.
+- Gather: n/a — all `## Context Sources` are repo-local artifacts and tracked GitHub issues already in working context; no external URL/Slack/Notion/Docs source required gathering this run.
+- Release: n/a — no version bump or install-manifest edit in this goal (`Release: n/a` was the drafted expectation and held).
+- Issue closeout: n/a — no issue closes in this goal by decision: #371 stays open (Tier 1 partial; upstream vercel-labs/agent-browser#1334 owns the rest), and #408 was already closed previously — this goal only delivers its disclosed residual item 4.
 
 ## Discuss Before Activation
 
@@ -347,6 +339,20 @@ applies.
 - Off-goal findings: none new (pre-goal red preflight-roundtrip test already recorded at Slice B).
 - Lessons carried forward: For public-skill prose slices the closeout's cautilus skill-review checkpoint is the extra gate to plan for — record the review decision early and rerun with the ack flag.
 - Metrics: Authored in main loop (prose); 1 fresh-eye critique subagent; 3 closeout runs (1 blocked on skill-review ack).
+
+### Slice 5: Slice D — dup-ratchet algo v2 + schema v3, one combined migration
+
+- Objective: S4-Defer-1 (tokenize-normalized member hashing, algo v2) + S4-Defer-3 (schema-v3 member-hash lists + reduction advisory pre-pass) with ONE migration of the three lockstep artifacts.
+- Why this approach: Dominant observed churn class (11 rotations/46 commits); combined = one re-baseline instead of two; decided A+B at drafting.
+- Commits: 5d85de98
+- What changed: nose_fingerprint_lib (algo v2 + explicit-algo + member hashes), dup_ratchet_lib (classify_reductions; baseline schema split to NEW dup_ratchet_baseline_lib), dup_ratchet_scan (public scan_families, member maps, production-dead fingerprints path DELETED), check_dup_ratchet (reduction pre-pass, v3 writes), nose_report_lib, NEW migrate_dup_fingerprints(.py/_lib.py), references/dup-ratchet.md, deferred-decisions.md, dogfood json, 4 test files (2 new), 3 rewritten quality artifacts, plugins mirrors.
+- Alternatives rejected: B-only then A later (two full re-baselines, rejected at drafting); corpus-reduction pass (rejected: fixable_ceiling already 0); extraction instead of deletion for the dead scan path (deletion removes the duplication rather than relocating it); blind --write-baseline (rejected: F1 — 9 grown/new families individually reviewed-then-accepted instead).
+- Targeted verification: 236 tests green across all 9 importer files (fixtures: comment-edit stable, whitespace stable, real-edit rotates, fallback==v1 for .mjs and unparseable spans, multiplicity, independent golden pin, block-nesting alignment pin, reduction/grow/genuine-new/shrink-then-recur, legacy-v2-degrades, 12 migration planner tests); live mid-phase degraded-advisory proven (S4-D7); post-migration live gate CLEAN exit 0; collision 548==548; zero orphaned intentional overlay ids, notes/reviewed_at verbatim; aggregate closeout completed with recorded cautilus skill-review ack; perf +0.24s (~9%).
+- Test duplication pressure: Post-migration check_dup_ratchet CLEAN (fixable_ceiling=0); goal-introduced code families all explicitly dispositioned: 1 refactored away (dead path deleted), 9 reviewed-accepted (2 critique-reviewed structural parallels, 6 thin-wrapper/bootstrap boilerplate cluster growth, 1 loader-idiom parallel with extract-on-third-copy note).
+- Critique: Fresh-eye bounded reviewer: APPROVE (adversarial, execution-backed). Key finding folded pre-migration: dropping INDENT/DEDENT drops BLOCK STRUCTURE, safe only because nose grouping is itself block-insensitive (reviewer proved by direct nose run) + the collision assertion fails closed — docstring rewritten + alignment test added. Second fold: production-dead fingerprints-only scan path deleted (with its unique real-scan coverage ported to the surviving members path, not dropped). Raised-not-folded: degrade message says missing/unreadable when file is legacy-schema (pre-existing FD8 wording); spec ~1.4s budget stale at HEAD (2.8s).
+- Off-goal findings: Spec runtime-budget note stale (dup-ratchet phase 2.8s at HEAD vs documented ~1.4s) — flagged, not fixed here.
+- Lessons carried forward: Critique-before-migration paid for itself twice: both folds were scanned-file edits that would have forced a second re-baseline if found after --execute.
+- Metrics: 1 impl subagent (sonnet, 2 rounds) + 1 fresh-eye critique subagent (execution-backed); 1 migration execute; 1 commit (lockstep).
 
 ## Context Sources
 
@@ -464,13 +470,36 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md
+Host log probe: charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack-host-log-probe.json
+Disposition review: charness-artifacts/critique/2026-07-08-retro-informed-improvement-5pack-disposition-review.md
 
 ## User Verification Instructions
 
+1. `python3 -m pytest -q tests/quality_gates/test_test_production_ratio.py` —
+   8 pass while the live ratio sits at 1.0002 (>1): the old hard pin would have
+   failed this tree (Slice R).
+2. `python3 scripts/validate_scenario_conditional_reads.py --repo-root .` —
+   exit 0, handoff covered, two waived findings; then in a scratch copy delete
+   `evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json` and rerun
+   to see `continuation-sequence.md` flagged (Slice V; the same reconstruction
+   is pinned in `tests/quality_gates/test_scenario_conditional_reads.py`).
+3. `python3 -m pytest -q tests/test_web_fetch_cleanup.py` — includes the
+   SIGTERM mid-render close test (Slice B); the red pre-fix output is recorded
+   in the Slice Log.
+4. Read `skills/public/quality/references/unit-test-quality.md` section 7 and
+   the cross-link at the end of `brittle-source-guards.md` (Slice G).
+5. `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root .`
+   — CLEAN on the migrated v3 baseline; an in-place comment edit inside a
+   duplicated span no longer rotates the family (pinned in
+   `tests/quality_gates/test_nose_fingerprint.py`), and membership shrink
+   surfaces as an advisory REDUCTION (pinned in
+   `tests/quality_gates/test_dup_ratchet.py`) (Slice D).
+6. Operator lane: approve/post the queued #371 comment draft (Operator
+   Decision Queue) and decide the test-debt rotation handoff placement; push +
+   remote CI remain an operator-approved lane.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: importer/registry focused-proof rule added to `docs/conventions/implementation-discipline.md` (Validation Discipline) — the goal's two proof escapes both lived in importer/registry tests the producer never ran; applied: stale dup-ratchet `~1.4s` budget note corrected with a dated annotation in `charness-artifacts/spec/boy-scout-dup-ratchet.md` (PQ3); none — the capability lane surfaced no missing tool this run (existing aggregates caught every producer miss, later than ideal but reliably).
+Structural follow-up: applied: `docs/conventions/implementation-discipline.md` Validation Discipline bullet (focused proof must include the registry/importer tests of the changed surface class) — committed with this goal's closeout commit.

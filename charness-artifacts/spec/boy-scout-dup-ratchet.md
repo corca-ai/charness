@@ -643,7 +643,10 @@ numbers and file content are always consistent — no staleness window.
   token/comment-aware normalization is S4-Defer-1.
 - **PQ3 — Performance.** Stamping a fingerprint for ~538 families adds file I/O to the
   ~0.6s code scan; cache reads per file and confirm the `dup-ratchet` phase stays
-  within its ~1.4s budget.
+  within its ~1.4s budget. (2026-07-08 correction: the phase measured ~2.8s at
+  HEAD *before* the algo-v2 slice — the ~1.4s figure is stale for the grown
+  corpus/nose 0.17.0; algo v2 added ~0.24s (~9%) on top. Treat ~3s as the
+  current live reference, not a regression signal.)
 
 ### Deferred Decisions
 

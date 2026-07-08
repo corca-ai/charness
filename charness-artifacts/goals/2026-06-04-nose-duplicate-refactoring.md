@@ -140,6 +140,11 @@ during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
+Routing: n/a — this goal completed on 2026-06-04, the same day the
+find-skills routing-evidence floor's rule date began; its run predates the
+recorded-route practice, and this dated retroactive opt-out was added on
+2026-07-08 when the goal-evidence-json sweep re-validated the artifact (no
+routing evidence exists to reconstruct honestly).
 Gather: n/a — no external URL or source asset was used to shape this goal.
 Release: n/a — no release surface is planned.
 Issue closeout: n/a — no tracked GitHub issue is being closed by this goal as

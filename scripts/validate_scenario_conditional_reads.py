@@ -33,7 +33,7 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - CLI entrypoint
     try:
         sys.exit(main())
     except ValidationError as exc:

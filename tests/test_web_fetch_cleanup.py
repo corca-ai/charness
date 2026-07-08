@@ -380,3 +380,35 @@ def test_teardown_no_session_is_idempotent_noop(monkeypatch) -> None:
     _ACQUIRE._teardown_live_session()
     _ACQUIRE._teardown_live_session()
     assert len(calls) == 1
+
+
+def test_signal_handler_runs_teardown_then_reraises_default(monkeypatch) -> None:
+    # In-process pin of the handler body: teardown fires first, then SIG_DFL is
+    # restored and the signal re-raised so the exit disposition is unchanged.
+    calls: list[object] = []
+    monkeypatch.setattr(
+        _ACQUIRE.browser_fallback_stages, "_close_cleanup_error",
+        lambda *args, **kwargs: calls.append("close"),
+    )
+    monkeypatch.setattr(_ACQUIRE.signal, "signal", lambda signum, action: calls.append(("sig", signum, action)))
+    monkeypatch.setattr(_ACQUIRE.os, "kill", lambda pid, signum: calls.append(("kill", signum)))
+    _ACQUIRE._register_live_session(SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT))
+
+    _ACQUIRE._handle_teardown_signal(signal.SIGTERM, None)
+
+    assert calls == [
+        "close",
+        ("sig", signal.SIGTERM, signal.SIG_DFL),
+        ("kill", signal.SIGTERM),
+    ]
+
+
+def test_teardown_swallows_close_errors(monkeypatch) -> None:
+    # never-raises contract: a failing close chain must not escape the handler.
+    def _boom(*_args, **_kwargs):
+        raise RuntimeError("close chain failed")
+
+    monkeypatch.setattr(_ACQUIRE.browser_fallback_stages, "_close_cleanup_error", _boom)
+    _ACQUIRE._register_live_session(SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT))
+    _ACQUIRE._teardown_live_session()
+    assert _ACQUIRE._LIVE_BROWSER_SESSION is None

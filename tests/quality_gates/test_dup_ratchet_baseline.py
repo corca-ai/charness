@@ -59,8 +59,17 @@ def test_load_gate_baseline_members_none_on_malformed_or_missing_hashes() -> Non
     assert baseline_lib.load_gate_baseline_members(None) is None
     assert baseline_lib.load_gate_baseline_members({"code_families": [{"fingerprint": "a"}]}) is None
     assert baseline_lib.load_gate_baseline_members({"code_family_fingerprints": ["a"]}) is None
+    # A non-dict entry in code_families -> None (same defensive shape guard as
+    # load_gate_baseline_ids, but exercised here for load_gate_baseline_members).
+    assert baseline_lib.load_gate_baseline_members({"code_families": ["not-a-dict"]}) is None
     baseline = baseline_lib.build_gate_baseline({"a": ["h1", "h2"]})
     assert baseline_lib.load_gate_baseline_members(baseline) == {"a": ["h1", "h2"]}
+
+
+def test_validate_gate_baseline_rejects_non_dict_top_level() -> None:
+    assert baseline_lib.validate_gate_baseline("nope") == ["gate baseline must be a JSON object"]
+    assert baseline_lib.validate_gate_baseline(None) == ["gate baseline must be a JSON object"]
+    assert baseline_lib.validate_gate_baseline([1, 2]) == ["gate baseline must be a JSON object"]
 
 
 def test_validate_gate_baseline_flags_bad_schema_and_shape() -> None:
