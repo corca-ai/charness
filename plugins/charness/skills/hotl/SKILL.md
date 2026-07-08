@@ -84,17 +84,23 @@ python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
    - record exactly one status per entry: `verified`,
      `blocked-needs-operator`, `blocked-needs-capability`,
      `deferred-by-operator`, `issue`, `accepted-risk`, or `out-of-scope`
-   - `verified` carries `verified_at` and `verified_against` (source commit,
-     proof artifact, proving-surface refs); a stale proving-surface ref is a
-     `stale_candidate` / `needs_adjudication` signal until the agent decides
-     whether it is actual proof debt
+   - `verified` carries `verified_at` plus the `verified_against.*` fields:
+     `verified_against.source_commit` (repo state the proof covered),
+     `verified_against.proof_artifact` (durable evidence), and
+     `verified_against.proving_surface_refs` (files whose change stales the
+     proof), plus provider refs when the surface exposes them; a stale
+     proving-surface ref is a `stale_candidate` / `needs_adjudication` signal
+     until the agent decides whether it is actual proof debt
    - staleness adjudication uses one of `reproof_required`,
      `covered_by_tests`, `covered_by_newer_proof`, `narrow_surface`,
      `ledger_outdated`, `accepted_risk`, or `deferred`
-   - final non-verified statuses carry disposition owner, reason, decided-at,
-     and revisit trigger
+   - final non-verified statuses carry `disposition.owner`,
+     `disposition.reason`, `disposition.decided_at`, and
+     `disposition.revisit_trigger`
    - queue deferrable operator-only decisions in the active goal's
-     `## Operator Decision Queue`; stop only when they block all safe next work
+     `## Operator Decision Queue` with the five fields `Decision`, `Owner`,
+     `Why deferred`, `Unblock action`, and `Revisit trigger`; stop only when
+     they block all safe next work
    - completion audits block while a linked entry is neither verified nor
      explicitly dispositioned, or while a stale candidate still has unresolved
      adjudication
