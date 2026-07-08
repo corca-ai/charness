@@ -43,14 +43,15 @@ driven by what is stable in the detector. They differ in mechanism only because
 the inputs differ:
 
 - **Code: a gate-owned content-fingerprint baseline** (`dup-ratchet-baseline.json`,
-  `schemaVersion: charness.quality.dup_ratchet_baseline.v2`, a
-  `code_family_fingerprints` list). A full `nose query` (one `--root` multi-root
-  call over the whole scope, no nose `--baseline`) yields the current code families;
-  the gate computes, per family, an offset/path-INDEPENDENT content fingerprint
-  (`nose_fingerprint_lib`): sha256 over the sorted, duplicate-preserving
-  rstrip-normalized member spans, read by each member's `(file, start, end)`. A
-  fingerprint absent from the baseline and not `intentional` is new. The scope is a
-  single corpus, so a cross-root clone family is grouped (not split per root).
+  `schemaVersion: charness.quality.dup_ratchet_baseline.v3`, a `code_families` list
+  of `{fingerprint, member_hashes}` objects — schema v3, item 5 slice D). A full
+  `nose query` (one `--root` multi-root call over the whole scope, no nose
+  `--baseline`) yields the current code families; the gate computes, per family, an
+  offset/path-INDEPENDENT content fingerprint (`nose_fingerprint_lib`): sha256 over
+  the sorted, duplicate-preserving normalized member spans, read by each member's
+  `(file, start, end)`. A fingerprint absent from the baseline and not `intentional`
+  is new. The scope is a single corpus, so a cross-root clone family is grouped (not
+  split per root).
 
   **Why not nose's `family_id` (slice 4 re-key, resolving D30).** nose's `family_id`
   folds each member span's normalized content, its **line offset**, AND its **file
@@ -63,12 +64,18 @@ the inputs differ:
   is still nose-version-scoped, so a nose bump can regroup families and drift the
   fingerprint set — re-baseline per nose version (self-detecting; see below).
 
-  **v1 limitation.** The rstrip-only normalization is stricter than nose's tokenizer:
-  an in-place comment or internal-whitespace edit *inside* a duplicated span (no
-  line-count change) rotates the fingerprint where nose's id would not. This is a
-  different, low-frequency edit class than the offset shift the fix removes, and it
-  falls back to the same re-baseline recovery; token/comment-aware normalization is
-  deferred (its arrival would bump `fingerprint_algo_version`).
+  **Normalization: algo v2 (token/comment-aware), v1 (rstrip-only) as fallback.**
+  For a Python member (`.py`), the fingerprint tokenizes the span (dedented, via
+  `tokenize.generate_tokens`), drops comment and pure-whitespace-structure tokens
+  (`COMMENT`/`NL`/`NEWLINE`/`INDENT`/`DEDENT`), and joins the surviving token strings
+  with a single space before hashing — so an in-place comment edit or an internal
+  whitespace edit inside a duplicated span no longer rotates the fingerprint, while
+  a real identifier/literal/operator edit still does (S4-Defer-1, resolved). A span
+  that fails to tokenize standalone (a bracket-unbalanced fragment, a dangling
+  `else:`) falls back, PER MEMBER, to algo v1 (rstrip each line, join with `\n`) —
+  never a crash, never a whole-family degrade for one unparseable member. A
+  non-Python member (e.g. a `.mjs` clone) always uses v1 regardless of algo — a
+  JS/TS-aware tokenizer is out of scope; this is an accepted, documented gap.
 - **Doc: the existing signature drift** (`doc-nose-baseline.json`, sorted member
   `path#heading` signature). Heading-based and position-independent; the doc
   inventory's drift output already is the new-family set, so a doc drift family not
@@ -77,6 +84,41 @@ the inputs differ:
 The counts feeding both the gate and the newness check come from the SAME family
 enumeration per surface, never from nose's `--fail-on` (whose count diverges from
 the enumerated families).
+
+## Reduction Advisory (Membership Shrink Is Not New Duplication)
+
+**S4-D9 stands: a membership CHANGE still rotates the family fingerprint** — adding
+or removing a copy changes the member set, and the fingerprint folds membership and
+multiplicity by design (`fp({A,A,B}) != fp({A,B})`, guarding a real 3-member family
+from colliding with a real 2-member one). This is not a regression: nose's own
+`family_id` already rotates on membership change today. A genuine membership GROW
+(a copy added) is real new/changed duplication and hard-blocks like any other new
+family — re-baseline is the correct, expected recovery, not a bug to route around.
+
+What schema v3 adds is a narrower, honest carve-out (S4-Defer-3, resolved): before
+the hard arm runs, the CLI classifies each would-be-new fingerprint against every
+baseline fingerprint that vanished from the live scan. When the candidate's
+member-hash multiset is a PROPER sub-multiset of a vanished family's (every member
+count `<=`, and a strictly smaller total — a copy was *removed*, not added or
+changed), it is a **membership REDUCTION**, not new duplication, and the CLI
+excludes it from the hard-block set entirely. A reduction is **never silent**: the
+CLI always prints one `ADVISORY (reduction): family OLD shrank to NEW ...` line
+naming the one-command scoped accept that folds it into the baseline:
+
+```bash
+python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . \
+  --accept-rotation OLD_FINGERPRINT=NEW_FINGERPRINT
+```
+
+A membership GROW is deliberately NOT a reduction (the candidate would be a
+*superset*, not a sub-multiset, of any vanished family) and still hard-blocks, same
+as before schema v3. The residual S4-Defer-2 adversary (a vanished/shrunk family's
+exact original member set recurring elsewhere) is narrowed by this same pre-pass:
+once a reduction is accepted via `--accept-rotation`, the baseline holds only the
+shrunk family, so the ORIGINAL full member set recurring under a different identity
+is no longer a superset of anything vanished and hard-blocks — it is never silently
+re-accepted. The residual applies only while a reduction advisory sits unaccepted
+(the CLI prints it every run until then).
 
 ## Re-Baseline Triggers
 
@@ -91,14 +133,22 @@ the false-block slice 4 removed.)
    WARNING when the live version differs.
 2. **Membership change.** Adding or removing a copy of a clone family changes its
    member set, so its content fingerprint rotates (the fingerprint folds membership
-   and multiplicity). Removing one of N copies — a legitimate reduction — therefore
-   reads as a new family and re-baselines, the SAME behavior as nose's id today (the
-   fingerprint does not make it worse; a subset-aware "reduction" diff is a deferred
-   enhancement). Verify the change is a real reduction, not a laundered new clone,
-   then re-baseline.
-3. **Fingerprint-algorithm bump.** A change to the normalization (e.g. landing
-   token/comment-aware normalization) bumps `fingerprint_algo_version`; the gate
-   surfaces an algo-skew WARNING so the drifted fingerprints read as re-baseline.
+   and multiplicity). A REMOVAL — one of N copies deleted — is now classified a
+   membership REDUCTION by the CLI's pre-pass (see "Reduction Advisory" above) and
+   stays advisory-only, with a one-command `--accept-rotation` scoped accept; it no
+   longer needs a full re-baseline. A GROW (a copy added) is NOT a reduction and
+   still reads as a new family — verify it is genuine new/changed duplication, not a
+   laundered clone, then re-baseline.
+3. **Fingerprint-algorithm bump.** A change to the normalization (e.g. the v1->v2
+   token/comment-aware landing, item 5 slice D) bumps `fingerprint_algo_version`;
+   the gate surfaces an algo-skew WARNING so the drifted fingerprints read as
+   re-baseline. A repo-wide algo bump uses the one-shot migration tool
+   (`migrate_dup_fingerprints.py`, dry-run by default) rather than a fresh
+   `--write-baseline`: it remaps every accepted family old-fingerprint ->
+   new-fingerprint (preserving `dup-review.json`'s manual classifications
+   verbatim), drops anything genuinely vanished, and refuses to silently absorb a
+   live family that was not previously accepted (`requires_review`, named in via
+   `--accept-new-family`).
 4. **Reviewed batch accept.** You genuinely accept new fixable families after review.
 
 **Prefer the scoped mode for routine churn.** `--write-baseline` is a full-scan
@@ -159,9 +209,12 @@ injectable so the policy stays pure and testable.
   gate degrades rather than block on — or silently pass — a misconfigured scan.
   Set `scope_paths` to your code roots.
 - the gate baseline is present and loadable but schema-invalid (wrong
-  `schemaVersion`, non-string ids) → advisory integrity warning
-  (`dup_ratchet_lib.validate_gate_baseline`); the hard arm must not run silently on
-  an unvalidated baseline. Never blocks.
+  `schemaVersion`, a non-string fingerprint, an empty/non-string `member_hashes`
+  list) → advisory integrity warning (`dup_ratchet_baseline_lib.validate_gate_baseline`);
+  the hard arm must not run silently on an unvalidated baseline. Never blocks. A
+  pre-v3 baseline (the old flat `code_family_fingerprints` list) has no
+  `code_families` key at all, so it reads as missing/unreadable (the line above),
+  not schema-invalid — same no-dual-read discipline as the v1→v2 re-key.
 - nose missing or the scan errors → degraded advisory; the doc-duplicates
   `--require-nose` phase owns failing closed on nose presence, not this gate.
 
@@ -202,3 +255,7 @@ later — the trap step 3 below warns about).
   the same discipline as the doc baseline — a version swing trips the
   `--write-baseline` large-delta guard, so confirm it deliberately with
   `--confirm-baseline-delta`.
+- Does a printed `ADVISORY (reduction)` line genuinely describe a copy removed, or
+  did the CLI's pre-pass mis-pair it with an unrelated vanished family? Read the
+  named old/new fingerprints against the actual diff before running the suggested
+  `--accept-rotation`.

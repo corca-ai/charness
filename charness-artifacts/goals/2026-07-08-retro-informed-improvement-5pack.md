@@ -334,6 +334,20 @@ applies.
 - Lessons carried forward: The V lesson was under-applied: the pre-lock aggregate still skips broad pytest, and MF1 lived exactly there. For remaining slices, run the focused pytest of ALL modules importing the changed surface (grep the import), not only the slice's own test file.
 - Metrics: 1 impl subagent (sonnet) + 1 fresh-eye critique subagent; red/green captured pre/post fix; 2 commits.
 
+### Slice 4: Slice G — forbidden-string prose principle (#408 residual item 4)
+
+- Objective: Section 7 of unit-test-quality.md: permanent negative wording assertions over rendered prose pass vacuously on wording drift — assert the positive scope; bless legitimate permanent-negative classes; temporary migration sentinels need a removal trigger; ratchet named as recurrence-triggered escalation. One-line cross-link from brittle-source-guards.md.
+- Why this approach: Disclosed residual of a closed issue; three live vacuous-pass examples existed; decided prose-only (validator rejected: semantic split).
+- Commits: de54a977
+- What changed: skills/public/quality/references/unit-test-quality.md (+~24), brittle-source-guards.md (+4 cross-link), plugins mirrors.
+- Alternatives rejected: Forbidden-string ratchet validator (rejected at drafting under north-star P1); owning the principle in brittle-source-guards.md (rejected: that file is charter-scoped to the syntactic false-trigger class; one home keeps the doc arm dup-clean).
+- Targeted verification: Skill-surface preflight (81 core headroom); run_slice_closeout --skip-broad-pytest completed incl. validate_skills/ergonomics/doc-links/markdown/mirror; dup-ratchet doc arm 0 new families; cautilus skill-review decision recorded (prose-only on-demand reference, dogfood consumer contract unchanged) and acked.
+- Test duplication pressure: Prose-only; no test LOC. Code arm carries 4 goal-introduced families from V/B awaiting Slice D review-then-accept.
+- Critique: Fresh-eye bounded reviewer: APPROVE. Folded the one optional polish (permanent-negatives list includes non-prose classes — framing clause broadened). Noted improvements over the brief: migration sentinels correctly demoted to temporary-only; worked example traced to a real unremediated in-repo instance. Portability clear (no anchors/dates/paths).
+- Off-goal findings: none new (pre-goal red preflight-roundtrip test already recorded at Slice B).
+- Lessons carried forward: For public-skill prose slices the closeout's cautilus skill-review checkpoint is the extra gate to plan for — record the review decision early and rerun with the ack flag.
+- Metrics: Authored in main loop (prose); 1 fresh-eye critique subagent; 3 closeout runs (1 blocked on skill-review ack).
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

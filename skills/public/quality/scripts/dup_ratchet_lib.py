@@ -46,23 +46,8 @@ phantom. Overlay/baseline/nose missing => degraded advisory, never a block (FD8)
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any, Iterable
-
-GATE_BASELINE_SCHEMA_VERSION = "charness.quality.dup_ratchet_baseline.v2"
-GATE_BASELINE_NOTE = (
-    "Accepted code clone content fingerprints for the boy-scout dup ratchet (item 5, slice 4). "
-    "A code family fingerprint present now but absent here (and not 'intentional' in dup-review.json) "
-    "is a NEW fixable-eligible family and hard-blocks. Keyed by a gate-computed, offset/path-"
-    "INDEPENDENT content fingerprint (sha256 over the sorted, duplicate-preserving rstrip-normalized "
-    "member spans; see nose_fingerprint_lib) from a FULL `nose query` over the scope — NOT nose's "
-    "offset/path-folding family_id (slice 4 re-key, resolving deferred decision D30). CHURN CAVEAT: "
-    "the fingerprint is STABLE across pure line-shifts (inserting lines above an unchanged span no "
-    "longer rotates it), so incidental member-file edits do not force a re-baseline. Re-baseline "
-    "deliberately on: a reviewed new/changed family, a member-set (membership) change, a nose-version "
-    "bump that regroups families, OR a fingerprint_algo_version bump. The baseline stamps the producing "
-    "nose tool_version AND fingerprint_algo_version; the gate WARNS (never degrades) on either skew, so "
-    "a silent bump's drift reads as re-baseline, not new dup. Docs key on the doc-nose-baseline signature."
-)
 
 
 # --------------------------------------------------------------------------- #
@@ -95,106 +80,55 @@ def overlay_fixable_ceiling(overlay: dict[str, Any] | None) -> int:
 
 
 # --------------------------------------------------------------------------- #
-# Gate baseline (dup-ratchet-baseline.json) load/build/validate
+# Reduction pre-pass (S4-Defer-3: membership-shrink is advisory, not a hard block)
+#
+# The gate-baseline schema (build/load/validate ``dup-ratchet-baseline.json``) lives
+# in the sibling ``dup_ratchet_baseline_lib`` module (length-cap split). This function
+# is a PURE CLI-layer pre-pass that runs BEFORE ``evaluate`` and never touches it
+# (S4-D9 keeps ``evaluate``'s opaque-string set-diff signature untouched, protecting
+# the ~15 existing policy tests): a candidate-new family whose member multiset is a
+# PROPER sub-multiset of a vanished baseline family's is a membership REDUCTION (a
+# copy was removed), not new duplication, so the CLI advises instead of hard-blocking.
 # --------------------------------------------------------------------------- #
-def build_gate_baseline(
-    code_family_fingerprints: Iterable[str],
-    *,
-    tool_version: str = "",
-    algo_version: str = "",
-    note: str = GATE_BASELINE_NOTE,
-) -> dict[str, Any]:
-    ids = sorted({str(fid) for fid in code_family_fingerprints if fid})
-    baseline: dict[str, Any] = {
-        "schemaVersion": GATE_BASELINE_SCHEMA_VERSION,
-        "note": note,
-        "code_family_fingerprints": ids,
-    }
-    # Stamp only when known so a legacy write stays unstamped, never a false skew.
-    if tool_version:
-        baseline["tool_version"] = str(tool_version)
-    if algo_version:
-        baseline["fingerprint_algo_version"] = str(algo_version)
-    return baseline
+def classify_reductions(
+    live_members: dict[str, list[str]],
+    baseline_members: dict[str, list[str]],
+    candidate_new: Iterable[str],
+) -> list[dict[str, str]]:
+    """Classify each ``candidate_new`` fingerprint as a membership reduction of some
+    vanished baseline family, or leave it unclassified (genuine new duplication).
 
-
-def load_gate_baseline_ids(data: Any) -> set[str] | None:
-    """Return the accepted code fingerprint set, or ``None`` when the file is
-    absent/unreadable/malformed OR keyed by the legacy ``code_family_ids`` (pre-slice-4
-    nose-id baseline) — both read as ``None`` so the CLI degrades to advisory (FD8) until
-    a deliberate re-baseline mints the new identity. The function name stays
-    identity-agnostic ("the accepted identity set"); only the key it reads changed.
-    No dual-read: a stale checkout must NOT misread nose ids as fingerprints."""
-    if not isinstance(data, dict):
-        return None
-    ids = data.get("code_family_fingerprints")
-    if not isinstance(ids, list):
-        return None
-    return {str(fid) for fid in ids if isinstance(fid, str) and fid}
-
-
-def _baseline_string_field(data: Any, key: str) -> str:
-    """A stamped string field from the gate baseline, or ``""`` when absent/legacy."""
-    if isinstance(data, dict):
-        value = data.get(key)
-        if isinstance(value, str):
-            return value
-    return ""
-
-
-def load_gate_baseline_tool_version(data: Any) -> str:
-    """The nose version stamped into the gate baseline, or ``""`` when absent/legacy.
-    The gate compares it against the live scan version and surfaces a skew WARNING
-    (never a degrade): a nose bump can regroup families and drift the fingerprint set,
-    so the operator must read "re-baseline", not "remove duplication"."""
-    return _baseline_string_field(data, "tool_version")
-
-
-def load_gate_baseline_algo_version(data: Any) -> str:
-    """The fingerprint algorithm version stamped into the gate baseline, or ``""`` when
-    absent/legacy. A future normalization change (e.g. landing token/comment-aware
-    normalization) bumps the algo version; the gate then WARNS (never degrades) so the
-    drifted fingerprints read as re-baseline, not a corpus-wide false hard-block."""
-    return _baseline_string_field(data, "fingerprint_algo_version")
-
-
-def algo_version_skew(baseline_algo: str | None, live_algo: str | None) -> str | None:
-    """Operator warning when the stored fingerprints were minted under a different
-    fingerprint algorithm version than the one now computing, else ``None``. A MISSING
-    stamp on either side returns ``None`` (unknown, not a mismatch). Mirrors
-    ``nose_report_lib.tool_version_skew`` for the gate-owned identity axis."""
-    base = str(baseline_algo or "").strip()
-    live = str(live_algo or "").strip()
-    if base and live and base != live:
-        return (
-            f"fingerprint algo skew: baseline written under algo v{base}, now computing "
-            f"with algo v{live}. The content-fingerprint normalization changed, so a "
-            "re-baseline (--write-baseline) is the honest fix — do NOT treat the rotated "
-            "fingerprints as new duplication."
-        )
-    return None
-
-
-def validate_gate_baseline(data: Any) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(data, dict):
-        return ["gate baseline must be a JSON object"]
-    if data.get("schemaVersion") != GATE_BASELINE_SCHEMA_VERSION:
-        errors.append(f"schemaVersion must be {GATE_BASELINE_SCHEMA_VERSION!r}")
-    version = data.get("tool_version")
-    if version is not None and not isinstance(version, str):
-        errors.append("tool_version must be a string when present")
-    algo = data.get("fingerprint_algo_version")
-    if algo is not None and not isinstance(algo, str):
-        errors.append("fingerprint_algo_version must be a string when present")
-    ids = data.get("code_family_fingerprints")
-    if not isinstance(ids, list):
-        errors.append("code_family_fingerprints must be a list")
-        return errors
-    for index, value in enumerate(ids):
-        if not isinstance(value, str) or not value:
-            errors.append(f"code_family_fingerprints[{index}] must be a non-empty string")
-    return errors
+    ``vanished`` = baseline fingerprints absent from ``live_members`` (the family the
+    candidate might be a shrunk remainder of). A candidate is a reduction of a
+    vanished family when its member-hash multiset (``collections.Counter``) is a
+    PROPER sub-multiset of the vanished family's (every count <= , and a strictly
+    smaller total — not merely equal). Pairing is deterministic: the smallest
+    vanished superset by member count, then by fingerprint, so the result never
+    depends on dict iteration order. A candidate absent from ``live_members`` (should
+    not happen; the CLI only asks about fingerprints it just scanned) is left
+    unclassified, never an error — this stays a pure best-effort classifier, never a crash."""
+    vanished = {fp: hashes for fp, hashes in baseline_members.items() if fp not in live_members}
+    reductions: list[dict[str, str]] = []
+    for new_fingerprint in sorted(candidate_new):
+        live_hashes = live_members.get(new_fingerprint)
+        if live_hashes is None:
+            continue
+        live_counter = Counter(live_hashes)
+        live_total = sum(live_counter.values())
+        best: tuple[int, str] | None = None
+        for old_fingerprint, old_hashes in vanished.items():
+            old_counter = Counter(old_hashes)
+            old_total = sum(old_counter.values())
+            if old_total <= live_total:
+                continue  # not strictly smaller -> not a proper sub-multiset
+            if any(count > old_counter.get(member, 0) for member, count in live_counter.items()):
+                continue  # some member over-represented -> not a sub-multiset
+            key = (old_total, old_fingerprint)
+            if best is None or key < best:
+                best = key
+        if best is not None:
+            reductions.append({"new_fingerprint": new_fingerprint, "old_fingerprint": best[1]})
+    return reductions
 
 
 # --------------------------------------------------------------------------- #

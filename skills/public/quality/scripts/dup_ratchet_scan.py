@@ -9,10 +9,10 @@ injected file). The gate CLI (``check_dup_ratchet.py``) and its baseline mainten
 commands both consume this; it depends only on the nose scan/report/fingerprint
 helpers, so the dependency direction stays one-way (scan <- check, never a cycle).
 
-Test seams mirror the CLI: ``code_fingerprints`` / ``doc_drift_signatures`` honor an
+Test seams mirror the CLI: ``code_family_members`` / ``doc_drift_signatures`` honor an
 injected ``--code-inventory`` / ``--doc-inventory`` payload so no nose binary is
-needed. An injected family carries ``family_fingerprint`` directly, or the fingerprint
-is computed from injected raw ``locations``.
+needed. An injected family carries ``family_fingerprint`` / ``family_member_hashes``
+directly, or they are computed from injected raw ``locations``.
 """
 
 from __future__ import annotations
@@ -74,10 +74,18 @@ def families_from_text(text: str | None) -> list | None:
     return families if isinstance(families, list) else []
 
 
-def scan_code_fingerprints(repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
+def scan_families(repo_root: Path, scope_paths: list[str]) -> tuple[list[dict] | None, str | None, str]:
+    """Shared leaf: one full ``nose query`` scan over ``scope_paths``, returning the
+    raw family dicts (each already carrying nose_report_lib's stamped
+    ``family_fingerprint`` / ``family_member_hashes``, plus ``locations`` for a
+    caller that needs the raw member spans), or ``None`` with a reason on a missing
+    nose binary or a scan error. `scan_code_members` builds on this (one nose
+    invocation per caller, never a double-scan for the perf budget); it is also the
+    reusable entrypoint an algo-migration tool (``migrate_dup_fingerprints.py``)
+    needs to compute BOTH the old and new algo's identity from one live scan."""
     nose_bin = _inventory.resolve_nose_bin()
     if nose_bin is None:
-        return set(), "nose binary not found; code clone scan skipped", ""
+        return None, "nose binary not found; code clone scan skipped", ""
     paths = [str(path) for path in (scope_paths or _inventory.DEFAULT_PATHS)]
     # Full enumeration via the pinned `nose query` resolver: one nose `--root` multi-root
     # query over the whole scope (a cross-root clone is grouped, not split per root), high
@@ -90,21 +98,39 @@ def scan_code_fingerprints(repo_root: Path, scope_paths: list[str]) -> tuple[set
     )
     live_version = result.get("tool_version", "")
     if result.get("status") == "error":
-        return set(), f"nose code scan error: {result.get('stderr', '')[:160]}", live_version
+        return None, f"nose code scan error: {result.get('stderr', '')[:160]}", live_version
     families = [fam for fam in result.get("families", []) if isinstance(fam, dict)]
-    # A family with no stamped fingerprint had an unreadable member span (file changed
-    # between scan and read, etc.). Degrade the WHOLE gate to advisory (FD8) — never a
-    # false block, never a silently dropped family that would read as "removed".
-    missing = [fam for fam in families if not fam.get("family_fingerprint")]
+    return families, None, live_version
+
+
+def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], str | None, str]:
+    """Real (non-injected) code-family scan, returning ``{fingerprint: member_hashes}``.
+    Schema v3 stores the per-family member hashes in the gate baseline; the CLI's
+    reduction pre-pass diffs them as multisets. Shares the FD8 whole-gate-degrade
+    discipline: any family missing either stamped field degrades the WHOLE map to a
+    reason, never a silently dropped family."""
+    families, reason, live_version = scan_families(repo_root, scope_paths)
+    if reason:
+        return {}, reason, live_version
+    missing = [
+        fam for fam in families
+        if not fam.get("family_fingerprint") or not isinstance(fam.get("family_member_hashes"), list)
+    ]
     if missing:
         return (
-            set(),
+            {},
             f"{len(missing)} clone family(ies) had an unreadable member span; "
             "content fingerprint degraded (whole gate advisory)",
             live_version,
         )
-    fingerprints = {str(fam["family_fingerprint"]) for fam in families}
-    return {fp for fp in fingerprints if fp}, None, live_version
+    return (
+        {
+            str(fam["family_fingerprint"]): [str(h) for h in fam["family_member_hashes"]]
+            for fam in families if fam.get("family_fingerprint")
+        },
+        None,
+        live_version,
+    )
 
 
 def payload_tool_version(text: str | None) -> str:
@@ -119,26 +145,34 @@ def payload_tool_version(text: str | None) -> str:
     return version if isinstance(version, str) else ""
 
 
-def code_fingerprints(args, repo_root: Path, scope_paths: list[str]) -> tuple[set[str], str | None, str]:
+def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], str | None, str]:
+    """The injected-inventory test seam (``--code-inventory``) mirrors the CLI:
+    an injected family carries `family_member_hashes` directly, else it is computed
+    from injected raw `locations`. A family missing both stays unrepresented — the
+    CLI's own missing-fingerprint checks already degrade the whole gate on that
+    shape. Without an injected inventory, delegates to a real ``scan_code_members``
+    (the fingerprints-only path this docstring once mirrored was deleted: schema
+    v3's per-family member hashes made it production-dead — every caller derives
+    `set(members)` when it only needs the identity set)."""
     if args.code_inventory is not None:
         text = safe_read(args.code_inventory)
         families = families_from_text(text)
         if families is None:
-            return set(), f"injected code inventory unreadable ({args.code_inventory})", ""
-        # Test seam: an injected family carries `family_fingerprint` directly (symmetric
-        # with the pre-slice-4 injected `family_id`); else compute it from injected raw
-        # `locations` so an injected nose-shaped inventory also works.
-        fingerprints: set[str] = set()
+            return {}, f"injected code inventory unreadable ({args.code_inventory})", ""
+        members: dict[str, list[str]] = {}
         for fam in families:
             if not isinstance(fam, dict):
                 continue
             fingerprint = fam.get("family_fingerprint")
+            hashes = fam.get("family_member_hashes")
             if not fingerprint and fam.get("locations"):
                 fingerprint = _fingerprint.family_content_fingerprint(fam, repo_root)
-            if fingerprint:
-                fingerprints.add(str(fingerprint))
-        return fingerprints, None, payload_tool_version(text)
-    return scan_code_fingerprints(repo_root, scope_paths)
+            if not isinstance(hashes, list) and fam.get("locations"):
+                hashes = _fingerprint.family_member_hashes(fam, repo_root)
+            if fingerprint and isinstance(hashes, list):
+                members[str(fingerprint)] = [str(h) for h in hashes]
+        return members, None, payload_tool_version(text)
+    return scan_code_members(repo_root, scope_paths)
 
 
 def run_doc_inventory(repo_root: Path) -> str:

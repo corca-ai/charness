@@ -28,10 +28,18 @@ ONLY the named pairs/ids onto the existing baseline and refuse any other live de
 
 Advisory (degraded, never blocks) inputs: overlay/baseline/nose missing, an empty
 `scope_paths` while enabled (falls back to nose DEFAULT_PATHS), and a present but
-schema-invalid gate baseline (validated via `dup_ratchet_lib.validate_gate_baseline`).
+schema-invalid gate baseline (validated via `dup_ratchet_baseline_lib.validate_gate_baseline`).
 
 Exit 0 when clean, inert, or degraded. Exit 1 on a real block, an invalid adapter
 (fails closed), or a refused unconfirmed large `--write-baseline` overwrite.
+
+Reduction pre-pass (schema v3, item 5 slice D, S4-Defer-3): before `evaluate` runs, a
+candidate-new fingerprint whose member-hash multiset is a PROPER sub-multiset of a
+vanished baseline family's is classified a membership REDUCTION (a copy of a clone
+was removed) rather than new duplication. Reduced fingerprints are excluded from the
+set `evaluate` is asked about — `evaluate`'s own pure set-diff signature (S4-D9) is
+untouched — and the CLI always prints one advisory line per reduction (never silent),
+naming the one-shot `--accept-rotation OLD=NEW` that folds it into the baseline.
 """
 
 from __future__ import annotations
@@ -52,6 +60,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _ratchet = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_lib")
+_ratchet_baseline = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_baseline_lib")
 _ratchet_git = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_git")
 _scan = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_scan")
 _nose_report = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
@@ -77,9 +86,9 @@ def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | N
     return stagnation, anchor, is_ancestor
 
 
-def _write_gate_baseline(out: Path, ids, live_version: str) -> None:
-    baseline = _ratchet.build_gate_baseline(
-        ids, tool_version=live_version, algo_version=_fingerprint.FINGERPRINT_ALGO_VERSION
+def _write_gate_baseline(out: Path, members: dict, live_version: str) -> None:
+    baseline = _ratchet_baseline.build_gate_baseline(
+        members, tool_version=live_version, algo_version=_fingerprint.FINGERPRINT_ALGO_VERSION
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(baseline, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -88,17 +97,18 @@ def _write_gate_baseline(out: Path, ids, live_version: str) -> None:
 def _write_baseline(repo_root: Path, config: dict, args) -> dict:
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
-    ids, reason, live_version = _scan.code_fingerprints(args, repo_root, scope_paths)
+    members, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "write-baseline-failed",
                 "messages": [f"cannot write gate baseline: {reason}"]}
+    ids = set(members)
     out = repo_root / baseline_rel
     # C: guard a large, possibly-accidental rewrite of the accepted baseline. A
     # deliberate re-baseline (a nose scanner-version swing re-hashes every family_id;
     # a reviewed batch accept) is the legitimate large-delta case — it proceeds with
     # --confirm-baseline-delta. This is the maintenance command refusing a silent
     # overwrite; it never touches the gate evaluate path, so it cannot false-block a push.
-    existing_ids = _ratchet.load_gate_baseline_ids(_scan.load_json(out))
+    existing_ids = _ratchet_baseline.load_gate_baseline_ids(_scan.load_json(out))
     delta_note = None
     if existing_ids is not None:
         added, removed = ids - existing_ids, existing_ids - ids
@@ -122,7 +132,7 @@ def _write_baseline(repo_root: Path, config: dict, args) -> dict:
     # Stamp the producing nose version from THIS scan (the run that minted these
     # fingerprints) plus the fingerprint algo version, never a fresh probe — so the stamps
     # can never disagree with the fingerprints they label.
-    _write_gate_baseline(out, ids, live_version)
+    _write_gate_baseline(out, members, live_version)
     message = f"wrote gate baseline ({len(ids)} code family fingerprints) -> {baseline_rel}"
     if delta_note:
         message += f" [{delta_note}]"
@@ -145,15 +155,17 @@ def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
     out = repo_root / baseline_rel
-    existing_ids = _ratchet.load_gate_baseline_ids(_scan.load_json(out))
-    if existing_ids is None:
+    existing_members = _ratchet_baseline.load_gate_baseline_members(_scan.load_json(out))
+    if existing_members is None:
         return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
                 "messages": [f"no readable gate baseline at {baseline_rel}; run --write-baseline "
                              "once to seed one before using scoped accepts."]}
-    live_ids, reason, live_version = _scan.code_fingerprints(args, repo_root, scope_paths)
+    existing_ids = set(existing_members)
+    live_members, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
                 "messages": [f"cannot compute live fingerprints: {reason}"]}
+    live_ids = set(live_members)
     accept_families = list(args.accept_family or [])
     rotations, malformed = _ratchet.parse_rotations(args.accept_rotation or [])
     plan = _ratchet.plan_scoped_rebaseline(
@@ -173,7 +185,11 @@ def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
             ],
         }
     updated_ids = plan["updated_ids"]
-    _write_gate_baseline(out, updated_ids, live_version)
+    # Each kept/rotated/accepted id's member hashes come from wherever it is still
+    # known: unchanged ids from the existing baseline, rotated/accepted ids from the
+    # live scan (the only place a brand-new fingerprint's members can come from).
+    updated_members = {fid: existing_members.get(fid, live_members.get(fid, [])) for fid in updated_ids}
+    _write_gate_baseline(out, updated_members, live_version)
     message = (
         f"scoped re-baseline: accepted {len(rotations)} rotation(s) + {len(accept_families)} new "
         f"family(ies); baseline now has {len(updated_ids)} code family fingerprints -> {baseline_rel}"
@@ -208,18 +224,20 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     if overlay is None:
         degraded.append(f"overlay missing/unreadable ({review_rel})")
     raw_baseline = _scan.load_json(repo_root / baseline_rel)
-    baseline_ids = _ratchet.load_gate_baseline_ids(raw_baseline)
-    baseline_version = _ratchet.load_gate_baseline_tool_version(raw_baseline)
-    baseline_algo = _ratchet.load_gate_baseline_algo_version(raw_baseline)
+    baseline_ids = _ratchet_baseline.load_gate_baseline_ids(raw_baseline)
+    baseline_members = _ratchet_baseline.load_gate_baseline_members(raw_baseline)
+    baseline_version = _ratchet_baseline.load_gate_baseline_tool_version(raw_baseline)
+    baseline_algo = _ratchet_baseline.load_gate_baseline_algo_version(raw_baseline)
     if baseline_ids is None:
         degraded.append(f"gate baseline missing/unreadable ({baseline_rel})")
-    elif (integrity := _ratchet.validate_gate_baseline(raw_baseline)):
+    elif (integrity := _ratchet_baseline.validate_gate_baseline(raw_baseline)):
         # I: a present, loadable baseline can still be schema-invalid (wrong
         # schemaVersion, non-string ids). validate_gate_baseline was defined+tested
         # but wired to nothing; fold it in here so a silent integrity drift surfaces
         # as advisory through the existing dup-ratchet phase. Advisory only (FD8).
         degraded.append(f"gate baseline integrity ({baseline_rel}): " + "; ".join(integrity))
-    code_ids, code_reason, live_version = _scan.code_fingerprints(args, repo_root, scope_paths)
+    live_members, code_reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
+    code_ids = set(live_members)
     if code_reason:
         degraded.append(code_reason)
     elif args.code_inventory is None and not code_ids and baseline_ids:
@@ -236,9 +254,16 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         degraded.append(doc_reason)
 
     intentional_code, intentional_doc = _ratchet.overlay_intentional(overlay)
+    # Reduction pre-pass (S4-Defer-3): classify each would-be-new fingerprint that is
+    # actually a membership-shrunk remainder of a vanished baseline family, so it never
+    # reaches evaluate()'s hard-block set. evaluate()'s own signature stays untouched
+    # (S4-D9); this only trims the id set handed to it.
+    candidate_new = code_ids - (baseline_ids or set()) - intentional_code
+    reductions = _ratchet.classify_reductions(live_members, baseline_members or {}, candidate_new)
+    code_ids_for_evaluate = code_ids - {r["new_fingerprint"] for r in reductions}
     stagnation, anchor, is_ancestor = _resolve_stagnation(repo_root, review_rel, args)
     verdict = _ratchet.evaluate(
-        code_family_ids=code_ids, gate_baseline_ids=baseline_ids or set(),
+        code_family_ids=code_ids_for_evaluate, gate_baseline_ids=baseline_ids or set(),
         doc_drift_signatures=doc_signatures, intentional_code_ids=intentional_code,
         intentional_doc_signatures=intentional_doc,
         fixable_ceiling=_ratchet.overlay_fixable_ceiling(overlay),
@@ -246,6 +271,15 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         anchor=anchor, anchor_is_ancestor=is_ancestor, degraded_reasons=degraded,
     )
     verdict["inert"] = False
+    # A reduction is NEVER silent, even on an otherwise-clean run: print one advisory
+    # line per reduction naming the scoped-accept hint that folds it into the baseline.
+    verdict["reductions"] = reductions
+    for reduction in reductions:
+        verdict["messages"].append(
+            f"ADVISORY (reduction): family {reduction['old_fingerprint']} shrank to "
+            f"{reduction['new_fingerprint']} (membership reduction, not new duplication); "
+            f"accept with --accept-rotation {reduction['old_fingerprint']}={reduction['new_fingerprint']}"
+        )
     # Scanner-version skew is a WARNING, never a degrade: surface it ON the verdict
     # (a block stays a block) so the operator reads a wall of "new" families as
     # version-rotation to re-baseline, not real duplication to remove. degrading here
@@ -257,7 +291,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     # Independent of the nose-version axis above: the gate-owned fingerprint algo version.
     # Either skew is a re-baseline signal; each names its axis so recovery is unambiguous.
     # Neither degrades — a block stays a block (suppressing would hide real new dup).
-    algo_skew = _ratchet.algo_version_skew(baseline_algo, _fingerprint.FINGERPRINT_ALGO_VERSION)
+    algo_skew = _ratchet_baseline.algo_version_skew(baseline_algo, _fingerprint.FINGERPRINT_ALGO_VERSION)
     verdict["algo_skew"] = algo_skew
     if algo_skew:
         verdict["messages"].append(f"WARNING (fingerprint-algo skew): {algo_skew}")

@@ -193,9 +193,14 @@ def collect_families(
         # field instead of recomputing it, so there is no per-consumer truncation
         # (family_summary's sample_locations caps at 6) and no three-way divergence.
         # Absent (None) when a member span is unreadable -> the gate degrades whole.
-        fingerprint = _fingerprint.family_content_fingerprint(family, repo_root)
-        if fingerprint:
-            family.setdefault("family_fingerprint", fingerprint)
+        # The per-member hash list is stamped alongside it (schema v3, item 5 slice
+        # D): the gate baseline stores it per family, and the reduction pre-pass
+        # diffs it as a multiset — computed here, once, from the same locations, so
+        # it can never disagree with the fingerprint that hashes it.
+        member_hashes = _fingerprint.family_member_hashes(family, repo_root)
+        if member_hashes:
+            family.setdefault("family_member_hashes", member_hashes)
+            family.setdefault("family_fingerprint", _fingerprint.fingerprint_from_member_hashes(member_hashes))
         identity = family_identity(family)
         if identity:
             family.setdefault("family_id", identity)

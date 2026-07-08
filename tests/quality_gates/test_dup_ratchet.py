@@ -43,6 +43,7 @@ def _load(name: str):
 
 
 lib = _load("dup_ratchet_lib")
+baseline_lib = _load("dup_ratchet_baseline_lib")
 gitmod = _load("dup_ratchet_git")
 scan = _load("dup_ratchet_scan")
 nose_report = _load("nose_report_lib")
@@ -162,69 +163,10 @@ def test_evaluate_degraded_never_blocks() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Gate baseline + overlay readers
+# Overlay (dup-review.json) readers. The gate-baseline schema (build/load/validate
+# dup-ratchet-baseline.json) itself is covered in test_dup_ratchet_baseline.py
+# (dup_ratchet_baseline_lib, split out for the test-file length cap).
 # --------------------------------------------------------------------------- #
-def test_build_and_load_gate_baseline_roundtrip() -> None:
-    baseline = lib.build_gate_baseline(["b", "a", "a", ""])
-    assert baseline["code_family_fingerprints"] == ["a", "b"]  # sorted, deduped, empties dropped
-    assert baseline["schemaVersion"] == lib.GATE_BASELINE_SCHEMA_VERSION
-    assert lib.validate_gate_baseline(baseline) == []
-    assert lib.load_gate_baseline_ids(baseline) == {"a", "b"}
-
-
-def test_load_gate_baseline_ids_none_on_malformed_or_legacy() -> None:
-    assert lib.load_gate_baseline_ids(None) is None
-    assert lib.load_gate_baseline_ids({"code_family_fingerprints": "nope"}) is None
-    assert lib.load_gate_baseline_ids([1, 2]) is None
-    # A legacy v1 baseline keyed by code_family_ids reads as None (no dual-read), so the
-    # gate degrades to advisory until a deliberate re-baseline mints fingerprints.
-    assert lib.load_gate_baseline_ids({"code_family_ids": ["a", "b"]}) is None
-
-
-def test_validate_gate_baseline_flags_bad_schema_and_ids() -> None:
-    errors = lib.validate_gate_baseline({"schemaVersion": "wrong", "code_family_fingerprints": ["", 5]})
-    joined = " ".join(errors)
-    assert "schemaVersion" in joined and "code_family_fingerprints[0]" in joined
-
-
-# --------------------------------------------------------------------------- #
-# Scanner tool_version stamp (issue #391): build stamps it, validate accepts it as
-# an optional string, the read path exposes it for skew detection.
-# --------------------------------------------------------------------------- #
-def test_build_gate_baseline_stamps_and_reads_tool_and_algo_version() -> None:
-    assert "tool_version" not in lib.build_gate_baseline(["a"])  # unknown stays unstamped
-    assert "fingerprint_algo_version" not in lib.build_gate_baseline(["a"])
-    stamped = lib.build_gate_baseline(["b", "a"], tool_version="0.15.0", algo_version="1")
-    assert stamped["tool_version"] == "0.15.0" and stamped["code_family_fingerprints"] == ["a", "b"]
-    assert stamped["fingerprint_algo_version"] == "1"
-    assert lib.validate_gate_baseline(stamped) == []
-    assert lib.load_gate_baseline_tool_version(stamped) == "0.15.0"
-    assert lib.load_gate_baseline_algo_version(stamped) == "1"
-
-
-def test_algo_version_skew_warns_on_mismatch_else_none() -> None:
-    assert lib.algo_version_skew("1", "2") is not None
-    assert lib.algo_version_skew("1", "1") is None
-    assert lib.algo_version_skew("", "1") is None  # missing stamp is "unknown", not a mismatch
-    assert lib.algo_version_skew("1", "") is None
-
-
-def test_load_gate_baseline_versions_empty_on_absent_or_nonstring() -> None:
-    assert lib.load_gate_baseline_tool_version({"code_family_fingerprints": ["a"]}) == ""
-    assert lib.load_gate_baseline_tool_version({"tool_version": 14}) == ""
-    assert lib.load_gate_baseline_algo_version({"fingerprint_algo_version": 1}) == ""
-    assert lib.load_gate_baseline_algo_version(None) == ""
-
-
-def test_validate_gate_baseline_rejects_nonstring_version_stamps() -> None:
-    errors = lib.validate_gate_baseline(
-        {"schemaVersion": lib.GATE_BASELINE_SCHEMA_VERSION, "tool_version": 14,
-         "fingerprint_algo_version": 1, "code_family_fingerprints": ["a"]}
-    )
-    assert any("tool_version" in e for e in errors)
-    assert any("fingerprint_algo_version" in e for e in errors)
-
-
 def test_overlay_intentional_only_collects_intentional() -> None:
     overlay = {"entries": [
         {"surface": "code", "id": "ci", "class": "intentional"},
@@ -240,6 +182,66 @@ def test_overlay_fixable_ceiling_reads_int_else_zero() -> None:
     assert lib.overlay_fixable_ceiling({"fixable_ceiling": 4}) == 4
     assert lib.overlay_fixable_ceiling({"fixable_ceiling": True}) == 0  # bool is not a count
     assert lib.overlay_fixable_ceiling(None) == 0
+
+
+# --------------------------------------------------------------------------- #
+# classify_reductions (S4-Defer-3) — pure membership-reduction pre-pass.
+# --------------------------------------------------------------------------- #
+def test_classify_reductions_proper_sub_multiset_is_a_reduction() -> None:
+    # baseline {A,A,B} vanished, live {A,B} candidate -> reduction.
+    live = {"new": ["A", "B"]}
+    baseline = {"old": ["A", "A", "B"]}
+    assert lib.classify_reductions(live, baseline, {"new"}) == [
+        {"new_fingerprint": "new", "old_fingerprint": "old"}
+    ]
+
+
+def test_classify_reductions_grow_is_not_a_reduction() -> None:
+    # baseline {A,B}, live {A,A,B} -> NOT a reduction (candidate is a SUPERSET, not
+    # a proper sub-multiset) -> the CLI must hard-block it as genuine new/changed dup.
+    live = {"new": ["A", "A", "B"]}
+    baseline = {"old": ["A", "B"]}
+    assert lib.classify_reductions(live, baseline, {"new"}) == []
+
+
+def test_classify_reductions_equal_multiset_is_not_a_reduction() -> None:
+    # Equal totals is NOT "strictly smaller" -> not a proper sub-multiset (would only
+    # happen if the same fingerprint reappeared, which can't be "vanished" anyway).
+    live = {"new": ["A", "B"]}
+    baseline = {"old": ["A", "B"]}
+    assert lib.classify_reductions(live, baseline, {"new"}) == []
+
+
+def test_classify_reductions_disjoint_content_is_genuine_new() -> None:
+    live = {"new": ["X", "Y"]}
+    baseline = {"old": ["A", "B"]}
+    assert lib.classify_reductions(live, baseline, {"new"}) == []
+
+
+def test_classify_reductions_ignores_baseline_families_still_live() -> None:
+    # A baseline family still present in the live scan is not "vanished" -- it
+    # cannot be the reduction's origin even if it would otherwise superset the
+    # candidate (this is what "new_code" already excludes via gate_baseline_ids).
+    live = {"still_here": ["A", "B"], "new": ["A"]}
+    baseline = {"still_here": ["A", "B"]}
+    assert lib.classify_reductions(live, baseline, {"new"}) == []
+
+
+def test_classify_reductions_deterministic_pairing_prefers_smallest_then_lexicographic() -> None:
+    live = {"new": ["A"]}
+    baseline = {"zzz_big": ["A", "B", "C"], "aaa_small": ["A", "B"], "bbb_small": ["A", "X"]}
+    # Two vanished supersets tie at total=2 ("aaa_small", "bbb_small"); "aaa_small"
+    # wins lexicographically. The total=3 superset loses to both smaller ones.
+    assert lib.classify_reductions(live, baseline, {"new"}) == [
+        {"new_fingerprint": "new", "old_fingerprint": "aaa_small"}
+    ]
+
+
+def test_classify_reductions_candidate_absent_from_live_is_skipped_not_a_crash() -> None:
+    # A candidate name not present in live_members (should not happen in practice;
+    # the CLI only asks about fingerprints from the scan it just ran) is a no-op,
+    # never an error -- classify_reductions stays a pure best-effort classifier.
+    assert lib.classify_reductions({}, {"old": ["A"]}, {"ghost"}) == []
 
 
 # --------------------------------------------------------------------------- #
@@ -315,7 +317,21 @@ def _write_json(path: Path, obj: dict) -> Path:
 
 def _code_inventory(path: Path, family_ids: list[str]) -> Path:
     # Slice 4: the gate keys on the injected `family_fingerprint` (was `family_id`).
-    return _write_json(path, {"status": "findings", "families": [{"family_fingerprint": fid} for fid in family_ids]})
+    # Slice D (schema v3): each family also carries `family_member_hashes` — these
+    # fixtures don't exercise real membership structure, so the fingerprint doubles
+    # as its own single synthetic member hash (see `_code_family` for fixtures that
+    # need a real multi-hash multiset, e.g. the reduction pre-pass tests).
+    return _write_json(path, {
+        "status": "findings",
+        "families": [{"family_fingerprint": fid, "family_member_hashes": [fid]} for fid in family_ids],
+    })
+
+
+def _code_family(fingerprint: str, member_hashes: list[str]) -> dict:
+    """A family fixture with an explicit member-hash multiset (for the reduction
+    pre-pass tests, which need real membership structure, not the single-hash
+    synthetic shape `_code_inventory` uses for hard-arm identity-only tests)."""
+    return {"family_fingerprint": fingerprint, "family_member_hashes": member_hashes}
 
 
 def _doc_inventory(path: Path, signatures: list[str]) -> Path:
@@ -337,10 +353,9 @@ def _consumer_repo(
         "schemaVersion": "charness.quality.dup_review.v1",
         "fixable_ceiling": fixable_ceiling, "entries": entries,
     })
-    _write_json(repo / "q" / "dup-ratchet-baseline.json", {
-        "schemaVersion": "charness.quality.dup_ratchet_baseline.v2",
-        "code_family_fingerprints": list(baseline_ids),
-    })
+    _write_json(repo / "q" / "dup-ratchet-baseline.json", baseline_lib.build_gate_baseline(
+        {fid: [fid] for fid in baseline_ids}
+    ))
     if with_block:
         lines = [
             "version: 1", "repo: consumer", "dup_ratchet:", "  enabled: true",
@@ -600,9 +615,9 @@ def test_cli_write_baseline_from_injected_inventory(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert written["code_family_fingerprints"] == ["a", "b"]
+    assert baseline_lib.load_gate_baseline_ids(written) == {"a", "b"}
     assert written["fingerprint_algo_version"] == fingerprint.FINGERPRINT_ALGO_VERSION
-    assert lib.validate_gate_baseline(written) == []
+    assert baseline_lib.validate_gate_baseline(written) == []
 
 
 # --------------------------------------------------------------------------- #
@@ -628,7 +643,9 @@ def test_inproc_I_schema_invalid_baseline_degrades_advisory(tmp_path: Path) -> N
     # surfaces an integrity advisory via validate_gate_baseline — never blocks.
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     (repo / "q" / "dup-ratchet-baseline.json").write_text(
-        json.dumps({"schemaVersion": "WRONG", "code_family_fingerprints": ["known1"]}), encoding="utf-8",
+        json.dumps({"schemaVersion": "WRONG",
+                    "code_families": [{"fingerprint": "known1", "member_hashes": ["known1"]}]}),
+        encoding="utf-8",
     )
     code_json = _code_inventory(tmp_path / "code.json", ["known1", "BRANDNEW"])
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
@@ -647,7 +664,7 @@ def test_inproc_C_large_delta_without_confirm_refuses_and_preserves_baseline(tmp
     assert report["ok"] is False and report["status"] == "baseline-delta-unconfirmed"
     assert report["baseline_delta"] == {"added": 4, "removed": 3, "threshold": 2}
     preserved = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert preserved["code_family_fingerprints"] == ["old1", "old2", "old3"]  # unchanged
+    assert baseline_lib.load_gate_baseline_ids(preserved) == {"old1", "old2", "old3"}  # unchanged
 
 
 def test_inproc_C_large_delta_with_confirm_rebaselines(tmp_path: Path) -> None:
@@ -659,7 +676,7 @@ def test_inproc_C_large_delta_with_confirm_rebaselines(tmp_path: Path) -> None:
                          "--baseline-delta-threshold", "2", "--confirm-baseline-delta")
     assert report["ok"] is True and report["status"] == "baseline-written"
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert written["code_family_fingerprints"] == ["n1", "n2", "n3", "n4"]
+    assert baseline_lib.load_gate_baseline_ids(written) == {"n1", "n2", "n3", "n4"}
 
 
 # --------------------------------------------------------------------------- #
@@ -748,68 +765,77 @@ def test_payload_tool_version_reads_or_empty() -> None:
     assert scan.payload_tool_version("[1, 2]") == ""  # not a dict
 
 
-def test_scan_code_fingerprints_threads_live_version(monkeypatch, tmp_path: Path) -> None:
+def test_scan_code_members_threads_live_version(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         scan._nose_report, "collect_families",
-        lambda *_a, **_k: {"status": "findings", "families": [{"family_fingerprint": "x"}], "tool_version": "0.14.0"},
+        lambda *_a, **_k: {
+            "status": "findings",
+            "families": [{"family_fingerprint": "x", "family_member_hashes": ["x1"]}],
+            "tool_version": "0.14.0",
+        },
     )
-    ids, reason, version = scan.scan_code_fingerprints(tmp_path, ["scripts"])
-    assert ids == {"x"} and reason is None and version == "0.14.0"
+    members, reason, version = scan.scan_code_members(tmp_path, ["scripts"])
+    assert members == {"x": ["x1"]} and reason is None and version == "0.14.0"
 
 
-def test_scan_code_fingerprints_unreadable_member_degrades_whole_gate(monkeypatch, tmp_path: Path) -> None:
-    # A family with no stamped fingerprint (unreadable member span) degrades the WHOLE
-    # scan to a reason -> advisory (FD8), never a dropped family.
+def test_scan_code_members_unreadable_member_degrades_whole_gate(monkeypatch, tmp_path: Path) -> None:
+    # A family with no stamped fingerprint/member hashes (unreadable member span)
+    # degrades the WHOLE scan to a reason -> advisory (FD8), never a dropped family.
     monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         scan._nose_report, "collect_families",
-        lambda *_a, **_k: {"status": "findings",
-                           "families": [{"family_fingerprint": "x"}, {"family_id": "noFP"}],
-                           "tool_version": "0.15.0"},
+        lambda *_a, **_k: {
+            "status": "findings",
+            "families": [{"family_fingerprint": "x", "family_member_hashes": ["x1"]}, {"family_id": "noFP"}],
+            "tool_version": "0.15.0",
+        },
     )
-    ids, reason, version = scan.scan_code_fingerprints(tmp_path, ["scripts"])
-    assert ids == set() and "unreadable member span" in reason and version == "0.15.0"
+    members, reason, version = scan.scan_code_members(tmp_path, ["scripts"])
+    assert members == {} and "unreadable member span" in reason and version == "0.15.0"
 
 
-def test_scan_code_fingerprints_error_and_missing_nose_carry_version(monkeypatch, tmp_path: Path) -> None:
+def test_scan_code_members_error_and_missing_nose_carry_version(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: "nose")
     monkeypatch.setattr(
         scan._nose_report, "collect_families",
         lambda *_a, **_k: {"status": "error", "stderr": "boom", "families": [], "tool_version": "0.14.0"},
     )
-    ids, reason, version = scan.scan_code_fingerprints(tmp_path, ["scripts"])
-    assert ids == set() and "boom" in reason and version == "0.14.0"  # error still carries the live version
+    members, reason, version = scan.scan_code_members(tmp_path, ["scripts"])
+    assert members == {} and "boom" in reason and version == "0.14.0"  # error still carries the live version
     monkeypatch.setattr(scan._inventory, "resolve_nose_bin", lambda: None)
-    ids, reason, version = scan.scan_code_fingerprints(tmp_path, [])
-    assert ids == set() and "nose binary not found" in reason and version == ""
+    members, reason, version = scan.scan_code_members(tmp_path, [])
+    assert members == {} and "nose binary not found" in reason and version == ""
 
 
-def test_code_fingerprints_injected_threads_version_and_unreadable(tmp_path: Path) -> None:
+def test_code_family_members_injected_threads_version_and_unreadable(tmp_path: Path) -> None:
     inv_path = tmp_path / "c.json"
     inv_path.write_text(
-        json.dumps({"families": [{"family_fingerprint": "a"}], "tool_version": "0.14.0"}), encoding="utf-8"
+        json.dumps({
+            "families": [{"family_fingerprint": "a", "family_member_hashes": ["a1"]}],
+            "tool_version": "0.14.0",
+        }), encoding="utf-8",
     )
     args = check.parse_args(["--code-inventory", str(inv_path)])
-    ids, reason, version = scan.code_fingerprints(args, tmp_path, [])
-    assert ids == {"a"} and reason is None and version == "0.14.0"
+    members, reason, version = scan.code_family_members(args, tmp_path, [])
+    assert members == {"a": ["a1"]} and reason is None and version == "0.14.0"
     missing = check.parse_args(["--code-inventory", str(tmp_path / "absent.json")])
-    ids, reason, version = scan.code_fingerprints(missing, tmp_path, [])
-    assert ids == set() and "unreadable" in reason and version == ""
+    members, reason, version = scan.code_family_members(missing, tmp_path, [])
+    assert members == {} and "unreadable" in reason and version == ""
 
 
 def test_inproc_write_baseline_stamps_tool_and_algo_version(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("old",))
     code_json = _write_json(
         tmp_path / "code.json",
-        {"families": [{"family_fingerprint": "a"}, {"family_fingerprint": "b"}], "tool_version": "0.14.0"},
+        {"families": [_code_family("a", ["a"]), _code_family("b", ["b"])], "tool_version": "0.14.0"},
     )
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--write-baseline")
     assert report["status"] == "baseline-written" and report["tool_version"] == "0.14.0"
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
     assert written["tool_version"] == "0.14.0"
     assert written["fingerprint_algo_version"] == fingerprint.FINGERPRINT_ALGO_VERSION
-    assert lib.validate_gate_baseline(written) == []
+    assert baseline_lib.validate_gate_baseline(written) == []
 
 
 def test_inproc_version_skew_warns_without_degrading_block(tmp_path: Path) -> None:
@@ -818,14 +844,13 @@ def test_inproc_version_skew_warns_without_degrading_block(tmp_path: Path) -> No
     # but surfaces the skew so the operator re-baselines.
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     (repo / "q" / "dup-ratchet-baseline.json").write_text(
-        json.dumps({"schemaVersion": "charness.quality.dup_ratchet_baseline.v2",
-                    "tool_version": "0.13.0", "code_family_fingerprints": ["known1"]}),
+        json.dumps(baseline_lib.build_gate_baseline({"known1": ["known1"]}, tool_version="0.13.0")),
         encoding="utf-8",
     )
     code_json = _write_json(
         tmp_path / "code.json",
         {"status": "findings", "tool_version": "0.14.0",
-         "families": [{"family_fingerprint": "ROT1"}, {"family_fingerprint": "ROT2"}]},
+         "families": [_code_family("ROT1", ["ROT1"]), _code_family("ROT2", ["ROT2"])]},
     )
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
@@ -922,7 +947,7 @@ def test_inproc_scoped_rebaseline_rotation_updates_only_named_pair(tmp_path: Pat
     assert report["accepted_rotations"] == [{"old": "old1", "new": "ROT_NEW"}]
     assert report["accepted_families"] == []
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert set(written["code_family_fingerprints"]) == {"ROT_NEW", "keep"}
+    assert baseline_lib.load_gate_baseline_ids(written) == {"ROT_NEW", "keep"}
 
 
 def test_inproc_scoped_rebaseline_family_accept_updates_only_named_id(tmp_path: Path) -> None:
@@ -932,7 +957,7 @@ def test_inproc_scoped_rebaseline_family_accept_updates_only_named_id(tmp_path: 
     assert report["ok"] is True and report["status"] == "scoped-rebaseline-written"
     assert report["accepted_families"] == ["NEWFAM"]
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert set(written["code_family_fingerprints"]) == {"keep", "NEWFAM"}
+    assert baseline_lib.load_gate_baseline_ids(written) == {"keep", "NEWFAM"}
 
 
 def test_inproc_scoped_rebaseline_refuses_unnamed_new_family_and_preserves_baseline(tmp_path: Path) -> None:
@@ -942,13 +967,13 @@ def test_inproc_scoped_rebaseline_refuses_unnamed_new_family_and_preserves_basel
     assert report["ok"] is False and report["status"] == "scoped-rebaseline-refused"
     assert report["refused_added"] == ["BRANDNEW"]
     preserved = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
-    assert set(preserved["code_family_fingerprints"]) == {"old1", "keep"}  # unchanged
+    assert baseline_lib.load_gate_baseline_ids(preserved) == {"old1", "keep"}  # unchanged
 
 
 def test_inproc_scoped_rebaseline_fails_when_live_fingerprints_unreadable(tmp_path: Path) -> None:
     # An existing baseline IS present and loadable (skips the "no readable
     # baseline" early return), but the injected code-inventory path does not
-    # exist, so `_code_fingerprints` returns a reason -- the scoped rebaseline
+    # exist, so `code_family_members` returns a reason -- the scoped rebaseline
     # must refuse with that reason rather than proceed with an empty live set.
     repo = _consumer_repo(tmp_path, baseline_ids=("old1",))
     report = _run_inproc(
@@ -991,3 +1016,108 @@ def test_inproc_write_baseline_no_warn_on_first_bootstrap(tmp_path: Path) -> Non
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--write-baseline")
     assert report["ok"] is True and report["status"] == "baseline-written"
     assert not any("WARN" in m for m in report["messages"])
+
+
+# --------------------------------------------------------------------------- #
+# CLI-level reduction pre-pass (S4-Defer-3 + S4-Defer-2 adversary) — end-to-end
+# through the real gate/scoped-rebaseline commands, a real multi-hash baseline.
+# --------------------------------------------------------------------------- #
+def test_cli_reduction_is_advisory_not_hard_block(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=())
+    # _consumer_repo's default helper only writes single-hash synthetic families;
+    # this scenario needs a real multi-hash {A,A,B} family, so seed it directly.
+    _write_json(repo / "q" / "dup-ratchet-baseline.json",
+                baseline_lib.build_gate_baseline({"OLDFAM": ["m1", "m1", "m2"]}))
+    code_json = _write_json(tmp_path / "code.json", {
+        "status": "findings", "families": [_code_family("NEWFAM", ["m1", "m2"])],
+    })
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["ok"] is True and report["block"] is False
+    assert report["status"] == "clean"  # not "new" -- the reduction is excluded before evaluate()
+    assert report["reductions"] == [{"new_fingerprint": "NEWFAM", "old_fingerprint": "OLDFAM"}]
+    assert any(
+        m.startswith("ADVISORY (reduction): family OLDFAM shrank to NEWFAM")
+        and "--accept-rotation OLDFAM=NEWFAM" in m
+        for m in report["messages"]
+    )
+
+
+def test_cli_genuine_new_family_not_a_reduction_hard_blocks(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=())
+    _write_json(repo / "q" / "dup-ratchet-baseline.json",
+                baseline_lib.build_gate_baseline({"OLDFAM": ["m1", "m2"]}))
+    code_json = _write_json(tmp_path / "code.json", {
+        "status": "findings", "families": [_code_family("NEWFAM", ["x1", "x2"])],
+    })
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["ok"] is False and report["status"] == "hard-block"
+    assert report["new_code_families"] == ["NEWFAM"]
+    assert report["reductions"] == []
+
+
+def test_cli_membership_grow_is_not_a_reduction_hard_blocks(tmp_path: Path) -> None:
+    # baseline {A,B}, live {A,A,B} -- a SUPERSET, not a sub-multiset -- must still
+    # hard-block like nose's own id would (S4-D9: membership growth is genuine
+    # new/changed dup, not a reduction).
+    repo = _consumer_repo(tmp_path, baseline_ids=())
+    _write_json(repo / "q" / "dup-ratchet-baseline.json",
+                baseline_lib.build_gate_baseline({"OLDFAM": ["m1", "m2"]}))
+    code_json = _write_json(tmp_path / "code.json", {
+        "status": "findings", "families": [_code_family("GROWNFAM", ["m1", "m1", "m2"])],
+    })
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["ok"] is False and report["status"] == "hard-block"
+    assert report["new_code_families"] == ["GROWNFAM"]
+    assert report["reductions"] == []
+
+
+def test_cli_shrink_then_recur_does_not_silently_reaccept(tmp_path: Path) -> None:
+    # S4-Defer-2 adversary: accept a reduction via the scoped rotation path (the
+    # baseline now holds only the shrunk family), then the ORIGINAL full member set
+    # recurs under a DIFFERENT family identity -- it must hard-block, not silently
+    # re-accepted as "known" (a residual only while a reduction advisory is ignored,
+    # never while the accepted baseline already reflects the shrink).
+    repo = _consumer_repo(tmp_path, baseline_ids=())
+    _write_json(repo / "q" / "dup-ratchet-baseline.json",
+                baseline_lib.build_gate_baseline({"OLDFAM": ["m1", "m1", "m2"]}))
+    shrink_json = _write_json(tmp_path / "shrink.json", {
+        "status": "findings", "families": [_code_family("NEWFAM", ["m1", "m2"])],
+    })
+    accept = _run_inproc(repo, "--code-inventory", str(shrink_json), "--accept-rotation", "OLDFAM=NEWFAM")
+    assert accept["ok"] is True and accept["status"] == "scoped-rebaseline-written"
+    written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert baseline_lib.load_gate_baseline_ids(written) == {"NEWFAM"}
+
+    recur_json = _write_json(tmp_path / "recur.json", {
+        "status": "findings", "families": [_code_family("RECURFAM", ["m1", "m1", "m2"])],
+    })
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(recur_json), "--doc-inventory", str(doc_json))
+    assert report["ok"] is False and report["status"] == "hard-block"
+    assert report["new_code_families"] == ["RECURFAM"]
+    assert report["reductions"] == []
+
+
+# --------------------------------------------------------------------------- #
+# Legacy v2-schema baseline read by v3 code -- whole gate degrades to advisory,
+# NEVER blocks (the live state between Phase 1 landing and Phase 2's re-baseline).
+# --------------------------------------------------------------------------- #
+def test_inproc_legacy_v2_baseline_degrades_never_blocks(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    # Overwrite with a pre-migration v2-schema baseline (bare fingerprint list, no
+    # per-family member hashes) -- load_gate_baseline_ids/members read it as None
+    # (no dual-read), degrading the WHOLE gate to advisory even with a brand-new
+    # family that would otherwise hard-block.
+    (repo / "q" / "dup-ratchet-baseline.json").write_text(
+        json.dumps({"schemaVersion": "charness.quality.dup_ratchet_baseline.v2",
+                    "code_family_fingerprints": ["known1"]}),
+        encoding="utf-8",
+    )
+    code_json = _code_inventory(tmp_path / "code.json", ["known1", "BRANDNEW"])
+    doc_json = _doc_inventory(tmp_path / "doc.json", [])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
+    assert report["status"] == "degraded" and report["block"] is False
+    assert any("gate baseline missing/unreadable" in r for r in report["degraded_reasons"])

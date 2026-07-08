@@ -288,9 +288,26 @@ Reopen trigger:
   comment edits; membership-shrink still re-baselines) — see the spec's
   `S4-Defer-1..3`.
 - Impact surfaces (migrated in lockstep): [skills/public/quality/scripts/nose_fingerprint_lib.py](../skills/public/quality/scripts/nose_fingerprint_lib.py) (new), [skills/public/quality/scripts/dup_ratchet_lib.py](../skills/public/quality/scripts/dup_ratchet_lib.py), [skills/public/quality/scripts/check_dup_ratchet.py](../skills/public/quality/scripts/check_dup_ratchet.py), [skills/public/quality/scripts/nose_report_lib.py](../skills/public/quality/scripts/nose_report_lib.py), [skills/public/quality/scripts/nose_baseline_lib.py](../skills/public/quality/scripts/nose_baseline_lib.py), [skills/public/quality/scripts/inventory_nose_clones.py](../skills/public/quality/scripts/inventory_nose_clones.py), [skills/public/quality/scripts/dup_review_lib.py](../skills/public/quality/scripts/dup_review_lib.py), [skills/public/quality/references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md), the gate + advisory fingerprint baselines and the [dup-review.json](../charness-artifacts/quality/dup-review.json) overlay (originally omitted from this list), [integrations/tools/nose.json](../integrations/tools/nose.json), [charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md](../charness-artifacts/debug/2026-06-21-dup-ratchet-family-id-rotation.md)
-- Residual reopen trigger: in-place-comment false-rotation (S4-Defer-1) or
-  membership-shrink re-baseline friction (S4-Defer-3) observed often enough to
-  justify token-aware normalization or a subset-aware reduction diff.
+- Residual reopen trigger (UPDATED 2026-07-08, goal `2026-07-08-retro-informed-improvement-5pack`
+  Slice D): **S4-Defer-1 RESOLVED** — `nose_fingerprint_lib` algo v2 tokenizes each
+  Python member span and drops comment/pure-whitespace-structure tokens, so an
+  in-place comment or internal-whitespace edit no longer rotates the fingerprint (a
+  span that fails to tokenize standalone falls back per-member to v1 rstrip-only);
+  `FINGERPRINT_ALGO_VERSION` bumped to `"2"`. **S4-Defer-3 RESOLVED** — the gate
+  baseline moved to schema v3 (`code_families`: `{fingerprint, member_hashes}`) and
+  `check_dup_ratchet.py` runs a `classify_reductions` pre-pass: a candidate-new
+  family whose member multiset is a PROPER sub-multiset of a vanished baseline
+  family's is an advisory membership REDUCTION (never silent — one
+  `--accept-rotation`-naming line per reduction), not a hard block; a membership
+  GROW still hard-blocks and re-baselines (S4-D9 unchanged). **S4-Defer-2
+  narrowed**: once a reduction is accepted via `--accept-rotation`, the baseline
+  holds only the shrunk family, so the original full member set recurring under a
+  different identity is no longer a superset of anything vanished and hard-blocks
+  (the shrink-then-recur adversary is covered by a fixture test); the residual now
+  applies only while a printed reduction advisory sits unaccepted. See
+  [spec Slice 4](../charness-artifacts/spec/boy-scout-dup-ratchet.md) (the
+  S4-Defer-1/2/3 entries) and
+  [references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md).
 
 ### D31. Handoff chunker should reconcile against recent commits
 
