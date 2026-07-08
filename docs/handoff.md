@@ -8,35 +8,32 @@
 
 ## Current State
 
-- **This session: issue-backlog sweep (chunked-routing pick, operator-directed).**
-  #420 CLOSED (advisory-only ratio verified live, fresh-eye critique);
-  #371 CLOSED by operator decision (residuals recorded in the close comment:
-  upstream `vercel-labs/agent-browser#1334`, Tier 1b deferred); #413 found
-  already closed (v0.58.0); **#422 fixed + auto-CLOSED** (`8b28ab3e` pushed
-  2026-07-08 ~12:30 UTC): sampler baseline-pytest aborts now write
-  `reports/mutation/baseline-abort.json` and both summary scripts lead with
-  the failing nodeids instead of the StrykerJS-missing collateral. Full
-  ledger in the commit body + `charness-artifacts/issue/2026-07-08-issue-422-*.md`.
-- The 2026-07-08 12:17 UTC scheduled mutation run had NOT fired as of 12:37
-  (cron lag); when it runs it judges `57af3d2b..8b28ab3e` — all changed pool
-  lines have local coverage proof (`check_changed_line_mutation_coverage`
-  green post-commit) and dup-ratchet was scoped-re-baselined (1 rotation + 7
-  #395-class fingerprint rotations accepted).
+- **This session (2026-07-08): issue-backlog sweep + test-debt rotation.**
+  #420 CLOSED (advisory-only verified live); #371 CLOSED by operator decision
+  (residuals in the close comment); #413 already closed; **#422 fixed +
+  auto-CLOSED** (`8b28ab3e`) — and provider-roundtrip PROVEN: the 12:50 UTC
+  scheduled red posted the real failing nodeid instead of the
+  StrykerJS-missing collateral.
+- That 12:50 red was a new env-dependent test (`test_migrate_dup_fingerprints`
+  live-scan CLI pin; no nose binary in the mutation env) — nose-guard skipif
+  landed (`28d76718`), mirroring the sibling idiom.
+- **Test-debt rotation DONE for this cycle** (`8e1fd200`): 193 delta tests
+  judged, 4 verified-redundant deleted, 2 candidates rejected as
+  load-bearing. Full method + evidence:
+  [2026-07-08-test-debt-rotation-delta-sweep.md](../charness-artifacts/quality/2026-07-08-test-debt-rotation-delta-sweep.md).
+  Next rotation baseline = `8e1fd200`.
 
 ## Next Session
 
 1. **Watch #421 auto-close (machine-owned; do not close manually)**: the next
-   scheduled run (`17 */12 * * *` UTC) judges `57af3d2b..8b28ab3e`, expected
-   green. If red, the summary now names the real blocking signal (#422 fix) —
-   read it first.
-2. **Test-debt rotation (standing)**: sweep the post-2026-07-03-audit
-   test-LOC delta (~+3.2k); deletions need mutation proof + fresh-eye review;
-   never headroom-pressured.
-3. **#410 remaining handoff flips (capture-gated, ~1.7-2.4M tokens each)**;
+   scheduled run (`17 */12 * * *` UTC, next ~2026-07-09 00:17) judges
+   `57af3d2b..8e1fd200`, expected green. If red, the summary now names the
+   real blocking signal (#422 fix, roundtrip-proven) — read it first.
+2. **#410 remaining handoff flips (capture-gated, ~1.7-2.4M tokens each)**;
    method + queue:
    [slice7-census-reconciliation.md](../charness-artifacts/reference-compaction/slice7-census-reconciliation.md).
    The #413 setup/greenfield fresh-sandbox capture rides this queue's method.
-4. **81-site argparse-help debt (run LAST, alone).** Trip-wire D33:
+3. **81-site argparse-help debt (run LAST, alone).** Trip-wire D33:
    `run_skill_efficiency_ab.py` at 479/480.
 
 ## Discuss
