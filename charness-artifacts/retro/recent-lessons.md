@@ -2,19 +2,19 @@
 
 ## Current Focus
 
+- Release publish triggered a configured automatic session retro for `v0.63.0`. (source: `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`)
 - The operator asked for creative autonomous-improvement directions, challenged the prompt-mutation idea on false negatives and A+B interaction effects, approved the resulting design (UNTESTED vs NO-OBSERVED-EFFECT, demote-never- delete, ship-configuration rerun, batch ratchet), and delegated full design and execution. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
-- This retro covers the prompt-mutation step-7 slim follow-up goal. (source: `charness-artifacts/retro/2026-07-09-session-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`; sources: 72)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`; sources: 73)
 - Blinding was designed three times (neutral commit message → digest-only refs + baseline dates → still diff-readable via `git show` on the snapshot commit). One exhaustive "what can the captured agent observe?" enumeration at S1 design time would have caught the diffable-parent channel that 4/6 mutant runs actually used. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 - The report's first draft claimed a causal story ("planner ran in mutant run 0") from stream-sourced evidence, and the streams were deleted before the report's claims were re-verified against the committed bundles; the closeout reviewer caught the contradiction and one honesty-pass commit repaired it. Deleting scoring inputs before re-scoring the committed state is the reusable trap. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 - The scorer's stream fallback matched a prose mention as a marker fire (#427); the fixture tests covered truncation but not mention-vs-execution. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`; sources: 72)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`; sources: 73)
 - applied: docs/prompt-mutation-policy.md stream-drop re-score rule and commit-diff blinding caveat (commit 5ce78e9d). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 - applied: this retro plus the T3/T4 experiment report record that the sweep is a first-class ship gate, not an advisory footnote. (source: `charness-artifacts/retro/2026-07-09-session-retro.md`)
 - issue #426 (novel: mutant snapshot commits are diffable against their baseline parent; symmetric parentless snapshots for all arms). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
@@ -101,3 +101,4 @@
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`
 - `charness-artifacts/retro/2026-07-09-session-retro.md`
+- `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`
