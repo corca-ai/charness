@@ -12,7 +12,7 @@ The release helper persisted this bounded retro before committing the release ar
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `skills/support/markdown-preview/scripts/markdown_preview_lib.py`, `skills/support/markdown-preview/scripts/render_markdown_preview.py`.
-- Evaluated changed paths: 73.
+- Evaluated changed paths: 77.
 
 ## Waste
 

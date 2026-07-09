@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.63.1` (tag `v0.63.1`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -51,7 +51,7 @@ Advanced `charness` toward release `0.63.1` (tag `v0.63.1`) through the repo-own
 - Path hits: 2.
   - `skills/support/markdown-preview/scripts/markdown_preview_lib.py`
   - `skills/support/markdown-preview/scripts/render_markdown_preview.py`
-- Evaluated changed paths: 73.
+- Evaluated changed paths: 77.
   - `.claude-plugin/marketplace.json`
   - `.gitignore`
   - `charness`
@@ -72,7 +72,7 @@ Advanced `charness` toward release `0.63.1` (tag `v0.63.1`) through the repo-own
   - `charness-artifacts/critique/2026-07-09-v0-63-1-release-critique.md`
   - `charness-artifacts/critique/2026-07-09-v0-63-1-release-packet-packet.json`
   - `charness-artifacts/critique/2026-07-09-v0-63-1-release-packet-packet.md`
-  - ... 53 more
+  - ... 57 more
 
 ## Real-Host Verification
 
@@ -96,7 +96,10 @@ Advanced `charness` toward release `0.63.1` (tag `v0.63.1`) through the repo-own
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -104,11 +107,14 @@ Advanced `charness` toward release `0.63.1` (tag `v0.63.1`) through the repo-own
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 0.093s
+- `quality_command`: 69.222s
+- `fresh_checkout_probes_initial`: 2.764s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
