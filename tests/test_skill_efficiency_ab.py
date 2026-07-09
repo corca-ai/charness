@@ -18,6 +18,9 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 ab = load_script_module("run_skill_efficiency_ab_under_test", ROOT / "scripts" / "run_skill_efficiency_ab.py")
+validation = load_script_module(
+    "run_skill_efficiency_ab_validation_under_test", ROOT / "scripts" / "run_skill_efficiency_ab_validation.py"
+)
 # The #409 gaps are only truly closed when the FINAL consumer — the outcome grader — reads
 # the preserved outputs/ and transcript; import it to prove producer->consumer end-to-end.
 import grade_skill_outcome as grader  # noqa: E402  (scripts/ added to sys.path above)
@@ -568,6 +571,30 @@ def test_run_refuses_invalid_name_with_explicit_out_dir_before_selftest(
     assert "refusing --run: invalid config name" in captured.err
 
 
+def test_run_refuses_when_run_ab_raises_value_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    cfg = tmp_path / "c.json"
+    cfg.write_text(
+        json.dumps({"name": "safe-name", "spec_path": "s", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(ab, "selftest", lambda repo_root: 0)
+
+    def _run_ab(*args, **kwargs):
+        raise ValueError("matrix refused")
+
+    monkeypatch.setattr(ab, "run_ab", _run_ab)
+
+    rc = ab.main(["--run", str(cfg), "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr()
+
+    assert rc == 1
+    assert "refusing --run: matrix refused" in captured.err
+
+
 def test_validate_run_config_accepts_parseable_runs_and_effective_spec_path() -> None:
     config = {
         "runs": "2",
@@ -588,6 +615,19 @@ def test_validate_run_config_can_require_results_name() -> None:
     config["name"] = "safe-name"
     runs, _arms, _default_spec = ab.validate_run_config(config, require_results_name=True)
     assert runs == 1
+
+
+@pytest.mark.parametrize(
+    "value",
+    [True, False, 1.5, 0.0, "", "   ", "x", "-1", object()],
+)
+def test_validate_run_config_rejects_bad_run_coercions(value: object) -> None:
+    with pytest.raises(ValueError, match=r"`runs` must be a positive integer"):
+        validation._coerce_positive_int(value, "`runs` must be a positive integer")
+
+
+def test_validate_run_config_accepts_integral_float_run_count() -> None:
+    assert validation._coerce_positive_int(2.0, "`runs` must be a positive integer") == 2
 
 
 @pytest.mark.parametrize(

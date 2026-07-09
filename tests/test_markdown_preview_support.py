@@ -469,6 +469,43 @@ def test_markdown_preview_rejects_absolute_path_outside_repo_root(tmp_path: Path
     assert any("Skipping absolute path outside repo root" in warning for warning in payload["warnings"])
 
 
+def test_markdown_preview_expands_absolute_and_relative_paths_and_warns_on_missing_matches(
+    tmp_path: Path,
+) -> None:
+    lib = RENDER_MARKDOWN_PREVIEW._LIB
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    docs = repo / "docs"
+    docs.mkdir()
+    readme = repo / "README.md"
+    readme.write_text("# Root\n", encoding="utf-8")
+    (docs / "guide.md").write_text("# Guide\n", encoding="utf-8")
+
+    absolute_matches, absolute_warnings = lib._expand_pattern(repo, str(readme.resolve()))
+    glob_matches, glob_warnings = lib._expand_pattern(repo, "*")
+    relative_matches, relative_warnings = lib._expand_pattern(repo, "docs")
+    config = lib.PreviewConfig(
+        enabled=True,
+        backend="glow",
+        widths=[100],
+        include=["missing.md"],
+        on_change_only=False,
+        artifact_dir=".artifacts/markdown-preview",
+        config_path=None,
+    )
+    selected, warnings = lib.select_targets(repo, config)
+
+    assert absolute_matches == [readme.resolve()]
+    assert absolute_warnings == []
+    assert readme in glob_matches
+    assert docs not in glob_matches
+    assert glob_warnings == []
+    assert relative_matches == []
+    assert relative_warnings == []
+    assert selected == []
+    assert warnings == ["No Markdown files matched `missing.md`."]
+
+
 def test_markdown_preview_rejects_repo_relative_symlink_outside_repo_root(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

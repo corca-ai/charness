@@ -245,6 +245,64 @@ def test_parse_arm_specs_rejects_malformed_entry() -> None:
         lib.parse_arm_specs(["not-a-kv-pair"])
 
 
+def test_stream_command_blob_skips_non_list_content_and_non_bash_tools(tmp_path: Path) -> None:
+    stream = tmp_path / "stream.jsonl"
+    stream.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "type": "assistant",
+                        "message": {
+                            "role": "assistant",
+                            "content": {"type": "tool_use", "name": "Bash", "input": {"command": "ignored"}},
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "assistant",
+                        "message": {
+                            "role": "assistant",
+                            "content": [
+                                "not-a-block",
+                                {"type": "tool_use", "id": "t1", "name": "TodoWrite", "input": {"command": "skip"}},
+                                {"type": "tool_use", "id": "t2", "name": "Bash", "input": "not-a-dict"},
+                                {"type": "tool_use", "id": "t3", "name": "Bash", "input": {"command": MARKER_VALUE}},
+                            ],
+                        },
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    assert lib._stream_command_blob(stream) == MARKER_VALUE
+
+
+def test_stream_command_blob_skips_bash_tools_with_non_dict_input(tmp_path: Path) -> None:
+    stream = tmp_path / "stream.jsonl"
+    stream.write_text(
+        json.dumps(
+            {
+                "type": "assistant",
+                "message": {
+                    "role": "assistant",
+                    "content": [
+                        {"type": "tool_use", "id": "t1", "name": "Bash", "input": "not-a-dict"},
+                    ],
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    assert lib._stream_command_blob(stream) == ""
+
+
 # --- baseline-validity refusal -----------------------------------------------
 
 

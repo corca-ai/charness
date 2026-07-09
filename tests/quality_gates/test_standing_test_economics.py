@@ -214,14 +214,44 @@ def test_standing_test_economics_splits_module_release_only_nested_cli_files(tmp
     assert "nested_cli_release_only_files" not in payload
 
 
+def test_standing_test_economics_routes_empty_nested_cli_test_modules_to_standing_or_mixed(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    (tests / "test_module_body_only.py").write_text(
+        "import subprocess\nsubprocess.run(['true'], check=True)\n",
+        encoding="utf-8",
+    )
+    (tests / "test_standing.py").write_text(
+        "import subprocess\n\n"
+        "def test_case():\n"
+        "    subprocess.run(['true'], check=True)\n",
+        encoding="utf-8",
+    )
+
+    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    assert payload["nested_cli_file_count"] == 2
+    assert payload["nested_cli_standing_file_count"] == 1
+    assert payload["nested_cli_standing_or_mixed_file_count"] == 2
+    assert "tests/test_module_body_only.py" in payload["nested_cli_standing_or_mixed_files_sample"]
+
+
 def test_surface_marker_lib_skips_unreadable_files(tmp_path: Path, monkeypatch) -> None:
     lib = _load_surface_marker_lib()
     repo = tmp_path / "repo"
     repo.mkdir()
     nested_path = repo / "test_nested.py"
     release_path = repo / "test_release.py"
+    broken_path = repo / "test_broken.py"
     nested_path.write_text("import subprocess\nsubprocess.run(['true'])\n", encoding="utf-8")
     release_path.write_text("pytestmark = pytest.mark.release_only\n", encoding="utf-8")
+    broken_path.write_text("def broken(:\n", encoding="utf-8")
 
     original_read_text = Path.read_text
 
@@ -236,6 +266,9 @@ def test_surface_marker_lib_skips_unreadable_files(tmp_path: Path, monkeypatch) 
 
     assert lib.nested_cli_files(repo, [nested_path]) == []
     assert lib.module_release_only_files(repo, [release_path.name]) == []
+    assert lib.pytest_file_test_counts(repo, [nested_path.name]) == []
+    assert lib.pytest_file_test_counts(repo, [broken_path.name]) == []
+    assert lib.module_release_only_files(repo, [broken_path.name]) == []
 
     # An unreadable file ordered BEFORE a matching readable file must not
     # short-circuit the scan: the unreadable entry should only be skipped
@@ -251,6 +284,180 @@ def test_surface_marker_lib_skips_unreadable_files(tmp_path: Path, monkeypatch) 
     matching_release.write_text("pytestmark = pytest.mark.release_only\n", encoding="utf-8")
     assert lib.module_release_only_files(repo, [release_path.name, matching_release.name]) == [
         matching_release.name
+    ]
+
+
+def test_surface_marker_lib_handles_call_and_class_release_only_variants(tmp_path: Path) -> None:
+    lib = _load_surface_marker_lib()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    module_call = tests / "test_module_call.py"
+    module_tuple = tests / "test_module_tuple.py"
+    class_marked = tests / "test_class_marked.py"
+    class_decorated = tests / "test_class_decorated.py"
+    class_direct = tests / "test_class_direct.py"
+    class_standing = tests / "test_class_standing.py"
+    module_call.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "import subprocess",
+                "",
+                "pytestmark = pytest.mark.release_only()",
+                "",
+                "def test_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    module_tuple.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "import subprocess",
+                "",
+                "pytestmark = (pytest.mark.release_only(),)",
+                "",
+                "def test_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    class_marked.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "import subprocess",
+                "",
+                "class TestMarked:",
+                "    pytestmark = [pytest.mark.release_only()]",
+                "",
+                "    def test_release_case(self):",
+                "        subprocess.run(['true'], check=True)",
+                "",
+                "    def test_second_release_case(self):",
+                "        subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    class_decorated.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "import subprocess",
+                "",
+                "@pytest.mark.release_only",
+                "class TestDecorated:",
+                "    def test_release_case(self):",
+                "        subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    class_direct.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "import subprocess",
+                "",
+                "class TestDirect:",
+                "    def helper(self):",
+                "        return None",
+                "    pytestmark = pytest.mark.release_only",
+                "",
+                "    def test_release_case(self):",
+                "        subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    class_standing.write_text(
+        "\n".join(
+            [
+                "import subprocess",
+                "",
+                "unused = 1",
+                "",
+                "class TestStanding:",
+                "    def helper(self):",
+                "        return None",
+                "",
+                "    def test_case(self):",
+                "        subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    assert lib.module_release_only_files(
+        repo,
+        [
+            module_call.relative_to(repo).as_posix(),
+            module_tuple.relative_to(repo).as_posix(),
+            class_marked.relative_to(repo).as_posix(),
+            class_decorated.relative_to(repo).as_posix(),
+            class_direct.relative_to(repo).as_posix(),
+            class_standing.relative_to(repo).as_posix(),
+        ],
+    ) == [
+        module_call.relative_to(repo).as_posix(),
+        module_tuple.relative_to(repo).as_posix(),
+    ]
+
+    payload = lib.pytest_file_test_counts(
+        repo,
+        [
+            module_call.relative_to(repo).as_posix(),
+            module_tuple.relative_to(repo).as_posix(),
+            class_marked.relative_to(repo).as_posix(),
+            class_decorated.relative_to(repo).as_posix(),
+            class_direct.relative_to(repo).as_posix(),
+            class_standing.relative_to(repo).as_posix(),
+        ],
+    )
+
+    assert payload == [
+        {
+            "path": "tests/test_module_call.py",
+            "test_count": 1,
+            "release_only_count": 1,
+            "standing_count": 0,
+        },
+        {
+            "path": "tests/test_module_tuple.py",
+            "test_count": 1,
+            "release_only_count": 1,
+            "standing_count": 0,
+        },
+        {
+            "path": "tests/test_class_marked.py",
+            "test_count": 2,
+            "release_only_count": 2,
+            "standing_count": 0,
+        },
+        {
+            "path": "tests/test_class_decorated.py",
+            "test_count": 1,
+            "release_only_count": 1,
+            "standing_count": 0,
+        },
+        {
+            "path": "tests/test_class_direct.py",
+            "test_count": 1,
+            "release_only_count": 1,
+            "standing_count": 0,
+        },
+        {
+            "path": "tests/test_class_standing.py",
+            "test_count": 1,
+            "release_only_count": 0,
+            "standing_count": 1,
+        },
     ]
 
 
