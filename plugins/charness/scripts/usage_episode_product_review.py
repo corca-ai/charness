@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import json
 import subprocess
-from collections import Counter
 from datetime import datetime, timezone
 from typing import Any
 
 from report_usage_episodes import NON_CLAIMS as USAGE_REPORT_NON_CLAIMS
 from report_usage_episodes import _parse_timestamp
-from usage_episode_product_evidence import FRICTION_SIGNALS, NON_DELIVERED_OUTCOMES
+from usage_episode_product_evidence import FRICTION_SIGNALS, NON_DELIVERED_OUTCOMES, _counter
 
 REVIEW_NON_CLAIMS = [
     "Last-seen fields are review inputs, not churn or stop-using classifiers.",
@@ -200,10 +199,6 @@ def print_review_result(payload: dict[str, Any], *, as_json: bool) -> None:
     for packet in payload["reporter_packets"]:
         print(f"\n--- {packet['signal_type']} ({packet['filing_mode']}) ---")
         print(packet["body"])
-
-
-def _counter(records: list[dict[str, Any]], field: str) -> dict[str, int]:
-    return dict(sorted(Counter(str(record.get(field, "<missing>")) for record in records).items()))
 
 
 def _iso(value: datetime) -> str:

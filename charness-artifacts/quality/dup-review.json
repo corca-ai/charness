@@ -345,6 +345,90 @@
     },
     {
       "class": "intentional",
+      "id": "13d608e6f6664a09",
+      "note": "one-line json.loads(path.read_text(...)) readers across nine unrelated repo and portable skill modules; extracting this stdlib idiom would couple independent command surfaces without centralizing a domain invariant",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2ad052297e4a5ae5",
+      "note": "module-local UTC timestamp formatters across eleven unrelated ledgers, hooks, and feedback commands; nose reports zero shared lines, and the local helpers preserve each record format owner",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2e29be3c2ab30763",
+      "note": "five-line stdlib import-header overlap between the standalone feedback writer and portable achieve timebox script; a shared bootstrap would create cross-package coupling for imports only",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "39fe3da80754d73c",
+      "note": "five-line repo-relative portable-path fallback used by eleven independently executable CLI and artifact modules; each keeps its local fallback contract, and extraction would add bootstrap coupling for a trivial pathlib idiom",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3c301f25c9dd81c5",
+      "note": "two-line missing-file early return shared by host-hook discovery and feedback JSONL reading; the call sites have unrelated return contracts and no stable helper concept",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "529239b7d4dfabb7",
+      "note": "feedback semantic validation and feedback reconciliation both traverse explicit feedback records, but one emits validity errors while the other joins valid signals for reporting; only three lines are shared across distinct domain aggregations, so merging would blur validation versus evidence ownership",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6962d4713943ed31",
+      "note": "usage validator and usage reporter terminal renderers share JSON dispatch and a short error loop, while their successful plain-output contracts are deliberately different; nine shared lines do not justify coupling the two command renderers",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6c87ad0efd0b6633",
+      "note": "two-line guarded rate calculation retained under feedback reconciliation and product-evidence ownership; extracting the one-line arithmetic would not reduce meaningful maintenance risk",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "90cebad1d0bdb633",
+      "note": "nine-line top-level import and usage-stream constant overlap between the standalone validator and reporter after both consume the shared records module; it is script bootstrap shape, not duplicated behavior",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9aa84744a72dd6ab",
+      "note": "five-line main-flow tail shared when validator and reporter print a terminal payload and return around missing or invalid records; each command owns a distinct payload builder, so a shared control-flow wrapper would obscure command semantics",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d1cc108c53cf4b55",
+      "note": "paired one-line list comprehensions select delivery versus feedback event types; separate named functions make the discriminated-union vocabulary explicit, and nose reports zero shared lines",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d97d4f0533f395a8",
+      "note": "eight-line import/bootstrap overlap between standalone feedback writer and usage reporter after both consume usage-episode helper modules; this is local command wiring rather than an extractable behavior seam",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "13741926e48b3ac1",
       "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
       "reviewed_at": "2026-06-27",

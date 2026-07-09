@@ -9,6 +9,8 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+from usage_episode_records import schema_root as _usage_schema_root
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 USAGE_EPISODES_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
 USAGE_EPISODES_DEFAULT_STORAGE = Path(".charness/usage-episodes")
@@ -22,13 +24,6 @@ def _portable_path(repo_root: Path, path: Path) -> str:
         return str(path.resolve().relative_to(repo_root))
     except ValueError:
         return str(path)
-
-
-def _usage_schema_root(repo_root: Path) -> Path:
-    candidate = repo_root / "integrations" / "usage-episodes"
-    if (candidate / "manifest.schema.json").is_file() and (candidate / "episode.schema.json").is_file():
-        return candidate
-    return REPO_ROOT / "integrations" / "usage-episodes"
 
 
 def _usage_episode_timestamp() -> str:

@@ -7,14 +7,23 @@ import argparse
 import json
 import sys
 from collections import Counter
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import jsonschema
 import yaml
-from usage_episode_feedback import delivery_records, reconcile_feedback, semantic_feedback_errors
-from usage_episode_product_evidence import PRODUCT_EVIDENCE_NON_CLAIM, product_evidence
+from usage_episode_feedback import delivery_records, reconcile_feedback
+from usage_episode_product_evidence import (
+    PRODUCT_EVIDENCE_NON_CLAIM,
+    _counter,
+    _nested_counter,
+    product_evidence,
+)
+from usage_episode_records import parse_timestamp as _parse_timestamp
+from usage_episode_records import read_valid_records as _read_valid_records
+from usage_episode_records import resolve_records_path as _resolve_records_path
+from usage_episode_records import schema_root as _schema_root
 
 from runtime_bootstrap import repo_root_from_script
 
@@ -42,13 +51,6 @@ def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _schema_root(repo_root: Path) -> Path:
-    candidate = repo_root / "integrations" / "usage-episodes"
-    if (candidate / "manifest.schema.json").is_file() and (candidate / "episode.schema.json").is_file():
-        return candidate
-    return REPO_ROOT / "integrations" / "usage-episodes"
-
-
 def _load_adapter(path: Path) -> dict[str, Any]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
@@ -56,75 +58,11 @@ def _load_adapter(path: Path) -> dict[str, Any]:
     return data
 
 
-def _storage_dir(repo_root: Path, adapter: dict[str, Any]) -> Path:
-    raw = adapter.get("storage_path")
-    if isinstance(raw, str) and raw:
-        return repo_root / raw
-    return repo_root / DEFAULT_STORAGE
-
-
 def _portable_path(repo_root: Path, path: Path) -> str:
     try:
         return str(path.resolve().relative_to(repo_root))
     except ValueError:
         return str(path)
-
-
-def _resolve_records_path(repo_root: Path, adapter: dict[str, Any], explicit: Path | None) -> Path:
-    if explicit is None:
-        return (_storage_dir(repo_root, adapter) / EVENT_FILENAME).resolve()
-    candidate = explicit if explicit.is_absolute() else repo_root / explicit
-    return candidate.resolve()
-
-
-def _parse_timestamp(value: str) -> datetime:
-    return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
-
-
-def _read_valid_records(path: Path, episode_schema: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
-    records: list[dict[str, Any]] = []
-    errors: list[str] = []
-    validator = jsonschema.Draft7Validator(episode_schema, format_checker=jsonschema.FormatChecker())
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        stripped = line.strip()
-        if not stripped:
-            continue
-        try:
-            row = json.loads(stripped)
-        except json.JSONDecodeError as exc:
-            errors.append(f"{path}:{line_number}: invalid JSON: {exc}")
-            continue
-        try:
-            validator.validate(row)
-        except jsonschema.ValidationError as exc:
-            path_text = ".".join(str(part) for part in exc.absolute_path)
-            suffix = f" at {path_text}" if path_text else ""
-            errors.append(f"{path}:{line_number}: schema error{suffix}: {exc.message}")
-            continue
-        try:
-            _parse_timestamp(row["timestamp"])
-        except ValueError:
-            errors.append(f"{path}:{line_number}: schema error at timestamp: {row['timestamp']!r} is not date-time")
-            continue
-        records.append(row)
-    if not errors:
-        errors.extend(semantic_feedback_errors(records))
-    return records, errors
-
-
-def _counter(records: list[dict[str, Any]], field: str) -> dict[str, int]:
-    return dict(sorted(Counter(str(record.get(field, "<missing>")) for record in records).items()))
-
-
-def _nested_counter(records: list[dict[str, Any]], object_field: str, field: str) -> dict[str, int]:
-    values: Counter[str] = Counter()
-    for record in records:
-        nested = record.get(object_field)
-        if isinstance(nested, dict):
-            values[str(nested.get(field, "<missing>"))] += 1
-        else:
-            values["<missing>"] += 1
-    return dict(sorted(values.items()))
 
 
 def _date_counter(records: list[dict[str, Any]]) -> dict[str, int]:

@@ -20,6 +20,8 @@ from usage_episode_feedback import (
     semantic_feedback_errors,
     signal_allowed_for_source,
 )
+from usage_episode_records import resolve_records_path
+from usage_episode_records import schema_root as _schema_root
 
 from runtime_bootstrap import repo_root_from_script
 
@@ -31,13 +33,6 @@ EVENT_FILENAME = "usage_episode.jsonl"
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _schema_root(repo_root: Path) -> Path:
-    candidate = repo_root / "integrations" / "usage-episodes"
-    if (candidate / "manifest.schema.json").is_file() and (candidate / "episode.schema.json").is_file():
-        return candidate
-    return REPO_ROOT / "integrations" / "usage-episodes"
 
 
 def _portable_path(repo_root: Path, path: Path) -> str:
@@ -108,8 +103,8 @@ def main() -> int:
     if not adapter.get("enabled", False) or "usage_feedback" not in adapter.get("events", ["usage_episode", "usage_feedback"]):
         _print({"status": "disabled", "executed": False, "errors": ["usage_feedback is not enabled by the adapter"]}, args.json)
         return 2
-    storage = repo_root / adapter.get("storage_path", str(DEFAULT_STORAGE))
-    records_path = (storage / EVENT_FILENAME).resolve()
+    records_path = resolve_records_path(repo_root, adapter, None)
+    storage = records_path.parent
     try:
         records_path.relative_to(repo_root)
     except ValueError:

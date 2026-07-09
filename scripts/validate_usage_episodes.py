@@ -6,13 +6,14 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import jsonschema
 import yaml
-from usage_episode_feedback import semantic_feedback_errors
+from usage_episode_records import read_valid_records
+from usage_episode_records import resolve_records_path as _resolve_records_path
+from usage_episode_records import schema_root as _schema_root
 
 from runtime_bootstrap import repo_root_from_script
 
@@ -34,13 +35,6 @@ def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _schema_root(repo_root: Path) -> Path:
-    candidate = repo_root / "integrations" / "usage-episodes"
-    if (candidate / "manifest.schema.json").is_file() and (candidate / "episode.schema.json").is_file():
-        return candidate
-    return REPO_ROOT / "integrations" / "usage-episodes"
-
-
 def _load_adapter(path: Path) -> dict[str, Any]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
@@ -48,49 +42,11 @@ def _load_adapter(path: Path) -> dict[str, Any]:
     return data
 
 
-def _storage_dir(repo_root: Path, adapter: dict[str, Any]) -> Path:
-    raw = adapter.get("storage_path")
-    if isinstance(raw, str) and raw:
-        return repo_root / raw
-    return repo_root / DEFAULT_STORAGE
-
-
 def _portable_path(repo_root: Path, path: Path) -> str:
     try:
         return str(path.resolve().relative_to(repo_root))
     except ValueError:
         return str(path)
-
-
-def _validate_jsonl(path: Path, episode_schema: dict[str, Any]) -> tuple[int, list[str]]:
-    errors: list[str] = []
-    valid_count = 0
-    validator = jsonschema.Draft7Validator(episode_schema, format_checker=jsonschema.FormatChecker())
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        stripped = line.strip()
-        if not stripped:
-            continue
-        try:
-            row = json.loads(stripped)
-        except json.JSONDecodeError as exc:
-            errors.append(f"{path}:{line_number}: invalid JSON: {exc}")
-            continue
-        try:
-            validator.validate(row)
-        except jsonschema.ValidationError as exc:
-            path_text = ".".join(str(part) for part in exc.absolute_path)
-            suffix = f" at {path_text}" if path_text else ""
-            errors.append(f"{path}:{line_number}: schema error{suffix}: {exc.message}")
-            continue
-        timestamp = row.get("timestamp")
-        if isinstance(timestamp, str):
-            try:
-                datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-            except ValueError:
-                errors.append(f"{path}:{line_number}: schema error at timestamp: {timestamp!r} is not date-time")
-                continue
-        valid_count += 1
-    return valid_count, errors
 
 
 def _no_records_payload(repo_root: Path, adapter_path: Path, records_path: Path) -> dict[str, Any]:
@@ -109,13 +65,6 @@ def _no_records_payload(repo_root: Path, adapter_path: Path, records_path: Path)
             )
         ],
     }
-
-
-def _resolve_records_path(repo_root: Path, adapter: dict[str, Any], explicit: Path | None) -> Path:
-    if explicit is None:
-        return (_storage_dir(repo_root, adapter) / EVENT_FILENAME).resolve()
-    candidate = explicit if explicit.is_absolute() else repo_root / explicit
-    return candidate.resolve()
 
 
 def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
@@ -225,20 +174,13 @@ def main() -> int:
     if not records_path.is_file():
         _print_result(_no_records_payload(repo_root, adapter_path, records_path), as_json=args.json)
         return 0
-    valid_count, errors = _validate_jsonl(records_path, episode_schema)
-    if not errors:
-        records = [
-            json.loads(line)
-            for line in records_path.read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        ]
-        errors.extend(semantic_feedback_errors(records))
+    records, errors = read_valid_records(records_path, episode_schema)
     payload = {
         "status": "valid" if not errors else "invalid_records",
         "valid": not errors,
         "adapter_path": _portable_path(repo_root, adapter_path),
         "records_path": _portable_path(repo_root, records_path),
-        "valid_count": valid_count,
+        "valid_count": len(records),
         "errors": errors,
         "warnings": [],
     }

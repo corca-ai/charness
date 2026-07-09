@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -16,6 +17,7 @@ from scripts.usage_episode_feedback import (
     classification_counts,
     feedback_id_for,
 )
+from scripts.usage_episode_records import read_valid_records
 from tests.test_usage_episodes_schema import acme_episode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -66,7 +68,18 @@ def write_records(repo: Path, records: list[dict[str, object]]) -> Path:
 
 
 def run(script: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run([sys.executable, str(script), *args], cwd=REPO_ROOT, check=False, capture_output=True, text=True, env=env)
+    child_env = os.environ.copy()
+    child_env.pop("CHARNESS_QUALITY_MODE", None)
+    if env is not None:
+        child_env.update(env)
+    return subprocess.run(
+        [sys.executable, str(script), *args],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=child_env,
+    )
 
 
 def test_usage_feedback_schema_requires_closed_safe_fields() -> None:
@@ -193,6 +206,13 @@ def test_validator_rejects_unlinked_and_duplicate_feedback_ids(tmp_path: Path) -
     deterministic = run(VALIDATOR, "--repo-root", str(tmp_path), "--json")
     assert deterministic.returncode == 1
     assert "non-deterministic feedback_id" in json.loads(deterministic.stdout)["errors"][0]
+
+
+def test_shared_record_reader_returns_records_and_semantic_errors(tmp_path: Path) -> None:
+    records_path = write_records(tmp_path, [acme_episode(), feedback_record(), feedback_record()])
+    records, errors = read_valid_records(records_path, SCHEMA)
+    assert len(records) == 3
+    assert any("duplicate feedback_id" in error for error in errors)
 
 
 def test_report_reconciles_one_delivery_and_one_feedback_event(tmp_path: Path) -> None:
