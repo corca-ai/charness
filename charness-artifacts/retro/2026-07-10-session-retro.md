@@ -27,6 +27,7 @@ candidate without external writes or live capture.
 - The first reporter implementation duplicated enough semantics that the validator could reject duplicate feedback while the reporter still counted it, allowing satisfaction rates above 100%. Fresh-eye critique caught this before closeout, but the split created avoidable rework.
 - The stale handoff state carried old #427 work forward until closeout. The operating contract intentionally delays handoff mutation, but it makes the final closeout review responsible for removing stale batons precisely.
 - The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict.
+- The first committed verification lock stopped because the new durable retro packet JSON had no owning surface. That was useful pressure: passing with `--allow-unmatched` would have left the next packet outside sync/verification planning.
 
 ## Critical Decisions
 
@@ -34,6 +35,7 @@ candidate without external writes or live capture.
 - Share one record-reader/semantic-validation seam across validator and reporter instead of patching only the failing report math. That turned a bug fix into a durable boundary.
 - Defer the prompt-vocabulary demotion. The N=2 pilot ranked a candidate, but its own policy required integrated ship-configuration proof and a tripwire window that this goal did not authorize.
 - Treat reviewer-authored worktree changes as untrusted even when the prose verdict is sound. The parent kept only independently verified intended content and assigned the required disposition review to a separate fresh context.
+- Register the durable retro packet pair in the retro owning surface rather than using a one-run unmatched override; the JSON now receives a parse verifier and a focused match regression.
 
 ## Expert Counterfactuals
 
@@ -47,6 +49,7 @@ candidate without external writes or live capture.
 - specialization down: plugin mirrors | decision: same waste, fix now | proof: source/plugin compare and `py_compile` passed after mirroring `usage_episode_records.py` and its consumers
 - mental-model siblings: prompt-mutation demotion from ranked-but-unshipped evidence | decision: same waste, fix now | proof: disposition artifact plus handoff now state that the candidate is neither proven necessary nor proven dead
 - mental-model siblings: shared-worktree fresh-eye mutation | decision: intentional boundary | proof: the repo contract already forbids reviewer writes; the parent audited the diff and reran canonical producers, so this instance needs enforcement of the existing boundary rather than a second prose rule
+- same layer: durable retro prepare-packet JSON/Markdown pairs | decision: same waste, fix now | proof: `.agents/surfaces.json` owns `*-packet.json`, existing retro Markdown coverage owns the pair, and the focused surface-obligation test pins zero unmatched paths
 
 ## Next Improvements
 
@@ -54,6 +57,7 @@ candidate without external writes or live capture.
 - capability: applied-in-session — validator, reporter, writer-adjacent review, and plugin mirrors now share the semantic usage record seam.
 - memory: applied-in-session — handoff and prompt-mutation disposition record the exact conditions required before the demotion candidate may be reopened.
 - workflow: applied-in-session — reviewer-produced files were treated as untrusted, independently inspected, and regenerated through the retro packet/persistence helpers before closeout.
+- capability: applied-in-session — the surfaces manifest and focused regression now route durable retro packet JSON/Markdown pairs through their owning verification commands.
 
 ## Persisted
 

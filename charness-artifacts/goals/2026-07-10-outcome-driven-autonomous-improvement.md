@@ -14,9 +14,9 @@ command remains the portable resume form for a fresh host session.
 - Current slice intent: bind the completed local implementation to honest
   quality/host/retro evidence and close without implying push, live feedback,
   or prompt-demotion proof that did not run.
-- Next action: complete the fresh-eye disposition review, commit the closeout
-  evidence, run the committed verification lock, and flip this artifact only
-  after that proof passes.
+- Next action: commit the retro-packet surface ownership repair, rerun the
+  committed verification lock, and flip this artifact only after that proof
+  passes.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -279,7 +279,7 @@ applies.
 
 - Objective: make local proof, residual risk, and the lessons from rework durable.
 - What changed: current quality artifact, retro packet/artifact/digest, scoped host-log probe, and closeout evidence bindings.
-- Targeted verification: `run-quality.sh --read-only` passed 81/81 after classifying the initial failures as new-slice-local and repairing them; dup-ratchet is clean without a baseline accept; quality/retro/handoff validators pass.
+- Targeted verification: `run-quality.sh --read-only` passed 81/81 after classifying the initial failures as new-slice-local and repairing them; dup-ratchet is clean without a baseline accept; quality/retro/handoff validators pass. The first committed lock then found the retro packet JSON unmatched, so the owning surface and a focused zero-unmatched regression were added instead of using an override.
 - Efficiency evidence: the goal-window probe measured two context compactions, 177 custom tool calls, 72 function calls, and 40 subagent waits. Counts overlap by channel and are activity signals, not cost totals. Fresh-eye and broad-gate work were necessary safety costs; repeated polling and auditing a reviewer that violated its read-only brief were reducible waste.
 
 ## Context Sources
@@ -356,7 +356,7 @@ Disposition review: charness-artifacts/critique/2026-07-10-outcome-driven-autono
 - Focused proof: 104 usage/report/schema/plugin/slice-closeout tests passed after the shared-reader and environment-isolation repair.
 - Broad proof: `./scripts/run-quality.sh --read-only` passed 81 gates, zero failed, in 50.6s; the initial two pytest failures and 13 clone fingerprints were new-slice-local and are repaired/dispositioned.
 - Data readback: all 1,331 current delivery records validate; the reporter shows zero feedback events, zero coverage, and all product-success veto gaps intact.
-- Artifact proof: handoff, quality, retro, lesson-selection, packaging, source/plugin mirror, and duplicate-ratchet checks pass.
+- Artifact proof: handoff, quality, retro, lesson-selection, surface matching, packaging, source/plugin mirror, and duplicate-ratchet checks pass.
 - Closeout state: `impl-local`; no push, remote CI, instance sync, live provider proof, release, or issue close ran.
 - Residual risks: feedback append has no cross-process lock; rotated streams are not reconciled; no real feedback observation exists yet.
 - High-cost/live proof: Cautilus and live capture were not run because the deterministic contract was sufficient and those lanes require separate approval.
@@ -374,4 +374,5 @@ Retro dispositions: applied: `tests/test_usage_feedback.py` now clears inherited
 Retro dispositions: applied: `scripts/usage_episode_records.py` and its plugin mirror give validator and reporter one semantic record seam.
 Retro dispositions: applied: `docs/handoff.md` and the prompt-mutation disposition bind the demotion candidate to explicit integrated-live-proof reopen conditions.
 Retro dispositions: applied: reviewer-produced files were independently audited and regenerated through the canonical retro packet/persistence helpers before being trusted.
-Structural follow-up: applied: `tests/test_usage_feedback.py` quality-mode regression, `scripts/usage_episode_records.py` shared validator contract, and the checked-in prompt disposition collectively close every transferable sibling named by the retro; the existing read-only reviewer contract remains the correct boundary for the disclosed reviewer violation.
+Retro dispositions: applied: `.agents/surfaces.json` plus `tests/quality_gates/test_surface_obligations.py` now own and verify durable retro prepare-packet pairs without `--allow-unmatched`.
+Structural follow-up: applied: `tests/test_usage_feedback.py` quality-mode regression, `scripts/usage_episode_records.py` shared validator contract, checked-in prompt disposition, and retro packet surface regression collectively close every transferable sibling named by the retro; the existing read-only reviewer contract remains the correct boundary for the disclosed reviewer violation.

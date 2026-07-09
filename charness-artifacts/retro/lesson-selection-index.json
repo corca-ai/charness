@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-10",
   "source_artifact_count": 295,
-  "candidate_count": 1348,
+  "candidate_count": 1350,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -845,6 +845,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f7212f1a3d5a",
+      "kind": "next_improvement",
+      "lesson": "applied-in-session — the surfaces manifest and focused regression now route durable retro packet JSON/Markdown pairs through their owning verification commands.",
+      "normalized_key": "applied in session the surfaces manifest and focused regression now route durable retro packet",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:20211a082e57",
       "kind": "next_improvement",
       "lesson": "applied-in-session — usage-feedback subprocess helpers now clear inherited quality-mode state by default, while the dedicated quality-mode test passes it intentionally.",
@@ -925,6 +945,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:be1d115cf15c",
+      "kind": "repeat_trap",
+      "lesson": "The first committed verification lock stopped because the new durable retro packet JSON had no owning surface. That was useful pressure: passing with `--allow-unmatched` would have left the next packet outside sync/verification planning.",
+      "normalized_key": "the first committed verification lock stopped because the new durable retro packet json had",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:1e2225d0207c",
       "kind": "repeat_trap",
       "lesson": "The first reporter implementation duplicated enough semantics that the validator could reject duplicate feedback while the reporter still counted it, allowing satisfaction rates above 100%. Fresh-eye critique caught this before closeout, but the split created avoidable rework.",
@@ -941,46 +981,6 @@
           "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
           "date": "2026-07-10",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:eecc354ce3d0",
-      "kind": "repeat_trap",
-      "lesson": "The stale handoff state carried old #427 work forward until closeout. The operating contract intentionally delays handoff mutation, but it makes the final closeout review responsible for removing stale batons precisely.",
-      "normalized_key": "the stale handoff state carried old 427 work forward until closeout the operating contract",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-          "date": "2026-07-10",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d1a279eeb05d",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.63.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 63 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-09",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md",
-          "date": "2026-07-09",
-          "section": "Context"
         }
       ]
     }
@@ -1817,6 +1817,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f7212f1a3d5a",
+      "kind": "next_improvement",
+      "lesson": "applied-in-session — the surfaces manifest and focused regression now route durable retro packet JSON/Markdown pairs through their owning verification commands.",
+      "normalized_key": "applied in session the surfaces manifest and focused regression now route durable retro packet",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:20211a082e57",
       "kind": "next_improvement",
       "lesson": "applied-in-session — usage-feedback subprocess helpers now clear inherited quality-mode state by default, while the dedicated quality-mode test passes it intentionally.",
@@ -1881,6 +1901,26 @@
       "kind": "repeat_trap",
       "lesson": "The first broad quality run found that usage-feedback execute tests inherited `CHARNESS_QUALITY_MODE=read-only` from the parent gate. The production guard was right, but the tests did not isolate their subprocess environment, so the narrow suite had overfit to the default shell state.",
       "normalized_key": "the first broad quality run found that usage feedback execute tests inherited charness quality",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:be1d115cf15c",
+      "kind": "repeat_trap",
+      "lesson": "The first committed verification lock stopped because the new durable retro packet JSON had no owning surface. That was useful pressure: passing with `--allow-unmatched` would have left the next packet outside sync/verification planning.",
+      "normalized_key": "the first committed verification lock stopped because the new durable retro packet json had",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
       "latest_source_date": "2026-07-10",

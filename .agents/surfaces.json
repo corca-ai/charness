@@ -608,9 +608,10 @@
     },
     {
       "surface_id": "retro-lesson-selection-index",
-      "description": "Generated advisory index for source-linked retro lesson digest selection.",
+      "description": "Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.",
       "source_paths": [
         "charness-artifacts/retro/*.md",
+        "charness-artifacts/retro/*-packet.json",
         "scripts/recent_lessons_lib.py",
         "scripts/build_retro_lesson_selection_index.py",
         "scripts/retro_persistence_lib.py",
@@ -623,10 +624,12 @@
         "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write"
       ],
       "verify_commands": [
+        "for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done",
         "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
       ],
       "notes": [
-        "The index is advisory source-linked selection evidence; it must not replace dated retro artifacts or make `recent-lessons.md` opaque."
+        "The index is advisory source-linked selection evidence; it must not replace dated retro artifacts or make `recent-lessons.md` opaque.",
+        "Retro prepare_packet emits durable `*-packet.json` / `*-packet.md` pairs; JSON must parse, while packet Markdown is covered by the existing retro `*.md` source pattern."
       ]
     },
     {

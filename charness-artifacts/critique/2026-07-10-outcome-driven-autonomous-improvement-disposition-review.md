@@ -9,7 +9,7 @@ Host exposure: model/reasoning request fields sent; application unconfirmed (`me
 ## Verdict
 
 Satisfactory after this artifact is bound into the goal closeout. The goal's
-four applied dispositions are backed by code, tests, or checked-in operating
+five applied dispositions are backed by code, tests, or checked-in operating
 contracts rather than by the retro digest alone. The honest closeout level is
 `impl-local`.
 
@@ -30,6 +30,11 @@ contracts rather than by the retro digest alone. The honest closeout level is
   generated retro surfaces before trusting them. The existing read-only
   fresh-eye contract remains the right structural destination unless this
   violation recurs.
+- Retro packet surface ownership: **dispositioned**. `.agents/surfaces.json`
+  routes durable `*-packet.json` artifacts through JSON parsing and the retro
+  lesson-index checks, while the focused surface-obligation regression proves
+  the JSON/Markdown pair has no unmatched path. This is real contract/test
+  teeth and correctly rejects a one-run `--allow-unmatched` escape.
 
 ## Structural Follow-Up
 

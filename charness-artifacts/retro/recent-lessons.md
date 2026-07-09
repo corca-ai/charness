@@ -10,14 +10,14 @@
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`; sources: 74)
 - The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 - The first broad quality run found that usage-feedback execute tests inherited `CHARNESS_QUALITY_MODE=read-only` from the parent gate. The production guard was right, but the tests did not isolate their subprocess environment, so the narrow suite had overfit to the default shell state. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
-- The first reporter implementation duplicated enough semantics that the validator could reject duplicate feedback while the reporter still counted it, allowing satisfaction rates above 100%. Fresh-eye critique caught this before closeout, but the split created avoidable rework. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- The first committed verification lock stopped because the new durable retro packet JSON had no owning surface. That was useful pressure: passing with `--allow-unmatched` would have left the next packet outside sync/verification planning. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`; sources: 74)
 - applied-in-session — handoff and prompt-mutation disposition record the exact conditions required before the demotion candidate may be reopened. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 - applied-in-session — reviewer-produced files were treated as untrusted, independently inspected, and regenerated through the retro packet/persistence helpers before closeout. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
-- applied-in-session — usage-feedback subprocess helpers now clear inherited quality-mode state by default, while the dedicated quality-mode test passes it intentionally. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- applied-in-session — the surfaces manifest and focused regression now route durable retro packet JSON/Markdown pairs through their owning verification commands. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 
 ## Selection Policy
 

@@ -152,6 +152,25 @@ def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> 
     assert payload["unmatched_paths"] == []
 
 
+def test_retro_prepare_packet_pair_matches_retro_surface() -> None:
+    result = run_script(
+        "scripts/check_changed_surfaces.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "charness-artifacts/retro/demo-packet.json",
+        "charness-artifacts/retro/demo-packet.md",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
+    assert "retro-lesson-selection-index" in surface_ids
+    assert "repo-markdown" in surface_ids
+    assert payload["unmatched_paths"] == []
+    assert any("retro_packet_json" in command for command in payload["verify_commands"])
+
+
 def test_check_changed_surfaces_verifies_mutation_workflow_actions() -> None:
     result = run_script(
         "scripts/check_changed_surfaces.py",
