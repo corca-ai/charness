@@ -149,20 +149,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def _non_claim(*, no_inputs: bool, blockers: list[dict[str, Any]]) -> str:
-    if no_inputs:
-        return (
+    messages = {
+        "empty": (
             "No input files were supplied, so this run makes no clean-proof claim. "
             "Pass --scenario-spec, --transcript, or --text to scan visible content."
-        )
-    if blockers:
-        return (
+        ),
+        "blocked": (
             "History/ref probe tokens were found, so no clean blinding proof is claimed. "
             "This advisory helper does not block commits or CI by exit status."
-        )
-    return (
-        "This scans visible scenario text and supplied transcripts only; it does not prove "
-        "a blind workspace or predict hidden tool behavior."
-    )
+        ),
+        "scoped": (
+            "This scans visible scenario text and supplied transcripts only; it does not prove "
+            "a blind workspace or predict hidden tool behavior."
+        ),
+    }
+    key = "empty" if no_inputs else "blocked" if blockers else "scoped"
+    return messages[key]
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

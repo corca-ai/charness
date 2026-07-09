@@ -1,5 +1,4 @@
 # Retro: Release Auto-Retro Trigger v0.63.0
-
 Date: 2026-07-09
 Mode: session
 
@@ -12,8 +11,8 @@ The release helper persisted this bounded retro before committing the release ar
 
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
-- Path hits: [skills/support/web-fetch/scripts/acquire_public_url.py](../../skills/support/web-fetch/scripts/acquire_public_url.py), [skills/support/web-fetch/scripts/youtube_source.py](../../skills/support/web-fetch/scripts/youtube_source.py).
-- Evaluated changed paths: 422.
+- Path hits: `skills/support/web-fetch/scripts/acquire_public_url.py`, `skills/support/web-fetch/scripts/youtube_source.py`.
+- Evaluated changed paths: 423.
 
 ## Waste
 
@@ -37,4 +36,4 @@ The release helper persisted this bounded retro before committing the release ar
 
 ## Persisted
 
-Persisted: yes: [charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md](./2026-07-09-v0-63-0-release-auto-retro.md)
+Persisted: yes: charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md

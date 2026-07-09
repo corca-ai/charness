@@ -51,7 +51,7 @@ Advanced `charness` toward release `0.63.0` (tag `v0.63.0`) through the repo-own
 - Path hits: 2.
   - `skills/support/web-fetch/scripts/acquire_public_url.py`
   - `skills/support/web-fetch/scripts/youtube_source.py`
-- Evaluated changed paths: 422.
+- Evaluated changed paths: 423.
   - `.agents/critique-adapter.yaml`
   - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
@@ -72,7 +72,7 @@ Advanced `charness` toward release `0.63.0` (tag `v0.63.0`) through the repo-own
   - `charness-artifacts/cautilus/handoff-refresh-move-2026-07-05/transcript.txt`
   - `charness-artifacts/cautilus/hotl-confirm-slice9b-2026-07-09/finding.md`
   - `charness-artifacts/cautilus/hotl-confirm-slice9b-2026-07-09/justification.md`
-  - ... 402 more
+  - ... 403 more
 
 ## Real-Host Verification
 

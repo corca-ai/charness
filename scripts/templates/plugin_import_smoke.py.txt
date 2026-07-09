@@ -6,6 +6,9 @@ errors = []
 for py_path in sorted(plugin_root.rglob("*.py")):
     if "__pycache__" in py_path.parts:
         continue
+    parent = str(py_path.parent)
+    if parent not in sys.path:
+        sys.path.insert(0, parent)
     rel = py_path.relative_to(plugin_root)
     module_name = "smoke_" + str(rel).replace("/", "_").replace(".", "_").replace("-", "_")
     try:

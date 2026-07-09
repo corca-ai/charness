@@ -352,6 +352,19 @@ def test_plugin_import_smoke_script_lives_in_template_asset() -> None:
     )
 
 
+def test_plugin_import_smoke_allows_exported_script_sibling_imports(tmp_path: Path) -> None:
+    plugin_root = tmp_path / "plugin"
+    scripts_dir = plugin_root / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "helper_lib.py").write_text("VALUE = 7\n", encoding="utf-8")
+    (scripts_dir / "uses_helper.py").write_text(
+        "from helper_lib import VALUE\nassert VALUE == 7\n",
+        encoding="utf-8",
+    )
+
+    validate_packaging_install_surface_module.smoke_exported_plugin_imports(plugin_root)
+
+
 @pytest.mark.release_only
 def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
