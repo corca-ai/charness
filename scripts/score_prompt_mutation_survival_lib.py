@@ -130,6 +130,8 @@ def _stream_command_blob(stream_path: Path) -> str:
         for block in content:
             if not isinstance(block, dict) or block.get("type") != "tool_use":
                 continue
+            if block.get("name") != "Bash":
+                continue
             input_obj = block.get("input")
             if not isinstance(input_obj, dict):
                 continue
