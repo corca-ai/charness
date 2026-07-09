@@ -97,7 +97,7 @@ def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) 
                     "specdown": {"doctor": {"doctor_status": "ok", "healthcheck": {"status": "not-configured"}}},
                     "tokei": {
                         "update": {
-                            "status": "updated",
+                            "status": "refreshed",
                             "mode": "script",
                             "version_transition": {"from": "1.1.0", "to": "1.1.0"},
                         }
@@ -125,7 +125,7 @@ def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) 
     assert "  - cautilus: manual" in output
     assert "  - nose: updated 0.17.0 -> 0.18.0 (script)" in output
     assert "  - specdown: ok healthcheck=not-configured" in output
-    assert "  - tokei: updated 1.1.0 (script)" in output
+    assert "  - tokei: refreshed 1.1.0 (script)" in output
     assert "  - github-gh: updated 2.0.0 -> 2.1.0 (npm: gh-cli)" in output
 
 
@@ -164,17 +164,18 @@ def test_package_manager_tool_next_step_includes_version_transition() -> None:
 
     assert next_step == "`nose` was updated via `cargo` package `nose-cli` (0.17.0 -> 0.18.0)."
 
-    plain_next_step = module._package_manager_tool_next_step(
+    refreshed_next_step = module._package_manager_tool_next_step(
         "nose",
         {
             "mode": "package_manager",
             "package_manager": "cargo",
             "package_name": "nose-cli",
-            "status": "updated",
+            "status": "refreshed",
+            "version_transition": {"from": "0.18.0", "to": "0.18.0"},
         },
     )
 
-    assert plain_next_step == "`nose` was updated via `cargo` package `nose-cli`."
+    assert refreshed_next_step == "`nose` was refreshed via `cargo` package `nose-cli` (0.18.0)."
 
 
 def test_print_next_actions_labels_repo_onboarding_primary_and_merges(capsys) -> None:

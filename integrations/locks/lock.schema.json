@@ -716,6 +716,8 @@
           "enum": [
             "updated",
             "updated-not-ready",
+            "refreshed",
+            "refreshed-not-ready",
             "failed",
             "noop",
             "manual",

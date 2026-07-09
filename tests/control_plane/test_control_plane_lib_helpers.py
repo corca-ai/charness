@@ -451,7 +451,7 @@ def test_upsert_lock_preserves_all_optional_sections(tmp_path: Path) -> None:
     }
     update = {
         "updated_at": "2026-05-16T00:00:00Z",
-        "update_status": "updated",
+        "update_status": "refreshed",
         "mode": "manual",
         "commands": [],
         "detect": check_result,

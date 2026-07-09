@@ -8,7 +8,7 @@ import scripts.sync_support as sync_support_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
-from scripts.update_tools import update_one
+from scripts.update_tools import _version_transition_changed, update_one
 from tests.script_main import run_loaded_script_main
 
 from .support import ROOT, seed_control_plane_repo
@@ -21,6 +21,13 @@ def write_manifest_schema(repo: Path) -> None:
         (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
+
+
+def test_update_status_version_transition_classification_requires_two_observed_versions() -> None:
+    assert _version_transition_changed({"from": "0.17.0", "to": "0.18.0"}) is True
+    assert _version_transition_changed({"from": "0.18.0", "to": "0.18.0"}) is False
+    assert _version_transition_changed({"from": None, "to": "0.18.0"}) is None
+    assert _version_transition_changed({"from": "0.18.0", "to": None}) is None
 
 
 def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path, monkeypatch) -> None:
@@ -63,7 +70,7 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path, monkeypatch) -
     assert doctor_after_sync_payload["support_discovery"]["support_skill_path"] == str(installed_skill_root / "SKILL.md")
     assert "installed Charness plugin support surface" in doctor_after_sync_payload["next_steps"][0]
 
-    assert update_one(repo, manifest, execute=True)["status"] == "updated"
+    assert update_one(repo, manifest, execute=True)["status"] == "refreshed"
 
     lock_payload = json.loads((repo / "integrations" / "locks" / "demo-tool.json").read_text(encoding="utf-8"))
     assert lock_payload["support"]["source_type"] == "local_wrapper"
@@ -74,7 +81,7 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path, monkeypatch) -
     assert lock_payload["doctor"]["support_sync"]["status"] == "ok"
     assert "install_route" not in lock_payload["doctor"]
     assert "support_discovery" not in lock_payload["doctor"]
-    assert lock_payload["update"]["update_status"] == "updated"
+    assert lock_payload["update"]["update_status"] == "refreshed"
 
 
 def test_sync_support_materializes_upstream_checkout_into_installed_plugin(tmp_path: Path) -> None:
@@ -222,5 +229,3 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
     payload = json.loads(sync.stdout)[0]
     assert payload["status"] == "synced"
     assert (plugin_root / "support" / "fixture-skill" / "SKILL.md").is_file()
-
-

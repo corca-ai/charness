@@ -108,6 +108,21 @@ def update_payload(
     return payload
 
 
+def _version_transition_changed(version_transition: dict[str, object] | None) -> bool | None:
+    if not isinstance(version_transition, dict):
+        return None
+    from_version = version_transition.get("from")
+    to_version = version_transition.get("to")
+    if (
+        isinstance(from_version, str)
+        and from_version
+        and isinstance(to_version, str)
+        and to_version
+    ):
+        return from_version != to_version
+    return None
+
+
 def passive_update(
     repo_root: Path,
     manifest: dict[str, object],
@@ -206,14 +221,18 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
     )
     readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
     command_ok = all(result.exit_code == 0 for result in command_results)
-    if command_ok and detect_result["ok"] and healthcheck_result["ok"]:
-        status = "updated" if readiness_result["ok"] else "updated-not-ready"
-    else:
-        status = "failed"
     version_transition = {
         "from": previous_observed_version(repo_root, manifest["tool_id"]),
         "to": observed_version_from_detect(detect_result),
     }
+    version_changed = _version_transition_changed(version_transition)
+    if command_ok and detect_result["ok"] and healthcheck_result["ok"]:
+        if readiness_result["ok"]:
+            status = "refreshed" if version_changed is False else "updated"
+        else:
+            status = "refreshed-not-ready" if version_changed is False else "updated-not-ready"
+    else:
+        status = "failed"
     payload = update_payload(
         status=status,
         mode=mode,
@@ -257,7 +276,7 @@ def main() -> int:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
         print_tool_statuses(results)
-    if has_any_status(results, status_key="status", statuses={"failed", "updated-not-ready"}):
+    if has_any_status(results, status_key="status", statuses={"failed", "updated-not-ready", "refreshed-not-ready"}):
         return 1
     return 0
 

@@ -120,6 +120,8 @@ def test_version_transition_suffix_renders_to_only_when_from_missing() -> None:
 def test_version_transition_suffix_reports_version_unknown_for_updated_without_transition() -> None:
     assert version_transition_suffix({"status": "updated"}) == " (version unknown)"
     assert version_transition_suffix({"status": "updated-not-ready"}) == " (version unknown)"
+    assert version_transition_suffix({"status": "refreshed"}) == ""
+    assert version_transition_suffix({"status": "refreshed-not-ready"}) == ""
 
 
 def test_version_transition_suffix_empty_for_other_statuses_without_transition() -> None:

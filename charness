@@ -2904,7 +2904,7 @@ def run_tool_update_flow(
     failed = any(
         isinstance(result, dict)
         and isinstance(result.get("update"), dict)
-        and result["update"].get("status") in {"failed", "updated-not-ready"}
+        and result["update"].get("status") in {"failed", "updated-not-ready", "refreshed-not-ready"}
         for result in payload["results"].values()
     )
     return payload, failed
@@ -3020,7 +3020,7 @@ def _package_manager_tool_next_step(tool_id: str, action_result: dict[str, objec
     package_name = action_result.get("package_name")
     if not isinstance(package_manager, str) or not isinstance(package_name, str):
         return None
-    if action_result.get("status") == "updated":
+    if action_result.get("status") in {"updated", "updated-not-ready"}:
         version_transition = action_result.get("version_transition")
         if isinstance(version_transition, dict):
             from_version = version_transition.get("from")
@@ -3037,6 +3037,24 @@ def _package_manager_tool_next_step(tool_id: str, action_result: dict[str, objec
                     f"({from_version} -> {to_version})."
                 )
         return f"`{tool_id}` was updated via `{package_manager}` package `{package_name}`."
+    if action_result.get("status") in {"refreshed", "refreshed-not-ready"}:
+        version_transition = action_result.get("version_transition")
+        if isinstance(version_transition, dict):
+            from_version = version_transition.get("from")
+            to_version = version_transition.get("to")
+            if (
+                isinstance(from_version, str)
+                and from_version
+                and isinstance(to_version, str)
+                and to_version
+            ):
+                if from_version != to_version:
+                    return (
+                        f"`{tool_id}` was refreshed via `{package_manager}` package `{package_name}` "
+                        f"({from_version} -> {to_version})."
+                    )
+                return f"`{tool_id}` was refreshed via `{package_manager}` package `{package_name}` ({to_version})."
+        return f"`{tool_id}` was refreshed via `{package_manager}` package `{package_name}`."
     return f"`{tool_id}` can be refreshed via `{package_manager}` package `{package_name}`."
 
 

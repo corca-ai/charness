@@ -85,3 +85,31 @@ def test_update_flow_syncs_support_when_reuse_is_not_available(monkeypatch, tmp_
     assert "--execute" in support_call
     assert failed is False
     assert payload["results"]["demo"]["support"]["status"] == "synced"
+
+
+def test_update_all_flow_treats_refreshed_not_ready_as_failure(monkeypatch, tmp_path: Path) -> None:
+    module = load_charness_module("charness_update_flow_unit_refreshed_failure_under_test")
+
+    def fake_invoke(_repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False) -> object:
+        assert allow_failure is True
+        if relative_script == "scripts/update_tools.py":
+            return [{"tool_id": "demo", "status": "refreshed-not-ready"}]
+        if relative_script == "scripts/doctor.py":
+            return [{"tool_id": "demo", "doctor_status": "ok", "doctor_disposition": "ok"}]
+        raise AssertionError(f"unexpected script: {relative_script}")
+
+    monkeypatch.setattr(module, "invoke_repo_json_script", fake_invoke)
+
+    payload, failed = module.run_tool_update_flow(
+        repo_root=tmp_path,
+        managed_checkout=True,
+        plugin_root=tmp_path / "plugin",
+        tool_ids=[],
+        dry_run=False,
+        skip_sync_support=True,
+        upstream_checkouts=[],
+        json_mode=True,
+    )
+
+    assert failed is True
+    assert payload["results"]["demo"]["update"]["status"] == "refreshed-not-ready"
