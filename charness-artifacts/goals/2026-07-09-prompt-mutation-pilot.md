@@ -9,13 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S1 — `generate_prompt_mutants.py` (splitter + manifest +
-  plumbing-built mutant refs against the plugin-mirror tree).
-- Current slice intent: land the offline mutant generator with unit tests;
-  spans the S1 commit(s) only. Critique and broad proof do not re-fire within
-  this unchanged intent (meaningful-slice-cadence).
-- Next action: S1 implementation in a lower-power coding subagent; main loop
-  reviews, then `run_slice_closeout.py --skip-broad-pytest` and commit.
+- Current slice: S2 — witness map schema + `witness_coverage.py` + seeded
+  handoff refresh-scenario map. Pilot scenario DECIDED: **refresh**
+  (3 deterministic floors: RCF spill-targets.md + RSF `Refresh kept:` /
+  `Refresh non-claims:`); witnessed units: bootstrap / workflow /
+  closeout-vocabulary → S3 budget 8 captures (baseline 2 + 3×2), 4 headroom.
+- Current slice intent: land the offline coverage verdict tool with tests and
+  the causally-rationalized pilot witness map; spans the S2 commit(s) only.
+- Next action: S2 implementation in a lower-power coding subagent (main loop
+  authored the causal analysis); then S1+S2 bundle fresh-eye critique before
+  any S3 capture spend.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -241,6 +244,20 @@ per the bullets above when that boundary is crossed):
   is a local reversible commit.
 
 ## Slice Log
+
+### Slice 1: S1 mutant generator
+
+- Objective: Offline splitter + plumbing-built mutant refs against the plugin-mirror tree, with manifest and explicit cleanup
+- Why this approach: Everything downstream consumes unit ids and refs; plumbing-only construction and plugin-tree targeting fold plan-critique F1/F4/F5 before any capture spend
+- Commits: 213f8986
+- What changed: scripts/prompt_mutant_lib.py, scripts/generate_prompt_mutants.py, tests/test_generate_prompt_mutants.py, plugin mirrors, goal artifact
+- Alternatives rejected: Rejected checkout-based mutant branches (violates #258 shared-worktree hygiene); rejected skills/public-only mutation (F1: captures resolve the plugin mirror); rejected flat-partition splitting in favor of nested document-outline units with lossless top-level reassembly
+- Targeted verification: 26 new tests green (pytest -q tests/test_generate_prompt_mutants.py); ruff clean; run_slice_closeout.py --skip-broad-pytest all PASS; length headroom 78/375/530; no mutant refs in real repo
+- Test duplication pressure: New standalone test file for a new module; no sibling-file overlap expected; broad-gate sample deferred to closeout lock
+- Critique: Plan-critique F1/F4/F5 folded into implementation and asserted by tests; fresh-eye implementation critique deferred to the S1+S2 offline-tooling bundle boundary (risk boundary = before S3 capture spend)
+- Off-goal findings: none
+- Lessons carried forward: Coding subagent flagged CRLF round-trip as a latent non-claim (repo markdown is all-LF); nested units overlap parents — S3 arm selection must avoid overlapping unit picks
+- Metrics: subagent ~179k tokens, 51 tool uses, ~16m
 
 ## Context Sources
 
