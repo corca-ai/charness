@@ -1,0 +1,36 @@
+{
+  "skill": "handoff",
+  "baseline_sha": "f84eb223a960a8857acdfc12575d3c8588e04629",
+  "units": [
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap@1bf5234513",
+      "mutant_ref": "refs/prompt-mutants/handoff/1bf52345137abf0db1b39b4917cca26f39cced643c6dbd632b57c4be393559f9",
+      "mutant_sha": "62b0ffe160f7d172ed140c7ab6d6dba7e1b286aa",
+      "files_mutated": [
+        "plugins/charness/skills/handoff/SKILL.md",
+        "skills/public/handoff/SKILL.md"
+      ],
+      "public_mutated": true
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+      "mutant_ref": "refs/prompt-mutants/handoff/51a25aa66fd0fafcf855b902395a4e08436946bc177b2087abc540ef3c85b16d",
+      "mutant_sha": "ed3cebb8a0cc99a183a1623194523f8df36d02ee",
+      "files_mutated": [
+        "plugins/charness/skills/handoff/SKILL.md",
+        "skills/public/handoff/SKILL.md"
+      ],
+      "public_mutated": true
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary@d2e0602196",
+      "mutant_ref": "refs/prompt-mutants/handoff/d2e06021968bafa13c17a6768c55044209335735aa3d6e0049af0d64f5c5886b",
+      "mutant_sha": "f815853880f9880d7c4eba3f84af7e60a92ea63a",
+      "files_mutated": [
+        "plugins/charness/skills/handoff/SKILL.md",
+        "skills/public/handoff/SKILL.md"
+      ],
+      "public_mutated": true
+    }
+  ]
+}

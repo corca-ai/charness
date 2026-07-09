@@ -1,0 +1,13 @@
+Passes locally at HEAD (`ed3cebb8`), but CI failed at `f84eb223`. Let me see whether the snapshot commit changed anything relevant, or whether it's CI-environment-specific.
+
+Now running the three cheap deterministic gates from the plan.
+
+All gates green (49/70 lines). Committing the refresh per the operating contract.
+
+Refresh done and committed (`8529a973`); all three deterministic gates pass at 49/70 lines. The material state change since the last write: **#421 went red overnight** — the 01:11 UTC scheduled run on `f84eb223` aborted at the coverage baseline because `test_capture_script_behavioral_no_identity_in_run_view` (the behavioral guard added by the #423 fix) failed on CI, while the same test passes locally at HEAD. The handoff's first action is now diagnosing that CI-vs-local seam from the workflow-run logs, with the machine-owned auto-close rule preserved. #423, #424, and #425 all closed since the last refresh, so their queue entries came out.
+
+Refresh kept: the #421 red facts (failing nodeid, CI-only vs local-pass divergence, collateral StrykerJS line, judge schedule and range, do-not-close-manually rule), the #423-fix-to-red-test causal link, the test-debt rotation baseline `8e1fd200`, the argparse-help debt item with its D33 trip-wire, and the three open Discuss decisions — each changes what the next operator does first or guards a decision still open.
+
+Refresh non-claims: the "watch #421, expected green" expectation was disproven and replaced; the dup-ratchet nose-0.18.0 re-baseline (`7d345c9b`) was dropped as quality/commit-history-owned; the #410 session narrative stays compressed to the census-artifact link; no root cause for the CI-only test failure is claimed — only the verified pass/fail split and the likely seam surface.
+
+One observation outside the artifact: this worktree is detached from main, and the prior `chore: snapshot` commit (`ed3cebb8`) deleted the `## Workflow` section from both handoff SKILL.md copies. That pattern reads as capture/eval scaffolding rather than durable repo state, so I did not act on it or record it in the handoff — but if this worktree's history is ever merged toward main, that deletion should be inspected first.

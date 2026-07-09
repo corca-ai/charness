@@ -1,0 +1,30 @@
+Running a handoff refresh pass. First, the planner to scope the run.
+
+Handoff is at 48 lines, shape ok. Now checking live state that could change the next action — recent commits, working tree, and the open issues named in the handoff.
+
+The test passes locally but failed in CI — a CI-only divergence. Pulling the failure detail from the workflow run to sharpen the pickup.
+
+pytest lives in the user site-packages; preserving that while faking HOME:
+
+It still passes with an empty HOME — so the test must control the config dir itself. Reading the test to see how it invokes the script.
+
+Running the three cheap deterministic gates from the planner:
+
+Two small findings on the debug artifact — fixing the heading spacing and turning the bare file ref into a link:
+
+All gates green. The handoff changed materially (next action flipped from "watch, expected green" to "fix a proven red"), so per the skill's step 6 and the repo's standing delegation, I'm spawning a bounded fresh-eye misunderstanding critique before committing.
+
+Re-running the gates on both files, then committing:
+
+Refresh done and committed (`0ae39645`), gates green, fresh-eye critique run with its one fix incorporated.
+
+**The state changed materially since the last handoff was written:** the #421 scheduled mutation run went RED this morning (run 28986563107 on `f84eb223`) — the previous handoff expected green. The blocking signal, correctly named by the #422 fix on its first field outing, is the #423 behavioral test `test_capture_script_behavioral_no_identity_in_run_view`. I root-caused it during the refresh: `capture-skill-run.sh:125` hard-copies `.credentials.json` under `set -euo pipefail` (the adjacent `settings.json` copy is guarded), and the test inherits the operator's `CLAUDE_CONFIG_DIR` — so it's green on any operator machine and red on a credential-less CI runner. Proven by an exact local reproduction with the env stripped.
+
+What was written:
+
+- `charness-artifacts/debug/2026-07-09-issue-421-red-capture-credentials-cp.md` — full diagnosis, both repro commands, and a Fix Shape that separates the test fix (make it hermetic) from the deliberate script-posture decision (don't silently guard the cp just to appease the test).
+- `docs/handoff.md` (48/70 lines) — next-session top action is now the #421 fix per that artifact, then the 81-site argparse-help debt last/alone. The retired #423 next-action and the #410 diary detail were dropped (#423/#424/#425 all closed; #410 detail already lives in the census artifact).
+
+Refresh kept: the #421 RED state with its proven root cause and debug-artifact pointer (it is the first next action), the machine-owned auto-close rule, the test-debt rotation baseline `8e1fd200`, and the three open Discuss decisions (RULE_DATE floor practice, D34/D35 declined, `--advisory` pin).
+
+Refresh non-claims: no remote CI green is claimed — the fix is unimplemented and #421 stays open until the scheduled run judges a pushed fix; the #423 "expected watch green" claim was dropped as disproven; #410/#423/#424/#425 session history was dropped as non-actionable (owned by the census artifact and closed issues).

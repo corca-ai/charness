@@ -1,0 +1,364 @@
+{
+  "config": {
+    "_comment": "prompt-mutation pilot S3: baseline f84eb223 (pre-S1, blueprint-decontaminated) vs 3 unit-removed mutants; deterministic scoring only (no --judge-cmd).",
+    "name": "prompt-mutation-handoff-refresh-pilot",
+    "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
+    "runs": 2,
+    "arms": [
+      {
+        "name": "baseline",
+        "ref": "f84eb223a960a8857acdfc12575d3c8588e04629"
+      },
+      {
+        "name": "m-bootstrap",
+        "ref": "62b0ffe160f7d172ed140c7ab6d6dba7e1b286aa"
+      },
+      {
+        "name": "m-workflow",
+        "ref": "ed3cebb8a0cc99a183a1623194523f8df36d02ee"
+      },
+      {
+        "name": "m-closeout",
+        "ref": "f815853880f9880d7c4eba3f84af7e60a92ea63a"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "arm": "baseline",
+      "ref": "f84eb223a960a8857acdfc12575d3c8588e04629",
+      "run": 0,
+      "total_tokens": 2898694,
+      "output_tokens": 39394,
+      "tool_count": 36,
+      "waste_smell_count": 1,
+      "duration_ms": 294144,
+      "outcome": "passed",
+      "output_lines": 17
+    },
+    {
+      "arm": "baseline",
+      "ref": "f84eb223a960a8857acdfc12575d3c8588e04629",
+      "run": 1,
+      "total_tokens": 2808535,
+      "output_tokens": 47598,
+      "tool_count": 38,
+      "waste_smell_count": 2,
+      "duration_ms": 380255,
+      "outcome": "passed",
+      "output_lines": 20
+    },
+    {
+      "arm": "m-bootstrap",
+      "ref": "62b0ffe160f7d172ed140c7ab6d6dba7e1b286aa",
+      "run": 0,
+      "total_tokens": 3228342,
+      "output_tokens": 64006,
+      "tool_count": 35,
+      "waste_smell_count": 1,
+      "duration_ms": 551597,
+      "outcome": "failed",
+      "output_lines": 27
+    },
+    {
+      "arm": "m-bootstrap",
+      "ref": "62b0ffe160f7d172ed140c7ab6d6dba7e1b286aa",
+      "run": 1,
+      "total_tokens": 7900591,
+      "output_tokens": 146890,
+      "tool_count": 64,
+      "waste_smell_count": 2,
+      "duration_ms": 911335,
+      "outcome": "failed",
+      "output_lines": 68
+    },
+    {
+      "arm": "m-workflow",
+      "ref": "ed3cebb8a0cc99a183a1623194523f8df36d02ee",
+      "run": 0,
+      "total_tokens": 1258994,
+      "output_tokens": 33516,
+      "tool_count": 16,
+      "waste_smell_count": 0,
+      "duration_ms": 202459,
+      "outcome": "passed",
+      "output_lines": 18
+    },
+    {
+      "arm": "m-workflow",
+      "ref": "ed3cebb8a0cc99a183a1623194523f8df36d02ee",
+      "run": 1,
+      "total_tokens": 3106327,
+      "output_tokens": 64040,
+      "tool_count": 42,
+      "waste_smell_count": 2,
+      "duration_ms": 504406,
+      "outcome": "passed",
+      "output_lines": 29
+    },
+    {
+      "arm": "m-closeout",
+      "ref": "f815853880f9880d7c4eba3f84af7e60a92ea63a",
+      "run": 0,
+      "total_tokens": 3543622,
+      "output_tokens": 67500,
+      "tool_count": 40,
+      "waste_smell_count": 2,
+      "duration_ms": 537529,
+      "outcome": "passed",
+      "output_lines": 122
+    },
+    {
+      "arm": "m-closeout",
+      "ref": "f815853880f9880d7c4eba3f84af7e60a92ea63a",
+      "run": 1,
+      "total_tokens": 1914504,
+      "output_tokens": 42180,
+      "tool_count": 29,
+      "waste_smell_count": 2,
+      "duration_ms": 369445,
+      "outcome": "passed",
+      "output_lines": 21
+    }
+  ],
+  "aggregate": {
+    "baseline": {
+      "n": 2,
+      "pass_rate": 1.0,
+      "total_tokens": {
+        "mean": 2853614.5,
+        "median": 2853614.5,
+        "min": 2808535,
+        "max": 2898694,
+        "n": 2
+      },
+      "output_tokens": {
+        "mean": 43496,
+        "median": 43496.0,
+        "min": 39394,
+        "max": 47598,
+        "n": 2
+      },
+      "duration_ms": {
+        "mean": 337199.5,
+        "median": 337199.5,
+        "min": 294144,
+        "max": 380255,
+        "n": 2
+      },
+      "tool_count": {
+        "mean": 37,
+        "median": 37.0,
+        "min": 36,
+        "max": 38,
+        "n": 2
+      },
+      "waste_smell_count": {
+        "mean": 1.5,
+        "median": 1.5,
+        "min": 1,
+        "max": 2,
+        "n": 2
+      },
+      "output_lines": {
+        "mean": 18.5,
+        "median": 18.5,
+        "min": 17,
+        "max": 20,
+        "n": 2
+      }
+    },
+    "m-bootstrap": {
+      "n": 2,
+      "pass_rate": 0.0,
+      "total_tokens": {
+        "mean": 5564466.5,
+        "median": 5564466.5,
+        "min": 3228342,
+        "max": 7900591,
+        "n": 2
+      },
+      "output_tokens": {
+        "mean": 105448,
+        "median": 105448.0,
+        "min": 64006,
+        "max": 146890,
+        "n": 2
+      },
+      "duration_ms": {
+        "mean": 731466,
+        "median": 731466.0,
+        "min": 551597,
+        "max": 911335,
+        "n": 2
+      },
+      "tool_count": {
+        "mean": 49.5,
+        "median": 49.5,
+        "min": 35,
+        "max": 64,
+        "n": 2
+      },
+      "waste_smell_count": {
+        "mean": 1.5,
+        "median": 1.5,
+        "min": 1,
+        "max": 2,
+        "n": 2
+      },
+      "output_lines": {
+        "mean": 47.5,
+        "median": 47.5,
+        "min": 27,
+        "max": 68,
+        "n": 2
+      }
+    },
+    "m-workflow": {
+      "n": 2,
+      "pass_rate": 1.0,
+      "total_tokens": {
+        "mean": 2182660.5,
+        "median": 2182660.5,
+        "min": 1258994,
+        "max": 3106327,
+        "n": 2
+      },
+      "output_tokens": {
+        "mean": 48778,
+        "median": 48778.0,
+        "min": 33516,
+        "max": 64040,
+        "n": 2
+      },
+      "duration_ms": {
+        "mean": 353432.5,
+        "median": 353432.5,
+        "min": 202459,
+        "max": 504406,
+        "n": 2
+      },
+      "tool_count": {
+        "mean": 29,
+        "median": 29.0,
+        "min": 16,
+        "max": 42,
+        "n": 2
+      },
+      "waste_smell_count": {
+        "mean": 1,
+        "median": 1.0,
+        "min": 0,
+        "max": 2,
+        "n": 2
+      },
+      "output_lines": {
+        "mean": 23.5,
+        "median": 23.5,
+        "min": 18,
+        "max": 29,
+        "n": 2
+      }
+    },
+    "m-closeout": {
+      "n": 2,
+      "pass_rate": 1.0,
+      "total_tokens": {
+        "mean": 2729063,
+        "median": 2729063.0,
+        "min": 1914504,
+        "max": 3543622,
+        "n": 2
+      },
+      "output_tokens": {
+        "mean": 54840,
+        "median": 54840.0,
+        "min": 42180,
+        "max": 67500,
+        "n": 2
+      },
+      "duration_ms": {
+        "mean": 453487,
+        "median": 453487.0,
+        "min": 369445,
+        "max": 537529,
+        "n": 2
+      },
+      "tool_count": {
+        "mean": 34.5,
+        "median": 34.5,
+        "min": 29,
+        "max": 40,
+        "n": 2
+      },
+      "waste_smell_count": {
+        "mean": 2,
+        "median": 2.0,
+        "min": 2,
+        "max": 2,
+        "n": 2
+      },
+      "output_lines": {
+        "mean": 71.5,
+        "median": 71.5,
+        "min": 21,
+        "max": 122,
+        "n": 2
+      }
+    }
+  },
+  "outcome": {
+    "baseline": {
+      "eval_id": "handoff-claim-fidelity",
+      "runs_graded": 2,
+      "grade_failed": 0,
+      "pass_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n": 2
+      },
+      "skipped": 6,
+      "errors": 0
+    },
+    "m-bootstrap": {
+      "eval_id": "handoff-claim-fidelity",
+      "runs_graded": 2,
+      "grade_failed": 0,
+      "pass_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n": 2
+      },
+      "skipped": 6,
+      "errors": 0
+    },
+    "m-workflow": {
+      "eval_id": "handoff-claim-fidelity",
+      "runs_graded": 2,
+      "grade_failed": 0,
+      "pass_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n": 2
+      },
+      "skipped": 6,
+      "errors": 0
+    },
+    "m-closeout": {
+      "eval_id": "handoff-claim-fidelity",
+      "runs_graded": 2,
+      "grade_failed": 0,
+      "pass_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n": 2
+      },
+      "skipped": 6,
+      "errors": 0
+    }
+  }
+}

@@ -1,0 +1,11 @@
+Passes locally, fails in CI — an environment-sensitive failure. Let me quickly look at the test to give the next session a concrete starting hypothesis.
+
+Now running the three cheap gates from the planner:
+
+One authoring finding: the backticked script path should be a real link. Fixing.
+
+Handoff refreshed and committed (`58f926ca`, 51/70 lines, all gates green). The state changed materially since the last refresh: **#421's scheduled mutation run went red** on `f84eb223` — the baseline test `test_capture_script_behavioral_no_identity_in_run_view` (the behavioral guard added with the #423 fix) fails in CI but passes locally, which I re-verified this session. **#423 is closed** (fixed by `7c09a8ce`), so the next session's first move is now debugging that CI-only failure via `charness:debug`, starting from the CI run log, rather than passively watching #421. A bounded fresh-eye reviewer confirmed the facts and caught one conflation risk — the referenced 2026-07-08 debug artifact covers the *prior*, already-resolved #421 red — which I fixed with an explicit annotation.
+
+Refresh kept: #421 red with the exact failing test node ID, local-pass/CI-fail evidence, the CI run URL, the machine-owned do-not-close-manually rule, the #423-fix lineage (the failing test guards `7c09a8ce`), the argparse-debt run-last item, the test-debt rotation baseline, and the three open Discuss decisions.
+
+Refresh non-claims: dropped the #423 open-issue entry (closed) and the #421 expected-green watch framing (falsified by the red run); the dup-ratchet re-baseline (`7d345c9b`) and CLI update-output change (`f84eb223`) were left to their owning quality/changelog surfaces as non-action-changing; the CI-environment cause of the test failure (PATH shim, `/proc` readlink, git defaults) is stated as a hypothesis to check, not a proven root cause — no debug artifact for the current red exists yet.

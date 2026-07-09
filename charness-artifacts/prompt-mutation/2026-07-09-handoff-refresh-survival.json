@@ -1,0 +1,175 @@
+{
+  "scenario": "refresh",
+  "baseline": {
+    "arm": "baseline",
+    "runs": 2,
+    "witnesses_all_fired": true,
+    "per_run": [
+      {
+        "run": 0,
+        "bundle": "preserved/baseline__0",
+        "witnesses": [
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap@1bf5234513",
+            "channel": "trace_command_marker",
+            "value": "plan_handoff_run.py",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap@1bf5234513",
+            "channel": "required_command_fragment",
+            "value": "spill-targets.md",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh kept:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh non-claims:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary@d2e0602196",
+            "channel": "required_summary_fragment",
+            "value": "Refresh kept:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary@d2e0602196",
+            "channel": "required_summary_fragment",
+            "value": "Refresh non-claims:",
+            "fired": true
+          }
+        ]
+      },
+      {
+        "run": 1,
+        "bundle": "preserved/baseline__1",
+        "witnesses": [
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap@1bf5234513",
+            "channel": "trace_command_marker",
+            "value": "plan_handoff_run.py",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap@1bf5234513",
+            "channel": "required_command_fragment",
+            "value": "spill-targets.md",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh kept:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh non-claims:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary@d2e0602196",
+            "channel": "required_summary_fragment",
+            "value": "Refresh kept:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary@d2e0602196",
+            "channel": "required_summary_fragment",
+            "value": "Refresh non-claims:",
+            "fired": true
+          }
+        ]
+      }
+    ]
+  },
+  "units": [
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap@1bf5234513",
+      "arm": "m-bootstrap",
+      "verdict": "DETECTED",
+      "survival_rate": 0.0,
+      "n": 2,
+      "per_witness": [
+        {
+          "channel": "trace_command_marker",
+          "value": "plan_handoff_run.py",
+          "fired_per_run": [
+            true,
+            false
+          ]
+        },
+        {
+          "channel": "required_command_fragment",
+          "value": "spill-targets.md",
+          "fired_per_run": [
+            false,
+            false
+          ]
+        }
+      ],
+      "caveats": []
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+      "arm": "m-workflow",
+      "verdict": "NO-OBSERVED-EFFECT",
+      "survival_rate": 1.0,
+      "n": 2,
+      "per_witness": [
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh kept:",
+          "fired_per_run": [
+            true,
+            true
+          ]
+        },
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh non-claims:",
+          "fired_per_run": [
+            true,
+            true
+          ]
+        }
+      ],
+      "caveats": []
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary@d2e0602196",
+      "arm": "m-closeout",
+      "verdict": "NO-OBSERVED-EFFECT",
+      "survival_rate": 1.0,
+      "n": 2,
+      "per_witness": [
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh kept:",
+          "fired_per_run": [
+            true,
+            true
+          ]
+        },
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh non-claims:",
+          "fired_per_run": [
+            true,
+            true
+          ]
+        }
+      ],
+      "caveats": []
+    }
+  ],
+  "experiment_valid": true
+}

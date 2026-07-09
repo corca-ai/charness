@@ -1,0 +1,16 @@
+I'll run the handoff refresh pass, starting with the planner.
+
+Now running the three cheap deterministic gates the planner named:
+
+Handoff refresh complete — `docs/handoff.md` rewritten, gate-validated (59/70 lines), fresh-eye reviewed, and committed as `87bf7b1b`. (Note: the repo was already on a detached HEAD, so the commit sits there rather than on a branch.)
+
+The refresh pass found three live changes versus the old handoff, plus one problem the old handoff couldn't have known about:
+
+- **#421 went RED, not green.** The scheduled mutation run on `f84eb223` (2026-07-09 01:11 UTC) failed at the coverage baseline: `test_capture_script_behavioral_no_identity_in_run_view` — the test added by the #423 fix — fails in CI but passes locally. This is #421's third distinct baseline cause, so the old "expected green / see #422" framing was replaced with a concrete debug pointer.
+- **HEAD commit `ed3cebb8` "chore: snapshot" is suspect.** It deleted the entire `## Workflow` section from both handoff SKILL.md copies with no rationale, no matching compaction artifact, and a different author than the surrounding work — and the surviving Guardrails still dangle a reference to the deleted "Workflow step 4". Verify-or-revert is now the first next-session action, since pickup itself routes through that skill. I did not revert it myself: it's plausibly another actor's in-flight work, and the handoff records it as unverified rather than acting on the assumption.
+- **#423 is CLOSED** (fix `7c09a8ce` landed), so it dropped out of Next Session; #410 detail compressed to its owning artifact pointer.
+- The fresh-eye reviewer also caught a **stale claim I'd carried over**: trip-wire D33 ("479/480 lines") already fired and was resolved on 2026-07-09 — the argparse-debt item now says so instead of implying a live squeeze.
+
+Refresh kept: the #421 red signal with its exact failing test and CI-vs-local divergence, the `ed3cebb8` verify-or-revert gate ordered before pickup-dependent work, the machine-owned #421 close rule, the argparse-debt run-LAST item with D33 marked resolved, the test-debt rotation baseline `8e1fd200`, and the three standing Discuss entries.
+
+Refresh non-claims: #410/#423 execution detail spilled to slice7-census-reconciliation.md and commit `7c09a8ce`; the cause of the CI-vs-local test divergence is unproven (observed, not diagnosed); whether `ed3cebb8` is intentional is unproven and recorded as such; the old "expected green" #421 prediction was dropped as falsified.

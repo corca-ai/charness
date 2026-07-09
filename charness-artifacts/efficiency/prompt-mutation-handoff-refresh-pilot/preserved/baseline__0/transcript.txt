@@ -1,0 +1,18 @@
+I'll run the handoff planner first to get the required reads and gates for this refresh pass.
+
+Planner resolved this as a refresh. Reading the required files now.
+
+The test passes locally at the same commit that failed in CI — so the #421 red is environment-dependent. One more quick check on the trip-wire number the handoff carries:
+
+Confirmed — D33 is resolved. Fixing the handoff:
+
+Handoff refreshed and committed (`62c3c9e3`). The live state had moved significantly since it was last written, and the refresh flipped the next pickup:
+
+- **#421's scheduled mutation gate went RED** at 2026-07-09 01:11 UTC on `f84eb223` — baseline pytest failed on `tests/test_skill_efficiency_ab.py::test_capture_script_behavioral_no_identity_in_run_view` before any mutants ran. I ran that test locally at the same commit and it **passes**, so the failure is CI-environment-dependent. The handoff's item 1 is now: debug via `charness:debug`, starting from the runner log, with #421's close still machine-owned.
+- **#423 is CLOSED** (fix landed as `7c09a8ce`), so it was dropped from Next Session; its behavioral test is exactly the one now red in CI, which the handoff notes as the connection.
+- The fresh-eye critique (separate agent, sonnet) confirmed one real defect I then verified and fixed: the **D33 trip-wire was stale** — D33 fired and was resolved 2026-07-09 by extracting `skill_efficiency_report.py`, so the argparse-help debt item no longer carries a near-limit warning. All other checks (next action, workflow trigger, ownership, cron expression) verified clean.
+- All three deterministic gates pass; the artifact sits at 47/70 lines with no dated diary sections.
+
+Refresh kept: the #421 red signal with the exact failing test, local-pass-at-same-commit evidence, and runner-log URL (it is the first action); #423's closure and its link to the failing test; machine ownership of #421's close; the test-debt rotation baseline; the three open Discuss items.
+
+Refresh non-claims: #423 leak detail dropped (issue closed, fix committed); #410 queue narrative compressed to its owning census artifact pointer; the D33 trip-wire claim removed as disproven (resolution detail owned by `docs/deferred-decisions.md`); no root cause claimed for the CI-only failure — only the verified local/CI divergence.

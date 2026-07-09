@@ -1,0 +1,12 @@
+{
+  "_comment": "prompt-mutation pilot S3: baseline f84eb223 (pre-S1, blueprint-decontaminated) vs 3 unit-removed mutants; deterministic scoring only (no --judge-cmd).",
+  "name": "prompt-mutation-handoff-refresh-pilot",
+  "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
+  "runs": 2,
+  "arms": [
+    {"name": "baseline", "ref": "f84eb223a960a8857acdfc12575d3c8588e04629"},
+    {"name": "m-bootstrap", "ref": "62b0ffe160f7d172ed140c7ab6d6dba7e1b286aa"},
+    {"name": "m-workflow", "ref": "ed3cebb8a0cc99a183a1623194523f8df36d02ee"},
+    {"name": "m-closeout", "ref": "f815853880f9880d7c4eba3f84af7e60a92ea63a"}
+  ]
+}

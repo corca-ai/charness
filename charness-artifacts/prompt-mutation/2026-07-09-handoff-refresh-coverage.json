@@ -1,0 +1,210 @@
+{
+  "skill": "handoff",
+  "scenario": "refresh",
+  "spec": "refresh.spec.json",
+  "generated_from_baseline": "worktree",
+  "counts": {
+    "witnessed": 3,
+    "untested": 30,
+    "excluded": 2
+  },
+  "witnessed": [
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap@1bf5234513",
+      "witnesses": [
+        {
+          "channel": "trace_command_marker",
+          "value": "plan_handoff_run.py",
+          "causal_path": "Bootstrap is the only SKILL.md unit instructing the planner invocation; without it the run has no instruction to execute plan_handoff_run.py.",
+          "deterministic": true
+        },
+        {
+          "channel": "required_command_fragment",
+          "value": "spill-targets.md",
+          "causal_path": "The planner's required_reads for refresh intent name spill-targets.md and Bootstrap owns the 'Open the listed reads' instruction; without Bootstrap the planner-driven read chain never starts.",
+          "deterministic": true
+        }
+      ]
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+      "witnesses": [
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh kept:",
+          "causal_path": "Workflow step 7 owns the refresh-closeout instruction to close with the Closeout Vocabulary tokens.",
+          "deterministic": true
+        },
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh non-claims:",
+          "causal_path": "Workflow step 7 owns the refresh-closeout instruction to close with the Closeout Vocabulary tokens.",
+          "deterministic": true
+        }
+      ]
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary@d2e0602196",
+      "witnesses": [
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh kept:",
+          "causal_path": "The Closeout Vocabulary section defines the emittable-verbatim token the floor substring-matches; expected partial redundancy with Workflow step 7 makes survival here the pilot's demotion-candidate question.",
+          "deterministic": true
+        },
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh non-claims:",
+          "causal_path": "The Closeout Vocabulary section defines the emittable-verbatim token the floor substring-matches; expected partial redundancy with Workflow step 7 makes survival here the pilot's demotion-candidate question.",
+          "deterministic": true
+        }
+      ]
+    }
+  ],
+  "untested_debt": [
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/output-shape@786b56aa40",
+      "reason": "The only conceivable deterministic marker (handoff doc section headings) pre-exists in the artifact and fires regardless of run behavior — zero detection power (F2)."
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/guardrails@9edf86febe",
+      "reason": "No deterministic floor observes guardrail compliance; judge-channel candidate only (unspent this goal)."
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/references@3fa8edad44",
+      "reason": "Link list; reference opens are planner-driven (RCF), no deterministic channel isolates this section."
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/adapter-contract.md#preamble@e3b0c44298",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/adapter-contract.md#handoff-adapter-contract@261fb0a249",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/adapter-contract.md#handoff-adapter-contract/canonical-path@2d8179d939",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/adapter-contract.md#handoff-adapter-contract/fields@1ddaba7014",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/adapter-contract.md#handoff-adapter-contract/artifact-rule@6fb391f99d",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/chunked-routing.md#preamble@e3b0c44298",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/chunked-routing.md#chunked-routing@7a8b45c515",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/chunked-routing.md#chunked-routing/deterministic-trigger-rule@60eca852a0",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/chunked-routing.md#chunked-routing/pipeline@af1ecc37eb",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/chunked-routing.md#chunked-routing/override-ux@9fa10c5674",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/chunked-routing.md#chunked-routing/end-only-write-discipline@37c6691731",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/chunked-routing.md#chunked-routing/standalone-usefulness@623606ae01",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/continuation-sequence.md#preamble@e3b0c44298",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/continuation-sequence.md#continuation-sequence@78ddd4e08c",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/continuation-sequence.md#continuation-sequence/core-moves@cbcdec60d4",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/continuation-sequence.md#continuation-sequence/translation-for-handoff@2fcf1e449e",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/spill-targets.md#preamble@e3b0c44298",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/spill-targets.md#spill-targets@100aa4bb38",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/spill-targets.md#spill-targets/replacement-pattern@8f807e4bd2",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/state-selection.md#preamble@e3b0c44298",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/state-selection.md#state-selection@85060c6839",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/state-selection.md#state-selection/keep@65a59a754e",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/state-selection.md#state-selection/drop@1ccee92c22",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/state-selection.md#state-selection/compression-rule@0e71d572f1",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/workflow-trigger.md#preamble@e3b0c44298",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/workflow-trigger.md#workflow-trigger@0e9f51d749",
+      "reason": "unmapped"
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/references/workflow-trigger.md#workflow-trigger/rule@c861d61383",
+      "reason": "unmapped"
+    }
+  ],
+  "excluded": [
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#preamble@adce8b9497",
+      "reason": "Frontmatter: removal breaks skill resolution structurally; not a prose-compaction candidate."
+    },
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff@864fc838fe",
+      "reason": "Whole-h1 parent overlapping every SKILL.md unit; overlapping picks are banned for arm selection (S1 lesson)."
+    }
+  ],
+  "downgraded_entries": [],
+  "scenario_floors": {
+    "required_command_fragments": [
+      "spill-targets.md"
+    ],
+    "required_summary_fragments": [
+      "Refresh kept:",
+      "Refresh non-claims:"
+    ]
+  },
+  "stale_entries": [],
+  "ambiguous_entries": [],
+  "spec_floor_errors": [],
+  "ok": true
+}

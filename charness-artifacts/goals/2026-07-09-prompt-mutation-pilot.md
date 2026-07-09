@@ -9,24 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S3 — live pilot. Pre-capture fixes from the S1+S2 bundle
-  critique (reviewer `a74cc813cbaec832c`, PROCEED-AFTER-FIXES): (a) baseline
-  pinned to pre-S1 **`f84eb223`** — HEAD's tree carries the witness map, goal
-  artifact, and prompt-mutation commit messages, a blueprint-contamination
-  channel a refresh run would faithfully read (handoff surfaces byte-identical
-  at that ref, unit ids unchanged); (b) new deterministic survival scorer
-  (trace marker over trace-digest.jsonl with stream.jsonl fallback,
-  per-fragment attribution via observed.v1.json `Claim failures:`,
-  baseline-validity refusal) — do NOT extend outcome-assertions.json (it
-  applies to all four handoff scenarios); (c) digest-only mutant ref leaves +
-  baseline committer date (decorate/log identity channels). Run with
-  `--keep-runs`. Bootstrap arm's RCF is survival-biased (spill-targets.md
-  named in 3 other prose spots) — read RCF-only survival skeptically; trace
-  marker is the sharper witness.
-- Current slice intent: S3-prep hardening + scorer, then baseline N=2 + 3
-  mutant arms × N=2 = 8 captures within the ≤12 bound.
-- Next action: S3-prep coding subagent (lib hardening + scorer + tests), then
-  generate mutants at f84eb223, write A/B config, run captures in background.
+- Current slice: closeout. S3 verdicts: bootstrap DETECTED (0/2), workflow
+  NO-OBSERVED-EFFECT (2/2, under-witnessed — coverage debt, not demotion),
+  closeout-vocabulary NO-OBSERVED-EFFECT (2/2, the single ranked demotion
+  candidate). Budget 8/12 captures, 0 failures. Report:
+  `charness-artifacts/prompt-mutation/2026-07-09-handoff-refresh-pilot.md`;
+  policy: `docs/prompt-mutation-policy.md`. Mutant refs cleaned post-capture
+  (SHAs in the manifest; regeneration is deterministic).
+- Current slice intent: final closeout — fresh-eye closeout critique,
+  verification lock (broad pytest), retro + host-log probe + dispositions,
+  status flip to complete.
+- Next action: commit S3/S4 artifacts, run the closeout critique, then
+  `run_slice_closeout.py --verification-lock` and the After-phase floors.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -280,6 +274,34 @@ per the bullets above when that boundary is crossed):
 - Off-goal findings: none
 - Lessons carried forward: Witness map schema hard-requires reason on untested/excluded — keeps the debt list honest; S3 budget improves to 8 captures + 4 headroom with only 3 witnessed units
 - Metrics: subagent ~143k tokens, 66 tool uses, ~8m
+
+### Slice 3: S3 live pilot
+
+- Objective: 8-capture matrix (baseline f84eb223 N=2 + 3 unit-removed mutant arms N=2) through run_skill_efficiency_ab.py, deterministic survival scoring
+- Why this approach: The empirical claim of the whole design; ran only after the S1+S2 bundle critique fixes (baseline decontamination, scorer, identity hardening) landed
+- Commits: capture artifacts committed with S4
+- What changed: charness-artifacts/efficiency/prompt-mutation-handoff-refresh-pilot/ (preserved bundles, results, report), charness-artifacts/prompt-mutation/ (mutant manifest, ab config, survival+coverage json)
+- Alternatives rejected: Rejected HEAD baseline (blueprint contamination); rejected scoring from harness pass_rate alone (combined verdict, no per-witness attribution); streams dropped from committed evidence after verifying trace-digest-only re-score reproduces all verdicts
+- Targeted verification: Selftest passed pre-run; baseline validity: all witnesses fired in both baseline runs; verdicts bootstrap=DETECTED(0/2), workflow=NOE(2/2), closeout-vocabulary=NOE(2/2); harness matcher pass_rate independently agrees (0.0/1.0/1.0); budget 8/12, 0 failures, ~52min wall
+- Test duplication pressure: No new tests this slice (harness reuse)
+- Critique: Bundle critique fixes verified in-run: mutant trees diffed (11-line removals both trees), neutral msg + baseline date confirmed, digest-only refs; refs cleaned post-capture per policy
+- Off-goal findings: none
+- Lessons carried forward: Mutual redundancy workflow<->closeout-vocabulary confirmed live (the A+B case); NO-OBSERVED-EFFECT on a broad unit reads as under-witnessed, not dead — post-hoc critique-collapse signal on m-workflow
+- Metrics: 8 captures, baseline mean 337s/run; m-bootstrap +95% tokens +117% duration
+
+### Slice 4: S4 report and policy
+
+- Objective: Operator-facing pilot report + durable prompt-mutation policy doc; artifact cleanup
+- Why this approach: Turns data into the deliverable and locks the demote-never-delete / ship-config / ratchet rules into a repo-owned surface
+- Commits: this closeout commit
+- What changed: charness-artifacts/prompt-mutation/2026-07-09-handoff-refresh-pilot.md, docs/prompt-mutation-policy.md
+- Alternatives rejected: Rejected proposing workflow for demotion despite 2/2 survival (under-witnessed broad owner; filed as coverage debt instead) — only closeout-vocabulary ranked
+- Targeted verification: check_doc_links + check-markdown green on both docs; scorer re-run reproducibility check (streams removed) green
+- Test duplication pressure: No new tests
+- Critique: Final closeout fresh-eye critique next, before status flip
+- Off-goal findings: none
+- Lessons carried forward: The primary product framing held: 30-unit UNTESTED debt list is the bigger deliverable than the 1 demotion candidate
+- Metrics: offline
 
 ## Context Sources
 

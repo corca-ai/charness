@@ -1,0 +1,23 @@
+I'll run the handoff planner first to scope this refresh pass.
+
+Plan resolved to a refresh. Reading the required files and live repo state.
+
+#423, #424, and #425 all closed since the handoff was written, and #421 has a new update (2026-07-09 01:11 UTC) — checking whether the scheduled run went green or red.
+
+The test passes locally but fails in CI — an environment-dependent failure. Let me pull the actual assertion failure from the CI run so the handoff can point at the real signal.
+
+Now rewriting the handoff around the changed next action.
+
+Gates green. Committing the refresh per the operating contract.
+
+Refresh complete and committed (`8b3404e1`). One environment note: the checkout was on a **detached HEAD**, so the commit is not on a branch — I left branch state untouched rather than guessing; if this session should land on `main`, that needs a deliberate branch update.
+
+**What the refresh found (the headline):** the #421 watch expectation in the old handoff is now wrong. The scheduled mutation run posted **red** at 2026-07-09 01:11 UTC (run 28986563107, HEAD `f84eb223`) with a *new* cause: baseline test `test_capture_script_behavioral_no_identity_in_run_view` — the regression test for the just-closed #423 fix — fails in CI only. I diagnosed it this session: `scripts/agent-runtime/capture-skill-run.sh:125` unconditionally copies `~/.claude/.credentials.json`, which doesn't exist on the CI runner, so the real-script behavioral test aborts. It passes locally (verified). The handoff's Next Session step 1 is now that fix, plus a sibling sweep since this is the second consecutive environment-coupled CI-only baseline abort.
+
+Also folded in: #423, #424, #425 all closed since the last refresh; the #410 session diary was compressed to a one-line pointer at its owning census artifact.
+
+The bounded fresh-eye critique (parent-delegated, medium tier via sonnet subagent) verified the diagnosis, fix direction, and workflow trigger, and caught one real gap: the References link to the #421 debug artifact only explains the *prior, resolved* cause — it now carries an explicit "(prior cause, resolved)" caveat so a cold operator doesn't read a stale root cause as current. All three deterministic gates pass (shape, pointer freshness, authoring preflight; 50/70 lines).
+
+**Refresh kept:** the #421 new-red diagnosis with exact fix site, run ID, and machine-owned-close rule; the argparse-help debt item with its D33 trip-wire; the test-debt rotation baseline pointer; the three open Discuss decisions.
+
+**Refresh non-claims:** #424/#425 filing-and-close and the dup-ratchet re-baseline (`7d345c9b`) dropped as non-actionable history owned by git log and quality/latest; #410 slice detail spilled to its census artifact pointer; no new debug artifact was written for the credentials red (diagnosis is inline in the handoff — the fix session's debug/impl work owns durable proof); no claim that the next scheduled run will be green until the fix lands.

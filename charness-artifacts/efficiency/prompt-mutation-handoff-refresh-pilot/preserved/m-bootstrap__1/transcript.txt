@@ -1,0 +1,22 @@
+Running a handoff refresh: I'll read the current handoff and live repo state, spill durable detail to owning artifacts, and rewrite the next-session pickup.
+
+I have the discipline rules and reviewer protocol. Let me check what `run-quality.sh:505` actually invokes (for the D38 spill accuracy), then make the three doc edits.
+
+Now the handoff rewrite around the new continuation state.
+
+Three doc-link findings to fix — pathy backticked refs need to be links.
+
+Final preflight, then commit the refresh with the closeout tokens in the body.
+
+Refresh complete and committed as `31c5f550` (3 files, pre-commit gates green, tree clean). The next-session picture changed substantially from what the old handoff predicted:
+
+**What the refresh found and wrote:**
+- **#421 did not auto-close — it went red again with a new cause.** The 2026-07-09 01:11 UTC machine comment (the #422 fix reporting correctly) names the failing baseline test `test_capture_script_behavioral_no_identity_in_run_view` — the behavioral test the #423 fix added. It passes locally; the CI log shows `capture-skill-run.sh` dying on `cp: cannot stat '~/.claude/.credentials.json'` — the credentials copy is unconditional while the adjacent `settings.json` copy already has `|| true`. That fix is now Next Session step 1.
+- **#423, #424, #425 all closed** since the last refresh, and **D33 resolved** (`skill_efficiency_report.py` extracted; the harness is at 384/480 lines), so the argparse-help debt item lost its stale trip-wire.
+- **A branch-reconciliation hazard is now step 2**: this session ran on a detached HEAD whose unpushed `chore: snapshot` commit carries the Slice-9 `## Bootstrap` removal (in `d0eb6831`'s declared scope but landed message-less), while `main` sits on a divergent unpushed prompt-mutation line that does *not* contain it — a plain `git checkout main` + push would silently drop that removal.
+
+**Spills:** the RULE_DATE landing-day practice moved to `docs/conventions/implementation-discipline.md` (Validation Discipline), and the `--advisory` pin deferral from #420 became D38 in `docs/deferred-decisions.md`; the D34/D35 pointer was dropped as already owned there. The mandated fresh-eye critique ran (parent-delegated bounded reviewer); it verified every SHA, path, and issue state, and surfaced the `main`-lacks-Bootstrap-removal blocker plus three minor clarity fixes, all incorporated.
+
+Refresh kept: the #421 red signal with its pinned CI-only cause and the machine-owned close rule, the branch-reconciliation hazard, the argparse-help debt with D33's corrected state, the test-debt rotation baseline, and the open D18 operator disposition.
+
+Refresh non-claims: the #410 session diary (owned by the slice7 census reconciliation record), #423–#425 fix detail (owned by their closing commits), the prompt-mutation line on `main` beyond its divergence, and the #421 CI fix itself — characterized and pinned to a log line, but not implemented or proven here.

@@ -1,0 +1,21 @@
+Running a handoff refresh: I'll read the current handoff and inspect live repo state, then rewrite it around the next action, spilling durable detail to owning artifacts.
+
+Both findings verified against source. Applying the fixes:
+
+Now committing the refresh per the closeout contract:
+
+The commit landed on a detached HEAD — let me check whether that's the repo's existing state or something to flag:
+
+Handoff refresh complete and committed (`20aea35b`). The next-session state changed materially: **#421 is red again with a new cause, not awaiting auto-close.**
+
+What the refresh found and wrote:
+
+- **#421 (mutation gate) failed its 2026-07-09 00:17 UTC run** — baseline pytest aborted before any mutants on `tests/test_skill_efficiency_ab.py::test_capture_script_behavioral_no_identity_in_run_view`, the end-to-end test added with the #423 fix. It passes locally at HEAD, so the failure is CI-environment-specific. The handoff's first next action is now: resolve that red via the `issue` skill, starting from the CI log (run 28986563107), keeping #421 machine-owned.
+- **#423, #424, #425 all closed this session** (`7c09a8ce`, `f84eb223`); the dup-ratchet was re-baselined under nose 0.18.0. The #410 diary block was dropped — its proof lives in `slice7-census-reconciliation.md`.
+- A bounded fresh-eye reviewer (parent-delegated, medium tier) confirmed the next action and workflow trigger were clear and caught two stale facts I then fixed: the D33 trip-wire was already resolved this session by the #423 slice (`run_skill_efficiency_ab.py` is now 384/480, not 479/480), and the mutation gate's judged base is dynamic (previous completed run's head, currently `f84eb223`), not the fixed `57af3d2b` the old handoff claimed.
+- I also verified the odd `chore: snapshot` commit (`62b0ffe1`): it deleted the handoff skill's `## Bootstrap` section from both copies. It's in-sync, gates-green, and consistent with the Slice-9 substance-judge flip, but it bypassed commit discipline — noted in `## Discuss`, no action needed unless a planner consumer regresses.
+
+One environment note: this session (including the commits that preceded it) is on a **detached HEAD** with no branch containing the chain — that's the pre-existing state, not something the refresh created, but the commits aren't on any named branch.
+
+Refresh kept: the #421 red signal (failing test, CI log pointer, machine-owned close rule), the corrected D33/argparse-help debt state, and the test-debt rotation baseline `8e1fd200` — each changes the next operator's first or ordered actions.
+Refresh non-claims: #410 session detail dropped (owned by `slice7-census-reconciliation.md`); #423 fix detail owned by the issue and `7c09a8ce`; the CI failure's root cause is not proven — only characterized as environment-specific.
