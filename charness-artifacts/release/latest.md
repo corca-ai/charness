@@ -91,14 +91,29 @@ Advanced `charness` toward release `0.63.1` (tag `v0.63.1`) through the repo-own
 
 - Release-time real-host proof is required for this slice.
 - Executed maintainer install refresh: `charness update` (status `refreshed`, return code `0`).
-- Remaining real-host checklist items, if any, still require explicit proof before full closeout.
-- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
-- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
-- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
-- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
-- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
-- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
+- Additional maintainer-host proof after publish:
+  - `charness doctor --json` reported managed checkout version `0.63.1`,
+    checkout head `e9eac274`, Codex cache `0.63.1`, Claude installed plugin
+    `0.63.1`, and Claude installed git SHA
+    `e9eac2744a0fdce32456f8d6ad4efb91731db357`.
+  - `charness tool doctor nose --json --no-write-locks` reported
+    `doctor_status: ok`, `doctor_disposition: ready`, observed `nose 0.18.0`,
+    and latest upstream release `v0.18.0`.
+  - `charness tool install nose --dry-run --json` reported the upstream
+    `nose-cli-installer.sh` release path and latest release `v0.18.0`.
+  - `nose --version` returned `nose 0.18.0`.
+  - `charness tool sync-support nose --json` reported support sync `skipped`
+    because `nose` is integration-only and has no `support_skill_source`.
+  - `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json`
+    ran with `nose` available and returned `status: clean`, `tool_version:
+    0.18.0`, and no version skew.
+- Non-claim: the missing-`nose` advisory-install-needed path was not re-created
+  because `nose` was already present on this maintainer host; installed-present
+  readiness was verified instead.
+- Adapter checklist disposition: installed-vs-repo skew, nose readiness,
+  installer dry-run, support-sync, and clone-inventory readback were verified on
+  this maintainer host; the unavailable missing-`nose` branch is explicitly
+  non-claimed above.
 
 ## Review Proof
 
