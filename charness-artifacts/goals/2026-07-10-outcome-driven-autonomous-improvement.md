@@ -263,7 +263,7 @@ applies.
 - Critique: `charness-artifacts/critique/2026-07-10-usage-feedback-code-critique.md`; fresh-eye reproduction found and closed the reporter/validator semantic split.
 - Off-goal findings: cross-process locking and rotated-stream reconciliation are deferred with explicit triggers.
 - Lessons carried forward: parent quality-mode state must be isolated in subprocess tests; shared semantic evidence must precede aggregation.
-- Metrics: 104 tests in the final focused rerun; current dogfood report 1,331 deliveries and zero feedback events.
+- Metrics: 104 tests in the final focused rerun; the initial quality snapshot reported 1,331 deliveries and zero feedback events, while later closeout runs added delivery-only episodes and still no feedback.
 
 ### Slice 3: Reconcile handoff and disposition the mutation candidate
 
@@ -353,7 +353,7 @@ Disposition review: charness-artifacts/critique/2026-07-10-outcome-driven-autono
 
 - Focused proof: 104 usage/report/schema/plugin/slice-closeout tests passed after the shared-reader and environment-isolation repair.
 - Broad proof: `./scripts/run-quality.sh --read-only` passed 81 gates, zero failed, in 50.6s; the initial two pytest failures and 13 clone fingerprints were new-slice-local and are repaired/dispositioned.
-- Data readback: all 1,331 current delivery records validate; the reporter shows zero feedback events, zero coverage, and all product-success veto gaps intact.
+- Data readback: all current delivery records validate; the reporter shows zero feedback events, zero coverage, and all product-success veto gaps intact. Delivery count is intentionally not pinned because each successful closeout emits another delivery episode.
 - Artifact proof: handoff, quality, retro, lesson-selection, surface matching, packaging, source/plugin mirror, and duplicate-ratchet checks pass.
 - Closeout state: `impl-local`; no push, remote CI, instance sync, live provider proof, release, or issue close ran.
 - Residual risks: feedback append has no cross-process lock; rotated streams are not reconciled; no real feedback observation exists yet.
@@ -363,7 +363,7 @@ Disposition review: charness-artifacts/critique/2026-07-10-outcome-driven-autono
 
 ## User Verification Instructions
 
-1. Run `python3 scripts/report_usage_episodes.py --repo-root . --json` and verify delivery and feedback counts remain separate (`1331` and `0` at closeout).
+1. Run `python3 scripts/report_usage_episodes.py --repo-root . --json` and verify delivery and feedback counts remain separate: delivery count is positive, feedback count is zero until a real observation is recorded.
 2. Choose an existing delivery episode and run `scripts/record_usage_feedback.py` without `--execute`; inspect the closed-enum event and confirm the JSONL line count does not change.
 3. Only when an authoritative operator/issue/release observation exists, repeat with `--execute`, then run the validator and reporter for readback. Do not manufacture a feedback event merely to make coverage non-zero.
 4. Read `docs/handoff.md` and the prompt-mutation disposition to verify #427 is not revived and the vocabulary demotion remains deferred pending integrated live proof.

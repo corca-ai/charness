@@ -16,8 +16,8 @@
 - **Outcome-driven feedback goal is locally implemented and closing.** The
   branch adds an append-only, privacy-safe `usage_feedback` event; validator and
   reporter share one semantic record reader, and delivery is never counted as
-  acceptance. Current dogfood state remains honest: 1,331 deliveries, zero
-  feedback events, zero feedback coverage.
+  acceptance. Current dogfood state remains honest: delivery records exist,
+  while feedback events and feedback coverage remain zero.
 - Local quality proof after the feedback hardening: 104 focused tests passed;
   `run-quality.sh --read-only` passed 81 gates with zero failures; dup-ratchet
   passed without accepting a new baseline. Final verification-lock evidence is
