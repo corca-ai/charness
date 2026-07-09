@@ -296,6 +296,19 @@ def test_debug_plan_main_emits_json(tmp_path: Path, monkeypatch, capsys) -> None
     assert payload["schema_version"] == "debug.run_plan.v1"
 
 
+def test_debug_plan_help_includes_repo_root_help(monkeypatch, capsys) -> None:
+    module = load_plan_module()
+    monkeypatch.setattr("sys.argv", ["plan_debug_run.py", "--help"])
+
+    with pytest.raises(SystemExit) as exc:
+        module.main()
+
+    assert exc.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "--repo-root" in help_text
+    assert "Repository root to analyze" in help_text
+
+
 def test_debug_plan_uses_canonical_forced_risk_taxonomy(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)

@@ -343,7 +343,12 @@ def build_plan(repo_root: Path) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Plan a debug run before broad search or repair.")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root to analyze; defaults to the current working directory",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON; accepted for parity with other planners")
     args = parser.parse_args()
     payload = build_plan(args.repo_root.resolve())
