@@ -133,6 +133,8 @@ def _write_bundle(
     missing_sentinel_summary: bool = False,
     marker_in_trace: bool = True,
     marker_in_stream: bool | None = None,
+    marker_in_stream_prose: bool = False,
+    marker_in_stream_note: bool = False,
     include_trace: bool = True,
 ) -> None:
     bundle = ab_dir / "preserved" / f"{arm}__{index}"
@@ -157,6 +159,36 @@ def _write_bundle(
             "message": {
                 "role": "assistant",
                 "content": [{"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": command}}],
+            },
+        }
+        (bundle / "stream.jsonl").write_text(json.dumps(event) + "\n", encoding="utf-8")
+    elif marker_in_stream_prose:
+        event = {
+            "type": "assistant",
+            "message": {
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"I mentioned {MARKER_VALUE} in prose, but did not run it.",
+                    }
+                ],
+            },
+        }
+        (bundle / "stream.jsonl").write_text(json.dumps(event) + "\n", encoding="utf-8")
+    elif marker_in_stream_note:
+        event = {
+            "type": "assistant",
+            "message": {
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "tool_use",
+                        "id": "t1",
+                        "name": "TodoWrite",
+                        "input": {"todos": [f"remember {MARKER_VALUE} later"]},
+                    }
+                ],
             },
         }
         (bundle / "stream.jsonl").write_text(json.dumps(event) + "\n", encoding="utf-8")
@@ -506,6 +538,42 @@ def test_trace_marker_fires_via_stream_fallback_when_trace_digest_lacks_it(tmp_p
     marker_witness = next(w for w in unit["per_witness"] if w["channel"] == "trace_command_marker")
     assert marker_witness["fired_per_run"] == [True, True]
     assert unit["verdict"] == "NO-OBSERVED-EFFECT"
+    assert unit["caveats"] == []
+
+
+def test_trace_marker_ignores_stream_prose_only_mentions(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, marker_in_trace=False, marker_in_stream_prose=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, marker_in_trace=False, marker_in_stream_prose=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    unit = report["units"][0]
+    marker_witness = next(w for w in unit["per_witness"] if w["channel"] == "trace_command_marker")
+    assert marker_witness["fired_per_run"] == [False, False]
+    assert unit["verdict"] == "DETECTED"
+    assert unit["caveats"] == []
+
+
+def test_trace_marker_ignores_non_command_tool_input_fields(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, marker_in_trace=False, marker_in_stream_note=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, marker_in_trace=False, marker_in_stream_note=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    unit = report["units"][0]
+    marker_witness = next(w for w in unit["per_witness"] if w["channel"] == "trace_command_marker")
+    assert marker_witness["fired_per_run"] == [False, False]
+    assert unit["verdict"] == "DETECTED"
     assert unit["caveats"] == []
 
 

@@ -42,7 +42,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from prompt_mutation_bundle_lib import iter_jsonl_dicts, stream_command_blob
+from prompt_mutation_bundle_lib import iter_jsonl_dicts
 from score_prompt_mutation_sentinel_lib import manifest_sentinels, score_sentinels, sentinel_label
 from witness_coverage_lib import WitnessCoverageError, load_witness_map
 
@@ -115,10 +115,27 @@ def _fragment_fired(summary: str, channel: str, value: str) -> bool:
 
 
 def _stream_command_blob(stream_path: Path) -> str:
-    """Every string tool-call input value across a stream.jsonl (the capture's
-    complete parent stdout), UNTRUNCATED -- the recovery source for a
-    trace_command_marker the 160-char trace-digest `args` field cut away."""
-    return stream_command_blob(stream_path)
+    """Every command-bearing tool_use input across a stream.jsonl, UNTRUNCATED.
+
+    This is the recovery source for a trace_command_marker the 160-char
+    trace-digest `args` field cut away. Only actual tool-use command input is
+    considered here; transcript prose and other tool inputs are ignored."""
+    commands: list[str] = []
+    for event in iter_jsonl_dicts(stream_path) or []:
+        message = event.get("message") if isinstance(event.get("message"), dict) else event
+        content = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(content, list):
+            continue
+        for block in content:
+            if not isinstance(block, dict) or block.get("type") != "tool_use":
+                continue
+            input_obj = block.get("input")
+            if not isinstance(input_obj, dict):
+                continue
+            command = input_obj.get("command")
+            if isinstance(command, str):
+                commands.append(command)
+    return "\n".join(commands)
 
 
 def _trace_marker_fired(bundle_dir: Path, value: str) -> tuple[bool, bool]:
