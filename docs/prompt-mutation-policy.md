@@ -109,6 +109,14 @@ Learned in the pilot and binding on every future run:
   parentless snapshot SHAs with identical neutral commit shape. `baseline_sha`
   in a manifest is provenance; `baseline_snapshot_sha` is the capture-facing
   baseline.
+- **Prefer blind capture workspaces.** When a live runner needs a repo checkout
+  rather than a raw tree object, prepare each capture arm with
+  `python3 scripts/prepare_prompt_mutation_blind_workspace.py --snapshot-ref <snapshot-sha> --out-dir <neutral-dir>`.
+  The helper exports only the snapshot tree, initializes a standalone
+  one-commit repo, and refuses metadata inside the run-visible workspace; the
+  source snapshot SHA stays in caller-side stdout or an outside metadata file.
+  This reduces late taint from `git log`/`show`/refs without turning blinding
+  into a new hard gate.
 - **Red-team the observer once, up front.** Before a new capture-experiment
   design ships, enumerate in one pass every channel the captured agent can
   observe — cwd and env paths, `git log`/`diff`/`show`, refs and reflog,

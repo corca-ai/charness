@@ -61,6 +61,15 @@ NEUTRAL_COMMIT_MESSAGE = "chore: snapshot"
 # remaining deterministic per baseline.
 NEUTRAL_AUTHOR_NAME = "charness"
 NEUTRAL_AUTHOR_EMAIL = "charness@example.invalid"
+GIT_ENV_ALLOWLIST = {
+    "GIT_AUTHOR_DATE",
+    "GIT_AUTHOR_EMAIL",
+    "GIT_AUTHOR_NAME",
+    "GIT_COMMITTER_DATE",
+    "GIT_COMMITTER_EMAIL",
+    "GIT_COMMITTER_NAME",
+    "GIT_INDEX_FILE",
+}
 
 
 class PromptMutantError(RuntimeError):
@@ -225,12 +234,18 @@ def _run_git(repo_root: Path, args: list[str], *, env: dict | None = None, input
         capture_output=True,
         text=True,
         check=False,
-        env=env,
+        env=scrub_git_env(env),
         input=input_text,
     )
     if result.returncode != 0:
         raise PromptMutantError(f"git {' '.join(args)} failed (rc={result.returncode}): {result.stderr.strip()}")
     return result.stdout.strip()
+
+
+def scrub_git_env(env: dict[str, str] | None = None) -> dict[str, str]:
+    """Remove ambient git routing/config variables while preserving explicit git plumbing keys."""
+    base = dict(os.environ if env is None else env)
+    return {key: value for key, value in base.items() if key in GIT_ENV_ALLOWLIST or not key.startswith("GIT_")}
 
 
 def resolve_baseline_sha(repo_root: Path, baseline_ref: str) -> str:
@@ -252,13 +267,10 @@ def resolve_baseline_committer_date(repo_root: Path, baseline_sha: str) -> str:
     return _run_git(repo_root, ["show", "-s", "--format=%cd", "--date=raw", baseline_sha])
 
 
-def _hash_object(repo_root: Path, content: str) -> str:
-    return _run_git(repo_root, ["hash-object", "-w", "--stdin"], input_text=content)
-
-
-def build_snapshot_commit(repo_root: Path, tree_sha: str, commit_date: str) -> str:
-    commit_env = {
-        **os.environ,
+def neutral_commit_env(commit_date: str) -> dict[str, str]:
+    """Environment for capture-facing neutral commits."""
+    return {
+        **scrub_git_env(),
         "GIT_AUTHOR_NAME": NEUTRAL_AUTHOR_NAME,
         "GIT_AUTHOR_EMAIL": NEUTRAL_AUTHOR_EMAIL,
         "GIT_AUTHOR_DATE": commit_date,
@@ -266,7 +278,14 @@ def build_snapshot_commit(repo_root: Path, tree_sha: str, commit_date: str) -> s
         "GIT_COMMITTER_EMAIL": NEUTRAL_AUTHOR_EMAIL,
         "GIT_COMMITTER_DATE": commit_date,
     }
-    return _run_git(repo_root, ["commit-tree", tree_sha, "-m", NEUTRAL_COMMIT_MESSAGE], env=commit_env)
+
+
+def _hash_object(repo_root: Path, content: str) -> str:
+    return _run_git(repo_root, ["hash-object", "-w", "--stdin"], input_text=content)
+
+
+def build_snapshot_commit(repo_root: Path, tree_sha: str, commit_date: str) -> str:
+    return _run_git(repo_root, ["commit-tree", tree_sha, "-m", NEUTRAL_COMMIT_MESSAGE], env=neutral_commit_env(commit_date))
 
 
 def build_mutant_commit(
@@ -288,7 +307,7 @@ def build_mutant_commit(
     baseline snapshot apart from the tree."""
     with tempfile.TemporaryDirectory(prefix="charness-prompt-mutant-") as tmp:
         index_path = str(Path(tmp) / "index")
-        index_env = {**os.environ, "GIT_INDEX_FILE": index_path}
+        index_env = {**scrub_git_env(), "GIT_INDEX_FILE": index_path}
         _run_git(repo_root, ["read-tree", baseline_sha], env=index_env)
         plugin_blob = _hash_object(repo_root, new_plugin_content)
         _run_git(repo_root, ["update-index", "--cacheinfo", f"100644,{plugin_blob},{plugin_path}"], env=index_env)

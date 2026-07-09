@@ -7,7 +7,8 @@ Fresh-eye satisfaction: parent-delegated
 Add read-only helper surfaces that reduce late prompt-mutation and closeout
 friction without adding new blocking floors: scenario clean-proof preflight,
 post-capture blinding scan, goal closeout normalizer, duplicate-ratchet triage
-draft, shared bundle JSONL reader, and plugin sync change summary.
+draft, shared bundle JSONL reader, plugin sync change summary, and a blind
+workspace preparation helper for capture runs that need a git checkout.
 
 ## Failure Angles
 
@@ -20,6 +21,9 @@ draft, shared bundle JSONL reader, and plugin sync change summary.
   duplicate-ratchet pressure.
 - Generated-surface drift: root script and skill helper changes must sync to
   the checked-in plugin mirror.
+- Ambient git environment poisoning: a blind-workspace helper that runs git
+  under inherited `GIT_DIR`, `GIT_WORK_TREE`, or `GIT_INDEX_FILE` can mutate or
+  inspect the wrong repo and silently invalidate the blinding claim.
 
 ## Counterweight Pass
 
@@ -43,6 +47,13 @@ draft, shared bundle JSONL reader, and plugin sync change summary.
   scanner, removing an extractable duplicate family instead of classifying it.
 - Plugin mirrors were regenerated with `sync_root_plugin_manifests.py`; the
   sync output now reports a digest-based change summary.
+- Blind workspace preparation remains advisory. It exports only the snapshot
+  tree into a standalone one-commit repo, refuses metadata inside the
+  run-visible workspace, and does not run captures or block commits.
+- Fresh-eye review found the ambient-git poisoning path before commit. Git
+  plumbing now scrubs ambient `GIT_*` routing/config variables centrally while
+  preserving explicit identity and `GIT_INDEX_FILE` for the mutation builder's
+  temporary index.
 
 ## Structured Findings
 
@@ -50,6 +61,8 @@ draft, shared bundle JSONL reader, and plugin sync change summary.
 - F2 | bin: bundle-anyway | evidence: strong | ref: `scripts/prompt_mutation_bundle_lib.py` | action: fix | note: Shared bundle JSONL/tool-input extraction avoids duplicating scorer logic in the blinding scanner.
 - F3 | bin: bundle-anyway | evidence: strong | ref: `docs/prompt-mutation-policy.md` | action: document | note: New blinding helpers are documented as advisory/read-only, preserving floor-addition restraint.
 - F4 | bin: act-before-ship | evidence: strong | ref: `plugins/charness/scripts/check_prompt_mutation_blinding.py` | action: fix | note: Plugin mirror was regenerated after root script and skill helper changes.
+- F5 | bin: act-before-ship | evidence: strong | ref: `scripts/prepare_prompt_mutation_blind_workspace.py` | action: fix | note: Fresh-eye review found ambient `GIT_DIR`/`GIT_WORK_TREE` poisoning could redirect workspace git operations; `scrub_git_env` now protects helper and shared prompt-mutant git plumbing.
+- F6 | bin: bundle-anyway | evidence: strong | ref: `tests/test_prompt_mutation_blind_workspace.py` | action: fix | note: Regression test poisons `GIT_DIR`/`GIT_WORK_TREE` with a different repo and proves source, poison, and blind workspace histories stay separated.
 
 ## Reviewer Tier Evidence
 
@@ -59,6 +72,10 @@ draft, shared bundle JSONL reader, and plugin sync change summary.
 - Host exposure state: requested_fields_sent
 - Application state: follow-up re-review returned `PASS` after deterministic
   regression tests and direct reproducer probes covered the reported blind spot.
+- Second reviewer pass: read-only reviewer `Linnaeus` initially returned
+  `FAIL` for ambient git environment poisoning, then returned `PASS` after the
+  git scrubber moved into shared prompt-mutant plumbing and the cross-repo
+  poisoning regression test passed.
 
 ## Fresh-Eye Satisfaction
 
