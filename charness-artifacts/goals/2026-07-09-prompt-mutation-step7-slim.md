@@ -1,6 +1,6 @@
 # Achieve Goal: Prompt mutation follow-up: parentless blinding, rewrite operator, step-7 slim experiment
 
-Status: draft
+Status: active
 Created: 2026-07-09
 Activation: `/goal @charness-artifacts/goals/2026-07-09-prompt-mutation-step7-slim.md`
 
@@ -9,14 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: draft awaiting activation; first slice on activation is T1
-  (#426 parentless-snapshot blinding).
-- Current slice intent: draft awaiting activation; reshape before activating
-  if the acceptance boundary has changed. Once active, this names the
-  reviewable-intent unit in progress and the commits it spans
-  (meaningful-slice-cadence).
-- Next action: activate with
-  `/goal @charness-artifacts/goals/2026-07-09-prompt-mutation-step7-slim.md`.
+- Current slice: T1 (#426 parentless-snapshot blinding) complete; next slice
+  is T2 (rewrite operator + sentinel-witness scoring).
+- Current slice intent: T1 removed the parent-diff unblinding channel by
+  making baseline and mutant capture arms raw parentless snapshot SHAs with
+  identical commit-shape metadata and no live `refs/prompt-mutants/*`
+  dependency.
+- Next action: start T2 with the rewrite operator contract and sentinel
+  witness scoring tests; keep the duplicate-pressure hard-block signal in view
+  for final broad closeout.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof
   at closeout.
@@ -238,6 +239,10 @@ during the run:
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
+- Routing: find-skills -> impl + issue — task-text recommendation matched
+  `issue` because T1 resolves #426; interpretation check routed code mutation
+  through `impl` and keeps `issue` for source-of-truth read plus close-ready
+  carrier proof.
 - **Gather step** — when `## Context Sources` names an external source, add a
   `Gather:` line here, or write `Gather: n/a — <reason>`.
 - **Release step** — when this run touches a release surface, add a `Release:`
@@ -273,6 +278,20 @@ Routing step line form (record on ONE physical line):
   cautilus; advisory evidence only.
 
 ## Slice Log
+
+### Slice 1: T1 parentless snapshot blinding
+
+- Objective: Remove the parent-diff unblinding channel for prompt-mutation captures and make #426 close-ready.
+- Why this approach: The pilot observed 4/6 mutant runs reading the removed prose through parented snapshot diffs; fixing the generator producer boundary is the smallest prevention surface.
+- Commits: this T1 commit; #426 carrier draft validated ready_to_commit_push before commit
+- What changed: scripts/prompt_mutant_lib.py and generate_prompt_mutants.py now emit parentless baseline_snapshot_sha + per-unit mutant_sha and no normal mutant_ref; scorer doc/fixture and plugin mirrors synced; critique artifact added.
+- Alternatives rejected: Rejected keeping live refs as capture handles; rejected rewriting completed pilot artifacts because they are historical evidence, not the new contract.
+- Targeted verification: PASS python3 -m ruff check scripts/prompt_mutant_lib.py scripts/generate_prompt_mutants.py scripts/score_prompt_mutation_survival.py tests/test_generate_prompt_mutants.py tests/test_score_prompt_mutation_survival.py; PASS python3 -m pytest -q tests/test_generate_prompt_mutants.py tests/test_score_prompt_mutation_survival.py (44 passed); PASS real handoff generate probe at f84eb223: 35 units, parentless baseline/mutant SHAs, no refs; PASS issue_tool.py validate-closeout-draft for #426 direct-commit carrier; PASS run_slice_closeout.py --skip-broad-pytest.
+- Test duplication pressure: check_dup_ratchet.py --json hard-block vs origin/main: 6 new code families, 0 doc families; classified as accumulated local prompt-mutation-tool debt across the ahead-of-origin bundle, to resolve/classify before final broad closeout.
+- Critique: Causal review parent-delegated; code critique artifact charness-artifacts/critique/2026-07-09-t1-parentless-prompt-mutant-snapshot-fix.md; counterweight: no remaining Act Before Ship.
+- Off-goal findings: none
+- Lessons carried forward: Keep baseline_sha as provenance only; baseline_snapshot_sha is the capture-facing baseline. Do not use refs/prompt-mutants during captures.
+- Metrics: subagent coding worker + causal/code critique reviewers used; live capture spend 0/8.
 
 ## Context Sources
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -220,40 +219,56 @@ def test_generate_leaves_differing_public_sibling_untouched(tmp_path: Path) -> N
     assert "Totally different wording." in mutated_public  # unchanged
 
 
-def test_generate_commit_message_is_neutral_and_uniform(tmp_path: Path) -> None:
-    repo, baseline_sha = _build_fixture_repo(tmp_path)
-    unit_id = _section_a_unit_id(repo, baseline_sha)
-    result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id])
-    mutant_sha = result["units"][0]["mutant_sha"]
-    message = _git(repo, "show", "-s", "--format=%s", mutant_sha)
-    assert message == "chore: snapshot"
-    parent = _git(repo, "show", "-s", "--format=%P", mutant_sha)
-    assert parent == baseline_sha
-
-
-def test_generate_ref_exists_and_manifest_records_full_sha(tmp_path: Path) -> None:
+def test_generate_snapshot_commits_are_parentless_and_metadata_identical(tmp_path: Path) -> None:
     repo, baseline_sha = _build_fixture_repo(tmp_path)
     unit_id = _section_a_unit_id(repo, baseline_sha)
     result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id])
     record = result["units"][0]
-    assert record["mutant_ref"].startswith("refs/prompt-mutants/x/")
-    ref_sha = _git(repo, "rev-parse", record["mutant_ref"])
-    assert ref_sha == record["mutant_sha"]
-    assert len(record["mutant_sha"]) == 40  # full SHA, not abbreviated -- refs may be deleted later
+    baseline_snapshot_sha = result["baseline_snapshot_sha"]
+    mutant_sha = record["mutant_sha"]
+
+    baseline_tree = _git(repo, "rev-parse", f"{baseline_sha}^{{tree}}")
+    baseline_snapshot_tree = _git(repo, "rev-parse", f"{baseline_snapshot_sha}^{{tree}}")
+    mutant_tree = _git(repo, "rev-parse", f"{mutant_sha}^{{tree}}")
+    assert baseline_snapshot_tree == baseline_tree
+    assert mutant_tree != baseline_tree
+
+    baseline_snapshot_parent = _git(repo, "show", "-s", "--format=%P", baseline_snapshot_sha)
+    mutant_parent = _git(repo, "show", "-s", "--format=%P", mutant_sha)
+    assert baseline_snapshot_parent == ""
+    assert mutant_parent == ""
+
+    baseline_payload = _git(repo, "cat-file", "commit", baseline_snapshot_sha)
+    mutant_payload = _git(repo, "cat-file", "commit", mutant_sha)
+    assert baseline_payload.splitlines()[1:] == mutant_payload.splitlines()[1:]
+
+    assert _git(repo, "show", "-s", "--format=%s", baseline_snapshot_sha) == "chore: snapshot"
+    assert _git(repo, "show", "-s", "--format=%s", mutant_sha) == "chore: snapshot"
+
+    mutated = _git(repo, "show", f"{mutant_sha}:plugins/charness/skills/x/SKILL.md")
+    assert "Section A" not in mutated and "Content A." not in mutated
+    assert "## Section B" in mutated and "Content B." in mutated
+
+    assert subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", f"{mutant_sha}^"], capture_output=True, text=True
+    ).returncode != 0
+
+    show_output = _git(repo, "show", mutant_sha)
+    assert "Section A" not in show_output
+    assert "Content A." not in show_output
+    assert "## Section B" in show_output
+    assert "Content B." in show_output
 
 
-def test_generate_ref_name_is_digest_only_no_unit_slug(tmp_path: Path) -> None:
-    # F5-class leak check (plan-critique, S1+S2 fresh-eye review): the ref LEAF
-    # must be digest-only -- no unit slug or heading name -- since a captured
-    # run can enumerate refs or read `git log --decorate` and a unit-named
-    # leaf would reveal which section was removed without even reading a diff.
+def test_generate_manifest_records_raw_snapshot_shas_without_refs(tmp_path: Path) -> None:
     repo, baseline_sha = _build_fixture_repo(tmp_path)
     unit_id = _section_a_unit_id(repo, baseline_sha)
     result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id])
     record = result["units"][0]
-    assert re.fullmatch(r"refs/prompt-mutants/x/[0-9a-f]{64}", record["mutant_ref"])
-    assert "section" not in record["mutant_ref"].lower()
-    assert "a" != record["mutant_ref"].rsplit("/", 1)[-1]  # not a bare slug either
+    assert "mutant_ref" not in record
+    assert len(result["baseline_snapshot_sha"]) == 40
+    assert len(record["mutant_sha"]) == 40
+    assert lib.list_mutant_refs(repo, "x") == []
 
 
 def test_generate_commit_date_matches_baseline_committer_date(tmp_path: Path) -> None:
@@ -278,8 +293,10 @@ def test_generate_is_idempotent(tmp_path: Path) -> None:
     unit_id = _section_a_unit_id(repo, baseline_sha)
     first = lib.generate_mutants(repo, "x", baseline_sha, [unit_id])
     second = lib.generate_mutants(repo, "x", baseline_sha, [unit_id])
+    assert first["baseline_snapshot_sha"] == second["baseline_snapshot_sha"]
     assert first["units"][0]["mutant_sha"] == second["units"][0]["mutant_sha"]
-    assert first["units"][0]["mutant_ref"] == second["units"][0]["mutant_ref"]
+    assert "mutant_ref" not in first["units"][0]
+    assert "mutant_ref" not in second["units"][0]
 
 
 def test_generate_default_selects_every_unit(tmp_path: Path) -> None:
@@ -306,8 +323,14 @@ def test_generate_never_touches_shared_worktree_or_index(tmp_path: Path) -> None
 
 def test_cleanup_deletes_refs_and_reports_them(tmp_path: Path) -> None:
     repo, baseline_sha = _build_fixture_repo(tmp_path)
+    units_by_id, _ = lib.collect_baseline_units(repo, baseline_sha, "x")
     result = lib.generate_mutants(repo, "x", baseline_sha, None)
-    created_refs = {u["mutant_ref"] for u in result["units"]}
+    created_refs = set()
+    for record in result["units"]:
+        unit = units_by_id[record["unit_id"]]
+        ref = lib.mutant_ref_name("x", unit["content_sha256"])
+        _git(repo, "update-ref", ref, record["mutant_sha"])
+        created_refs.add(ref)
     deleted = lib.cleanup_mutant_refs(repo, "x")
     assert set(deleted) == created_refs
     assert lib.list_mutant_refs(repo, "x") == []
@@ -377,10 +400,19 @@ def test_cli_generate_writes_manifest_and_cleanup_reports_deletion(tmp_path: Pat
     manifest = json.loads(out_path.read_text(encoding="utf-8"))
     assert manifest["skill"] == "x"
     assert manifest["baseline_sha"] == baseline_sha
+    assert len(manifest["baseline_snapshot_sha"]) == 40
     assert len(manifest["units"]) >= 1
     for record in manifest["units"]:
+        assert "mutant_ref" not in record
         assert len(record["mutant_sha"]) == 40
+    assert lib.list_mutant_refs(repo, "x") == []
 
+    units_by_id, _ = lib.collect_baseline_units(repo, baseline_sha, "x")
+    created_refs = set()
+    for record in manifest["units"]:
+        ref = lib.mutant_ref_name("x", units_by_id[record["unit_id"]]["content_sha256"])
+        _git(repo, "update-ref", ref, record["mutant_sha"])
+        created_refs.add(ref)
     rc = cli.main(["cleanup", "--repo-root", str(repo), "--skill", "x"])
     assert rc == 0
-    assert lib.list_mutant_refs(repo, "x") == []
+    assert created_refs and lib.list_mutant_refs(repo, "x") == []

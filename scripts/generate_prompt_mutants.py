@@ -4,13 +4,14 @@ goal, charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md).
 
 A RANKING + scenario-coverage tool, never a deletion prover: `split` cuts a
 skill's SKILL.md + references into section-level mutation units (a stable,
-content-addressed manifest); `generate` builds one throwaway mutant git commit
-per selected unit -- with that unit's section removed from the installed-
-plugin mirror tree (`plugins/charness/skills/<skill>/**`, the surface
-`capture-skill-run.sh` actually resolves) -- on a `refs/prompt-mutants/...`
-namespace, using object-database plumbing ONLY; `cleanup` deletes those refs
-once downstream capture experiments are done. See prompt_mutant_lib.py for the
-splitting algorithm and git-plumbing mechanics; this module is CLI wiring only.
+content-addressed manifest); `generate` builds one throwaway parentless
+snapshot commit per selected unit -- with that unit's section removed from the
+installed-plugin mirror tree (`plugins/charness/skills/<skill>/**`, the
+surface `capture-skill-run.sh` actually resolves) -- and returns raw snapshot
+SHAs only; `cleanup` deletes legacy `refs/prompt-mutants/...` refs once
+downstream capture experiments are done. See prompt_mutant_lib.py for the
+splitting algorithm and git-plumbing mechanics; this module is CLI wiring
+only.
 """
 
 from __future__ import annotations
@@ -59,7 +60,8 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         json.dumps(
             {
                 "skill": result["skill"],
-                "baseline_sha": result["baseline_sha"],
+                "baseline_provenance_sha": result["baseline_sha"],
+                "baseline_snapshot_sha": result["baseline_snapshot_sha"],
                 "unit_count": len(result["units"]),
                 "out": str(args.out),
             },
@@ -79,8 +81,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Split a skill's prompt surface into section-level mutation units and build/cleanup "
-            "throwaway mutant git refs over the installed-plugin mirror tree. Advisory tooling for "
-            "the prompt-mutation-pilot goal; never a commit/CI gate."
+            "throwaway parentless snapshot commits over the installed-plugin mirror tree. Advisory "
+            "tooling for the prompt-mutation-pilot goal; never a commit/CI gate."
         )
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -97,7 +99,7 @@ def build_parser() -> argparse.ArgumentParser:
     split_parser.set_defaults(func=_cmd_split)
 
     generate_parser = subparsers.add_parser(
-        "generate", help="Build one mutant commit per selected unit against a baseline ref."
+        "generate", help="Build one parentless snapshot commit per selected unit and emit raw snapshot SHAs."
     )
     generate_parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     generate_parser.add_argument("--skill", required=True)
@@ -108,7 +110,9 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser.add_argument("--out", type=Path, required=True, help="Where to write the mutation manifest JSON.")
     generate_parser.set_defaults(func=_cmd_generate)
 
-    cleanup_parser = subparsers.add_parser("cleanup", help="Delete all refs/prompt-mutants/<skill>/* refs.")
+    cleanup_parser = subparsers.add_parser(
+        "cleanup", help="Delete legacy refs/prompt-mutants/<skill>/* prompt-mutant refs."
+    )
     cleanup_parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     cleanup_parser.add_argument("--skill", required=True)
     cleanup_parser.set_defaults(func=_cmd_cleanup)

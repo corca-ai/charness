@@ -5,7 +5,7 @@
 Reads a `run_skill_efficiency_ab.py` output dir (`--ab-dir`: `results.json` +
 `preserved/<arm>__<i>/` bundles), a skill's checked-in witness map
 (`--witness-map`), and a `generate_prompt_mutants.py generate` manifest
-(`--mutant-manifest`: unit_id -> mutant ref/SHA), and scores each mutant arm's
+(`--mutant-manifest`: unit_id -> snapshot SHA), and scores each mutant arm's
 unit DETECTED / NO-OBSERVED-EFFECT / INVALID-FOR-VERDICT from deterministic
 witnesses only (required_command_fragment / required_summary_fragment /
 trace_command_marker -- never a cautilus judge channel, per the goal's

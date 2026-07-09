@@ -82,10 +82,10 @@ def _mutant_manifest(tmp_path: Path) -> Path:
         {
             "skill": "x",
             "baseline_sha": "deadbeef",
+            "baseline_snapshot_sha": "feedface",
             "units": [
                 {
                     "unit_id": UNIT_ID,
-                    "mutant_ref": "refs/prompt-mutants/x/abc123",
                     "mutant_sha": "cafebabe",
                     "files_mutated": ["plugins/charness/skills/x/SKILL.md"],
                     "public_mutated": False,
@@ -237,6 +237,8 @@ def test_detected_on_missing_fragment_in_mutant_run(tmp_path: Path) -> None:
     _write_bundle(ab_dir, "m1", 1, missing_fragment=True, marker_in_trace=True)  # fragment fails to fire
     witness_map = _witness_map(tmp_path)
     manifest = _mutant_manifest(tmp_path)
+    manifest_json = json.loads(manifest.read_text(encoding="utf-8"))
+    assert "mutant_ref" not in manifest_json["units"][0]
 
     report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
     assert report["experiment_valid"] is True
@@ -452,6 +454,9 @@ def test_cli_json_and_markdown_end_to_end(tmp_path: Path, capsys: pytest.Capture
         _write_bundle(ab_dir, "m1", i, missing_fragment=False, marker_in_trace=True)
     witness_map = _witness_map(tmp_path)
     manifest = _mutant_manifest(tmp_path)
+    manifest_json = json.loads(manifest.read_text(encoding="utf-8"))
+    assert manifest_json["baseline_snapshot_sha"] == "feedface"
+    assert "mutant_ref" not in manifest_json["units"][0]
     argv = [
         "--ab-dir", str(ab_dir), "--witness-map", str(witness_map), "--scenario", "refresh",
         "--mutant-manifest", str(manifest), "--arm", "baseline=BASELINE", "--arm", f"m1={UNIT_ID}",
