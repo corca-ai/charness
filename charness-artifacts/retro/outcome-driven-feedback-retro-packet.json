@@ -1,0 +1,22 @@
+{
+  "kind": "charness.retro_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-09T22:01:26Z",
+  "prepared_for": "outcome-driven feedback closeout",
+  "changed_ref": null,
+  "adapter_path": ".agents/retro-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/quality/latest.md\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/retro/recent-lessons.md\n- docs/handoff.md\n- charness-artifacts/prompt-mutation/2026-07-10-handoff-closeout-vocabulary-disposition.md\n- charness-artifacts/quality/2026-07-10-outcome-driven-feedback.md\n- charness-artifacts/retro/2026-07-10-session-retro.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/quality/latest.md, charness-artifacts/retro/recent-lessons.md, docs/handoff.md, charness-artifacts/prompt-mutation/2026-07-10-handoff-closeout-vocabulary-disposition.md, charness-artifacts/quality/2026-07-10-outcome-driven-feedback.md, charness-artifacts/retro/2026-07-10-session-retro.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-mutation-artifacts: Prompt-mutation experiment manifests, configs, scores, judge packets, and reports.\n  source matches: charness-artifacts/prompt-mutation/2026-07-10-handoff-closeout-vocabulary-disposition.md\n  verify: for path in charness-artifacts/prompt-mutation/*.json; do [ -e \"$path\" ] && { python3 -m json.tool \"$path\" >/dev/null || exit $?; }; done\n- retro-lesson-selection-index: Generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/recent-lessons.md, charness-artifacts/retro/2026-07-10-session-retro.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n\nPlanned sync commands before validators:\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 1,
+  "ok": true
+}

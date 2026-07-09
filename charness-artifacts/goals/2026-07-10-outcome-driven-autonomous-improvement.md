@@ -10,12 +10,13 @@ command remains the portable resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: S2/S3 closeout state reconciliation and mutation-candidate disposition.
-- Current slice intent: repair the stale next-session baton once, then decide
-  the handoff vocabulary demotion from existing proof without spending an
-  unauthorized live-capture budget or weakening the mutation policy.
-- Next action: run the handoff refresh planner, verify current git/issue/release
-  state, record the demotion defer, and obtain bounded misunderstanding review.
+- Current slice: S4 final quality, retro, disposition review, and verification lock.
+- Current slice intent: bind the completed local implementation to honest
+  quality/host/retro evidence and close without implying push, live feedback,
+  or prompt-demotion proof that did not run.
+- Next action: complete the fresh-eye disposition review, commit the closeout
+  evidence, run the committed verification lock, and flip this artifact only
+  after that proof passes.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -172,9 +173,9 @@ Make Charness self-improvement outcome-driven: repair stale operating state, est
 | --- | --- | --- | --- | --- |
 | S0 | Shape, activate, and critique the outcome-driven goal | Prevent autonomy from collapsing into an unbounded cleanup pass | Pursue-ready goal, bounded plan critique, explicit boundaries | complete |
 | S1 | Add the smallest privacy-safe feedback evidence path beyond delivery | 1,329 local episodes have zero feedback and one emitter | Focused tests, validated schema/records, reporter distinguishes linked feedback from delivery | complete |
-| S2 | Reconcile semantic operating state at closeout | Handoff says #427 is unpushed although its commits are on origin/main and v0.63.1 is released | Commit ancestry/readback evidence, concise current handoff, doc preflight | in progress |
-| S3 | Disposition the prompt-mutation demotion candidate | The pilot found one narrow redundancy but only N=2 and one scenario | Integrated deterministic proof and fresh-eye reading review, or evidence-backed defer | in progress |
-| S4 | Final quality, retro, and commit closeout | Task-completing repo work requires durable proof and learning | Verification lock, critique/retro artifacts, complete goal, clean committed tree | pending |
+| S2 | Reconcile semantic operating state at closeout | Handoff says #427 is unpushed although its commits are on origin/main and v0.63.1 is released | Commit ancestry/readback evidence, concise current handoff, doc preflight | complete |
+| S3 | Disposition the prompt-mutation demotion candidate | The pilot found one narrow redundancy but only N=2 and one scenario | Integrated deterministic proof and fresh-eye reading review, or evidence-backed defer | complete |
+| S4 | Final quality, retro, and commit closeout | Task-completing repo work requires durable proof and learning | Verification lock, critique/retro artifacts, complete goal, clean committed tree | in progress |
 
 ## Operator Decision Queue
 
@@ -241,30 +242,45 @@ applies.
 ### Slice 1: Shape and critique the feedback contract
 
 - Objective: Make the first implementation slice falsifiable and privacy-safe before code mutation
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: the feedback gap crossed schema, privacy, reporting, and operator boundaries, so the goal contract had to make false-success paths explicit before code.
+- Commits: `b89d7000`
+- What changed: activated this goal, fixed the append-only feedback contract, and folded two fresh-eye plan angles plus a counterweight into acceptance checks.
+- Alternatives rejected: a new autopilot skill, delivery-as-feedback inference, and raw conversation capture.
 - Targeted verification: pursue-ready goal; two parent-delegated spec angles plus separate counterweight; critique validator PASS; run_slice_closeout --skip-broad-pytest PASS; commit b89d7000
-- Test duplication pressure:
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+- Test duplication pressure: n/a — contract slice contained no production test expansion.
+- Critique: `charness-artifacts/critique/2026-07-10-outcome-driven-feedback-loop-pre-implementation-critique.md`.
+- Off-goal findings: historical on-disk active goals were not audited because they did not block this goal.
+- Lessons carried forward: observer ownership, idempotency, reporter denominator separation, and no inferred satisfaction.
+- Metrics: one goal artifact, two review angles, one counterweight, zero external writes.
 
 ### Slice 2: Add linked privacy-safe feedback evidence
 
 - Objective: Separate observer-owned feedback from delivery and reconcile it without false satisfaction claims
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: extend the existing usage stream with one discriminated event instead of creating a second unowned data plane.
+- Commits: `c17c03ee`, `1e0ee8af`
+- What changed: added the feedback schema/writer/reconciler, shared semantic record reader, reporter/validator integration, plugin mirrors, operator docs, and focused tests.
+- Alternatives rejected: historical backfill, a separate stream, automatic observers before manual semantics, and widening the duplicate baseline.
 - Targeted verification: 85 focused usage tests passed; current 1,330 records validated/reported unchanged; dry-run in quality mode wrote zero records; parent-delegated code critique reproduced and fixed reporter semantic false-positive; pre-lock slice closeout passed with public-skill scenario review acknowledged
 - Test duplication pressure: inventory_structural_waste.py reported zero findings, zero duplicate-discovery candidates, and zero intra-test reread candidates; new test module centralizes feedback fixture helpers; broad pressure remains for final lock
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+- Critique: `charness-artifacts/critique/2026-07-10-usage-feedback-code-critique.md`; fresh-eye reproduction found and closed the reporter/validator semantic split.
+- Off-goal findings: cross-process locking and rotated-stream reconciliation are deferred with explicit triggers.
+- Lessons carried forward: parent quality-mode state must be isolated in subprocess tests; shared semantic evidence must precede aggregation.
+- Metrics: 104 tests in the final focused rerun; current dogfood report 1,331 deliveries and zero feedback events.
+
+### Slice 3: Reconcile handoff and disposition the mutation candidate
+
+- Objective: remove stale #427/release state and decide the ranked prompt candidate without spending an unauthorized live-capture budget.
+- Why this approach: handoff is a closeout baton, while mutation survival is candidate-ranking evidence rather than deletion proof.
+- What changed: `docs/handoff.md` now records v0.63.1/#427 reality and the next operator sequence; the prompt disposition keeps `#handoff/closeout-vocabulary` unchanged and names its reopen conditions.
+- Targeted verification: `gh issue view` readback; tag/commit ancestry checks; handoff validator PASS; bounded next-operator fresh-eye review found no action ambiguity or false claim.
+- Non-claim: no live capture, Cautilus evaluation, prompt demotion, push, issue close, or release ran.
+
+### Slice 4: Quality and learning closeout
+
+- Objective: make local proof, residual risk, and the lessons from rework durable.
+- What changed: current quality artifact, retro packet/artifact/digest, scoped host-log probe, and closeout evidence bindings.
+- Targeted verification: `run-quality.sh --read-only` passed 81/81 after classifying the initial failures as new-slice-local and repairing them; dup-ratchet is clean without a baseline accept; quality/retro/handoff validators pass.
+- Efficiency evidence: the goal-window probe measured two context compactions, 177 custom tool calls, 72 function calls, and 40 subagent waits. Counts overlap by channel and are activity signals, not cost totals. Fresh-eye and broad-gate work were necessary safety costs; repeated polling and auditing a reviewer that violated its read-only brief were reducible waste.
 
 ## Context Sources
 
@@ -329,18 +345,33 @@ applies.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Host metric window: started_at=2026-07-09T21:15:46Z completed_at=2026-07-09T22:02:17Z codex_session_file=/home/hwidong/.codex/sessions/2026/07/10/rollout-2026-07-10T06-10-15-019f48b7-8a74-7b30-a307-b15a5722d881.jsonl
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Bound closeout evidence:
+
+Retro: charness-artifacts/retro/2026-07-10-session-retro.md
+Host log probe: charness-artifacts/probe/2026-07-10-outcome-driven-autonomous-improvement-host-log.json
+Disposition review: charness-artifacts/critique/2026-07-10-outcome-driven-autonomous-improvement-disposition-review.md
+
+- Focused proof: 104 usage/report/schema/plugin/slice-closeout tests passed after the shared-reader and environment-isolation repair.
+- Broad proof: `./scripts/run-quality.sh --read-only` passed 81 gates, zero failed, in 50.6s; the initial two pytest failures and 13 clone fingerprints were new-slice-local and are repaired/dispositioned.
+- Data readback: all 1,331 current delivery records validate; the reporter shows zero feedback events, zero coverage, and all product-success veto gaps intact.
+- Artifact proof: handoff, quality, retro, lesson-selection, packaging, source/plugin mirror, and duplicate-ratchet checks pass.
+- Closeout state: `impl-local`; no push, remote CI, instance sync, live provider proof, release, or issue close ran.
+- Residual risks: feedback append has no cross-process lock; rotated streams are not reconciled; no real feedback observation exists yet.
+- High-cost/live proof: Cautilus and live capture were not run because the deterministic contract was sufficient and those lanes require separate approval.
 
 ## User Verification Instructions
 
+1. Run `python3 scripts/report_usage_episodes.py --repo-root . --json` and verify delivery and feedback counts remain separate (`1331` and `0` at closeout).
+2. Choose an existing delivery episode and run `scripts/record_usage_feedback.py` without `--execute`; inspect the closed-enum event and confirm the JSONL line count does not change.
+3. Only when an authoritative operator/issue/release observation exists, repeat with `--execute`, then run the validator and reporter for readback. Do not manufacture a feedback event merely to make coverage non-zero.
+4. Read `docs/handoff.md` and the prompt-mutation disposition to verify #427 is not revived and the vocabulary demotion remains deferred pending integrated live proof.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: `tests/test_usage_feedback.py` now clears inherited quality mode by default and explicitly injects it only for the guard test.
+Retro dispositions: applied: `scripts/usage_episode_records.py` and its plugin mirror give validator and reporter one semantic record seam.
+Retro dispositions: applied: `docs/handoff.md` and the prompt-mutation disposition bind the demotion candidate to explicit integrated-live-proof reopen conditions.
+Retro dispositions: applied: reviewer-produced files were independently audited and regenerated through the canonical retro packet/persistence helpers before being trusted.
+Structural follow-up: applied: `tests/test_usage_feedback.py` quality-mode regression, `scripts/usage_episode_records.py` shared validator contract, and the checked-in prompt disposition collectively close every transferable sibling named by the retro; the existing read-only reviewer contract remains the correct boundary for the disclosed reviewer violation.

@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- This retro reviews the autonomous outcome-driven improvement goal: adding a privacy-safe `usage_feedback` path, reconciling stale handoff state, and dispositioning the `#handoff/closeout-vocabulary` prompt-mutation demotion candidate without external writes or live capture. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 - Release publish triggered a configured automatic session retro for `v0.63.0`. (source: `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.63.1`. (source: `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`; sources: 74)
-- Blinding was designed three times (neutral commit message → digest-only refs + baseline dates → still diff-readable via `git show` on the snapshot commit). One exhaustive "what can the captured agent observe?" enumeration at S1 design time would have caught the diffable-parent channel that 4/6 mutant runs actually used. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
-- The report's first draft claimed a causal story ("planner ran in mutant run 0") from stream-sourced evidence, and the streams were deleted before the report's claims were re-verified against the committed bundles; the closeout reviewer caught the contradiction and one honesty-pass commit repaired it. Deleting scoring inputs before re-scoring the committed state is the reusable trap. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
-- The scorer's stream fallback matched a prose mention as a marker fire (#427); the fixture tests covered truncation but not mention-vs-execution. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
+- The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- The first broad quality run found that usage-feedback execute tests inherited `CHARNESS_QUALITY_MODE=read-only` from the parent gate. The production guard was right, but the tests did not isolate their subprocess environment, so the narrow suite had overfit to the default shell state. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- The first reporter implementation duplicated enough semantics that the validator could reject duplicate feedback while the reporter still counted it, allowing satisfaction rates above 100%. Fresh-eye critique caught this before closeout, but the split created avoidable rework. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`; sources: 74)
-- applied: bug-class issue closeout now runs fresh-eye causal review plus code critique before final carrier validation; this caught and fixed two same-class siblings. (source: `charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md`)
-- applied: `docs/prompt-mutation-policy.md` and `docs/handoff.md` record the Bash-only marker evidence rule and #427 push/verify boundary. (source: `charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md`)
-- applied: docs/prompt-mutation-policy.md stream-drop re-score rule and commit-diff blinding caveat (commit 5ce78e9d). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
+- applied-in-session — handoff and prompt-mutation disposition record the exact conditions required before the demotion candidate may be reopened. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- applied-in-session — reviewer-produced files were treated as untrusted, independently inspected, and regenerated through the retro packet/persistence helpers before closeout. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- applied-in-session — usage-feedback subprocess helpers now clear inherited quality-mode state by default, while the dedicated quality-mode test passes it intentionally. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 
 ## Selection Policy
 
@@ -99,7 +99,6 @@
 - `charness-artifacts/retro/2026-07-03-v0-60-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md`
-- `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-10-session-retro.md`
