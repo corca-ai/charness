@@ -171,7 +171,7 @@ def test_report_usage_episodes_aggregates_counts_sessions_and_gaps(tmp_path: Pat
     plain = run_report("--repo-root", str(tmp_path))
     assert plain.returncode == 0
     assert "ADVISORY: usage episode report is an engineering signal" in plain.stdout
-    assert "Usage episodes: 4 record(s) across 3 session group(s)." in plain.stdout
+    assert "Usage episodes: 4 delivery record(s); feedback events: 0; across 3 session group(s)." in plain.stdout
     assert "Product evidence: first_value_floor=4/4 (100.0%)" in plain.stdout
     assert "feedback_coverage=75.0%" in plain.stdout
     assert "Product-success veto gaps: missing_feedback, single_trigger_type." in plain.stdout
@@ -243,8 +243,9 @@ def test_report_usage_episodes_flags_unclassified_feedback(tmp_path: Path) -> No
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
-    assert payload["product_evidence"]["unclassified_feedback_signal_count"] == 1
-    assert "unclassified_feedback" in payload["product_evidence"]["veto_gaps"]
+    assert payload["product_evidence"]["neutral_feedback_signal_count"] == 1
+    assert payload["product_evidence"]["unclassified_feedback_signal_count"] == 0
+    assert "unclassified_feedback" not in payload["product_evidence"]["veto_gaps"]
 
 
 def test_product_review_report_exposes_last_seen_without_actioning_inactivity(tmp_path: Path) -> None:

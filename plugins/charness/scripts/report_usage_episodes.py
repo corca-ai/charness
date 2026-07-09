@@ -13,6 +13,7 @@ from typing import Any
 
 import jsonschema
 import yaml
+from usage_episode_feedback import delivery_records, reconcile_feedback, semantic_feedback_errors
 from usage_episode_product_evidence import PRODUCT_EVIDENCE_NON_CLAIM, product_evidence
 
 from runtime_bootstrap import repo_root_from_script
@@ -106,6 +107,8 @@ def _read_valid_records(path: Path, episode_schema: dict[str, Any]) -> tuple[lis
             errors.append(f"{path}:{line_number}: schema error at timestamp: {row['timestamp']!r} is not date-time")
             continue
         records.append(row)
+    if not errors:
+        errors.extend(semantic_feedback_errors(records))
     return records, errors
 
 
@@ -181,7 +184,12 @@ def _cluster_sessions(records: list[dict[str, Any]], gap: timedelta) -> list[dic
     return sorted(sessions, key=lambda item: item["first_timestamp"])
 
 
-def _capture_gaps(records: list[dict[str, Any]], sessions: list[dict[str, Any]]) -> dict[str, Any]:
+def _capture_gaps(
+    records: list[dict[str, Any]],
+    sessions: list[dict[str, Any]],
+    *,
+    feedback_coverage_count: int,
+) -> dict[str, Any]:
     ungrouped_count = sum(1 for record in records if not record.get("session_id"))
     t_signal_records = [record for record in records if record.get("t_status") != "none"]
     missing_t_evidence = sum(1 for record in t_signal_records if "t_evidence" not in record)
@@ -190,7 +198,7 @@ def _capture_gaps(records: list[dict[str, Any]], sessions: list[dict[str, Any]])
     return {
         "ungrouped_episode_count": ungrouped_count,
         "inferred_gap_session_count": sum(1 for session in sessions if session["session_type"] == "inferred_gap"),
-        "missing_feedback_signal_count": sum(1 for record in records if "feedback_signal" not in record),
+        "missing_feedback_signal_count": len(records) - feedback_coverage_count,
         "t_signal_without_evidence_count": missing_t_evidence,
         "single_entry_point_only": len(entry_point_counts) == 1 and bool(records),
         "explicit_request_only": set(trigger_counts) == {"explicit_request"},
@@ -206,16 +214,26 @@ def _report_payload(
     gap_minutes: int,
     session_limit: int,
 ) -> dict[str, Any]:
-    sessions = _cluster_sessions(records, timedelta(minutes=gap_minutes))
-    session_id_present_count = sum(1 for record in records if record.get("session_id"))
-    t_signal_count = sum(1 for record in records if record.get("t_status") != "none")
+    deliveries = delivery_records(records)
+    feedback = reconcile_feedback(records)
+    sessions = _cluster_sessions(deliveries, timedelta(minutes=gap_minutes))
+    session_id_present_count = sum(1 for record in deliveries if record.get("session_id"))
+    t_signal_count = sum(1 for record in deliveries if record.get("t_status") != "none")
     visible_sessions = sessions[:session_limit]
     return {
         "status": "valid",
         "valid": True,
         "adapter_path": _portable_path(repo_root, adapter_path),
         "records_path": _portable_path(repo_root, records_path),
-        "episode_count": len(records),
+        "episode_count": len(deliveries),
+        "delivery_episode_count": len(deliveries),
+        "feedback_event_count": feedback["feedback_event_count"],
+        "feedback_reconciliation": {
+            "linked_count": feedback["linked_feedback_count"],
+            "unlinked_count": feedback["unlinked_feedback_count"],
+            "duplicate_feedback_id_count": feedback["duplicate_feedback_id_count"],
+            "inline_feedback_count": feedback["inline_feedback_count"],
+        },
         "session_count": len(sessions),
         "session_limit": session_limit,
         "sessions_truncated": max(0, len(sessions) - len(visible_sessions)),
@@ -224,25 +242,29 @@ def _report_payload(
             "explicit_count": sum(1 for session in sessions if session["session_type"] == "explicit"),
             "inferred_gap_count": sum(1 for session in sessions if session["session_type"] == "inferred_gap"),
             "session_id_present_count": session_id_present_count,
-            "session_grouping_rate": round(session_id_present_count / len(records), 4) if records else 0.0,
+            "session_grouping_rate": round(session_id_present_count / len(deliveries), 4) if deliveries else 0.0,
             "items": visible_sessions,
         },
         "counts": {
-            "daily": _date_counter(records),
-            "selected_job": _counter(records, "selected_job"),
-            "core_action": _counter(records, "core_action"),
-            "entry_point": _counter(records, "entry_point"),
-            "trigger_type": _counter(records, "trigger_type"),
-            "outcome_status": _counter(records, "outcome_status"),
-            "feedback_signal": _counter(records, "feedback_signal"),
-            "t_status": _counter(records, "t_status"),
-            "agent_surface": _nested_counter(records, "agent_action", "surface"),
-            "agent_capability_ref": _nested_counter(records, "agent_action", "capability_ref"),
+            "daily": _date_counter(deliveries),
+            "selected_job": _counter(deliveries, "selected_job"),
+            "core_action": _counter(deliveries, "core_action"),
+            "entry_point": _counter(deliveries, "entry_point"),
+            "trigger_type": _counter(deliveries, "trigger_type"),
+            "outcome_status": _counter(deliveries, "outcome_status"),
+            "feedback_signal": feedback["feedback_signal_counts"],
+            "t_status": _counter(deliveries, "t_status"),
+            "agent_surface": _nested_counter(deliveries, "agent_action", "surface"),
+            "agent_capability_ref": _nested_counter(deliveries, "agent_action", "capability_ref"),
         },
         "t_signal_count": t_signal_count,
-        "t_signal_rate": round(t_signal_count / len(records), 4) if records else 0.0,
-        "capture_gaps": _capture_gaps(records, sessions),
-        "product_evidence": product_evidence(records),
+        "t_signal_rate": round(t_signal_count / len(deliveries), 4) if deliveries else 0.0,
+        "capture_gaps": _capture_gaps(deliveries, sessions, feedback_coverage_count=feedback["feedback_coverage_count"]),
+        "product_evidence": product_evidence(
+            deliveries,
+            feedback["signal_records"],
+            feedback_coverage_count=feedback["feedback_coverage_count"],
+        ),
         "warnings": [],
         "errors": [],
         "non_claims": NON_CLAIMS,
@@ -288,13 +310,14 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
             print(f"- {error}")
     else:
         print(
-            f"Usage episodes: {payload['episode_count']} record(s) across "
+            f"Usage episodes: {payload['delivery_episode_count']} delivery record(s); "
+            f"feedback events: {payload['feedback_event_count']}; across "
             f"{payload['session_count']} session group(s)."
         )
         sessions = payload["sessions"]
         print(
             "Session grouping: "
-            f"{sessions['session_id_present_count']}/{payload['episode_count']} records "
+            f"{sessions['session_id_present_count']}/{payload['delivery_episode_count']} delivery records "
             f"carry session_id; inferred gap sessions: {sessions['inferred_gap_count']}."
         )
         print(f"T signals: {payload['t_signal_count']} ({payload['t_signal_rate']:.1%}).")
@@ -314,6 +337,13 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
             f"missing_feedback={gaps['missing_feedback_signal_count']}, "
             f"single_entry_point_only={gaps['single_entry_point_only']}, "
             f"explicit_request_only={gaps['explicit_request_only']}."
+        )
+        reconciliation = payload["feedback_reconciliation"]
+        print(
+            "Feedback reconciliation: "
+            f"linked={reconciliation['linked_count']}, "
+            f"unlinked={reconciliation['unlinked_count']}, "
+            f"duplicate_ids={reconciliation['duplicate_feedback_id_count']}."
         )
         if evidence["veto_gaps"]:
             print("Product-success veto gaps: " + ", ".join(evidence["veto_gaps"]) + ".")

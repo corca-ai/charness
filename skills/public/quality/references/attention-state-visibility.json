@@ -218,6 +218,12 @@
       "evidence_terms": ["RUNTIME_SELF_UPDATE: disabled"],
       "rationale": "Plugin preamble prints disabled runtime self-update status."
     },
+    "scripts/record_usage_feedback.py": {
+      "states": ["disabled", "no_adapter"],
+      "visibility": ["hard_failure_or_blocker", "terminal_payload"],
+      "evidence_terms": ["status", "errors", "executed"],
+      "rationale": "Feedback recording requires an enabled usage_feedback adapter event. Missing or disabled configuration exits 2 and renders a structured status/errors payload (or the same terminal status in plain output), so the command blocks without appending and cannot read as successful feedback capture."
+    },
     "scripts/retro_persistence_lib.py": {
       "states": ["skipped"],
       "visibility": ["terminal_payload"],

@@ -12,6 +12,7 @@ from typing import Any
 
 import jsonschema
 import yaml
+from usage_episode_feedback import semantic_feedback_errors
 
 from runtime_bootstrap import repo_root_from_script
 
@@ -225,6 +226,13 @@ def main() -> int:
         _print_result(_no_records_payload(repo_root, adapter_path, records_path), as_json=args.json)
         return 0
     valid_count, errors = _validate_jsonl(records_path, episode_schema)
+    if not errors:
+        records = [
+            json.loads(line)
+            for line in records_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        errors.extend(semantic_feedback_errors(records))
     payload = {
         "status": "valid" if not errors else "invalid_records",
         "valid": not errors,

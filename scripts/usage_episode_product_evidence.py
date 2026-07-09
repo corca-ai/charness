@@ -5,66 +5,70 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from usage_episode_feedback import (
+    FRICTION_SIGNALS,
+    classification_counts,
+)
+
 PRODUCT_EVIDENCE_NON_CLAIM = (
     "First-value refs are a minimum evidence floor, not satisfaction proof."
 )
 
-SATISFACTION_SIGNALS = {"accepted", "human_confirmed", "closed_issue", "released"}
-FRICTION_SIGNALS = {"corrected", "retried", "ignored", "follow_up_requested"}
 NON_DELIVERED_OUTCOMES = {"abandoned", "corrected", "escalated", "failed"}
 
 
-def product_evidence(records: list[dict[str, Any]]) -> dict[str, Any]:
+def product_evidence(
+    records: list[dict[str, Any]],
+    feedback_records: list[dict[str, Any]] | None = None,
+    *,
+    feedback_coverage_count: int | None = None,
+) -> dict[str, Any]:
     total = len(records)
     first_value_count = sum(
         1 for record in records if isinstance(record.get("first_value_ref"), dict)
     )
-    feedback_records = [
+    feedback_records = feedback_records or [
         record for record in records if isinstance(record.get("feedback_signal"), str)
     ]
-    satisfaction_count = sum(
-        1
+    classes = classification_counts(feedback_records)
+    satisfaction_count = classes["satisfaction"]
+    friction_targets = {
+        (str(record.get("product_id")), str(record.get("target_episode_id", record.get("episode_id"))))
         for record in feedback_records
-        if record["feedback_signal"] in SATISFACTION_SIGNALS
-    )
-    friction_count = sum(
+        if record.get("feedback_signal") in FRICTION_SIGNALS
+    }
+    friction_count = classes["friction"] + sum(
         1
         for record in records
-        if record.get("feedback_signal") in FRICTION_SIGNALS
-        or record.get("outcome_status") in NON_DELIVERED_OUTCOMES
+        if record.get("outcome_status") in NON_DELIVERED_OUTCOMES
+        and (str(record.get("product_id")), str(record.get("episode_id"))) not in friction_targets
     )
-    missing_feedback_count = total - len(feedback_records)
+    coverage_count = len(feedback_records) if feedback_coverage_count is None else feedback_coverage_count
+    missing_feedback_count = total - coverage_count
     return {
         "first_value_floor_count": first_value_count,
         "first_value_floor_rate": _rate(first_value_count, total),
         "first_value_kind": _nested_counter(records, "first_value_ref", "kind"),
-        "feedback_coverage_count": len(feedback_records),
-        "feedback_coverage_rate": _rate(len(feedback_records), total),
+        "feedback_coverage_count": coverage_count,
+        "feedback_coverage_rate": _rate(coverage_count, total),
         "satisfaction_signal_count": satisfaction_count,
         "satisfaction_signal_rate": _rate(satisfaction_count, total),
         "friction_or_followup_signal_count": friction_count,
         "friction_or_followup_signal_rate": _rate(friction_count, total),
         "missing_feedback_signal_count": missing_feedback_count,
-        "unclassified_feedback_signal_count": _unclassified_feedback_count(
-            feedback_records
-        ),
+        "neutral_feedback_signal_count": classes["neutral"],
+        "unclassified_feedback_signal_count": classes["unclassified"],
         "veto_gaps": _veto_gaps(
             records=records,
             missing_feedback_count=missing_feedback_count,
             satisfaction_count=satisfaction_count,
-            unclassified_feedback_count=_unclassified_feedback_count(
-                feedback_records
-            ),
+            unclassified_feedback_count=classes["unclassified"],
         ),
     }
 
 
 def _rate(count: int, total: int) -> float:
     return round(count / total, 4) if total else 0.0
-
-
-def _counter(records: list[dict[str, Any]], field: str) -> dict[str, int]:
-    return dict(sorted(Counter(str(record.get(field, "<missing>")) for record in records).items()))
 
 
 def _nested_counter(
@@ -80,9 +84,8 @@ def _nested_counter(
     return dict(sorted(values.items()))
 
 
-def _unclassified_feedback_count(records: list[dict[str, Any]]) -> int:
-    classified = SATISFACTION_SIGNALS | FRICTION_SIGNALS
-    return sum(1 for record in records if record.get("feedback_signal") not in classified)
+def _counter(records: list[dict[str, Any]], field: str) -> dict[str, int]:
+    return dict(sorted(Counter(str(record.get(field, "<missing>")) for record in records).items()))
 
 
 def _emitter_key(record: dict[str, Any]) -> str:

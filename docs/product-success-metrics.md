@@ -209,7 +209,7 @@ target, and the baseline window opens only as live (non-seed) events accrue.
 | --- | --- | --- | --- |
 | Skill routing success | Task-oriented sessions start with the expected skill or explicit capability discovery when required. | Proves Charness is reducing workflow ambiguity. | Partly measurable through Cautilus fixtures, public-skill dogfood artifacts, issue closeout notes, and manual review. |
 | First-value evidence floor | First durable output that changes repo state or operator understanding, such as a spec, issue, commit, gathered record, quality artifact, or handoff update. This is a minimum evidence floor, not satisfaction proof. | Separates "the agent produced something inspectable" from raw activity, while preventing artifact existence from being counted as user satisfaction. | Capturable for `slice_closeout` when usage episodes are enabled; summarized by `python3 scripts/report_usage_episodes.py --repo-root .`. |
-| Satisfaction and friction signals | Observable follow-through after the first-value floor: acceptance, human confirmation, issue closure, release, correction, retry, ignored output, or follow-up request. | Measures whether the artifact was useful enough to accept or reuse, or whether it created more work. | Partly measurable when `feedback_signal` is present; missing feedback remains a veto gap in `report_usage_episodes.py`. |
+| Satisfaction and friction signals | Observable follow-through after the first-value floor: acceptance, human confirmation, issue closure, release, correction, retry, ignored output, or follow-up request. `edited` is explicit neutral: it does not establish satisfaction or failure. | Measures whether the artifact was useful enough to accept or reuse, or whether it created more work. | Partly measurable through linked `usage_feedback` events; delivery alone never supplies feedback coverage. |
 | Closeout proof strength | Highest proof level reached before commit or handoff: deterministic local gate, release gate, provider roundtrip, bounded fresh-eye review, or explicit weak proof. | Prevents green-looking but under-proven work. | Measurable from artifacts and command logs; not summarized automatically. |
 | Resume clarity | Whether [handoff](./handoff.md) points to the correct next move and stale completed work is removed. | Measures long-running agent continuity. | Manually reviewable; handoff validators cover structure but not semantic sufficiency. |
 | Quality gate health | [run-quality](../scripts/run-quality.sh) phase count, pass/fail state, runtime hot spots, and warnings. | Keeps the product maintainable as skills and validators grow. | Measured in [quality latest](../charness-artifacts/quality/latest.md) and .charness/quality/runtime-signals.json. |
@@ -255,9 +255,41 @@ The proposed Charness-owned vocabulary for the fields called out in
 | `core_action` | `normalized_repo_surface`, `landed_verified_change`, `preserved_debug_learning`, `captured_source_context`, `produced_quality_posture`, `published_release_surface`, `refreshed_handoff`, `persisted_retro_lesson`, `explained_current_state` | Use the valuable product behavior, not the tool call. |
 | `agent_action.surface` | `public_skill_workflow`, `support_capability`, `github_issue`, `git_commit`, `quality_gate`, `release_helper`, `gather_record`, `handoff_artifact`, `critique_review`, `operator_reply` | Use the surface that delivered value. |
 | `first_value_ref.kind` | `commit`, `issue`, `artifact`, `doc`, `test_result`, `release`, `comment`, `answer` | Keep `ref` opaque and non-PII; use `path` for repo-root-relative artifacts. |
-| `feedback_signal` | `accepted`, `edited`, `corrected`, `ignored`, `retried`, `follow_up_requested`, `human_confirmed`, `closed_issue`, `released` | Use observable feedback when available; omit when unknown. |
+| `feedback_signal` | `accepted`, `edited`, `corrected`, `ignored`, `retried`, `follow_up_requested`, `human_confirmed`, `closed_issue`, `released` | `accepted`, `human_confirmed`, `closed_issue`, and `released` are satisfaction; `corrected`, `ignored`, `retried`, and `follow_up_requested` are friction; `edited` is explicit neutral. |
 | `outcome_status` | `delivered`, `abandoned`, `corrected`, `escalated`, `failed` | Closed enum owned by the schema; summarize it, do not extend it in docs. |
 | `t_status` | `none`, `candidate`, `promoted`, `rejected` | Closed enum owned by the schema; use it to connect episodes to durable learning. |
+
+## Linked Feedback Evidence
+
+`usage_episode` remains delivery and first-value evidence. A later
+`usage_feedback` event can record a closed feedback signal against exactly one
+delivery `target_episode_id`; it does not backfill satisfaction into closeout
+emission. The feedback writer previews by default and appends only with
+`--execute`.
+
+Feedback carries a deterministic `feedback_id`, one closed `source_kind`
+(`operator`, `issue_lifecycle`, `release_lifecycle`, or `repository_state`),
+and a compact `evidence_ref`. `operator` may report the closed vocabulary;
+`issue_lifecycle` only reports `closed_issue`; `release_lifecycle` only reports
+`released`; and `repository_state` records only neutral or friction signals.
+Evidence references are restricted to opaque
+artifact, issue, release, or review locators without whitespace or prose. Raw
+bodies, prompts, transcripts, user identity, and extra fields are rejected.
+
+Reports keep `delivery_episode_count` and `feedback_event_count` separate,
+reconcile linked feedback to its target, and calculate coverage only across
+delivery episodes. The report exposes linked, unlinked, and duplicate feedback
+ids; no local count proves satisfaction outside the captured evidence.
+Feedback append deliberately does not rotate the mixed stream until retention
+can reconcile active and rotated files together; this preserves target links.
+
+Preview a feedback event first, then repeat the same command with `--execute`
+only after confirming the target and compact evidence locator:
+
+```bash
+python3 scripts/record_usage_feedback.py --repo-root . --product-id charness --target-episode-id <delivery-episode-id> --feedback-signal accepted --source-kind operator --evidence-kind review --evidence-ref review-20260710 --json
+python3 scripts/record_usage_feedback.py --repo-root . --product-id charness --target-episode-id <delivery-episode-id> --feedback-signal accepted --source-kind operator --evidence-kind review --evidence-ref review-20260710 --execute --json
+```
 
 This is a product vocabulary baseline only. It does not prove product success.
 The first implemented workflow is `slice_closeout`: when the adapter is

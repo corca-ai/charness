@@ -35,7 +35,8 @@
       "items": {
         "type": "string",
         "enum": [
-          "usage_episode"
+          "usage_episode",
+          "usage_feedback"
         ]
       },
       "description": "Subset of v1 events captured by this repo. Omit to capture all v1 events."

@@ -10,12 +10,12 @@ command remains the portable resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: S0 goal shaping and bounded design critique before code mutation.
-- Current slice intent: freeze the smallest outcome-driven loop that can add
-  honest feedback evidence without treating delivery as satisfaction or
-  weakening privacy boundaries.
-- Next action: pass pursue-readiness, activate the goal, then delegate the S1
-  implementation slice to a lower-power coding agent.
+- Current slice: S2/S3 closeout state reconciliation and mutation-candidate disposition.
+- Current slice intent: repair the stale next-session baton once, then decide
+  the handoff vocabulary demotion from existing proof without spending an
+  unauthorized live-capture budget or weakening the mutation policy.
+- Next action: run the handoff refresh planner, verify current git/issue/release
+  state, record the demotion defer, and obtain bounded misunderstanding review.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -170,10 +170,10 @@ Make Charness self-improvement outcome-driven: repair stale operating state, est
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S0 | Shape, activate, and critique the outcome-driven goal | Prevent autonomy from collapsing into an unbounded cleanup pass | Pursue-ready goal, bounded plan critique, explicit boundaries | in progress |
-| S1 | Add the smallest privacy-safe feedback evidence path beyond delivery | 1,329 local episodes have zero feedback and one emitter | Focused tests, validated schema/records, reporter distinguishes linked feedback from delivery | pending |
-| S2 | Reconcile semantic operating state at closeout | Handoff says #427 is unpushed although its commits are on origin/main and v0.63.1 is released | Commit ancestry/readback evidence, concise current handoff, doc preflight | pending |
-| S3 | Disposition the prompt-mutation demotion candidate | The pilot found one narrow redundancy but only N=2 and one scenario | Integrated deterministic proof and fresh-eye reading review, or evidence-backed defer | pending |
+| S0 | Shape, activate, and critique the outcome-driven goal | Prevent autonomy from collapsing into an unbounded cleanup pass | Pursue-ready goal, bounded plan critique, explicit boundaries | complete |
+| S1 | Add the smallest privacy-safe feedback evidence path beyond delivery | 1,329 local episodes have zero feedback and one emitter | Focused tests, validated schema/records, reporter distinguishes linked feedback from delivery | complete |
+| S2 | Reconcile semantic operating state at closeout | Handoff says #427 is unpushed although its commits are on origin/main and v0.63.1 is released | Commit ancestry/readback evidence, concise current handoff, doc preflight | in progress |
+| S3 | Disposition the prompt-mutation demotion candidate | The pilot found one narrow redundancy but only N=2 and one scenario | Integrated deterministic proof and fresh-eye reading review, or evidence-backed defer | in progress |
 | S4 | Final quality, retro, and commit closeout | Task-completing repo work requires durable proof and learning | Verification lock, critique/retro artifacts, complete goal, clean committed tree | pending |
 
 ## Operator Decision Queue
@@ -238,6 +238,34 @@ applies.
 
 ## Slice Log
 
+### Slice 1: Shape and critique the feedback contract
+
+- Objective: Make the first implementation slice falsifiable and privacy-safe before code mutation
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: pursue-ready goal; two parent-delegated spec angles plus separate counterweight; critique validator PASS; run_slice_closeout --skip-broad-pytest PASS; commit b89d7000
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 2: Add linked privacy-safe feedback evidence
+
+- Objective: Separate observer-owned feedback from delivery and reconcile it without false satisfaction claims
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 85 focused usage tests passed; current 1,330 records validated/reported unchanged; dry-run in quality mode wrote zero records; parent-delegated code critique reproduced and fixed reporter semantic false-positive; pre-lock slice closeout passed with public-skill scenario review acknowledged
+- Test duplication pressure: inventory_structural_waste.py reported zero findings, zero duplicate-discovery candidates, and zero intra-test reread candidates; new test module centralizes feedback fixture helpers; broad pressure remains for final lock
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 - `docs/design-north-star.md` — reversible judgment and irreversible-boundary
@@ -291,6 +319,13 @@ applies.
 - Existing goal artifacts with `Status: active` were found on disk, but no host
   goal slot is active. Auditing historical lifecycle drift is outside this goal
   unless it blocks validation.
+- Feedback appends are not concurrency-locked; two simultaneous identical
+  `--execute` calls can race and the validator will reject the duplicate later.
+  Deferred until an automatic/concurrent observer exists.
+- Rotation cannot yet reconcile targets across `usage_episode.1.jsonl` and the
+  active stream, so explicit feedback append preserves link integrity by not
+  rotating. Stream-aware retention reopens when file growth or an automatic
+  observer makes it operationally necessary.
 
 ## Final Verification
 

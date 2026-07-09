@@ -13,6 +13,7 @@ enabled: true
 storage_path: .charness/usage-episodes
 events:
   - usage_episode
+  - usage_feedback
 privacy:
   raw_prompt: false
   raw_transcript: false
