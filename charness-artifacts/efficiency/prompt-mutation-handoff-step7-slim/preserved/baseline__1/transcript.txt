@@ -1,0 +1,17 @@
+Running the three cheap deterministic gates the planner named.
+
+Worktree removed. Now applying the critique fixes to the handoff.
+
+Gates green at 58/70 lines. Committing the refresh.
+
+Handoff refresh is done and committed (`6aad3f1d`), all three deterministic gates green at 58/70 lines. The live state had moved substantially since the last write, and the rewrite reorders the pickup around it:
+
+- **#421 went red, not green.** The 2026-07-09 01:11 UTC scheduled run failed its coverage-baseline pytest before any mutants ran (`test_capture_script_behavioral_no_identity_in_run_view` at head `f84eb223`); the StrykerJS failure is collateral. I verified the failing test **passes in isolation locally at both the current tree and `f84eb223`**, so the handoff now points the next operator at full-suite interaction or CI-env divergence first, not at a unit regression — and keeps the do-not-close-manually boundary.
+- **#423 is closed**; its slot is replaced by the two open follow-ups **#426** (captures unblind via diffing the snapshot commit) and **#427** (scorer stream fallback matches mentions, not executions), with issue bodies named as the spec since the cited pilot artifact isn't in this checkout.
+- The completed **#410 diary paragraph was dropped** — its detail already lives in the census-reconciliation artifact.
+
+A fresh-eye subagent critique ran on the material change and produced two clarity fixes I applied: the #421 first move is now a concrete throwaway-worktree suite run instead of vague "CI conditions", and the prior-red debug artifact link is annotated so its resolved conclusion (a different failing test) isn't mistaken for a diagnosis of the new red. One reviewer claim ("local main ahead 9") didn't survive verification — this checkout is ahead of `origin/main` by exactly one commit, and I excluded the commit-difference hypothesis by direct test instead of recording it.
+
+Refresh kept: the #421 red signal with its reproduce-fork (passes in isolation at both trees → suite-interaction or CI-env), the machine-owned-close boundary, #426/#427 as the queued harness work, the test-debt rotation baseline `8e1fd200`, the argparse-debt run-LAST rule with trip-wire D33, and the three Discuss decisions (RULE_DATE floor practice stays — the 2026-07-08 retro explicitly defers it to this section).
+
+Refresh non-claims: the #410 execution narrative (spilled to `charness-artifacts/reference-compaction/slice7-census-reconciliation.md`), the closed #423 entry, the missing pilot-report path as a link target (issues are the working source), and any root cause for the new #421 red — only the isolation-pass facts are proven; the suite-interaction/CI-env fork is a hypothesis, not a diagnosis.

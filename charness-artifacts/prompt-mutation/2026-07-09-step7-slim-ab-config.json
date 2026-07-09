@@ -1,0 +1,15 @@
+{
+  "name": "prompt-mutation-handoff-step7-slim",
+  "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
+  "runs": 2,
+  "arms": [
+    {
+      "name": "baseline",
+      "ref": "36636b8fc079680e498f5afe928d8a59a8784770"
+    },
+    {
+      "name": "step7_slim",
+      "ref": "4ded67f41ba8f95a93b7b0e86608edc63366ebb4"
+    }
+  ]
+}

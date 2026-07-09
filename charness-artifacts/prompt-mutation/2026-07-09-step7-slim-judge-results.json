@@ -1,0 +1,38 @@
+{
+  "packet_scope": "refreshed refresh.spec.json pairwise blinded output-quality judging",
+  "decision_rule": "material regression only if baseline is preferred in both pairings with contract-anchored reasons; split or ties are advisory noise",
+  "mapping": {
+    "run0": {
+      "A": "step7_slim",
+      "B": "baseline"
+    },
+    "run1": {
+      "A": "baseline",
+      "B": "step7_slim"
+    }
+  },
+  "judges": [
+    {
+      "run": 0,
+      "agent_id": "019f462c-ede8-71e2-b8aa-404bbefb9a95",
+      "nickname": "Copernicus",
+      "preference": "A",
+      "unblinded_preference": "step7_slim",
+      "summary": "Preferred A for tighter next-action state, clearer kept/spilled/unproven accounting, and narrower operator baton; B broadly compliant but more branchy.",
+      "caveat": "Preference, not hard rejection of B."
+    },
+    {
+      "run": 1,
+      "agent_id": "019f462c-ee4b-7622-8eec-fc06de21be76",
+      "nickname": "Kepler",
+      "preference": "A",
+      "unblinded_preference": "baseline",
+      "summary": "Preferred A for explicit Refresh kept/non-claims accounting, careful closeout summary, and ordered next-session baton; B usable but more narrative and less explicit.",
+      "caveat": "B is close if the bar is rough usability."
+    }
+  ],
+  "verdict": {
+    "material_regression": false,
+    "reason": "The blinded judges split after unblinding: one preference for step7_slim and one for baseline, so baseline was not preferred in both pairings."
+  }
+}

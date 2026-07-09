@@ -1,0 +1,17 @@
+I'll run the handoff planner first, per the skill bootstrap.
+
+The handoff is in good shape structurally (48 lines, no dated diary sections). Now I'll check the live state that could change the next action — issue statuses and referenced artifacts.
+
+It passes locally but failed in CI — that's the key fact for the next session. Let me quickly check the owning debug artifact so the pointer is accurate.
+
+Now the cheap deterministic gates from the plan:
+
+The reviewer confirmed the next action and ownership boundaries, and flagged two concrete clarity fixes. Applying both:
+
+Refresh done and committed (`a30804fc`). The headline change: the previous handoff expected #421 to auto-close green, but the live check showed the nightly mutation gate went **red again** at 2026-07-09 01:11 UTC — baseline pytest fails in CI on `tests/test_skill_efficiency_ab.py::test_capture_script_behavioral_no_identity_in_run_view` (the guard test from the #423 fix), while that same test **passes locally** at this snapshot. The next session's first move is now debugging that CI-vs-local split via the `debug` skill; #421 stays machine-owned and must not be closed manually. #423 and #410 are both CLOSED, so their next-action entries were dropped and the session diary was compressed to a pointer at the owning census artifact.
+
+All three deterministic gates pass (shape, pointer freshness, authoring preflight; 49/70 lines). The bounded fresh-eye critique confirmed the next action and ownership boundaries, and produced two clarity fixes I applied: the Workflow Trigger now states that session-start pickup and a bare `/handoff` are the same no-task trigger (both run chunked routing), and the "stays red until…" clause is hedged so an operator doesn't skip CI-environment reproduction by just pushing to main and waiting for green.
+
+Refresh kept: the #421 red evidence (run 28986563107, head `f84eb223`, failing test node id, local-pass observation) because it defines the first debug move; the machine-owned-close boundary; the argparse-help debt item with trip-wire D33; the test-debt rotation baseline `8e1fd200`; and the three Discuss items (RULE_DATE floor practice, D34/D35 declined, `--advisory` pin deferral).
+
+Refresh non-claims: the #410 session narrative was spilled to `charness-artifacts/reference-compaction/slice7-census-reconciliation.md` (already the owning artifact); the closed #423 next-action was dropped; the root cause of the new #421 red is unproven — local pass vs CI fail is observed fact, but whether it's a CI-environment difference or a fix postdating `f84eb223` is explicitly left open for the debug session.

@@ -15,18 +15,19 @@ into section-level mutation units, and asks two questions:
 
 1. Statically (zero capture cost): which units have a **deterministic
    witness** — an eval floor or behavior-trace marker that would fire
-   differently if the unit were removed, with a written causal-path
+   differently if the unit were removed or rewritten, with a written causal-path
    rationale? Everything else is `UNTESTED`, and the `UNTESTED` list is the
    pipeline's primary product: scenario-coverage debt, i.e. skill-contract
    clauses no capture scenario currently observes.
 2. Live (bounded capture cost): for witnessed units only, does a real
-   captured run at a unit-removed mutant ref still fire every witness?
+   captured run at a mutant snapshot still fire every witness?
 
 Tooling:
-[generate_prompt_mutants.py](../scripts/generate_prompt_mutants.py) (units +
-mutant refs), [witness_coverage.py](../scripts/witness_coverage.py) (static
-verdicts), [run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py)
-(ref-armed captures), and
+[generate_prompt_mutants.py](../scripts/generate_prompt_mutants.py) (units,
+parentless snapshot SHAs, removal/rewrite operator metadata, and optional
+all-arm sentinels), [witness_coverage.py](../scripts/witness_coverage.py)
+(static verdicts), [run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py)
+(SHA-armed captures), and
 [score_prompt_mutation_survival.py](../scripts/score_prompt_mutation_survival.py)
 (survival verdicts).
 
@@ -74,6 +75,17 @@ applied together — runs the same capture battery once** and must keep every
 baseline witness firing. The combinatorial space is irrelevant: the only
 configuration that must be proven is the one that ships.
 
+For a **rewrite** application, the shipped tree bytes must match the
+generator-applied captured mutant tree exactly. The contract is the applied
+mutant bytes (including generator newline normalization), not a near-match to
+review prose. If review changes the wording after capture, regenerate the
+mutant and rerun the battery; do not treat a near-match as ship evidence.
+Rewrite experiments may add top-level manifest `sentinels`: deterministic
+run-level canaries that must fire in every baseline and mutant run, but are not
+causal unit witnesses. Baseline invalidity is still a hard
+`EXPERIMENT-INVALID` red outcome; sentinel failure is a separate sentinel-red
+outcome even when a per-unit verdict is `NO-OBSERVED-EFFECT`.
+
 ## Batch Ratchet
 
 - At most **k demotions per cycle** (default k=2) per skill.
@@ -93,6 +105,10 @@ Learned in the pilot and binding on every future run:
   contain the experiment's own blueprint (witness map, goal artifact,
   pipeline commit messages) — a faithful run reads recent history and would
   recover the expected tokens from them (#423-class leaks).
+- **Use parentless capture snapshots.** Baseline and mutant arms must be raw
+  parentless snapshot SHAs with identical neutral commit shape. `baseline_sha`
+  in a manifest is provenance; `baseline_snapshot_sha` is the capture-facing
+  baseline.
 - **Red-team the observer once, up front.** Before a new capture-experiment
   design ships, enumerate in one pass every channel the captured agent can
   observe — cwd and env paths, `git log`/`diff`/`show`, refs and reflog,
@@ -124,9 +140,9 @@ Learned in the pilot and binding on every future run:
   pattern differs, either commit the stream that carried the difference or
   withdraw the stream-only fire (a stream match can be a mention, not an
   execution — the pilot hit exactly this).
-- Commit-diff unblinding: a captured run can `git show` the mutant snapshot
-  commit and read the removed section verbatim (observed in 4 of 6 pilot
-  mutant runs). Neutral messages are necessary but not sufficient; prefer
+- Commit-diff unblinding: a captured run can `git show` a parented mutant
+  commit and read the removed or rewritten section verbatim (observed in 4 of
+  6 pilot mutant runs). Neutral messages are necessary but not sufficient; use
   symmetric parentless snapshot commits for **all** arms, baseline included,
   so no arm has a diffable history.
 - Judge-kind witnesses are modeled in the witness-map schema but spend

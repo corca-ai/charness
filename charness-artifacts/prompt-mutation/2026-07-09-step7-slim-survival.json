@@ -1,0 +1,266 @@
+{
+  "scenario": "refresh",
+  "baseline": {
+    "arm": "baseline",
+    "runs": 2,
+    "witnesses_all_fired": true,
+    "per_run": [
+      {
+        "run": 0,
+        "bundle": "preserved/baseline__0",
+        "witnesses": [
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh kept:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh non-claims:",
+            "fired": true
+          }
+        ]
+      },
+      {
+        "run": 1,
+        "bundle": "preserved/baseline__1",
+        "witnesses": [
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh kept:",
+            "fired": true
+          },
+          {
+            "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+            "channel": "required_summary_fragment",
+            "value": "Refresh non-claims:",
+            "fired": true
+          }
+        ]
+      }
+    ]
+  },
+  "sentinels": {
+    "all_fired": true,
+    "definitions": [
+      {
+        "channel": "required_summary_fragment",
+        "value": "Refresh kept:",
+        "deterministic": true,
+        "name": null,
+        "reason": null
+      },
+      {
+        "channel": "required_summary_fragment",
+        "value": "Refresh non-claims:",
+        "deterministic": true,
+        "name": null,
+        "reason": null
+      },
+      {
+        "channel": "required_command_fragment",
+        "value": "spill-targets.md",
+        "deterministic": true,
+        "name": null,
+        "reason": null
+      },
+      {
+        "channel": "trace_command_marker",
+        "value": "plan_handoff_run.py",
+        "deterministic": true,
+        "name": "planner trace marker",
+        "reason": "handoff planner should still execute"
+      }
+    ],
+    "per_arm": [
+      {
+        "arm": "baseline",
+        "runs": 2,
+        "per_run": [
+          {
+            "run": 0,
+            "bundle": "preserved/baseline__0",
+            "witnesses": [
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh kept:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh non-claims:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_command_fragment",
+                "value": "spill-targets.md",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": "planner trace marker",
+                "channel": "trace_command_marker",
+                "value": "plan_handoff_run.py",
+                "deterministic": true,
+                "fired": true
+              }
+            ],
+            "all_fired": true
+          },
+          {
+            "run": 1,
+            "bundle": "preserved/baseline__1",
+            "witnesses": [
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh kept:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh non-claims:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_command_fragment",
+                "value": "spill-targets.md",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": "planner trace marker",
+                "channel": "trace_command_marker",
+                "value": "plan_handoff_run.py",
+                "deterministic": true,
+                "fired": true
+              }
+            ],
+            "all_fired": true
+          }
+        ],
+        "all_fired": true
+      },
+      {
+        "arm": "step7_slim",
+        "runs": 2,
+        "per_run": [
+          {
+            "run": 0,
+            "bundle": "preserved/step7_slim__0",
+            "witnesses": [
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh kept:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh non-claims:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_command_fragment",
+                "value": "spill-targets.md",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": "planner trace marker",
+                "channel": "trace_command_marker",
+                "value": "plan_handoff_run.py",
+                "deterministic": true,
+                "fired": true
+              }
+            ],
+            "all_fired": true
+          },
+          {
+            "run": 1,
+            "bundle": "preserved/step7_slim__1",
+            "witnesses": [
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh kept:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_summary_fragment",
+                "value": "Refresh non-claims:",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": null,
+                "channel": "required_command_fragment",
+                "value": "spill-targets.md",
+                "deterministic": true,
+                "fired": true
+              },
+              {
+                "name": "planner trace marker",
+                "channel": "trace_command_marker",
+                "value": "plan_handoff_run.py",
+                "deterministic": true,
+                "fired": true
+              }
+            ],
+            "all_fired": true
+          }
+        ],
+        "all_fired": true
+      }
+    ],
+    "failures": [],
+    "caveats": []
+  },
+  "units": [
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+      "arm": "step7_slim",
+      "verdict": "NO-OBSERVED-EFFECT",
+      "survival_rate": 1.0,
+      "n": 2,
+      "per_witness": [
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh kept:",
+          "fired_per_run": [
+            true,
+            true
+          ]
+        },
+        {
+          "channel": "required_summary_fragment",
+          "value": "Refresh non-claims:",
+          "fired_per_run": [
+            true,
+            true
+          ]
+        }
+      ],
+      "caveats": []
+    }
+  ],
+  "experiment_valid": true
+}

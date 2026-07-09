@@ -1,0 +1,10 @@
+{
+  "run0": {
+    "A": "step7_slim",
+    "B": "baseline"
+  },
+  "run1": {
+    "A": "baseline",
+    "B": "step7_slim"
+  }
+}

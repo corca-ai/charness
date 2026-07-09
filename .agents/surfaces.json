@@ -529,6 +529,22 @@
       ]
     },
     {
+      "surface_id": "prompt-mutation-artifacts",
+      "description": "Prompt-mutation experiment manifests, configs, scores, judge packets, and reports.",
+      "source_paths": [
+        "charness-artifacts/prompt-mutation/*.json",
+        "charness-artifacts/prompt-mutation/*.md"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for path in charness-artifacts/prompt-mutation/*.json; do [ -e \"$path\" ] && { python3 -m json.tool \"$path\" >/dev/null || exit $?; }; done"
+      ],
+      "notes": [
+        "Prompt-mutation artifacts are durable experiment evidence. JSON files must parse; markdown reports and judge packets are covered by repo-markdown checks."
+      ]
+    },
+    {
       "surface_id": "cautilus-chatbot-proposals",
       "description": "Checked-in long-context chatbot proposal packets and their current-pointer artifacts.",
       "source_paths": [

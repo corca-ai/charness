@@ -9,15 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: T2 (rewrite operator + sentinel-witness scoring) complete;
-  next slice is T3 (freeze slim text and run the blinded experiment).
-- Current slice intent: T2 added replace-unit mutation and producer-backed
-  all-arm sentinel witnesses so the step-7 slim experiment can be generated
-  and scored without hand-edited manifests.
-- Next action: freeze and fresh-eye critique the step-7 slim replacement text,
-  then run the four planned captures if the critique leaves the text shippable;
-  keep the duplicate-pressure hard-block signal in view for final broad
-  closeout.
+- Current slice: T3/T4 closeout complete locally; final verification and commit
+  are in progress.
+- Current slice intent: T3 proved the rewrite/sentinel machinery works but the
+  refreshed captures are tainted for the blinding claim; T4 therefore does not
+  apply the slim prose.
+- Next action: run sync/verification, commit the negative experiment report and
+  policy update, and keep the duplicate-pressure hard-block signal in view for
+  final broad closeout.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof
   at closeout.
@@ -210,8 +209,8 @@ applied one-commit slim (evidence-green path) or an honest negative report
 | --- | --- | --- | --- | --- |
 | T1 | Parentless symmetric snapshot blinding in generate_prompt_mutants + capture config path; close #426 | Pilot proved the diff channel is the dominant leak; rewrite diffs read even better than deletion diffs | pytest green (parentless + shape-identity tests); issue_tool closeout draft/verify for #426; low test pressure (extends existing test file) | complete |
 | T2 | Replace-unit rewrite operator + manifest operator kind + **sentinel-witness scoring** (all-arm canary checks, distinct from causal witnesses) | T3's mutant is a rewrite, and its green condition is unscoreable without sentinels (F2) | pytest green (round-trip, manifest, sentinel evaluation incl. a sentinel-fails fixture); low test pressure | complete |
-| T3 | Freeze + pre-critique the slim text, then the experiment: 4 captures, sentinel witnesses + blinded pairwise judge + unblinding transcript sweep | The precisely-motivated compaction the pilot surfaced but could not test at section granularity; pre-critique keeps the captured tree shippable (F3) | frozen-text critique verdict; scorer + sentinel tables; judge verdicts under the pre-registered rule; sweep result; ≤8 budget | pending |
-| T4 | Conditional application of the frozen slim (green path, byte-identity + f84eb223-identity re-checked) or honest negative report (red path); policy-doc rewrite-class update | The experiment doubles as the ship-config proof only under byte-identity; the governing policy surface must model the new operator class (F7) | Applied: reviewed 2-file commit + equality check + policy update; Not applied: report section naming the failed channel | pending |
+| T3 | Freeze + pre-critique the slim text, then the experiment: 4 captures, sentinel witnesses + blinded pairwise judge + unblinding transcript sweep | The precisely-motivated compaction the pilot surfaced but could not test at section granularity; pre-critique keeps the captured tree shippable (F3) | frozen-text critique verdict; scorer + sentinel tables; judge verdicts under the pre-registered rule; sweep result; ≤8 budget | complete — scorer/judge passed, sweep tainted all runs |
+| T4 | Conditional application of the frozen slim (green path, byte-identity + f84eb223-identity re-checked) or honest negative report (red path); policy-doc rewrite-class update | The experiment doubles as the ship-config proof only under byte-identity; the governing policy surface must model the new operator class (F7) | Applied: reviewed 2-file commit + equality check + policy update; Not applied: report section naming the failed channel | complete — no edit; policy updated for T1/T2 operator semantics |
 
 ## Operator Decision Queue
 
@@ -254,6 +253,10 @@ during the run:
 Routing step line form (record on ONE physical line):
 
 - `Routing: find-skills -> <skill> — <why this phase needs it>`
+- Gather: n/a — no external source links were introduced during execution.
+- Release: n/a — no release/version surface changed.
+- Issue closeout: #426 close-ready carrier only; `validate-closeout-draft`
+  passed in T1, live close remains queued for the operator after push.
 
 ## Discuss Before Activation
 
@@ -306,6 +309,70 @@ Routing step line form (record on ONE physical line):
 - Off-goal findings: `docs/prompt-mutation-policy.md` still needs rewrite/sentinel operator semantics; deferred to T4 as already scoped because the policy should describe the applied/not-applied outcome after the experiment.
 - Lessons carried forward: T3 manifests must be generated with producer-backed `--sentinel` entries; sentinel failures are closeout-red even when causal unit verdicts remain valid.
 - Metrics: one coding worker and three fresh-eye reviewers used (one lower-power reviewer spawn hit model capacity and was replaced); live capture spend 0/8.
+
+### Slice 3: T3 frozen text and refreshed step-7-slim experiment
+
+- Objective: Generate the frozen step-7 slim rewrite mutant, run the refresh
+  scenario N=2 per arm, score deterministic witnesses/sentinels, judge output
+  quality blind, and sweep for unblinding probes.
+- Why this approach: The pilot identified a precise duplication candidate; T3
+  tests that exact rewrite without changing the shipping skill first.
+- Commits: this T3/T4 closeout commit.
+- What changed: frozen replacement artifact, generated rewrite manifest, AB
+  config, refreshed capture bundles, survival report, blinded judge packets,
+  judge results, unblinding sweep, experiment report, and frozen-text critique
+  artifact.
+- Alternatives rejected: The first four captures used the default chunked
+  scenario and were discarded after fresh-eye review because they did not
+  preserve the produced `docs/handoff.md`; the final proof attempt used
+  `refresh.spec.json`.
+- Targeted verification: PASS scorer returned `experiment_valid: true`; PASS
+  baseline fragments `Refresh kept:` and `Refresh non-claims:` fired in both
+  baseline runs; PASS all sentinels (`Refresh kept:`,
+  `Refresh non-claims:`, `spill-targets.md`, planner trace marker) fired in
+  every baseline and slim run; PASS blinded judge rule found no material
+  regression after unblinding (split: one slim preference, one baseline
+  preference).
+- Taint result: FAIL clean-blinding proof. The transcript sweep found
+  executed git history/ref probes in every refreshed capture, including direct
+  slim snapshot probes in slim runs; all four runs are tainted for the
+  blinding claim.
+- Critique: Frozen-text critique parent-delegated; T4 taint adjudicator
+  returned `BLOCK`, so the slim prose is not applied. Artifacts:
+  `charness-artifacts/critique/2026-07-09-t3-step7-slim-frozen-text.md`,
+  `charness-artifacts/critique/2026-07-09-t4-step7-slim-no-apply.md`.
+- Test duplication pressure: still a final broad-closeout concern from the
+  accumulated ahead-of-origin bundle; not resolved by T3/T4.
+- Off-goal findings: Parentless snapshots remove the parent diff, but the
+  refresh task's legitimate git-history behavior still exposes enough
+  identity surface to taint output captures; future clean proof needs a
+  stronger blind workspace or task-level probe controls.
+- Lessons carried forward: The scorer/sentinel channel can pass while the
+  experiment still fails as a ship proof; the sweep is a first-class gate, not
+  report-only decoration.
+- Metrics: live capture spend 8/8 used; 4 discarded chunked captures plus 4
+  refreshed captures.
+
+### Slice 4: T4 no-apply closeout and policy update
+
+- Objective: Apply the frozen slim prose only if T3 was clean; otherwise record
+  an honest negative report and keep the governing policy current for the
+  T1/T2 pipeline changes.
+- Why this approach: The goal's green path requires clean capture evidence; the
+  taint sweep made the slim change non-shippable even though the deterministic
+  and judge channels passed.
+- Commits: this T3/T4 closeout commit.
+- What changed: `plugins/charness/skills/handoff/SKILL.md` and
+  `skills/public/handoff/SKILL.md` remain at the original step-7 wording;
+  `docs/prompt-mutation-policy.md` now documents rewrite operator byte
+  identity, parentless capture snapshots, and sentinel-vs-invalid outcomes.
+- Alternatives rejected: Rejected shipping the slim prose with only a caveat;
+  fresh-eye adjudication found that T4 does not apply when all captures are
+  tainted for blinding.
+- Targeted verification: PASS handoff mirrors have no diff after backing out
+  the slim prose; final sync/verification recorded below.
+- Critique: T4 no-apply critique artifact records the `BLOCK` decision.
+- Metrics: one bounded taint adjudicator used; live capture spend remains 8/8.
 
 ## Context Sources
 
@@ -401,13 +468,22 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: `charness-artifacts/retro/2026-07-09-session-retro.md`
+Host log probe: `charness-artifacts/probe/2026-07-09-prompt-mutation-step7-slim-host-log.json`
+Disposition review: `charness-artifacts/retro/2026-07-09-step7-slim-disposition-review.md`
+
+- PASS `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest`
+- PASS `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock`
+- PASS `python3 scripts/check_doc_authoring_preflight.py --path docs/prompt-mutation-policy.md`
+- PASS `python3 scripts/validate_skills.py --repo-root .`
+- PASS `python3 scripts/validate_retro_artifact.py --repo-root . --paths charness-artifacts/retro/2026-07-09-session-retro.md`
+- PASS `python3 -m json.tool charness-artifacts/probe/2026-07-09-prompt-mutation-step7-slim-host-log.json`
+- BLOCK `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`: hard-block, 8 new code families, 0 doc families, accumulated across the ahead-of-origin prompt-mutation bundle.
+- Outcome sufficiency check: local slice artifacts, policy update, and negative experiment report are verified and commit-ready; the whole activated goal is not marked complete because the duplicate-ratchet hard block and #426 post-push live close remain open operator/final-bundle work.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: `charness-artifacts/retro/2026-07-09-step7-slim-disposition-review.md` PASS — blind-workspace guard and clean-proof preflight are dispositioned as repo-local guards; sweep-as-ship-gate memory is applied.
+Structural follow-up: repo-local guard: prompt-mutation blind-workspace guard; repo-local guard: prompt-mutation clean-proof preflight; applied: T3/T4 report + retro record sweep-as-first-class ship gate.

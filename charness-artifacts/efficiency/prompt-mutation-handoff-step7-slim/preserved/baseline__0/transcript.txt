@@ -1,0 +1,21 @@
+I'll start by running the handoff planner to scope this refresh pass.
+
+Now writing the refreshed handoff:
+
+Now running the cheap deterministic gates the planner named:
+
+No blockers, three clarity nits — all concrete, so I'll incorporate them:
+
+Handoff refresh complete — `docs/handoff.md` rewritten (59/70 lines, all three deterministic gates green), fresh-eye critique run, and committed as `1b3bcfff` (this checkout is a detached-HEAD snapshot, so the commit sits on top of `36636b8f chore: snapshot`).
+
+**What changed and why.** Live state had moved out from under the old handoff:
+
+- **#421 went red, not green.** The 2026-07-09 01:11 UTC scheduled run failed baseline pytest on `f84eb223` — the failing test is `test_capture_script_behavioral_no_identity_in_run_view`, the behavioral proof of the #423 capture-blinding fix. #423 itself closed 2026-07-08, and the test passes locally in this checkout (I re-proved it: 1 passed in 0.56s), so the new pickup is a CI-only diagnosis, not the old #422 story. Next-action 1 flipped from "watch expected-green" to "diagnose the red"; the machine-owned/do-not-close-manually boundary is kept.
+- **Two new pilot-filed issues added** as actions 2–3: #426 (mutant-arm captures unblind themselves by diffing the `chore: snapshot` mutant commit) and #427 (scorer `stream.jsonl` fallback matches marker *mentions*, not command-bearing tool_use events). Their evidence artifact isn't in this checkout, so the handoff points readers at the issues rather than a dead path.
+- **Spilled/dropped:** the closed #410 session paragraph (owned by the slice7 census-reconciliation artifact) and the closed-#423 filing entry.
+
+The bounded fresh-eye critique (parent-delegated, medium tier) found no blockers and three clarity nits — trigger-section ambiguity, missing access note for the pilot artifact, over-literalizable 479/480 count — all incorporated before commit.
+
+Refresh kept: the #421 red diagnosis pickup (cause, failing test, passes-locally fact, run URL, machine-owned close boundary), the #426/#427 next actions with issue-based evidence access, the test-debt rotation baseline `8e1fd200`, the argparse-debt run-LAST item with D33 trip-wire, and the three open Discuss decisions.
+
+Refresh non-claims: #410 session detail dropped (spilled to the slice7 census-reconciliation artifact), the closed #423 filing entry dropped, no root cause claimed for the CI-only test failure (unproven — passes locally, failed on `f84eb223` in CI), and the pilot artifact's content not restated (not present in this checkout; owned by #426/#427).

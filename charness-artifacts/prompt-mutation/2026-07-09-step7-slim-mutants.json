@@ -1,0 +1,48 @@
+{
+  "skill": "handoff",
+  "baseline_sha": "f84eb223a960a8857acdfc12575d3c8588e04629",
+  "baseline_snapshot_sha": "36636b8fc079680e498f5afe928d8a59a8784770",
+  "units": [
+    {
+      "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",
+      "mutant_sha": "4ded67f41ba8f95a93b7b0e86608edc63366ebb4",
+      "files_mutated": [
+        "plugins/charness/skills/handoff/SKILL.md",
+        "skills/public/handoff/SKILL.md"
+      ],
+      "public_mutated": true,
+      "operator_kind": "rewrite",
+      "replacement_content_sha256": "860483a0a100132980da0c077a9e9b80abfd5d2598d358c63cee5796e4170e01"
+    }
+  ],
+  "sentinels": [
+    {
+      "channel": "required_summary_fragment",
+      "value": "Refresh kept:",
+      "deterministic": true,
+      "name": null,
+      "reason": null
+    },
+    {
+      "channel": "required_summary_fragment",
+      "value": "Refresh non-claims:",
+      "deterministic": true,
+      "name": null,
+      "reason": null
+    },
+    {
+      "channel": "required_command_fragment",
+      "value": "spill-targets.md",
+      "deterministic": true,
+      "name": null,
+      "reason": null
+    },
+    {
+      "channel": "trace_command_marker",
+      "value": "plan_handoff_run.py",
+      "deterministic": true,
+      "name": "planner trace marker",
+      "reason": "handoff planner should still execute"
+    }
+  ]
+}

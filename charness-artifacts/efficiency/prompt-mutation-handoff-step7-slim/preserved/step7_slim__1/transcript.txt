@@ -1,0 +1,13 @@
+I'll run the handoff planner first to scope this refresh pass.
+
+Now inspecting live repo state that could change the next action.
+
+Now running the deterministic gates the planner named.
+
+Handoff refresh complete — `docs/handoff.md` rewritten, all three deterministic gates green (59/70 lines), fresh-eye critique run and its fixes incorporated, and the change committed as `a076ca53` (note: this checkout is on a detached squashed snapshot, so the commit lives here, not on a branch).
+
+The material change: the next session's first move is no longer "watch #421, expected green." The scheduled run went **red** at 2026-07-09 01:11 UTC on `f84eb223` — the coverage baseline pytest failed before any mutants ran, on `test_capture_script_behavioral_no_identity_in_run_view` (the #423 blinding fix's test, and #423 itself is now closed). That test passes at this checkout, so the handoff directs a fresh diagnosis at `f84eb223` in a disposable worktree. Two new prompt-mutation harness issues (#426 capture unblinding, #427 scorer stream-fallback false fires) are queued second, with an explicit warning that this snapshot predates that harness entirely and code work needs a synced checkout. The critique also caught that the prior #421 debug artifact covers a different, already-fixed failure, so the handoff no longer implies continuity between the reds.
+
+Refresh kept: #421 red signal + failing test name + machine-owned/do-not-close rule, #423 closed, #426/#427 as next fixes, the stale-snapshot fact (it changes every code-work first move), test-debt baseline `8e1fd200`, and the three standing Discuss items.
+
+Refresh non-claims: the #410 census detail stays spilled to `slice7-census-reconciliation.md`; no root cause is claimed for the new #421 red (only the observed signal and that it differs from the two prior failures); the prompt-mutation pilot report is referenced only via the issues since it doesn't exist in this snapshot; and per #426 I did not diff the snapshot commit to inspect its provenance.

@@ -3,7 +3,7 @@
 ## Current Focus
 
 - The operator asked for creative autonomous-improvement directions, challenged the prompt-mutation idea on false negatives and A+B interaction effects, approved the resulting design (UNTESTED vs NO-OBSERVED-EFFECT, demote-never- delete, ship-configuration rerun, batch ratchet), and delegated full design and execution. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
-- Implementation session for the activated goal `charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack.md` (retro-informed-improvement-5pack): five decided slices landed in the hard order R -> V -> B -> G -> D (`6415175b`, `6440b24d`+`30e3dd11`, `cf7e6f47`, `de54a977`, `5d85de98`), plus one inherited pre-goal red-tree repair (`38219d95`). (source: `charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md`)
+- This retro covers the prompt-mutation step-7 slim follow-up goal. (source: `charness-artifacts/retro/2026-07-09-session-retro.md`)
 
 ## Repeat Traps
 
@@ -16,8 +16,8 @@
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`; sources: 72)
 - applied: docs/prompt-mutation-policy.md stream-drop re-score rule and commit-diff blinding caveat (commit 5ce78e9d). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
+- applied: this retro plus the T3/T4 experiment report record that the sweep is a first-class ship gate, not an advisory footnote. (source: `charness-artifacts/retro/2026-07-09-session-retro.md`)
 - issue #426 (novel: mutant snapshot commits are diffable against their baseline parent; symmetric parentless snapshots for all arms). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
-- issue #427 (novel: constrain scorer stream fallback to command-bearing events; add mention-only negative fixture). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 
 ## Selection Policy
 
@@ -99,5 +99,5 @@
 - `charness-artifacts/retro/2026-07-03-v0-60-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md`
 - `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`
+- `charness-artifacts/retro/2026-07-09-session-retro.md`

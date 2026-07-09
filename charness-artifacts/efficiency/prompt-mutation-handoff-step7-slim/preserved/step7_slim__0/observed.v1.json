@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "cautilus.skill_evaluation_inputs.v1",
+  "skillId": "handoff",
+  "skillDisplayName": "handoff",
+  "evaluations": [
+    {
+      "evaluationId": "execution-handoff-refresh-claim-fidelity",
+      "targetKind": "public_skill",
+      "targetId": "handoff",
+      "displayName": "handoff",
+      "evaluationKind": "execution",
+      "prompt": "/charness:handoff run a refresh pass and write the next-session state, spilling durable detail to its owning artifact and keeping only what changes the next action",
+      "startedAt": "2026-07-09T09:00:27.104Z",
+      "invoked": true,
+      "summary": "Execution of /handoff: 2177976 total tokens (56126 output, 1888464 cache-read), 430096ms wall. Tool profile: Bash=26 Read=7 Edit=2 Write=1 Agent=1. All declared claims met. Reference coverage: 3/5 DEPTH references opened (missing: adapter-contract.md, continuation-sequence.md). Advisory ref classes: 1 INLINE, 0 DUP (excluded from the coverage ratio). Waste smells: 2 (duplicate_read, repeated_edit).",
+      "outcome": "passed",
+      "metrics": {
+        "total_tokens": 2177976,
+        "output_tokens": 56126,
+        "tool_count": 37,
+        "waste_smell_count": 2,
+        "duration_ms": 430096
+      },
+      "sampling": {
+        "sampleCount": 1,
+        "consensusCount": 1,
+        "invokedCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "passed": 1,
+          "degraded": 0,
+          "blocked": 0,
+          "failed": 0
+        }
+      },
+      "thresholds": {
+        "max_duration_ms": 550000
+      }
+    }
+  ]
+}

@@ -1,0 +1,184 @@
+{
+  "scope": "prompt-mutation handoff step7 slim refresh sweep",
+  "scan_version": 2,
+  "summary": {
+    "runs": 4,
+    "tainted_runs": 4,
+    "tainted_bundles": [
+      "preserved/baseline__0",
+      "preserved/baseline__1",
+      "preserved/step7_slim__0",
+      "preserved/step7_slim__1"
+    ],
+    "interpretation": "Trace sweep found executed git history/ref probes in every refreshed capture. The slim captures also include direct HEAD/mutant-SHA probes. Deterministic sentinel scoring and blinded output judging completed, but the live behavior captures are tainted for the blinding claim and cannot be called a clean experiment."
+  },
+  "runs": [
+    {
+      "bundle": "preserved/baseline__0",
+      "arm": "baseline",
+      "run": 0,
+      "tainted": true,
+      "trace_hits": [
+        {
+          "step": 4,
+          "track": "parent",
+          "tool": "Bash",
+          "args": "git log --oneline -12 && git status --short --branch",
+          "risk": "identity_probe"
+        }
+      ],
+      "transcript_hits": [
+        {
+          "line": 9,
+          "text": "Handoff refresh complete \u2014 `docs/handoff.md` rewritten (59/70 lines, all three deterministic gates green), fresh-eye critique run, and committed as `1b3bcfff` (this checkout is a detached-HEAD snapshot, so the commit sits on top of `36636b8f chore: snapshot`)."
+        }
+      ]
+    },
+    {
+      "bundle": "preserved/baseline__1",
+      "arm": "baseline",
+      "run": 1,
+      "tainted": true,
+      "trace_hits": [
+        {
+          "step": 4,
+          "track": "parent",
+          "tool": "Bash",
+          "args": "git status --short && git log --oneline -8 && git log -1 --format='%ci' -- docs/handoff.md",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 18,
+          "track": "parent",
+          "tool": "Bash",
+          "args": "git rev-parse --abbrev-ref HEAD; git rev-parse HEAD origin/main 2>&1; git rev-list --count origin/main..HEAD 2>&1; git log --oneline origin/main..HEAD 2>&1 | he\u2026",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 25,
+          "track": "parent",
+          "tool": "Bash",
+          "args": "git add docs/handoff.md && git commit -m \"handoff: refresh to 2026-07-09 state \u2014 #421 red pickup, #423 closed, #426/#427 queued\" && git log --oneline -2",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 28,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git log --oneline -3 && git rev-parse HEAD && ls charness-artifacts/debug/ | tail -5",
+          "risk": "identity_probe"
+        }
+      ],
+      "transcript_hits": []
+    },
+    {
+      "bundle": "preserved/step7_slim__0",
+      "arm": "step7_slim",
+      "run": 0,
+      "tainted": true,
+      "trace_hits": [
+        {
+          "step": 4,
+          "track": "parent",
+          "tool": "Bash",
+          "args": "git status --short && git log --oneline -10",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 18,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git log --oneline -5 -- docs/handoff.md",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 19,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git log --oneline -10 -- docs/handoff.md; echo ---; git show HEAD~1:docs/handoff.md 2>/dev/null || echo \"no prior commit content or same commit\"; echo ---STATUS\u2026",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 27,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git status; echo ---; git log --oneline -5 origin/main 2>/dev/null; echo ---; git log --oneline -5 HEAD; echo ---; git rev-parse HEAD; git rev-parse origin/main\u2026",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 29,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git show --stat 4ded67f4 | head -30; echo ---; git diff f84eb223 4ded67f4 -- tests/test_skill_efficiency_ab.py 2>&1 | head -100",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 30,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git show f84eb223:tests/test_skill_efficiency_ab.py 2>/dev/null | grep -n \"def test_capture_script_behavioral_no_identity_in_run_view\" -A 30 | head -50",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 37,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git diff -- docs/handoff.md",
+          "risk": "identity_probe"
+        }
+      ],
+      "transcript_hits": []
+    },
+    {
+      "bundle": "preserved/step7_slim__1",
+      "arm": "step7_slim",
+      "run": 1,
+      "tainted": true,
+      "trace_hits": [
+        {
+          "step": 4,
+          "track": "parent",
+          "tool": "Bash",
+          "args": "git status --short && echo \"---\" && git log --oneline -12",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 19,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git show HEAD:docs/handoff.md",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 25,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git log --oneline -5; echo \"---\"; git log -1 --format=%H; echo \"---\"; git log --all --oneline | grep -i f84eb223 || echo \"f84eb223 not found in git log --all\"; \u2026",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 26,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git merge-base --is-ancestor f84eb223 HEAD && echo \"f84eb223 is ancestor of HEAD\" || echo \"NOT an ancestor\"; git log --oneline f84eb223..HEAD | head -20; echo \"\u2026",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 28,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git merge-base --is-ancestor f84eb223 HEAD; echo \"exit code: $?\"; echo \"---\"; git rev-parse f84eb223; echo \"---\"; git rev-parse f84eb223a960a8857acdfc12575d3c85\u2026",
+          "risk": "identity_probe"
+        },
+        {
+          "step": 29,
+          "track": "sub",
+          "tool": "Bash",
+          "args": "git log --oneline --all | wc -l; echo \"---all---\"; git log --oneline --all | head -20; echo \"---parents of HEAD---\"; git log -1 --format=\"%H %P\" HEAD; echo \"---\u2026",
+          "risk": "identity_probe"
+        }
+      ],
+      "transcript_hits": []
+    }
+  ]
+}

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-09",
-  "source_artifact_count": 287,
-  "candidate_count": 1328,
+  "source_artifact_count": 289,
+  "candidate_count": 1332,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -785,6 +785,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b20a94eed6e8",
+      "kind": "current_focus",
+      "lesson": "This retro covers the prompt-mutation step-7 slim follow-up goal.",
+      "normalized_key": "this retro covers the prompt mutation step 7 slim follow up goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+          "date": "2026-07-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:cdbbdc36a2b9",
       "kind": "next_improvement",
       "lesson": "applied: docs/prompt-mutation-policy.md stream-drop re-score rule and commit-diff blinding caveat (commit 5ce78e9d).",
@@ -799,6 +819,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:41a15087ea64",
+      "kind": "next_improvement",
+      "lesson": "applied: this retro plus the T3/T4 experiment report record that the sweep is a first-class ship gate, not an advisory footnote.",
+      "normalized_key": "applied this retro plus the t3 t4 experiment report record that the sweep is",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
           "date": "2026-07-09",
           "section": "Next Improvements"
         }
@@ -865,6 +905,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:61bfa8801809",
+      "kind": "next_improvement",
+      "lesson": "repo-local guard: prompt-mutation blind-workspace guard — before spending live prompt-mutation captures, require a preflight that either prevents identity-relevant git history/ref probes or declares the experiment tainted in advance.",
+      "normalized_key": "repo local guard prompt mutation blind workspace guard before spending live prompt mutation captures",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:574279ae4697",
+      "kind": "next_improvement",
+      "lesson": "repo-local guard: prompt-mutation clean-proof preflight — make the post-hoc sweep rules executable earlier so \"sentinels green but observer tainted\" is caught before capture headroom is exhausted.",
+      "normalized_key": "repo local guard prompt mutation clean proof preflight make the post hoc sweep rules",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:8e2ef523ec10",
       "kind": "repeat_trap",
       "lesson": "Blinding was designed three times (neutral commit message → digest-only refs + baseline dates → still diff-readable via `git show` on the snapshot commit). One exhaustive \"what can the captured agent observe?\" enumeration at S1 design time would have caught the diffable-parent channel that 4/6 mutant runs actually used.",
@@ -881,86 +961,6 @@
           "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
           "date": "2026-07-09",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:3b8095750b4f",
-      "kind": "repeat_trap",
-      "lesson": "The report's first draft claimed a causal story (\"planner ran in mutant run 0\") from stream-sourced evidence, and the streams were deleted before the report's claims were re-verified against the committed bundles; the closeout reviewer caught the contradiction and one honesty-pass commit repaired it. Deleting scoring inputs before re-scoring the committed state is the reusable trap.",
-      "normalized_key": "the report s first draft claimed a causal story planner ran in mutant run",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
-      "latest_source_date": "2026-07-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
-          "date": "2026-07-09",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:de08734e4a24",
-      "kind": "repeat_trap",
-      "lesson": "The scorer's stream fallback matched a prose mention as a marker fire (#427); the fixture tests covered truncation but not mention-vs-execution.",
-      "normalized_key": "the scorer s stream fallback matched a prose mention as a marker fire 427",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
-      "latest_source_date": "2026-07-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
-          "date": "2026-07-09",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:43d39e4f81b0",
-      "kind": "current_focus",
-      "lesson": "Implementation session for the activated goal `charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack.md` (retro-informed-improvement-5pack): five decided slices landed in the hard order R -> V -> B -> G -> D (`6415175b`, `6440b24d`+`30e3dd11`, `cf7e6f47`, `de54a977`, `5d85de98`), plus one inherited pre-goal red-tree repair (`38219d95`).",
-      "normalized_key": "implementation session for the activated goal charness artifacts goals 2026 07 08 retro informed",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
-      "latest_source_date": "2026-07-08",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md",
-          "date": "2026-07-08",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:54462ece25f4",
-      "kind": "current_focus",
-      "lesson": "Session pickup ran handoff chunked routing over 8 backlog entries; the operator selected the live-issue chunk and the session executed the achieve goal `fix-421-mutation-regression` (charness-artifacts/goals/2026-07-08-fix-421-mutation-regression.md) end to end: root-caused the recurring nightly mutation-gate red, covered the 16 changed-line proof targets, audited the post-push judgment range, and triaged all 16 survived mutants.",
-      "normalized_key": "session pickup ran handoff chunked routing over 8 backlog entries the operator selected the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
-      "latest_source_date": "2026-07-08",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md",
-          "date": "2026-07-08",
-          "section": "Context"
         }
       ]
     }
@@ -1737,6 +1737,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b20a94eed6e8",
+      "kind": "current_focus",
+      "lesson": "This retro covers the prompt-mutation step-7 slim follow-up goal.",
+      "normalized_key": "this retro covers the prompt mutation step 7 slim follow up goal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+          "date": "2026-07-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:cdbbdc36a2b9",
       "kind": "next_improvement",
       "lesson": "applied: docs/prompt-mutation-policy.md stream-drop re-score rule and commit-diff blinding caveat (commit 5ce78e9d).",
@@ -1751,6 +1771,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:41a15087ea64",
+      "kind": "next_improvement",
+      "lesson": "applied: this retro plus the T3/T4 experiment report record that the sweep is a first-class ship gate, not an advisory footnote.",
+      "normalized_key": "applied this retro plus the t3 t4 experiment report record that the sweep is",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
           "date": "2026-07-09",
           "section": "Next Improvements"
         }
@@ -1811,6 +1851,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:61bfa8801809",
+      "kind": "next_improvement",
+      "lesson": "repo-local guard: prompt-mutation blind-workspace guard — before spending live prompt-mutation captures, require a preflight that either prevents identity-relevant git history/ref probes or declares the experiment tainted in advance.",
+      "normalized_key": "repo local guard prompt mutation blind workspace guard before spending live prompt mutation captures",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:574279ae4697",
+      "kind": "next_improvement",
+      "lesson": "repo-local guard: prompt-mutation clean-proof preflight — make the post-hoc sweep rules executable earlier so \"sentinels green but observer tainted\" is caught before capture headroom is exhausted.",
+      "normalized_key": "repo local guard prompt mutation clean proof preflight make the post hoc sweep rules",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
           "date": "2026-07-09",
           "section": "Next Improvements"
         }
