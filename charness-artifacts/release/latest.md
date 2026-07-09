@@ -91,7 +91,14 @@ Advanced `charness` toward release `0.63.0` (tag `v0.63.0`) through the repo-own
 
 - Release-time real-host proof is required for this slice.
 - Executed maintainer install refresh: `charness update` (status `refreshed`, return code `0`).
-- Remaining real-host checklist items, if any, still require explicit proof before full closeout.
+- Additional maintainer-host proof after publish:
+  - `charness doctor --json` reported installed checkout version `0.63.0`, checkout head `e494fd72`, Codex cache `0.63.0`, and Claude installed plugin `0.63.0` at git SHA `e494fd7240da13978909ecc296ca0f3a0a900cd0`.
+  - `charness tool doctor nose --json --no-write-locks` reported `doctor_status: ok`, `doctor_disposition: ready`, observed `nose 0.18.0`, and latest upstream release `v0.18.0`.
+  - `charness tool install nose --dry-run --json` reported the upstream `nose-cli-installer.sh` release path and latest release `v0.18.0`.
+  - `nose --version` returned `nose 0.18.0`.
+  - `charness tool sync-support nose --json` reported support sync `skipped` because `nose` is integration-only and has no `support_skill_source`.
+  - `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` ran with `nose` available and returned advisory clone findings, not standing quality failures.
+- Non-claim: the missing-`nose` advisory-install-needed path was not re-created because `nose` was already present on this maintainer host; installed-present readiness was verified instead.
 - On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
 - Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
 - Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
