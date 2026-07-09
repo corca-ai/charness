@@ -180,14 +180,14 @@ small-N caveats and non-claims.
 ## Operator Decision Queue
 
 - Decision: accept or reject the ranked demotion proposal
-  (`#handoff/closeout-vocabulary` → reference file, per
-  `docs/prompt-mutation-policy.md`: ship-config rerun + ratchet + tripwire
-  window before any physical change)
-  - Owner: operator
-  - Why deferred: applying demotions is an explicit non-goal of this pilot
-  - Unblock action: say "accept the demotion proposal" to open a follow-up
-    goal, or reject and the candidate stays recorded in the report
-  - Revisit trigger: next prompt-mutation or handoff-skill work
+  (`#handoff/closeout-vocabulary` → reference file)
+  - RESOLVED 2026-07-09: **rejected by the operator** after the deeper
+    consumer check showed `## Closeout Vocabulary` is a repo-wide authoring
+    convention (create-skill portable-authoring "Closeout Vocabulary Rule"
+    mandates verbatim floor-matched tokens stay in SKILL.md core). Replaced
+    by the convention-compliant inverse: a step-7-slim sub-section rewrite
+    experiment, formalized as the follow-up goal
+    `charness-artifacts/goals/2026-07-09-prompt-mutation-step7-slim.md`.
 - Decision: push the local commits (this goal is 6 commits ahead of
   origin/main; no push approved in-goal)
   - Owner: operator
