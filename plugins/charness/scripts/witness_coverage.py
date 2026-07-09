@@ -5,9 +5,10 @@ charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md).
 
 Reads a checked-in witness map (`evals/cautilus/<skill>-claim-fidelity/
 witness-map.json` by default), resolves its hash-less unit prefixes against
-the LIVE unit manifest (worktree split, via `prompt_mutant_lib` -- same
-discovery `generate_prompt_mutants.py split` uses), and reports a verdict per
-live unit: WITNESSED (a deterministic + causally-rationalized witness),
+the LIVE unit manifest (worktree file discovery via `prompt_mutant_files_lib`,
+unit splitting via `prompt_mutant_lib` -- same discovery
+`generate_prompt_mutants.py split` uses), and reports a verdict per live unit:
+WITNESSED (a deterministic + causally-rationalized witness),
 UNTESTED (unmapped, judge-only, or authored untested/excluded), or EXCLUDED.
 Static analysis only -- no network, no git mutation, read-only over the repo.
 See witness_coverage_lib.py for the verdict logic; this module is CLI wiring

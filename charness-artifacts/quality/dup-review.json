@@ -296,6 +296,55 @@
     },
     {
       "class": "intentional",
+      "id": "100af5ff16d3bfa0",
+      "note": "standalone prompt-mutation CLI entrypoint shape overlaps with existing report-render CLIs (arg parse, try/except, JSON/markdown output); each command owns different error types and output contracts, so extracting a shared CLI runner would add coupling for little behavior gain",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1064f7970518a588",
+      "note": "two-line repo-root-relative path resolver family shared across standalone mutation and prompt-mutation CLIs; keeping the resolver local preserves direct script execution and avoids coupling unrelated command surfaces for a trivial idiom",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "44bf068730cf4daf",
+      "note": "small SHA256 helper family across mutation sampling and prompt-mutant unit hashing; the call sites name different domain concepts (stable sample hash versus unit content hash), and a shared hash helper would not reduce meaningful maintenance risk",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "52327b5f48f32b03",
+      "note": "prompt-mutation coverage and survival CLIs both accumulate fatal problem strings before returning nonzero, but the problem domains and report contracts differ; a shared formatter would obscure the owning command semantics",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7f11e1cbf8266c06",
+      "note": "low-value local string/assignment idiom family spanning unrelated Python and JavaScript helper code; the duplicated spans are not a stable shared concept and extraction would add cross-surface coupling",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d24f9bbb352ab75b",
+      "note": "three-branch label mapping shape appears in unrelated status and sentinel-channel classifiers; labels and domains differ, so a shared helper would conflate separate taxonomies",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ed8a6184309255b4",
+      "note": "tiny f-string path/timestamp helper family across unrelated modules; existing local helper policy keeps such low-value direct-execution idioms local instead of introducing shared imports",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "13741926e48b3ac1",
       "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
       "reviewed_at": "2026-06-27",

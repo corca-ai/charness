@@ -1,6 +1,6 @@
 # Achieve Goal: Prompt mutation follow-up: parentless blinding, rewrite operator, step-7 slim experiment
 
-Status: active
+Status: complete
 Created: 2026-07-09
 Activation: `/goal @charness-artifacts/goals/2026-07-09-prompt-mutation-step7-slim.md`
 
@@ -9,14 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: T3/T4 closeout complete locally; final verification and commit
-  are in progress.
-- Current slice intent: T3 proved the rewrite/sentinel machinery works but the
-  refreshed captures are tainted for the blinding claim; T4 therefore does not
-  apply the slim prose.
-- Next action: run sync/verification, commit the negative experiment report and
-  policy update, and keep the duplicate-pressure hard-block signal in view for
-  final broad closeout.
+- Current slice: final duplicate-ratchet closeout complete locally; final
+  verification and commit are in progress.
+- Current slice intent: resolve the accumulated duplicate-pressure hard block
+  without silently accepting extractable duplication.
+- Next action: run mutation-coverage-aware final closeout, commit the
+  duplicate-ratchet resolution, then flip the checked-in goal artifact to
+  complete if `check_goal_artifact.py` passes.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof
   at closeout.
@@ -214,17 +213,14 @@ applied one-commit slim (evidence-green path) or an honest negative report
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: push the local close-ready #426 carrier commit bundle and run live
+  CLOSED-state verification after it lands on the default branch.
+  Owner: operator.
+  Why deferred: this goal's boundary permits local commits only and forbids
+  pushing or manual issue close fallbacks.
+  Unblock action: push the branch, let the direct-commit close keyword reach
+  origin/main, then run the queued issue-tool live verification.
+  Revisit trigger: after the operator pushes the completed local commit bundle.
 
 ## Coordination Cues
 
@@ -257,6 +253,7 @@ Routing step line form (record on ONE physical line):
 - Release: n/a — no release/version surface changed.
 - Issue closeout: #426 close-ready carrier only; `validate-closeout-draft`
   passed in T1, live close remains queued for the operator after push.
+- Routing: find-skills -> quality — final closeout consumed the dup-ratchet hard-block signal and followed the quality planner/dup-ratchet policy before changing the overlay.
 
 ## Discuss Before Activation
 
@@ -374,6 +371,25 @@ Routing step line form (record on ONE physical line):
 - Critique: T4 no-apply critique artifact records the `BLOCK` decision.
 - Metrics: one bounded taint adjudicator used; live capture spend remains 8/8.
 
+### Slice 5: Final duplicate-ratchet closeout
+
+- Objective: Resolve the accumulated duplicate-ratchet hard block before final
+  goal closeout.
+- Why this approach: The quality planner routed the failure through the
+  dup-ratchet policy: remove genuine extractable duplication, classify
+  intentional low-value families, or deliberately accept reviewed families.
+- Commits: this final closeout commit.
+- What changed: extracted the duplicated plugin/public sibling pairing loop in
+  `scripts/prompt_mutant_files_lib.py`; moved prompt-mutant file discovery into
+  that helper module; slimmed `scripts/prompt_mutant_lib.py` back under the
+  line-length guard; synced the plugin mirror; added seven reviewed intentional
+  classifications to `charness-artifacts/quality/dup-review.json`.
+- Alternatives rejected: rejected a full baseline overwrite; rejected
+  extracting trivial CLI/path/hash/status-label idioms across unrelated modules.
+- Targeted verification: PASS `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json` (`status: clean`, `new_code_families: []`, `new_doc_families: []`, `fixable_ceiling=0`); PASS `python3 -m ruff check scripts/prompt_mutant_files_lib.py scripts/prompt_mutant_lib.py scripts/generate_prompt_mutants.py scripts/witness_coverage.py scripts/witness_coverage_lib.py tests/test_generate_prompt_mutants.py tests/test_score_prompt_mutation_survival.py tests/test_witness_coverage.py`; PASS `python3 -m pytest -q tests/test_generate_prompt_mutants.py tests/test_score_prompt_mutation_survival.py tests/test_witness_coverage.py` (71 passed); PASS `python3 scripts/check_python_lengths.py --headroom --paths scripts/prompt_mutant_lib.py scripts/prompt_mutant_files_lib.py`.
+- Critique: Fresh-eye duplicate-ratchet closeout reviewers returned `PASS`; artifact `charness-artifacts/critique/2026-07-09-dup-ratchet-closeout.md`.
+- Metrics: duplicate-ratchet hard block reduced from 8 new code families to clean.
+
 ## Context Sources
 
 - Pilot goal + report (read first):
@@ -468,22 +484,24 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Retro: `charness-artifacts/retro/2026-07-09-session-retro.md`
-Host log probe: `charness-artifacts/probe/2026-07-09-prompt-mutation-step7-slim-host-log.json`
-Disposition review: `charness-artifacts/retro/2026-07-09-step7-slim-disposition-review.md`
+Retro: charness-artifacts/retro/2026-07-09-session-retro.md
+Host log probe: charness-artifacts/probe/2026-07-09-prompt-mutation-step7-slim-host-log.json
+Disposition review: charness-artifacts/retro/2026-07-09-step7-slim-disposition-review.md
 
 - PASS `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest`
 - PASS `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock`
+- PASS `python3 scripts/run_slice_closeout.py --repo-root . --verification-lock --produce-mutation-coverage --mutation-coverage-command "python3 -m pytest -q tests/test_generate_prompt_mutants.py tests/test_score_prompt_mutation_survival.py tests/test_witness_coverage.py" --refresh-broad-pytest-proof`
 - PASS `python3 scripts/check_doc_authoring_preflight.py --path docs/prompt-mutation-policy.md`
 - PASS `python3 scripts/validate_skills.py --repo-root .`
 - PASS `python3 scripts/validate_retro_artifact.py --repo-root . --paths charness-artifacts/retro/2026-07-09-session-retro.md`
 - PASS `python3 -m json.tool charness-artifacts/probe/2026-07-09-prompt-mutation-step7-slim-host-log.json`
-- BLOCK `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`: hard-block, 8 new code families, 0 doc families, accumulated across the ahead-of-origin prompt-mutation bundle.
-- Outcome sufficiency check: local slice artifacts, policy update, and negative experiment report are verified and commit-ready; the whole activated goal is not marked complete because the duplicate-ratchet hard block and #426 post-push live close remain open operator/final-bundle work.
+- PASS `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --json`
+- ADVISORY `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha origin/main --reuse-coverage` was rerun after commit and returned `ok: false` for uncovered changed lines in eight mutation-pool files; no changed-line mutation proof is claimed for this bundle.
+- Outcome sufficiency check: local slice artifacts, policy update, negative experiment report, and duplicate-ratchet resolution are verified and commit-ready. #426 live close remains queued as an operator post-push step by the goal boundary, not a local blocker.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: `charness-artifacts/retro/2026-07-09-step7-slim-disposition-review.md` PASS — blind-workspace guard and clean-proof preflight are dispositioned as repo-local guards; sweep-as-ship-gate memory is applied.
-Structural follow-up: repo-local guard: prompt-mutation blind-workspace guard; repo-local guard: prompt-mutation clean-proof preflight; applied: T3/T4 report + retro record sweep-as-first-class ship gate.
+Retro dispositions: applied: blind-workspace guard, clean-proof preflight, and sweep-as-ship-gate memory are dispositioned in charness-artifacts/retro/2026-07-09-step7-slim-disposition-review.md and charness-artifacts/retro/2026-07-09-session-retro.md.
+Structural follow-up: repo-local guard: prompt-mutation blind-workspace and clean-proof follow-ups are recorded for future guard work in the disposition review.

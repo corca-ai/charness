@@ -22,8 +22,10 @@ sweep tainted every refreshed capture for the blinding claim.
   `charness-artifacts/prompt-mutation/2026-07-09-step7-slim-survival.json`
 - Unblinding sweep:
   `charness-artifacts/prompt-mutation/2026-07-09-step7-slim-unblinding-sweep.json`
-- Verification: `run_slice_closeout.py --verification-lock` passed; duplicate
-  ratchet separately hard-blocked on the known 8 code-family accumulated bundle.
+- Verification: `run_slice_closeout.py --verification-lock` passed for the
+  T3/T4 artifact closeout. The duplicate ratchet initially hard-blocked on 8
+  accumulated code families, then the final closeout slice resolved it with one
+  extraction plus seven reviewed intentional classifications.
 
 ## Waste
 

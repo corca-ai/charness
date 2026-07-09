@@ -4,8 +4,9 @@ charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md).
 
 Resolves a checked-in witness map's HASH-LESS unit prefixes
 (`file#heading-path`, no `@hash` -- so the map survives content edits) against
-the LIVE unit manifest (worktree split via `prompt_mutant_lib`, never a
-capture), applies the verdict rules from the goal's Low-Cost Checks /
+the LIVE unit manifest (worktree file discovery via `prompt_mutant_files_lib`
+and unit splitting via `prompt_mutant_lib`, never a capture), applies the
+verdict rules from the goal's Low-Cost Checks /
 plan-critique F2 (judge-only witnesses never promote a unit to WITNESSED), and
 cross-checks deterministic witness values against the scenario's spec file's
 `requiredCommandFragments`/`requiredSummaryFragments` floors. No network, no
@@ -17,7 +18,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from prompt_mutant_lib import list_skill_files_worktree, read_worktree_file, units_for_file
+from prompt_mutant_files_lib import list_skill_files_worktree, read_worktree_file
+from prompt_mutant_lib import units_for_file
 
 SCHEMA_VERSION = 1
 STATUS_VALUES = ("witnessed", "untested", "excluded")
