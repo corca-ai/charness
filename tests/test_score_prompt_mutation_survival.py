@@ -27,6 +27,7 @@ UNIT_HASHLESS = "plugins/charness/skills/x/SKILL.md#section-a"
 UNIT_ID = f"{UNIT_HASHLESS}@abc1234567"
 FRAGMENT_VALUE = "foo.md"
 MARKER_VALUE = "plan_x.py"
+SENTINEL_SUMMARY_VALUE = "slim-pointer.md"
 
 
 def _write_json(path: Path, data: dict) -> None:
@@ -74,7 +75,7 @@ def _witness_map(tmp_path: Path) -> Path:
     return path
 
 
-def _mutant_manifest(tmp_path: Path) -> Path:
+def _mutant_manifest(tmp_path: Path, *, sentinels: list[dict] | None = None) -> Path:
     # Shape mirrors generate_prompt_mutants.py generate's manifest output.
     path = tmp_path / "mutants.json"
     _write_json(
@@ -83,6 +84,7 @@ def _mutant_manifest(tmp_path: Path) -> Path:
             "skill": "x",
             "baseline_sha": "deadbeef",
             "baseline_snapshot_sha": "feedface",
+            "sentinels": sentinels or [],
             "units": [
                 {
                     "unit_id": UNIT_ID,
@@ -96,17 +98,21 @@ def _mutant_manifest(tmp_path: Path) -> Path:
     return path
 
 
-def _observed_packet(*, missing_fragment: bool, label: str = "command log") -> dict:
+def _observed_packet(
+    *, missing_fragment: bool, label: str = "command log", missing_sentinel_summary: bool = False
+) -> dict:
     # Real shape (verified against a checked-in bundle:
     # charness-artifacts/efficiency/hitl-baseline-vs-skill/preserved/baseline__0/
     # observed.v1.json): evaluations[0].summary carries a
     # "Claim failures: <label> missing required fragment: <fragment>." clause
     # when a required fragment is absent; otherwise "All declared claims met."
+    failures = []
     if missing_fragment:
-        summary = (
-            f"Execution of /x: 100 total tokens. Claim failures: {label} missing required "
-            f"fragment: {FRAGMENT_VALUE}."
-        )
+        failures.append(f"{label} missing required fragment: {FRAGMENT_VALUE}")
+    if missing_sentinel_summary:
+        failures.append(f"summary missing required fragment: {SENTINEL_SUMMARY_VALUE}")
+    if failures:
+        summary = "Execution of /x: 100 total tokens. Claim failures: " + "; ".join(failures) + "."
         outcome = "failed"
     else:
         summary = "Execution of /x: 100 total tokens. All declared claims met."
@@ -124,13 +130,17 @@ def _write_bundle(
     index: int,
     *,
     missing_fragment: bool = False,
+    missing_sentinel_summary: bool = False,
     marker_in_trace: bool = True,
     marker_in_stream: bool | None = None,
     include_trace: bool = True,
 ) -> None:
     bundle = ab_dir / "preserved" / f"{arm}__{index}"
     bundle.mkdir(parents=True, exist_ok=True)
-    _write_json(bundle / "observed.v1.json", _observed_packet(missing_fragment=missing_fragment))
+    _write_json(
+        bundle / "observed.v1.json",
+        _observed_packet(missing_fragment=missing_fragment, missing_sentinel_summary=missing_sentinel_summary),
+    )
     if include_trace:
         # Shape mirrors trace-digest.jsonl records emitted by
         # collectToolTrace() in build-skill-execution-observation.mjs.
@@ -162,6 +172,21 @@ def _write_results(ab_dir: Path, arm_runs: dict[str, int]) -> None:
 
 
 ARM_SPECS = {"baseline": "BASELINE", "m1": UNIT_ID}
+SENTINELS = [
+    {
+        "name": "summary canary",
+        "channel": "required_summary_fragment",
+        "value": SENTINEL_SUMMARY_VALUE,
+        "reason": "baseline summary must still show the canary fragment",
+        "deterministic": True,
+    },
+    {
+        "name": "planner marker",
+        "channel": "trace_command_marker",
+        "value": MARKER_VALUE,
+        "deterministic": True,
+    },
+]
 
 
 # --- parse_arm_specs ---------------------------------------------------------
@@ -223,6 +248,153 @@ def test_baseline_validity_refusal_when_no_baseline_runs(tmp_path: Path) -> None
     report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
     assert report["experiment_valid"] is False
     assert report["baseline"]["runs"] == 0
+
+
+def test_sentinels_fire_across_baseline_and_mutant(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+        _write_bundle(ab_dir, "m1", i, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path, sentinels=SENTINELS)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    assert report["experiment_valid"] is True
+    assert report["sentinels"]["all_fired"] is True
+    assert [arm["all_fired"] for arm in report["sentinels"]["per_arm"]] == [True, True]
+    assert report["sentinels"]["failures"] == []
+
+
+def test_sentinel_missing_in_one_mutant_run_reports_failure(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, missing_sentinel_summary=True, marker_in_trace=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path, sentinels=SENTINELS)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    assert report["experiment_valid"] is True
+    assert report["sentinels"]["all_fired"] is False
+    failures = report["sentinels"]["failures"]
+    assert len(failures) == 1
+    failure = failures[0]
+    assert failure["arm"] == "m1"
+    assert failure["run"] == 1
+    assert failure["witness"]["name"] == "summary canary"
+    assert "sentinel did not fire: summary `slim-pointer.md`" in failure["reason"]
+    markdown = lib.render_markdown(report)
+    assert "SENTINEL-FAILURE" in markdown
+    assert "summary canary" in markdown
+
+
+def test_baseline_validity_refusal_still_holds_with_sentinels(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    _write_bundle(ab_dir, "baseline", 0, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "baseline", 1, missing_fragment=True, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path, sentinels=SENTINELS)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    assert report["experiment_valid"] is False
+    assert report["units"] == []
+    assert report["sentinels"]["all_fired"] is True
+    assert report["baseline"]["witnesses_all_fired"] is False
+
+
+def test_missing_baseline_bundle_with_sentinels_returns_invalid_report(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    _write_bundle(ab_dir, "baseline", 0, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    (ab_dir / "preserved" / "baseline__1").mkdir(parents=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path, sentinels=SENTINELS)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    assert report["experiment_valid"] is False
+    assert report["units"] == []
+    assert report["sentinels"]["all_fired"] is False
+    assert any("missing observed.v1.json" in failure["reason"] for failure in report["sentinels"]["failures"])
+
+
+def test_configured_sentinel_zero_run_arm_is_not_green(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 0})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path, sentinels=SENTINELS)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    assert report["experiment_valid"] is True
+    assert report["units"][0]["verdict"] == "INVALID-FOR-VERDICT"
+    assert report["sentinels"]["all_fired"] is False
+    assert any(failure["arm"] == "m1" and failure["run"] is None for failure in report["sentinels"]["failures"])
+
+
+def test_trace_marker_sentinel_miss_without_stream_records_caveat(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, marker_in_trace=False)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(
+        tmp_path,
+        sentinels=[{"channel": "trace_command_marker", "value": MARKER_VALUE, "deterministic": True}],
+    )
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    assert report["sentinels"]["all_fired"] is False
+    assert report["sentinels"]["caveats"]
+    assert "no stream.jsonl fallback" in report["sentinels"]["caveats"][0]
+
+
+def test_sentinel_failure_does_not_erase_causal_unit_verdict(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, missing_sentinel_summary=True, marker_in_trace=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path, sentinels=SENTINELS)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    unit = report["units"][0]
+    assert unit["verdict"] == "NO-OBSERVED-EFFECT"
+    assert unit["survival_rate"] == 1.0
+    assert report["sentinels"]["all_fired"] is False
+
+
+def test_cli_returns_nonzero_when_sentinels_fail(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 0, missing_fragment=False, missing_sentinel_summary=False, marker_in_trace=True)
+    _write_bundle(ab_dir, "m1", 1, missing_fragment=False, missing_sentinel_summary=True, marker_in_trace=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path, sentinels=SENTINELS)
+
+    rc = cli.main(
+        [
+            "--ab-dir", str(ab_dir), "--witness-map", str(witness_map), "--scenario", "refresh",
+            "--mutant-manifest", str(manifest), "--arm", "baseline=BASELINE", "--arm", f"m1={UNIT_ID}",
+        ]
+    )
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert "SENTINEL-FAILURE" in err
 
 
 # --- verdicts -----------------------------------------------------------------

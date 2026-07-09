@@ -5,13 +5,13 @@ goal, charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md).
 A RANKING + scenario-coverage tool, never a deletion prover: `split` cuts a
 skill's SKILL.md + references into section-level mutation units (a stable,
 content-addressed manifest); `generate` builds one throwaway parentless
-snapshot commit per selected unit -- with that unit's section removed from the
-installed-plugin mirror tree (`plugins/charness/skills/<skill>/**`, the
-surface `capture-skill-run.sh` actually resolves) -- and returns raw snapshot
-SHAs only; `cleanup` deletes legacy `refs/prompt-mutants/...` refs once
-downstream capture experiments are done. See prompt_mutant_lib.py for the
-splitting algorithm and git-plumbing mechanics; this module is CLI wiring
-only.
+snapshot commit per selected unit -- either removing the unit or rewriting it
+in place with provided replacement text, always on the installed-plugin mirror
+tree (`plugins/charness/skills/<skill>/**`, the surface `capture-skill-run.sh`
+actually resolves) -- and returns raw snapshot SHAs only; `cleanup` deletes
+legacy `refs/prompt-mutants/...` refs once downstream capture experiments are
+done. See prompt_mutant_lib.py for the splitting algorithm and git-plumbing
+mechanics; this module is CLI wiring only.
 """
 
 from __future__ import annotations
@@ -34,6 +34,45 @@ from runtime_bootstrap import repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 GRANULARITY_CHOICES = ["section"]
+SENTINEL_CHANNELS = {"required_command_fragment", "required_summary_fragment", "trace_command_marker"}
+
+
+def _parse_sentinel(raw: str) -> dict:
+    """Parse repeatable --sentinel values.
+
+    Accepted shapes:
+    - CHANNEL=VALUE
+    - JSON object with channel/value/deterministic and optional name/reason
+    """
+    text = raw.strip()
+    if text.startswith("{"):
+        try:
+            sentinel = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise PromptMutantError(f"--sentinel is not valid JSON: {exc}") from exc
+        if not isinstance(sentinel, dict):
+            raise PromptMutantError("--sentinel JSON must be an object")
+    else:
+        if "=" not in text:
+            raise PromptMutantError("--sentinel must be CHANNEL=VALUE or a JSON object")
+        channel, value = text.split("=", 1)
+        sentinel = {"channel": channel.strip(), "value": value}
+
+    channel = sentinel.get("channel")
+    value = sentinel.get("value")
+    if channel not in SENTINEL_CHANNELS:
+        raise PromptMutantError(f"--sentinel channel must be one of {sorted(SENTINEL_CHANNELS)!r}, got {channel!r}")
+    if not isinstance(value, str) or not value:
+        raise PromptMutantError("--sentinel value must be a non-empty string")
+    if sentinel.get("deterministic", True) is not True:
+        raise PromptMutantError("--sentinel deterministic must be true")
+    name = sentinel.get("name")
+    reason = sentinel.get("reason")
+    if name is not None and not isinstance(name, str):
+        raise PromptMutantError("--sentinel name must be a string when present")
+    if reason is not None and not isinstance(reason, str):
+        raise PromptMutantError("--sentinel reason must be a string when present")
+    return {"channel": channel, "value": value, "deterministic": True, "name": name, "reason": reason}
 
 
 def _cmd_split(args: argparse.Namespace) -> int:
@@ -50,7 +89,11 @@ def _cmd_split(args: argparse.Namespace) -> int:
 
 def _cmd_generate(args: argparse.Namespace) -> int:
     try:
-        result = generate_mutants(args.repo_root, args.skill, args.baseline_ref, args.unit_id or None)
+        sentinels = [_parse_sentinel(raw) for raw in args.sentinel]
+        result = generate_mutants(
+            args.repo_root, args.skill, args.baseline_ref, args.unit_id or None, args.replacement_text
+        )
+        result["sentinels"] = sentinels
     except PromptMutantError as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -106,6 +149,19 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser.add_argument("--baseline-ref", required=True)
     generate_parser.add_argument(
         "--unit-id", action="append", default=[], help="Repeatable; defaults to every unit of --skill."
+    )
+    generate_parser.add_argument(
+        "--replacement-text",
+        help="When set, rewrite selected units to this exact text instead of removing them.",
+    )
+    generate_parser.add_argument(
+        "--sentinel",
+        action="append",
+        default=[],
+        help=(
+            "Repeatable all-arm canary witness to copy into the manifest. "
+            "Use CHANNEL=VALUE or a JSON object with channel/value/deterministic plus optional name/reason."
+        ),
     )
     generate_parser.add_argument("--out", type=Path, required=True, help="Where to write the mutation manifest JSON.")
     generate_parser.set_defaults(func=_cmd_generate)

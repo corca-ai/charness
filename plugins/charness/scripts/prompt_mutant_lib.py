@@ -12,7 +12,7 @@ Canonical prompt surface: mutants target `plugins/charness/skills/<skill>/**`
 (the installed-plugin mirror `capture-skill-run.sh` actually resolves), not
 only the `skills/public/<skill>/**` source (plan-critique F1). The
 `skills/public/...` sibling is mutated too when it contains an
-identical-by-content copy of the removed section.
+identical-by-content copy of the selected section.
 
 A "unit" is one markdown section: a heading line (any level) plus its body up
 to the next heading of the SAME OR HIGHER level -- so a `###` nested under a
@@ -35,6 +35,12 @@ import tempfile
 from pathlib import Path
 
 from artifact_naming_lib import slugify
+from prompt_mutant_rewrite_lib import (
+    applied_replacement_text,
+    remove_unit_by_lines,
+    rewrite_matching_public_unit,
+    rewrite_unit_by_lines,
+)
 
 _HEADING_RE = re.compile(r"^(#{1,6})(\s+.*)?$")
 _FENCE_RE = re.compile(r"^(`{3,}|~{3,})")
@@ -167,13 +173,6 @@ def units_for_file(file_relpath: str, text: str) -> list[dict]:
             }
         )
     return entries
-
-
-def remove_unit_by_lines(text: str, start_line: int, end_line: int) -> str:
-    """Splice out the 1-based inclusive line range `[start_line, end_line]`
-    (as produced by `split_units`) from `text`."""
-    lines = text.splitlines(keepends=True)
-    return "".join(lines[: start_line - 1] + lines[end_line:])
 
 
 # --- file discovery (worktree vs baseline-ref-aware) ------------------------
@@ -395,7 +394,7 @@ def mutant_ref_name(skill: str, content_sha256: str) -> str:
     """Legacy `refs/prompt-mutants/<skill>/<content-sha256>` name helper.
 
     The leaf stays digest-only, with no unit slug or heading name, so a manual
-    cleanup ref never leaks the removed section from the ref name itself. The
+    cleanup ref never leaks the targeted section from the ref name itself. The
     normal generate path no longer creates or depends on these refs."""
     return f"{MUTANT_REF_PREFIX}/{skill}/{content_sha256}"
 
@@ -428,20 +427,41 @@ def collect_baseline_units(repo_root: Path, baseline_sha: str, skill: str) -> tu
 
 
 def mutate_unit(
-    repo_root: Path, baseline_sha: str, unit: dict, file_text: dict[str, str], commit_date: str
+    repo_root: Path,
+    baseline_sha: str,
+    unit: dict,
+    file_text: dict[str, str],
+    commit_date: str,
+    replacement_text: str | None = None,
 ) -> dict:
-    """Build one mutant snapshot for `unit`. The public sibling is mutated too
-    only when it contains the exact unit content (match by content); otherwise
-    only the plugin path is mutated and `public_mutated` is False."""
+    """Build one mutant snapshot for `unit`.
+
+    When `replacement_text` is None, the selected unit is removed. Otherwise,
+    the selected unit content is rewritten to `replacement_text`. The public
+    sibling is mutated too only when it contains the exact unit content
+    (match by content); otherwise only the plugin path is mutated and
+    `public_mutated` is False."""
     plugin_path = unit["file"]
-    new_plugin_content = remove_unit_by_lines(file_text[plugin_path], unit["start_line"], unit["end_line"])
+    if replacement_text is None:
+        operator_kind = "removal"
+        replacement_for_plugin = None
+        new_plugin_content = remove_unit_by_lines(file_text[plugin_path], unit["start_line"], unit["end_line"])
+    else:
+        operator_kind = "rewrite"
+        replacement_for_plugin = applied_replacement_text(file_text[plugin_path], unit["end_line"], replacement_text)
+        new_plugin_content = rewrite_unit_by_lines(
+            file_text[plugin_path], unit["start_line"], unit["end_line"], replacement_text
+        )
     public_path = unit.get("public_sibling")
     public_mutated = False
     new_public_content = None
     if public_path is not None:
         public_text = file_text.get(public_path)
-        if public_text is not None and unit["content"] in public_text:
-            new_public_content = public_text.replace(unit["content"], "", 1)
+        if public_text is not None:
+            new_public_content = rewrite_matching_public_unit(
+                public_text, unit, units_for_file(public_path, public_text), replacement_text
+            )
+        if new_public_content is not None:
             public_mutated = True
     mutant_sha = build_mutant_commit(
         repo_root,
@@ -453,15 +473,21 @@ def mutate_unit(
         commit_date,
     )
     files_mutated = [plugin_path] + ([public_path] if public_mutated else [])
-    return {
+    record = {
         "unit_id": unit["unit_id"],
         "mutant_sha": mutant_sha,
         "files_mutated": files_mutated,
         "public_mutated": public_mutated,
+        "operator_kind": operator_kind,
     }
+    if replacement_for_plugin is not None:
+        record["replacement_content_sha256"] = unit_content_sha256(replacement_for_plugin)
+    return record
 
 
-def generate_mutants(repo_root: Path, skill: str, baseline_ref: str, unit_ids: list[str] | None) -> dict:
+def generate_mutants(
+    repo_root: Path, skill: str, baseline_ref: str, unit_ids: list[str] | None, replacement_text: str | None = None
+) -> dict:
     """Resolve `baseline_ref`, split fresh at that commit, build one mutant
     commit per selected unit (default: every unit), and return the mutation
     manifest {"skill", "baseline_sha", "baseline_snapshot_sha", "units": [...]}.
@@ -486,7 +512,7 @@ def generate_mutants(repo_root: Path, skill: str, baseline_ref: str, unit_ids: l
     else:
         selected = list(units_by_id.keys())
     results = [
-        mutate_unit(repo_root, baseline_sha, units_by_id[unit_id], file_text, commit_date)
+        mutate_unit(repo_root, baseline_sha, units_by_id[unit_id], file_text, commit_date, replacement_text)
         for unit_id in selected
     ]
     return {

@@ -99,6 +99,9 @@ def main(argv: list[str] | None = None) -> int:
     if not report["experiment_valid"]:
         print("score_prompt_mutation_survival: EXPERIMENT-INVALID -- see experiment_invalid_reasons", file=sys.stderr)
         return 1
+    if not report.get("sentinels", {}).get("all_fired", True):
+        print("score_prompt_mutation_survival: SENTINEL-FAILURE -- see sentinels.failures", file=sys.stderr)
+        return 1
     return 0
 
 

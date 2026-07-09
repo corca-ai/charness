@@ -9,15 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: T1 (#426 parentless-snapshot blinding) complete; next slice
-  is T2 (rewrite operator + sentinel-witness scoring).
-- Current slice intent: T1 removed the parent-diff unblinding channel by
-  making baseline and mutant capture arms raw parentless snapshot SHAs with
-  identical commit-shape metadata and no live `refs/prompt-mutants/*`
-  dependency.
-- Next action: start T2 with the rewrite operator contract and sentinel
-  witness scoring tests; keep the duplicate-pressure hard-block signal in view
-  for final broad closeout.
+- Current slice: T2 (rewrite operator + sentinel-witness scoring) complete;
+  next slice is T3 (freeze slim text and run the blinded experiment).
+- Current slice intent: T2 added replace-unit mutation and producer-backed
+  all-arm sentinel witnesses so the step-7 slim experiment can be generated
+  and scored without hand-edited manifests.
+- Next action: freeze and fresh-eye critique the step-7 slim replacement text,
+  then run the four planned captures if the critique leaves the text shippable;
+  keep the duplicate-pressure hard-block signal in view for final broad
+  closeout.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof
   at closeout.
@@ -208,8 +208,8 @@ applied one-commit slim (evidence-green path) or an honest negative report
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| T1 | Parentless symmetric snapshot blinding in generate_prompt_mutants + capture config path; close #426 | Pilot proved the diff channel is the dominant leak; rewrite diffs read even better than deletion diffs | pytest green (parentless + shape-identity tests); issue_tool closeout draft/verify for #426; low test pressure (extends existing test file) | pending |
-| T2 | Replace-unit rewrite operator + manifest operator kind + **sentinel-witness scoring** (all-arm canary checks, distinct from causal witnesses) | T3's mutant is a rewrite, and its green condition is unscoreable without sentinels (F2) | pytest green (round-trip, manifest, sentinel evaluation incl. a sentinel-fails fixture); low test pressure | pending |
+| T1 | Parentless symmetric snapshot blinding in generate_prompt_mutants + capture config path; close #426 | Pilot proved the diff channel is the dominant leak; rewrite diffs read even better than deletion diffs | pytest green (parentless + shape-identity tests); issue_tool closeout draft/verify for #426; low test pressure (extends existing test file) | complete |
+| T2 | Replace-unit rewrite operator + manifest operator kind + **sentinel-witness scoring** (all-arm canary checks, distinct from causal witnesses) | T3's mutant is a rewrite, and its green condition is unscoreable without sentinels (F2) | pytest green (round-trip, manifest, sentinel evaluation incl. a sentinel-fails fixture); low test pressure | complete |
 | T3 | Freeze + pre-critique the slim text, then the experiment: 4 captures, sentinel witnesses + blinded pairwise judge + unblinding transcript sweep | The precisely-motivated compaction the pilot surfaced but could not test at section granularity; pre-critique keeps the captured tree shippable (F3) | frozen-text critique verdict; scorer + sentinel tables; judge verdicts under the pre-registered rule; sweep result; ≤8 budget | pending |
 | T4 | Conditional application of the frozen slim (green path, byte-identity + f84eb223-identity re-checked) or honest negative report (red path); policy-doc rewrite-class update | The experiment doubles as the ship-config proof only under byte-identity; the governing policy surface must model the new operator class (F7) | Applied: reviewed 2-file commit + equality check + policy update; Not applied: report section naming the failed channel | pending |
 
@@ -292,6 +292,20 @@ Routing step line form (record on ONE physical line):
 - Off-goal findings: none
 - Lessons carried forward: Keep baseline_sha as provenance only; baseline_snapshot_sha is the capture-facing baseline. Do not use refs/prompt-mutants during captures.
 - Metrics: subagent coding worker + causal/code critique reviewers used; live capture spend 0/8.
+
+### Slice 2: T2 rewrite operator and sentinel scoring
+
+- Objective: Add replace-unit mutation and all-arm sentinel witnesses for the T3 rewrite experiment.
+- Why this approach: Step-7 slim is a rewrite, not a deletion; its green condition requires non-causal canaries to fire in both baseline and mutant arms, which per-unit causal witnesses cannot express.
+- Commits: this T2 commit.
+- What changed: generator CLI/API supports `--replacement-text`; manifest unit records include `operator_kind` plus applied replacement hash for rewrites; generator emits top-level `sentinels` from repeatable `--sentinel`; scorer validates and reports sentinels, returns nonzero on sentinel failure, and preserves in-band invalid reports for missing bundles; rewrite splicing and sentinel scoring were split into cohesive helper modules; plugin script exports synced.
+- Alternatives rejected: Rejected hand-editing sentinels into manifests because that would make T3's proof non-reproducible; rejected substring public-sibling rewrites because duplicated prose can select the wrong section; rejected treating sentinel failures as green CLI exits.
+- Targeted verification: PASS `python3 -m ruff check scripts/prompt_mutant_rewrite_lib.py scripts/prompt_mutant_lib.py scripts/generate_prompt_mutants.py scripts/score_prompt_mutation_sentinel_lib.py scripts/score_prompt_mutation_survival_lib.py scripts/score_prompt_mutation_survival.py tests/test_generate_prompt_mutants.py tests/test_score_prompt_mutation_survival.py`; PASS `python3 -m pytest -q tests/test_generate_prompt_mutants.py tests/test_score_prompt_mutation_survival.py` (58 passed); PASS real handoff rewrite+sentinel generate probe at f84eb223: 35 units, top-level sentinels, rewrite operator hash, parentless baseline/mutant SHAs, no refs; PASS `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest`.
+- Critique: Fresh-eye reviewers found sentinel missing-bundle hard-raise, producer reachability gap, zero-run vacuous success, trace-marker caveat loss, newline-free rewrite boundary risk, ambiguous public duplicate risk, and green sentinel-failure CLI exit; all were fixed. Critique artifact: `charness-artifacts/critique/2026-07-09-t2-rewrite-sentinel-operator.md`.
+- Test duplication pressure: check_dup_ratchet.py --json hard-block vs origin/main: 8 new code families, 0 doc families; classified as accumulated local prompt-mutation-tool debt across the ahead-of-origin bundle, to resolve/classify before final broad closeout.
+- Off-goal findings: `docs/prompt-mutation-policy.md` still needs rewrite/sentinel operator semantics; deferred to T4 as already scoped because the policy should describe the applied/not-applied outcome after the experiment.
+- Lessons carried forward: T3 manifests must be generated with producer-backed `--sentinel` entries; sentinel failures are closeout-red even when causal unit verdicts remain valid.
+- Metrics: one coding worker and three fresh-eye reviewers used (one lower-power reviewer spawn hit model capacity and was replaced); live capture spend 0/8.
 
 ## Context Sources
 

@@ -204,6 +204,7 @@ def test_generate_mutates_identical_public_sibling(tmp_path: Path) -> None:
     record = result["units"][0]
     assert record["public_mutated"] is True
     assert "skills/public/x/SKILL.md" in record["files_mutated"]
+    assert "replacement_content_sha256" not in record
     mutated_public = _git(repo, "show", f"{record['mutant_sha']}:skills/public/x/SKILL.md")
     assert "Section A" not in mutated_public and "Content A." not in mutated_public
 
@@ -217,6 +218,96 @@ def test_generate_leaves_differing_public_sibling_untouched(tmp_path: Path) -> N
     assert record["files_mutated"] == ["plugins/charness/skills/x/SKILL.md"]
     mutated_public = _git(repo, "show", f"{record['mutant_sha']}:skills/public/x/SKILL.md")
     assert "Totally different wording." in mutated_public  # unchanged
+
+
+def test_generate_rewrites_unit_and_identical_public_sibling(tmp_path: Path) -> None:
+    repo, baseline_sha = _build_fixture_repo(tmp_path, public_section_a_body="Content A.\n")
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+    replacement_text = "## Replacement A\nReplacement body.\n"
+    result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id], replacement_text)
+    record = result["units"][0]
+    assert record["operator_kind"] == "rewrite"
+    assert record["replacement_content_sha256"] == lib.unit_content_sha256(replacement_text)
+    assert record["public_mutated"] is True
+    assert "skills/public/x/SKILL.md" in record["files_mutated"]
+
+    expected_plugin = (
+        "# X Skill\n"
+        "\n"
+        "## Replacement A\n"
+        "Replacement body.\n"
+        "## Section B\n"
+        "Content B."
+    )
+    mutated_plugin = _git(repo, "show", f"{record['mutant_sha']}:plugins/charness/skills/x/SKILL.md")
+    assert mutated_plugin == expected_plugin
+    mutated_public = _git(repo, "show", f"{record['mutant_sha']}:skills/public/x/SKILL.md")
+    assert mutated_public == expected_plugin
+
+
+def test_generate_rewrite_adds_boundary_newline_when_replacement_lacks_one(tmp_path: Path) -> None:
+    repo, baseline_sha = _build_fixture_repo(tmp_path, public_section_a_body="Content A.\n")
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+    replacement_text = "## Replacement A\nReplacement body."
+    result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id], replacement_text)
+    record = result["units"][0]
+    applied_text = replacement_text + "\n"
+    assert record["replacement_content_sha256"] == lib.unit_content_sha256(applied_text)
+
+    mutated_plugin = _git(repo, "show", f"{record['mutant_sha']}:plugins/charness/skills/x/SKILL.md")
+    assert "Replacement body.\n## Section B" in mutated_plugin
+
+
+def test_generate_leaves_ambiguous_public_duplicate_untouched(tmp_path: Path) -> None:
+    repo, baseline_sha = _build_fixture_repo(tmp_path, public_section_a_body="Content A.\n")
+    duplicate_public = (
+        "# X Skill\n"
+        "\n"
+        "## Section A\n"
+        "Content A.\n"
+        "\n"
+        "## Section A\n"
+        "Content A.\n"
+        "\n"
+        "## Section B\n"
+        "Content B.\n"
+    )
+    (repo / "skills" / "public" / "x" / "SKILL.md").write_text(duplicate_public, encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "duplicate public")
+    baseline_sha = _git(repo, "rev-parse", "HEAD")
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+
+    result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id], "## Replacement A\n")
+    record = result["units"][0]
+    assert record["public_mutated"] is False
+    assert record["files_mutated"] == ["plugins/charness/skills/x/SKILL.md"]
+    mutated_public = _git(repo, "show", f"{record['mutant_sha']}:skills/public/x/SKILL.md")
+    assert mutated_public.count("## Section A") == 2
+
+
+def test_generate_rewrites_only_plugin_when_public_differs(tmp_path: Path) -> None:
+    repo, baseline_sha = _build_fixture_repo(tmp_path, public_section_a_body="Totally different wording.\n")
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+    replacement_text = "## Replacement A\nReplacement body.\n"
+    result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id], replacement_text)
+    record = result["units"][0]
+    assert record["operator_kind"] == "rewrite"
+    assert record["public_mutated"] is False
+    assert record["files_mutated"] == ["plugins/charness/skills/x/SKILL.md"]
+    mutated_public = _git(repo, "show", f"{record['mutant_sha']}:skills/public/x/SKILL.md")
+    assert "Totally different wording." in mutated_public
+
+
+def test_generate_rewrite_is_idempotent(tmp_path: Path) -> None:
+    repo, baseline_sha = _build_fixture_repo(tmp_path)
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+    replacement_text = "## Replacement A\nReplacement body.\n"
+    first = lib.generate_mutants(repo, "x", baseline_sha, [unit_id], replacement_text)
+    second = lib.generate_mutants(repo, "x", baseline_sha, [unit_id], replacement_text)
+    assert first["baseline_snapshot_sha"] == second["baseline_snapshot_sha"]
+    assert first["units"][0]["mutant_sha"] == second["units"][0]["mutant_sha"]
+    assert first["units"][0]["replacement_content_sha256"] == second["units"][0]["replacement_content_sha256"]
 
 
 def test_generate_snapshot_commits_are_parentless_and_metadata_identical(tmp_path: Path) -> None:
@@ -404,6 +495,7 @@ def test_cli_generate_writes_manifest_and_cleanup_reports_deletion(tmp_path: Pat
     assert len(manifest["units"]) >= 1
     for record in manifest["units"]:
         assert "mutant_ref" not in record
+        assert record["operator_kind"] == "removal"
         assert len(record["mutant_sha"]) == 40
     assert lib.list_mutant_refs(repo, "x") == []
 
@@ -416,3 +508,59 @@ def test_cli_generate_writes_manifest_and_cleanup_reports_deletion(tmp_path: Pat
     rc = cli.main(["cleanup", "--repo-root", str(repo), "--skill", "x"])
     assert rc == 0
     assert created_refs and lib.list_mutant_refs(repo, "x") == []
+
+
+def test_cli_generate_rewrite_records_operator_and_hash(tmp_path: Path) -> None:
+    repo, baseline_sha = _build_fixture_repo(tmp_path)
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+    out_path = tmp_path / "mutants.json"
+    replacement_text = "## Replacement A\nReplacement body.\n"
+    rc = cli.main(
+        [
+            "generate",
+            "--repo-root",
+            str(repo),
+            "--skill",
+            "x",
+            "--baseline-ref",
+            baseline_sha,
+            "--unit-id",
+            unit_id,
+            "--replacement-text",
+            replacement_text,
+            "--sentinel",
+            "required_summary_fragment=slim-pointer.md",
+            "--sentinel",
+            json.dumps(
+                {
+                    "name": "planner marker",
+                    "channel": "trace_command_marker",
+                    "value": "scripts/plan.py",
+                    "deterministic": True,
+                    "reason": "planner should run",
+                }
+            ),
+            "--out",
+            str(out_path),
+        ]
+    )
+    assert rc == 0
+    manifest = json.loads(out_path.read_text(encoding="utf-8"))
+    assert manifest["units"][0]["operator_kind"] == "rewrite"
+    assert manifest["units"][0]["replacement_content_sha256"] == lib.unit_content_sha256(replacement_text)
+    assert manifest["sentinels"] == [
+        {
+            "channel": "required_summary_fragment",
+            "value": "slim-pointer.md",
+            "deterministic": True,
+            "name": None,
+            "reason": None,
+        },
+        {
+            "channel": "trace_command_marker",
+            "value": "scripts/plan.py",
+            "deterministic": True,
+            "name": "planner marker",
+            "reason": "planner should run",
+        },
+    ]

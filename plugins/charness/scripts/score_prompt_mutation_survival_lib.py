@@ -5,7 +5,7 @@ deterministic survival scorer for the prompt-mutation-pilot goal
 Reads a `run_skill_efficiency_ab.py` output dir (`results.json` + `preserved/
 <arm>__<i>/` bundles), a skill's checked-in witness map (`witness_coverage_lib`
 schema), and a `generate_prompt_mutants.py generate` manifest (unit_id ->
-mutant ref/SHA), and computes a per-mutant-unit DETECTED / NO-OBSERVED-EFFECT /
+parentless snapshot SHA), and computes a per-mutant-unit DETECTED / NO-OBSERVED-EFFECT /
 INVALID-FOR-VERDICT verdict from three deterministic detection channels ONLY
 (never a cautilus judge channel -- no judge-kind grading in this pilot's
 survival scoring, per the goal's Boundaries):
@@ -42,6 +42,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from score_prompt_mutation_sentinel_lib import manifest_sentinels, score_sentinels, sentinel_label
 from witness_coverage_lib import WitnessCoverageError, load_witness_map
 
 # Deterministic-only: `judge` is a valid witness-map channel (schema-modeled
@@ -369,6 +370,7 @@ def score_survival(
     skill = manifest.get("skill")
     if not isinstance(skill, str) or not skill:
         raise SurvivalScorerError(f"mutant manifest missing 'skill': {mutant_manifest_path}")
+    sentinels = manifest_sentinels(manifest, DETERMINISTIC_CHANNELS, SurvivalScorerError)
 
     baseline_arm = next(name for name, value in arm_specs.items() if value == BASELINE_MARKER)
     mutant_specs = {name: value for name, value in arm_specs.items() if name != baseline_arm}
@@ -376,11 +378,13 @@ def score_survival(
 
     triples = _witness_triples(mutant_units)
     baseline_block, invalid_reasons = _score_baseline(ab_dir, baseline_arm, runs_by_arm.get(baseline_arm, []), triples)
+    sentinel_report = score_sentinels(ab_dir, arm_specs, runs_by_arm, sentinels, evaluate_witness, SurvivalScorerError)
 
     if invalid_reasons:
         return {
             "scenario": scenario,
             "baseline": baseline_block,
+            "sentinels": sentinel_report,
             "units": [],
             "experiment_valid": False,
             "experiment_invalid_reasons": invalid_reasons,
@@ -390,7 +394,13 @@ def score_survival(
         _score_mutant_unit(ab_dir, arm_name, info, runs_by_arm.get(arm_name, []))
         for arm_name, info in mutant_units.items()
     ]
-    return {"scenario": scenario, "baseline": baseline_block, "units": units_out, "experiment_valid": True}
+    return {
+        "scenario": scenario,
+        "baseline": baseline_block,
+        "sentinels": sentinel_report,
+        "units": units_out,
+        "experiment_valid": True,
+    }
 
 
 # --- markdown rendering ------------------------------------------------------
@@ -403,6 +413,32 @@ def render_markdown(report: dict) -> str:
         f"Baseline arm `{baseline['arm']}`: {baseline['runs']} run(s), "
         f"witnesses_all_fired={baseline['witnesses_all_fired']}"
     )
+    lines.append("")
+    sentinels = report.get("sentinels") or {
+        "all_fired": True,
+        "definitions": [],
+        "per_arm": [],
+        "failures": [],
+        "caveats": [],
+    }
+    lines.append(
+        f"Sentinels: {len(sentinels['definitions'])} configured, all_fired={sentinels['all_fired']}"
+    )
+    for arm in sentinels["per_arm"]:
+        lines.append(f"- arm `{arm['arm']}`: {arm['runs']} run(s), all_fired={arm['all_fired']}")
+        for run in arm["per_run"]:
+            details = ", ".join(
+                f"{sentinel_label(w)}={'yes' if w['fired'] else 'no'}" for w in run["witnesses"]
+            ) or "no sentinels configured"
+            lines.append(f"  - run {run['run']} ({run['bundle']}): {details}")
+    for failure in sentinels["failures"]:
+        witness = failure["witness"]
+        lines.append(
+            f"- SENTINEL-FAILURE arm `{failure['arm']}` run {failure['run']} ({failure['bundle']}): "
+            f"{sentinel_label(witness)} -- {failure['reason']}"
+        )
+    for caveat in sentinels.get("caveats", []):
+        lines.append(f"- SENTINEL-CAVEAT: {caveat}")
     lines.append("")
     if not report["experiment_valid"]:
         lines.append("## EXPERIMENT-INVALID -- no mutant verdicts emitted")
