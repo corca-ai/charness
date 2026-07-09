@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -239,6 +240,37 @@ def test_generate_ref_exists_and_manifest_records_full_sha(tmp_path: Path) -> No
     ref_sha = _git(repo, "rev-parse", record["mutant_ref"])
     assert ref_sha == record["mutant_sha"]
     assert len(record["mutant_sha"]) == 40  # full SHA, not abbreviated -- refs may be deleted later
+
+
+def test_generate_ref_name_is_digest_only_no_unit_slug(tmp_path: Path) -> None:
+    # F5-class leak check (plan-critique, S1+S2 fresh-eye review): the ref LEAF
+    # must be digest-only -- no unit slug or heading name -- since a captured
+    # run can enumerate refs or read `git log --decorate` and a unit-named
+    # leaf would reveal which section was removed without even reading a diff.
+    repo, baseline_sha = _build_fixture_repo(tmp_path)
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+    result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id])
+    record = result["units"][0]
+    assert re.fullmatch(r"refs/prompt-mutants/x/[0-9a-f]{64}", record["mutant_ref"])
+    assert "section" not in record["mutant_ref"].lower()
+    assert "a" != record["mutant_ref"].rsplit("/", 1)[-1]  # not a bare slug either
+
+
+def test_generate_commit_date_matches_baseline_committer_date(tmp_path: Path) -> None:
+    # F5-class leak check: a fixed 2000-01-01 epoch on a mutant whose parent is
+    # a real (e.g. 2026-dated) baseline is itself an arm-asymmetric oddity a
+    # captured run's `git log -1` could notice. The mutant must instead reuse
+    # the baseline commit's OWN committer date for both author and committer.
+    repo, baseline_sha = _build_fixture_repo(tmp_path)
+    unit_id = _section_a_unit_id(repo, baseline_sha)
+    result = lib.generate_mutants(repo, "x", baseline_sha, [unit_id])
+    mutant_sha = result["units"][0]["mutant_sha"]
+    baseline_date = _git(repo, "show", "-s", "--format=%cd", "--date=raw", baseline_sha)
+    mutant_author_date = _git(repo, "show", "-s", "--format=%ad", "--date=raw", mutant_sha)
+    mutant_committer_date = _git(repo, "show", "-s", "--format=%cd", "--date=raw", mutant_sha)
+    assert mutant_author_date == baseline_date
+    assert mutant_committer_date == baseline_date
+    assert "946684800" not in baseline_date  # sanity: not accidentally the old fixed epoch
 
 
 def test_generate_is_idempotent(tmp_path: Path) -> None:

@@ -41,12 +41,17 @@ _FENCE_RE = re.compile(r"^(`{3,}|~{3,})")
 
 MUTANT_REF_PREFIX = "refs/prompt-mutants"
 NEUTRAL_COMMIT_MESSAGE = "chore: snapshot"
-# Fixed neutral identity/date (#423-class leak, plan-critique F5): a
-# descriptive message or a real timestamp would let a captured run read which
-# unit was removed, or that it is in an experiment, via `git log`.
+# Fixed neutral identity (#423-class leak, plan-critique F5): a descriptive
+# message would let a captured run read which unit was removed, or that it is
+# in an experiment, via `git log`. The commit DATE deliberately does NOT use a
+# fixed epoch: it reuses the baseline commit's own committer date (see
+# `resolve_baseline_committer_date` below), because a mutant timestamped
+# 2000-01-01 as the child of a real (e.g. 2026-dated) baseline is itself an
+# arm-asymmetric oddity a captured run's `git log -1` could notice. Reusing
+# the baseline's own date keeps every mutant commit dated identically to its
+# parent -- still fully deterministic per baseline, just not a giveaway.
 NEUTRAL_AUTHOR_NAME = "charness"
 NEUTRAL_AUTHOR_EMAIL = "charness@example.invalid"
-NEUTRAL_GIT_DATE = "946684800 +0000"  # 2000-01-01T00:00:00Z, fixed for determinism
 
 
 class PromptMutantError(RuntimeError):
@@ -251,15 +256,20 @@ def list_skill_files_at_ref(repo_root: Path, ref: str, skill: str) -> list[tuple
 
 
 def read_file_at_ref(repo_root: Path, ref: str, relpath: str) -> str | None:
+    """Read `relpath` at `ref` via `git show`, decoding the captured bytes as
+    UTF-8 EXPLICITLY -- never `subprocess.run(..., text=True)`'s locale-
+    dependent decode. A locale-default decode can hash-drift a unit id across
+    machines/CI (a different codec for the same em-dash bytes changes
+    `unit_content_sha256`) or crash outright under a `C`/`POSIX` locale, even
+    though this repo's skill prose is UTF-8 by convention."""
     result = subprocess.run(
         ["git", "-C", str(repo_root), "show", f"{ref}:{relpath}"],
         capture_output=True,
-        text=True,
         check=False,
     )
     if result.returncode != 0:
         return None
-    return result.stdout
+    return result.stdout.decode("utf-8")
 
 
 # --- split manifest (used by the `split` CLI subcommand) --------------------
@@ -319,6 +329,15 @@ def resolve_baseline_sha(repo_root: Path, baseline_ref: str) -> str:
     return _run_git(repo_root, ["rev-parse", baseline_ref])
 
 
+def resolve_baseline_committer_date(repo_root: Path, baseline_sha: str) -> str:
+    """The baseline commit's own committer date, in git's `--date=raw` form
+    (`<unix-seconds> <tz-offset>` -- directly usable as GIT_AUTHOR_DATE /
+    GIT_COMMITTER_DATE). Deterministic per baseline (same input, same output
+    every call) and never a fixed epoch a real baseline's child would
+    visibly mismatch (#423-class leak, plan-critique F5)."""
+    return _run_git(repo_root, ["show", "-s", "--format=%cd", "--date=raw", baseline_sha])
+
+
 def _hash_object(repo_root: Path, content: str) -> str:
     return _run_git(repo_root, ["hash-object", "-w", "--stdin"], input_text=content)
 
@@ -330,11 +349,16 @@ def build_mutant_commit(
     new_plugin_content: str,
     public_path: str | None,
     new_public_content: str | None,
+    commit_date: str,
 ) -> str:
     """One mutant commit whose tree equals `baseline_sha`'s tree except
     `plugin_path` (and `public_path`, when given) are replaced -- built purely
     via a TEMPORARY `GIT_INDEX_FILE`, `read-tree`/`update-index --cacheinfo`/
-    `write-tree`/`commit-tree`. Never touches the real index or working tree."""
+    `write-tree`/`commit-tree`. Never touches the real index or working tree.
+    `commit_date` is the baseline commit's own committer date (see
+    `resolve_baseline_committer_date`), reused for BOTH author and committer
+    date so the mutant shares its parent's timestamp instead of a fixed
+    epoch."""
     with tempfile.TemporaryDirectory(prefix="charness-prompt-mutant-") as tmp:
         index_path = str(Path(tmp) / "index")
         index_env = {**os.environ, "GIT_INDEX_FILE": index_path}
@@ -351,22 +375,23 @@ def build_mutant_commit(
         **os.environ,
         "GIT_AUTHOR_NAME": NEUTRAL_AUTHOR_NAME,
         "GIT_AUTHOR_EMAIL": NEUTRAL_AUTHOR_EMAIL,
-        "GIT_AUTHOR_DATE": NEUTRAL_GIT_DATE,
+        "GIT_AUTHOR_DATE": commit_date,
         "GIT_COMMITTER_NAME": NEUTRAL_AUTHOR_NAME,
         "GIT_COMMITTER_EMAIL": NEUTRAL_AUTHOR_EMAIL,
-        "GIT_COMMITTER_DATE": NEUTRAL_GIT_DATE,
+        "GIT_COMMITTER_DATE": commit_date,
     }
     return _run_git(repo_root, ["commit-tree", tree_sha, "-p", baseline_sha, "-m", NEUTRAL_COMMIT_MESSAGE], env=commit_env)
 
 
-def mutant_ref_name(skill: str, unit_id: str) -> str:
-    """`refs/prompt-mutants/<skill>/<short-unit-slug>`: the slug portion of
-    `unit_id` is already flattened/slugified, so its last path component plus
-    the id's own hash suffix is short, ref-safe, and collision-free."""
-    slug_and_hash = unit_id.split("#", 1)[-1]
-    slug, _, digest = slug_and_hash.rpartition("@")
-    leaf = slug.rsplit("/", 1)[-1] or "unit"
-    return f"{MUTANT_REF_PREFIX}/{skill}/{leaf}-{digest}"
+def mutant_ref_name(skill: str, content_sha256: str) -> str:
+    """`refs/prompt-mutants/<skill>/<content-sha256>` -- DIGEST-ONLY, with NO
+    unit slug or heading name in the leaf. A captured run can enumerate refs
+    (or read `git log --decorate`), and a unit-named leaf (the previous
+    `<slug>-<hash>` shape) would leak which section was removed just from the
+    ref name, even without reading the diff. The manifest (unit_id -> ref/SHA)
+    is the only place that maps a unit back to its ref; nothing about the ref
+    name itself should be legible."""
+    return f"{MUTANT_REF_PREFIX}/{skill}/{content_sha256}"
 
 
 def collect_baseline_units(repo_root: Path, baseline_sha: str, skill: str) -> tuple[dict[str, dict], dict[str, str]]:
@@ -396,7 +421,9 @@ def collect_baseline_units(repo_root: Path, baseline_sha: str, skill: str) -> tu
     return units_by_id, file_text
 
 
-def mutate_unit(repo_root: Path, skill: str, baseline_sha: str, unit: dict, file_text: dict[str, str]) -> dict:
+def mutate_unit(
+    repo_root: Path, skill: str, baseline_sha: str, unit: dict, file_text: dict[str, str], commit_date: str
+) -> dict:
     """Build and ref one mutant for `unit`. The public sibling is mutated too
     only when it contains the exact unit content (match by content); otherwise
     only the plugin path is mutated and `public_mutated` is False."""
@@ -417,8 +444,9 @@ def mutate_unit(repo_root: Path, skill: str, baseline_sha: str, unit: dict, file
         new_plugin_content,
         public_path if public_mutated else None,
         new_public_content if public_mutated else None,
+        commit_date,
     )
-    mutant_ref = mutant_ref_name(skill, unit["unit_id"])
+    mutant_ref = mutant_ref_name(skill, unit["content_sha256"])
     _run_git(repo_root, ["update-ref", mutant_ref, mutant_sha])
     files_mutated = [plugin_path] + ([public_path] if public_mutated else [])
     return {
@@ -435,9 +463,12 @@ def generate_mutants(repo_root: Path, skill: str, baseline_ref: str, unit_ids: l
     commit per selected unit (default: every unit), and return the mutation
     manifest {"skill", "baseline_sha", "units": [...]}. Re-running with the
     same inputs reproduces the same mutant SHAs (the commit's tree/parent/
-    message/identity/date are all deterministic), so refs are updated in
-    place -- idempotent by construction, not by a separate existence check."""
+    message/identity/date are all deterministic -- the date is the baseline
+    commit's own committer date, resolved once per baseline_sha), so refs are
+    updated in place -- idempotent by construction, not by a separate
+    existence check."""
     baseline_sha = resolve_baseline_sha(repo_root, baseline_ref)
+    commit_date = resolve_baseline_committer_date(repo_root, baseline_sha)
     units_by_id, file_text = collect_baseline_units(repo_root, baseline_sha, skill)
     if unit_ids:
         missing = [unit_id for unit_id in unit_ids if unit_id not in units_by_id]
@@ -448,7 +479,10 @@ def generate_mutants(repo_root: Path, skill: str, baseline_ref: str, unit_ids: l
         selected = unit_ids
     else:
         selected = list(units_by_id.keys())
-    results = [mutate_unit(repo_root, skill, baseline_sha, units_by_id[unit_id], file_text) for unit_id in selected]
+    results = [
+        mutate_unit(repo_root, skill, baseline_sha, units_by_id[unit_id], file_text, commit_date)
+        for unit_id in selected
+    ]
     return {"skill": skill, "baseline_sha": baseline_sha, "units": results}
 
 

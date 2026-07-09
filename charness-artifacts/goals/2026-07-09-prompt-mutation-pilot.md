@@ -9,16 +9,24 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S2 — witness map schema + `witness_coverage.py` + seeded
-  handoff refresh-scenario map. Pilot scenario DECIDED: **refresh**
-  (3 deterministic floors: RCF spill-targets.md + RSF `Refresh kept:` /
-  `Refresh non-claims:`); witnessed units: bootstrap / workflow /
-  closeout-vocabulary → S3 budget 8 captures (baseline 2 + 3×2), 4 headroom.
-- Current slice intent: land the offline coverage verdict tool with tests and
-  the causally-rationalized pilot witness map; spans the S2 commit(s) only.
-- Next action: S2 implementation in a lower-power coding subagent (main loop
-  authored the causal analysis); then S1+S2 bundle fresh-eye critique before
-  any S3 capture spend.
+- Current slice: S3 — live pilot. Pre-capture fixes from the S1+S2 bundle
+  critique (reviewer `a74cc813cbaec832c`, PROCEED-AFTER-FIXES): (a) baseline
+  pinned to pre-S1 **`f84eb223`** — HEAD's tree carries the witness map, goal
+  artifact, and prompt-mutation commit messages, a blueprint-contamination
+  channel a refresh run would faithfully read (handoff surfaces byte-identical
+  at that ref, unit ids unchanged); (b) new deterministic survival scorer
+  (trace marker over trace-digest.jsonl with stream.jsonl fallback,
+  per-fragment attribution via observed.v1.json `Claim failures:`,
+  baseline-validity refusal) — do NOT extend outcome-assertions.json (it
+  applies to all four handoff scenarios); (c) digest-only mutant ref leaves +
+  baseline committer date (decorate/log identity channels). Run with
+  `--keep-runs`. Bootstrap arm's RCF is survival-biased (spill-targets.md
+  named in 3 other prose spots) — read RCF-only survival skeptically; trace
+  marker is the sharper witness.
+- Current slice intent: S3-prep hardening + scorer, then baseline N=2 + 3
+  mutant arms × N=2 = 8 captures within the ≤12 bound.
+- Next action: S3-prep coding subagent (lib hardening + scorer + tests), then
+  generate mutants at f84eb223, write A/B config, run captures in background.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -258,6 +266,20 @@ per the bullets above when that boundary is crossed):
 - Off-goal findings: none
 - Lessons carried forward: Coding subagent flagged CRLF round-trip as a latent non-claim (repo markdown is all-LF); nested units overlap parents — S3 arm selection must avoid overlapping unit picks
 - Metrics: subagent ~179k tokens, 51 tool uses, ~16m
+
+### Slice 2: S2 witness coverage
+
+- Objective: Static witness-coverage verdict tool + causally-rationalized handoff refresh witness map; pilot scenario decision
+- Why this approach: Zero-cost half of the value; decides which mutants earn capture spend. Refresh scenario chosen: 3 deterministic floors vs 1 elsewhere
+- Commits: d1c815c5
+- What changed: scripts/witness_coverage{,_lib}.py, tests/test_witness_coverage.py, evals/cautilus/handoff-claim-fidelity/witness-map.json, plugin mirrors, goal frame
+- Alternatives rejected: Rejected auto-deriving witnesses from spec floors alone (F2: channel existence is not causal sensitivity); rejected full-hash map keys (stale on any edit) for hash-less prefixes with fatal stale/ambiguous resolution; rejected judge-channel scoring (cautilus ask-before-run; modeled but unspent)
+- Targeted verification: 39 tests green (13 new + 26 S1 regression); real-repo smoke witnessed=3/untested=30/excluded=2 with all 27 reference-body units UNTESTED unmapped; run_slice_closeout.py --skip-broad-pytest all PASS
+- Test duplication pressure: New standalone test file; validate_claim_fidelity_specs/validate_outcome_assertions pass on the new eval-dir file; broad-gate sample deferred to closeout lock
+- Critique: Main loop authored the causal analysis; S1+S2 bundle fresh-eye critique is the next action before S3 capture spend (risk boundary)
+- Off-goal findings: none
+- Lessons carried forward: Witness map schema hard-requires reason on untested/excluded — keeps the debt list honest; S3 budget improves to 8 captures + 4 headroom with only 3 witnessed units
+- Metrics: subagent ~143k tokens, 66 tool uses, ~8m
 
 ## Context Sources
 
