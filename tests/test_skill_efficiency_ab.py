@@ -22,6 +22,10 @@ ab = load_script_module("run_skill_efficiency_ab_under_test", ROOT / "scripts" /
 # the preserved outputs/ and transcript; import it to prove producer->consumer end-to-end.
 import grade_skill_outcome as grader  # noqa: E402  (scripts/ added to sys.path above)
 
+CAPTURE_SCRIPT_PATH = ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh"
+CAPTURE_SCRIPT_TEXT = CAPTURE_SCRIPT_PATH.read_text(encoding="utf-8")
+CAPTURE_SCRIPT_LINES = CAPTURE_SCRIPT_TEXT.splitlines()
+
 
 def test_aggregate_metrics_basic() -> None:
     runs = [
@@ -229,8 +233,7 @@ def test_capture_script_records_base_before_the_captured_run() -> None:
     # commit and advance HEAD. No live capture exercises that bash emit, and _capture_base
     # falls back to "HEAD" when the marker is absent — which would SILENTLY reintroduce the
     # diff-vs-HEAD bug — so pin the emit's presence and ordering here.
-    lines = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(
-        encoding="utf-8").splitlines()
+    lines = CAPTURE_SCRIPT_LINES
     emit = next((i for i, ln in enumerate(lines) if "rev-parse HEAD" in ln and "base-commit.txt" in ln), None)
     worktree_add = next((i for i, ln in enumerate(lines) if "worktree add --detach" in ln), None)
     # The actual captured invocation, not the comment that merely mentions `claude -p`.
@@ -248,7 +251,7 @@ def test_capture_script_run_cwd_defaults_to_worktree_and_guards_missing_dir() ->
     # the throwaway worktree), and a nonexistent --run-cwd must refuse before spending a
     # live `claude -p` run. No live capture exercises the default fallback, so pin both
     # the fallback expansion and the existence guard statically.
-    text = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(encoding="utf-8")
+    text = CAPTURE_SCRIPT_TEXT
     assert 'run_dir="${run_cwd:-$wt}"' in text, "--run-cwd must default to the worktree"
     assert '--run-cwd dir does not exist' in text, "a missing --run-cwd dir must refuse pre-run"
     lines = text.splitlines()
@@ -264,7 +267,7 @@ def test_capture_script_keeps_run_visible_state_out_of_out_dir() -> None:
     # agent can see — its cwd, its worktree, its config dir, its hooks dir, or the
     # redirect targets a `readlink /proc/self/fd/1` could expose. All run-visible
     # state must live under a neutral `mktemp -d` base instead.
-    text = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(encoding="utf-8")
+    text = CAPTURE_SCRIPT_TEXT
     assert 'run_base="$(mktemp -d)"' in text
     assert 'wt="$run_base/' in text and 'wt="$out_dir/worktree"' not in text
     assert 'cfg="$run_base/config"' in text and 'cfg="$out_dir/config"' not in text
@@ -276,7 +279,7 @@ def test_capture_script_keeps_run_visible_state_out_of_out_dir() -> None:
 def test_capture_script_refuses_run_cwd_under_out_dir() -> None:
     # #423: --run-cwd under --out-dir would let the captured run read grader
     # siblings (justification.md) via `..` and see its own eval identity in cwd.
-    text = (ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh").read_text(encoding="utf-8")
+    text = CAPTURE_SCRIPT_TEXT
     assert '--run-cwd must not live under --out-dir' in text
     assert "warning: --run-cwd path contains the out-dir name" in text
 
@@ -435,7 +438,10 @@ def test_run_refuses_when_selftest_fails(tmp_path: Path, monkeypatch: pytest.Mon
     # The load-bearing honesty fix: --run gates on the self-test and never spends
     # (never reaches run_ab) when the instruments are not trustworthy.
     cfg = tmp_path / "c.json"
-    cfg.write_text(json.dumps({"name": "x", "spec_path": "s", "runs": 1, "arms": []}), encoding="utf-8")
+    cfg.write_text(
+        json.dumps({"name": "x", "spec_path": "s", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}),
+        encoding="utf-8",
+    )
     spent = {"ran": False}
     monkeypatch.setattr(ab, "selftest", lambda repo_root: 1)
     monkeypatch.setattr(ab, "run_ab", lambda *a, **k: spent.__setitem__("ran", True) or {})
@@ -446,11 +452,55 @@ def test_run_refuses_when_selftest_fails(tmp_path: Path, monkeypatch: pytest.Mon
 
 def test_run_proceeds_when_selftest_passes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     cfg = tmp_path / "c.json"
-    cfg.write_text(json.dumps({"name": "x", "spec_path": "s", "runs": 1, "arms": []}), encoding="utf-8")
+    cfg.write_text(
+        json.dumps({"name": "x", "spec_path": "s", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}),
+        encoding="utf-8",
+    )
     monkeypatch.setattr(ab, "selftest", lambda repo_root: 0)
     monkeypatch.setattr(ab, "run_ab", lambda *a, **k: {"report": "R", "aggregate": {}, "runs": []})
     rc = ab.main(["--run", str(cfg), "--repo-root", str(tmp_path), "--out-dir", str(tmp_path / "out")])
     assert rc == 0
+
+
+def test_run_refuses_empty_arms_before_spend(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys) -> None:
+    cfg = tmp_path / "c.json"
+    cfg.write_text(json.dumps({"name": "x", "spec_path": "s", "runs": 1, "arms": []}), encoding="utf-8")
+    called = {"run_ab": False}
+    monkeypatch.setattr(ab, "selftest", lambda repo_root: 0)
+    monkeypatch.setattr(ab, "run_ab", lambda *a, **k: called.__setitem__("run_ab", True) or {})
+    rc = ab.main(["--run", str(cfg), "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr()
+    assert rc == 1
+    assert called["run_ab"] is False
+    assert "refusing --run: `arms` must be a non-empty list" in captured.err
+
+
+@pytest.mark.parametrize(
+    "name,expected",
+    [
+        ("", "`name` must be a non-empty string"),
+        ("../x", "invalid config name"),
+        ("x/y", "invalid config name"),
+        ("x\\y", "invalid config name"),
+    ],
+)
+def test_run_refuses_invalid_name_for_default_results_dir(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+    name: str,
+    expected: str,
+) -> None:
+    cfg = tmp_path / "c.json"
+    cfg.write_text(
+        json.dumps({"name": name, "spec_path": "s", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(ab, "selftest", lambda repo_root: 0)
+    rc = ab.main(["--run", str(cfg), "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr()
+    assert rc == 1
+    assert f"refusing --run: {expected}" in captured.err
 
 
 def test_main_requires_a_mode(tmp_path: Path) -> None:
@@ -543,6 +593,98 @@ def test_run_ab_skips_failed_preserves_and_cleans(tmp_path: Path, monkeypatch: p
     assert (tmp_path / "res" / "results.json").is_file()
     assert (tmp_path / "res" / "preserved" / "a__0" / "observed.v1.json").is_file()  # preserve-copy ran
     assert len(cleaned) == 2  # cleanup ran for both runs (success + skipped)
+
+
+@pytest.mark.parametrize("runs", [0, -1])
+def test_run_ab_rejects_nonpositive_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, runs: int) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "P"}), encoding="utf-8")
+    config = {"name": "t", "spec_path": "spec.json", "runs": runs, "arms": [{"name": "a", "ref": "HEAD"}]}
+
+    def _forbid_run_one(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("run_one must not run")
+
+    def _forbid_cleanup(_repo: Path, _out_dir: Path) -> None:
+        raise AssertionError("cleanup must not run")
+
+    monkeypatch.setattr(ab, "run_one", _forbid_run_one)
+    monkeypatch.setattr(ab, "_cleanup_run", _forbid_cleanup)
+    with pytest.raises(ValueError, match=r"`runs` must be a positive integer"):
+        ab.run_ab(tmp_path, config, tmp_path / "res", 600, keep_runs=False)
+    assert not (tmp_path / "res").exists()
+
+
+def test_run_ab_rejects_empty_arms(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "P"}), encoding="utf-8")
+    config = {"name": "t", "spec_path": "spec.json", "runs": 1, "arms": []}
+
+    def _forbid_run_one(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("run_one must not run")
+
+    def _forbid_cleanup(_repo: Path, _out_dir: Path) -> None:
+        raise AssertionError("cleanup must not run")
+
+    monkeypatch.setattr(ab, "run_one", _forbid_run_one)
+    monkeypatch.setattr(ab, "_cleanup_run", _forbid_cleanup)
+    with pytest.raises(ValueError, match=r"`arms` must be a non-empty list"):
+        ab.run_ab(tmp_path, config, tmp_path / "res", 600, keep_runs=False)
+    assert not (tmp_path / "res").exists()
+
+
+@pytest.mark.parametrize("name", ["", "bad/name"])
+def test_run_ab_rejects_invalid_arm_name(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, name: str) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "P"}), encoding="utf-8")
+    config = {"name": "t", "spec_path": "spec.json", "runs": 1, "arms": [{"name": name, "ref": "HEAD"}]}
+
+    def _forbid_run_one(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("run_one must not run")
+
+    monkeypatch.setattr(ab, "run_one", _forbid_run_one)
+    with pytest.raises(ValueError, match="invalid arm name"):
+        ab.run_ab(tmp_path, config, tmp_path / "res", 600, keep_runs=False)
+    assert not (tmp_path / "res").exists()
+
+
+def test_run_ab_rejects_malformed_arm_entry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config = {"name": "t", "spec_path": "spec.json", "runs": 1, "arms": ["not-an-arm"]}
+
+    def _forbid_run_one(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("run_one must not run")
+
+    monkeypatch.setattr(ab, "run_one", _forbid_run_one)
+    with pytest.raises(ValueError, match="each arm must be an object"):
+        ab.run_ab(tmp_path, config, tmp_path / "res", 600, keep_runs=False)
+    assert not (tmp_path / "res").exists()
+
+
+def test_run_ab_preserves_stream_jsonl(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "P"}), encoding="utf-8")
+    config = {"name": "t", "spec_path": "spec.json", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}
+    monkeypatch.setattr(ab, "_cleanup_run", lambda _repo, _out: None)
+
+    def fake_run_one(_repo, _ref, _inv, _spec, out_dir, _timeout):
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "observed.v1.json").write_text(json.dumps({"evaluations": [{"summary": "Execution of /hitl", "outcome": "passed", "metrics": {}}]}), encoding="utf-8")
+        (out_dir / "trace-digest.jsonl").write_text("{}\n", encoding="utf-8")
+        (out_dir / "stream.jsonl").write_text('{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"ok"}]}}\n', encoding="utf-8")
+        return {"outcome": "passed", "total_tokens": 100, "tool_count": 4, "output_lines": 1}
+
+    monkeypatch.setattr(ab, "run_one", fake_run_one)
+    result = ab.run_ab(tmp_path, config, tmp_path / "res", 600, keep_runs=True)
+    assert result["aggregate"]["a"]["n"] == 1
+    assert (tmp_path / "res" / "preserved" / "a__0" / "stream.jsonl").is_file()
+    assert (tmp_path / "res" / "preserved" / "a__0" / "stream.jsonl").read_text(encoding="utf-8").startswith('{"type":"assistant"')
+
+
+def test_gitignore_blocks_preserved_efficiency_stream_jsonl() -> None:
+    # Raw stream files are useful for local scorer fallback but should not become
+    # committed efficiency artifacts; transcript.txt and trace-digest.jsonl remain
+    # the durable checked-in evidence shape.
+    gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    assert "charness-artifacts/efficiency/**/preserved/**/stream.jsonl" in gitignore
 
 
 def test_run_ab_auto_grades_when_assertion_set_present(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

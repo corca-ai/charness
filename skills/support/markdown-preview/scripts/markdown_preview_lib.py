@@ -145,14 +145,33 @@ def merge_cli(
     )
 
 
-def _expand_pattern(repo_root: Path, pattern: str) -> list[Path]:
+def _expand_pattern(repo_root: Path, pattern: str) -> tuple[list[Path], list[str]]:
+    root = repo_root.resolve()
     raw_path = Path(pattern)
     if raw_path.is_absolute():
-        return [raw_path] if raw_path.is_file() else []
+        resolved = raw_path.resolve()
+        if not resolved.is_relative_to(root):
+            return [], [f"Skipping absolute path outside repo root: {resolved}"]
+        return ([resolved] if resolved.is_file() else []), []
     if any(char in pattern for char in GLOB_CHARS):
-        return sorted(path for path in repo_root.glob(pattern) if path.is_file())
+        matches: list[Path] = []
+        warnings: list[str] = []
+        for path in repo_root.glob(pattern):
+            if not path.is_file():
+                continue
+            resolved = path.resolve()
+            if not resolved.is_relative_to(root):
+                warnings.append(f"Skipping path outside repo root: {resolved}")
+                continue
+            matches.append(path)
+        return sorted(matches), warnings
     candidate = repo_root / pattern
-    return [candidate] if candidate.is_file() else []
+    if not candidate.is_file():
+        return [], []
+    resolved = candidate.resolve()
+    if not resolved.is_relative_to(root):
+        return [], [f"Skipping path outside repo root: {resolved}"]
+    return [candidate], []
 
 
 def _changed_markdown_paths(repo_root: Path) -> tuple[set[str], list[str]]:
@@ -189,9 +208,11 @@ def select_targets(repo_root: Path, config: PreviewConfig) -> tuple[list[Path], 
     seen: set[Path] = set()
     selected: list[Path] = []
     for pattern in config.include:
-        matches = _expand_pattern(repo_root, pattern)
+        matches, expansion_warnings = _expand_pattern(repo_root, pattern)
+        warnings.extend(expansion_warnings)
         if not matches:
-            warnings.append(f"No Markdown files matched `{pattern}`.")
+            if not expansion_warnings:
+                warnings.append(f"No Markdown files matched `{pattern}`.")
             continue
         for path in matches:
             resolved = path.resolve()

@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -66,6 +67,29 @@ REPO_ROOT = repo_root_from_script(__file__)
 AGENT_RUNTIME = Path("scripts/agent-runtime")
 CAPTURE_SCRIPT = AGENT_RUNTIME / "capture-skill-run.sh"
 OBSERVE_SCRIPT = AGENT_RUNTIME / "build-skill-execution-observation.mjs"
+ARM_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+CONFIG_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def _validate_run_spec(runs: int, arms: list[dict]) -> None:
+    if runs <= 0:
+        raise ValueError("`runs` must be a positive integer")
+    if not isinstance(arms, list) or not arms:
+        raise ValueError("`arms` must be a non-empty list")
+    for arm in arms:
+        if not isinstance(arm, dict):
+            raise ValueError("each arm must be an object")
+        name = arm.get("name", "")
+        if not isinstance(name, str) or not ARM_NAME_RE.fullmatch(name):
+            raise ValueError(f"invalid arm name: {name!r}")
+
+
+def _validate_default_results_name(name: object) -> str:
+    if not isinstance(name, str) or not name:
+        raise ValueError("`name` must be a non-empty string")
+    if not CONFIG_NAME_RE.fullmatch(name):
+        raise ValueError(f"invalid config name: {name!r}")
+    return name
 
 
 # --- pure aggregation / comparison (unit-tested) ---------------------------------
@@ -269,6 +293,7 @@ def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, k
     agg_by_arm: dict = {}
     outcome_by_arm: dict = {}
     gate = outcome.GraderGate()
+    _validate_run_spec(runs, config["arms"])
     results_dir.mkdir(parents=True, exist_ok=True)
     for arm in config["arms"]:
         spec_path = repo_root / (arm.get("spec_path") or default_spec)
@@ -287,7 +312,7 @@ def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, k
                 raw_runs.append(record)
                 preserve = results_dir / "preserved" / f"{arm['name']}__{index}"
                 preserve.mkdir(parents=True, exist_ok=True)
-                for name in ("observed.v1.json", "trace-digest.jsonl", "transcript.txt"):
+                for name in ("observed.v1.json", "trace-digest.jsonl", "stream.jsonl", "transcript.txt"):
                     src = out_dir / name
                     if src.is_file():
                         shutil.copy(src, preserve / name)
@@ -451,6 +476,21 @@ def main(argv: list[str] | None = None) -> int:
     if args.selftest:
         return selftest(repo_root)
     if args.run:
+        config = json.loads(args.run.read_text(encoding="utf-8"))
+        if args.out_dir is None:
+            try:
+                name = _validate_default_results_name(config["name"])
+            except (KeyError, ValueError) as exc:
+                print(f"refusing --run: {exc}", file=sys.stderr)
+                return 1
+            results_dir = repo_root / "charness-artifacts" / "efficiency" / name
+        else:
+            results_dir = args.out_dir
+        try:
+            _validate_run_spec(int(config["runs"]), config["arms"])
+        except (KeyError, TypeError, ValueError) as exc:
+            print(f"refusing --run: {exc}", file=sys.stderr)
+            return 1
         # The slice's promise is "self-tested instruments refuse before spend": gate
         # the live matrix on the offline self-test so a broken extractor can never
         # produce a comparison we'd trust. Cheap (no API) and fail-closed.
@@ -459,11 +499,15 @@ def main(argv: list[str] | None = None) -> int:
         if code != 0:
             print("refusing --run: instrument self-test failed; fix the extractor before spending on a live matrix.", file=sys.stderr)
             return code
-        config = json.loads(args.run.read_text(encoding="utf-8"))
-        results_dir = args.out_dir or (repo_root / "charness-artifacts" / "efficiency" / config.get("name", "ab"))
         judge_fn = grade_skill_outcome.judge_via_command(args.judge_cmd, args.judge_timeout_sec) if args.judge_cmd else None
-        ab_result = run_ab(repo_root, config, results_dir.resolve(), args.timeout_sec, args.keep_runs,
-                           judge_fn, args.keep_untracked_outputs)
+        try:
+            ab_result = run_ab(
+                repo_root, config, results_dir.resolve(), args.timeout_sec, args.keep_runs,
+                judge_fn, args.keep_untracked_outputs,
+            )
+        except ValueError as exc:
+            print(f"refusing --run: {exc}", file=sys.stderr)
+            return 1
         print(ab_result["report"])
         print(f"\nresults: {results_dir}", file=sys.stderr)
         return 0

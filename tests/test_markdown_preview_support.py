@@ -428,3 +428,57 @@ def test_markdown_preview_rejects_unsupported_backend(tmp_path: Path, monkeypatc
 
     assert result.returncode != 0
     assert "Unsupported markdown preview backend `pandoc`" in result.stderr
+
+
+def test_markdown_preview_rejects_absolute_path_outside_repo_root(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside = tmp_path / "outside.md"
+    outside.write_text("# Outside\n", encoding="utf-8")
+
+    result = run_helper_in_process(monkeypatch, capsys, repo, "--file", str(outside))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "no-targets"
+    assert payload["target_count"] == 0
+    assert any("Skipping absolute path outside repo root" in warning for warning in payload["warnings"])
+
+
+def test_markdown_preview_rejects_repo_relative_symlink_outside_repo_root(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside_root = tmp_path / "outside"
+    outside_root.mkdir()
+    outside_target = outside_root / "outside.md"
+    outside_target.write_text("# Outside\n", encoding="utf-8")
+    (repo / "outside-link.md").symlink_to(outside_target)
+
+    result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "outside-link.md")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "no-targets"
+    assert payload["target_count"] == 0
+    assert any("Skipping path outside repo root" in warning for warning in payload["warnings"])
+
+
+def test_markdown_preview_keeps_safe_glob_matches_when_skipping_outside_symlink(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Inside\n", encoding="utf-8")
+    outside = tmp_path / "outside.md"
+    outside.write_text("# Outside\n", encoding="utf-8")
+    (repo / "outside-link.md").symlink_to(outside)
+
+    result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "*.md")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["target_count"] == 1
+    assert payload["previews"][0]["source_path"] == "README.md"
+    assert any("Skipping path outside repo root" in warning for warning in payload["warnings"])
