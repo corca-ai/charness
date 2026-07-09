@@ -93,6 +93,13 @@ Learned in the pilot and binding on every future run:
   contain the experiment's own blueprint (witness map, goal artifact,
   pipeline commit messages) — a faithful run reads recent history and would
   recover the expected tokens from them (#423-class leaks).
+- **Red-team the observer once, up front.** Before a new capture-experiment
+  design ships, enumerate in one pass every channel the captured agent can
+  observe — cwd and env paths, `git log`/`diff`/`show`, refs and reflog,
+  sibling and parent files, commit metadata — and neutralize or disclose
+  each. The pilot patched blinding three times because channels were
+  discovered iteratively; the diff-against-parent channel that 4/6 mutant
+  runs used was derivable up front from "handoff runs do git ops".
 - **Causality, not channel existence.** A witness counts only with a written
   causal path from the unit to the signal; run-level sanity assertions that
   fire on any packet have zero detection power (pilot plan-critique F2).

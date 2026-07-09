@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- The operator asked for creative autonomous-improvement directions, challenged the prompt-mutation idea on false negatives and A+B interaction effects, approved the resulting design (UNTESTED vs NO-OBSERVED-EFFECT, demote-never- delete, ship-configuration rerun, batch ratchet), and delegated full design and execution. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 - Implementation session for the activated goal `charness-artifacts/goals/2026-07-08-retro-informed-improvement-5pack.md` (retro-informed-improvement-5pack): five decided slices landed in the hard order R -> V -> B -> G -> D (`6415175b`, `6440b24d`+`30e3dd11`, `cf7e6f47`, `de54a977`, `5d85de98`), plus one inherited pre-goal red-tree repair (`38219d95`). (source: `charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md`)
-- Session pickup ran handoff chunked routing over 8 backlog entries; the operator selected the live-issue chunk and the session executed the achieve goal `fix-421-mutation-regression` (charness-artifacts/goals/2026-07-08-fix-421-mutation-regression.md) end to end: root-caused the recurring nightly mutation-gate red, covered the 16 changed-line proof targets, audited the post-push judgment range, and triaged all 16 survived mutants. (source: `charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`; sources: 72)
-- Slice B repeated a narrower form of the same trap: its focused proof ran only the slice's own test file, and the `args.repo_root` regression in a sibling test file (`test_web_fetch_route_and_classify.py`) was caught by the critique reviewer, not the producer. (source: `charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md`)
-- Slice G's closeout blocked once on the cautilus skill-review ack and once on the timing-layer table — both were knowable pre-edit from the changed-path surface map; running the aggregate before authoring would have surfaced them in one pass. (source: `charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md`)
-- The first root-cause hypothesis (base==head empty-range sampler bug) was wrong and would have burned a slice; the plan-critique reviewer's empirical falsification (running the sampler) redirected the debug to CI logs before any code was written. Residual waste: one drafted-then-rewritten Goal section. (source: `charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md`)
+- Blinding was designed three times (neutral commit message → digest-only refs + baseline dates → still diff-readable via `git show` on the snapshot commit). One exhaustive "what can the captured agent observe?" enumeration at S1 design time would have caught the diffable-parent channel that 4/6 mutant runs actually used. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
+- The report's first draft claimed a causal story ("planner ran in mutant run 0") from stream-sourced evidence, and the streams were deleted before the report's claims were re-verified against the committed bundles; the closeout reviewer caught the contradiction and one honesty-pass commit repaired it. Deleting scoring inputs before re-scoring the committed state is the reusable trap. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
+- The scorer's stream fallback matched a prose mention as a marker fire (#427); the fixture tests covered truncation but not mention-vs-execution. (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`; sources: 72)
-- #422 — the mutation gate should name a baseline-pytest abort (failing nodeids) instead of reporting the downstream missing-report symptom. (source: `charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md`)
-- none — no missing tool surfaced; the existing aggregates caught everything the producer missed, just later than ideal. (source: `charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md`)
-- the pre-push changed-line consumer runs its own full-coverage producer when the marker is stale; budget ~10 minutes and never run it concurrently with test-file edits. (source: `charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md`)
+- applied: docs/prompt-mutation-policy.md stream-drop re-score rule and commit-diff blinding caveat (commit 5ce78e9d). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
+- issue #426 (novel: mutant snapshot commits are diffable against their baseline parent; symmetric parentless snapshots for all arms). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
+- issue #427 (novel: constrain scorer stream fallback to command-bearing events; add mention-only negative fixture). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 
 ## Selection Policy
 
@@ -100,4 +100,4 @@
 - `charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-08-retro-informed-improvement-5pack-goal-retro.md`
-- `charness-artifacts/retro/2026-07-08-session-retro-421-mutation-gate-recovery-goal.md`
+- `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`

@@ -1,6 +1,6 @@
 # Achieve Goal: Prompt mutation testing: witness coverage + demote-ranking pilot
 
-Status: active
+Status: complete
 Created: 2026-07-09
 Activation: `/goal @charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md`
 
@@ -9,18 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: closeout. S3 verdicts: bootstrap DETECTED (0/2), workflow
-  NO-OBSERVED-EFFECT (2/2, under-witnessed — coverage debt, not demotion),
-  closeout-vocabulary NO-OBSERVED-EFFECT (2/2, the single ranked demotion
-  candidate). Budget 8/12 captures, 0 failures. Report:
+- Current slice: COMPLETE. All four slices + closeout honesty pass landed.
+  Verdicts: bootstrap DETECTED (0/2), workflow NO-OBSERVED-EFFECT (2/2,
+  under-witnessed — coverage debt, not demotion), closeout-vocabulary
+  NO-OBSERVED-EFFECT (2/2, the single ranked demotion candidate — untainted
+  by the disclosed unblinding). Report:
   `charness-artifacts/prompt-mutation/2026-07-09-handoff-refresh-pilot.md`;
-  policy: `docs/prompt-mutation-policy.md`. Mutant refs cleaned post-capture
-  (SHAs in the manifest; regeneration is deterministic).
-- Current slice intent: final closeout — fresh-eye closeout critique,
-  verification lock (broad pytest), retro + host-log probe + dispositions,
-  status flip to complete.
-- Next action: commit S3/S4 artifacts, run the closeout critique, then
-  `run_slice_closeout.py --verification-lock` and the After-phase floors.
+  policy: `docs/prompt-mutation-policy.md`. Closeout critique verdict
+  CLOSE-AFTER-FIXES with all fixes applied; disposition review PASS after
+  one FAIL-fix cycle (#427 relabeled recurs: #415).
+- Next action: none — operator decisions queued (demotion proposal
+  accept/reject; push) in `## Operator Decision Queue`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -180,17 +179,21 @@ small-N caveats and non-claims.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: accept or reject the ranked demotion proposal
+  (`#handoff/closeout-vocabulary` → reference file, per
+  `docs/prompt-mutation-policy.md`: ship-config rerun + ratchet + tripwire
+  window before any physical change)
+  - Owner: operator
+  - Why deferred: applying demotions is an explicit non-goal of this pilot
+  - Unblock action: say "accept the demotion proposal" to open a follow-up
+    goal, or reject and the candidate stays recorded in the report
+  - Revisit trigger: next prompt-mutation or handoff-skill work
+- Decision: push the local commits (this goal is 6 commits ahead of
+  origin/main; no push approved in-goal)
+  - Owner: operator
+  - Why deferred: external side-effect scope was none-approved by design
+  - Unblock action: `git push`, or ask for a pre-push review
+  - Revisit trigger: next session pickup
 
 ## Coordination Cues
 
@@ -225,7 +228,9 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: find-skills -> impl — implementation slices S1/S2/S4 (list_capabilities.py --recommend-for-skill impl also surfaced cautilus as a validation-role tool; deliberately unspent this goal per Boundaries)`
+- Routing: find-skills -> impl — implementation slices S1/S2/S4 (list_capabilities.py --recommend-for-skill impl also surfaced cautilus as a validation-role tool; deliberately unspent this goal per Boundaries)
+- Routing: find-skills -> issue — off-goal findings #426/#427 filed with observed-problem-first bodies (list_capabilities.py --recommend-for-task returned issue)
+- Routing: find-skills -> quality — gate cadence and verification lock at closeout (list_capabilities.py --recommend-for-task returned quality)
 - Gather: n/a — all context sources are repo-local (no external URL/doc consumed).
 - Release: n/a — no version bump or install-manifest edit in this goal.
 - Issue closeout: n/a — no issue closed by this goal; #426 was FILED as an off-goal follow-up, not resolved.
@@ -405,13 +410,43 @@ activation:
 
 ## Final Verification
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+- Self-verification: 4 slices + honesty pass landed as 6 local commits; 58
+  pipeline tests green; verification lock recorded at closeout
+  (`run_slice_closeout.py --verification-lock`, broad pytest included);
+  survival.json regenerates byte-consistently from the committed bundles;
+  witness-coverage counts (3/30/2) reproduce live; no `skills/public/**`
+  prose deleted (checked across all goal commits); no leftover
+  `refs/prompt-mutants` refs or mktemp run bases.
+- Residual risks / non-claims: N=2 survival rates rank, not estimate;
+  verdicts hold for the refresh scenario on this Claude host only;
+  m-workflow's survival attribution is unblinding-confounded (disclosed in
+  the report; #426); prose quality and guardrail compliance unscored (judge
+  channels unspent); trace-marker fires carry the trace-digest truncation
+  caveat now that streams are dropped.
+- Live/high-cost proof: the 8-capture matrix itself (S3); no push, release,
+  or provider claim made.
+
+Retro: charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md
+Host log probe: charness-artifacts/goals/2026-07-09-prompt-mutation-pilot-host-log-probe.json
+Disposition review: charness-artifacts/critique/2026-07-09-prompt-mutation-pilot-disposition-review.md
 
 ## User Verification Instructions
 
+- Read the pilot report:
+  `charness-artifacts/prompt-mutation/2026-07-09-handoff-refresh-pilot.md`
+  (verdict table, findings, unblinding disclosure, coverage debt,
+  non-claims).
+- Zero-spend reproduction: `python3 scripts/witness_coverage.py --repo-root .
+  --skill handoff --scenario refresh --markdown` (expect 3 witnessed / 30
+  untested / 2 excluded) and the scorer command in the report's Method
+  section against the committed bundles (expect identical verdicts).
+- Tests: `pytest -q tests/test_generate_prompt_mutants.py
+  tests/test_witness_coverage.py tests/test_score_prompt_mutation_survival.py`
+  (expect 58 passed).
+- Confirm no skill prose changed: `git log origin/main..HEAD --stat --
+  skills/public plugins/charness/skills` shows no deletions.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: docs/prompt-mutation-policy.md stream-drop re-score rule + commit-diff blinding caveat (commit 5ce78e9d); applied: docs/prompt-mutation-policy.md "red-team the observer once, up front" floor (channel enumeration at design time — the lesson behind the three blinding iterations, committed with this closeout); issue #426 (novel: mutant snapshot commits are diffable against their baseline parent — symmetric parentless snapshots for all arms); issue #427 (recurs: #415 — textual mention counted as genuine action, the same matcher-honesty class as the closed doc-open-floor instance; lineage noted on the issue)
+Structural follow-up: issue #427 (recurs: #415 — mention-vs-execution matching is a transcript-scorer class defect; the applied re-score rule is scoped to this pipeline, and the efficiency-A/B sibling named in the retro is dispositioned none-for-now because its committed reports derive from committed results.json, so the trap binds only if a future claim cites pruned evidence)

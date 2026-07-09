@@ -8,6 +8,14 @@
 
 ## Current State
 
+- **This session (2026-07-09, later): prompt-mutation pilot goal COMPLETE
+  (unpushed).** New pipeline (mutant generator, witness coverage, survival
+  scorer + policy doc) proven live on handoff/refresh: bootstrap DETECTED,
+  workflow + closeout-vocabulary survived (mutual token redundancy — the A+B
+  case), 30-unit coverage-debt list. #426/#427 filed. Report:
+  [2026-07-09-handoff-refresh-pilot.md](../charness-artifacts/prompt-mutation/2026-07-09-handoff-refresh-pilot.md);
+  goal artifact owns the detail and the operator decision queue (push;
+  demotion proposal accept/reject).
 - **This session (2026-07-09): #410 queue executed end-to-end and CLOSED.**
   Handoff pickup floor moved to a substance judge (planner `e4f3626d`, flip +
   capture proof), hotl ledger tokens lifted with the floor re-proven
