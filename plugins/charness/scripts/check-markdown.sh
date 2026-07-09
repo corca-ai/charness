@@ -38,7 +38,20 @@ else
 fi
 
 listing_dir="$(mktemp -d)"
-trap 'rm -rf "$listing_dir"' EXIT
+inline_code_pid=""
+markdownlint_pid=""
+# Invoked through the EXIT trap below; ShellCheck cannot follow that indirect call.
+# shellcheck disable=SC2317
+cleanup() {
+  if [[ -n "$inline_code_pid" ]]; then
+    kill "$inline_code_pid" 2>/dev/null || true
+  fi
+  if [[ -n "$markdownlint_pid" ]]; then
+    kill "$markdownlint_pid" 2>/dev/null || true
+  fi
+  rm -rf "$listing_dir"
+}
+trap cleanup EXIT
 tracked_markdown_list="$listing_dir/tracked-markdown.txt"
 run_git_listing_to_file tracked-markdown "$tracked_markdown_list" \
   git ls-files -- '*.md' \
@@ -67,16 +80,36 @@ fi
 # commit boundary no longer bears that burden; the script itself keeps its own
 # exit-code semantics for direct callers.
 inline_code_log="$listing_dir/inline-code.log"
-if ! python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT" >"$inline_code_log" 2>&1; then
-  echo "WARN: inline code span check found issue(s) (advisory; rendered output is correct, not blocking):"
+markdownlint_stdout_log="$listing_dir/markdownlint.stdout.log"
+markdownlint_stderr_log="$listing_dir/markdownlint.stderr.log"
+
+# These scans are independent.  Run them together, then emit their logs in a
+# fixed advisory-then-blocking order so callers retain stable diagnostics.
+python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT" >"$inline_code_log" 2>&1 &
+inline_code_pid=$!
+"${MARKDOWNLINT_CMD[@]}" --no-globs "${markdown_files[@]}" >"$markdownlint_stdout_log" 2>"$markdownlint_stderr_log" &
+markdownlint_pid=$!
+
+if wait "$inline_code_pid"; then
   cat "$inline_code_log"
 else
+  echo "WARN: inline code span check found issue(s) (advisory; rendered output is correct, not blocking):"
   cat "$inline_code_log"
 fi
+inline_code_pid=""
+
+if wait "$markdownlint_pid"; then
+  markdownlint_status=0
+else
+  markdownlint_status=$?
+fi
+markdownlint_pid=""
 # The markdownlint-cli2 banner emits a single `Finding: <space-separated paths>`
 # line listing every file it is about to lint. On this repo that line is
 # ~50KB (485+ tracked markdown paths), which floods agent context on every
 # commit and push without changing lint behavior. Filter it out; per-file
 # error lines (`file.md:line:col error MDxxx ...`) do not start with
 # `Finding: ` and continue to surface failing file names. See #230 Waste 2.
-"${MARKDOWNLINT_CMD[@]}" --no-globs "${markdown_files[@]}" | sed '/^Finding: /d'
+sed '/^Finding: /d' "$markdownlint_stdout_log"
+cat "$markdownlint_stderr_log" >&2
+exit "$markdownlint_status"

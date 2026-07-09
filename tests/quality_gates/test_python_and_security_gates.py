@@ -97,6 +97,59 @@ def test_check_markdown_demotes_wrapped_inline_code_to_warn(
     assert "_check_markdown_demotion_fixture.md:3" in combined
 
 
+@pytest.mark.release_only
+def test_check_markdown_keeps_markdownlint_failure_blocking(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+    bin_dir = repo / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    write_executable(
+        bin_dir / "markdownlint-cli2",
+        "#!/usr/bin/env bash\necho 'docs/bad.md:4:1 error MD999/test lint failure'\necho 'lint stderr detail' >&2\nexit 7\n",
+    )
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"}
+
+    result = run_shell_script(repo / "scripts" / "check-markdown.sh", cwd=repo, env=env)
+
+    assert result.returncode == 7
+    assert "docs/bad.md:4:1 error MD999/test lint failure" in result.stdout
+    assert "lint stderr detail" in result.stderr
+    assert "lint stderr detail" not in result.stdout
+    assert "WARN:" not in result.stdout + result.stderr
+
+
+@pytest.mark.release_only
+def test_check_markdown_reports_advisory_before_blocking_lint_failure(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+    fixture = repo / "docs" / "_check_markdown_overlap_fixture.md"
+    fixture.write_text("# Fixture\n\nUse `cautilus eval test\n--repo-root .` for proof.\n", encoding="utf-8")
+    subprocess.run(
+        ["git", "add", "docs/_check_markdown_overlap_fixture.md"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    bin_dir = repo / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    write_executable(
+        bin_dir / "markdownlint-cli2",
+        "#!/usr/bin/env bash\necho 'docs/bad.md:4:1 error MD999/test lint failure'\nexit 9\n",
+    )
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"}
+
+    result = run_shell_script(repo / "scripts" / "check-markdown.sh", cwd=repo, env=env)
+
+    combined = result.stdout + result.stderr
+    assert result.returncode == 9
+    assert "WARN:" in combined
+    assert "docs/bad.md:4:1 error MD999/test lint failure" in combined
+    assert combined.index("WARN:") < combined.index("docs/bad.md:4:1 error MD999/test lint failure")
+
+
 def test_check_links_internal_fails_when_git_listing_fails(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     script_path = _copy_script(repo, "check-links-internal.sh")

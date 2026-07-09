@@ -110,6 +110,7 @@ def reconcile_feedback(records: list[dict[str, Any]]) -> dict[str, Any]:
     seen: set[str] = set()
     duplicate_count = 0
     linked: list[dict[str, Any]] = []
+    enriched_linked: list[dict[str, Any]] = []
     unlinked_count = 0
     for record in explicit:
         feedback_id = str(record["feedback_id"])
@@ -119,11 +120,20 @@ def reconcile_feedback(records: list[dict[str, Any]]) -> dict[str, Any]:
         target = (str(record["product_id"]), str(record["target_episode_id"]))
         if target in targets:
             linked.append(record)
+            # Explicit feedback has no delivery dimensions of its own.  Carry
+            # its signal onto the delivery it observes so downstream summaries
+            # retain delivery-only denominators and evidence references.
+            enriched_linked.append(
+                {
+                    **targets[target],
+                    "feedback_signal": record["feedback_signal"],
+                }
+            )
         else:
             unlinked_count += 1
 
     inline = [record for record in deliveries if isinstance(record.get("feedback_signal"), str)]
-    signal_records = [*inline, *linked]
+    signal_records = [*inline, *enriched_linked]
     covered_targets = {
         (str(record["product_id"]), str(record["episode_id"])) for record in inline
     }

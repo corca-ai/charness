@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from scripts.report_usage_episodes import NON_CLAIMS
+from scripts.usage_episode_feedback import feedback_id_for
 from tests.test_usage_episodes_schema import acme_episode, crill_episode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -329,6 +330,160 @@ def test_product_review_report_builds_thresholded_reporter_packets(tmp_path: Pat
     body = packets["friction_threshold"]["body"]
     assert "### Triage Questions" in body
     assert "recommended fix" not in body.lower()
+
+
+def test_product_review_keeps_delivery_denominator_when_feedback_is_explicit(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
+    delivery = crill_episode()
+    delivery.pop("feedback_signal")
+    feedback = {
+        "schema_version": 1,
+        "event_type": "usage_feedback",
+        "timestamp": "2026-06-03T12:00:00Z",
+        "product_id": delivery["product_id"],
+        "feedback_id": "feedback-" + "1" * 64,
+        "target_episode_id": delivery["episode_id"],
+        "feedback_signal": "retried",
+        "source_kind": "operator",
+        "evidence_ref": {"kind": "review", "ref": "review-002"},
+    }
+    feedback["feedback_id"] = feedback_id_for(
+        product_id=str(feedback["product_id"]),
+        target_episode_id=str(feedback["target_episode_id"]),
+        feedback_signal=str(feedback["feedback_signal"]),
+        source_kind=str(feedback["source_kind"]),
+        evidence_ref=dict(feedback["evidence_ref"]),
+    )
+    write_records(tmp_path, [delivery, feedback])
+
+    result = run_product_review("--repo-root", str(tmp_path), "--friction-threshold", "1", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    summary = payload["review_summary"]
+    assert summary["usage_count"] == 1
+    assert summary["product_counts"] == {delivery["product_id"]: 1}
+    assert summary["entry_point_counts"] == {delivery["entry_point"]: 1}
+    assert summary["trigger_type_counts"] == {delivery["trigger_type"]: 1}
+    assert summary["outcome_status_counts"] == {delivery["outcome_status"]: 1}
+    assert summary["feedback_signal_counts"] == {"retried": 1}
+    assert summary["friction_or_followup_count"] == 1
+    assert summary["first_seen_at"] == delivery["timestamp"]
+    assert summary["last_seen_at"] == delivery["timestamp"]
+    assert "<missing>" not in json.dumps(summary)
+    friction_packet = next(
+        packet
+        for packet in payload["reporter_packets"]
+        if packet["signal_type"] == "friction_threshold"
+    )
+    assert friction_packet["evidence_refs"] == [
+        {
+            "timestamp": delivery["timestamp"],
+            "episode_id": delivery["episode_id"],
+            "ref": delivery["first_value_ref"]["ref"],
+        }
+    ]
+
+
+def test_product_review_window_filters_explicit_feedback_by_its_own_timestamp(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
+    delivery = crill_episode()
+    delivery.pop("feedback_signal")
+    delivery["timestamp"] = "2026-06-02T12:00:00Z"
+    feedback = {
+        "schema_version": 1,
+        "event_type": "usage_feedback",
+        "timestamp": "2026-06-04T12:00:00Z",
+        "product_id": delivery["product_id"],
+        "target_episode_id": delivery["episode_id"],
+        "feedback_signal": "retried",
+        "source_kind": "operator",
+        "evidence_ref": {"kind": "review", "ref": "review-003"},
+    }
+    feedback["feedback_id"] = feedback_id_for(
+        product_id=str(feedback["product_id"]),
+        target_episode_id=str(feedback["target_episode_id"]),
+        feedback_signal=str(feedback["feedback_signal"]),
+        source_kind=str(feedback["source_kind"]),
+        evidence_ref=dict(feedback["evidence_ref"]),
+    )
+    write_records(tmp_path, [delivery, feedback])
+
+    result = run_product_review(
+        "--repo-root", str(tmp_path),
+        "--window-start", "2026-06-01T00:00:00Z",
+        "--window-end", "2026-06-03T00:00:00Z",
+        "--friction-threshold", "1",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["review_summary"]["usage_count"] == 1
+    assert payload["review_summary"]["feedback_signal_counts"] == {}
+    assert payload["review_summary"]["friction_or_followup_count"] == 0
+    assert payload["actionable_packet_count"] == 0
+
+
+def test_product_review_counts_outcome_only_friction_and_missed_detection_once(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
+    delivery = crill_episode()
+    delivery.pop("feedback_signal")
+    delivery["outcome_status"] = "failed"
+    delivery["t_status"] = "none"
+    write_records(tmp_path, [delivery])
+
+    result = run_product_review(
+        "--repo-root", str(tmp_path),
+        "--friction-threshold", "1",
+        "--missed-detection-threshold", "1",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["review_summary"]["friction_or_followup_count"] == 1
+    assert payload["review_summary"]["missed_detection_candidate_count"] == 1
+    packets = {packet["signal_type"]: packet for packet in payload["reporter_packets"]}
+    assert packets["friction_threshold"]["evidence_refs"][0]["episode_id"] == delivery["episode_id"]
+    assert packets["missed_detection_candidate"]["evidence_refs"][0]["episode_id"] == delivery["episode_id"]
+
+
+def test_product_review_counts_inline_and_explicit_friction_once_per_delivery(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
+    delivery = crill_episode()
+    delivery["feedback_signal"] = "retried"
+    feedback = {
+        "schema_version": 1,
+        "event_type": "usage_feedback",
+        "timestamp": delivery["timestamp"],
+        "product_id": delivery["product_id"],
+        "target_episode_id": delivery["episode_id"],
+        "feedback_signal": "corrected",
+        "source_kind": "operator",
+        "evidence_ref": {"kind": "review", "ref": "review-004"},
+    }
+    feedback["feedback_id"] = feedback_id_for(
+        product_id=str(feedback["product_id"]),
+        target_episode_id=str(feedback["target_episode_id"]),
+        feedback_signal=str(feedback["feedback_signal"]),
+        source_kind=str(feedback["source_kind"]),
+        evidence_ref=dict(feedback["evidence_ref"]),
+    )
+    write_records(tmp_path, [delivery, feedback])
+
+    result = run_product_review("--repo-root", str(tmp_path), "--friction-threshold", "1", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["review_summary"]["feedback_signal_counts"] == {"corrected": 1, "retried": 1}
+    assert payload["review_summary"]["friction_or_followup_count"] == 1
+    friction_packet = next(
+        packet
+        for packet in payload["reporter_packets"]
+        if packet["signal_type"] == "friction_threshold"
+    )
+    assert friction_packet["threshold"]["observed_count"] == 1
 
 
 def test_product_review_window_filtering_and_empty_window_are_neutral(tmp_path: Path) -> None:

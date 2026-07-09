@@ -20,7 +20,7 @@ from usage_episode_feedback import (
     semantic_feedback_errors,
     signal_allowed_for_source,
 )
-from usage_episode_records import resolve_records_path
+from usage_episode_records import read_schema_valid_records, resolve_records_path
 from usage_episode_records import schema_root as _schema_root
 
 from runtime_bootstrap import repo_root_from_script
@@ -44,12 +44,6 @@ def _portable_path(repo_root: Path, path: Path) -> str:
 
 def _timestamp() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _read_records(path: Path) -> list[dict[str, Any]]:
-    if not path.is_file():
-        return []
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def _parse_args() -> argparse.Namespace:
@@ -115,10 +109,13 @@ def main() -> int:
     record = {"schema_version": 1, "event_type": "usage_feedback", "timestamp": _timestamp(), "product_id": args.product_id, "feedback_id": feedback_id, "target_episode_id": args.target_episode_id, "feedback_signal": args.feedback_signal, "source_kind": args.source_kind, "evidence_ref": evidence_ref}
     schema = _load_json(schema_root / "episode.schema.json")
     try:
-        jsonschema.validate(record, schema)
-        existing = _read_records(records_path)
-    except (json.JSONDecodeError, jsonschema.ValidationError) as exc:
+        jsonschema.validate(record, schema, format_checker=jsonschema.FormatChecker())
+    except jsonschema.ValidationError as exc:
         _print({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": [str(exc)]}, args.json)
+        return 2
+    existing, read_errors = read_schema_valid_records(records_path, schema)
+    if read_errors:
+        _print({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": read_errors}, args.json)
         return 2
     errors = semantic_feedback_errors([*existing, record])
     replay = next((item for item in existing if item.get("event_type") == "usage_feedback" and item.get("feedback_id") == feedback_id), None)

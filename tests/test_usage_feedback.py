@@ -19,7 +19,12 @@ from scripts.usage_episode_feedback import (
     feedback_id_for,
     reconcile_feedback,
 )
-from scripts.usage_episode_records import read_valid_records, resolve_records_path, schema_root
+from scripts.usage_episode_records import (
+    read_schema_valid_records,
+    read_valid_records,
+    resolve_records_path,
+    schema_root,
+)
 from tests.test_usage_episodes_schema import acme_episode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -269,6 +274,25 @@ def test_feedback_writer_rejects_conflicting_existing_feedback_id(tmp_path: Path
     assert any("non-deterministic feedback_id" in error for error in payload["errors"])
 
 
+def test_feedback_writer_rejects_schema_invalid_existing_stream_without_mutating_it(tmp_path: Path) -> None:
+    write_adapter(tmp_path)
+    records_path = write_records(tmp_path, [acme_episode()])
+    original = records_path.read_bytes() + b'{"event_type":"usage_feedback"}\n'
+    records_path.write_bytes(original)
+
+    result = run(
+        WRITER,
+        "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--execute", "--json",
+    )
+
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "invalid_feedback"
+    assert any("schema error" in error for error in payload["errors"])
+    assert records_path.read_bytes() == original
+
+
 def test_validator_rejects_unlinked_and_duplicate_feedback_ids(tmp_path: Path) -> None:
     write_adapter(tmp_path)
     base = acme_episode()
@@ -293,6 +317,9 @@ def test_validator_rejects_unlinked_and_duplicate_feedback_ids(tmp_path: Path) -
 
 def test_shared_record_reader_returns_records_and_semantic_errors(tmp_path: Path) -> None:
     records_path = write_records(tmp_path, [acme_episode(), feedback_record(), feedback_record()])
+    structural_records, structural_errors = read_schema_valid_records(records_path, SCHEMA)
+    assert len(structural_records) == 3
+    assert structural_errors == []
     records, errors = read_valid_records(records_path, SCHEMA)
     assert len(records) == 3
     assert any("duplicate feedback_id" in error for error in errors)
@@ -356,6 +383,19 @@ def test_report_reconciles_one_delivery_and_one_feedback_event(tmp_path: Path) -
         "duplicate_feedback_id_count": 0,
         "inline_feedback_count": 0,
     }
+
+
+def test_reconciled_explicit_feedback_uses_its_delivery_dimensions() -> None:
+    delivery = acme_episode()
+    delivery.pop("feedback_signal")
+    reconciliation = reconcile_feedback([delivery, feedback_record(feedback_signal="retried")])
+
+    assert reconciliation["signal_records"] == [
+        {
+            **delivery,
+            "feedback_signal": "retried",
+        }
+    ]
 
 
 @pytest.mark.parametrize(

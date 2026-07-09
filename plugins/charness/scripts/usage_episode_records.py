@@ -39,10 +39,13 @@ def parse_timestamp(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
 
 
-def read_valid_records(
+def read_schema_valid_records(
     path: Path,
     record_schema: dict[str, Any],
 ) -> tuple[list[dict[str, Any]], list[str]]:
+    """Return parsed schema-valid rows without cross-row reconciliation."""
+    if not path.is_file():
+        return [], []
     records: list[dict[str, Any]] = []
     errors: list[str] = []
     validator = jsonschema.Draft7Validator(
@@ -74,6 +77,15 @@ def read_valid_records(
             )
             continue
         records.append(row)
+    return records, errors
+
+
+def read_valid_records(
+    path: Path,
+    record_schema: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Return schema-valid rows plus stream-wide feedback semantics errors."""
+    records, errors = read_schema_valid_records(path, record_schema)
     if not errors:
         errors.extend(semantic_feedback_errors(records))
     return records, errors

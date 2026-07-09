@@ -145,13 +145,16 @@ def shell_quote(value: str) -> str:
     return "'" + value.replace("'", "'\"'\"'") + "'"
 
 
-def run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+def run(
+    command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
         cwd=cwd,
         check=False,
         capture_output=True,
         text=True,
+        env=env,
     )
 
 
@@ -1102,6 +1105,18 @@ def resolve_repo_python(repo_root: Path) -> str:
     cached = _BOOTSTRAP_PYTHON_CACHE.get(resolved_root)
     if cached:
         return cached
+
+    # `bootstrap_runtime.py` is deliberately repair-capable: it validates the
+    # contract, rewrites stale launchers, and can install dependencies.  Most
+    # CLI invocations only need to reuse the already healthy launcher, though.
+    # Keep that common path read-only and leave every absent/unhealthy case to
+    # the existing repair flow below.
+    fast_path = bootstrap_runtime_fast_path(repo_root)
+    if fast_path is not None and bootstrap_runtime_is_healthy(repo_root, *fast_path):
+        python_executable = str(fast_path[0])
+        _BOOTSTRAP_PYTHON_CACHE[resolved_root] = python_executable
+        return python_executable
+
     result = run(
         [
             sys.executable,
@@ -1120,6 +1135,80 @@ def resolve_repo_python(repo_root: Path) -> str:
         raise CharnessError(f"bootstrap runtime for `{repo_root}` did not return a Python executable")
     _BOOTSTRAP_PYTHON_CACHE[resolved_root] = python_executable
     return python_executable
+
+
+def bootstrap_runtime_fast_path(repo_root: Path) -> tuple[Path, list[str], tuple[int, int]] | None:
+    """Return the validated read-only launcher probe inputs, if available.
+
+    Contract errors intentionally return ``None`` here.  The repair-capable
+    bootstrap command remains the single authoritative validator and produces
+    its established diagnostics for every non-fast-path case.
+    """
+
+    contract_path = repo_root / "packaging" / "bootstrap-python.json"
+    try:
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        schema_version = contract["schema_version"]
+        python_section = contract["python"]
+        min_version = python_section["min_version"]
+        runtime_dir = contract["runtime_dir"]
+        requirements_file = contract["requirements_file"]
+        required_modules = contract["required_modules"]
+    except (FileNotFoundError, OSError, json.JSONDecodeError, KeyError, TypeError):
+        return None
+    if schema_version != 1 or not isinstance(python_section, dict):
+        return None
+    if not isinstance(min_version, str) or not min_version:
+        return None
+    try:
+        min_version_parts = min_version.split(".")
+        if len(min_version_parts) < 2:
+            return None
+        minimum = (int(min_version_parts[0]), int(min_version_parts[1]))
+    except ValueError:
+        return None
+    # The reuse path does not read requirements, but malformed contract fields
+    # must still reach the authoritative bootstrap validator instead of being
+    # silently accepted only because today's launcher happens to be healthy.
+    if not isinstance(runtime_dir, str) or not runtime_dir or not isinstance(requirements_file, str) or not requirements_file:
+        return None
+    if not isinstance(required_modules, list) or not required_modules or not all(
+        isinstance(module, str) and module for module in required_modules
+    ):
+        return None
+    launcher_name = "python.cmd" if os.name == "nt" else "python"
+    launcher = repo_root / runtime_dir / ("Scripts" if os.name == "nt" else "bin") / launcher_name
+    return launcher, required_modules, minimum
+
+
+def bootstrap_runtime_is_healthy(
+    repo_root: Path, launcher: Path, required_modules: list[str], minimum: tuple[int, int]
+) -> bool:
+    """Probe the launcher once without inheriting another runtime's path."""
+
+    if not launcher.exists():
+        return False
+
+    probe = (
+        "import importlib, sys\n"
+        f"modules = {required_modules!r}\n"
+        f"minimum = {minimum!r}\n"
+        "if sys.version_info[:2] < minimum:\n"
+        "    sys.exit(1)\n"
+        "for name in modules:\n"
+        "    try:\n"
+        "        importlib.import_module(name)\n"
+        "    except Exception:\n"
+        "        sys.exit(1)\n"
+    )
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env.pop("PYTHONHOME", None)
+    try:
+        result = run([str(launcher), "-c", probe], cwd=repo_root, env=env)
+    except OSError:
+        return False
+    return result.returncode == 0
 
 
 def write_claude_wrapper(wrapper_path: Path, plugin_root: Path) -> None:
@@ -3659,6 +3748,9 @@ def cmd_version(args: argparse.Namespace) -> int:
     else:
         repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
     cli_path = args.cli_path.resolve() if args.cli_path else default_cli_path(home_root)
+    if not args.json and not args.verbose and not args.check:
+        print(packaging_version(repo_root) or "unknown")
+        return 0
     payload = build_version_payload(
         home_root=home_root,
         repo_root=repo_root,
@@ -5141,7 +5233,13 @@ def main(argv: list[str] | None = None) -> int:
         raw_argv = ["version"]
     parser = build_parser()
     args = parser.parse_args(raw_argv)
-    maybe_record_self_version_state(args)
+    if not (
+        getattr(args, "command", None) == "version"
+        and not getattr(args, "json", False)
+        and not getattr(args, "verbose", False)
+        and not getattr(args, "check", False)
+    ):
+        maybe_record_self_version_state(args)
     return args.func(args)
 
 

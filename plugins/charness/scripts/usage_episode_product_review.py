@@ -9,6 +9,7 @@ from typing import Any
 
 from report_usage_episodes import NON_CLAIMS as USAGE_REPORT_NON_CLAIMS
 from report_usage_episodes import _parse_timestamp
+from usage_episode_feedback import delivery_records, feedback_records, reconcile_feedback
 from usage_episode_product_evidence import FRICTION_SIGNALS, NON_DELIVERED_OUTCOMES, _counter
 
 REVIEW_NON_CLAIMS = [
@@ -44,9 +45,28 @@ def build_review_payload(
     missed_detection_threshold: int | None,
     execute: bool,
 ) -> dict[str, Any]:
-    window_records = _filter_window(records, window_start=window_start, window_end=window_end)
+    deliveries = delivery_records(records)
+    window_records = _filter_window(deliveries, window_start=window_start, window_end=window_end)
+    window_feedback = _filter_window(
+        feedback_records(records),
+        window_start=window_start,
+        window_end=window_end,
+    )
+    window_targets = {
+        (str(record["product_id"]), str(record["episode_id"]))
+        for record in window_records
+    }
+    # A linked feedback assertion belongs in a review only when both its own
+    # observation time and its target delivery are in the requested window.
+    feedback = reconcile_feedback([*window_records, *window_feedback])
+    window_signals = [
+        record
+        for record in feedback["signal_records"]
+        if (str(record["product_id"]), str(record["episode_id"])) in window_targets
+    ]
     summary = _review_summary(
         window_records,
+        signal_records=window_signals,
         window_start=window_start,
         window_end=window_end,
         release_version=release_version,
@@ -65,7 +85,7 @@ def build_review_payload(
             summary=summary,
         )
     ]
-    friction = _friction_records(window_records)
+    friction = _friction_records(window_records, window_signals)
     if friction_threshold is not None and len(friction) >= friction_threshold:
         packets.append(
             _packet(
@@ -81,7 +101,7 @@ def build_review_payload(
                 },
             )
         )
-    missed = _missed_detection_records(window_records)
+    missed = _missed_detection_records(friction)
     if missed_detection_threshold is not None and len(missed) >= missed_detection_threshold:
         packets.append(
             _packet(
@@ -248,30 +268,35 @@ def _evidence_refs(records: list[dict[str, Any]], *, limit: int = 8) -> list[dic
     return refs
 
 
-def _friction_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _friction_records(
+    deliveries: list[dict[str, Any]],
+    signal_records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    friction_targets = {
+        (str(record["product_id"]), str(record["episode_id"]))
+        for record in signal_records
+        if record.get("feedback_signal") in FRICTION_SIGNALS
+    }
     return [
         record
-        for record in records
-        if record.get("feedback_signal") in FRICTION_SIGNALS
+        for record in deliveries
+        if (str(record["product_id"]), str(record["episode_id"])) in friction_targets
         or record.get("outcome_status") in NON_DELIVERED_OUTCOMES
     ]
 
 
 def _missed_detection_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    missed = []
-    for record in records:
-        friction_like = (
-            record.get("feedback_signal") in FRICTION_SIGNALS
-            or record.get("outcome_status") in NON_DELIVERED_OUTCOMES
-        )
-        if friction_like and (record.get("classification_skipped") or record.get("t_status") == "none"):
-            missed.append(record)
-    return missed
+    return [
+        record
+        for record in records
+        if record.get("classification_skipped") or record.get("t_status") == "none"
+    ]
 
 
 def _review_summary(
     records: list[dict[str, Any]],
     *,
+    signal_records: list[dict[str, Any]],
     window_start: datetime | None,
     window_end: datetime | None,
     release_version: str,
@@ -281,6 +306,7 @@ def _review_summary(
     user_ref: str | None,
 ) -> dict[str, Any]:
     timestamps = [_parse_timestamp(record["timestamp"]) for record in records]
+    friction = _friction_records(records, signal_records)
     return {
         "scope": "corca_internal" if corca_internal else "privacy_safe",
         "window_start": _iso(window_start) if window_start else None,
@@ -301,9 +327,15 @@ def _review_summary(
         "entry_point_counts": _counter(records, "entry_point"),
         "trigger_type_counts": _counter(records, "trigger_type"),
         "outcome_status_counts": _counter(records, "outcome_status"),
-        "feedback_signal_counts": _counter(records, "feedback_signal"),
-        "friction_or_followup_count": len(_friction_records(records)),
-        "missed_detection_candidate_count": len(_missed_detection_records(records)),
+        "feedback_signal_counts": _counter(signal_records, "feedback_signal"),
+        "feedback_coverage_count": len(
+            {
+                (str(record["product_id"]), str(record["episode_id"]))
+                for record in signal_records
+            }
+        ),
+        "friction_or_followup_count": len(friction),
+        "missed_detection_candidate_count": len(_missed_detection_records(friction)),
     }
 
 
@@ -389,7 +421,7 @@ def _confidence_gaps(records: list[dict[str, Any]], summary: dict[str, Any]) -> 
         gaps.append("repo_ref_not_provided")
     if summary["scope"] == "corca_internal" and not summary["target_refs"].get("user_ref"):
         gaps.append("corca_internal_user_ref_not_provided")
-    if any("feedback_signal" not in record for record in records):
+    if summary["feedback_coverage_count"] < summary["usage_count"]:
         gaps.append("missing_feedback_signal")
     return gaps
 

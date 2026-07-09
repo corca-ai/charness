@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import importlib.machinery
 import importlib.util
+import json
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP_RUNTIME_PATH = ROOT / "scripts" / "bootstrap_runtime.py"
@@ -176,6 +179,151 @@ def test_charness_invokes_repo_scripts_with_bootstrap_runtime(monkeypatch, tmp_p
     assert result == "ok"
     assert commands[0][:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
     assert commands[1][0] == "/tmp/charness-bootstrap/bin/python"
+
+
+def test_resolve_repo_python_reuses_healthy_launcher_without_bootstrap(monkeypatch, tmp_path: Path) -> None:
+    module = load_module("charness_bootstrap_fast_path_healthy", CHARNESS_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    launcher = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
+    launcher.parent.mkdir(parents=True)
+    launcher.write_text("healthy launcher\n", encoding="utf-8")
+    commands: list[list[str]] = []
+    isolated_envs: list[dict[str, str] | None] = []
+
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        del cwd
+        commands.append(command)
+        isolated_envs.append(env)
+        assert command[0] == str(launcher)
+        return completed(command)
+
+    monkeypatch.setattr(module, "run", fake_run)
+    monkeypatch.setenv("PYTHONPATH", "/foreign/runtime")
+    monkeypatch.setenv("PYTHONHOME", "/foreign/home")
+    module._BOOTSTRAP_PYTHON_CACHE.clear()
+
+    assert module.resolve_repo_python(repo_root) == str(launcher)
+    assert len(commands) == 1
+    assert isolated_envs == [env for env in isolated_envs if env and "PYTHONPATH" not in env and "PYTHONHOME" not in env]
+
+
+def test_resolve_repo_python_bootstraps_when_launcher_is_absent(monkeypatch, tmp_path: Path) -> None:
+    module = load_module("charness_bootstrap_fast_path_absent", CHARNESS_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    commands: list[list[str]] = []
+
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        del cwd, env
+        commands.append(command)
+        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        return completed(command, stdout="/tmp/repaired/bin/python\n")
+
+    monkeypatch.setattr(module, "run", fake_run)
+    module._BOOTSTRAP_PYTHON_CACHE.clear()
+
+    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
+    assert len(commands) == 1
+
+
+def test_resolve_repo_python_bootstraps_when_contract_schema_is_invalid(monkeypatch, tmp_path: Path) -> None:
+    module = load_module("charness_bootstrap_fast_path_invalid_schema", CHARNESS_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    contract_path = repo_root / "packaging" / "bootstrap-python.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["schema_version"] = 2
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    commands: list[list[str]] = []
+
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        del cwd, env
+        commands.append(command)
+        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        return completed(command, stdout="/tmp/repaired/bin/python\n")
+
+    monkeypatch.setattr(module, "run", fake_run)
+    module._BOOTSTRAP_PYTHON_CACHE.clear()
+
+    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
+    assert len(commands) == 1
+
+
+def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(monkeypatch, tmp_path: Path) -> None:
+    module = load_module("charness_bootstrap_fast_path_unhealthy", CHARNESS_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    launcher = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
+    launcher.parent.mkdir(parents=True)
+    launcher.write_text("stale launcher\n", encoding="utf-8")
+    commands: list[list[str]] = []
+
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        del cwd, env
+        commands.append(command)
+        if command[0] == str(launcher):
+            return completed(command, returncode=1)
+        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        return completed(command, stdout="/tmp/repaired/bin/python\n")
+
+    monkeypatch.setattr(module, "run", fake_run)
+    module._BOOTSTRAP_PYTHON_CACHE.clear()
+
+    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
+    assert [command[0] for command in commands] == [str(launcher), sys.executable]
+
+
+def test_resolve_repo_python_bootstraps_when_launcher_is_too_old(monkeypatch, tmp_path: Path) -> None:
+    module = load_module("charness_bootstrap_fast_path_old_python", CHARNESS_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    launcher = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
+    launcher.parent.mkdir(parents=True)
+    launcher.write_text("old launcher\n", encoding="utf-8")
+    commands: list[list[str]] = []
+
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        del cwd, env
+        commands.append(command)
+        if command[0] == str(launcher):
+            assert "sys.version_info[:2] < minimum" in command[2]
+            return completed(command, returncode=1)
+        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        return completed(command, stdout="/tmp/repaired/bin/python\n")
+
+    monkeypatch.setattr(module, "run", fake_run)
+    module._BOOTSTRAP_PYTHON_CACHE.clear()
+
+    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
+    assert [command[0] for command in commands] == [str(launcher), sys.executable]
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX execute permissions provide the real probe failure")
+def test_resolve_repo_python_bootstraps_when_launcher_is_not_executable(tmp_path: Path) -> None:
+    module = load_module("charness_bootstrap_fast_path_non_executable", CHARNESS_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    launcher = repo_root / ".charness" / "bootstrap-python" / "bin" / "python"
+    launcher.parent.mkdir(parents=True)
+    launcher.write_text("not executable\n", encoding="utf-8")
+    launcher.chmod(0o644)
+    bootstrap_script = repo_root / "scripts" / "bootstrap_runtime.py"
+    bootstrap_script.parent.mkdir(parents=True)
+    bootstrap_script.write_text("print('/tmp/repaired/bin/python')\n", encoding="utf-8")
+    module._BOOTSTRAP_PYTHON_CACHE.clear()
+
+    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
 
 
 def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) -> None:
