@@ -12,7 +12,7 @@ The release helper persisted this bounded retro before committing the release ar
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `skills/support/web-fetch/scripts/acquire_public_url.py`, `skills/support/web-fetch/scripts/youtube_source.py`.
-- Evaluated changed paths: 423.
+- Evaluated changed paths: 425.
 
 ## Waste
 
