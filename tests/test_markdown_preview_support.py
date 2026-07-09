@@ -64,6 +64,30 @@ def run_helper_in_process(
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
+def test_markdown_preview_parse_args_help_includes_argument_help(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", [RENDER_SCRIPT, "--help"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        RENDER_MARKDOWN_PREVIEW.parse_args()
+
+    out = capsys.readouterr().out
+    normalized = " ".join(out.split())
+    assert excinfo.value.code == 0
+    expected = {
+        "--repo-root": ["Repository root", "resolve paths"],
+        "--config": ["markdown preview config"],
+        "--file": ["Markdown file or glob", "Repeatable"],
+        "--width": ["Preview width", "Repeatable"],
+        "--artifact-dir": ["Repo-relative directory", "generated preview artifacts"],
+        "--backend": ["markdown preview backend", "Supported:", "glow"],
+        "--changed-only": ["selected Markdown targets", "files changed in", "git"],
+    }
+    for option, snippets in expected.items():
+        assert option in out
+        for snippet in snippets:
+            assert snippet in normalized
+
+
 def _isolated_path() -> str:
     return str(Path(sys.executable).resolve().parent)
 

@@ -31,13 +31,13 @@ render_targets = _RENDER.render_targets
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--config", type=Path)
-    parser.add_argument("--file", action="append", default=[])
-    parser.add_argument("--width", action="append", type=int, default=[])
-    parser.add_argument("--artifact-dir")
-    parser.add_argument("--backend")
-    parser.add_argument("--changed-only", action="store_true")
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repository root to resolve paths against.")
+    parser.add_argument("--config", type=Path, help="Path to the markdown preview config file.")
+    parser.add_argument("--file", action="append", default=[], help="Markdown file or glob to render. Repeatable.")
+    parser.add_argument("--width", action="append", type=int, default=[], help="Preview width in columns. Repeatable.")
+    parser.add_argument("--artifact-dir", help="Repo-relative directory for generated preview artifacts.")
+    parser.add_argument("--backend", help="Override the markdown preview backend. Supported: glow.")
+    parser.add_argument("--changed-only", action="store_true", help="Limit selected Markdown targets to files changed in git.")
     return parser.parse_args()
 
 
