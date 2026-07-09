@@ -23,7 +23,7 @@ standing argparse-help and file-length advisories remain outside this slice.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json`
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
 - runtime hot spots: `pytest` 30.7s latest / 30.7s median, budget 140.0s;
   `dead-code-advisory` 7.8s / 7.8s; `check-coverage` 7.5s / 7.4s, budget
