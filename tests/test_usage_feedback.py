@@ -9,6 +9,7 @@ from pathlib import Path
 import jsonschema
 import pytest
 
+from scripts import record_usage_feedback
 from scripts.usage_episode_feedback import (
     FEEDBACK_SIGNALS,
     FRICTION_SIGNALS,
@@ -16,8 +17,9 @@ from scripts.usage_episode_feedback import (
     SATISFACTION_SIGNALS,
     classification_counts,
     feedback_id_for,
+    reconcile_feedback,
 )
-from scripts.usage_episode_records import read_valid_records
+from scripts.usage_episode_records import read_valid_records, resolve_records_path, schema_root
 from tests.test_usage_episodes_schema import acme_episode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -186,6 +188,87 @@ def test_feedback_writer_rejects_missing_target_disabled_event_and_quality_mode(
     assert json.loads(incompatible.stdout)["status"] == "invalid_feedback"
 
 
+def test_feedback_writer_renders_plain_errors_and_portable_fallback(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    outside = tmp_path.parent / "outside-feedback.jsonl"
+    assert record_usage_feedback._portable_path(tmp_path, outside) == str(outside)
+
+    record_usage_feedback._print(
+        {"status": "no_adapter", "executed": False, "errors": ["adapter required"]},
+        False,
+    )
+    output = capsys.readouterr().out
+    assert "no_adapter: feedback_id=<none>" in output
+    assert "- adapter required" in output
+
+
+def test_feedback_writer_adapter_error_and_relative_path_branches(tmp_path: Path) -> None:
+    args = (
+        "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+    )
+    missing = run(WRITER, *args)
+    assert missing.returncode == 2
+    assert json.loads(missing.stdout)["status"] == "no_adapter"
+
+    plain_missing = run(WRITER, *args[:-1])
+    assert plain_missing.returncode == 2
+    assert "no_adapter: feedback_id=<none>" in plain_missing.stdout
+    assert "usage-episodes adapter is required" in plain_missing.stdout
+
+    adapter_path = write_adapter(tmp_path)
+    write_records(tmp_path, [acme_episode()])
+    relative = run(WRITER, *args[:-1], "--adapter-path", ".agents/usage-episodes-adapter.yaml", "--json")
+    assert relative.returncode == 0, relative.stderr
+    assert json.loads(relative.stdout)["status"] == "dry_run"
+
+    adapter_path.write_text("- not-a-mapping\n", encoding="utf-8")
+    wrong_shape = run(WRITER, *args)
+    assert wrong_shape.returncode == 2
+    assert "must be a mapping" in json.loads(wrong_shape.stdout)["errors"][0]
+
+    adapter_path.write_text("version: [\n", encoding="utf-8")
+    malformed = run(WRITER, *args)
+    assert malformed.returncode == 2
+    assert json.loads(malformed.stdout)["status"] == "invalid_adapter"
+
+
+def test_feedback_writer_rejects_symlinked_storage_escape(tmp_path: Path) -> None:
+    adapter = write_adapter(tmp_path)
+    adapter.write_text(
+        "version: 1\nenabled: true\nstorage_path: escape\nevents:\n  - usage_episode\n  - usage_feedback\n",
+        encoding="utf-8",
+    )
+    outside = tmp_path.parent / f"{tmp_path.name}-outside"
+    outside.mkdir()
+    (tmp_path / "escape").symlink_to(outside, target_is_directory=True)
+    result = run(
+        WRITER,
+        "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+    )
+    assert result.returncode == 2
+    assert json.loads(result.stdout)["status"] == "invalid_records_path"
+
+
+def test_feedback_writer_rejects_conflicting_existing_feedback_id(tmp_path: Path) -> None:
+    write_adapter(tmp_path)
+    conflicting = feedback_record()
+    conflicting["feedback_signal"] = "corrected"
+    write_records(tmp_path, [acme_episode(), conflicting])
+    result = run(
+        WRITER,
+        "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+    )
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "conflicting_feedback_id"
+    assert any("non-deterministic feedback_id" in error for error in payload["errors"])
+
+
 def test_validator_rejects_unlinked_and_duplicate_feedback_ids(tmp_path: Path) -> None:
     write_adapter(tmp_path)
     base = acme_episode()
@@ -213,6 +296,46 @@ def test_shared_record_reader_returns_records_and_semantic_errors(tmp_path: Path
     records, errors = read_valid_records(records_path, SCHEMA)
     assert len(records) == 3
     assert any("duplicate feedback_id" in error for error in errors)
+
+
+def test_shared_record_reader_handles_schema_fallback_blanks_and_invalid_json(tmp_path: Path) -> None:
+    assert schema_root(tmp_path) == REPO_ROOT / "integrations" / "usage-episodes"
+    local_schema_root = tmp_path / "integrations" / "usage-episodes"
+    local_schema_root.mkdir(parents=True)
+    for schema_name in ("manifest.schema.json", "episode.schema.json"):
+        (local_schema_root / schema_name).write_text("{}\n", encoding="utf-8")
+    assert schema_root(tmp_path) == local_schema_root
+
+    relative_records_path = Path("custom") / "records.jsonl"
+    assert resolve_records_path(tmp_path, {}, relative_records_path) == (tmp_path / relative_records_path).resolve()
+    absolute_records_path = tmp_path.parent / "absolute-records.jsonl"
+    assert resolve_records_path(tmp_path, {}, absolute_records_path) == absolute_records_path.resolve()
+
+    records_path = tmp_path / "usage_episode.jsonl"
+    records_path.write_text(f"\n{json.dumps(acme_episode())}\n\n", encoding="utf-8")
+    records, errors = read_valid_records(records_path, SCHEMA)
+    assert records == [acme_episode()]
+    assert errors == []
+
+    records_path.write_text("{not-json\n", encoding="utf-8")
+    records, errors = read_valid_records(records_path, SCHEMA)
+    assert records == []
+    assert any("invalid JSON" in error for error in errors)
+
+    invalid_timestamp = acme_episode()
+    invalid_timestamp["timestamp"] = "2026-07-10T01:00:60Z"
+    records_path.write_text(json.dumps(invalid_timestamp) + "\n", encoding="utf-8")
+    records, errors = read_valid_records(records_path, SCHEMA)
+    assert records == []
+    assert any("schema error at timestamp" in error for error in errors)
+
+
+def test_reconcile_feedback_counts_duplicate_and_unlinked_events() -> None:
+    linked = feedback_record()
+    unlinked = feedback_record(target_episode_id="missing")
+    reconciliation = reconcile_feedback([acme_episode(), linked, dict(linked), unlinked])
+    assert reconciliation["duplicate_feedback_id_count"] == 1
+    assert reconciliation["unlinked_feedback_count"] == 1
 
 
 def test_report_reconciles_one_delivery_and_one_feedback_event(tmp_path: Path) -> None:
