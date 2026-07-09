@@ -132,6 +132,7 @@ def _write_bundle(
     missing_fragment: bool = False,
     missing_sentinel_summary: bool = False,
     marker_in_trace: bool = True,
+    trace_name: str = "Bash",
     marker_in_stream: bool | None = None,
     marker_in_stream_prose: bool = False,
     marker_in_stream_note: bool = False,
@@ -148,7 +149,7 @@ def _write_bundle(
         # collectToolTrace() in build-skill-execution-observation.mjs.
         args_value = MARKER_VALUE if marker_in_trace else "something-else"
         record = {
-            "step": 1, "track": "parent", "name": "Bash", "args": args_value, "out_chars": 5,
+            "step": 1, "track": "parent", "name": trace_name, "args": args_value, "out_chars": 5,
             "msg_out_tokens": 1, "msg_cache_read": 0, "msg_tool_count": 1, "wall_ms": None,
         }
         (bundle / "trace-digest.jsonl").write_text(json.dumps(record) + "\n", encoding="utf-8")
@@ -566,6 +567,31 @@ def test_trace_marker_ignores_non_command_tool_input_fields(tmp_path: Path) -> N
         _write_bundle(ab_dir, "baseline", i, missing_fragment=False, marker_in_trace=True)
     _write_bundle(ab_dir, "m1", 0, missing_fragment=False, marker_in_trace=False, marker_in_stream_note=True)
     _write_bundle(ab_dir, "m1", 1, missing_fragment=False, marker_in_trace=False, marker_in_stream_note=True)
+    witness_map = _witness_map(tmp_path)
+    manifest = _mutant_manifest(tmp_path)
+
+    report = lib.score_survival(ab_dir, witness_map, "refresh", manifest, ARM_SPECS)
+    unit = report["units"][0]
+    marker_witness = next(w for w in unit["per_witness"] if w["channel"] == "trace_command_marker")
+    assert marker_witness["fired_per_run"] == [False, False]
+    assert unit["verdict"] == "DETECTED"
+    assert unit["caveats"] == []
+
+
+def test_trace_marker_ignores_non_bash_trace_records_with_marker_args(tmp_path: Path) -> None:
+    ab_dir = tmp_path / "ab"
+    _write_results(ab_dir, {"baseline": 2, "m1": 2})
+    for i in range(2):
+        _write_bundle(ab_dir, "baseline", i, missing_fragment=False, marker_in_trace=True)
+        _write_bundle(
+            ab_dir,
+            "m1",
+            i,
+            missing_fragment=False,
+            marker_in_trace=True,
+            trace_name="Read",
+            marker_in_stream=False,
+        )
     witness_map = _witness_map(tmp_path)
     manifest = _mutant_manifest(tmp_path)
 

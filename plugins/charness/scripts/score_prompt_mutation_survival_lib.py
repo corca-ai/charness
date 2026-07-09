@@ -21,14 +21,15 @@ survival scoring, per the goal's Boundaries):
     re-derived from a lower-fidelity re-grep of the trace.
 
   trace_command_marker -- read from the preserved `trace-digest.jsonl`
-    (per-tool-call digest; its `args` field truncates at 160 chars,
-    ARGS_DIGEST_MAX in build-skill-execution-observation.mjs), with a
-    `stream.jsonl` fallback (untruncated tool-call inputs) checked ONLY when
-    the marker did not fire via trace-digest, so a marker digestArgs
-    truncated away is still recoverable when the fuller source is present in
-    the bundle. When a marker did not fire and no stream.jsonl fallback was
-    available, callers get a caveat noting the truncation risk: an absence
-    there could be a false negative, not proof of removal.
+    command-bearing records (per-tool-call digest; its `args` field
+    truncates at 160 chars, ARGS_DIGEST_MAX in
+    build-skill-execution-observation.mjs), with a `stream.jsonl` fallback
+    (untruncated tool-call inputs) checked ONLY when the marker did not fire
+    via trace-digest, so a marker digestArgs truncated away is still
+    recoverable when the fuller source is present in the bundle. When a
+    marker did not fire and no stream.jsonl fallback was available, callers
+    get a caveat noting the truncation risk: an absence there could be a
+    false negative, not proof of removal.
 
 BASELINE VALIDITY is a hard refusal, not a soft caveat: every witness of
 every mutant unit under test must have fired in EVERY baseline run, or the
@@ -138,6 +139,10 @@ def _stream_command_blob(stream_path: Path) -> str:
     return "\n".join(commands)
 
 
+def _trace_record_has_command(record: dict, value: str) -> bool:
+    return record.get("name") == "Bash" and value in str(record.get("args", ""))
+
+
 def _trace_marker_fired(bundle_dir: Path, value: str) -> tuple[bool, bool]:
     """Returns `(fired, stream_available)`. Checks `trace-digest.jsonl` first;
     `stream.jsonl` (if present in the bundle) is the untruncated fallback,
@@ -149,7 +154,7 @@ def _trace_marker_fired(bundle_dir: Path, value: str) -> tuple[bool, bool]:
     stream_available = stream_path.is_file()
     if trace_path.is_file():
         for record in iter_jsonl_dicts(trace_path):
-            if value in str(record.get("args", "")):
+            if _trace_record_has_command(record, value):
                 return True, stream_available
     if stream_available and value in _stream_command_blob(stream_path):
         return True, stream_available
