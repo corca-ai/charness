@@ -46,7 +46,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import shutil
 import subprocess
 import sys
@@ -55,6 +54,7 @@ from pathlib import Path
 
 import grade_skill_outcome
 import skill_outcome_wiring as outcome
+from run_skill_efficiency_ab_validation import validate_results_name, validate_run_config
 
 # relative_deltas: not called directly here (build_report uses it internally) but re-exported
 # ("as" re-import) because tests exercise it via this module's attribute (ab.relative_deltas).
@@ -67,29 +67,6 @@ REPO_ROOT = repo_root_from_script(__file__)
 AGENT_RUNTIME = Path("scripts/agent-runtime")
 CAPTURE_SCRIPT = AGENT_RUNTIME / "capture-skill-run.sh"
 OBSERVE_SCRIPT = AGENT_RUNTIME / "build-skill-execution-observation.mjs"
-ARM_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
-CONFIG_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
-
-
-def _validate_run_spec(runs: int, arms: list[dict]) -> None:
-    if runs <= 0:
-        raise ValueError("`runs` must be a positive integer")
-    if not isinstance(arms, list) or not arms:
-        raise ValueError("`arms` must be a non-empty list")
-    for arm in arms:
-        if not isinstance(arm, dict):
-            raise ValueError("each arm must be an object")
-        name = arm.get("name", "")
-        if not isinstance(name, str) or not ARM_NAME_RE.fullmatch(name):
-            raise ValueError(f"invalid arm name: {name!r}")
-
-
-def _validate_default_results_name(name: object) -> str:
-    if not isinstance(name, str) or not name:
-        raise ValueError("`name` must be a non-empty string")
-    if not CONFIG_NAME_RE.fullmatch(name):
-        raise ValueError(f"invalid config name: {name!r}")
-    return name
 
 
 # --- pure aggregation / comparison (unit-tested) ---------------------------------
@@ -287,15 +264,13 @@ def _cleanup_run(repo_root: Path, out_dir: Path) -> None:
 
 def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, keep_runs: bool,
            judge_fn=None, keep_untracked: bool = False) -> dict:
-    runs = int(config.get("runs", 4))
-    default_spec = config.get("spec_path")
+    runs, arms, default_spec = validate_run_config(config)
     raw_runs: list[dict] = []
     agg_by_arm: dict = {}
     outcome_by_arm: dict = {}
     gate = outcome.GraderGate()
-    _validate_run_spec(runs, config["arms"])
     results_dir.mkdir(parents=True, exist_ok=True)
-    for arm in config["arms"]:
+    for arm in arms:
         spec_path = repo_root / (arm.get("spec_path") or default_spec)
         spec = json.loads(spec_path.read_text(encoding="utf-8"))
         invocation = arm.get("invocation") or spec["prompt"]
@@ -477,20 +452,20 @@ def main(argv: list[str] | None = None) -> int:
         return selftest(repo_root)
     if args.run:
         config = json.loads(args.run.read_text(encoding="utf-8"))
+        try:
+            validate_run_config(config)
+        except (TypeError, ValueError) as exc:
+            print(f"refusing --run: {exc}", file=sys.stderr)
+            return 1
         if args.out_dir is None:
             try:
-                name = _validate_default_results_name(config["name"])
+                name = validate_results_name(config["name"])
             except (KeyError, ValueError) as exc:
                 print(f"refusing --run: {exc}", file=sys.stderr)
                 return 1
             results_dir = repo_root / "charness-artifacts" / "efficiency" / name
         else:
             results_dir = args.out_dir
-        try:
-            _validate_run_spec(int(config["runs"]), config["arms"])
-        except (KeyError, TypeError, ValueError) as exc:
-            print(f"refusing --run: {exc}", file=sys.stderr)
-            return 1
         # The slice's promise is "self-tested instruments refuse before spend": gate
         # the live matrix on the offline self-test so a broken extractor can never
         # produce a comparison we'd trust. Cheap (no API) and fail-closed.

@@ -475,6 +475,23 @@ def test_run_refuses_empty_arms_before_spend(tmp_path: Path, monkeypatch: pytest
     assert "refusing --run: `arms` must be a non-empty list" in captured.err
 
 
+def test_run_refuses_malformed_config_before_selftest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys) -> None:
+    cfg = tmp_path / "c.json"
+    cfg.write_text(json.dumps(["not-an-object"]), encoding="utf-8")
+    called = {"selftest": False}
+
+    def _selftest(_repo_root: Path) -> int:
+        called["selftest"] = True
+        raise AssertionError("selftest must not run")
+
+    monkeypatch.setattr(ab, "selftest", _selftest)
+    rc = ab.main(["--run", str(cfg), "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr()
+    assert rc == 1
+    assert called["selftest"] is False
+    assert "refusing --run: config must be an object" in captured.err
+
+
 @pytest.mark.parametrize(
     "name,expected",
     [
@@ -501,6 +518,32 @@ def test_run_refuses_invalid_name_for_default_results_dir(
     captured = capsys.readouterr()
     assert rc == 1
     assert f"refusing --run: {expected}" in captured.err
+
+
+def test_validate_run_config_accepts_parseable_runs_and_effective_spec_path() -> None:
+    config = {
+        "runs": "2",
+        "spec_path": "spec.json",
+        "arms": [{"name": "a", "ref": "HEAD"}, {"name": "b", "ref": "HEAD~1", "spec_path": "alt.json", "invocation": ""}],
+    }
+    runs, arms, default_spec = ab.validate_run_config(config)
+    assert runs == 2
+    assert arms[0]["name"] == "a"
+    assert default_spec == "spec.json"
+
+
+@pytest.mark.parametrize(
+    "config,expected",
+    [
+        ({"runs": 1, "spec_path": "spec.json", "arms": [{"name": "a", "ref": "HEAD"}, {"name": "a", "ref": "HEAD~1"}]}, "duplicate arm name"),
+        ({"runs": 1, "spec_path": "spec.json", "arms": [{"name": "a", "ref": ""}]}, "must have a non-empty `ref`"),
+        ({"runs": 1, "spec_path": "", "arms": [{"name": "a", "ref": "HEAD"}]}, "must have a non-empty `spec_path`"),
+        ({"runs": 1, "spec_path": "spec.json", "arms": [{"name": "a", "ref": "HEAD", "invocation": 42}]}, "`invocation` must be a string"),
+    ],
+)
+def test_validate_run_config_rejects_schema_gaps(config: dict, expected: str) -> None:
+    with pytest.raises(ValueError, match=expected):
+        ab.validate_run_config(config)
 
 
 def test_main_requires_a_mode(tmp_path: Path) -> None:
