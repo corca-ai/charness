@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-09",
-  "source_artifact_count": 290,
-  "candidate_count": 1333,
+  "source_artifact_count": 292,
+  "candidate_count": 1338,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -815,6 +815,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:88ac28fcbd58",
+      "kind": "current_focus",
+      "lesson": "This retro covers the autonomous repo-improvement slice that resolved the local #427 scorer proof-honesty bug and reconciled handoff/prompt-mutation policy state.",
+      "normalized_key": "this retro covers the autonomous repo improvement slice that resolved the local 427 scorer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+          "date": "2026-07-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b20a94eed6e8",
       "kind": "current_focus",
       "lesson": "This retro covers the prompt-mutation step-7 slim follow-up goal.",
@@ -831,6 +851,46 @@
           "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
           "date": "2026-07-09",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2549b5fbc6f4",
+      "kind": "next_improvement",
+      "lesson": "applied: bug-class issue closeout now runs fresh-eye causal review plus code critique before final carrier validation; this caught and fixed two same-class siblings.",
+      "normalized_key": "applied bug class issue closeout now runs fresh eye causal review plus code critique",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:11ac23101917",
+      "kind": "next_improvement",
+      "lesson": "applied: `docs/prompt-mutation-policy.md` and `docs/handoff.md` record the Bash-only marker evidence rule and #427 push/verify boundary.",
+      "normalized_key": "applied docs prompt mutation policy md and docs handoff md record the bash only",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -875,12 +935,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:52ad44a76789",
+      "candidate_id": "next_improvement:f345ee2b0b85",
       "kind": "next_improvement",
-      "lesson": "issue #426 (novel: mutant snapshot commits are diffable against their baseline parent; symmetric parentless snapshots for all arms).",
-      "normalized_key": "issue 426 novel mutant snapshot commits are diffable against their baseline parent symmetric parentless",
+      "lesson": "applied: `trace_command_marker` scoring now requires Bash command-bearing evidence in both trace digest and stream fallback, with focused regression tests.",
+      "normalized_key": "applied trace command marker scoring now requires bash command bearing evidence in both trace",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
       "latest_source_date": "2026-07-09",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -888,19 +948,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
           "date": "2026-07-09",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:09f5698bf007",
+      "candidate_id": "next_improvement:d1128fe3723d",
       "kind": "next_improvement",
-      "lesson": "issue #427 (novel: constrain scorer stream fallback to command-bearing events; add mention-only negative fixture).",
-      "normalized_key": "issue 427 novel constrain scorer stream fallback to command bearing events add mention only",
+      "lesson": "deferred prompt-mutation-helper-contract — rename or split `prompt_mutation_bundle_lib.stream_command_blob` when a future consumer needs execution-proof stream semantics.",
+      "normalized_key": "deferred prompt mutation helper contract rename or split prompt mutation bundle lib stream command",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
       "latest_source_date": "2026-07-09",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -908,67 +968,7 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
-          "date": "2026-07-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:3941732577ee",
-      "kind": "next_improvement",
-      "lesson": "none further — the 30-unit UNTESTED debt list is recorded in the pilot report as the input for future witness-authoring work, owned by the report artifact rather than a new tracked issue now.",
-      "normalized_key": "none further the 30 unit untested debt list is recorded in the pilot report",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
-      "latest_source_date": "2026-07-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md",
-          "date": "2026-07-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:61bfa8801809",
-      "kind": "next_improvement",
-      "lesson": "repo-local guard: prompt-mutation blind-workspace guard — before spending live prompt-mutation captures, require a preflight that either prevents identity-relevant git history/ref probes or declares the experiment tainted in advance.",
-      "normalized_key": "repo local guard prompt mutation blind workspace guard before spending live prompt mutation captures",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
-      "latest_source_date": "2026-07-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
-          "date": "2026-07-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:574279ae4697",
-      "kind": "next_improvement",
-      "lesson": "repo-local guard: prompt-mutation clean-proof preflight — make the post-hoc sweep rules executable earlier so \"sentinels green but observer tainted\" is caught before capture headroom is exhausted.",
-      "normalized_key": "repo local guard prompt mutation clean proof preflight make the post hoc sweep rules",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
-      "latest_source_date": "2026-07-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
           "date": "2026-07-09",
           "section": "Next Improvements"
         }
@@ -1777,6 +1777,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:88ac28fcbd58",
+      "kind": "current_focus",
+      "lesson": "This retro covers the autonomous repo-improvement slice that resolved the local #427 scorer proof-honesty bug and reconciled handoff/prompt-mutation policy state.",
+      "normalized_key": "this retro covers the autonomous repo improvement slice that resolved the local 427 scorer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+          "date": "2026-07-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b20a94eed6e8",
       "kind": "current_focus",
       "lesson": "This retro covers the prompt-mutation step-7 slim follow-up goal.",
@@ -1793,6 +1813,46 @@
           "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
           "date": "2026-07-09",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2549b5fbc6f4",
+      "kind": "next_improvement",
+      "lesson": "applied: bug-class issue closeout now runs fresh-eye causal review plus code critique before final carrier validation; this caught and fixed two same-class siblings.",
+      "normalized_key": "applied bug class issue closeout now runs fresh eye causal review plus code critique",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:11ac23101917",
+      "kind": "next_improvement",
+      "lesson": "applied: `docs/prompt-mutation-policy.md` and `docs/handoff.md` record the Bash-only marker evidence rule and #427 push/verify boundary.",
+      "normalized_key": "applied docs prompt mutation policy md and docs handoff md record the bash only",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -1831,6 +1891,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-09-session-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f345ee2b0b85",
+      "kind": "next_improvement",
+      "lesson": "applied: `trace_command_marker` scoring now requires Bash command-bearing evidence in both trace digest and stream fallback, with focused regression tests.",
+      "normalized_key": "applied trace command marker scoring now requires bash command bearing evidence in both trace",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+          "date": "2026-07-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d1128fe3723d",
+      "kind": "next_improvement",
+      "lesson": "deferred prompt-mutation-helper-contract — rename or split `prompt_mutation_bundle_lib.stream_command_blob` when a future consumer needs execution-proof stream semantics.",
+      "normalized_key": "deferred prompt mutation helper contract rename or split prompt mutation bundle lib stream command",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
+      "latest_source_date": "2026-07-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md",
           "date": "2026-07-09",
           "section": "Next Improvements"
         }

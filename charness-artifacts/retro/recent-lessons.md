@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`; sources: 73)
+- applied: bug-class issue closeout now runs fresh-eye causal review plus code critique before final carrier validation; this caught and fixed two same-class siblings. (source: `charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md`)
+- applied: `docs/prompt-mutation-policy.md` and `docs/handoff.md` record the Bash-only marker evidence rule and #427 push/verify boundary. (source: `charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md`)
 - applied: docs/prompt-mutation-policy.md stream-drop re-score rule and commit-diff blinding caveat (commit 5ce78e9d). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
-- applied: this retro plus the T3/T4 experiment report record that the sweep is a first-class ship gate, not an advisory footnote. (source: `charness-artifacts/retro/2026-07-09-session-retro.md`)
-- issue #426 (novel: mutant snapshot commits are diffable against their baseline parent; symmetric parentless snapshots for all arms). (source: `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`)
 
 ## Selection Policy
 
@@ -99,6 +99,6 @@
 - `charness-artifacts/retro/2026-07-03-v0-60-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-09-autonomous-repo-improvement-issues-retro.md`
 - `charness-artifacts/retro/2026-07-09-session-retro-prompt-mutation-pilot-goal.md`
-- `charness-artifacts/retro/2026-07-09-session-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`

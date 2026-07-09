@@ -151,11 +151,13 @@ Learned in the pilot and binding on every future run:
   with a sharper trace marker where possible.
 - `trace-digest.jsonl` truncates command args at 160 chars; keep
   `stream.jsonl` available at scoring time (`--keep-runs`, copy into the
-  bundles) as the untruncated fallback for trace markers. Before dropping
-  streams from committed evidence, re-score without them: if any fire
-  pattern differs, either commit the stream that carried the difference or
-  withdraw the stream-only fire (a stream match can be a mention, not an
-  execution — the pilot hit exactly this).
+  bundles) as the untruncated fallback for trace markers. Scoring evidence
+  must come from Bash command-bearing records only: transcript prose, non-Bash
+  tool inputs, paths, patterns, task descriptions, or other mention-level text
+  do not count as a marker fire. Before dropping streams from committed
+  evidence, re-score without them: if any fire pattern differs, either commit
+  the Bash command stream that carried the difference or withdraw the
+  stream-only fire.
 - Commit-diff unblinding: a captured run can `git show` a parented mutant
   commit and read the removed or rewritten section verbatim (observed in 4 of
   6 pilot mutant runs). Neutral messages are necessary but not sufficient; use
