@@ -1,6 +1,6 @@
 # Achieve Goal: Outcome-driven autonomous repo improvement
 
-Status: active
+Status: complete
 Created: 2026-07-10
 Activation: `/goal @charness-artifacts/goals/2026-07-10-outcome-driven-autonomous-improvement.md`
 
@@ -10,13 +10,11 @@ command remains the portable resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: S4 final quality, retro, disposition review, and verification lock.
-- Current slice intent: bind the completed local implementation to honest
-  quality/host/retro evidence and close without implying push, live feedback,
-  or prompt-demotion proof that did not run.
-- Next action: commit the retro-packet surface ownership repair, rerun the
-  committed verification lock, and flip this artifact only after that proof
-  passes.
+- Current slice: S4 complete — local closeout evidence and verification are locked.
+- Current slice intent: preserve the proven `impl-local` outcome without
+  implying push, live feedback, or prompt-demotion proof that did not run.
+- Next action: operator decision on whether to push the completed local bundle;
+  the first feedback event remains conditional on a real authoritative observation.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -175,7 +173,7 @@ Make Charness self-improvement outcome-driven: repair stale operating state, est
 | S1 | Add the smallest privacy-safe feedback evidence path beyond delivery | 1,329 local episodes have zero feedback and one emitter | Focused tests, validated schema/records, reporter distinguishes linked feedback from delivery | complete |
 | S2 | Reconcile semantic operating state at closeout | Handoff says #427 is unpushed although its commits are on origin/main and v0.63.1 is released | Commit ancestry/readback evidence, concise current handoff, doc preflight | complete |
 | S3 | Disposition the prompt-mutation demotion candidate | The pilot found one narrow redundancy but only N=2 and one scenario | Integrated deterministic proof and fresh-eye reading review, or evidence-backed defer | complete |
-| S4 | Final quality, retro, and commit closeout | Task-completing repo work requires durable proof and learning | Verification lock, critique/retro artifacts, complete goal, clean committed tree | in progress |
+| S4 | Final quality, retro, and commit closeout | Task-completing repo work requires durable proof and learning | Verification lock, critique/retro artifacts, complete goal, clean committed tree | complete |
 
 ## Operator Decision Queue
 
@@ -360,6 +358,8 @@ Disposition review: charness-artifacts/critique/2026-07-10-outcome-driven-autono
 - Closeout state: `impl-local`; no push, remote CI, instance sync, live provider proof, release, or issue close ran.
 - Residual risks: feedback append has no cross-process lock; rotated streams are not reconciled; no real feedback observation exists yet.
 - High-cost/live proof: Cautilus and live capture were not run because the deterministic contract was sufficient and those lanes require separate approval.
+- Final committed verification lock: PASS on `ec5eb4a9f1635a5c912fb656f31b12e510655da5`; all sync/verify commands completed, standing pytest passed, and closeout status was `completed`.
+- Changed-line mutation coverage: PASS over `origin/main..HEAD`; `blocking: []` for all eight changed mutation-pool files after focused error/fallback branch coverage was added.
 
 ## User Verification Instructions
 
