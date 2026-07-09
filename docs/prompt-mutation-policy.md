@@ -116,6 +116,14 @@ Learned in the pilot and binding on every future run:
   each. The pilot patched blinding three times because channels were
   discovered iteratively; the diff-against-parent channel that 4/6 mutant
   runs used was derivable up front from "handoff runs do git ops".
+- **Preflight and sweep the blinding channel explicitly.** Before captures,
+  run `python3 scripts/prompt_mutation_clean_proof_preflight.py` over the
+  visible scenario spec text to catch prompt-authored history/ref probes before
+  they burn capture budget. After captures, run
+  `python3 scripts/check_prompt_mutation_blinding.py` over the preserved
+  bundle or A/B directory before treating scorer/judge green as ship proof.
+  Both helpers are advisory/read-only; a taint finding means no clean blinding
+  proof is claimed.
 - **Causality, not channel existence.** A witness counts only with a written
   causal path from the unit to the signal; run-level sanity assertions that
   fire on any packet have zero detection power (pilot plan-critique F2).

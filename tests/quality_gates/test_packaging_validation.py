@@ -215,6 +215,11 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
         "demo",
     )
     assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    summary = payload["change_summary"]
+    assert "plugins/demo/README.md" in summary["added_paths"]
+    assert summary["removed_paths"] == []
+    assert isinstance(summary["unchanged_count"], int)
     assert (repo / "plugins" / "demo" / ".claude-plugin" / "plugin.json").exists()
     assert (repo / ".claude-plugin" / "marketplace.json").exists()
     assert (repo / "plugins" / "demo" / ".codex-plugin" / "plugin.json").exists()

@@ -1,0 +1,59 @@
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+from tests.script_loader import load_script_module
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+
+preflight = load_script_module(
+    "prompt_mutation_clean_proof_preflight_under_test",
+    ROOT / "scripts" / "prompt_mutation_clean_proof_preflight.py",
+)
+
+
+def test_scenario_scan_ignores_comments_by_default(tmp_path: Path) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(
+        json.dumps({"_comment": "historical git show note", "prompt": "run refresh"}),
+        encoding="utf-8",
+    )
+
+    report = preflight.run(preflight.parse_args(["--scenario-spec", str(spec)]))
+
+    assert report["ok"] is True
+    assert report["findings"] == []
+
+
+def test_scenario_scan_blocks_visible_prompt_probe(tmp_path: Path) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "run git diff main HEAD"}), encoding="utf-8")
+
+    report = preflight.run(preflight.parse_args(["--scenario-spec", str(spec)]))
+
+    assert report["ok"] is False
+    assert report["findings"][0]["rule"] == "git-diff"
+
+
+def test_scenario_scan_blocks_git_global_option_probe(tmp_path: Path) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "run git -C . log --oneline"}), encoding="utf-8")
+
+    report = preflight.run(preflight.parse_args(["--scenario-spec", str(spec)]))
+
+    assert report["ok"] is False
+    assert report["findings"][0]["rule"] == "git-log"
+
+
+def test_transcript_scan_reports_history_probe(tmp_path: Path) -> None:
+    transcript = tmp_path / "transcript.txt"
+    transcript.write_text("tool ran: git log --all\n", encoding="utf-8")
+
+    report = preflight.run(preflight.parse_args(["--transcript", str(transcript)]))
+
+    assert report["blocking_count"] == 1
+    assert report["findings"][0]["source"] == str(transcript)

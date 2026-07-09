@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import sys
@@ -21,6 +22,36 @@ load_manifest = _scripts_packaging_lib_module.load_manifest
 write_json = _scripts_packaging_lib_module.write_json
 
 
+def _digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _snapshot(repo_root: Path, roots: list[Path]) -> dict[str, str]:
+    snapshot: dict[str, str] = {}
+    for root in roots:
+        if root.is_file():
+            snapshot[str(root.relative_to(repo_root))] = _digest(root)
+        elif root.is_dir():
+            for path in sorted(p for p in root.rglob("*") if p.is_file()):
+                snapshot[str(path.relative_to(repo_root))] = _digest(path)
+    return snapshot
+
+
+def _change_summary(before: dict[str, str], after: dict[str, str]) -> dict[str, object]:
+    before_paths = set(before)
+    after_paths = set(after)
+    added = sorted(after_paths - before_paths)
+    removed = sorted(before_paths - after_paths)
+    changed = sorted(path for path in before_paths & after_paths if before[path] != after[path])
+    unchanged = len(before_paths & after_paths) - len(changed)
+    return {
+        "added_paths": added,
+        "changed_paths": changed,
+        "removed_paths": removed,
+        "unchanged_count": unchanged,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate the checked-in plugin install surface and root marketplace files from the shared packaging manifest."
@@ -34,21 +65,33 @@ def main() -> int:
     written_paths: list[str] = []
     removed_paths: list[str] = []
     plugin_root = repo_root / checked_in_plugin_root(manifest)
+    root_artifact_paths = [repo_root / rel_path for rel_path, _payload in expected_root_artifacts(manifest)]
+    stale_manifest_paths = [
+        repo_root / ".claude-plugin" / "plugin.json",
+        repo_root / ".codex-plugin" / "plugin.json",
+    ]
+    before = _snapshot(repo_root, [plugin_root, *root_artifact_paths, *stale_manifest_paths])
     if plugin_root.exists():
         shutil.rmtree(plugin_root)
     export_plugin_tree(repo_root, plugin_root, manifest)
     written_paths.append(str(plugin_root.relative_to(repo_root)))
-    for stale_path in (repo_root / ".claude-plugin" / "plugin.json", repo_root / ".codex-plugin" / "plugin.json"):
+    for stale_path in stale_manifest_paths:
         if stale_path.exists():
             stale_path.unlink()
             removed_paths.append(str(stale_path.relative_to(repo_root)))
     for rel_path, payload in expected_root_artifacts(manifest):
         write_json(repo_root / rel_path, payload)
         written_paths.append(rel_path)
+    after = _snapshot(repo_root, [plugin_root, *root_artifact_paths, *stale_manifest_paths])
 
     print(
         json.dumps(
-            {"package_id": args.package_id, "written_paths": written_paths, "removed_paths": removed_paths},
+            {
+                "package_id": args.package_id,
+                "written_paths": written_paths,
+                "removed_paths": removed_paths,
+                "change_summary": _change_summary(before, after),
+            },
             ensure_ascii=False,
         )
     )

@@ -42,6 +42,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from prompt_mutation_bundle_lib import iter_jsonl_dicts, stream_command_blob
 from score_prompt_mutation_sentinel_lib import manifest_sentinels, score_sentinels, sentinel_label
 from witness_coverage_lib import WitnessCoverageError, load_witness_map
 
@@ -93,23 +94,6 @@ def parse_arm_specs(arm_args: list[str]) -> dict[str, str]:
 # --- bundle evidence readers (pure over one preserved/<arm>__<i>/ dir) ------
 
 
-def _iter_jsonl_dicts(path: Path):
-    try:
-        text = path.read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        return
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            record = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if isinstance(record, dict):
-            yield record
-
-
 def _observed_summary(bundle_dir: Path) -> str:
     observed_path = bundle_dir / "observed.v1.json"
     if not observed_path.is_file():
@@ -134,24 +118,7 @@ def _stream_command_blob(stream_path: Path) -> str:
     """Every string tool-call input value across a stream.jsonl (the capture's
     complete parent stdout), UNTRUNCATED -- the recovery source for a
     trace_command_marker the 160-char trace-digest `args` field cut away."""
-    parts: list[str] = []
-    for event in _iter_jsonl_dicts(stream_path):
-        message = event.get("message") if isinstance(event.get("message"), dict) else event
-        content = message.get("content") if isinstance(message, dict) else None
-        if not isinstance(content, list):
-            continue
-        for block in content:
-            if not isinstance(block, dict) or block.get("type") != "tool_use":
-                continue
-            block_input = block.get("input")
-            if not isinstance(block_input, dict):
-                continue
-            for value in block_input.values():
-                if isinstance(value, str):
-                    parts.append(value)
-                elif isinstance(value, list):
-                    parts.append(" ".join(v for v in value if isinstance(v, str)))
-    return "\n".join(parts)
+    return stream_command_blob(stream_path)
 
 
 def _trace_marker_fired(bundle_dir: Path, value: str) -> tuple[bool, bool]:
@@ -164,7 +131,7 @@ def _trace_marker_fired(bundle_dir: Path, value: str) -> tuple[bool, bool]:
     stream_path = bundle_dir / "stream.jsonl"
     stream_available = stream_path.is_file()
     if trace_path.is_file():
-        for record in _iter_jsonl_dicts(trace_path):
+        for record in iter_jsonl_dicts(trace_path):
             if value in str(record.get("args", "")):
                 return True, stream_available
     if stream_available and value in _stream_command_blob(stream_path):
