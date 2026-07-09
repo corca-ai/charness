@@ -334,6 +334,97 @@ def test_surface_marker_lib_counts_function_level_release_only_tests(tmp_path: P
     ]
 
 
+def test_surface_marker_lib_recognizes_pytest_alias_release_only_marks(tmp_path: Path) -> None:
+    lib = _load_surface_marker_lib()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    module_alias = tests / "test_module_alias.py"
+    function_alias = tests / "test_function_alias.py"
+    standing = tests / "test_standing.py"
+    module_alias.write_text(
+        "\n".join(
+            [
+                "import pytest as pt",
+                "import subprocess",
+                "",
+                "pytestmark = pt.mark.release_only",
+                "",
+                "def test_release_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    function_alias.write_text(
+        "\n".join(
+            [
+                "from pytest import mark as pytest_mark",
+                "import subprocess",
+                "",
+                "@pytest_mark.release_only",
+                "def test_release_case():",
+                "    subprocess.run(['true'], check=True)",
+                "",
+                "def test_standing_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    standing.write_text(
+        "\n".join(
+            [
+                "import subprocess",
+                "",
+                "def test_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    assert lib.module_release_only_files(
+        repo,
+        [
+            module_alias.relative_to(repo).as_posix(),
+            function_alias.relative_to(repo).as_posix(),
+            standing.relative_to(repo).as_posix(),
+        ],
+    ) == [module_alias.relative_to(repo).as_posix()]
+
+    payload = lib.pytest_file_test_counts(
+        repo,
+        [
+            module_alias.relative_to(repo).as_posix(),
+            function_alias.relative_to(repo).as_posix(),
+            standing.relative_to(repo).as_posix(),
+        ],
+    )
+
+    assert payload == [
+        {
+            "path": "tests/test_module_alias.py",
+            "test_count": 1,
+            "release_only_count": 1,
+            "standing_count": 0,
+        },
+        {
+            "path": "tests/test_function_alias.py",
+            "test_count": 2,
+            "release_only_count": 1,
+            "standing_count": 1,
+        },
+        {
+            "path": "tests/test_standing.py",
+            "test_count": 1,
+            "release_only_count": 0,
+            "standing_count": 1,
+        },
+    ]
+
+
 def test_standing_test_economics_ignores_generated_mutant_tree(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

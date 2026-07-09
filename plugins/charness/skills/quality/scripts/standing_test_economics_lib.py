@@ -325,10 +325,10 @@ def inventory(repo_root: Path) -> dict[str, Any]:
                 "evidence": (
                     f"{len(nested_cli_standing_files)} standing file(s), "
                     f"{len(nested_cli_mixed_release_only_files)} mixed release_only/standing file(s), "
-                    f"{len(nested_cli_release_only_files)} module-all-release-only file(s); "
+                    f"{len(nested_cli_release_only_files)} all-release-only file(s); "
                     f"standing sample: {standing_sample}; "
                     f"mixed sample: {mixed_sample}; "
-                    f"module-all-release-only sample: {release_only_sample}"
+                    f"all-release-only sample: {release_only_sample}"
                 ),
                 "recommended_action": "Keep a small real-binary smoke and move repeated contract proof in-process where honest.",
             }

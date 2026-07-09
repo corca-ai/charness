@@ -36,59 +36,81 @@ def _name_parts(node: ast.AST) -> list[str]:
     return []
 
 
-def _is_release_only_marker(node: ast.AST) -> bool:
+def _pytest_aliases(tree: ast.Module) -> tuple[set[str], set[str]]:
+    pytest_aliases = {"pytest"}
+    mark_aliases: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "pytest":
+                    pytest_aliases.add(alias.asname or alias.name)
+        elif isinstance(node, ast.ImportFrom) and node.module == "pytest":
+            for alias in node.names:
+                if alias.name == "mark":
+                    mark_aliases.add(alias.asname or alias.name)
+    return pytest_aliases, mark_aliases
+
+
+def _is_release_only_marker(node: ast.AST, pytest_aliases: set[str], mark_aliases: set[str]) -> bool:
     parts = _name_parts(node)
-    return len(parts) >= 3 and parts[-3:] == ["pytest", "mark", "release_only"]
+    return (
+        (len(parts) >= 3 and parts[-3] in pytest_aliases and parts[-2:] == ["mark", "release_only"])
+        or (len(parts) >= 2 and parts[-2] in mark_aliases and parts[-1] == "release_only")
+    )
 
 
 def _module_release_only(tree: ast.Module) -> bool:
+    pytest_aliases, mark_aliases = _pytest_aliases(tree)
     for node in tree.body:
         if not isinstance(node, ast.Assign):
             continue
         targets = [target.id for target in node.targets if isinstance(target, ast.Name)]
         if "pytestmark" not in targets:
             continue
-        if _is_release_only_marker(node.value):
+        if _is_release_only_marker(node.value, pytest_aliases, mark_aliases):
             return True
         if isinstance(node.value, (ast.List, ast.Tuple)):
-            if any(_is_release_only_marker(item) for item in node.value.elts):
+            if any(_is_release_only_marker(item, pytest_aliases, mark_aliases) for item in node.value.elts):
                 return True
     return False
 
 
-def _class_release_only(node: ast.ClassDef) -> bool:
-    if any(_is_release_only_marker(decorator) for decorator in node.decorator_list):
+def _class_release_only(node: ast.ClassDef, pytest_aliases: set[str], mark_aliases: set[str]) -> bool:
+    if any(_is_release_only_marker(decorator, pytest_aliases, mark_aliases) for decorator in node.decorator_list):
         return True
     for item in node.body:
         if not isinstance(item, ast.Assign):
             continue
         targets = [target.id for target in item.targets if isinstance(target, ast.Name)]
-        if "pytestmark" in targets and _is_release_only_marker(item.value):
+        if "pytestmark" in targets and _is_release_only_marker(item.value, pytest_aliases, mark_aliases):
             return True
         if "pytestmark" in targets and isinstance(item.value, (ast.List, ast.Tuple)):
-            if any(_is_release_only_marker(marker) for marker in item.value.elts):
+            if any(_is_release_only_marker(marker, pytest_aliases, mark_aliases) for marker in item.value.elts):
                 return True
     return False
 
 
-def _function_release_only(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
-    return any(_is_release_only_marker(decorator) for decorator in node.decorator_list)
+def _function_release_only(
+    node: ast.FunctionDef | ast.AsyncFunctionDef, pytest_aliases: set[str], mark_aliases: set[str]
+) -> bool:
+    return any(_is_release_only_marker(decorator, pytest_aliases, mark_aliases) for decorator in node.decorator_list)
 
 
 def _iter_tests(tree: ast.Module) -> list[tuple[str, bool]]:
+    pytest_aliases, mark_aliases = _pytest_aliases(tree)
     module_release_only = _module_release_only(tree)
     tests: list[tuple[str, bool]] = []
     for node in tree.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_"):
-            tests.append((node.name, module_release_only or _function_release_only(node)))
+            tests.append((node.name, module_release_only or _function_release_only(node, pytest_aliases, mark_aliases)))
         if isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
-            class_release_only = module_release_only or _class_release_only(node)
+            class_release_only = module_release_only or _class_release_only(node, pytest_aliases, mark_aliases)
             for item in node.body:
                 if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name.startswith("test_"):
                     tests.append(
                         (
                             f"{node.name}.{item.name}",
-                            class_release_only or _function_release_only(item),
+                            class_release_only or _function_release_only(item, pytest_aliases, mark_aliases),
                         )
                     )
     return tests
