@@ -92,7 +92,7 @@ def _line_col(text: str, offset: int) -> tuple[int, int]:
 
 def _scan_text(source: str, field: str, text: str) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
-    for severity, patterns in (("block", BLOCKING_PATTERNS), ("advisory", ADVISORY_PATTERNS)):
+    for severity, patterns in (("clean-proof-blocker", BLOCKING_PATTERNS), ("advisory", ADVISORY_PATTERNS)):
         for rule_id, pattern in patterns:
             for match in pattern.finditer(text):
                 line, col = _line_col(text, match.start())
@@ -128,21 +128,41 @@ def scan_text_file(path: Path) -> list[dict[str, Any]]:
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
+    scan_inputs = [*(args.scenario_spec or []), *(args.transcript or []), *(args.text or [])]
     for path in args.scenario_spec or []:
         findings.extend(scan_scenario(path, scan_comments=args.scan_comments))
     for path in (args.transcript or []) + (args.text or []):
         findings.extend(scan_text_file(path))
-    blocking = [finding for finding in findings if finding["severity"] == "block"]
+    blockers = [finding for finding in findings if finding["severity"] == "clean-proof-blocker"]
+    no_inputs = not scan_inputs
     return {
-        "ok": not blocking,
-        "blocking_count": len(blocking),
+        "ok": True,
+        "clean_proof_claim": bool(scan_inputs) and not blockers,
+        "clean_proof_blocker_count": len(blockers),
+        "blocking_count": len(blockers),
         "advisory_count": sum(1 for finding in findings if finding["severity"] == "advisory"),
+        "scanned_inputs_count": len(scan_inputs),
+        "no_inputs": no_inputs,
         "findings": findings,
-        "non_claim": (
-            "This scans visible scenario text and supplied transcripts only; it does not prove "
-            "a blind workspace or predict hidden tool behavior."
-        ),
+        "non_claim": _non_claim(no_inputs=no_inputs, blockers=blockers),
     }
+
+
+def _non_claim(*, no_inputs: bool, blockers: list[dict[str, Any]]) -> str:
+    if no_inputs:
+        return (
+            "No input files were supplied, so this run makes no clean-proof claim. "
+            "Pass --scenario-spec, --transcript, or --text to scan visible content."
+        )
+    if blockers:
+        return (
+            "History/ref probe tokens were found, so no clean blinding proof is claimed. "
+            "This advisory helper does not block commits or CI by exit status."
+        )
+    return (
+        "This scans visible scenario text and supplied transcripts only; it does not prove "
+        "a blind workspace or predict hidden tool behavior."
+    )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -171,9 +191,11 @@ def main(argv: list[str] | None = None) -> int:
                 f"{finding['severity']}: {finding['source']} {finding['field']} "
                 f"{finding['line']}:{finding['column']} {finding['rule']} ({finding['match']})"
             )
-        if not report["findings"]:
+        if report["no_inputs"]:
+            print("prompt-mutation clean-proof preflight: no input files supplied; no clean-proof claim made")
+        elif not report["findings"]:
             print("prompt-mutation clean-proof preflight: no visible git history/ref probe tokens found")
-    return 0 if report["ok"] else 1
+    return 0
 
 
 if __name__ == "__main__":

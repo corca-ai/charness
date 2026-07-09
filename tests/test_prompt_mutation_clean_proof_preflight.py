@@ -35,8 +35,11 @@ def test_scenario_scan_blocks_visible_prompt_probe(tmp_path: Path) -> None:
 
     report = preflight.run(preflight.parse_args(["--scenario-spec", str(spec)]))
 
-    assert report["ok"] is False
+    assert report["ok"] is True
+    assert report["clean_proof_claim"] is False
+    assert report["clean_proof_blocker_count"] == 1
     assert report["findings"][0]["rule"] == "git-diff"
+    assert report["findings"][0]["severity"] == "clean-proof-blocker"
 
 
 def test_scenario_scan_blocks_git_global_option_probe(tmp_path: Path) -> None:
@@ -45,7 +48,7 @@ def test_scenario_scan_blocks_git_global_option_probe(tmp_path: Path) -> None:
 
     report = preflight.run(preflight.parse_args(["--scenario-spec", str(spec)]))
 
-    assert report["ok"] is False
+    assert report["clean_proof_claim"] is False
     assert report["findings"][0]["rule"] == "git-log"
 
 
@@ -57,3 +60,25 @@ def test_transcript_scan_reports_history_probe(tmp_path: Path) -> None:
 
     assert report["blocking_count"] == 1
     assert report["findings"][0]["source"] == str(transcript)
+
+
+def test_no_inputs_reports_no_clean_proof_claim(capsys) -> None:
+    report = preflight.run(preflight.parse_args([]))
+
+    assert report["ok"] is True
+    assert report["clean_proof_claim"] is False
+    assert report["no_inputs"] is True
+    assert "No input files were supplied" in report["non_claim"]
+
+    rc = preflight.main([])
+    assert rc == 0
+    assert "no input files supplied" in capsys.readouterr().out
+
+
+def test_cli_probe_findings_remain_advisory_exit_zero(tmp_path: Path) -> None:
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps({"prompt": "run git show HEAD~1:file"}), encoding="utf-8")
+
+    rc = preflight.main(["--scenario-spec", str(spec)])
+
+    assert rc == 0
