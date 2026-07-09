@@ -520,6 +520,54 @@ def test_run_refuses_invalid_name_for_default_results_dir(
     assert f"refusing --run: {expected}" in captured.err
 
 
+def test_run_refuses_invalid_default_results_name_before_selftest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    cfg = tmp_path / "c.json"
+    cfg.write_text(
+        json.dumps({"name": "../x", "spec_path": "s", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}),
+        encoding="utf-8",
+    )
+    called = {"selftest": False}
+
+    def _selftest(_repo_root: Path) -> int:
+        called["selftest"] = True
+        raise AssertionError("selftest must not run")
+
+    monkeypatch.setattr(ab, "selftest", _selftest)
+    rc = ab.main(["--run", str(cfg), "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr()
+    assert rc == 1
+    assert called["selftest"] is False
+    assert "refusing --run: invalid config name" in captured.err
+
+
+def test_run_refuses_invalid_name_with_explicit_out_dir_before_selftest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    cfg = tmp_path / "c.json"
+    cfg.write_text(
+        json.dumps({"name": "bad/name", "spec_path": "s", "runs": 1, "arms": [{"name": "a", "ref": "HEAD"}]}),
+        encoding="utf-8",
+    )
+    called = {"selftest": False}
+
+    def _selftest(_repo_root: Path) -> int:
+        called["selftest"] = True
+        raise AssertionError("selftest must not run")
+
+    monkeypatch.setattr(ab, "selftest", _selftest)
+    rc = ab.main(["--run", str(cfg), "--repo-root", str(tmp_path), "--out-dir", str(tmp_path / "out")])
+    captured = capsys.readouterr()
+    assert rc == 1
+    assert called["selftest"] is False
+    assert "refusing --run: invalid config name" in captured.err
+
+
 def test_validate_run_config_accepts_parseable_runs_and_effective_spec_path() -> None:
     config = {
         "runs": "2",
@@ -530,6 +578,16 @@ def test_validate_run_config_accepts_parseable_runs_and_effective_spec_path() ->
     assert runs == 2
     assert arms[0]["name"] == "a"
     assert default_spec == "spec.json"
+
+
+def test_validate_run_config_can_require_results_name() -> None:
+    config = {"runs": 1, "spec_path": "spec.json", "arms": [{"name": "a", "ref": "HEAD"}]}
+    with pytest.raises(ValueError, match=r"`name` must be a non-empty string"):
+        ab.validate_run_config(config, require_results_name=True)
+
+    config["name"] = "safe-name"
+    runs, _arms, _default_spec = ab.validate_run_config(config, require_results_name=True)
+    assert runs == 1
 
 
 @pytest.mark.parametrize(

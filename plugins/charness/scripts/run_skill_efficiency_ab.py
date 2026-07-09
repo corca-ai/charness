@@ -453,16 +453,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.run:
         config = json.loads(args.run.read_text(encoding="utf-8"))
         try:
-            validate_run_config(config)
+            validate_run_config(config, require_results_name=True)
         except (TypeError, ValueError) as exc:
             print(f"refusing --run: {exc}", file=sys.stderr)
             return 1
         if args.out_dir is None:
-            try:
-                name = validate_results_name(config["name"])
-            except (KeyError, ValueError) as exc:
-                print(f"refusing --run: {exc}", file=sys.stderr)
-                return 1
+            name = validate_results_name(config["name"])
             results_dir = repo_root / "charness-artifacts" / "efficiency" / name
         else:
             results_dir = args.out_dir
