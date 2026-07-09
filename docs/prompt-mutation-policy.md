@@ -111,8 +111,17 @@ Learned in the pilot and binding on every future run:
   when the fragment string appears in multiple prose surfaces — pair them
   with a sharper trace marker where possible.
 - `trace-digest.jsonl` truncates command args at 160 chars; keep
-  `stream.jsonl` available (`--keep-runs`, copy into preserved bundles) as
-  the untruncated fallback for trace markers.
+  `stream.jsonl` available at scoring time (`--keep-runs`, copy into the
+  bundles) as the untruncated fallback for trace markers. Before dropping
+  streams from committed evidence, re-score without them: if any fire
+  pattern differs, either commit the stream that carried the difference or
+  withdraw the stream-only fire (a stream match can be a mention, not an
+  execution — the pilot hit exactly this).
+- Commit-diff unblinding: a captured run can `git show` the mutant snapshot
+  commit and read the removed section verbatim (observed in 4 of 6 pilot
+  mutant runs). Neutral messages are necessary but not sufficient; prefer
+  symmetric parentless snapshot commits for **all** arms, baseline included,
+  so no arm has a diffable history.
 - Judge-kind witnesses are modeled in the witness-map schema but spend
   evaluator budget; they follow the repo cautilus ask-before-run contract
   and never contribute to deterministic survival verdicts.

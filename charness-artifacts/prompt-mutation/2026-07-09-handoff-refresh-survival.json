@@ -103,7 +103,7 @@
           "channel": "trace_command_marker",
           "value": "plan_handoff_run.py",
           "fired_per_run": [
-            true,
+            false,
             false
           ]
         },
@@ -116,7 +116,9 @@
           ]
         }
       ],
-      "caveats": []
+      "caveats": [
+        "trace_command_marker witness 'plan_handoff_run.py' had no stream.jsonl fallback in run(s) [0, 1] -- trace-digest.jsonl truncates `args` at 160 chars (ARGS_DIGEST_MAX in build-skill-execution-observation.mjs), so a marker beyond that point there could be a false negative."
+      ]
     },
     {
       "unit_id": "plugins/charness/skills/handoff/SKILL.md#handoff/workflow@51a25aa66f",

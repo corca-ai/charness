@@ -227,6 +227,8 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: find-skills -> impl — implementation slices S1/S2/S4 (list_capabilities.py --recommend-for-skill impl also surfaced cautilus as a validation-role tool; deliberately unspent this goal per Boundaries)`
 - Gather: n/a — all context sources are repo-local (no external URL/doc consumed).
+- Release: n/a — no version bump or install-manifest edit in this goal.
+- Issue closeout: n/a — no issue closed by this goal; #426 was FILED as an off-goal follow-up, not resolved.
 
 ## Discuss Before Activation
 
@@ -396,7 +398,10 @@ activation:
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
+- #426 filed (commit-diff unblinding: 4/6 mutant captures identified the
+  removed section via `git show` on the snapshot commit; fix direction =
+  symmetric parentless snapshot commits for all arms). Surfaced by the final
+  closeout fresh-eye critique; report + policy doc already disclose it.
 
 ## Final Verification
 
