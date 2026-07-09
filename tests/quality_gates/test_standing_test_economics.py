@@ -104,9 +104,13 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
     payload = json.loads(result.stdout)
 
     assert payload["nested_cli_file_count"] == 12
+    assert payload["nested_cli_all_release_only_file_count"] == 0
+    assert payload["nested_cli_mixed_release_only_file_count"] == 0
+    assert payload["nested_cli_standing_file_count"] == 12
     assert payload["nested_cli_release_only_file_count"] == 0
     assert payload["nested_cli_standing_or_mixed_file_count"] == 12
     assert len(payload["nested_cli_files_sample"]) == 10
+    assert len(payload["nested_cli_standing_files_sample"]) == 10
     assert len(payload["nested_cli_standing_or_mixed_files_sample"]) == 10
     assert "nested_cli_files" not in payload
     assert "nested_cli_standing_or_mixed_files" not in payload
@@ -136,6 +140,7 @@ def test_standing_test_economics_summary_yaml_is_compact_and_parseable(tmp_path:
     payload = yaml.safe_load(yaml_result.stdout)
 
     assert payload["nested_cli_file_count"] == 12
+    assert payload["nested_cli_standing_file_count"] == 12
     assert payload["nested_cli_standing_or_mixed_file_count"] == 12
     assert "nested_cli_files" not in payload
     assert len(yaml_result.stdout.encode("utf-8")) < len(json_result.stdout.encode("utf-8"))
@@ -193,6 +198,12 @@ def test_standing_test_economics_splits_module_release_only_nested_cli_files(tmp
     payload = json.loads(result.stdout)
 
     assert payload["nested_cli_file_count"] == 3
+    assert payload["nested_cli_all_release_only_file_count"] == 1
+    assert payload["nested_cli_all_release_only_files_sample"] == ["tests/test_module_release_only.py"]
+    assert payload["nested_cli_mixed_release_only_file_count"] == 1
+    assert payload["nested_cli_mixed_release_only_files_sample"] == ["tests/test_mixed_release_only.py"]
+    assert payload["nested_cli_standing_file_count"] == 1
+    assert payload["nested_cli_standing_files_sample"] == ["tests/test_standing.py"]
     assert payload["nested_cli_release_only_file_count"] == 1
     assert payload["nested_cli_release_only_files_sample"] == ["tests/test_module_release_only.py"]
     assert payload["nested_cli_standing_or_mixed_file_count"] == 2
@@ -240,6 +251,86 @@ def test_surface_marker_lib_skips_unreadable_files(tmp_path: Path, monkeypatch) 
     matching_release.write_text("pytestmark = pytest.mark.release_only\n", encoding="utf-8")
     assert lib.module_release_only_files(repo, [release_path.name, matching_release.name]) == [
         matching_release.name
+    ]
+
+
+def test_surface_marker_lib_counts_function_level_release_only_tests(tmp_path: Path) -> None:
+    lib = _load_surface_marker_lib()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    release_only = repo / "tests" / "test_release_only.py"
+    mixed = repo / "tests" / "test_mixed.py"
+    standing = repo / "tests" / "test_standing.py"
+    release_only.parent.mkdir()
+    release_only.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "import subprocess",
+                "",
+                "@pytest.mark.release_only",
+                "def test_release_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    mixed.write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "import subprocess",
+                "",
+                "@pytest.mark.release_only",
+                "def test_release_case():",
+                "    subprocess.run(['true'], check=True)",
+                "",
+                "def test_standing_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    standing.write_text(
+        "\n".join(
+            [
+                "import subprocess",
+                "",
+                "def test_case():",
+                "    subprocess.run(['true'], check=True)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    payload = lib.pytest_file_test_counts(
+        repo,
+        [
+            release_only.relative_to(repo).as_posix(),
+            mixed.relative_to(repo).as_posix(),
+            standing.relative_to(repo).as_posix(),
+        ],
+    )
+
+    assert payload == [
+        {
+            "path": "tests/test_release_only.py",
+            "test_count": 1,
+            "release_only_count": 1,
+            "standing_count": 0,
+        },
+        {
+            "path": "tests/test_mixed.py",
+            "test_count": 2,
+            "release_only_count": 1,
+            "standing_count": 1,
+        },
+        {
+            "path": "tests/test_standing.py",
+            "test_count": 1,
+            "release_only_count": 0,
+            "standing_count": 1,
+        },
     ]
 
 

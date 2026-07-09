@@ -17,7 +17,7 @@ _MARKERS = __import__("surface_marker_lib")
 discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
 find_nested_cli_files = _MARKERS.nested_cli_files
-find_module_release_only_files = _MARKERS.module_release_only_files
+find_pytest_file_test_counts = _MARKERS.pytest_file_test_counts
 
 IGNORED_DIRS = {
     ".artifacts", ".charness", ".git", ".hg", ".mypy_cache", ".pytest_cache",
@@ -262,11 +262,25 @@ def inventory(repo_root: Path) -> dict[str, Any]:
     node_test_snippets = [item for item in snippets if NODE_TEST_RE.search(item["snippet"])]
     ts_loader_snippets = [item for item in snippets if TS_LOADER_RE.search(item["snippet"])]
     nested_cli_files = find_nested_cli_files(repo_root, test_files)
-    nested_cli_release_only_files = find_module_release_only_files(repo_root, nested_cli_files)
-    nested_cli_release_only_set = set(nested_cli_release_only_files)
-    nested_cli_standing_or_mixed_files = [
-        path for path in nested_cli_files if path not in nested_cli_release_only_set
-    ]
+    nested_cli_test_counts = find_pytest_file_test_counts(repo_root, nested_cli_files)
+    nested_cli_release_only_files: list[str] = []
+    nested_cli_mixed_release_only_files: list[str] = []
+    nested_cli_standing_files: list[str] = []
+    nested_cli_standing_or_mixed_files: list[str] = []
+    for item in nested_cli_test_counts:
+        path = item["path"]
+        release_only_count = int(item["release_only_count"])
+        standing_count = int(item["standing_count"])
+        if release_only_count and not standing_count:
+            nested_cli_release_only_files.append(path)
+        elif release_only_count and standing_count:
+            nested_cli_mixed_release_only_files.append(path)
+            nested_cli_standing_or_mixed_files.append(path)
+        elif standing_count:
+            nested_cli_standing_files.append(path)
+            nested_cli_standing_or_mixed_files.append(path)
+        else:
+            nested_cli_standing_or_mixed_files.append(path)
     pytest_temp = _pytest_temp_footprint()
     findings: list[dict[str, Any]] = []
     if len(test_files) >= 50:
@@ -300,7 +314,8 @@ def inventory(repo_root: Path) -> dict[str, Any]:
             }
         )
     if nested_cli_files:
-        standing_sample = ", ".join(nested_cli_standing_or_mixed_files[:5]) or "none"
+        standing_sample = ", ".join(nested_cli_standing_files[:5]) or "none"
+        mixed_sample = ", ".join(nested_cli_mixed_release_only_files[:5]) or "none"
         release_only_sample = ", ".join(nested_cli_release_only_files[:5]) or "none"
         findings.append(
             {
@@ -308,10 +323,12 @@ def inventory(repo_root: Path) -> dict[str, Any]:
                 "severity": "advisory",
                 "message": "Tests spawn nested processes inside the standing suite.",
                 "evidence": (
-                    f"{len(nested_cli_standing_or_mixed_files)} standing/mixed file(s), "
-                    f"{len(nested_cli_release_only_files)} module-release-only file(s); "
-                    f"standing/mixed sample: {standing_sample}; "
-                    f"module-release-only sample: {release_only_sample}"
+                    f"{len(nested_cli_standing_files)} standing file(s), "
+                    f"{len(nested_cli_mixed_release_only_files)} mixed release_only/standing file(s), "
+                    f"{len(nested_cli_release_only_files)} module-all-release-only file(s); "
+                    f"standing sample: {standing_sample}; "
+                    f"mixed sample: {mixed_sample}; "
+                    f"module-all-release-only sample: {release_only_sample}"
                 ),
                 "recommended_action": "Keep a small real-binary smoke and move repeated contract proof in-process where honest.",
             }
@@ -335,6 +352,12 @@ def inventory(repo_root: Path) -> dict[str, Any]:
         "runner_snippets": snippets,
         "nested_cli_file_count": len(nested_cli_files),
         "nested_cli_files": nested_cli_files,
+        "nested_cli_all_release_only_file_count": len(nested_cli_release_only_files),
+        "nested_cli_all_release_only_files": nested_cli_release_only_files,
+        "nested_cli_mixed_release_only_file_count": len(nested_cli_mixed_release_only_files),
+        "nested_cli_mixed_release_only_files": nested_cli_mixed_release_only_files,
+        "nested_cli_standing_file_count": len(nested_cli_standing_files),
+        "nested_cli_standing_files": nested_cli_standing_files,
         "nested_cli_release_only_file_count": len(nested_cli_release_only_files),
         "nested_cli_release_only_files": nested_cli_release_only_files,
         "nested_cli_standing_or_mixed_file_count": len(nested_cli_standing_or_mixed_files),

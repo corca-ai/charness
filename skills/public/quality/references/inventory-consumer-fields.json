@@ -33,6 +33,12 @@
         "test_file_count",
         "nested_cli_file_count",
         "nested_cli_files",
+        "nested_cli_all_release_only_file_count",
+        "nested_cli_all_release_only_files",
+        "nested_cli_mixed_release_only_file_count",
+        "nested_cli_mixed_release_only_files",
+        "nested_cli_standing_file_count",
+        "nested_cli_standing_files",
         "nested_cli_release_only_file_count",
         "nested_cli_standing_or_mixed_file_count",
         "runner_snippets"

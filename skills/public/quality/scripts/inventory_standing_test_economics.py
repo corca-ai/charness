@@ -28,9 +28,9 @@ emit_summary = _summary_output.emit_summary
 # inference-layer proxy, so the inventory self-declares blind spots and the
 # question the `quality` consumer must answer before acting on the growth.
 INTERPRETATION = {
-    "measures": "the test surface relevant to standing economics — test-file count, nested-CLI fan-out split into likely standing/mixed vs module-level release_only buckets, transpiler/loader and node-isolation snippets, and the pytest temp footprint",
+    "measures": "the test surface relevant to standing economics — test-file count, nested-CLI fan-out split into standing-only, mixed release_only/standing, and all-release-only buckets, transpiler/loader and node-isolation snippets, and the pytest temp footprint",
     "proxy_for": "standing suite cost dominated by per-file runner startup, isolation, and fixture materialization rather than by test value",
-    "blind_spots": "counts files and process-spawn call sites, not coverage or value — a high test-file count can be honest behavior coverage, and an intentional real-binary smoke that spawns a subprocess counts as nested-CLI fan-out; the release_only split is conservative and only separates module-level pytestmark files, so mixed or non-standard markers stay in standing/mixed; it cannot see whether a given test earns its isolation cost",
+    "blind_spots": "counts files and process-spawn call sites, not coverage or value — a high test-file count can be honest behavior coverage, and an intentional real-binary smoke that spawns a subprocess counts as nested-CLI fan-out; the release_only split is structural and only sees pytest markers, so the file buckets still cannot tell whether a given test earns its isolation cost",
     "interpretation_question": "is this test-file / nested-CLI growth paying for real isolation and coverage value, or is it startup-cost waste THIS repo should consolidate?",
 }
 
@@ -42,6 +42,12 @@ SUMMARY_FIELDS = (
     "runner_snippets",
     "nested_cli_file_count",
     "nested_cli_files_sample",
+    "nested_cli_all_release_only_file_count",
+    "nested_cli_all_release_only_files_sample",
+    "nested_cli_mixed_release_only_file_count",
+    "nested_cli_mixed_release_only_files_sample",
+    "nested_cli_standing_file_count",
+    "nested_cli_standing_files_sample",
     "nested_cli_release_only_file_count",
     "nested_cli_release_only_files_sample",
     "nested_cli_standing_or_mixed_file_count",
@@ -59,6 +65,9 @@ def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
     payload_with_sample["summary_note"] = SUMMARY_NOTE
     for key in (
         "nested_cli_files",
+        "nested_cli_all_release_only_files",
+        "nested_cli_mixed_release_only_files",
+        "nested_cli_standing_files",
         "nested_cli_release_only_files",
         "nested_cli_standing_or_mixed_files",
     ):
@@ -86,6 +95,12 @@ def main() -> int:
         return 0
     print(f"test files: {payload['test_file_count']}")
     print(f"nested CLI files: {payload['nested_cli_file_count']}")
+    print(
+        "nested CLI buckets: "
+        f"standing={payload['nested_cli_standing_file_count']} "
+        f"mixed={payload['nested_cli_mixed_release_only_file_count']} "
+        f"all-release-only={payload['nested_cli_all_release_only_file_count']}"
+    )
     for finding in payload["findings"]:
         print(f"{finding['severity'].upper()} {finding['type']}: {finding['recommended_action']}")
     interpretation = payload.get("interpretation")
