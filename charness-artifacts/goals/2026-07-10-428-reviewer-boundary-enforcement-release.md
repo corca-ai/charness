@@ -237,6 +237,20 @@ applies.
 - Lessons carried forward: Host envelope tool restriction did not bind on a mid-session spawn (probe: TOOL-EXECUTED; meta agentType echoed the spawn name); typed-envelope live proof needs a fresh session — recorded as a non-claim, rail 1 verified live instead. Never trust reviewer self-report: audit tool_use events in the transcript.
 - Metrics:
 
+### Slice 4: Slice 4: quality gates, resolution critique, closeout staging
+
+- Objective: Run the final quality proof and stage an honest #428 closeout: resolution critique, per-line acceptance mapping, carrier rehearsal.
+- Why this approach: Issue workflow step 7 and repo closeout discipline before the approved external lane (push/release).
+- Commits: 8145629a (+ critique artifact in the release-prep commit)
+- What changed: charness-artifacts/critique/2026-07-10-428-resolution-critique.md, fresh-eye reference quarantine line (+mirror), goal artifact
+- Alternatives rejected: Rejected: closing #428 with a flat 'acceptance met' claim (resolution critique BLOCKER: lines 1-2 rest partly on the unproven rail-2 binding); holding the close until fresh-session envelope proof (the issue's impact — silent closeout corruption — is closed by rail 1 everywhere; deferral tracked as #430).
+- Targeted verification: Full CI-baseline command in credentials-less env: 4431 passed, 77 deselected, 0 failed; run_slice_closeout pre-lock aggregate all PASS; validate-closeout-draft ok:true for the direct-commit carrier; rail-1 verify clean around both reviewers.
+- Test duplication pressure: No new tests this slice; suite runtime 3m41s local.
+- Critique: Resolution critique (bounded fresh-eye, parent-delegated): CLOSE-WITH-EDITS; BLOCKER folded into the carrier draft; SHOULD-FIXes tracked as #430/#431; NIT applied. Artifact: charness-artifacts/critique/2026-07-10-428-resolution-critique.md
+- Off-goal findings: #430, #431 filed (see critique artifact)
+- Lessons carried forward: Honest close = per-acceptance-line verdict mapping, not a blanket met/unmet; the verify-full-clean-after-quarantine nuance came from the reviewer's masking analysis.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
