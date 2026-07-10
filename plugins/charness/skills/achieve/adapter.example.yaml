@@ -36,3 +36,5 @@ scaffold:
     - "  non-claims, out-of-scope lines, and reviewer questions."
     - "- History boundary: keep this frame current; move completed detail to"
     - "  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`."
+  # Optional additive pointer; the path must be a repo-relative regular file.
+  # execution_efficiency_context_path: docs/execution-efficiency.md

@@ -217,6 +217,7 @@ def upsert_goal(
         status=status,
         goal_rel_path=rel,
         frame_lines=adapter["data"]["scaffold"]["draft_active_frame_lines"],
+        execution_efficiency_context_path=adapter["data"]["scaffold"]["execution_efficiency_context_path"],
         goal_body=goal_body,
     )
     if status == "blocked":

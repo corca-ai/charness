@@ -96,6 +96,7 @@ def _defaults(repo_root: Path) -> dict[str, Any]:
         },
         "scaffold": {
             "draft_active_frame_lines": list(_load_scaffold().DEFAULT_DRAFT_ACTIVE_FRAME_LINES),
+            "execution_efficiency_context_path": None,
         },
     }
 
@@ -177,7 +178,9 @@ def _validate_auto_retro(data: dict[str, Any], defaults: dict[str, Any], errors:
     return policy
 
 
-def _validate_scaffold(data: dict[str, Any], defaults: dict[str, Any], errors: list[str]) -> dict[str, Any]:
+def _validate_scaffold(
+    data: dict[str, Any], defaults: dict[str, Any], errors: list[str], repo_root: Path
+) -> dict[str, Any]:
     policy = dict(defaults["scaffold"])
     scaffold = _mapping(data.get("scaffold"), "scaffold", errors)
     lines = optional_string_list(scaffold.get("draft_active_frame_lines"), "scaffold.draft_active_frame_lines", errors)
@@ -188,6 +191,46 @@ def _validate_scaffold(data: dict[str, Any], defaults: dict[str, Any], errors: l
             errors.append("scaffold.draft_active_frame_lines must not contain markdown headings")
         else:
             policy["draft_active_frame_lines"] = lines
+    context_path = optional_string(
+        scaffold.get("execution_efficiency_context_path"),
+        "scaffold.execution_efficiency_context_path",
+        errors,
+    )
+    if context_path is not None:
+        if not context_path.strip():
+            errors.append("scaffold.execution_efficiency_context_path must not be empty")
+        elif any(char in context_path for char in ("\x00", "\n", "\r")):
+            errors.append(
+                "scaffold.execution_efficiency_context_path must be a single-line repo-relative path"
+            )
+        else:
+            relative_path = Path(context_path)
+            if relative_path.is_absolute():
+                errors.append("scaffold.execution_efficiency_context_path must be repo-relative")
+            else:
+                root = repo_root.resolve()
+                candidate = repo_root / relative_path
+                try:
+                    resolved = candidate.resolve(strict=False)
+                except (OSError, RuntimeError) as exc:
+                    errors.append(
+                        "scaffold.execution_efficiency_context_path could not be resolved: "
+                        f"{exc}"
+                    )
+                else:
+                    try:
+                        resolved.relative_to(root)
+                    except ValueError:
+                        errors.append(
+                            "scaffold.execution_efficiency_context_path must resolve within the repo"
+                        )
+                    else:
+                        if not candidate.exists() or not candidate.is_file() or not resolved.is_file():
+                            errors.append(
+                                "scaffold.execution_efficiency_context_path must point to an existing regular file"
+                            )
+                        else:
+                            policy["execution_efficiency_context_path"] = relative_path.as_posix()
     return policy
 
 
@@ -210,7 +253,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         validated["discussion_deploy_vocab"] = deploy_vocab
     validated["closeout_publication"] = _validate_closeout_publication(data, validated, errors)
     validated["auto_retro"] = _validate_auto_retro(data, validated, errors)
-    validated["scaffold"] = _validate_scaffold(data, validated, errors)
+    validated["scaffold"] = _validate_scaffold(data, validated, errors, repo_root)
     if validated["closeout_publication"]["default_mode"] in {"audit-only", "handoff-only"}:
         warnings.append(
             "Achieve closeout publication default is "

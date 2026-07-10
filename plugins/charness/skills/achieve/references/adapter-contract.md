@@ -57,6 +57,7 @@ scaffold:
     - "  the intent changes, not per commit (meaningful-slice-cadence)."
     - "- Next action: activate with `/goal @{goal_rel}` after confirming the draft is"
     - "  still intended."
+  execution_efficiency_context_path: docs/execution-efficiency.md
 ```
 
 `closeout_publication.default_mode` is the default claim boundary. Supported
@@ -88,6 +89,15 @@ is a list of rendered markdown lines, including bullet prefixes when desired;
 `{goal_rel}` is replaced with the generated
 artifact path. Existing artifacts are still idempotent: `upsert_goal.py` updates
 only `Status:` on later calls and never rewrites manual frame content.
+
+`scaffold.execution_efficiency_context_path` optionally adds one
+repo-relative execution-efficiency context pointer after the default or custom
+active-frame lines. The configured path must resolve to an existing regular file
+within the repository. Missing paths, directories, absolute or escaping paths,
+and symlinks whose targets escape the repository invalidate the adapter and
+refuse new goal scaffolding. An in-repository symlink to a regular file is valid.
+The pointer is guidance for Before-phase shaping and resumed-goal pickup; it is
+not a new completion floor, and it does not replace `draft_active_frame_lines`.
 
 `discussion_deploy_vocab` optionally provides the consumer-axis deploy /
 irreversible-side-effect verbs the pre-activation discussion gate detects (for
