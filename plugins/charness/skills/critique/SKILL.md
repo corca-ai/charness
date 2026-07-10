@@ -109,6 +109,8 @@ history.
      it as a separate skeptical pass
    - before reporting the canonical path as blocked, use
      `../../shared/references/fresh-eye-subagent-review.md`
+   - wrap reviewer spawns in the rail-1 snapshot/verify from that shared
+     reference's Enforcement section (snapshot before, verify after each)
    - if the host cannot provide subagents, stop and report that the canonical
      critique path is unavailable; fixing the host-side subagent contract is
      the next move instead of inventing a local substitute

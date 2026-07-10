@@ -11,7 +11,12 @@ from runtime_bootstrap import import_repo_module
 _repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
 
-DEFAULT_SCAN_GLOBS = ("scripts/*.py", "skills/public/*/scripts/*.py", "skills/support/*/scripts/*.py")
+DEFAULT_SCAN_GLOBS = (
+    "scripts/*.py",
+    "skills/public/*/scripts/*.py",
+    "skills/support/*/scripts/*.py",
+    "skills/shared/scripts/*.py",
+)
 SKIP_PATH_PARTS = {"__pycache__", "vendor", "generated"}
 
 

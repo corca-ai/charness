@@ -72,7 +72,10 @@ git status --short
 9. Run bounded fresh-eye review after initial inventory and before broad
    recommendations when the quality contract calls for it; use the
    high-leverage tier in `../../shared/references/fresh-eye-subagent-review.md`
-   and host field `reviewer_tiers.high-leverage` when available.
+   and host field `reviewer_tiers.high-leverage` when available. For
+   shared-tree reviewers, run the rail-1 snapshot/verify commands from that
+   reference's Enforcement section: snapshot before spawning, verify after
+   each reviewer returns.
 
 ## Invariants
 

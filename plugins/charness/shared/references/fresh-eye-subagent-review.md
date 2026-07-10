@@ -162,11 +162,18 @@ instruction-following alone.
 2. Host envelope. Hosts that expose typed subagent definitions spawn bounded
    reviewers under a read-only envelope (this repo ships
    `<repo-root>/.claude/agents/bounded-reviewer.md`: Read/Grep/Glob only), so
-   writes, index mutation, and undelegated nested spawning fail with the
-   host's concrete tool-unavailable signal. An enveloped reviewer has no
-   shell, so prior-version content (`git show`) rides the parent's packet
-   instead of a reviewer-run command. Reviewer-tier semantics stay intact
-   because the tier maps to spawn fields, not tools.
+   that, where the envelope binds, writes, index mutation, and undelegated
+   nested spawning fail with the host's concrete tool-unavailable signal. An
+   enveloped reviewer has no shell, so prior-version content (`git show`) rides
+   the parent's packet instead of a reviewer-run command. Reviewer-tier
+   semantics stay intact because the tier maps to spawn fields, not tools.
+   Envelope binding is a per-host claim that must be proven live, never
+   assumed: a recorded host probe has seen a typed spawn accepted by name
+   while the tool restriction did not bind (the reviewer still held shell
+   and write tools). Until a live denial signal is recorded on the current
+   host, treat rail 2 as unproven, rely on rail 1 plus the shared-tree rules
+   above, and have parents audit reviewer tool-use events rather than trust
+   self-report.
 
 Rail 1 covers the git-state class: worktree writes, index mutation, HEAD
 moves, and untracked churn on non-ignored paths. A reviewer action that

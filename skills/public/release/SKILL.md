@@ -69,6 +69,9 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 - Do not substitute same-agent review for the release critique gate.
 - Apply `../../shared/references/fresh-eye-subagent-review.md` for reviewer
   tier policy when release critique or closeout review needs a fresh observer.
+- Wrap shared-tree reviewer spawns in the rail-1 snapshot/verify commands from
+  that reference's Enforcement section (snapshot before spawn, verify after
+  each reviewer returns).
 - Keep a verified release ledger; if a release target cannot be re-read, record
   the `target_unavailable` disposition from
   `../../shared/references/closeout-discipline.md`.

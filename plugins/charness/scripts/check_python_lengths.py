@@ -149,6 +149,7 @@ def iter_python_targets(root: Path, *, require_git: bool = False) -> list[Path]:
             "scripts/*.py",
             "skills/public/*/scripts/*.py",
             "skills/support/*/scripts/*.py",
+            "skills/shared/scripts/*.py",
             "tests/*.py",
             "tests/**/*.py",
         ),

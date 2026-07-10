@@ -1,0 +1,22 @@
+{
+  "probe": "bounded-reviewer-envelope-live-binding",
+  "issue": 430,
+  "date": "2026-07-10",
+  "host": "claude-code",
+  "plugin_version": "0.65.0",
+  "session_kind": "fresh conversation (post /clear) with plugin 0.65.0 installed; .claude/agents/bounded-reviewer.md git-tracked before session start",
+  "observations": {
+    "session_start_agent_type_list_contains_bounded_reviewer": false,
+    "spawn_with_subagent_type_bounded_reviewer": "accepted (no refusal signal)",
+    "reviewer_tool_surface": "Bash, Edit, Write, Agent exposed; Grep and Glob absent",
+    "shell_probe": "TOOL-EXECUTED (echo ran; no denial signal)",
+    "tool_use_audit": ["Bash", "Read", "Read", "Read", "Read", "Read", "Read", "Read"],
+    "rail1_verify_after_return": {"ok": true, "drift": []}
+  },
+  "verdict": "envelope did not bind on this host session; spawn-denial not observed",
+  "non_claims": [
+    "does not prove a fully fresh host process (post-restart) session; a conversation reset may reuse the process-level agent registry",
+    "does not prove or disprove binding on other hosts"
+  ],
+  "automated_spawn_denial_probe": "no host-exposed automated probe surface found; disposition recorded on the issue"
+}

@@ -61,7 +61,10 @@ closing anything.
    `bug`, `feature`, `deferred-work`, `question`, or `decision-needed`.
 5. Follow the planner's `classification_actions`.
    - `bug`: run the causal-review fresh-eye subagent before design; if spawning
-     is blocked, stop and report the host signal.
+     is blocked, stop and report the host signal. Wrap shared-tree reviewers
+     in the rail-1 snapshot/verify from the Enforcement section of
+     `../../shared/references/fresh-eye-subagent-review.md` (snapshot before
+     spawn, verify after return).
    - `feature` / `deferred-work`: emit the pre-mutation resolution brief and
      name the capability or capability failure before proposing implementation;
      pause when open decisions are non-empty.

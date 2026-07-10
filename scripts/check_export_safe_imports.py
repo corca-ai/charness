@@ -9,7 +9,7 @@ same file runs from the exported plugin tree.
 
 Detect and reject those imports in source files that get copied into the
 exported plugin tree (`scripts/`, `skills/public/*/scripts/`,
-`skills/support/*/scripts/`).
+`skills/support/*/scripts/`, `skills/shared/scripts/`).
 """
 from __future__ import annotations
 
@@ -45,6 +45,7 @@ def iter_python_targets(root: Path, *, require_git: bool = False) -> list[Path]:
             "scripts/*.py",
             "skills/public/*/scripts/*.py",
             "skills/support/*/scripts/*.py",
+            "skills/shared/scripts/*.py",
         ),
         require_git=require_git,
     )

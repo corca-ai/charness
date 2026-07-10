@@ -472,10 +472,11 @@ python_files=(
   scripts/*.py
   skills/public/*/scripts/*.py
   skills/support/*/scripts/*.py
+  skills/shared/scripts/*.py
   skills/support/*/vendor/*.py
 )
 queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
-queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts
+queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts skills/shared/scripts
 flush_phase || OVERALL_RC=$?
 
 PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")

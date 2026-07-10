@@ -112,11 +112,12 @@
       "sync_commands": [],
       "verify_commands": [
         "./scripts/check-markdown.sh",
-        "./scripts/check-secrets.sh"
+        "./scripts/check-secrets.sh",
+        "python3 -m pytest -q tests/quality_gates/test_bounded_reviewer_envelope.py"
       ],
       "notes": [
         "Each definition's YAML frontmatter (name/description/tools) scopes a host-spawned subagent's tool access; `bounded-reviewer.md` is the first entry, the read-only reviewer envelope for issue #428.",
-        "No repo-owned schema validator exists yet for this class; markdownlint and the secrets scan (already repo-wide via the checked-in git file listing) are the closeout floor.",
+        "tests/quality_gates/test_bounded_reviewer_envelope.py pins the read-only frontmatter tool set; markdownlint and the secrets scan (already repo-wide via the checked-in git file listing) remain the base floor. Envelope binding stays a per-host live-probe claim recorded under charness-artifacts/probe/ (issue #430).",
         "Host-specific: charness does not read or package this directory, unlike skills/public|support/**; Claude Code resolves it directly."
       ]
     },
