@@ -1,0 +1,42 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-09T23:53:17Z",
+  "prepared_for": "plain version read-only behavior in HEAD",
+  "changed_ref": "HEAD",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `HEAD`:\n- charness\n- charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-critique.md\n- charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-packet.json\n- charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-packet.md\n- charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-critique.md\n- charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-packet.json\n- charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-packet.md\n- charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md\n- plugins/charness/scripts/check-markdown.sh\n- plugins/charness/scripts/record_usage_feedback.py\n- plugins/charness/scripts/usage_episode_feedback.py\n- plugins/charness/scripts/usage_episode_product_review.py\n- plugins/charness/scripts/usage_episode_records.py\n- scripts/check-markdown.sh\n- scripts/record_usage_feedback.py\n- scripts/usage_episode_feedback.py\n- scripts/usage_episode_product_review.py\n- scripts/usage_episode_records.py\n- tests/charness_cli/test_bootstrap_runtime.py\n- tests/quality_gates/test_python_and_security_gates.py\n- tests/test_usage_episodes_report.py\n- tests/test_usage_feedback.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/check-markdown.sh, scripts/record_usage_feedback.py, scripts/usage_episode_feedback.py, scripts/usage_episode_product_review.py, scripts/usage_episode_records.py\n  derived matches: plugins/charness/scripts/check-markdown.sh, plugins/charness/scripts/record_usage_feedback.py, plugins/charness/scripts/usage_episode_feedback.py, plugins/charness/scripts/usage_episode_product_review.py, plugins/charness/scripts/usage_episode_records.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-critique.md, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-packet.md, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-critique.md, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-packet.md, charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-critique.md, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-packet.json, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-packet.md, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-critique.md, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-packet.json, charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-plan-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/check-markdown.sh, plugins/charness/scripts/record_usage_feedback.py, plugins/charness/scripts/usage_episode_feedback.py, plugins/charness/scripts/usage_episode_product_review.py, plugins/charness/scripts/usage_episode_records.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: charness, scripts/record_usage_feedback.py, scripts/usage_episode_feedback.py, scripts/usage_episode_product_review.py, scripts/usage_episode_records.py, tests/charness_cli/test_bootstrap_runtime.py, tests/quality_gates/test_python_and_security_gates.py, tests/test_usage_episodes_report.py, tests/test_usage_feedback.py\n  derived matches: plugins/charness/scripts/record_usage_feedback.py, plugins/charness/scripts/usage_episode_feedback.py, plugins/charness/scripts/usage_episode_product_review.py, plugins/charness/scripts/usage_episode_records.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/record_usage_feedback.py, scripts/usage_episode_feedback.py, scripts/usage_episode_product_review.py, scripts/usage_episode_records.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "medium",
+      "service_tier": "priority"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  }
+}

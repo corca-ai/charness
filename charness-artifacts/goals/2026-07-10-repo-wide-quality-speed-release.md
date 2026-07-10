@@ -239,6 +239,11 @@ applies.
   - bootstrap fresh-process median: 502.40ms authoritative path versus 102.01ms
     reuse fast path (4.93x); Markdown median: 4.73s baseline versus 4.01s after
     overlap; slow preflight integration call: 5.02s baseline versus 3.96s;
+  - plain `version`/exact `--version` is retained as a read-only manifest probe:
+    15 fresh-process samples had 112.32ms median versus the recorded 117--134ms
+    baseline, but the primary gain is no host-local state creation/rewrite;
+    verbose/json/check keep provenance and update-state behavior. Fresh-eye
+    decision: `charness-artifacts/critique/2026-07-10-plain-version-readonly-critique.md`;
   - fresh-eye code critique:
     `charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-critique.md`;
     its only Act Before Ship finding, launcher `OSError` fallback, is fixed with
