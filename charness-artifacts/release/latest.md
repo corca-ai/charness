@@ -106,12 +106,13 @@ Advanced `charness` toward release `0.65.0` (tag `v0.65.0`) through the repo-own
 ## Release Runtime
 
 - `requested_review_gate`: 0.001s
-- `cli_skill_surface_gate`: 0.095s
-- `quality_command`: 85.010s
+- `cli_skill_surface_gate`: 0.091s
+- `quality_command`: 72.338s
+- `fresh_checkout_probes_initial`: 2.811s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
