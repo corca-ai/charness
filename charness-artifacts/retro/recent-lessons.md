@@ -2,15 +2,15 @@
 
 ## Current Focus
 
+- Autonomous improvement run over the handoff backlog: fixed the credentials-less CI baseline failure blocking the #421 mutation gate, resolved #428 (reviewer read-only boundary enforcement: rail-1 worktree+index fingerprint + rail-2 read-only reviewer envelope), and shipped v0.65.0 (pushed, tagged, published, install-refreshed, #428 closed with a verified carrier). (source: `charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md`)
 - Release publish triggered a configured automatic session retro for `v0.64.0`. (source: `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v0.65.0`. (source: `charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md`; sources: 76)
 - After update, injected 0.63.1 skill paths were stale. The stable 0.64.0 resolver correctly re-resolved them, so no resolver change was needed. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
+- Background subagent completion produced no notification and `TaskOutput` could not find named agents, so waiting was polling `sleep` loops against worktree state and transcript files (~20 idle minutes across three reviewers). (source: `charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md`)
 - Release execution output was lost after its session closed. Release state had to be reconstructed from the checked-in release artifact, git/remote readbacks, the public HTTPS channel, and installed-machine proof. The resulting artifact/state readback was sufficient; no new code change was justified. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
-- The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 
 ## Next-Time Checklist
 
@@ -101,6 +101,7 @@
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md`
 - `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`
 - `charness-artifacts/retro/2026-07-10-session-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`

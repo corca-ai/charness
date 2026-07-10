@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-10",
-  "source_artifact_count": 299,
-  "candidate_count": 1359,
+  "source_artifact_count": 300,
+  "candidate_count": 1367,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -805,6 +805,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:867c73b994f8",
+      "kind": "current_focus",
+      "lesson": "Autonomous improvement run over the handoff backlog: fixed the credentials-less CI baseline failure blocking the #421 mutation gate, resolved #428 (reviewer read-only boundary enforcement: rail-1 worktree+index fingerprint + rail-2 read-only reviewer envelope), and shipped v0.65.0 (pushed, tagged, published, install-refreshed, #428 closed with a verified carrier).",
+      "normalized_key": "autonomous improvement run over the handoff backlog fixed the credentials less ci baseline failure",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+          "date": "2026-07-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:2cf68b9d54cd",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.64.0`.",
@@ -969,26 +989,6 @@
       "kind": "next_improvement",
       "lesson": "applied-in-session — usage-feedback subprocess helpers now clear inherited quality-mode state by default, while the dedicated quality-mode test passes it intentionally.",
       "normalized_key": "applied in session usage feedback subprocess helpers now clear inherited quality mode state by",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-          "date": "2026-07-10",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9a957650cc50",
-      "kind": "next_improvement",
-      "lesson": "applied-in-session — validator, reporter, writer-adjacent review, and plugin mirrors now share the semantic usage record seam.",
-      "normalized_key": "applied in session validator reporter writer adjacent review and plugin mirrors now share the",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
       "latest_source_date": "2026-07-10",
@@ -1797,6 +1797,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:867c73b994f8",
+      "kind": "current_focus",
+      "lesson": "Autonomous improvement run over the handoff backlog: fixed the credentials-less CI baseline failure blocking the #421 mutation gate, resolved #428 (reviewer read-only boundary enforcement: rail-1 worktree+index fingerprint + rail-2 read-only reviewer envelope), and shipped v0.65.0 (pushed, tagged, published, install-refreshed, #428 closed with a verified carrier).",
+      "normalized_key": "autonomous improvement run over the handoff backlog fixed the credentials less ci baseline failure",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+          "date": "2026-07-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:2cf68b9d54cd",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.64.0`.",
@@ -1997,6 +2017,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4e616c44a23e",
+      "kind": "next_improvement",
+      "lesson": "before any release that closes issues, rehearse the *helper's generated commit message* against the commit-msg gate (not only the hand-drafted carrier) — mismatch filed as the publish-helper/gate seam in the goal's Auto-Retro (issue below).",
+      "normalized_key": "before any release that closes issues rehearse the helper s generated commit message against",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:21f940811aaf",
+      "kind": "next_improvement",
+      "lesson": "fresh-session envelope binding probe + spawn-denial regression (#430); rail-1 spawn-step wiring in consuming skills (#431).",
+      "normalized_key": "fresh session envelope binding probe spawn denial regression 430 rail 1 spawn step wiring",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:53a95191cabd",
       "kind": "next_improvement",
       "lesson": "issue #428 (recurs: three reviewer boundary violations in this run despite existing policy) owns the structural follow-up; `AGENTS.md` remains the existing repo-local guard.",
@@ -2037,6 +2097,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a2d7e6658455",
+      "kind": "next_improvement",
+      "lesson": "reviewer self-report is never evidence — transcript tool-use audit plus rail-1 verify is the provable channel; recorded in the goal artifact and the fresh-eye reference's Enforcement section.",
+      "normalized_key": "reviewer self report is never evidence transcript tool use audit plus rail 1 verify",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:6bf1db584c4d",
       "kind": "repeat_trap",
       "lesson": "After update, injected 0.63.1 skill paths were stale. The stable 0.64.0 resolver correctly re-resolved them, so no resolver change was needed.",
@@ -2051,6 +2131,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:198e3eae97a4",
+      "kind": "repeat_trap",
+      "lesson": "Background subagent completion produced no notification and `TaskOutput` could not find named agents, so waiting was polling `sleep` loops against worktree state and transcript files (~20 idle minutes across three reviewers).",
+      "normalized_key": "background subagent completion produced no notification and taskoutput could not find named agents so",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
           "date": "2026-07-10",
           "section": "Waste"
         }
@@ -2077,6 +2177,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:70ff90870f4a",
+      "kind": "repeat_trap",
+      "lesson": "Repo-local git identity was left as `hotl proof <hotl-proof@example.invalid>` by a prior proof session; 62 commits (mostly already pushed) carry the placeholder. Caught only by the release critique NIT at the last boundary.",
+      "normalized_key": "repo local git identity was left as hotl proof hotl proof example invalid by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:0c87056813d8",
       "kind": "repeat_trap",
       "lesson": "The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict.",
@@ -2091,6 +2211,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ba58b45b5c0e",
+      "kind": "repeat_trap",
+      "lesson": "The `bounded-reviewer` typed envelope accepted the spawn but did not bind its tool restriction mid-session; detecting that cost one probe round. Worse, the spawn-name was echoed back as `agentType`, so a host-signal-shaped confirmation would have been wrong — only the transcript tool-use audit was trustworthy.",
+      "normalized_key": "the bounded reviewer typed envelope accepted the spawn but did not bind its tool",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
           "date": "2026-07-10",
           "section": "Waste"
         }
@@ -2151,6 +2291,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ac49e2d5441a",
+      "kind": "repeat_trap",
+      "lesson": "The publish helper's own release commit embeds `Close #N` without the ledger the repo's commit-msg gate demands, so `--execute` failed twice (~160s of duplicate quality runs) before the carrier was committed manually and the helper resumed without `--close-issue`. Helper and gate disagree about one contract.",
+      "normalized_key": "the publish helper s own release commit embeds close n without the ledger the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
           "date": "2026-07-10",
           "section": "Waste"
         }

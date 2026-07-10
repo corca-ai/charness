@@ -1,6 +1,6 @@
 # Achieve Goal: Enforce fresh-eye reviewer read-only boundaries (#428) and release
 
-Status: active
+Status: complete
 Created: 2026-07-10
 Activation: `/goal @charness-artifacts/goals/2026-07-10-428-reviewer-boundary-enforcement-release.md`
 
@@ -9,14 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 — credentials-less CI baseline fix in
-  `scripts/agent-runtime/capture-skill-run.sh`.
-- Current slice intent: make the mutation-CI baseline green again by guarding
-  the unconditional `.credentials.json` copy (warn, not die) and making the
-  behavioral capture test deterministic in a credentials-less environment
-  (CI parity via `CLAUDE_CONFIG_DIR` pointed at an empty dir). One commit.
-- Next action: implement + prove fails-before/passes-after in an empty-config
-  env, then move to slice 2 (#428 causal review + design).
+- Current slice: closeout — all five slices executed; v0.65.0 released and
+  #428 closed with verified carrier.
+- Current slice intent: goal closeout (retro, dispositions, disposition
+  review, handoff refresh, complete flip).
+- Next action: none — goal complete; next-session pickups live in
+  `docs/handoff.md` (#431 wiring, #430 fresh-session envelope probe, #421
+  scheduled-run watch).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -124,25 +123,26 @@ Done-early policy: continue_next_improvement
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Fix credentials-less failure in `capture-skill-run.sh` + regression test | Main's mutation gate is red; smallest unblocker | Test fails-before/passes-after in empty-HOME env; suite green | planned |
-| 2 | #428 causal review + enforcement design via `issue` workflow | Handoff item 1; design before code | Recorded causal review + design in issue/goal artifacts | planned |
-| 3 | Implement #428 enforcement: reviewer envelope + pre/post worktree+index integrity verification + nested-spawn denial posture | The designed fix | New guard surface + regression tests covering the violation class | planned |
-| 4 | Quality gates, critique, issue closeout staging | Closeout discipline | Gate outputs, critique artifact, validate-closeout-draft proof | planned |
-| 5 | Release bump + push + publish + verify | Operator-requested final step | Release proof artifact, `gh release view`, remote CI observation | planned |
+| 1 | Fix credentials-less failure in `capture-skill-run.sh` + regression test | Main's mutation gate is red; smallest unblocker | Test fails-before/passes-after in empty-HOME env; suite green | done (`3c25073c`) |
+| 2 | #428 causal review + enforcement design via `issue` workflow | Handoff item 1; design before code | Recorded causal review + design in issue/goal artifacts | done (brief, no pause) |
+| 3 | Implement #428 enforcement: reviewer envelope + pre/post worktree+index integrity verification + nested-spawn denial posture | The designed fix | New guard surface + regression tests covering the violation class | done (`5d894aa1`) |
+| 4 | Quality gates, critique, issue closeout staging | Closeout discipline | Gate outputs, critique artifact, validate-closeout-draft proof | done (`7531144a`) |
+| 5 | Release bump + push + publish + verify | Operator-requested final step | Release proof artifact, `gh release view`, remote CI observation | done (v0.65.0 published) |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: prove the rail-2 reviewer envelope actually binds (spawn
+  `bounded-reviewer` in a NEW session and confirm Bash/Edit/Write/Agent are
+  denied with a concrete signal) — the mid-session probe in this run showed
+  the tool restriction did NOT bind.
+- Owner: operator (requires a fresh Claude Code session; the installed
+  plugin was refreshed to 0.65.0 and active sessions must restart anyway)
+- Why deferred: the host loads typed agent definitions at session start, so
+  no in-session action can produce the proof; rail 1 covers the
+  commit-corruption class meanwhile
+- Unblock action: in a new session run the probe per issue #430 and record
+  the denial (or non-denial) signal there
+- Revisit trigger: first new session in this repo, or #430 resolution
 
 ## Coordination Cues
 
@@ -181,6 +181,9 @@ per the bullets above when that boundary is crossed):
 - Routing: find-skills -> impl — the recommend-for-task probe for "implement enforcement code and regression tests" returned no ranked match (recorded honestly); `impl` is the route by its shipped description ("work should move into code, config, tests"), used for slices 1 and 3.
 - Routing: find-skills -> quality — `--recommend-for-task "run quality gates and validation before release"` ranked `quality` first (then `release`); slice-4 gate posture runs through it.
 - Routing: find-skills -> release — `--recommend-for-task "cut and publish a plugin release"` ranked `release` first; slice-5 bump/publish/verify runs through it.
+- Gather: n/a — all context sources are repo-local artifacts, GitHub issues read through the adapter-resolved `gh` backend, and CI logs read via `gh run view`; no external source needed a durable gather asset.
+- Release: charness-artifacts/release/latest.md — v0.65.0 published at https://github.com/corca-ai/charness/releases/tag/v0.65.0 (distinct-channel HTTPS readback 200), install refreshed 0.64.0 -> 0.65.0 on the maintainer machine.
+- Issue closeout: #428 via direct-commit carrier `0528718e` (release bundle); `issue_tool.py validate-closeout-draft` ok:true pre-commit and `verify-closeout --expect-state CLOSED` returned status verified with resolution-critique evidence bound; #429/#430/#431/#432/#433 filed as tracked follow-ups, not closed.
 
 ## Discuss Before Activation
 
@@ -251,6 +254,20 @@ applies.
 - Lessons carried forward: Honest close = per-acceptance-line verdict mapping, not a blanket met/unmet; the verify-full-clean-after-quarantine nuance came from the reviewer's masking analysis.
 - Metrics:
 
+### Slice 5: Slice 5: v0.65.0 release, #428 closeout, goal closeout
+
+- Objective: Cut and publish v0.65.0 (minor: new additive maintained capability), carry the #428 close, verify externally, and close the goal.
+- Why this approach: Operator-requested endpoint; minor bump justified by the new fingerprint capability shipped to consumers.
+- Commits: 8bfa3147, 0528718e (carrier), b8930138 (tagged), 4b7ba6ca
+- What changed: packaging + generated manifests via bump/sync, release/retro artifacts, release critique artifact, goal artifact closeout sections
+- Alternatives rejected: Rejected: patch bump (new capability, not only fixes); helper --close-issue path (its generated commit fails the repo commit-msg closeout gate, #433 filed); rewriting placeholder-identity local commits (breaks artifact SHA references; config fixed forward instead, #432).
+- Targeted verification: Release critique (fresh-eye): RELEASE-OK with one operator-confirm on close wording (applied verbatim in the carrier); fresh-checkout probes passed; release URL HTTP 200 distinct-channel; verify-closeout verified CLOSED; install refreshed 0.64.0->0.65.0; Quality Core success on pushed HEAD; Mutation Tests dispatched on 4b7ba6ca (watch recorded).
+- Test duplication pressure: No new tests this slice.
+- Critique: charness-artifacts/critique/2026-07-10-v0-65-0-release-critique.md (RELEASE-OK); reviewer conduct proven by rail-1 verify + transcript audit.
+- Off-goal findings: #432 (identity leak), #433 (helper/gate mismatch) filed during this slice
+- Lessons carried forward: Rehearse the helper-generated commit message against the commit-msg gate before --execute; amend-then-resume without close flags is the working seam until #433 lands.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -317,7 +334,16 @@ the originating context by following them in order.
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
+- Issue #429 — shared skill scripts (`skills/shared/scripts/`) escape the
+  ruff/length gate scope; found while manually linting the new fingerprint
+  script.
+- Issue #432 — a prior hotl proof session left the repo-local git identity as
+  `hotl proof <hotl-proof@example.invalid>`; 62 commits carry the
+  placeholder. Config unset this run; the structural restore/guard is the
+  issue.
+- Issue #433 — `publish_release.py --close-issue` composes a release commit
+  the repo's own commit-msg closeout gate rejects; two failed publish
+  attempts before the manual-carrier workaround shipped v0.65.0.
 
 ## Final Verification
 
@@ -326,13 +352,72 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md
+Host log probe: charness-artifacts/goals/2026-07-10-428-reviewer-boundary-enforcement-release-host-log-probe.json
+Disposition review: charness-artifacts/critique/2026-07-10-428-reviewer-boundary-disposition-review.md
+
+Self-verification executed this run:
+
+- Slice gates: `run_slice_closeout.py --skip-broad-pytest` all PASS at each
+  slice boundary; release-time `./scripts/run-quality.sh --release` passed
+  inside the publish helper.
+- Broad proof: the exact CI baseline command
+  (`python3 -m pytest -q -m 'not release_only' tests`) run in a
+  credentials-less env: 4431 passed, 0 failed.
+- Enforcement proof: 12/12 fingerprint regression tests; rail-1
+  snapshot/verify clean around every bounded reviewer this run.
+- External proof: at release-verification time origin/main and local HEAD
+  both read `4b7ba6ca` (historical; the goal-closeout commit lands after);
+  tag `v0.65.0` -> `b8930138`; release URL readback HTTP 200 (distinct
+  channel);
+  `verify-closeout` for #428 returned `verified` with state CLOSED;
+  maintainer install refreshed 0.64.0 -> 0.65.0; post-push Quality Core
+  workflow concluded success on `4b7ba6ca`.
+- Pending external watch: the dispatched Mutation Tests run on `4b7ba6ca`
+  (the #421 machine gate) — recorded in handoff; not claimed green here.
+
+Residual risks and non-claims:
+
+- Rail-2 envelope live binding unproven this session (mid-session spawn did
+  not bind the tool restriction); spawn-denial has no automated regression —
+  tracked #430, queued as the operator decision above.
+- Rail-1 invocation not yet wired into consuming skills' spawn steps (#431);
+  portable installs rely on the shared reference's Enforcement section.
+- 62 pushed commits keep the placeholder author identity permanently (#432).
+- No product-success/feedback signal is claimed; feedback events remain zero.
+
+Timebox closeout (activation 02:17Z, closed ~04:50Z of a 6h box):
+
+Early close rationale: the operator-requested endpoint (autonomous improvement, then push + release) is fully reached and externally verified; post-release continuation would either strand unpushed work or re-enter the external publish lane whose approval was scoped to this bundle, and the highest-value remaining items require a fresh session (#430 envelope probe) or their own dedicated run (#431 four-surface skill wiring, argparse debt pinned LAST/alone by handoff).
+Early close report: charness-artifacts/goals/2026-07-10-428-reviewer-boundary-enforcement-release-early-close-report.md
+Next slice candidate: #431 rail-1 spawn-step wiring in quality/release/issue/critique SKILL.md | decision: defer | reason: touches four gated public skill surfaces and deserves its own critique + release train, not a post-publish tail.
+Next slice candidate: #430 fresh-session bounded-reviewer envelope binding probe + spawn-denial regression | decision: blocked | reason: the host loads typed agent definitions at session start, so no probe in this session can produce the binding proof.
+Outcome sufficiency check: sufficient: all four User Acceptance lines are met and externally verified — release commits on origin/main with the tag and release page live, the CI baseline command green in a credentials-less environment, #428 closed with a per-acceptance-line verdict carrier, and the maintainer install refreshed to 0.65.0.
 
 ## User Verification Instructions
 
+1. `git fetch && git log --oneline origin/main -4` — see `4b7ba6ca` /
+   `b8930138` (tagged v0.65.0) / `0528718e` (the #428 closeout carrier).
+2. Open <https://github.com/corca-ai/charness/releases/tag/v0.65.0> and
+   <https://github.com/corca-ai/charness/issues/428> (CLOSED, with the
+   behavior verdict in the carrier commit `0528718e`).
+3. `CLAUDE_CONFIG_DIR=$(mktemp -d) python3 -m pytest -q tests/test_skill_efficiency_ab.py` — passes without credentials.
+4. In a NEW session, run the #430 probe: spawn a `bounded-reviewer` subagent
+   and ask it to run a shell command — expect a concrete tool-denial; record
+   the result on #430 either way.
+5. Watch the next Mutation Tests conclusion on #421 (machine-owned; do not
+   close manually).
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: credentials-less capture-script guard + CI-parity test pin (commit `3c25073c`).
+Retro dispositions: applied: #428 two-rail enforcement — fingerprint script, 12-test class matrix, read-only reviewer envelope, Enforcement contract section (commits `5d894aa1`, `8145629a`).
+Retro dispositions: applied: reviewer-self-report-is-not-evidence lesson encoded in the shared reference's Enforcement section (closeout cites verify output, not self-report) and exercised live this run.
+Retro dispositions: issue #429 (novel: shared-script lint/length gate scope gap found while hand-linting the new fingerprint script).
+Retro dispositions: issue #430 (novel: rail-2 envelope live-binding proof and spawn-denial regression are absent; mid-session probe showed the tool restriction did not bind).
+Retro dispositions: issue #431 (novel: rail-1 invocation is not wired at consuming skills' reviewer-spawn steps, so portable installs rely on the shared reference alone).
+Retro dispositions: issue #432 (recurs: hotl proof git-identity leak — 62 placeholder-authored commits; `.invalid`-identity guard named in the issue direction).
+Retro dispositions: issue #433 (novel: publish helper close-path composes a commit the repo commit-msg gate rejects; two wasted release-quality runs this release).
+Retro dispositions: accepted-risk: background-agent completion produced no notification and TaskOutput could not resolve named agents, so multi-reviewer waits fell back to polling (~20 idle minutes this run) — the completion signal is host-runtime-owned, no repo surface owns it; recorded so the fan-out wait cost is expected, not rediscovered.
+
+Structural follow-up: issue #432 (recurs: ambient machine state consumed instead of pinned — the same class produced both the CI credentials failure and the 62-commit identity leak; sibling sweep in the bound retro found no further unfiled instances in this run's changed surfaces)
