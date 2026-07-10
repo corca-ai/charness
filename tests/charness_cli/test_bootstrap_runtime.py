@@ -256,6 +256,55 @@ def test_resolve_repo_python_bootstraps_when_contract_schema_is_invalid(monkeypa
     assert len(commands) == 1
 
 
+@pytest.mark.parametrize(
+    ("field_path", "invalid_value"),
+    [
+        pytest.param(("python", "min_version"), None, id="min-version-wrong-type"),
+        pytest.param(("python", "min_version"), "3", id="min-version-too-short"),
+        pytest.param(("python", "min_version"), "three.ten", id="min-version-not-numeric"),
+        pytest.param(("runtime_dir",), "", id="runtime-dir-empty"),
+        pytest.param(("requirements_file",), None, id="requirements-file-wrong-type"),
+        pytest.param(("required_modules",), [], id="required-modules-empty"),
+    ],
+)
+def test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap(
+    monkeypatch,
+    tmp_path: Path,
+    field_path: tuple[str, ...],
+    invalid_value: object,
+) -> None:
+    module_name = "charness_bootstrap_fast_path_malformed_" + "_".join(field_path)
+    module = load_module(module_name, CHARNESS_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    launcher = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
+    launcher.parent.mkdir(parents=True)
+    launcher.write_text("healthy launcher\n", encoding="utf-8")
+    contract_path = repo_root / "packaging" / "bootstrap-python.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    target = contract
+    for key in field_path[:-1]:
+        target = target[key]
+        assert isinstance(target, dict)
+    target[field_path[-1]] = invalid_value
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    commands: list[list[str]] = []
+
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        del cwd, env
+        commands.append(command)
+        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        return completed(command, stdout="/tmp/repaired/bin/python\n")
+
+    monkeypatch.setattr(module, "run", fake_run)
+    module._BOOTSTRAP_PYTHON_CACHE.clear()
+
+    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
+    assert len(commands) == 1
+
+
 def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(monkeypatch, tmp_path: Path) -> None:
     module = load_module("charness_bootstrap_fast_path_unhealthy", CHARNESS_PATH)
     repo_root = tmp_path / "repo"
