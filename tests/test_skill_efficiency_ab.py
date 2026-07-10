@@ -322,12 +322,17 @@ def test_capture_script_behavioral_no_identity_in_run_view(tmp_path: Path) -> No
 
     neutral_tmp = tmp_path / "neutral-tmp"
     neutral_tmp.mkdir()
+    # Credentials-less env (CI parity): a maintainer's real ~/.claude must not mask
+    # the credentials-absent path the script has to tolerate under `set -e` in CI.
+    empty_claude_cfg = tmp_path / "empty-claude-cfg"
+    empty_claude_cfg.mkdir()
 
     result = subprocess.run(
         ["bash", str(ROOT / "scripts" / "agent-runtime" / "capture-skill-run.sh"),
          "--ref", "HEAD", "--invocation", "x", "--out-dir", str(out_dir),
          "--repo-root", str(repo), "--timeout-sec", "60"],
-        env={**os.environ, "PATH": f"{shim_bin}:{os.environ['PATH']}", "TMPDIR": str(neutral_tmp)},
+        env={**os.environ, "PATH": f"{shim_bin}:{os.environ['PATH']}", "TMPDIR": str(neutral_tmp),
+             "CLAUDE_CONFIG_DIR": str(empty_claude_cfg)},
         capture_output=True, text=True,
     )
     assert result.returncode == 0, f"stdout={result.stdout!r} stderr={result.stderr!r}"

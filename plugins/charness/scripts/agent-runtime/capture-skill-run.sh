@@ -122,8 +122,14 @@ mkdir -p "$empty_hooks"
 hooks_env=("GIT_CONFIG_COUNT=1" "GIT_CONFIG_KEY_0=core.hooksPath" "GIT_CONFIG_VALUE_0=$empty_hooks")
 
 mkdir -p "$cfg/plugins"
-cp "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.credentials.json" "$cfg/"
-cp "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json" "$cfg/" 2>/dev/null || true
+src_cfg="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+# CI runners have no ~/.claude: copy credentials only if present, else warn (the captured run then fails loudly at auth, which is intended).
+if [[ -f "$src_cfg/.credentials.json" ]]; then
+	cp "$src_cfg/.credentials.json" "$cfg/"
+else
+	echo "warning: no credentials at $src_cfg/.credentials.json; captured run will have none" >&2
+fi
+cp "$src_cfg/settings.json" "$cfg/" 2>/dev/null || true
 python3 - "$wt" "$cfg" <<'PY'
 import json, os, sys
 wt, cfg = sys.argv[1], sys.argv[2]
