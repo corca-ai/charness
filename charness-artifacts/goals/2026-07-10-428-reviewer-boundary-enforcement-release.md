@@ -223,6 +223,20 @@ applies.
 - Lessons carried forward: Design: portable class-covering detection (fingerprint) + host envelope prevention (.claude/agents read-only reviewer) satisfies acceptance without new packaging surface.
 - Metrics:
 
+### Slice 3: Slice 3: #428 enforcement implementation
+
+- Objective: Implement the two enforcement rails: portable worktree+index fingerprint (snapshot/verify with concrete drift paths) and the Claude host read-only reviewer envelope, wired into the fresh-eye reference and AGENTS.md.
+- Why this approach: The designed fix from slice 2; the smallest complete unit that satisfies the #428 acceptance boundary.
+- Commits: 5d894aa1
+- What changed: skills/shared/scripts/reviewer_boundary_fingerprint.py (+mirror), tests/quality_gates/test_reviewer_boundary_fingerprint.py (12 tests), .claude/agents/bounded-reviewer.md, skills/shared/references/fresh-eye-subagent-review.md Enforcement section (+mirror), AGENTS.md bullet, .gitignore, .agents/surfaces.json claude-agent-definitions surface
+- Alternatives rejected: Rejected during review: leaving _git_text strict-UTF8 (crash on non-UTF8 names); markdown link to the agent def (breaks in the plugin mirror); claiming rail 1 covers non-writing spawns (it does not; rail 2 only).
+- Targeted verification: 12/12 targeted tests; tests/quality_gates 2716 passed pre-fix-round; run_slice_closeout --skip-broad-pytest all PASS; manual ruff on the shared script (gate scope gap filed as #429); dogfood: rail-1 snapshot/verify wrapped this slice's own fresh-eye critique (verify ok, drift empty).
+- Test duplication pressure: New test file 151/800 code lines; duplicate-pressure low (new surface, no sibling suite).
+- Critique: Bounded fresh-eye critique (parent-delegated reviewer): no blockers; 5 SHOULD-FIX all applied (surrogateescape decoding, snapshot-tamper non-claim + --out guidance, rail-1 scope wording, git-show/envelope reconciliation, repo-root path form) plus rename/corrupt-JSON/non-UTF8 regression tests. Tool-use audit of the reviewer transcript confirmed its self-report.
+- Off-goal findings: #429 filed: shared skill scripts escape the ruff/length gate scope.
+- Lessons carried forward: Host envelope tool restriction did not bind on a mid-session spawn (probe: TOOL-EXECUTED; meta agentType echoed the spawn name); typed-envelope live proof needs a fresh session — recorded as a non-claim, rail 1 verified live instead. Never trust reviewer self-report: audit tool_use events in the transcript.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

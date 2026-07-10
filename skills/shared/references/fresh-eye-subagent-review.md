@@ -154,9 +154,11 @@ instruction-following alone.
    After EACH reviewer returns, run
    `python3 <repo-root>/skills/shared/scripts/reviewer_boundary_fingerprint.py verify --repo-root <repo-root>`.
    A non-zero verify is a concrete, auditable violation signal: quarantine
-   that review's approvals, restore state deliberately, and re-snapshot
-   before the next reviewer. Closeout evidence should cite the verify
-   result, not reviewer self-report.
+   that review's approvals, restore state deliberately, and re-run verify to
+   a full-clean result before re-snapshotting for the next reviewer (the
+   drift list is fail-closed but names at least one drifted surface, not
+   necessarily every one). Closeout evidence should cite the verify result,
+   not reviewer self-report.
 2. Host envelope. Hosts that expose typed subagent definitions spawn bounded
    reviewers under a read-only envelope (this repo ships
    `<repo-root>/.claude/agents/bounded-reviewer.md`: Read/Grep/Glob only), so
