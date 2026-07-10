@@ -8,30 +8,25 @@
 
 ## Current State
 
-- **v0.63.1 is released and its host proof is on `origin/main`.** Tag
-  `v0.63.1` points at `e9eac274`; host proof `e5862b10` is also an ancestor of
-  `origin/main`.
-- **#427 is CLOSED.** Its trace-command-marker fix is already on main; the old
-  “local/unpushed” baton was stale and must not be revived.
-- **Outcome-driven feedback goal is locally implemented and closing.** The
-  branch adds an append-only, privacy-safe `usage_feedback` event; validator and
-  reporter share one semantic record reader, and delivery is never counted as
-  acceptance. Current dogfood state remains honest: delivery records exist,
-  while feedback events and feedback coverage remain zero.
-- Local quality proof after the feedback hardening: 104 focused tests passed;
-  `run-quality.sh --read-only` passed 81 gates with zero failures; dup-ratchet
-  passed without accepting a new baseline. Final verification-lock evidence is
-  owned by the active goal artifact.
-- Local commits are ahead of `origin/main`; no push, release, issue close, live
-  capture, or Cautilus spend was authorized in this goal.
+- **v0.64.0 is released, pushed, and installed on the maintainer machine.** Tag
+  `v0.64.0` points at `ad673083`; `origin/main` includes the release proof commit
+  `2fe1e046`; public release URL is
+  [v0.64.0](https://github.com/corca-ai/charness/releases/tag/v0.64.0).
+- **Repo-wide quality/speed release goal is closed out, not a pickup item.**
+  The durable proof lives in the goal, quality, release, and retro artifacts;
+  do not redo the sweep unless a new task asks for it.
+- **Dogfood state remains honest:** delivery records exist, while legitimate
+  observer-owned feedback events and feedback coverage remain zero. The release
+  shipped the evidence path and counting fixes, not product-success proof.
 - Test-debt rotation baseline stays `8e1fd200` (2026-07-08 cycle done; method:
   [2026-07-08 test-debt rotation](../charness-artifacts/quality/2026-07-08-test-debt-rotation-delta-sweep.md)).
 
 ## Next Session
 
-1. **Operator decision: push the completed local bundle.** If authorized, run
-   the normal pre-push/remote proof over the final bundle once; do not infer
-   consumer feedback from a green push.
+1. **Resolve the recurring reviewer-boundary follow-up #428 through `issue`.**
+   It is OPEN and was not fixed or closed by v0.64.0. Start by reading the
+   GitHub issue source and comments, then use the `issue` workflow for causal
+   review, resolution design, and any subsequent closeout proof.
 2. **Watch #421 (machine-owned; do not close manually).** It remains OPEN; read
    the latest scheduled-run summary before changing the gate or baseline.
 3. **Record the first legitimate feedback observation when one exists.** Start
@@ -56,4 +51,7 @@
 
 ## References
 
-- [active outcome-driven goal](../charness-artifacts/goals/2026-07-10-outcome-driven-autonomous-improvement.md) · [latest quality review](../charness-artifacts/quality/latest.md) · [mutation disposition](../charness-artifacts/prompt-mutation/2026-07-10-handoff-closeout-vocabulary-disposition.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [deferred decisions](./deferred-decisions.md)
+- [repo-wide release goal](../charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md) · [latest release proof](../charness-artifacts/release/latest.md) · [latest quality review](../charness-artifacts/quality/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [deferred decisions](./deferred-decisions.md)
+
+- Refresh kept: v0.64.0 release/install state, OPEN [#428 follow-up](https://github.com/corca-ai/charness/issues/428) (not fixed or closed by this release), #421 machine-owned watch, first-feedback observation path, argparse-help debt ordering, and deferred locking/rotation triggers.
+- Refresh non-claims: [release goal](../charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md) remains honest that old v0.63.1/local-unpushed state was stale, #428 is open and unresolved, the repo-wide sweep is not a next-session task, and no real satisfaction signal or concurrent-writer locking proof is claimed.

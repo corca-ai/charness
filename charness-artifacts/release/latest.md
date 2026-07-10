@@ -89,14 +89,23 @@ Advanced `charness` toward release `0.64.0` (tag `v0.64.0`) through the repo-own
 
 - Release-time real-host proof is required for this slice.
 - Executed maintainer install refresh: `charness update` (status `refreshed`, return code `0`).
-- Remaining real-host checklist items, if any, still require explicit proof before full closeout.
-- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
-- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
-- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
-- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
-- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
-- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
+- Completed real-host checklist on the maintainer/dev machine. `charness update`
+  refreshed the installed source/cache/Claude surfaces to 0.64.0; installed
+  `charness version --verbose` reports 0.64.0, GIT_HEAD `ad673083`, and
+  `managed-local-cli`. Installed doctor readback reports source/cache/Claude
+  all 0.64.0 and ready. It also surfaces the pre-existing
+  `commit_discipline_drift` setup recommendation; that recommendation was not
+  changed or claimed fixed.
+- `charness tool doctor nose --json --no-write-locks`: ready, 0.18.0 (>= 0.17).
+- `charness tool install nose --dry-run --json`: upstream latest installer,
+  release v0.18.0.
+- `nose --version`: 0.18.0.
+- `charness tool sync-support nose --json`: skipped; this integration declares
+  no `support_skill_source`.
+- `inventory_nose_clones.py --repo-root . --json`: one 55-line `_portable_path`
+  family, explicitly advisory rather than a standing quality failure.
+- Missing-nose behavior was not tested because `nose` was already installed;
+  no missing-nose claim is made.
 
 ## Review Proof
 

@@ -1,6 +1,6 @@
 # Achieve Goal: Repo-wide quality, speed, and v0.64.0 release
 
-Status: active
+Status: complete
 Created: 2026-07-10
 Activation: `/goal @charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md`
 
@@ -109,7 +109,7 @@ or strengthen behavior proof; then publish and independently verify v0.64.0.
 | S1 | Repair usage-feedback review and malformed-history handling | Two reproduced regressions can corrupt counts or crash the writer | Focused delivery+feedback and malformed-history regression tests, mirror parity | completed |
 | S2 | Fast-path a healthy bootstrap runtime and overlap independent Markdown checks | Measured CLI and standing-gate costs have behavior-preserving seams | Repeated CLI/Markdown timings, fallback/advisory/failure tests | completed |
 | S3 | Freeze and verify the release bundle | Prevent local green from escaping wrong | Fresh-eye critique, verification lock, changed-line coverage | completed |
-| S4 | Bump, push, publish, refresh, and verify v0.64.0 | External boundary comes last | Release artifact, tag/release/public/install readbacks | in progress |
+| S4 | Bump, push, publish, refresh, and verify v0.64.0 | External boundary comes last | Release artifact, tag/release/public/install readbacks | completed |
 
 ## Operator Decision Queue
 
@@ -156,7 +156,7 @@ per the bullets above when that boundary is crossed):
 
 - Routing: find-skills recommended quality and release for the explicit task; achieve coordinates the long objective, impl owns code/test slices, critique owns fresh-eye risk review, and release owns bump/publish/verification
 - Gather: n/a — no external source link is an input; GitHub and public release readbacks are execution evidence, not gathered working context
-- Release: pending — bind the v0.64.0 release artifact and public verification at closeout
+- Release: `charness-artifacts/release/latest.md` — v0.64.0 published and independently read back at https://github.com/corca-ai/charness/releases/tag/v0.64.0
 - Issue closeout: n/a — no tracked issue is claimed resolved by this goal at activation
 
 ## Discuss Before Activation
@@ -298,21 +298,35 @@ applies.
 - Process violation: the replacement reviewer spawned an unauthorized coding
   child. The child was interrupted before any edit; its useful coverage warning
   was reproduced independently and closed by committed malformed-contract tests.
+- Process violation: the final disposition reviewer edited `docs/handoff.md` and
+  generated the retro packet despite a read-only brief. Its approval was
+  discarded; the handoff diff was independently audited and the packet was
+  canonically regenerated with `prepare_packet.py`.
+- Off-goal issue: issue #428 was filed and verified OPEN for the recurring
+  shared-worktree reviewer-boundary class; this goal does not claim it resolved
+  or closed.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Closeout evidence:
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md
+Host log probe: charness-artifacts/probe/2026-07-10-repo-wide-quality-speed-release.json
+Disposition review: charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-release-disposition-review.md
+Release/public/install proof: charness-artifacts/release/latest.md, with tag/release v0.64.0, HTTPS 200 readback, fresh-checkout probes, and installed 0.64.0 verification.
+Post-checkpoint classification: release/install/live checkpoint is `ad673083` (v0.64.0); `2fe1e046` and the pending final closeout artifact commit are audit-doc-only; no runtime-affecting commits exist after the checkpoint and no reinstall is required for these audit artifacts.
 
 ## User Verification Instructions
 
+1. Open the public release at https://github.com/corca-ai/charness/releases/tag/v0.64.0 and confirm it is published at `2026-07-10T00:39:04Z`.
+2. In a fresh checkout run `./charness --help`, `./charness goal check --help`, and `python3 scripts/doctor.py --repo-root . --json --skip-release-probe`.
+3. Run `charness version --verbose` and `charness doctor --json`; confirm installed source/cache/Claude surfaces report 0.64.0 and ready. The existing `commit_discipline_drift` setup recommendation is pre-existing and remains intentionally unresolved.
+4. If `nose` is installed, confirm `nose --version` 0.18.0 and the ready doctor result; missing-nose behavior was not exercised in this environment.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #428 (recurs: three reviewer boundary violations in this run despite existing policy); violating approvals were discarded and audited.
+Retro dispositions: accepted-risk: release-session output was lost, but release artifact plus git/remote/public/install readbacks were sufficient; no new code change was justified.
+Retro dispositions: applied: the stable 0.64.0 skill-path resolver correctly handled stale injected 0.63.1 paths; no resolver change was needed.
+
+Structural follow-up: issue #428 (recurs: three reviewer boundary violations in this run despite existing policy); `AGENTS.md` remains the existing repo-local guard.

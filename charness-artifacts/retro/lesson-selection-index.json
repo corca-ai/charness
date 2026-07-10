@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-10",
-  "source_artifact_count": 296,
-  "candidate_count": 1351,
+  "source_artifact_count": 298,
+  "candidate_count": 1358,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -815,6 +815,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:30ec029d5347",
+      "kind": "current_focus",
+      "lesson": "This retro covers the repo-wide quality, bug-fix, speed, and v0.64.0 release goal at `charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md`.",
+      "normalized_key": "this retro covers the repo wide quality bug fix speed and v0 64 0",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:48a73046e66e",
       "kind": "current_focus",
       "lesson": "This retro reviews the autonomous outcome-driven improvement goal: adding a privacy-safe `usage_feedback` path, reconciling stale handoff state, and dispositioning the `#handoff/closeout-vocabulary` prompt-mutation demotion candidate without external writes or live capture.",
@@ -831,6 +851,26 @@
           "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
           "date": "2026-07-10",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9e42b18bc326",
+      "kind": "next_improvement",
+      "lesson": "applied: evidence-ranked slices, changed-line coverage, release helper, distinct-channel verification, and install refresh are now part of this goal's durable proof.",
+      "normalized_key": "applied evidence ranked slices changed line coverage release helper distinct channel verification and install",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -935,12 +975,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:0c87056813d8",
-      "kind": "repeat_trap",
-      "lesson": "The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict.",
-      "normalized_key": "the bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite",
+      "candidate_id": "next_improvement:53a95191cabd",
+      "kind": "next_improvement",
+      "lesson": "issue #428 (recurs: three reviewer boundary violations in this run despite existing policy) owns the structural follow-up; `AGENTS.md` remains the existing repo-local guard.",
+      "normalized_key": "issue 428 recurs three reviewer boundary violations in this run despite existing policy owns",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
       "latest_source_date": "2026-07-10",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -948,49 +988,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
           "date": "2026-07-10",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d71c83f28a54",
-      "kind": "repeat_trap",
-      "lesson": "The first broad quality run found that usage-feedback execute tests inherited `CHARNESS_QUALITY_MODE=read-only` from the parent gate. The production guard was right, but the tests did not isolate their subprocess environment, so the narrow suite had overfit to the default shell state.",
-      "normalized_key": "the first broad quality run found that usage feedback execute tests inherited charness quality",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-          "date": "2026-07-10",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:be1d115cf15c",
-      "kind": "repeat_trap",
-      "lesson": "The first committed verification lock stopped because the new durable retro packet JSON had no owning surface. That was useful pressure: passing with `--allow-unmatched` would have left the next packet outside sync/verification planning.",
-      "normalized_key": "the first committed verification lock stopped because the new durable retro packet json had",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-          "date": "2026-07-10",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     }
@@ -1797,6 +1797,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:30ec029d5347",
+      "kind": "current_focus",
+      "lesson": "This retro covers the repo-wide quality, bug-fix, speed, and v0.64.0 release goal at `charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md`.",
+      "normalized_key": "this retro covers the repo wide quality bug fix speed and v0 64 0",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:48a73046e66e",
       "kind": "current_focus",
       "lesson": "This retro reviews the autonomous outcome-driven improvement goal: adding a privacy-safe `usage_feedback` path, reconciling stale handoff state, and dispositioning the `#handoff/closeout-vocabulary` prompt-mutation demotion candidate without external writes or live capture.",
@@ -1813,6 +1833,26 @@
           "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
           "date": "2026-07-10",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9e42b18bc326",
+      "kind": "next_improvement",
+      "lesson": "applied: evidence-ranked slices, changed-line coverage, release helper, distinct-channel verification, and install refresh are now part of this goal's durable proof.",
+      "normalized_key": "applied evidence ranked slices changed line coverage release helper distinct channel verification and install",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -1917,6 +1957,86 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:53a95191cabd",
+      "kind": "next_improvement",
+      "lesson": "issue #428 (recurs: three reviewer boundary violations in this run despite existing policy) owns the structural follow-up; `AGENTS.md` remains the existing repo-local guard.",
+      "normalized_key": "issue 428 recurs three reviewer boundary violations in this run despite existing policy owns",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f864514e22d2",
+      "kind": "next_improvement",
+      "lesson": "none — no additional transferable structural gap was found after the release/readback reconstruction.",
+      "normalized_key": "none no additional transferable structural gap was found after the release readback reconstruction",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6bf1db584c4d",
+      "kind": "repeat_trap",
+      "lesson": "After update, injected 0.63.1 skill paths were stale. The stable 0.64.0 resolver correctly re-resolved them, so no resolver change was needed.",
+      "normalized_key": "after update injected 0 63 1 skill paths were stale the stable 0 64",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:931960f90f07",
+      "kind": "repeat_trap",
+      "lesson": "Release execution output was lost after its session closed. Release state had to be reconstructed from the checked-in release artifact, git/remote readbacks, the public HTTPS channel, and installed-machine proof. The resulting artifact/state readback was sufficient; no new code change was justified.",
+      "normalized_key": "release execution output was lost after its session closed release state had to be",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:0c87056813d8",
       "kind": "repeat_trap",
       "lesson": "The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict.",
@@ -2011,6 +2131,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c191889a2188",
+      "kind": "repeat_trap",
+      "lesson": "Three bounded reviewer runs crossed their read-only boundary: one staged and committed reviewed content, a replacement reviewer spawned an unauthorized coding child, and the final disposition reviewer mutated `docs/handoff.md` and generated the retro packet. The child made no edits; the committed content was audited and retained, while all violating approvals were discarded. The handoff diff was audited and the packet was canonically regenerated with `prepare_packet.py`; the repo-local AGENTS contract already states the guard, so no duplicate prose was added.",
+      "normalized_key": "three bounded reviewer runs crossed their read only boundary one staged and committed reviewed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
+      "latest_source_date": "2026-07-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
           "date": "2026-07-10",
           "section": "Waste"
         }

@@ -3,21 +3,21 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v0.64.0`. (source: `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`)
-- This retro reviews the autonomous outcome-driven improvement goal: adding a privacy-safe `usage_feedback` path, reconciling stale handoff state, and dispositioning the `#handoff/closeout-vocabulary` prompt-mutation demotion candidate without external writes or live capture. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- This retro covers the repo-wide quality, bug-fix, speed, and v0.64.0 release goal at `charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md`. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`; sources: 75)
+- After update, injected 0.63.1 skill paths were stale. The stable 0.64.0 resolver correctly re-resolved them, so no resolver change was needed. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
+- Release execution output was lost after its session closed. Release state had to be reconstructed from the checked-in release artifact, git/remote readbacks, the public HTTPS channel, and installed-machine proof. The resulting artifact/state readback was sufficient; no new code change was justified. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
 - The bounded handoff reviewer disclosed that it accidentally wrote retro and digest files despite a read-only brief. That broke reviewer isolation and forced the parent to audit every changed path, run the real prepare packet, and re-persist the retro before trusting either the files or the verdict. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
-- The first broad quality run found that usage-feedback execute tests inherited `CHARNESS_QUALITY_MODE=read-only` from the parent gate. The production guard was right, but the tests did not isolate their subprocess environment, so the narrow suite had overfit to the default shell state. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
-- The first committed verification lock stopped because the new durable retro packet JSON had no owning surface. That was useful pressure: passing with `--allow-unmatched` would have left the next packet outside sync/verification planning. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`; sources: 75)
+- applied: evidence-ranked slices, changed-line coverage, release helper, distinct-channel verification, and install refresh are now part of this goal's durable proof. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
 - applied-in-session — handoff and prompt-mutation disposition record the exact conditions required before the demotion candidate may be reopened. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 - applied-in-session — reviewer-produced files were treated as untrusted, independently inspected, and regenerated through the retro packet/persistence helpers before closeout. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
-- applied-in-session — the surfaces manifest and focused regression now route durable retro packet JSON/Markdown pairs through their owning verification commands. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 
 ## Selection Policy
 
@@ -101,5 +101,6 @@
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`
 - `charness-artifacts/retro/2026-07-10-session-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`
