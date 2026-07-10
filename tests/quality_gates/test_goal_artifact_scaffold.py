@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 _LIB = ROOT / "skills/public/achieve/scripts/goal_artifact_lib.py"
 _spec = importlib.util.spec_from_file_location("goal_artifact_lib", _LIB)
@@ -145,6 +147,45 @@ def test_adapter_example_context_pointer_is_valid_when_uncommented(tmp_path: Pat
     assert adapter["data"]["scaffold"]["execution_efficiency_context_path"] == (
         "docs/execution-efficiency.md"
     )
+
+
+@pytest.mark.parametrize(
+    ("context_path", "expected"),
+    [
+        ("", "must not be empty"),
+        ("docs/efficiency.md\ncontinued", "single-line repo-relative path"),
+        ("docs/efficiency.md\rcontinued", "single-line repo-relative path"),
+    ],
+)
+def test_context_path_rejects_empty_or_multiline_values(
+    tmp_path: Path, context_path: str, expected: str
+) -> None:
+    _validated, errors, _warnings = gal._policy.validate_adapter_data(
+        {"scaffold": {"execution_efficiency_context_path": context_path}}, tmp_path
+    )
+
+    assert any(expected in error for error in errors)
+
+
+@pytest.mark.parametrize("error_type", [OSError, RuntimeError])
+def test_context_path_reports_resolve_failures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, error_type: type[Exception]
+) -> None:
+    target = tmp_path / "efficiency.md"
+    target.write_text("baseline\n", encoding="utf-8")
+    original_resolve = Path.resolve
+
+    def selective_resolve(path: Path, *, strict: bool = False) -> Path:
+        if path == target:
+            raise error_type("resolve blocked")
+        return original_resolve(path, strict=strict)
+
+    monkeypatch.setattr(Path, "resolve", selective_resolve)
+    _validated, errors, _warnings = gal._policy.validate_adapter_data(
+        {"scaffold": {"execution_efficiency_context_path": "efficiency.md"}}, tmp_path
+    )
+
+    assert any("could not be resolved" in error for error in errors)
 
 
 def test_upsert_accepts_in_repo_symlink_context_path(tmp_path: Path) -> None:

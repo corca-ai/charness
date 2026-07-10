@@ -141,3 +141,16 @@ the new pointer behavior for future goals.
 Run the focused and locked repo closeout gates on the reviewed diff, then publish
 v0.66.0 with #434 linked and verify behavior through fresh scaffold evidence,
 public HTTPS readback, and maintainer install refresh.
+
+## Release Gate Follow-up
+
+The first publish attempt stopped before commit, tag, push, release creation, or
+issue close. Its release-only quality pass found four uncovered adapter-error
+branches and one existing adapter-validator clone family whose fingerprint
+rotated when the explicit `repo_root` call changed. The follow-up kept the clear
+parameterized design, added direct tests for empty/multiline values and
+`Path.resolve` exceptions, produced fresh changed-line coverage, and performed
+the implementation-discipline-prescribed single dup-ratchet rebaseline after
+the source batch locked. Focused tests, changed-line coverage, and the dup
+consumer now pass. These are proof/ratchet repairs inside the reviewed boundary,
+not a new capability or release risk boundary.
