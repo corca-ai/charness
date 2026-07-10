@@ -12,7 +12,7 @@ The release helper persisted this bounded retro before committing the release ar
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `skills/public/release/SKILL.md`, `skills/public/release/scripts/publish_release_plan.py`, `skills/public/release/scripts/publish_release_preflight.py`.
-- Evaluated changed paths: 74.
+- Evaluated changed paths: 76.
 
 ## Waste
 

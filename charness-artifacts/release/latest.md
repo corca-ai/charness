@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -52,7 +52,7 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
   - `skills/public/release/SKILL.md`
   - `skills/public/release/scripts/publish_release_plan.py`
   - `skills/public/release/scripts/publish_release_preflight.py`
-- Evaluated changed paths: 74.
+- Evaluated changed paths: 76.
   - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
   - `.claude/agents/bounded-reviewer.md`
@@ -72,8 +72,8 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
   - `charness-artifacts/probe/2026-07-10-issue-430-bounded-reviewer-envelope-probe.json`
   - `charness-artifacts/quality/dup-ratchet-baseline.json`
   - `charness-artifacts/quality/dup-review.json`
-  - `charness-artifacts/release/latest.md`
-  - ... 54 more
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
+  - ... 56 more
 
 ## Real-Host Verification
 
@@ -97,7 +97,10 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -105,7 +108,9 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 0.080s
+- `quality_command`: 69.918s
 
 ## Fresh Checkout Probes
 
