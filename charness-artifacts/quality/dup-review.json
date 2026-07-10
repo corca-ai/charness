@@ -58,6 +58,13 @@
     },
     {
       "class": "intentional",
+      "id": "22d1204ff09453f5",
+      "note": "six shared JSONL parse/validate lines between usage_episode_records.read_schema_valid_records and the unrelated RCA ledger validator; their error payloads, schemas, timestamp fields, missing-file behavior, and ownership differ, so extracting a cross-domain helper would add coupling for a standard library loop rather than centralize one contract",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2dd39753778c7cb1",
       "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable — intentional",
       "reviewed_at": "2026-07-02",
@@ -173,6 +180,13 @@
       "id": "8063cae3315dd267",
       "note": "git config subprocess helper family rotated after setup worktree template extraction; root worktree doctor and portable setup seed script keep local helper ownership to preserve direct execution boundaries",
       "reviewed_at": "2026-06-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8209826f4d9b7376",
+      "note": "after extracting the shared delivery target/index ownership, semantic_feedback_errors and reconcile_feedback still each iterate feedback rows and bind feedback_id; the residual family is two shared lines with different error-versus-summary consumers, so another iterator helper would obscure control flow for no behavior or maintenance gain",
+      "reviewed_at": "2026-07-10",
       "surface": "code"
     },
     {

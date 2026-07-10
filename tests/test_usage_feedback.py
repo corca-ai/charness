@@ -365,6 +365,16 @@ def test_reconcile_feedback_counts_duplicate_and_unlinked_events() -> None:
     assert reconciliation["unlinked_feedback_count"] == 1
 
 
+def test_reconcile_feedback_keeps_duplicate_deliveries_in_the_denominator() -> None:
+    delivery = acme_episode()
+    delivery.pop("feedback_signal")
+    reconciliation = reconcile_feedback([delivery, dict(delivery), feedback_record()])
+
+    assert reconciliation["delivery_episode_count"] == 2
+    assert reconciliation["feedback_coverage_count"] == 1
+    assert reconciliation["feedback_coverage_rate"] == 0.5
+
+
 def test_report_reconciles_one_delivery_and_one_feedback_event(tmp_path: Path) -> None:
     write_adapter(tmp_path)
     delivery = acme_episode()

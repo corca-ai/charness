@@ -1,1 +1,1 @@
-2026-07-10-outcome-driven-feedback.md
+2026-07-10-repo-wide-quality-speed-release.md

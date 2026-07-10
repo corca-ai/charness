@@ -23,12 +23,7 @@ from usage_episode_feedback import (
 from usage_episode_records import read_schema_valid_records, resolve_records_path
 from usage_episode_records import schema_root as _schema_root
 
-from runtime_bootstrap import repo_root_from_script
-
-REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
-DEFAULT_STORAGE = Path(".charness/usage-episodes")
-EVENT_FILENAME = "usage_episode.jsonl"
 
 
 def _load_json(path: Path) -> dict[str, Any]:

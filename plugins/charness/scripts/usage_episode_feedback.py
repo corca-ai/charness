@@ -64,11 +64,26 @@ def feedback_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [record for record in records if record.get("event_type") == "usage_feedback"]
 
 
-def semantic_feedback_errors(records: list[dict[str, Any]]) -> list[str]:
-    deliveries = {
-        (str(record["product_id"]), str(record["episode_id"]))
+def _episode_target(record: dict[str, Any], episode_id_field: str) -> tuple[str, str]:
+    return str(record["product_id"]), str(record[episode_id_field])
+
+
+def delivery_target_index(records: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
+    """Index deliveries by the product and episode target they can receive feedback for."""
+    return {
+        _episode_target(record, "episode_id"): record
         for record in delivery_records(records)
     }
+
+
+def linked_delivery(
+    targets: dict[tuple[str, str], dict[str, Any]], feedback: dict[str, Any]
+) -> dict[str, Any] | None:
+    return targets.get(_episode_target(feedback, "target_episode_id"))
+
+
+def semantic_feedback_errors(records: list[dict[str, Any]]) -> list[str]:
+    deliveries = delivery_target_index(records)
     seen: dict[str, dict[str, Any]] = {}
     errors: list[str] = []
     for record in feedback_records(records):
@@ -90,8 +105,7 @@ def semantic_feedback_errors(records: list[dict[str, Any]]) -> list[str]:
                 errors.append(f"conflicting feedback_id: {feedback_id}")
         else:
             seen[feedback_id] = record
-        target = (str(record["product_id"]), str(record["target_episode_id"]))
-        if target not in deliveries:
+        if linked_delivery(deliveries, record) is None:
             errors.append(
                 "unlinked target_episode_id: "
                 f"{record['target_episode_id']} for product_id {record['product_id']}"
@@ -102,10 +116,7 @@ def semantic_feedback_errors(records: list[dict[str, Any]]) -> list[str]:
 def reconcile_feedback(records: list[dict[str, Any]]) -> dict[str, Any]:
     """Join explicit and legacy-inline feedback to delivery records without claims."""
     deliveries = delivery_records(records)
-    targets = {
-        (str(record["product_id"]), str(record["episode_id"])): record
-        for record in deliveries
-    }
+    targets = delivery_target_index(records)
     explicit = feedback_records(records)
     seen: set[str] = set()
     duplicate_count = 0
@@ -117,15 +128,15 @@ def reconcile_feedback(records: list[dict[str, Any]]) -> dict[str, Any]:
         if feedback_id in seen:
             duplicate_count += 1
         seen.add(feedback_id)
-        target = (str(record["product_id"]), str(record["target_episode_id"]))
-        if target in targets:
+        delivery = linked_delivery(targets, record)
+        if delivery is not None:
             linked.append(record)
             # Explicit feedback has no delivery dimensions of its own.  Carry
             # its signal onto the delivery it observes so downstream summaries
             # retain delivery-only denominators and evidence references.
             enriched_linked.append(
                 {
-                    **targets[target],
+                    **delivery,
                     "feedback_signal": record["feedback_signal"],
                 }
             )

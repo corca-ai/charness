@@ -25,12 +25,7 @@ from usage_episode_records import read_valid_records as _read_valid_records
 from usage_episode_records import resolve_records_path as _resolve_records_path
 from usage_episode_records import schema_root as _schema_root
 
-from runtime_bootstrap import repo_root_from_script
-
-REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
-DEFAULT_STORAGE = Path(".charness/usage-episodes")
-EVENT_FILENAME = "usage_episode.jsonl"
 NON_CLAIMS = [
     "Usage episodes are an engineering usage signal, not product-success proof.",
     PRODUCT_EVIDENCE_NON_CLAIM,
