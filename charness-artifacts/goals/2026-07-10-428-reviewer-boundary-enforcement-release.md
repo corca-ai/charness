@@ -195,6 +195,34 @@ applies.
 
 ## Slice Log
 
+### Slice 1: Slice 1: credentials-less capture-script fix
+
+- Objective: Restore the mutation-CI baseline: guard the unconditional .credentials.json copy in scripts/agent-runtime/capture-skill-run.sh and pin the behavioral test to a credentials-less CLAUDE_CONFIG_DIR for CI parity.
+- Why this approach: Latest #421 scheduled run (29061283943) failed the coverage baseline at test_capture_script_behavioral_no_identity_in_run_view with cp: cannot stat .credentials.json; smallest unblocker and a red-gate precondition for the release slice.
+- Commits: 3c25073c
+- What changed: scripts/agent-runtime/capture-skill-run.sh (+ plugins mirror), tests/test_skill_efficiency_ab.py, goal artifact
+- Alternatives rejected: Rejected: skipping the test in CI (masks the class); making credentials fatal-with-message (breaks the shimmed behavioral test and any credless host); test-only env pin without script guard (leaves real CI break in place).
+- Targeted verification: fails-before reproduced locally with empty CLAUDE_CONFIG_DIR (same cp error as CI); after fix: target test + full tests/test_skill_efficiency_ab.py (70 passed) in both credentials-less and normal envs; bash -n; run_slice_closeout.py --skip-broad-pytest all PASS.
+- Test duplication pressure: No new test added (existing test env pinned); file headroom 657/800 code lines (143 left).
+- Critique: Slice-level self-check: warning (not silence) keeps real credless captures auditable; implementation ran in a lower-power subagent per standing request, parent re-verified independently.
+- Off-goal findings: none
+- Lessons carried forward: Env-dependent E2E tests should pin their external-state inputs (CLAUDE_CONFIG_DIR) instead of inheriting the maintainer machine; parity with CI is the test's job, not the runner's.
+- Metrics:
+
+### Slice 2: Slice 2: #428 classification + resolution brief (design)
+
+- Objective: Classify #428 and fix the enforcement design before mutation, through the issue workflow (planner, full read with comments, feature-class resolution brief).
+- Why this approach: Issue resolution contract: GitHub is source of truth; feature-class issues need a pre-mutation resolution brief; #428 explicitly asks for enforcement of an existing contract, not more prose.
+- Commits: none (design only)
+- What changed: none; resolution brief emitted in transcript (inline, no pause: open decisions empty)
+- Alternatives rejected: Rejected: plugin packaging export of agents/ (schema+export surface too large for this fix-unit; deferrable follow-up); OS-level sandboxing (host-owned); run_slice_closeout coupling (enforcement point is the review boundary, not commit time); Bash-included reviewer envelope (would keep the write channel open and fail acceptance line 1).
+- Targeted verification: issue_tool.py plan (backend_ready true) + read (comments_read true); classification feature per labels+desired-outcome; brief pause rule evaluated: open decisions none -> continue.
+- Test duplication pressure:
+- Critique: Design self-check folded into brief non-goals; fresh-eye critique deferred to the implementation slice boundary per meaningful-slice-cadence.
+- Off-goal findings: none
+- Lessons carried forward: Design: portable class-covering detection (fingerprint) + host envelope prevention (.claude/agents read-only reviewer) satisfies acceptance without new packaging surface.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

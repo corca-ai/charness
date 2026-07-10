@@ -141,6 +141,40 @@ the unambiguous phantom (`worktree == HEAD` but `index != HEAD`) as a backstop,
 but the gate is rung 2: following this rule is what keeps the index clean in the
 first place.
 
+## Enforcement
+
+Prose alone did not prevent recurrence: recorded shared-tree reviewer
+violations include a reviewer that staged and committed content, one that
+spawned an unauthorized child agent, and one that modified docs despite a
+no-write brief. Two enforcement rails now back the rule instead of
+instruction-following alone.
+
+1. Parent-side integrity proof. Before spawning shared-tree reviewers, run
+   `python3 <repo-root>/skills/shared/scripts/reviewer_boundary_fingerprint.py snapshot --repo-root <repo-root>`.
+   After EACH reviewer returns, run
+   `python3 <repo-root>/skills/shared/scripts/reviewer_boundary_fingerprint.py verify --repo-root <repo-root>`.
+   A non-zero verify is a concrete, auditable violation signal: quarantine
+   that review's approvals, restore state deliberately, and re-snapshot
+   before the next reviewer. Closeout evidence should cite the verify
+   result, not reviewer self-report.
+2. Host envelope. Hosts that expose typed subagent definitions spawn bounded
+   reviewers under a read-only envelope (this repo ships
+   `<repo-root>/.claude/agents/bounded-reviewer.md`: Read/Grep/Glob only), so
+   writes, index mutation, and undelegated nested spawning fail with the
+   host's concrete tool-unavailable signal. An enveloped reviewer has no
+   shell, so prior-version content (`git show`) rides the parent's packet
+   instead of a reviewer-run command. Reviewer-tier semantics stay intact
+   because the tier maps to spawn fields, not tools.
+
+Rail 1 covers the git-state class: worktree writes, index mutation, HEAD
+moves, and untracked churn on non-ignored paths. A reviewer action that
+leaves no git trace — an unauthorized child that never writes — is prevented
+only by rail 2. Two limits are by design: gitignored paths are out of
+fingerprint scope (they cannot enter a closeout commit), and on hosts
+without the envelope a writing reviewer could rewrite the default snapshot
+file itself, so pass `--out` to keep the snapshot outside the
+reviewer-reachable tree when that matters.
+
 ## Required Before Declaring The Canonical Path Blocked
 
 1. Attempt the bounded setup the skill calls for.

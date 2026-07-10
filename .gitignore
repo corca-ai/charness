@@ -17,6 +17,7 @@ reports/
 .charness/closeout/
 .charness/tasks/
 .charness/hitl/runtime/
+.charness/reviewer-boundary/
 .charness/t-events/
 .charness/usage-episodes/
 integrations/locks/*.json

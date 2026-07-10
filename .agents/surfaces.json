@@ -103,6 +103,24 @@
       ]
     },
     {
+      "surface_id": "claude-agent-definitions",
+      "description": "Host-specific Claude Code subagent definitions (typed read-only spawn envelopes) under .claude/agents/.",
+      "source_paths": [
+        ".claude/agents/**"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "./scripts/check-markdown.sh",
+        "./scripts/check-secrets.sh"
+      ],
+      "notes": [
+        "Each definition's YAML frontmatter (name/description/tools) scopes a host-spawned subagent's tool access; `bounded-reviewer.md` is the first entry, the read-only reviewer envelope for issue #428.",
+        "No repo-owned schema validator exists yet for this class; markdownlint and the secrets scan (already repo-wide via the checked-in git file listing) are the closeout floor.",
+        "Host-specific: charness does not read or package this directory, unlike skills/public|support/**; Claude Code resolves it directly."
+      ]
+    },
+    {
       "surface_id": "goal-evidence-json",
       "description": "Machine-readable evidence captured beside achieve goal artifacts.",
       "source_paths": [
