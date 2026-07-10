@@ -10,11 +10,10 @@ activation for this session; the command above is the portable resume form.
 
 ## Active Operating Frame
 
-- Current slice: S3 freeze and verify the release bundle.
-- Current slice intent: turn the critiqued S1/S2 implementation into a committed,
-  fully evidenced release candidate without widening the selected scope.
-- Next action: commit the implementation slice, write the final quality record,
-  then run the verification lock and release preflight.
+- Current slice: S4 publish and independently verify v0.64.0.
+- Current slice intent: preserve the locked local bundle while crossing tag,
+  GitHub release, fresh-checkout, public-readback, and install-refresh boundaries.
+- Next action: prepare release critique and publish through the repo-owned helper.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -109,8 +108,8 @@ or strengthen behavior proof; then publish and independently verify v0.64.0.
 | S0 | Inventory repo-wide quality, bug, and speed candidates | Avoid broad cleanup without evidence | Baseline gates, runtime packets, candidate scorecard, critique | completed |
 | S1 | Repair usage-feedback review and malformed-history handling | Two reproduced regressions can corrupt counts or crash the writer | Focused delivery+feedback and malformed-history regression tests, mirror parity | completed |
 | S2 | Fast-path a healthy bootstrap runtime and overlap independent Markdown checks | Measured CLI and standing-gate costs have behavior-preserving seams | Repeated CLI/Markdown timings, fallback/advisory/failure tests | completed |
-| S3 | Freeze and verify the release bundle | Prevent local green from escaping wrong | Fresh-eye critique, verification lock, changed-line coverage | in progress |
-| S4 | Bump, push, publish, refresh, and verify v0.64.0 | External boundary comes last | Release artifact, tag/release/public/install readbacks | pending |
+| S3 | Freeze and verify the release bundle | Prevent local green from escaping wrong | Fresh-eye critique, verification lock, changed-line coverage | completed |
+| S4 | Bump, push, publish, refresh, and verify v0.64.0 | External boundary comes last | Release artifact, tag/release/public/install readbacks | in progress |
 
 ## Operator Decision Queue
 
@@ -248,6 +247,14 @@ applies.
     `charness-artifacts/critique/2026-07-10-repo-wide-quality-speed-code-critique.md`;
     its only Act Before Ship finding, launcher `OSError` fallback, is fixed with
     a real subprocess regression.
+- S3 verification lock, 2026-07-10:
+  - `run_slice_closeout.py --base --verification-lock
+    --produce-mutation-coverage --refresh-broad-pytest-proof` completed;
+  - coverage-instrumented broad pytest: 4,419 passed in 71.97s;
+  - changed-line mutation readback against origin/main: `blocking: []` for all
+    nine changed mutation-pool files;
+  - all structural, mirror, duplicate, packaging, skill, docs, secrets, Ruff,
+    headroom, integration, and agent-browser orphan checks passed.
 
 ## Context Sources
 
@@ -285,7 +292,12 @@ applies.
 
 ## Off-Goal Findings
 
-N/A — inventory has not yet produced off-goal findings.
+- Process violation: a final quality reviewer staged and committed the already
+  reviewed bundle despite a read-only brief (`71974856`). Content and tree state
+  were audited and retained; that reviewer's approval was discarded.
+- Process violation: the replacement reviewer spawned an unauthorized coding
+  child. The child was interrupted before any edit; its useful coverage warning
+  was reproduced independently and closed by committed malformed-contract tests.
 
 ## Final Verification
 

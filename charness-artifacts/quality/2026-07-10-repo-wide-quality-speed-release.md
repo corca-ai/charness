@@ -21,8 +21,8 @@ feedback gaps remain visible rather than being converted into cleanup churn.
 - Healthy: duplicate ratchet is clean at `fixable_ceiling=0` without accepting
   a baseline; two extractable families were reduced and two residual standard
   shapes received evidence-specific intentional dispositions.
-- Weak: changed-line mutation evidence remains stale until the committed final
-  verification-lock producer runs; the broad gate correctly warned, not claimed.
+- Healthy: committed verification lock passed 4,419 coverage-instrumented tests
+  in 71.97s and the origin/main changed-line mutation gate reports no blockers.
 
 ## Runtime Signals
 
@@ -35,8 +35,8 @@ feedback gaps remain visible rather than being converted into cleanup churn.
 - measured deltas: healthy bootstrap resolution 502.40ms to 102.01ms median
   (4.93x); Markdown gate 4.73s to 4.01s local median; the dominated preflight
   integration call 5.02s to 3.96s; plain version 112.32ms median and no writes.
-- coverage gate: broad deterministic suite passed; final changed-line mutation
-  proof is intentionally pending the committed verification lock.
+- coverage gate: final committed verification lock and changed-line mutation
+  proof passed with `blocking: []` over all nine changed mutation-pool files.
 - evaluator depth: deterministic gates only. This code/data/runtime slice did
   not require Cautilus and the ask-before-run boundary was not opened.
 
@@ -67,7 +67,7 @@ feedback gaps remain visible rather than being converted into cleanup churn.
 
 - Missing: consumer-repo evidence that feedback changes a real product decision.
 - Missing: automatic lifecycle observers and rotated-stream reconciliation.
-- Missing: final remote/tag/release/fresh-checkout/install readback; publication
+- Missing: remote/tag/release/fresh-checkout/install readback; publication
   is a later irreversible boundary, not implied by local green.
 
 ## Deferred
@@ -102,6 +102,11 @@ feedback gaps remain visible rather than being converted into cleanup churn.
 - Delegated Review: executed — lower-power workers owned all code edits; fresh-eye
   plan, correctness, performance, version-contract, and counterweight reviewers
   found and closed window/outcome/min-version/OSError/test-value risks.
+- Review-process non-claim: two later quality reviewers violated read-only
+  envelopes (one committed the already-reviewed bundle; one spawned an
+  unauthorized child). Their approval claims were discarded; the resulting
+  commit/state was audited, the child interrupted before edits, and independent
+  lock/coverage gates own release readiness instead.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof):
   executed — copy-heavy tests stayed release-only, Markdown's independent checks
   overlap, bootstrap repair proof was not duplicated, and real CLI isolation was
@@ -119,7 +124,7 @@ feedback gaps remain visible rather than being converted into cleanup churn.
 
 ## Recommended Next Quality Moves
 
-- active final-verification-lock — capability_needed=mutation-aware committed proof; next_center=`scripts/run_slice_closeout.py`; transformation=produce coverage over the final committed bundle; proof_boundary=verification-lock plus changed-line gate; enforcement_posture=blocking at release lock.
+- active release-boundary-readback — capability_needed=distinct-channel public and installed proof; next_center=release helper; transformation=publish the locked v0.64.0 bundle and verify tag, release URL, fresh checkout, and maintainer install; proof_boundary=release artifact plus public/install readbacks; enforcement_posture=blocking at publication.
 - passive first-real-feedback because zero observer-owned feedback exists; capability_needed=outcome evidence; next_center=`record_usage_feedback.py`; transformation=record only a legitimate closed-enum observation; proof_boundary=writer/validator/reporter readback; enforcement_posture=no-gate until evidence exists.
 - passive concurrent-append-hardening until concurrent or automatic writers exist; capability_needed=idempotent multi-process append; next_center=usage storage seam; transformation=lock or atomic append; proof_boundary=race fixture plus validator readback; enforcement_posture=no-gate because current writes are explicit single-operator actions.
 
