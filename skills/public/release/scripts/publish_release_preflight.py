@@ -4,6 +4,7 @@ import importlib.util
 import json
 import re
 import runpy
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Callable
@@ -11,6 +12,12 @@ from typing import Any, Callable
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 SEMVER_PIN_RE = re.compile(
     r"(?<![\w.])v?(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?![\w]|\.\d)"
+)
+_INVALID_IDENTITY_SUFFIX = ".invalid"
+_IDENTITY_EMAIL_RE = re.compile(r"<([^<>]*)>")
+_IDENTITY_VARS: tuple[tuple[str, str], ...] = (
+    ("author", "GIT_AUTHOR_IDENT"),
+    ("committer", "GIT_COMMITTER_IDENT"),
 )
 
 
@@ -86,6 +93,51 @@ def validate_critique_artifact_arg(
     if tracked.returncode != 0:
         raise SystemExit(f"--critique-artifact must be tracked before release: {normalized}")
     return normalized
+
+
+def _resolve_git_ident(repo_root: Path, var_name: str) -> str | None:
+    proc = subprocess.run(
+        ["git", "-C", str(repo_root), "var", var_name],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0 or not proc.stdout.strip():
+        return None
+    return proc.stdout.strip()
+
+
+def invalid_git_identity_blocker(repo_root: Path) -> str | None:
+    """Refuse a lingering `.invalid` placeholder git author/committer identity
+    before release mutation starts.
+
+    Duplicates (does not import) a small resolve+check helper that also lives at
+    the repo root for the commit-boundary gate -- this skill ships standalone in
+    the plugin and must not import outside its own package. This check is
+    unconditional: it always runs, not only when a release-adapter field
+    changed in the delta.
+    """
+    for kind, var_name in _IDENTITY_VARS:
+        ident = _resolve_git_ident(repo_root, var_name)
+        if ident is None:
+            continue
+        match = _IDENTITY_EMAIL_RE.search(ident)
+        email = match.group(1) if match else None
+        if email is None or not email.strip().lower().endswith(_INVALID_IDENTITY_SUFFIX):
+            continue
+        # floor-addition-restraint: keep -- recorded recurrence: a lingering
+        # synthetic proof identity misattributed dozens of real pushed commits
+        # before anyone noticed; environment check, adds no authoring-shape weight
+        return (
+            f"release publish gate: effective git {kind} identity resolves to a "
+            f"`.invalid` placeholder domain: {ident}; publishing now would "
+            "durably misattribute published history to a synthetic identity. "
+            "Unset the lingering identity (`git config --unset user.email` / "
+            "`user.name`, or the GIT_AUTHOR_*/GIT_COMMITTER_* env override) or "
+            "scope a synthetic identity per command instead of durably mutating "
+            "config."
+        )
+    return None
 
 
 def update_instructions_version_blocker(

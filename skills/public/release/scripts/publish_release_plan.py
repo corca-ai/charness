@@ -33,6 +33,7 @@ ensure_release_target_available = _helpers.ensure_release_target_available
 safe_real_host_payload = _preflight.safe_real_host_payload
 release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
+invalid_git_identity_blocker = _preflight.invalid_git_identity_blocker
 github_repo_slug = _issue_closeout.github_repo_slug
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 
@@ -86,6 +87,9 @@ def build_publish_plan(
     run_command,
     resume: bool = False,
 ) -> dict[str, Any]:
+    identity_blocker = invalid_git_identity_blocker(repo_root)
+    if identity_blocker:
+        raise SystemExit(identity_blocker)
     current_payload = build_release_payload(repo_root)
     current_version = current_payload["surface_versions"]["packaging_manifest"]
     if not isinstance(current_version, str):

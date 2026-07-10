@@ -32,6 +32,17 @@ that looks like proof but is not, and what the honest claim would be.
    provider behavior unless the acceptance class is explicitly local-only.
    Name the acceptance class in the proof packet so the local/live boundary
    is a recorded decision.
+7. **A synthetic proof identity must be scoped, not durably set.** When a proof
+   needs a synthetic or temporary git/provider identity, scope it to the one
+   command that needs it -- per-command env vars, or an inline `-c` override on
+   that one git invocation -- never by mutating durable repo or host config. If
+   a durable mutation is genuinely unavoidable, restore the prior state on exit
+   -- including abnormal exit (a trap/finally, not a manual last step) -- and
+   record the restoration readback in the proof packet. Give a synthetic
+   identity a `.invalid` reserved-domain email so a boundary gate can
+   recognize a lingering one; a synthetic identity on a real-looking domain
+   defeats that detection. An unrestored synthetic identity keeps producing
+   evidence against every later, unrelated action until someone notices.
 
 ## Proof packet discipline
 

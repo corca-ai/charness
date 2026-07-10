@@ -248,6 +248,13 @@ def staged_commit_gate_plan(
                 ("python3", "scripts/check_staged_reversion.py", "--repo-root", str(repo_root)),
             )
         )
+        if (repo_root / "scripts" / "check_git_identity.py").exists():
+            plan.append(
+                GateCommand(
+                    "check-git-identity",
+                    ("python3", "scripts/check_git_identity.py", "--repo-root", str(repo_root)),
+                )
+            )
         if (repo_root / "scripts" / "check_staged_worktree_consistency.py").exists():
             plan.append(
                 GateCommand(

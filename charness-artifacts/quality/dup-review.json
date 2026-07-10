@@ -503,6 +503,27 @@
       "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
       "reviewed_at": "2026-06-24",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "89d83f450e19e19b",
+      "note": "#432 identity guard: the release preflight deliberately duplicates the repo-root check_git_identity resolve+check logic because the plugin ships standalone and cannot import repo-root scripts; the two copies are bound by the test_release_preflight_parity matrix so semantic drift fails a test instead of diverging silently",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "34408a7c1ad1e68c",
+      "note": "small idiom-sized argparse/bootstrap span shared by top-level checker scripts (check_markdown_inline_code, validate_handoff_artifact, validate_quality_artifact); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, a shared helper would add coupling for 5 lines",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "aaf0db28d5594b20",
+      "note": "small idiom-sized span shared by pre-existing checker scripts (check_markdown_inline_code, check_skill_bootstrap_vars); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, not new duplication from this slice",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

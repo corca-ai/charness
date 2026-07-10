@@ -78,10 +78,33 @@ def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     labels = _labels(["scripts/new_helper.py"])
 
     assert "check-staged-reversion" in labels
+    assert "check-git-identity" in labels
     assert "py_compile (staged)" in labels
     assert "check-python-lengths (staged)" in labels
     assert "validate-attention-state-visibility" in labels
     assert "staged-plugin-mirror-drift" in labels
+
+
+def test_staged_commit_plan_gates_git_identity_when_script_present() -> None:
+    # #432: the effective-identity refusal gate runs whenever ANY path is
+    # staged (identity applies to the commit as a whole, not per-path), scoped
+    # by script presence -- like staged-worktree-consistency -- so a seeded/
+    # consumer repo without the script degrades cleanly instead of planning a
+    # command that cannot run.
+    plan = staged_commit_gate_plan(ROOT, ["README.md"], ruff_path="")
+    gate = next((c for c in plan if c.label == "check-git-identity"), None)
+    assert gate is not None
+    assert gate.argv == (
+        "python3",
+        "scripts/check_git_identity.py",
+        "--repo-root",
+        str(ROOT),
+    )
+
+
+def test_staged_commit_plan_skips_git_identity_without_script(tmp_path: Path) -> None:
+    labels = [c.label for c in staged_commit_gate_plan(tmp_path, ["README.md"], ruff_path="")]
+    assert "check-git-identity" not in labels
 
 
 def test_staged_worktree_consistency_blocks_edit_after_stage(tmp_path: Path, monkeypatch) -> None:
@@ -440,6 +463,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
     assert json_result.returncode == 0, json_result.stderr
     assert [item["label"] for item in json.loads(json_result.stdout)] == [
         "check-staged-reversion",
+        "check-git-identity",
         "staged-worktree-consistency",
         "staged-plugin-mirror-drift",
         "check-doc-links",

@@ -232,6 +232,43 @@ def test_publish_blocks_when_update_instructions_are_stale(tmp_path: Path) -> No
     assert "version-agnostic" in result.stderr
 
 
+# --- #432: lingering `.invalid` git identity guard ----------------------------
+
+
+def test_invalid_git_identity_blocker_logic(tmp_path: Path) -> None:
+    preflight = _load_preflight()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.name", "Dev")
+    _git(repo, "config", "user.email", "dev@example.com")
+
+    # A normal identity is not blocked.
+    assert preflight.invalid_git_identity_blocker(repo) is None
+
+    # A lingering `.invalid` placeholder identity is blocked, and the message
+    # names the offending kind and ident.
+    _git(repo, "config", "user.email", "hotl-proof@example.invalid")
+    blocker = preflight.invalid_git_identity_blocker(repo)
+    assert blocker is not None
+    assert "hotl-proof@example.invalid" in blocker
+    assert "author" in blocker
+
+
+def test_publish_blocks_when_git_identity_is_invalid(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    # Simulate the #432 shape: a proof flow left a synthetic `.invalid` identity
+    # in the repo-local config and it was never restored.
+    _git(repo, "config", "user.email", "hotl-proof@example.invalid")
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_publish(repo, env, "--part", "patch", "--critique-blocked", CRITIQUE_BLOCKED)
+
+    assert result.returncode != 0
+    assert "hotl-proof@example.invalid" in result.stderr
+    assert ".invalid" in result.stderr
+
+
 # --- update_instructions pre-publish stub (prep affordance) -------------------
 
 
