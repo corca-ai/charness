@@ -1,6 +1,9 @@
 # Release Surface Check
 Date: 2026-07-11
 
+Timezone note: this is the UTC generation date; publication occurred on
+2026-07-12 in the repo operator's Asia/Seoul timezone.
+
 ## Scope
 
 Advanced `charness` toward release `0.66.4` (tag `v0.66.4`) through the repo-owned release helper.

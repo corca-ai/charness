@@ -1,23 +1,25 @@
 # Achieve Goal: North-Star Autonomous Two-Hour Release Round 3
 
-Status: active
+Status: complete
 Created: 2026-07-12
 Activation: `/goal @charness-artifacts/goals/2026-07-12-north-star-autonomous-two-hour-release-round-3.md`
 Timebox: 2h
 Activation time: 2026-07-12T06:29:46+09:00
 Closeout reserve: 20m
 Done-early policy: continue_next_improvement
+Host metric window: started_at=2026-07-11T21:29:46Z completed_at=2026-07-11T23:09:46Z codex_session_file=/home/hwidong/.codex/sessions/2026/07/11/rollout-2026-07-11T12-42-43-019f4f45-3606-7892-a931-3a4bfdf739d6.jsonl
 
 This file is the living goal scratchpad for the active round-3 autonomous run.
 
 ## Active Operating Frame
 
-- Current slice: full-delta quality and release preparation after completed
-  Slices A/B and a no-change multi-lens Slice C probe.
-- Current slice intent: freeze one reviewed v0.66.4 candidate and prove it on a
-  clean immutable HEAD before any publication.
-- Next action: commit the updated goal/critique evidence, run final quality and
-  mutation-coverage lock, then inspect the exact release dry-run payload.
+- Current slice: public-release lifecycle and goal closeout after eight
+  evidence-admitted implementation/probe/review slices.
+- Current slice intent: bind public, installed, issue-state, retro, host-window,
+  and disposition evidence without reopening the released runtime bundle.
+- Next action: finish retro/handoff/disposition evidence at the T+100 closeout
+  boundary, flip the goal only after its validator passes, and push lifecycle
+  artifacts.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -129,22 +131,14 @@ publish one independently verified patch release.
 | A | Reclassify the observed SLOC writer in the surface manifest | Repeated post-sync proof drift remains from #436 | surface plan shows sync-before-verify; dirty and clean executor proof | complete |
 | B | Expose producer facts and format their exact consumer handoff | A wrong manual base caused an eight-minute duplicate run and 2.8 GB JSON | structured payload fields, wrong/stale negative proof, and roundtrip without recollection | complete |
 | C | Probe operator/security/portability siblings | Counter implementation anchoring with genuinely different lenses | bounded evidence plus admit/defer/no-change decision | complete — no mutation admitted |
-| D | Full-delta quality and release critique | Freeze one reviewed bundle before the irreversible boundary | quality artifact, release notes, critique, clean verification lock, dry-run | in progress |
-| E | Push and publish the patch release | User-authorized final external lane | tag/release URL, distinct HTTPS proof, install/doctor and issue-state reads | planned |
+| D | Full-delta quality and release critique | Freeze one reviewed bundle before the irreversible boundary | quality artifact, release notes, critique, clean verification lock, dry-run | complete |
+| E | Push and publish the patch release | User-authorized final external lane | tag/release URL, distinct HTTPS proof, install/doctor and issue-state reads | complete |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+none — this goal's authorized patch release is complete; #433/#436 lifecycle
+remains deliberately outside scope and becomes a future explicit task, not a
+decision blocking this closeout.
 
 ## Coordination Cues
 
@@ -184,6 +178,7 @@ per the bullets above when that boundary is crossed):
 Routing: find-skills -> issue — #436 supplies fresh source-of-truth context; impl owns reversible code, quality owns proof, critique owns risk review, and release owns publication.
 Gather: n/a — no public source needs conversion into a local knowledge asset; GitHub issue state is read through the issue workflow.
 Issue closeout: n/a — #433 and #436 are context only and must remain OPEN.
+Release: charness-artifacts/release/latest.md — v0.66.4 public HTTPS, fresh-checkout, install refresh, and non-close evidence.
 
 ## Discuss Before Activation
 
@@ -266,7 +261,7 @@ applies.
 
 - Objective: Restore structural headroom without changing quality-gate behavior
 - Why this approach: The general runner test module remained in a warning band; the five coverage-selection cases form one stable behavioral seam
-- Commits: pending
+- Commits: `039ee871`
 - What changed: Moved the existing helper and five coverage-selection tests into test_quality_runner_coverage_selection.py; no production code changed
 - Alternatives rejected: Rejected deleting scenarios, weakening assertions, or mixing aggregate-runtime and coverage-selection fixtures
 - Targeted verification: five focused scenarios passed; ruff and diff check passed; original module 644/800 and new module 101/800
@@ -294,7 +289,7 @@ applies.
 
 - Objective: Turn the complete bundle into a reviewable patch-release contract before irreversible mutation
 - Why this approach: Publication must remain provisional until exact-bundle and distinct-channel evidence, while reversible preparation stays lightweight
-- Commits: pending
+- Commits: `08fa386c`, `149feb87`
 - What changed: Added release-readiness quality record, three-angle release critique with counterweight, and operator-facing v0.66.4 notes
 - Alternatives rejected: Rejected issue closure, new CLI/floor, speculative host abstraction, and treating helper green as terminal success
 - Targeted verification: quality artifact validator and fresh-eye quality review approved; release angles/counterweight completed with zero reviewer drift
@@ -308,7 +303,7 @@ applies.
 
 - Objective: Stop unrelated plugin scripts from triggering a seven-step external-tool host checklist without losing real host-sensitive coverage
 - Why this approach: The release planner reproduced the false positive on this bundle; the broad derived plugin wildcard made reversible release preparation pay unrelated operator work
-- Commits: pending
+- Commits: `275788b8`
 - What changed: Added external-tool-control-plane with exact source/plugin paths; release adapter subscribes to it; added unrelated-derived negative fixture
 - Alternatives rejected: Rejected removing host proof, raw-glob duplication, or a generic dependency graph
 - Targeted verification: six focused tests, surface/integration validators, dry-run support/update, current delta required=false; initial ownership HOLD fixed and stable reviews approved
@@ -393,7 +388,8 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
-- none before activation.
+- The release planner's broad integration subscription produced an unrelated
+  seven-step real-host checklist; Slice 8 moved it to exact host-tool ownership.
 
 ## Final Verification
 
@@ -402,13 +398,38 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md
+Host log probe: charness-artifacts/probe/2026-07-12-north-star-autonomous-two-hour-release-round-3-host-log.json
+Disposition review: charness-artifacts/critique/2026-07-12-north-star-autonomous-two-hour-release-round-3-disposition-review.md
+
+- Final locked proof: 4,592 broad tests passed; focused mutation production
+  completed in 12.9s and its exact emitted strict-reuse command returned
+  `blocking=[]` for base `917239ba` without recollection.
+- Release proof: `run-quality --release` passed in 82.9s; fresh-checkout passed;
+  v0.66.4 tag/release is public; helper HTTPS and a separate reviewer confirmed
+  substantive content; install refresh reports 0.66.4 and 13/13 doctor checks ok.
+- Issue-state proof: #433 and #436 were read OPEN before and after publication;
+  no issue-close flags or close keywords were present.
+- Residual nonclaims: no exhaustive future-writer audit, dynamic dependency
+  discovery for host-tool surfaces, Cautilus evaluation, issue lifecycle
+  mutation, or non-GitHub publication proof.
+- Goal-window efficiency: 1,954 timestamped events, 196 function calls, 233
+  custom tool calls, 28 patch applications, two compactions, and 26 reviewer/
+  worker spawns were measured from 06:29:46–08:09:46 KST. Necessary safety cost
+  included fresh-eye/public proof and repeated fail-closed locks; reducible
+  waste was replacement review after envelope violations and one broad run
+  before quality evidence fields were machine-readable.
 
 ## User Verification Instructions
 
+- Run `charness --version` and expect `0.66.4`; restart active Codex/Claude
+  sessions so their cached plugin paths reload.
+- Inspect `https://github.com/corca-ai/charness/releases/tag/v0.66.4` and use
+  `charness doctor` if host readiness needs a fresh local read.
+- Treat #433/#436 as OPEN tracker decisions; this release does not authorize or
+  imply their closure.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: exact inventory evidence fields and reproduction marker landed; applied: external-tool-control-plane plus negative trigger regression landed; applied: handoff now removes completed work and preserves only live issue/nonclaim state.
+Structural follow-up: applied: .agents/surfaces.json ownership split plus tests/quality_gates/test_release_real_host.py regression guard
