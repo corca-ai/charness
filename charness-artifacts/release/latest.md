@@ -101,6 +101,24 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
 - Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
 - Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
+## Real-Host Execution Readback
+
+- `charness tool doctor nose --json --no-write-locks`: `doctor_status: ok`,
+  `doctor_disposition: ready`, observed/current `nose 0.18.0`.
+- Missing-state non-claim: `nose` was already installed, so this run could not
+  observe the pre-install `advisory-install-needed` transition.
+- `charness tool install nose --dry-run --json`: selected the upstream
+  `nose-cli-installer.sh` route and read back latest release `v0.18.0`.
+- `charness tool sync-support nose --json`: skipped materialization because
+  `nose` is integration-only and has no support-skill source.
+- `inventory_nose_clones.py --json`: completed with advisory refactoring
+  candidates; no standing failure was inferred from the findings.
+- Post-publish `charness doctor --json`: checkout, Codex source/cache, and Claude
+  installed versions are `0.66.0`; tool readiness includes `nose: ok` and Codex
+  source/cache drift is false.
+- Installed-vs-repo spot check: the installed `achieve_adapter_policy.py` is
+  byte-identical to the release repo file.
+
 ## Review Proof
 
 - Review proof: `charness-artifacts/critique/2026-07-11-434-release-critique.md`.
