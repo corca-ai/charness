@@ -1,5 +1,5 @@
 # Release Surface Check
-Date: 2026-07-10
+Date: 2026-07-11
 
 ## Scope
 
@@ -43,7 +43,7 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
@@ -108,13 +108,14 @@ Advanced `charness` toward release `0.66.0` (tag `v0.66.0`) through the repo-own
 
 ## Release Runtime
 
-- `requested_review_gate`: 0.001s
-- `cli_skill_surface_gate`: 0.080s
-- `quality_command`: 69.918s
+- `requested_review_gate`: 0.005s
+- `cli_skill_surface_gate`: 1.832s
+- `quality_command`: 72.855s
+- `fresh_checkout_probes_resume`: 2.848s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`

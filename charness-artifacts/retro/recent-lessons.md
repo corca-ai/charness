@@ -2,19 +2,19 @@
 
 ## Current Focus
 
+- Release publish triggered a configured automatic session retro for `v0.66.0`. (source: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`; sources: 2)
 - Autonomous improvement run over the handoff backlog: fixed the credentials-less CI baseline failure blocking the #421 mutation gate, resolved #428 (reviewer read-only boundary enforcement: rail-1 worktree+index fingerprint + rail-2 read-only reviewer envelope), and shipped v0.65.0 (pushed, tagged, published, install-refreshed, #428 closed with a verified carrier). (source: `charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md`)
-- Release publish triggered a configured automatic session retro for `v0.64.0`. (source: `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md`; sources: 77)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`; sources: 78)
 - After update, injected 0.63.1 skill paths were stale. The stable 0.64.0 resolver correctly re-resolved them, so no resolver change was needed. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
 - Background subagent completion produced no notification and `TaskOutput` could not find named agents, so waiting was polling `sleep` loops against worktree state and transcript files (~20 idle minutes across three reviewers). (source: `charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md`)
 - Release execution output was lost after its session closed. Release state had to be reconstructed from the checked-in release artifact, git/remote readbacks, the public HTTPS channel, and installed-machine proof. The resulting artifact/state readback was sufficient; no new code change was justified. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md`; sources: 77)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`; sources: 78)
 - applied: evidence-ranked slices, changed-line coverage, release helper, distinct-channel verification, and install refresh are now part of this goal's durable proof. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
 - applied-in-session — handoff and prompt-mutation disposition record the exact conditions required before the demotion candidate may be reopened. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
 - applied-in-session — reviewer-produced files were treated as untrusted, independently inspected, and regenerated through the retro packet/persistence helpers before closeout. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
@@ -107,3 +107,4 @@
 - `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`
