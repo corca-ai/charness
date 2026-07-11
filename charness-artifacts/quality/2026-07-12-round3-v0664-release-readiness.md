@@ -27,7 +27,7 @@ describe regressions in the target delta.
 ## Runtime Signals
 
 - runtime source: structured metrics from
-  `.charness/quality/runtime-signals.json`, rendered by
+  `.charness/quality/runtime-signals.json` <!-- reproduction-source -->, rendered by
   `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
 - runtime hot spots: read-only aggregate 61.9s latest / 63.8s median against
   90s; pytest 42.4s / 36.8s against 140s; coverage 6.8s / 7.4s against 55s.
@@ -83,10 +83,13 @@ describe regressions in the target delta.
   were strengthened at their owning seams; no new floor or public CLI is
   recommended.
 - prose review result: command: `inventory_skill_ergonomics.py --summary`
-  scanned 22
-  packages and found 17 host-reference heuristics (85 references), with zero
-  core overfill, mode pressure, path ambiguity, issue/date anchors, or missing
-  references. No skill changed; the hits are intentional adapter/integration
+  reported `scope_status=scanned`, `finding_status=heuristics_present`, and
+  `prose_review_status=required`; this paragraph supplies that prose review.
+  It checked `checked_skill_count=22` packages with
+  `heuristic_finding_count=17`, all from
+  `subcheck_counts.host_surface_reference=85`, while core overfill, mode
+  pressure, path ambiguity, issue/date anchors, and missing references were
+  zero. No skill changed; the hits are intentional adapter/integration
   vocabulary, not evidence of target portability failure.
 - artifact: the round-three goal Slice 6 records three independent read-only
   probes that found no additional code candidate in
