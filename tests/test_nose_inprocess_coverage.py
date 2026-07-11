@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -665,3 +666,26 @@ def test_main_json_and_human(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["inv", "--repo-root", str(tmp_path)])
     assert inv.main() == 0
     assert "nose missing" in capsys.readouterr().out
+
+
+def test_main_help_documents_clone_inventory_options(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["inv", "--help"])
+    with pytest.raises(SystemExit) as exc_info:
+        inv.main()
+    assert exc_info.value.code == 0
+    output = capsys.readouterr().out
+    expected = {
+        "--repo-root": "Repository root to scan and use for baseline paths",
+        "--mode": "Comma-separated nose query channels to scan",
+        "--min-size": "Minimum token count for a clone family",
+        "--top": "Maximum ranked families to report normally (default: 20); --write-baseline ignores this limit and scans all families",
+        "--sort": "Ranking field for reported families",
+        "--json": "Emit the full advisory payload as JSON",
+    }
+    for option, fragment in expected.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
