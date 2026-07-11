@@ -39,6 +39,26 @@ tqlib = _load()
         ("skills/public/demo/adapter.example.yaml", "# Codex host mapping", "adapter-mapping"),
         ("skills/public/demo/scripts/templates/demo_adapter.yaml", "# Claude Code mapping", "adapter-mapping"),
         ("skills/public/demo/references/session-start-routing.md", "Codex session routing", "named-host-integration"),
+        (
+            "skills/public/setup/references/agent-docs-policy.md",
+            "A higher-priority system or developer instruction may prohibit a spawn.",
+            "named-host-integration",
+        ),
+        (
+            "plugins/charness/skills/public/setup/references/agent-docs-policy.md",
+            "A higher-priority system or developer instruction may prohibit a spawn.",
+            "named-host-integration",
+        ),
+        (
+            "skills/public/demo/references/host-routing.md",
+            "Read .codex/adapter.yaml and .claude/adapter.yaml when resolving host policy.",
+            "adapter-compatibility",
+        ),
+        (
+            "skills/public/demo/references/portable-guidance.md",
+            "Compare .codex/ and .claude/ behavior before choosing a host integration.",
+            "portable-prose",
+        ),
         ("skills/public/demo/references/host-policy.json", '"host": "Codex"', "policy-fixture"),
         ("skills/public/quality/scripts/skill_text_quality_lib.py", 'r"Codex"', "detector-definition"),
         ("skills/public/demo/references/portable-guidance.md", "Claude Code behavior", "portable-prose"),

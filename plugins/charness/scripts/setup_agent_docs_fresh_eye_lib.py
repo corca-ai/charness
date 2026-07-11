@@ -27,11 +27,18 @@ FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS = (
     "do not substitute a same-agent",
     "same-agent pass fails",
 )
-FRESH_EYE_DELEGATION_CAVEAT_PATTERNS = (
-    "higher-priority host",
-    "developer policy requires explicit user delegation",
-    "once the user authorizes subagents",
-    "follow that stricter rule",
+FRESH_EYE_DEFERRED_RECONSENT_RE = re.compile(
+    r"(?ix)(?:"
+    r"\b(?:ask|wait|defer|only\s+after|until|once|after)\b"
+    r"[^\n.!?]{0,120}\busers?\b[^\n.!?]{0,80}"
+    r"\b(?:approv\w*|authoriz\w*|consent|permission)\b"
+    r"[^\n.!?]{0,120}\b(?:spawn\w*|subagents?|reviewers?)\b"
+    r"|"
+    r"\b(?:ask|wait|defer|only\s+after|until|once|after)\b"
+    r"[^\n.!?]{0,120}\b(?:spawn\w*|subagents?|reviewers?)\b"
+    r"[^\n.!?]{0,80}\busers?\b[^\n.!?]{0,80}"
+    r"\b(?:approv\w*|authoriz\w*|consent|permission)\b"
+    r")"
 )
 TASK_REVIEW_SCOPE_SNIPPETS = ("setup", "quality", "critique", "release", "issue")
 LEGACY_TASK_REVIEW_SCOPE_SNIPPET = "init-repo"
@@ -57,6 +64,15 @@ def _normalize_whitespace(text: str) -> str:
 def _missing_snippets(text: str, snippets: tuple[str, ...]) -> list[str]:
     lowered = _normalize_whitespace(text).lower()
     return [snippet for snippet in snippets if _normalize_whitespace(snippet).lower() not in lowered]
+
+
+def _deferred_reconsent_matches(text: str) -> list[str]:
+    """Return deterministic reasons for deferring a standing spawn request."""
+
+    return [
+        _normalize_whitespace(match.group(0)).strip().lower()
+        for match in FRESH_EYE_DEFERRED_RECONSENT_RE.finditer(_normalize_whitespace(text))
+    ]
 
 
 def _extract_section(text: str, heading: str) -> str:
@@ -117,12 +133,7 @@ def detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object],
     )
     stale_markers = [marker for marker in FRESH_EYE_STALE_MARKERS if marker in lowered]
     section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING) if has_subagent_delegation_section else ""
-    section_lower = _normalize_whitespace(section_body).lower()
-    weakening_caveats_detected = (
-        [pattern for pattern in FRESH_EYE_DELEGATION_CAVEAT_PATTERNS if pattern in section_lower]
-        if section_body
-        else []
-    )
+    weakening_caveats_detected = _deferred_reconsent_matches(section_body) if section_body else []
     findings: list[dict[str, str]] = []
     if stop_gate_detected and missing_required:
         findings.append(

@@ -2,69 +2,47 @@
 
 ## Workflow Trigger
 
-- Pickup with no explicit task invokes `charness:handoff` directly; a bare
-  `/handoff` runs chunked routing over this baton plus live issues.
+- Pickup with no explicit task invokes `charness:handoff`; a bare `/handoff`
+  runs chunked routing over this baton plus live issues.
 
 ## Current State
 
-- Continue through `issue` for #433 closeout boundaries and through `quality`
-  for the remaining argparse-help debt. Keep reversible cleanup
-  judgment-led; reserve distinct-channel teeth for push/release/issue close.
-- Release `v0.66.1` is published and verified; proof lives in
-  [release/latest.md](../charness-artifacts/release/latest.md).
-- `origin/main` contains the complete #433 repair and refreshed baton through
-  `569ab2ea`; distinct GitHub readback matched that SHA and #433 remained open.
-- Local `main` contains eighteen unpushed improvement commits. The latest
-  five-iteration campaign made four host-reference ownership/signal changes and
-  one deliberate find-skills non-change; argparse help remains complete.
-- Final local proof passed standing pytest, 81/81 read-only quality gates, and
-  fresh changed-line coverage for 13 mutation-pool modules. The bounded
-  disposition review passed with zero reviewer-boundary drift.
-- #433 remains OPEN. No release, provider mutation, or issue close was performed.
-  The authorized handoff push is complete; pushing the follow-up commits or
-  closing the issue remains a separate external boundary.
-- The only open GitHub issue is #433. Feedback evidence still has zero legitimate
-  observations; do not manufacture one. The old #421 watch is no longer live.
+- Continue reversible improvement through judgment-led `quality`; treat push,
+  release, and issue close as distinct-channel irreversible boundaries.
+- `origin/main` remains at the verified #433 carrier. Local `main` contains
+  nineteen unpushed improvement commits after this campaign; #433 remains OPEN.
+- The five perspectives repaired false instruction-priority claims, preserved
+  standing delegation and independent review, generalized re-consent detection,
+  routed the two reviewed host rows to their owners, and rejected a new gate or
+  generic host API.
+- Host-reference inventory now has 85 visible lexical hits and zero
+  `portable-prose`; the increase is detector self-reference, not a quality score.
+- Final local proof and review live in the linked quality/critique records. No
+  push, issue close, release, provider mutation, or feedback observation occurred.
 
 ## Next Session
 
-1. Keep the eighteen follow-up commits local until another push is authorized. If the
-   operator separately authorizes issue close, first push and verify the
-   published carrier through a distinct channel before closing #433.
-2. Review only the two rows now classified `portable-prose`: setup's agent-docs
-   policy and markdown-preview's host config paths. Do not sweep the other 82
-   adapter/integration/fixture rows without new evidence.
-3. Run cheap structural/duplicate checks before the first coverage lock; run
-   fresh-eye review before the final producer; then pay for one locked broad
-   quality/coverage pass. D33 is already resolved by the report extraction and
-   is not a live trip-wire.
+1. Keep the nineteen local commits unpushed until separately authorized. If
+   issue close is later authorized, first push and verify the carrier through a
+   distinct channel before closing #433.
+2. Do not sweep the 85 host-reference rows. Reopen classification only for a
+   concrete false route or operator misunderstanding.
+3. If a real setup consumer shows standing delegation was generated without
+   owner intent, review consent provenance then; do not add a speculative gate.
 
 ## Discuss
 
-- Pushing the follow-up commits, closing #433, publishing another release, and
-  applying provider changes remain separate external or irreversible approvals.
-- Feedback append locking and rotated-stream reconciliation stay deferred until
-  concurrent writers or stream growth produce evidence.
+- Push, #433 close, release, and provider changes remain separate approvals.
+- Feedback append locking remains deferred until concurrent-writer evidence.
 
 ## References
 
-- [completed goal](../charness-artifacts/goals/2026-07-11-issue-create-safety-quality-speed-sweep.md)
-  · [quality proof](../charness-artifacts/quality/2026-07-11-issue-create-safety-quality-speed-sweep.md)
-  · [retro](../charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md)
-  · [#433 disposition review](../charness-artifacts/critique/2026-07-11-issue-create-safety-quality-speed-sweep-disposition-review.md)
+- [quality proof](../charness-artifacts/quality/2026-07-11-truthful-standing-delegation.md)
+  · [critique](../charness-artifacts/critique/2026-07-11-truthful-standing-delegation.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: the [retro](../charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md)
-  preserves #433's open external boundary, the next argparse-help package, the
-  zero-feedback non-claim, and the verification sequence that prevents reruns.
+- Refresh kept: #433's external boundary, the local unpushed carrier, and the
+  evidence-triggered next move.
 
-- Refresh non-claims: the [completed goal](../charness-artifacts/goals/2026-07-11-issue-create-safety-quality-speed-sweep.md)
-  claims no #433 close, new release, provider mutation, feedback observation,
-  or full argparse-debt completion.
-
-- Follow-up proof: [web-fetch quality](../charness-artifacts/quality/2026-07-11-web-fetch-argparse-help.md)
-  · [retro quality](../charness-artifacts/quality/2026-07-11-retro-argparse-help.md)
-  · [release quality](../charness-artifacts/quality/2026-07-11-release-argparse-help.md)
-  · [five-package campaign](../charness-artifacts/quality/2026-07-11-five-package-argparse-help.md)
-  · [final quality campaign](../charness-artifacts/quality/2026-07-11-final-quality-argparse-help.md)
-  · [host-reference review](../charness-artifacts/quality/2026-07-11-host-reference-north-star.md)
+- Refresh non-claims: no push, issue close, release, provider mutation,
+  external behavior proof, or feedback observation.

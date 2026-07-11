@@ -162,6 +162,19 @@ def host_surface_review_context(path: Path, line: str) -> str:
     name = path.name.lower()
     stem = path.stem.lower()
     line_lower = line.lower()
+    # These two high-signal host-policy shapes have dedicated review owners.
+    # Check them before broader path/line heuristics so a policy reference is
+    # not mislabeled as generic portable prose.
+    policy_path = "skills/public/setup/references/agent-docs-policy.md"
+    path_text = path.as_posix().lower()
+    if path_text == policy_path or path_text.endswith(f"/{policy_path}"):
+        return "named-host-integration"
+    if (
+        ".codex/" in line_lower
+        and ".claude/" in line_lower
+        and re.search(r"\.(?:ya?ml|json|toml)\b", line_lower)
+    ):
+        return "adapter-compatibility"
     in_quality_scripts = "/quality/scripts/" in normalized
     if in_quality_scripts and (
         name.startswith(("inventory_", "validate_", "check_"))

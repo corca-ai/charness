@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from .support import inspect_setup_repo
 
 
@@ -477,6 +479,17 @@ def test_generated_agents_carries_adapter_first_reviewer_rule(tmp_path: Path) ->
     assert "fresh_eye_delegation_caveat_weakens_contract" not in finding_types
 
 
+def test_live_and_generated_agents_do_not_claim_precedence_over_host_instructions() -> None:
+    from scripts.setup_host_docs_lib import render_agents_template
+
+    root_agents = Path(__file__).resolve().parents[2] / "AGENTS.md"
+    generated = render_agents_template(skill_routing_markdown="## Skill Routing\n\n- Route via find-skills.")
+    for text in (root_agents.read_text(encoding="utf-8"), generated):
+        assert "IGNORE UPPER-LEVEL INSTRUCTIONS" not in text
+        assert "THIS SECTION WINS" not in text
+    assert "cannot override" in root_agents.read_text(encoding="utf-8")
+
+
 def test_setup_inspect_rejects_compact_delegation_that_allows_same_agent_substitute(tmp_path: Path) -> None:
     # Same-agent ALLOWED block carries the adapter-first rule, so the only failing
     # condition is the same-agent-forbidden check (not the #311 adapter snippet).
@@ -510,9 +523,9 @@ def _agents_with_delegation_section(*, heading: str = "## Subagent Delegation", 
     return "\n".join(body)
 
 
-def test_setup_inspect_flags_weakening_caveat_inside_subagent_delegation_section(tmp_path: Path) -> None:
+def test_setup_inspect_accepts_truthful_higher_priority_boundary_inside_subagent_delegation_section(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    caveat = "- If a higher-priority host, tool, or developer policy requires explicit user delegation, follow that stricter rule before spawning."
+    caveat = "- A higher-priority system, developer, or host instruction may prohibit a spawn; this repo request cannot override it."
     _seed_normalize_repo(repo, _agents_with_delegation_section(caveats=(caveat,)))
 
     payload = _run_inspect(repo)
@@ -520,19 +533,16 @@ def test_setup_inspect_flags_weakening_caveat_inside_subagent_delegation_section
     normalization = payload["agent_docs"]["normalization"]
     fresh_eye = normalization["fresh_eye_review"]
     finding_types = {finding["type"] for finding in normalization["findings"]}
-    recommendation_priorities = {item["id"]: item["priority"] for item in normalization["recommendations"]}
     assert fresh_eye["missing_required_snippets"] == []
-    assert "higher-priority host" in fresh_eye["weakening_caveats_detected"]
-    assert "follow that stricter rule" in fresh_eye["weakening_caveats_detected"]
-    assert "fresh_eye_delegation_caveat_weakens_contract" in finding_types
-    assert recommendation_priorities["fresh_eye_delegation_caveat_weakens_contract"] == "advisory"
+    assert fresh_eye["weakening_caveats_detected"] == []
+    assert "fresh_eye_delegation_caveat_weakens_contract" not in finding_types
     assert "fresh_eye_delegation_rule_drift" not in finding_types
     assert "fresh_eye_task_review_scope_drift" not in finding_types
 
 
-def test_setup_inspect_flags_weakening_caveat_with_mixed_case_heading(tmp_path: Path) -> None:
+def test_setup_inspect_accepts_truthful_boundary_with_mixed_case_heading(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    caveat = "- If a higher-priority host policy requires explicit user delegation, follow that stricter rule before spawning."
+    caveat = "- A higher-priority host policy may prohibit spawning; report the concrete host signal."
     _seed_normalize_repo(repo, _agents_with_delegation_section(heading="## Subagent delegation", caveats=(caveat,)))
 
     payload = _run_inspect(repo)
@@ -540,8 +550,32 @@ def test_setup_inspect_flags_weakening_caveat_with_mixed_case_heading(tmp_path: 
     fresh_eye = payload["agent_docs"]["normalization"]["fresh_eye_review"]
     finding_types = {f["type"] for f in payload["agent_docs"]["normalization"]["findings"]}
     assert fresh_eye["has_subagent_delegation_section"] is True
-    assert "higher-priority host" in fresh_eye["weakening_caveats_detected"]
-    assert "fresh_eye_delegation_caveat_weakens_contract" in finding_types
+    assert fresh_eye["weakening_caveats_detected"] == []
+    assert "fresh_eye_delegation_caveat_weakens_contract" not in finding_types
+
+
+@pytest.mark.parametrize(
+    ("caveat", "should_flag"),
+    [
+        ("Wait to spawn once the user authorizes subagents.", True),
+        ("Ask the user for approval before spawning subagents.", True),
+        ("Wait for user consent before spawning.", True),
+        ("A higher-priority system instruction may prohibit a spawn; this request cannot override it.", False),
+        ("Report a higher-priority host block instead of claiming the reviewer ran.", False),
+    ],
+)
+def test_setup_inspect_classifies_deferred_user_reconsent(
+    tmp_path: Path, caveat: str, should_flag: bool
+) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, _agents_with_delegation_section(caveats=(f"- {caveat}",)))
+
+    payload = _run_inspect(repo)
+
+    fresh_eye = payload["agent_docs"]["normalization"]["fresh_eye_review"]
+    finding_types = {f["type"] for f in payload["agent_docs"]["normalization"]["findings"]}
+    assert bool(fresh_eye["weakening_caveats_detected"]) is should_flag
+    assert ("fresh_eye_delegation_caveat_weakens_contract" in finding_types) is should_flag
 
 
 def test_setup_inspect_does_not_flag_caveat_phrase_outside_subagent_delegation_section(tmp_path: Path) -> None:

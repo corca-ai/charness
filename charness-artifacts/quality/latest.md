@@ -1,1 +1,1 @@
-2026-07-11-host-reference-north-star.md
+2026-07-11-truthful-standing-delegation.md
