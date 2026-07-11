@@ -27,6 +27,7 @@ from scripts.surfaces_lib import (
     collect_changed_paths_since_base,
     collect_changed_paths_since_resolved_base,
     resolve_base_sha,
+    resolve_explicit_campaign_base,
 )
 
 
@@ -83,6 +84,17 @@ def test_resolve_base_sha_auto_matches_the_gate_range_anchor(tmp_path: Path) -> 
     assert resolve_base_sha(repo, "origin/main") == expected
 
 
+def test_resolve_explicit_campaign_base_resolves_non_auto_ref(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    head = _git(repo, "rev-parse", "HEAD")
+    origin_main = _git(repo, "rev-parse", "origin/main")
+
+    assert head != origin_main
+    assert resolve_explicit_campaign_base(repo, " HEAD ") == head
+    assert resolve_explicit_campaign_base(repo, "auto") is None
+    assert resolve_explicit_campaign_base(repo, "origin/main", has_paths=True) is None
+
+
 def test_resolve_base_sha_unresolvable_ref_raises_surface_error(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path)
     with pytest.raises(SurfaceError, match="merge-base"):
@@ -97,6 +109,11 @@ def test_resolve_base_sha_empty_merge_base_output_raises(tmp_path: Path, monkeyp
     monkeypatch.setattr(surfaces_lib, "_run_git", lambda *a, **k: [])
     with pytest.raises(SurfaceError, match="resolved empty"):
         resolve_base_sha(repo, "auto")
+
+
+def test_collect_changed_paths_since_resolved_base_rejects_empty_sha(tmp_path: Path) -> None:
+    with pytest.raises(SurfaceError, match="non-empty"):
+        collect_changed_paths_since_resolved_base(tmp_path, "  ")
 
 
 def test_resolve_changed_paths_default_stays_working_tree_only(tmp_path: Path) -> None:

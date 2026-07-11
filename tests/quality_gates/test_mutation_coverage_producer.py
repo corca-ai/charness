@@ -356,6 +356,32 @@ def test_make_closeout_producer_uses_explicit_campaign_base_once(tmp_path: Path,
     assert resolver_called is False
 
 
+def test_closeout_producer_or_error_binds_explicit_campaign_base(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    captured: dict[str, object] = {}
+
+    def fake_make(repo_root, run_command, **kwargs):
+        captured.update(kwargs)
+        return lambda *args: {"returncode": 0}
+
+    monkeypatch.setattr(prod, "make_closeout_producer", fake_make)
+    args = SimpleNamespace(
+        produce_mutation_coverage=True,
+        verification_lock=True,
+        skip_broad_pytest=False,
+        mutation_coverage_command=None,
+    )
+
+    producer, error = prod.closeout_producer_or_error(
+        args, tmp_path, lambda *args: {"returncode": 0}, base_sha="campaign-sha"
+    )
+
+    assert callable(producer)
+    assert error is None
+    assert captured["base_sha"] == "campaign-sha"
+
+
 def test_closeout_producer_or_error_branches(tmp_path: Path) -> None:
     from scripts.mutation_coverage_producer import (
         FOCUSED_REQUIRES_PRODUCE_ERROR,

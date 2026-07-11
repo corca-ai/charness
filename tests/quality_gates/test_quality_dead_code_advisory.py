@@ -362,3 +362,21 @@ def test_dead_code_advisory_reclassifies_dataclass_annotated_fields(tmp_path: Pa
         "review_candidate",
         "review_candidate",
     ]
+
+
+def test_dead_code_advisory_ignores_unreadable_dataclass_source(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory_unreadable_source", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    invalid_syntax = tmp_path / "invalid_syntax.py"
+    invalid_syntax.write_text("def broken(:\n", encoding="utf-8")
+    invalid_utf8 = tmp_path / "invalid_utf8.py"
+    invalid_utf8.write_bytes(b"\xff")
+
+    assert module._dataclass_field_locations(tmp_path / "missing.py") == set()
+    assert module._dataclass_field_locations(invalid_syntax) == set()
+    assert module._dataclass_field_locations(invalid_utf8) == set()
