@@ -290,6 +290,20 @@ applies.
 - Lessons carried forward: A structurally valid handoff can still misroute work when semantic state is stale; refresh it after public lifecycle proof
 - Metrics:
 
+### Slice 7: v0.66.4 release readiness and critique
+
+- Objective: Turn the complete bundle into a reviewable patch-release contract before irreversible mutation
+- Why this approach: Publication must remain provisional until exact-bundle and distinct-channel evidence, while reversible preparation stays lightweight
+- Commits: pending
+- What changed: Added release-readiness quality record, three-angle release critique with counterweight, and operator-facing v0.66.4 notes
+- Alternatives rejected: Rejected issue closure, new CLI/floor, speculative host abstraction, and treating helper green as terminal success
+- Targeted verification: quality artifact validator and fresh-eye quality review approved; release angles/counterweight completed with zero reviewer drift
+- Test duplication pressure: none — artifacts only
+- Critique: charness-artifacts/critique/2026-07-12-v0664-release-critique.md; one nested-spawn review quarantined
+- Off-goal findings: Conservative real-host nose checklist remains explicit but does not claim changed nose behavior
+- Lessons carried forward: Release notes must teach recovery at the handoff seam, not only enumerate internal commits
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
