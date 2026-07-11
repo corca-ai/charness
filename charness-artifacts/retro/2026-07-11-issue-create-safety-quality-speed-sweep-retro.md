@@ -34,6 +34,9 @@ verification, not another implementation branch.
 - Several implementation workers stopped at progress narration before editing;
   narrowing ownership and giving an exact falsifiable contract recovered the
   work, but repeated polling was reducible coordination waste.
+- The explicit broad quality gate ran only after the first coverage lock. It
+  surfaced production duplicate families late, and the cleanup then required
+  repeated full coverage passes as each newly visible branch was covered.
 - Broad exploration itself was necessary: the goal explicitly asked for sibling
   discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/
   defer—prevented that breadth from becoming speculative patches.
@@ -47,6 +50,9 @@ verification, not another implementation branch.
 - Reject headline suite speed claims when paired deltas were mixed; ship the
   stronger orchestration test and claim only the measured node reduction.
 - Keep external push/release/issue close outside this local goal run.
+- Remove same-owner release duplication, classify only genuinely portable
+  residual idioms, and let the full suite falsify the extracted resume boundary
+  before accepting the common helper.
 
 ## Expert Counterfactuals
 

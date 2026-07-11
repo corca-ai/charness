@@ -1,6 +1,6 @@
 # Achieve Goal: Issue-create safety, code-quality, and test-speed sweep
 
-Status: active
+Status: complete
 Created: 2026-07-11
 Activation: `/goal @charness-artifacts/goals/2026-07-11-issue-create-safety-quality-speed-sweep.md`
 
@@ -10,12 +10,13 @@ runs the activation command.
 ## Active Operating Frame
 
 - Current slice: Slice 5 — lock the bundle, verify, critique, and close the goal.
-- Current disposition: active local run; external publication, release, remote CI,
-  provider mutation, and issue close remain queued for separate authorization.
-- Current slice intent: freeze the verified mutation set, run broad quality and
-  changed-line proof, then finalize honest before/after and disposition evidence.
-- Next action: commit the verified speed/quality slice, run final verification
-  lock with fresh mutation coverage, and complete critique/retro/goal closeout.
+- Current disposition: local implementation and deterministic proof complete;
+  external publication, release, remote CI, provider mutation, and issue close
+  remain queued for separate authorization.
+- Current slice intent: bind the green local proof and fresh-eye disposition to
+  the goal, then commit the completed closeout artifact.
+- Next action: run the bounded disposition review, apply any correction, and
+  flip this goal to complete.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -142,18 +143,6 @@ runtime comparison and a durable disposition for every surfaced finding.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
 - Decision: whether to push/release the final bundle and close #433 or other
   repaired tracked issues
 - Owner: operator
@@ -197,7 +186,9 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: find-skills -> <skill> — <why this phase needs it>`
 
-- `Routing: find-skills -> quality — the current phase needs evidence-ranked bug, code-quality, test-confidence, and runtime-cost inventory before implementation routing`
+- Routing: find-skills -> quality — quality coordinated the evidence-ranked bug,
+  code-quality, test-confidence, duplication, coverage, and runtime-cost proof;
+  debug, issue, impl, critique, and retro then owned their bounded phases.
 - Gather: n/a — all context is repo-local or GitHub issue metadata read through
   the issue backend; no public source needs a gathered knowledge asset.
 - Release: n/a — release behavior may be tested locally, but no version bump or
@@ -405,18 +396,36 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Retro: charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md
+Host log probe: skipped: host-log-not-exposed: this host exposes no session token/tool-call log file that can be probed without inventing telemetry
+Disposition review: charness-artifacts/critique/2026-07-11-issue-create-safety-quality-speed-sweep-disposition-review.md
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+- Closeout state: impl-local. Commits `041aa380`, `66bb01cd`, `9e5960b1`,
+  `32a15c19`, and `7f033160` contain the implementation and proof slices.
+- Final deterministic proof: `run_slice_closeout.py --base
+  --verification-lock --refresh-broad-pytest-proof
+  --produce-mutation-coverage --ack-cautilus-skill-review` passed with standing
+  pytest; `check_changed_line_mutation_coverage.py --reuse-coverage
+  --require-fresh-coverage` passed for 13 changed mutation-pool modules; and
+  `./scripts/run-quality.sh --read-only` passed 81/81 gates in 56.5s.
+- Focused closeout proof: 92 composed release/debug/artifact tests passed before
+  the final two branch regressions; the final release boundary pair passed 44
+  tests, and the full standing run passed after catching and repairing the
+  resume `tag_name` extraction regression.
+- Runtime result: the profiled target node improved from median 4.88s to 0.655s
+  (86.6%). The isolated full-suite A/B medians were 53.09s and 52.14s with mixed
+  pair deltas, so the full-suite effect remains inconclusive.
+- Non-claims: no push, remote CI, provider roundtrip, release publish, GitHub
+  issue close, or Cautilus evaluation ran; #433 remains open and its local
+  carrier/behavior proof is not evidence of deployed behavior.
 
 ## User Verification Instructions
 
+1. Run `python3 -m pytest -q tests/quality_gates/test_release_publish_resilience.py tests/quality_gates/test_release_distinct_channel.py` to exercise normal/resumed release closeout and the extracted common boundary.
+2. Run `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha origin/main --head-sha HEAD --reuse-coverage --require-fresh-coverage` to confirm every changed mutation-pool line has standing coverage.
+3. Run `./scripts/run-quality.sh --read-only` for the complete local quality surface; do not interpret it as remote/provider/release proof.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: composed producer-to-final-consumer tests and the five-bucket sibling triage now guard the repaired seams; applied: owner validation, explicit lifecycle/kind carriers, and release/common orchestration helpers reduce repeated work while preserving final consumers; applied: the debug, quality, critique, goal, RCA ledger, and retro artifacts retain the exact proof and non-claims.
+Structural follow-up: applied: final-consumer contract tests, packet-kind/lifecycle validators, release closeout preflight, changed-line coverage, and the duplicate ratchet now guard the transferable producer/carrier/consumer and repeated-work failure classes.

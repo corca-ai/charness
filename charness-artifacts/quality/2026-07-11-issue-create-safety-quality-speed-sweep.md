@@ -58,8 +58,9 @@ artifact pointer and packet/session mismatches are now resolved.
   unrelated close-issue tests. Explicit missing, thin, extra-close, feature,
   normal publish, and resume tests keep the new contract visible, but new tests
   must not rely on the injection when carrier behavior is their subject.
-- The current broad quality result is not yet locked; focused green evidence is
-  sufficient for this slice, not final-goal completion.
+- The final broad quality lock is green locally, but it is deterministic local
+  proof only and does not stand in for provider, release, or installed-machine
+  behavior.
 - Three unpaired current-worktree suite samples (34.25s/33.21s/33.56s wall,
   4,491 passing) are not comparable to the 4,469-test activation baseline.
 
@@ -76,8 +77,8 @@ artifact pointer and packet/session mismatches are now resolved.
 - Worker-count tuning, broad subprocess redesign, and test pruning wait for
   release-only/node-level profiling. The 389/146 inventory is a selection prompt,
   not a performance verdict.
-- Broad read-only quality, full pytest, mutation coverage, and matched after
-  samples run at the bundle/final verification lock.
+- Further full-suite speed work remains deferred because the paired after
+  samples are mixed and do not support a suite-wide improvement claim.
 
 ## Advisory
 
