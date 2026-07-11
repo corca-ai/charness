@@ -53,7 +53,8 @@
   · [retro](../charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: #433/#436 lifecycle boundaries and the explicit future-file
-  nonclaim for `external-tool-control-plane`.
-- Refresh non-claims: no issue closure, exhaustive writer audit, dynamic
-  dependency discovery, Cautilus evaluation, or non-GitHub release proof.
+- Refresh kept: [this baton](./handoff.md) retains #433/#436 lifecycle boundaries
+  and the explicit future-file nonclaim for `external-tool-control-plane`.
+- Refresh non-claims: the [release record](../charness-artifacts/release/latest.md)
+  does not claim issue closure, exhaustive writer audit, dynamic dependency
+  discovery, Cautilus evaluation, or non-GitHub release proof.
