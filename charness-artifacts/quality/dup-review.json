@@ -573,6 +573,41 @@
       "note": "scanner-reported zero-shared-line control-flow resemblance between release and achieve helpers; there is no shared body or contract to extract",
       "reviewed_at": "2026-07-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "08fb1dd459a76b42",
+      "note": "paired advisory inventory reporting contract with materially different parser and status semantics; callback-heavy extraction would couple independently executable quality tools",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "355892af703b8e23",
+      "note": "portable planner envelope and direct-execution bootstrap shared across skill-owned planners whose packet and parser semantics remain distinct",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "678d8f09da69b267",
+      "note": "generic scan loop across a portable skill text scanner and repo-owned doc coupling gate; extraction would cross plugin/bootstrap ownership for four generic lines",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e12e9ccf6cffd081",
+      "note": "standalone quality CLI entrypoint scaffolding with distinct parse, run, output, and error contracts; shared helper would add coupling without owning behavior",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e6735d40e5bb7be1",
+      "note": "temporary scanner false-grouping suppression: two same-file functions have distinct contracts and consumers, while nose reports shared_lines=0 and removable=0 for semantic subdag overlap only",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

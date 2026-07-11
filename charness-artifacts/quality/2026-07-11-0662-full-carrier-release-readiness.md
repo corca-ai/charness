@@ -55,6 +55,11 @@ preconditions, not claims already made by this readiness record.
 - artifact: structural review result: the active goal and five slice critiques selected producer fixes, one proven deletion, one internal ownership split, and one advisory classifier improvement; they rejected new floors and inventory-score chasing.
 - command: prose review result: `inventory_skill_ergonomics.py --summary` reports 85 host-reference lexical hits in adapter/integration/detector contexts already reviewed in the prior carrier; zero are unresolved portable-prose debt.
 - command: `inventory_nose_clones.py` found three displayed clone families / 111 duplicated lines; its own contract classifies them as advisory refactoring candidates, not standing failures, and no family was admitted without a separate ownership case.
+- artifact: the full-delta duplicate ratchet surfaced five family fingerprints;
+  three bounded reviewers classified four as independently owned portable/CLI
+  boilerplate and one as a same-file semantic subdag with `shared_lines=0` /
+  `removable=0`. `dup-review.json` records those scoped dispositions; no full
+  baseline rewrite or reduction-target claim was made.
 
 ## Delegated Review
 
