@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import jsonschema
@@ -137,6 +138,91 @@ def test_feedback_writer_dry_run_execute_replay_and_privacy(tmp_path: Path) -> N
     unsafe = run(WRITER, *args[:-1], "--evidence-ref", "operator said accepted", "--json")
     assert unsafe.returncode == 2
     assert json.loads(unsafe.stdout)["status"] == "invalid_feedback"
+
+
+def test_feedback_writer_serializes_concurrent_execute_replay_and_validates_stream(tmp_path: Path) -> None:
+    """Two writers released together must produce one row, not a TOCTOU duplicate."""
+
+    write_adapter(tmp_path)
+    write_records(tmp_path, [acme_episode()])
+    records_path = tmp_path / ".charness" / "usage-episodes" / "usage_episode.jsonl"
+    args = [
+        "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review",
+        "--evidence-ref", "concurrent-review-001", "--execute", "--json",
+    ]
+    child_env = os.environ.copy()
+    child_env.pop("CHARNESS_QUALITY_MODE", None)
+
+    # Hold the same stream lock while both children start.  This makes the
+    # handoff deterministic: an implementation that does not lock its
+    # read/check/append section exits during the hold, while the fixed writer
+    # keeps both children blocked until they can serialize their decisions.
+    with record_usage_feedback._stream_lock(records_path):
+        children = [
+            subprocess.Popen(
+                [sys.executable, str(WRITER), *args],
+                cwd=REPO_ROOT,
+                env=child_env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            for _ in range(2)
+        ]
+        time.sleep(0.75)
+        assert all(child.poll() is None for child in children)
+
+    results = [child.communicate(timeout=10) for child in children]
+    statuses = [json.loads(stdout)["status"] for stdout, _stderr in results]
+    assert sorted(statuses) == ["appended", "replay_noop"]
+    assert len(records_path.read_text(encoding="utf-8").splitlines()) == 2
+    validated = run(VALIDATOR, "--repo-root", str(tmp_path), "--json")
+    assert validated.returncode == 0, validated.stderr
+
+
+def test_feedback_stream_lock_preserves_body_errors_and_releases(tmp_path: Path) -> None:
+    records_path = tmp_path / "usage_episode.jsonl"
+    with pytest.raises(OSError, match="body failure"):
+        with record_usage_feedback._stream_lock(records_path):
+            raise OSError("body failure")
+    # The failed body must not leave the sidecar held by this process.
+    with record_usage_feedback._stream_lock(records_path):
+        pass
+
+
+def test_feedback_stream_lock_keeps_body_error_primary_when_unlock_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    if record_usage_feedback.fcntl is None:
+        pytest.skip("POSIX flock-specific regression proof")
+
+    def fail_unlock(_file_descriptor: int, operation: int) -> None:
+        if operation == record_usage_feedback.fcntl.LOCK_UN:
+            raise OSError("unlock failure")
+
+    monkeypatch.setattr(record_usage_feedback.fcntl, "flock", fail_unlock)
+    with pytest.raises(OSError, match="body failure"):
+        with record_usage_feedback._stream_lock(tmp_path / "usage_episode.jsonl"):
+            raise OSError("body failure")
+
+
+def test_feedback_stream_lock_reports_unlock_failure_after_clean_body(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    if record_usage_feedback.fcntl is None:
+        pytest.skip("POSIX flock-specific regression proof")
+
+    def fail_unlock(_file_descriptor: int, operation: int) -> None:
+        if operation == record_usage_feedback.fcntl.LOCK_UN:
+            raise OSError("unlock failure")
+
+    monkeypatch.setattr(record_usage_feedback.fcntl, "flock", fail_unlock)
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="unable to unlock"):
+        with record_usage_feedback._stream_lock(tmp_path / "usage_episode.jsonl"):
+            pass
 
 
 def test_plugin_feedback_writer_smoke(tmp_path: Path) -> None:

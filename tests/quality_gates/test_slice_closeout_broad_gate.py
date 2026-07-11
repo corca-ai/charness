@@ -245,3 +245,108 @@ def test_execute_plan_explains_invalidated_broad_cache_as_locked_diff(tmp_path: 
     invalidated = payload["invalidated_broad_pytest_proofs"][0]
     assert invalidated["status"] == "invalidated"
     assert invalidated["latest"]["changed_paths"] == ["f.txt"]
+
+
+def _init_closeout_git_repo(repo: Path) -> None:
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    (repo / "tracked.txt").write_text("base\n", encoding="utf-8")
+    (repo / "untouched.txt").write_text("base\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.txt", "untouched.txt"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-m", "init"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+
+
+def test_execute_plan_verification_lock_stops_after_sync_tracked_drift(tmp_path: Path) -> None:
+    from scripts.slice_closeout_command_executor import execute_command_plan
+
+    _init_closeout_git_repo(tmp_path)
+    # The slice is already dirty before sync.  The sync command must still be
+    # caught when it changes that same tracked path again.
+    (tmp_path / "tracked.txt").write_text("slice edit\n", encoding="utf-8")
+    (tmp_path / "untouched.txt").write_text("other slice edit\n", encoding="utf-8")
+    executed: list[str] = []
+    payload: dict[str, object] = {"executed_commands": []}
+
+    def run_command(repo: Path, command: str, phase: str) -> dict[str, object]:
+        executed.append(phase)
+        if phase == "sync":
+            (repo / "tracked.txt").write_text("generated sync output\n", encoding="utf-8")
+            (repo / "untracked-cache.tmp").write_text("ignore me\n", encoding="utf-8")
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    stopped = execute_command_plan(
+        tmp_path,
+        [("sync", "sync"), ("verify", STANDING_PYTEST)],
+        payload,
+        run_command=run_command,
+        collect_changed_paths=lambda repo: ["tracked.txt", "untracked-cache.tmp"],
+        refresh_broad_pytest_proof=False,
+        stop_on_sync_drift=True,
+        broad_pytest_producer=lambda *_args: (_ for _ in ()).throw(
+            AssertionError("broad producer must not run after sync drift")
+        ),
+    )
+
+    assert stopped is True
+    assert executed == ["sync"]
+    assert payload["status"] == "blocked"
+    assert payload["sync_drift_paths"] == ["tracked.txt"]
+    assert payload["sync_drift"]["tracked_only"] is True
+    assert "commit the generated sync output" in str(payload["error"])
+    assert "rerun with --verification-lock" in str(payload["error"])
+    assert len(payload["executed_commands"]) == 1
+
+
+def test_execute_plan_verification_lock_continues_when_sync_is_clean(tmp_path: Path) -> None:
+    from scripts.slice_closeout_command_executor import execute_command_plan
+
+    _init_closeout_git_repo(tmp_path)
+    payload: dict[str, object] = {"executed_commands": []}
+    executed: list[str] = []
+
+    def run_command(repo: Path, command: str, phase: str) -> dict[str, object]:
+        executed.append(phase)
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    stopped = execute_command_plan(
+        tmp_path,
+        [("sync", "sync"), ("verify", "verify")],
+        payload,
+        run_command=run_command,
+        collect_changed_paths=lambda _repo: [],
+        refresh_broad_pytest_proof=False,
+        stop_on_sync_drift=True,
+    )
+
+    assert stopped is False
+    assert executed == ["sync", "verify"]
+
+
+def test_execute_plan_verification_lock_preserves_sync_failure(tmp_path: Path) -> None:
+    from scripts.slice_closeout_command_executor import execute_command_plan
+
+    _init_closeout_git_repo(tmp_path)
+    payload: dict[str, object] = {"executed_commands": []}
+    executed: list[str] = []
+
+    def run_command(repo: Path, command: str, phase: str) -> dict[str, object]:
+        executed.append(phase)
+        return {"phase": phase, "command": command, "returncode": 7, "stdout": "", "stderr": "sync failed"}
+
+    stopped = execute_command_plan(
+        tmp_path,
+        [("sync", "sync"), ("verify", "verify")],
+        payload,
+        run_command=run_command,
+        collect_changed_paths=lambda _repo: [],
+        refresh_broad_pytest_proof=False,
+        stop_on_sync_drift=True,
+    )
+
+    assert stopped is True
+    assert payload["status"] == "failed"
+    assert executed == ["sync"]

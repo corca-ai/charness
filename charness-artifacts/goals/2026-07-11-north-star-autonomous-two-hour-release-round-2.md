@@ -13,12 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: shape and critique the #436 generated-sync preflight slice.
-- Current slice intent: preserve the immutable clean-HEAD verification boundary
-  while moving deterministic sync-drift discovery ahead of the expensive broad
-  verification phase; keep #433/#436 open.
-- Next action: fold Before-phase fresh-eye findings, activate, reproduce #436,
-  then delegate the bounded implementation to a lower-power worker.
+- Current slice: commit the reviewed Slice A/B bundle, then begin final quality
+  and release preparation.
+- Current slice intent: freeze the two evidence-backed repairs without widening
+  public surface or issue lifecycle state; keep #433/#436 open.
+- Next action: commit the reviewed slices, run pre-lock closeout, then prepare
+  the full-delta release critique and final verification lock.
 - Current disposition: shaped, fresh-eye reviewed, and approved for activation
   by the user's explicit two-hour implementation-and-release request.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -144,9 +144,9 @@ release whose public content is confirmed by a different observer and channel.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Implement #436 fail-fast after sync drift | Handoff-first repeated waste; saves expensive false-start proof without weakening final gate | reproduction, focused branch tests, broad-run-not-called proof, fresh-eye critique | pending |
-| B | Probe an evidence-backed safety/reliability candidate | Continue only from a reproduced escape or repeated operator cost | observed evidence plus admission decision; bounded diff/proof only if admitted, otherwise explicit no-change disposition | pending |
-| C | Probe a portability/ergonomics consumer perspective | Counter local implementation bias without requiring code | consumer-path evidence and admission decision, or explicit no-change disposition | pending |
+| A | Implement #436 fail-fast after sync drift | Handoff-first repeated waste; saves expensive false-start proof without weakening final gate | reproduction, focused branch tests, broad-run-not-called proof, fresh-eye critique | complete |
+| B | Repair usage-feedback concurrent replay TOCTOU | A 20-run race probe produced duplicate IDs that the validator rejected | serialized read/check/append, concurrent proof, validator and mirror parity | complete |
+| C | Probe a portability/ergonomics consumer perspective | Counter local implementation bias without requiring code | consumer-path evidence and admission decision, or explicit no-change disposition | deferred — evidence below did not meet the admission floor |
 | D | Full-delta critique, quality lock, and release | Freeze mutation before irreversible boundary | release notes, critique, verification lock, dry-run | pending |
 | E | Push and publish patch release | User-authorized final external lane | tag/release URL, independent HTTPS proof, install refresh | pending |
 
@@ -221,6 +221,56 @@ applies.
   a distinct observer plus unauthenticated content-bearing HTTPS evidence.
 
 ## Slice Log
+
+### Slice A closeout — verification-lock sync drift
+
+- Repro command: `python3 -m pytest -q tests/quality_gates/test_slice_closeout_broad_gate.py::test_execute_plan_verification_lock_stops_after_sync_tracked_drift`.
+- Dirty proof: the sync producer rewrites an already-dirty tracked file while
+  leaving a second pre-dirty file untouched; the payload reports only
+  `tracked.txt` and excludes the untracked cache file.
+- Clean proof: `python3 -m pytest -q tests/quality_gates/test_slice_closeout_broad_gate.py::test_execute_plan_verification_lock_continues_when_sync_is_clean`.
+- Verify runner not called proof: the dirty test supplies the standing broad
+  pytest command and a producer that raises if invoked; execution ends after
+  the sync command. The sync-failure test separately preserves `failed` status.
+- Focused bundle: 60 tests passed across closeout broad/surface obligations and
+  usage feedback; ruff, pycompile, mirror sync, mirror drift, and diff checks
+  passed.
+- Critique: `charness-artifacts/critique/round2-slices-a-b-post-change-packet.md`;
+  final valid bounded reviewer approved with zero fingerprint drift. Earlier
+  reviewers that violated read-only command bounds were quarantined.
+
+### Slice B admission — usage-feedback concurrent replay
+
+- Observed escape: two identical `record_usage_feedback.py --execute` writers
+  were launched concurrently in a temporary repository for 20 trials; 6 trials
+  reported both writers as `appended`, leaving a duplicate feedback ID and
+  three JSONL records instead of one delivery plus one feedback record.
+- Consumer failure: `validate_usage_episodes.py --json` rejected the raced
+  stream as `invalid_records` with `duplicate feedback_id`.
+- Existing convention: the 2026-07-10 outcome-driven-feedback quality review
+  explicitly deferred locking until a real concurrency trigger appeared; this
+  reproduction supplies that trigger instead of adding a speculative floor.
+- Admission: **admit** the smallest portable stream-level serialization of
+  read/check/append, with deterministic concurrent and validator proof. Preserve
+  sequential replay behavior and source/plugin parity; do not broaden the
+  public CLI or records schema.
+- Implementation proof: the deterministic concurrent test holds the same
+  sidecar lock while two subprocesses start, then observes exactly one
+  `appended` plus one `replay_noop`, two valid stream records, and a passing
+  validator. Separate tests prove body-error precedence and clean-body unlock
+  failure visibility. `tests/test_usage_feedback.py` passed 25 tests.
+- Critique disposition: approved with one explicit non-claim — other stream
+  writers do not yet share this lock, and no mixed-writer escape is claimed.
+
+### Slice C disposition — bootstrap precondition wording
+
+- Consumer evidence: `README.md` says only Python 3, while
+  `packaging/bootstrap-python.json` and `scripts/bootstrap_runtime.py` require
+  Python 3.10+ with pip/venv support.
+- Admission: **defer/no-change**. The mismatch is real, but no incident or
+  repeated operator cost was observed, and fixing the shared README would widen
+  generated plugin surfaces. Record it as a probe result rather than
+  manufacturing release scope.
 
 ## Context Sources
 

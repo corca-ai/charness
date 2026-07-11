@@ -435,6 +435,7 @@ def main() -> int:
         collect_changed_paths=_closeout_changed_paths_collector(list(payload["changed_paths"])),
         refresh_broad_pytest_proof=args.refresh_broad_pytest_proof,
         broad_pytest_producer=broad_pytest_producer,
+        stop_on_sync_drift=args.verification_lock,
     )
     if not should_stop:
         should_stop = run_focused_closeout_coverage(
