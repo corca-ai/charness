@@ -53,9 +53,10 @@ Keep measured, proxy, and unavailable signals separate:
 
 Do not store one session's scope narrowing, thread ids, or intended breadth in
 the adapter. Put that context in the retro narrative or command flags.
-For Codex session detail, `$SKILL_DIR/scripts/audit_codex_session.py` may supply
-thread-scoped evidence pointers; its phase labels still require this review
-before anything is called waste.
+When Codex session logs are available, the optional
+`$SKILL_DIR/scripts/audit_codex_session.py` may supply thread-scoped evidence
+pointers; it is not a portable prerequisite, and its phase labels still require
+this review before anything is called waste.
 
 Cached input tokens are not a waste conclusion by themselves. Treat them as a
 context-pressure signal only when paired with evidence such as compactions,

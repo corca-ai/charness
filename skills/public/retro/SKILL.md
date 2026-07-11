@@ -57,8 +57,9 @@ Adapter policy:
    - adapter-defined `evidence_paths`
    - for host-log-derived efficiency signals, prefer `$SKILL_DIR/scripts/probe_host_logs.py`
      (`--repo-root .`) before claiming turns, tokens, or tool-call counts, and
-     `$SKILL_DIR/scripts/audit_codex_session.py` for Codex session detail — as
-     evidence producers, not waste conclusions. Pass `--session-id <id>` or
+     the optional `$SKILL_DIR/scripts/audit_codex_session.py` when Codex session
+     logs are available — both are evidence sources, not portable prerequisites
+     or waste conclusions. Pass `--session-id <id>` or
      `--session-file <path>` to read the full session JSONL directly; pass
      `probe_host_logs.py --goal-path <artifact>` (when the goal carries a
      `Host metric window:` line) for a scoped `goal_window_audit`; add
