@@ -153,10 +153,15 @@ def normalize(text: str, *, complete: bool = False) -> tuple[str, list[str]]:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Normalize common achieve closeout artifact form errors.")
-    parser.add_argument("--goal-path", type=Path, required=True)
+    parser.add_argument(
+        "--goal-path",
+        type=Path,
+        required=True,
+        help="Path to the goal closeout artifact to normalize.",
+    )
     parser.add_argument("--write", action="store_true", help="Write changes in place. Default is dry-run.")
     parser.add_argument("--complete", action="store_true", help="Also set `Status: complete`.")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit normalization results as JSON.")
     return parser.parse_args(argv)
 
 

@@ -286,7 +286,12 @@ def render_goal_conditional(report: dict[str, Any], rel_path: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo root for resolving goal evidence paths.",
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--goal-path", type=Path, help="Emit the goal-conditional triggered-floor set for this artifact (A2)")
     mode.add_argument("--stub", action="store_true", help="Emit a starter closeout block")

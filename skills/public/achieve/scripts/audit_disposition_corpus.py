@@ -64,9 +64,18 @@ def audit_goal(repo_root: Path, path: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit the goal corpus against the disposition floor.")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo root containing the goal corpus to audit.",
+    )
     parser.add_argument("--completed-only", action="store_true", help="Only audit goals with Status: complete")
-    parser.add_argument("--fail-on-pre-rule-refusal", action="store_true")
+    parser.add_argument(
+        "--fail-on-pre-rule-refusal",
+        action="store_true",
+        help="Fail if a pre-rule goal is refused by the disposition floor.",
+    )
     args = parser.parse_args()
     repo_root = args.repo_root.expanduser().resolve()
     goals_dir = repo_root / GOAL_DIR

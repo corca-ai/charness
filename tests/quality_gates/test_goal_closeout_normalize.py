@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import re
+import subprocess
+import sys
 from pathlib import Path
 
 from tests.script_loader import load_script_module
@@ -9,6 +12,37 @@ normalizer = load_script_module(
     "normalize_goal_closeout_under_test",
     ROOT / "skills/public/achieve/scripts/normalize_goal_closeout.py",
 )
+
+
+def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
+    """Assert each fragment belongs to its option block, not only usage text."""
+    for option, fragment in expected_pairs.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_normalize_goal_closeout_help_describes_options() -> None:
+    script = ROOT / "skills/public/achieve/scripts/normalize_goal_closeout.py"
+    result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    _assert_help_pairs(
+        result.stdout,
+        {
+            "--goal-path": "Path to the goal closeout artifact to normalize.",
+            "--json": "Emit normalization results as JSON.",
+        },
+    )
 
 
 def test_normalize_common_closeout_form_errors() -> None:

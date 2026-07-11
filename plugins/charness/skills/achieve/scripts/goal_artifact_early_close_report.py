@@ -128,8 +128,12 @@ def main() -> int:
     import argparse
 
     parser = argparse.ArgumentParser(description="Print the author-time early-close report shape (stub).")
-    parser.add_argument("--repo-root", default=".")  # accepted for the preflight scaffold contract
-    parser.add_argument("--slug", default="<goal-slug>")
+    parser.add_argument(
+        "--repo-root",
+        default=".",
+        help="Repo root accepted for the preflight scaffold contract.",
+    )
+    parser.add_argument("--slug", default="<goal-slug>", help="Goal slug used in the report heading.")
     args = parser.parse_args()
     print(report_stub(args.slug), end="")
     return 0

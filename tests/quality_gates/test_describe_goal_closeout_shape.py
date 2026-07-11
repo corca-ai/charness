@@ -11,6 +11,9 @@ goal-conditional view does, and that grandfathered floors stay omitted.
 from __future__ import annotations
 
 import importlib.util
+import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -25,6 +28,30 @@ def _load():
 
 
 desc = _load()
+
+
+def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
+    """Assert each fragment belongs to its option block, not only usage text."""
+    for option, fragment in expected_pairs.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_describe_goal_closeout_shape_help_describes_repo_root() -> None:
+    result = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--help"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    _assert_help_pairs(result.stdout, {"--repo-root": "Repo root for resolving goal evidence paths."})
 
 
 def _preamble(slug: str, created: str) -> str:
