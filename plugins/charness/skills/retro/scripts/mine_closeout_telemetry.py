@@ -153,9 +153,24 @@ def _read_lines(repo_root: Path, stream_path: Path) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--stream-path", type=Path, default=DEFAULT_STREAM_PATH)
-    parser.add_argument("--recur-min", type=int, default=DEFAULT_RECUR_MIN)
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repository root used to resolve the closeout-telemetry stream path.",
+    )
+    parser.add_argument(
+        "--stream-path",
+        type=Path,
+        default=DEFAULT_STREAM_PATH,
+        help="Closeout-telemetry JSONL path relative to --repo-root.",
+    )
+    parser.add_argument(
+        "--recur-min",
+        type=int,
+        default=DEFAULT_RECUR_MIN,
+        help="Minimum occurrence count that marks a waste item as recurring.",
+    )
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
     result = mine(_read_lines(repo_root, args.stream_path), recur_min=args.recur_min)

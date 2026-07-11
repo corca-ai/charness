@@ -299,7 +299,12 @@ def build_plan(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Plan a retro run before gathering evidence and writing the artifact.")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root used to resolve adapter state, artifacts, and changed paths.",
+    )
     parser.add_argument("--invocation-text", default="", help="The user's retro request, used to select session vs weekly mode")
     parser.add_argument("--changed-paths", nargs="*", help="Explicit paths for work-class classification (defaults to working tree, then recent commits)")
     parser.add_argument("--json", action="store_true", help="Emit JSON; accepted for parity with other planners")

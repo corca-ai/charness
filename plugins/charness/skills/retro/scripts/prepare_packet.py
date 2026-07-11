@@ -42,13 +42,43 @@ def _default_slug() -> str:
 def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="retro prepare_packet")
     parser = argparse.ArgumentParser(description="Run the retro prepare-packet runner")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--prepared-for", default="working tree")
-    parser.add_argument("--changed-ref", default=None)
-    parser.add_argument("--commit", default=None)
-    parser.add_argument("--range", dest="changed_range", default=None)
-    parser.add_argument("--slug", default=None)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root used to resolve the retro adapter and packet output path.",
+    )
+    parser.add_argument(
+        "--prepared-for",
+        default="working tree",
+        help="Human label for the work under review when no explicit changed ref is supplied.",
+    )
+    parser.add_argument(
+        "--changed-ref",
+        default=None,
+        help="Single Git ref whose changed files should define the packet scope.",
+    )
+    parser.add_argument(
+        "--commit",
+        default=None,
+        help="Single commit whose changed files should define the packet scope.",
+    )
+    parser.add_argument(
+        "--range",
+        dest="changed_range",
+        default=None,
+        help="Git revision range whose changed files should define the packet scope.",
+    )
+    parser.add_argument(
+        "--slug",
+        default=None,
+        help="Output filename slug; defaults to the current UTC timestamp.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the packet JSON to stdout instead of writing packet files.",
+    )
     try:
         args = parser.parse_args()
         changed_targets = [value for value in (args.changed_ref, args.commit, args.changed_range) if value]
