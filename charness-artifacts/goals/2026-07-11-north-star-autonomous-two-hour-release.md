@@ -237,7 +237,7 @@ applies.
 
 - Objective: Restore safe headroom in the closeout entrypoint before the next small feature forces an emergency split.
 - Why this approach: Move one cohesive 79-line argparse declaration block behind an internal sibling and preserve the parent compatibility wrapper.
-- Commits: pending this slice checkpoint
+- Commits: `398f0b55` (`Extract closeout parser before the limit`)
 - What changed: New internal slice_closeout_parser module; thin parent wrapper; plugin mirrors; default-preservation test.
 - Alternatives rejected: Rejected a broad module split, public CLI redesign, alias that freezes defaults, exhaustive snapshots, and command-doc expansion.
 - Targeted verification: 38 focused tests; ruff/py_compile; parser action metadata parity; representative argv parity; source/plugin help byte parity; packaging validators; parent headroom 400/480.
@@ -246,6 +246,20 @@ applies.
 - Off-goal findings: Speculative dynamic parser consumers remain a non-claim; no evidence warranted compatibility beyond _build_parser.
 - Lessons carried forward: Extract a cohesive owner before a near-limit module forces a rushed split; preserve mutable defaults through a wrapper, not an alias.
 - Metrics: 76 runner code lines removed net; headroom 4 to 80; 16 argparse actions parity-checked; 0 CLI behavior changes.
+
+### Slice 5: Slice E — stop re-triaging dataclass output fields
+
+- Objective: Reduce repeated dead-code review waste by recognizing dataclass schema/output fields structurally.
+- Why this approach: Use AST line/name ownership rather than an exemption list; cache per path and preserve advisory-only posture.
+- Commits: pending this slice checkpoint
+- What changed: AST-aware dataclass field classification; direct/qualified/nested positive branches; ordinary class/module negatives; regenerated plugin mirror.
+- Alternatives rejected: Rejected exact-name allowlists, decorator import resolution, new blocking floors, and treating all class annotations as structured output.
+- Targeted verification: 12 focused tests; real advisory summary 5 structured-output fields and 7 review candidates; ruff/py_compile; mirror parity; reviewer branch recheck.
+- Test duplication pressure: Extended one focused classifier test with two positive decorator shapes and two negative annotation shapes.
+- Critique: Fresh-eye critique at charness-artifacts/critique/2026-07-11-dataclass-dead-code-classification.md; qualified/nested branch finding cleared; rail-1 zero drift.
+- Off-goal findings: Intentional vocabulary/dynamic helper candidates remain in the review queue until a general structural classifier exists.
+- Lessons carried forward: Improve an advisory by recognizing ownership structure, not by hiding names; the output queue becomes smaller without weakening discovery.
+- Metrics: 5 recurrent false positives reclassified; generic review candidates 12 to 7; 1 AST parse per finding path; advisory remains non-blocking.
 
 ## Context Sources
 

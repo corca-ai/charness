@@ -307,3 +307,58 @@ def test_dead_code_advisory_marks_structured_output_fields() -> None:
     )
 
     assert findings[0]["classification"] == "structured_output_field"
+
+
+def test_dead_code_advisory_reclassifies_dataclass_annotated_fields(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    repo = tmp_path / "repo"
+    source_path = repo / "scripts" / "payloads.py"
+    source_path.parent.mkdir(parents=True)
+    source_path.write_text(
+        textwrap.dedent(
+            """\
+            from dataclasses import dataclass
+            import dataclasses
+
+            @dataclass
+            class Payload:
+                schema_value: str
+
+            class Outer:
+                @dataclasses.dataclass(frozen=True)
+                class Nested:
+                    nested_value: str
+
+            class Ordinary:
+                schema_value: str
+
+            module_value: str
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    findings = module.parse_findings(
+        "\n".join(
+            [
+                "scripts/payloads.py:6: unused variable 'schema_value' (60% confidence, 1 line)",
+                "scripts/payloads.py:11: unused variable 'nested_value' (60% confidence, 1 line)",
+                "scripts/payloads.py:14: unused variable 'schema_value' (60% confidence, 1 line)",
+                "scripts/payloads.py:16: unused variable 'module_value' (60% confidence, 1 line)",
+            ]
+        ),
+        repo_root=repo,
+    )
+
+    assert [finding["classification"] for finding in findings] == [
+        "structured_output_field",
+        "structured_output_field",
+        "review_candidate",
+        "review_candidate",
+    ]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import shutil
@@ -50,7 +51,33 @@ def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...]) -> list[st
     return sorted(selected)
 
 
-def classify_finding(path: str, message: str) -> str:
+def _is_dataclass_decorator(decorator: ast.expr) -> bool:
+    target = decorator.func if isinstance(decorator, ast.Call) else decorator
+    return getattr(target, "id", None) == "dataclass" or getattr(target, "attr", None) == "dataclass"
+
+
+def _dataclass_field_locations(path: Path) -> set[tuple[int, str]]:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (OSError, SyntaxError, UnicodeDecodeError):
+        return set()
+    return {
+        (statement.lineno, statement.target.id)
+        for class_node in ast.walk(tree)
+        if isinstance(class_node, ast.ClassDef)
+        and any(_is_dataclass_decorator(decorator) for decorator in class_node.decorator_list)
+        for statement in class_node.body
+        if isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name)
+    }
+
+
+def classify_finding(
+    path: str,
+    message: str,
+    *,
+    line: int | None = None,
+    dataclass_fields: set[tuple[int, str]] | None = None,
+) -> str:
     name_match = UNUSED_NAME_RE.search(message)
     unused_kind = name_match.group("kind") if name_match else ""
     unused_name = name_match.group("name") if name_match else ""
@@ -71,29 +98,38 @@ def classify_finding(path: str, message: str) -> str:
         "property",
     }:
         return "likely_test_protocol"
-    if unused_name in STRUCTURED_OUTPUT_NAMES:
+    fields = dataclass_fields if dataclass_fields is not None else set()
+    if unused_kind == "variable" and line is not None and (line, unused_name) in (fields or set()):
+        return "structured_output_field"
+    # Preserve context-free direct-call compatibility without affecting AST-aware scans.
+    if dataclass_fields is None and unused_name in STRUCTURED_OUTPUT_NAMES:
         return "structured_output_field"
     if "unused attribute" in message:
         return "low_confidence_attribute"
     return "review_candidate"
 
 
-def parse_findings(stdout: str) -> list[dict[str, object]]:
+def parse_findings(stdout: str, *, repo_root: Path | None = None) -> list[dict[str, object]]:
     findings: list[dict[str, object]] = []
+    field_cache: dict[str, set[tuple[int, str]]] = {}
     for line in stdout.splitlines():
         match = FINDING_RE.match(line)
         if not match:
             continue
         path = match.group("path")
         message = match.group("message")
+        finding_line = int(match.group("line"))
+        if repo_root is not None and path not in field_cache:
+            field_cache[path] = _dataclass_field_locations(repo_root / path)
+        fields = field_cache.get(path)
         findings.append(
             {
                 "path": path,
-                "line": int(match.group("line")),
+                "line": finding_line,
                 "message": message,
                 "confidence": int(match.group("confidence")),
                 "size": int(match.group("size")),
-                "classification": classify_finding(path, message),
+                "classification": classify_finding(path, message, line=finding_line, dataclass_fields=fields),
             }
         )
     return findings
@@ -158,7 +194,7 @@ def run_vulture(repo_root: Path, paths: list[str], *, confidence: int) -> dict[s
             str(exc.stdout or ""),
             f"timed out after {VULTURE_TIMEOUT_SECONDS}s",
         )
-    findings = parse_findings(completed.stdout)
+    findings = parse_findings(completed.stdout, repo_root=repo_root)
     return {
         "confidence": confidence,
         "status": "findings" if completed.returncode == 3 else "clean" if completed.returncode == 0 else "error",
