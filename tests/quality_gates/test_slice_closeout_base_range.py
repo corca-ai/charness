@@ -15,6 +15,8 @@ from pathlib import Path
 import pytest
 
 from scripts.run_slice_closeout import (
+    REPO_ROOT,
+    SURFACES_PATH,
     _build_parser,
     _closeout_changed_paths_collector,
     _maybe_fail_on_broad_pytest_scope_drift,
@@ -205,7 +207,10 @@ def test_predict_commit_rejects_base(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_build_parser_base_flag_shapes() -> None:
     parser = _build_parser()
+    defaults = parser.parse_args([])
 
-    assert parser.parse_args([]).base is None
+    assert defaults.repo_root == REPO_ROOT
+    assert defaults.surfaces_path == SURFACES_PATH
+    assert defaults.base is None
     assert parser.parse_args(["--base"]).base == "auto"
     assert parser.parse_args(["--base", "v1.2.3"]).base == "v1.2.3"

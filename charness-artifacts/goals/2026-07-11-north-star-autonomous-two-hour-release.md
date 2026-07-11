@@ -223,7 +223,7 @@ applies.
 
 - Objective: Remove confirmed internal dead code without laundering low-confidence advisory findings into broad cleanup.
 - Why this approach: Inspect static references, dynamic registries, history, and tests; delete only the regex replaced by AST detection and keep five intentional/deferred candidates.
-- Commits: pending this slice checkpoint
+- Commits: `8015ab99` (`Delete superseded release marker regex`)
 - What changed: Removed MODULE_RELEASE_ONLY_RE from canonical quality helper and regenerated plugin mirror; no behavior or API change.
 - Alternatives rejected: Rejected deleting gate markers, public vocabulary constants, dynamic helpers, adding a dead-code floor, or changing the live AST implementation.
 - Targeted verification: 17 standing-test economics tests passed; ruff, AST parse, attention-state validator, mirror cmp, and diff check passed.
@@ -232,6 +232,20 @@ applies.
 - Off-goal findings: Five advisory candidates retained with explicit dynamic/intentional/deferred dispositions.
 - Lessons carried forward: Low-confidence dead-code output is a review queue, not a deletion list; history can prove a constant is a marker rather than executable data.
 - Metrics: 6 candidates reviewed; 1 safe deletion; 5 retained; 8 derived lines removed; 0 remaining act-before-ship findings.
+
+### Slice 4: Slice D — extract closeout parser seam
+
+- Objective: Restore safe headroom in the closeout entrypoint before the next small feature forces an emergency split.
+- Why this approach: Move one cohesive 79-line argparse declaration block behind an internal sibling and preserve the parent compatibility wrapper.
+- Commits: pending this slice checkpoint
+- What changed: New internal slice_closeout_parser module; thin parent wrapper; plugin mirrors; default-preservation test.
+- Alternatives rejected: Rejected a broad module split, public CLI redesign, alias that freezes defaults, exhaustive snapshots, and command-doc expansion.
+- Targeted verification: 38 focused tests; ruff/py_compile; parser action metadata parity; representative argv parity; source/plugin help byte parity; packaging validators; parent headroom 400/480.
+- Test duplication pressure: One existing parser test gained default forwarding assertions; no new parser matrix.
+- Critique: Fresh-eye design and post-change critique at charness-artifacts/critique/2026-07-11-closeout-parser-extraction.md; no remaining act-before-ship finding; rail-1 zero drift.
+- Off-goal findings: Speculative dynamic parser consumers remain a non-claim; no evidence warranted compatibility beyond _build_parser.
+- Lessons carried forward: Extract a cohesive owner before a near-limit module forces a rushed split; preserve mutable defaults through a wrapper, not an alias.
+- Metrics: 76 runner code lines removed net; headroom 4 to 80; 16 argparse actions parity-checked; 0 CLI behavior changes.
 
 ## Context Sources
 
