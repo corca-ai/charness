@@ -306,7 +306,12 @@ def print_human(payload: dict[str, Any]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repository root to scan and use for baseline paths",
+    )
     parser.add_argument("--path", help=f"Repo-relative scan root (default {DEFAULT_SCAN_PATH}).")
     parser.add_argument("--exclude", action="append", default=[], help="Gitignore-style glob to skip; repeatable. Defaults to mirror/artifact/mutant excludes.")
     parser.add_argument("--baseline", help=f"Accepted doc-family baseline (repo-relative). Defaults to {DEFAULT_BASELINE_REL} when it exists.")
@@ -322,7 +327,7 @@ def main() -> int:
             "all-clear. Used by the run-quality `doc-duplicates` phase."
         ),
     )
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the full advisory payload as JSON")
     parser.add_argument(
         "--json-out",
         type=Path,

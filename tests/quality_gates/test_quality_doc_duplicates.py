@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -159,3 +160,25 @@ def test_doc_dup_reports_new_family_then_baseline_filters_it(tmp_path: Path) -> 
     assert payload_after["total_family_count"] == 1
     assert payload_after["family_count"] == 0  # accepted by baseline (drift posture)
     assert payload_after["accepted_count"] == 1
+
+
+def test_doc_dup_help_explains_root_and_json_options() -> None:
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--help"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    expected = {
+        "--repo-root": "Repository root to scan and use for baseline paths",
+        "--json": "Emit the full advisory payload as JSON",
+    }
+    for option, fragment in expected.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", result.stdout, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", result.stdout[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(result.stdout)
+        option_block = re.sub(r"\s+", " ", result.stdout[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"

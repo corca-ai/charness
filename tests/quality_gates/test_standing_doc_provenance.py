@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -246,3 +247,14 @@ def test_invalid_adapter_block_fails_with_error(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["adapter_errors"]
     assert "standing_doc_provenance must be a mapping" in payload["adapter_errors"][0]
+
+
+def test_help_explains_repo_root_option() -> None:
+    result = run_script(SCRIPT, "--help")
+    assert result.returncode == 0, result.stderr
+    match = re.search(r"^  --repo-root\b.*$", result.stdout, re.MULTILINE)
+    assert match
+    next_option = re.search(r"^  --[a-z][a-z-]*\b", result.stdout[match.end() :], re.MULTILINE)
+    end = match.end() + next_option.start() if next_option else len(result.stdout)
+    option_block = re.sub(r"\s+", " ", result.stdout[match.start() : end])
+    assert "Repository root containing the quality adapter and standing docs" in option_block

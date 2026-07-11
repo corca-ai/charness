@@ -40,7 +40,12 @@ load_quality_adapter_strict = _quality_adapter_lib.load_quality_adapter_strict
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check standing-doc provenance placement.")
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path("."),
+        help="Repository root containing the quality adapter and standing docs",
+    )
     parser.add_argument("--json", action="store_true", help="Emit a JSON report.")
     return parser.parse_args(argv)
 

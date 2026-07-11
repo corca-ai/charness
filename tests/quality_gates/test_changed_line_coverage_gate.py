@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -129,3 +130,19 @@ def test_invalid_adapter_fails_closed(tmp_path: Path) -> None:
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert any("changed_line_mutation_gate must be a mapping" in e for e in payload["adapter_errors"])
+
+
+def test_help_explains_repo_root_and_json_options() -> None:
+    result = run_script(SCRIPT, "--help")
+    assert result.returncode == 0, result.stderr
+    expected = {
+        "--repo-root": "Repository root containing the quality adapter and changed files",
+        "--json": "Emit the full gate report as JSON",
+    }
+    for option, fragment in expected.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", result.stdout, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", result.stdout[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(result.stdout)
+        option_block = re.sub(r"\s+", " ", result.stdout[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"

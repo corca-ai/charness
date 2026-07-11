@@ -42,11 +42,16 @@ _sampling_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scri
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Portable changed-line coverage gate.")
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path("."),
+        help="Repository root containing the quality adapter and changed files",
+    )
     parser.add_argument("--base-sha", default=None, help="Base SHA; defaults to $MUTATION_BASE_SHA.")
     parser.add_argument("--head-sha", default=None, help="Head SHA; defaults to $MUTATION_HEAD_SHA, else HEAD.")
     parser.add_argument("--stamp-marker", action="store_true", help="Producer mode: stamp the freshness marker, then exit 0.")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the full gate report as JSON")
     return parser.parse_args(argv)
 
 
