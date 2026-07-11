@@ -46,6 +46,7 @@ GH_VIEW_BODY_DEFAULT = [
     "{json_fields}",
 ]
 BODY_PREVIEW_CHARS = 1200
+PLACEHOLDER_TITLES: frozenset[str] = frozenset({"x", "test"})
 # Labels and milestone are appended as flags after the rendered base command,
 # so they are not template placeholders — only repo/title/body_file are.
 CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "title", "body_file"})
@@ -79,9 +80,16 @@ def create_issue(
     backend: dict[str, Any] | None = None,
     labels: list[str] | None = None,
     milestone: str | None = None,
-    verify: bool = True,
+    skip_readback: bool = False,
+    allow_placeholder_title: bool = False,
 ) -> dict[str, Any]:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
+    normalized_title = title.strip().casefold()
+    if normalized_title in PLACEHOLDER_TITLES and not allow_placeholder_title:
+        raise RuntimeError(
+            f"placeholder title {title.strip()!r} refused before issue creation; "
+            "pass --allow-placeholder-title to create it intentionally"
+        )
     if not body_file.is_file():
         raise RuntimeError(f"create body file not found: {body_file}")
     body_text = body_file.read_text(encoding="utf-8")
@@ -124,8 +132,9 @@ def create_issue(
         "view_argv": None,
     }
 
-    if not verify:
-        payload["verify_skipped"] = "verification disabled by caller"
+    if skip_readback:
+        payload["readback_skipped"] = True
+        payload["verify_skipped"] = "issue created; post-create readback skipped by caller"
         return payload
     if created_number is None:
         payload["verify_error"] = (
@@ -189,7 +198,8 @@ def command_create(args: argparse.Namespace) -> int:
             backend=resolved["backend"],
             labels=args.label,
             milestone=args.milestone,
-            verify=not args.no_verify,
+            skip_readback=args.skip_readback,
+            allow_placeholder_title=args.allow_placeholder_title,
         )
     except RuntimeError as exc:
         _emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
@@ -209,6 +219,15 @@ def register_create_subparser(subparsers: Any, cwd_default: Path) -> None:
     create.add_argument("--body-file", type=Path, required=True, help="Path to the issue body file (UTF-8)")
     create.add_argument("--label", action="append", help="Existing repository label to apply; repeat per label")
     create.add_argument("--milestone", help="Existing repository milestone title to assign")
-    create.add_argument("--no-verify", action="store_true", help="Skip reading the created issue body back")
+    create.add_argument(
+        "--skip-readback",
+        action="store_true",
+        help="Creation still occurs; skip only post-create readback verification",
+    )
+    create.add_argument(
+        "--allow-placeholder-title",
+        action="store_true",
+        help="Allow exact placeholder titles `x` or `test` (case-insensitive)",
+    )
     create.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     create.set_defaults(func=command_create)

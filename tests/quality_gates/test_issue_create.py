@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 
+import pytest
+
 from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
@@ -61,6 +63,32 @@ def _write_capture_backend(bin_dir: Path, store: Path, *, echo_body: str | None 
                 "elif 'view' in argv:",
                 "    body = override if override is not None else (store.read_text(encoding='utf-8') if store.exists() else '')",
                 "    print(json.dumps({'body': body}))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+
+
+def _write_counting_backend(bin_dir: Path, count_file: Path) -> None:
+    """Write a fake backend that records create/view invocations and returns a URL."""
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, os, sys",
+                "from pathlib import Path",
+                "count_file = Path(os.environ['GH_CALL_COUNT'])",
+                "calls = count_file.read_text().splitlines() if count_file.exists() else []",
+                "calls.append('view' if 'view' in sys.argv else 'create' if 'create' in sys.argv else 'other')",
+                "count_file.write_text('\\n'.join(calls) + '\\n')",
+                "if 'create' in sys.argv:",
+                "    print('https://github.com/corca-ai/charness/issues/778')",
+                "elif 'view' in sys.argv:",
+                "    print(json.dumps({'body': 'body\\n'}))",
                 "",
             ]
         ),
@@ -217,3 +245,135 @@ def test_create_fails_when_body_file_missing(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["ok"] is False
     assert "body file not found" in payload["error"]
+
+
+@pytest.mark.parametrize("title", [" X ", "  TeSt  "])
+def test_create_rejects_placeholder_title_before_backend_mutation(tmp_path: Path, title: str) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        title,
+        "--body-file",
+        str(body_file),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "placeholder title" in payload["error"]
+    assert not count_file.exists()
+
+
+def test_normal_verified_create_runs_create_then_view_once(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "normal title",
+        "--body-file",
+        str(body_file),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["body_verified"] is True
+    assert count_file.read_text().splitlines() == ["create", "view"]
+
+
+def test_create_allows_intentional_placeholder_title(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        " TEST ",
+        "--body-file",
+        str(body_file),
+        "--allow-placeholder-title",
+        "--skip-readback",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["created_number"] == 778
+    assert payload["readback_skipped"] is True
+    assert count_file.read_text().splitlines() == ["create"]
+
+
+def test_no_verify_is_rejected_and_skip_readback_still_creates(tmp_path: Path) -> None:
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+
+    rejected = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "normal title",
+        "--body-file",
+        str(body_file),
+        "--no-verify",
+        "--repo-root",
+        str(tmp_path),
+    )
+    assert rejected.returncode == 2
+    assert "unrecognized arguments: --no-verify" in rejected.stderr
+
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    created = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "normal title",
+        "--body-file",
+        str(body_file),
+        "--skip-readback",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+    assert created.returncode == 0, created.stderr
+    payload = json.loads(created.stdout)
+    assert payload["created_number"] == 778
+    assert payload["body_verified"] is None
+    assert payload["readback_skipped"] is True
+    assert "issue created" in payload["verify_skipped"]
+    assert count_file.read_text().splitlines() == ["create"]

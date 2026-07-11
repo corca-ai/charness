@@ -525,10 +525,10 @@
       "rationale": "Author-time shape SOURCE for the goal-closeout preflight: it prints the enforced `skipped: <enum>: <detail>` author syntax (the exact form `check_goal_artifact.py` accepts) to stdout so an author learns it before the flip. The `skipped` token is documentation of the author syntax surfaced verbatim to the operator, never a runtime exit-zero status of this script."
     },
     "skills/public/issue/scripts/issue_create.py": {
-      "states": ["disabled", "skipped"],
+      "states": ["skipped"],
       "visibility": ["terminal_payload"],
-      "evidence_terms": ["verify_skipped", "verification disabled by caller", "body_verified"],
-      "rationale": "issue create emits a stdout payload whose body_verified is null with an explicit verify_skipped/verify_error note when read-back is disabled (verify=False) or not feasible; an unverified write is surfaced to the operator, never silently treated as a confirmed write."
+      "evidence_terms": ["readback_skipped", "issue created; post-create readback skipped by caller", "body_verified"],
+      "rationale": "issue create emits a terminal payload with readback_skipped and body_verified null when --skip-readback is requested; an unverified write is surfaced to the operator, never silently treated as a confirmed write."
     },
     "skills/public/issue/scripts/issue_resolution_critique.py": {
       "states": ["skipped"],

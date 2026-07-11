@@ -250,6 +250,15 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" create \
 
 - The body file is read in UTF-8 and delivered verbatim; title/labels/milestone
   ride as argv values (also no shell), so none of them can be corrupted.
+- The helper refuses the exact placeholder titles `x` and `test` after trimming
+  and case-folding, before invoking the backend. Use
+  `--allow-placeholder-title` only when that title is intentional; no broad
+  minimum-length rule is applied.
+- Use `--skip-readback` only when the caller accepts an unverified result:
+  creation still occurs, and this flag skips only the post-create `view`
+  readback. The returned `view_argv` (when readback runs) or a separate
+  `issue_tool.py read` command is the readback path; never issue a second
+  `create` command to verify the first one.
 - Never construct `gh issue create --body "<multi-line>"` (or the equivalent on
   another backend) from a raw body string — that is the body-corruption path.
 - After creating, the helper reads the issue back (`view --json body`) and
