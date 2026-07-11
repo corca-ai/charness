@@ -2,12 +2,11 @@
 
 `critique` reads its repo policy from `.agents/critique-adapter.yaml`.
 The adapter is optional. Without it, `critique` runs with inferred
-defaults and consumes no prepare packet. Newly scaffolded adapters include the
-Codex `high-leverage` reviewer tier (`model: gpt-5.5`,
-`reasoning_effort: medium`, `service_tier: priority`) plus a routine `medium`
-tier (`reasoning_effort: medium` with the inherited model), so repos adopting the
-adapter get the current Codex default without making adapter-less non-Codex
-hosts inherit a provider-specific model.
+defaults and consumes no prepare packet. Concrete host mappings and current
+model versions are owned by [adapter.example.yaml](../adapter.example.yaml) and
+the [scaffold template](../scripts/templates/critique_adapter.yaml). A
+scaffolded `.agents/critique-adapter.yaml` is the repo-specific policy; this
+portable contract defines only lookup and field semantics.
 
 ## Lookup Order
 
@@ -28,13 +27,13 @@ version: 1
 repo: <repo-name>
 language: en
 output_dir: charness-artifacts/critique
-reviewer_tiers:        # values are host-specific; Codex shown, Claude Code uses sonnet-4.6
+reviewer_tiers:        # optional portable-tier to host-field mapping
   high-leverage:
-    model: gpt-5.5
-    reasoning_effort: medium
-    service_tier: priority
+    model: "<host-specific model>"
+    reasoning_effort: "<host-specific effort>"
+    service_tier: "<host-specific service tier>"
   medium:
-    reasoning_effort: medium
+    reasoning_effort: "<host-specific effort>"
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces
@@ -70,16 +69,12 @@ Field semantics:
   into the values for whichever host this repo runs on. Use `medium` for
   routine bounded fresh-eye packets and reserve `high-leverage` for release,
   issue, quality closeout, deployment-confidence, or explicitly justified
-  high-risk reviews. Known host defaults for the `high-leverage` tier: a Codex
-  host uses `model: gpt-5.5`, `reasoning_effort: medium`,
-  `service_tier: priority`; a Claude Code host uses `model: sonnet-4.6`. Each
-  tier value may set `model`, `reasoning_effort`, and `service_tier` (all
-  strings, all optional); `reasoning_effort` /
+  high-risk reviews. Each tier value may set `model`, `reasoning_effort`, and
+  `service_tier` (all strings, all optional); `reasoning_effort` /
   `service_tier` apply only where the host exposes them. Unknown tier names
   warn; unknown sub-fields error. A host without subagent model overrides
-  ignores it. Newly scaffolded adapters default the Codex `high-leverage` tier
-  to `gpt-5.5` with `medium` reasoning and the routine `medium` tier to an
-  inherited model with `medium` reasoning.
+  ignores it. Use the example or scaffolded adapter for concrete host mappings
+  instead of copying provider-specific model/version values into this reference.
 
 Each `packet_sections` entry:
 

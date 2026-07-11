@@ -157,8 +157,9 @@ def test_critique_adapter_warns_on_unknown_reviewer_tier() -> None:
     assert any("mystery" in warning for warning in warnings)
 
 
-def test_adapter_contract_documents_both_host_defaults() -> None:
+def test_adapter_contract_delegates_concrete_host_defaults_to_owned_assets() -> None:
     text = ADAPTER_CONTRACT.read_text(encoding="utf-8")
-    assert "gpt-5.5" in text and "sonnet-4.6" in text, (
-        "the adapter contract must document both known host defaults"
-    )
+    for token in PROVIDER_MODEL_TOKENS:
+        assert token not in text
+    assert "../adapter.example.yaml" in text
+    assert "../scripts/templates/critique_adapter.yaml" in text
