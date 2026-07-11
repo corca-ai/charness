@@ -14,9 +14,9 @@
   [release/latest.md](../charness-artifacts/release/latest.md).
 - `origin/main` contains the complete #433 repair and refreshed baton through
   `569ab2ea`; distinct GitHub readback matched that SHA and #433 remained open.
-- Local `main` contains thirteen unpushed argparse-help packages. The latest
-  five-iteration campaign cleared quality's final 23 findings across ten CLIs;
-  repo-wide missing argparse help is now zero.
+- Local `main` contains eighteen unpushed improvement commits. The latest
+  five-iteration campaign made four host-reference ownership/signal changes and
+  one deliberate find-skills non-change; argparse help remains complete.
 - Final local proof passed standing pytest, 81/81 read-only quality gates, and
   fresh changed-line coverage for 13 mutation-pool modules. The bounded
   disposition review passed with zero reviewer-boundary drift.
@@ -28,12 +28,12 @@
 
 ## Next Session
 
-1. Keep the thirteen follow-up commits local until another push is authorized. If the
+1. Keep the eighteen follow-up commits local until another push is authorized. If the
    operator separately authorizes issue close, first push and verify the
    published carrier through a distinct channel before closing #433.
-2. Treat argparse-help cleanup as complete. The next bounded quality question is
-   whether quality's eight host-reference findings are legitimate adapter/example
-   usage or real portability leaks; keep that review advisory-first.
+2. Review only the two rows now classified `portable-prose`: setup's agent-docs
+   policy and markdown-preview's host config paths. Do not sweep the other 82
+   adapter/integration/fixture rows without new evidence.
 3. Run cheap structural/duplicate checks before the first coverage lock; run
    fresh-eye review before the final producer; then pay for one locked broad
    quality/coverage pass. D33 is already resolved by the report extraction and
@@ -67,3 +67,4 @@
   · [release quality](../charness-artifacts/quality/2026-07-11-release-argparse-help.md)
   · [five-package campaign](../charness-artifacts/quality/2026-07-11-five-package-argparse-help.md)
   · [final quality campaign](../charness-artifacts/quality/2026-07-11-final-quality-argparse-help.md)
+  · [host-reference review](../charness-artifacts/quality/2026-07-11-host-reference-north-star.md)
