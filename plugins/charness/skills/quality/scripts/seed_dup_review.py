@@ -97,13 +97,13 @@ def build_result(args: argparse.Namespace) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root whose duplicate inventories and overlay should be managed")
     parser.add_argument("--output", default=DEFAULT_OUTPUT_REL, help=f"Overlay path (repo-relative; default {DEFAULT_OUTPUT_REL}).")
     parser.add_argument("--code-inventory", type=Path, help="Pre-collected inventory_nose_clones --json file (else the script is run).")
     parser.add_argument("--doc-inventory", type=Path, help="Pre-collected inventory_doc_duplicates --json file (else the script is run).")
     parser.add_argument("--reviewed-at", default=datetime.date.today().isoformat(), help="ISO date stamp for newly auto-seeded entries (default today).")
     parser.add_argument("--write", action="store_true", help="Write the overlay to --output (else dry-run preview).")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the seed result as JSON")
     args = parser.parse_args()
 
     result = build_result(args)

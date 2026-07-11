@@ -222,13 +222,13 @@ def run(repo_root: Path, args) -> dict:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Migrate the dup-ratchet fingerprints to a new algo version.")
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument("--repo-root", type=Path, default=Path("."), help="Repository root containing the dup-ratchet artifacts to migrate (default: current directory)")
     parser.add_argument("--scope-path", action="append", help="Override dup_ratchet.scope_paths (repeatable).")
     parser.add_argument("--nose-baseline-path", help="Override the advisory baseline path (default nose_baseline_lib.DEFAULT_BASELINE_REL).")
     parser.add_argument("--accept-new-family", action="append", metavar="V2_FINGERPRINT",
                          help="Accept one requires_review live family (by its v2 fingerprint) into the migrated gate baseline (repeatable).")
     parser.add_argument("--execute", action="store_true", help="Write the migrated artifacts (else dry-run: print the plan only).")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the migration report as JSON")
     return parser.parse_args(argv)
 
 

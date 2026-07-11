@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -283,3 +284,22 @@ def test_main_inprocess_invalid_overlay_exits_one(tmp_path: Path, monkeypatch, c
     )
     assert seed.main() == 1
     assert "invalid overlay" in capsys.readouterr().err
+
+
+def test_main_help_documents_repo_root_and_json(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["seed", "--help"])
+    with pytest.raises(SystemExit) as exc_info:
+        seed.main()
+    assert exc_info.value.code == 0
+    output = capsys.readouterr().out
+    expected = {
+        "--repo-root": "Repository root whose duplicate inventories and overlay should be managed",
+        "--json": "Emit the seed result as JSON",
+    }
+    for option, fragment in expected.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"

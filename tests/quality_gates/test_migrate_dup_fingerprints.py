@@ -14,6 +14,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -193,6 +194,24 @@ def test_load_skill_runtime_bootstrap_import_error(monkeypatch, tmp_path: Path) 
     monkeypatch.setattr(cli, "__file__", str(isolated))
     with pytest.raises(ImportError):
         cli._load_skill_runtime_bootstrap()
+
+
+def test_migrate_cli_help_documents_repo_root_and_json(capsys) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        cli.parse_args(["--help"])
+    assert exc_info.value.code == 0
+    output = capsys.readouterr().out
+    expected = {
+        "--repo-root": "Repository root containing the dup-ratchet artifacts to migrate",
+        "--json": "Emit the migration report as JSON",
+    }
+    for option, fragment in expected.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
 
 
 # --------------------------------------------------------------------------- #
