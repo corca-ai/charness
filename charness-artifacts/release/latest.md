@@ -3,12 +3,12 @@ Date: 2026-07-11
 
 ## Scope
 
-Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-owned release helper.
+Advanced `charness` toward release `0.66.2` (tag `v0.66.2`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.66.0`
-- target version: `0.66.1`
+- previous version: `0.66.1`
+- target version: `0.66.2`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,26 +17,18 @@ Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-own
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.66.1`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.66.2`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
-
-## Distinct-Channel Verification
-
-- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
-- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v0.66.1`
-- HTTP status: `200`
-- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
@@ -51,45 +43,66 @@ Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
-- Surface hits: 1.
+- Surface hits: 2.
   - `checked-in-plugin-export`
-- Path hits: 0.
-- Evaluated changed paths: 23.
+  - `integrations-and-control-plane`
+- Path hits: 12.
+  - `skills/public/release/references/publication-boundary.md`
+  - `skills/public/release/scripts/plan_release_run.py`
+  - `skills/public/release/scripts/publish_release_cli.py`
+  - `skills/public/release/scripts/publish_release_common.py`
+  - `skills/public/release/scripts/publish_release_execute.py`
+  - `skills/public/release/scripts/publish_release_resume.py`
+  - `skills/public/release/scripts/publish_release_runtime.py`
+  - `skills/public/release/scripts/release_issue_closeout.py`
+  - `skills/public/release/scripts/release_issue_closeout_message.py`
+  - `skills/support/web-fetch/scripts/acquire_public_url.py`
+  - `skills/support/web-fetch/scripts/classify_fetch_response.py`
+  - `skills/support/web-fetch/scripts/route_public_fetch.py`
+- Evaluated changed paths: 260.
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-07-11-issue-435-release-critique.md`
-  - `charness-artifacts/critique/2026-07-11-issue-435-release-packet.json`
-  - `charness-artifacts/critique/2026-07-11-issue-435-release-packet.md`
-  - `charness-artifacts/quality/sloc-inventory/latest.json`
-  - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`
-  - `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`
-  - `charness-artifacts/retro/lesson-selection-index.json`
-  - `charness-artifacts/retro/recent-lessons.md`
-  - `docs/public-skill-dogfood.json`
-  - `packaging/charness.json`
-  - `plugins/charness/.claude-plugin/plugin.json`
-  - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/skills/issue/SKILL.md`
-  - `plugins/charness/skills/issue/references/issue-backend.md`
-  - `plugins/charness/skills/issue/scripts/issue_create.py`
-  - `plugins/charness/skills/quality/references/attention-state-visibility.json`
-  - `skills/public/issue/SKILL.md`
-  - `skills/public/issue/references/issue-backend.md`
-  - ... 3 more
+  - `AGENTS.md`
+  - `charness-artifacts/critique/2026-07-11-041729-packet.json`
+  - `charness-artifacts/critique/2026-07-11-041729-packet.md`
+  - `charness-artifacts/critique/2026-07-11-075049-packet.json`
+  - `charness-artifacts/critique/2026-07-11-075049-packet.md`
+  - `charness-artifacts/critique/2026-07-11-080522-packet.json`
+  - `charness-artifacts/critique/2026-07-11-080522-packet.md`
+  - `charness-artifacts/critique/2026-07-11-082541-packet.json`
+  - `charness-artifacts/critique/2026-07-11-082541-packet.md`
+  - `charness-artifacts/critique/2026-07-11-083446-packet.json`
+  - `charness-artifacts/critique/2026-07-11-083446-packet.md`
+  - `charness-artifacts/critique/2026-07-11-085201-packet.json`
+  - `charness-artifacts/critique/2026-07-11-085201-packet.md`
+  - `charness-artifacts/critique/2026-07-11-091356-packet.json`
+  - `charness-artifacts/critique/2026-07-11-091356-packet.md`
+  - `charness-artifacts/critique/2026-07-11-093306-packet.json`
+  - `charness-artifacts/critique/2026-07-11-093306-packet.md`
+  - `charness-artifacts/critique/2026-07-11-094504-packet.json`
+  - `charness-artifacts/critique/2026-07-11-094504-packet.md`
+  - ... 240 more
 
 ## Real-Host Verification
 
-- No configured release-time real-host verification trigger matched this slice.
+- Release-time real-host verification was triggered for this slice.
+- Real-host checklist items remain open until their executed proof is recorded.
 
 ## Real-Host Proof
 
-- No configured release-time real-host proof trigger matched this slice.
+- Release-time real-host proof is required for this slice.
+- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
+- Run `charness tool doctor nose --json --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
+- Run `charness tool install nose --dry-run --json` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
+- Install `nose` through the manifest-supported path (`charness tool install nose --json`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
+- Re-run `charness tool doctor nose --json --no-write-locks` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support nose --json` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
+- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-07-11-issue-435-release-critique.md`.
+- Review proof: `charness-artifacts/critique/2026-07-11-v0662-release.md`.
 
 ## Requested Review Gate
 
@@ -98,42 +111,16 @@ Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-own
 - Policy: `advisory-only`.
 - Configured command count: `0`.
 
-## Post-Publish Proof
-
-- Public release check: `gh release view v0.66.1`.
-
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Elapsed seconds: `9.131`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 0.66.0 -> 0.66.1
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 0.66.0 -> 0.66.1
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/skills/public/find-skills/scripts/resolve_skill_path.py --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION:
-  - codex: Codex host install markers are present. Start a new Codex session to load charness.
-  - claude: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Release Runtime
 
-- `requested_review_gate`: 0.003s
-- `cli_skill_surface_gate`: 1.874s
-- `quality_command`: 85.684s
-- `fresh_checkout_probes_resume`: 2.838s
-- `push_create_verify_release`: 55.243s
-- `distinct_channel_verification`: 0.506s
-- `issue_closeout`: 0.436s
-- `post_publish_install_refresh`: 9.131s
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 1.895s
+- `quality_command`: 74.685s
+- `fresh_checkout_probes_initial`: 2.860s
 
 ## Fresh Checkout Probes
 
@@ -144,11 +131,7 @@ NEXT_ACTION:
 
 ## Issue Closeout
 
-- Issue closeout verification: `state-verified`.
-- GitHub repo: `corca-ai/charness`
-- Issue #435: `CLOSED` (https://github.com/corca-ai/charness/issues/435)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 

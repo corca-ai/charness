@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`; sources: 79)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`; sources: 80)
 - Authoring: `scaffold_quality_artifact.py --title ...` emitted a custom H1 even though the validator requires exactly `# Quality Review`, causing a reactive artifact-shape repair. This is a helper/validator contract defect, not author misunderstanding. (source: `charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md`)
 - Broad exploration itself was necessary: the goal explicitly asked for sibling discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/ defer—prevented that breadth from becoming speculative patches. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
 - Producer and final-consumer contracts were inspected separately, allowing a release carrier, resolved debug pointer, and pre-review packets to look valid locally while failing or overwriting at the next boundary. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`; sources: 79)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`; sources: 80)
 - applied — composed producer-to-final-consumer proof and five-bucket sibling triage now gate each repaired seam before implementation closeout. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
 - applied — debug, quality, critique, goal, and this retro preserve exact evidence, non-claims, and the speed comparison. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
 - applied — release carrier validation, fresh-record routing, packet-kind recognition, and orchestration-focused pytest tests landed with owner gates intact. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
@@ -108,3 +108,4 @@
 - `charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`
