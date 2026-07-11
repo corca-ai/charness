@@ -100,6 +100,40 @@ reported `ok: true` with no drift after every reviewer.
   export; release publication remains owned by the release helper.
 - Verdict: owned-correctly
 
+## Public Skill Validation Review
+
+- Target boundary: the `issue` create helper, its first-use guidance, and the
+  attention-state declaration consumed by `quality`.
+- Capability needed: safe post-create verification that cannot silently become
+  a second external mutation.
+- Current centers: the create helper, fake-backend tests, public issue contract,
+  backend reference, attention-state catalog, and synchronized plugin export.
+- Next center and transformation: interface narrowing at the create owner plus
+  existing-gate reuse; the pre-mutation placeholder guard and explicit
+  create-then-view tests now carry the behavior boundary.
+- Proof boundary: local fake-backend proof confirms zero calls for `x`/`test`
+  and exactly one create followed by one view for ordinary verified creation.
+  It does not claim provider/model agent-choice behavior.
+- Enforcement posture: existing-gate-reuse; no new floor.
+- prose review result: trigger boundaries and progressive disclosure remain
+  honest. The core carries the safety decision while the backend reference owns
+  the detailed “never second create” explanation. Skill-ergonomics inventory
+  found no core-overfill, mode pressure, prose ritual, ambiguous path, issue
+  anchor, dated incident, or reference-discoverability hit for `issue`; its host
+  references are intentional GitHub/backend adapter vocabulary, and the new
+  flags have help text.
+- structural review result: target skill finding resolved by strengthening the
+  existing owner and tests. Ambient repo heuristics are not #435 findings and
+  require no quality move in this release.
+- Scenario decision: maintained issue routing and claim-fidelity scenarios stay
+  unchanged because routing, planner required reads, GitHub source-of-truth,
+  causal-review, and feature-brief contracts did not change. The quality
+  consumer contract is also unchanged; only its declarative attention-state
+  terms were synchronized. No live Cautilus run was made: it is ask-before-run,
+  and faithful `issue new` capture performs an irreversible GitHub write.
+- Dogfood record: `docs/public-skill-dogfood.json` records the issue and quality
+  decisions for 2026-07-11.
+
 ## Deliberately Not Doing
 
 - No time-window body-hash deduplication cache.
