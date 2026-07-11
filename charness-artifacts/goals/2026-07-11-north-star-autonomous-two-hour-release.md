@@ -1,6 +1,6 @@
 # Achieve Goal: North-Star Autonomous Two-Hour Release
 
-Status: active
+Status: complete
 Created: 2026-07-11
 Activation: `/goal @charness-artifacts/goals/2026-07-11-north-star-autonomous-two-hour-release.md`
 Timebox: 2h
@@ -13,12 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: lock and publish the full v0.66.1-to-HEAD release delta.
-- Current slice intent: preserve the five completed reversible slices, include
-  the eleven post-tag commits already on origin, and publish one reviewed patch
-  repair without closing #433.
-- Next action: commit corrected release readiness/notes/critique, run the locked
-  full-delta proof and dry-run, then publish through the release helper.
+- Current slice: close the published v0.66.2 goal lifecycle and handoff.
+- Current slice intent: preserve the five completed reversible slices, the
+  verified 45-commit tag delta, and the independent public readback while
+  keeping #433 open.
+- Next action: validate the retro/disposition evidence, commit and push the
+  lifecycle artifacts, then re-read #433 and origin/main.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -51,11 +51,9 @@ whose public behavior is checked through a distinct evidence channel.
 - Reversible local mutation is authorized throughout the timebox.
 - Push, tag, GitHub release creation, and maintainer install refresh are
   authorized only for the final reviewed bundle. No per-slice push.
-- The push carrier is `merge-base(origin/main, HEAD)..HEAD`, but the release
-  delta is the larger `v0.66.1..HEAD` range: eleven post-tag commits already on
-  origin plus twenty-five unpushed commits. Release inventory, notes, critique,
-  and proof bind to all thirty-six commits. Preserve history; do not squash,
-  rebase, or cherry-pick the carrier.
+- The published release delta is `v0.66.1..v0.66.2`: 45 commits at immutable
+  tag SHA `746510ecfd6ab3badc20bec66990d777f6de1a32`. Release inventory,
+  notes, critique, and proof bind to that full range. History was preserved.
 - Release target is only a patch candidate (`0.66.2`). After mutation closes,
   inventory every consumer-visible surface in the full carrier and choose the
   lightest honest version before release mutation.
@@ -134,8 +132,8 @@ whose public behavior is checked through a distinct evidence channel.
 | A | Repair quality scaffold custom-title/H1 contract | Concrete repeat trap and first active handoff slice | focused scaffold + validator tests | completed |
 | B | Diagnose coverage producer/consumer anchor mismatch; fix only if reproduced | Avoids changing an intentional pre-push default from an ambiguous symptom | reproduction packet, then focused freshness/closeout tests or explicit not-reproduced disposition | completed |
 | C | Admit only evidence-backed safe improvement(s) | Continue without manufacturing work | captured failure/repeat-waste owner, bounded proof, commit before T+100m | completed |
-| D | Bundle critique, quality lock, release prep | Locks the final mutation set before publication | critique artifact, closeout, dry-run | in progress |
-| E | Push and publish patch release | User-authorized irreversible boundary | public release URL, distinct-channel readback, install refresh | pending |
+| D | Bundle critique, quality lock, release prep | Locks the final mutation set before publication | critique artifact, closeout, dry-run | completed |
+| E | Push and publish patch release | User-authorized irreversible boundary | public release URL, distinct-channel readback, install refresh | completed |
 
 ## Operator Decision Queue
 
@@ -180,6 +178,9 @@ per the bullets above when that boundary is crossed):
 - Routing: find-skills -> release — release is the confirmed external-boundary owner; the higher-ranked issue match came only from the explicit issue-close exclusion.
 - Gather: n/a — no external source is input to the local improvement slices.
 - Issue closeout: n/a — #433 is context only and must remain open.
+
+Routing: find-skills recommended impl for reversible slices, quality for the verification lock, release for publication, retro for closeout, and issue for the filed structural follow-up.
+Release: `charness-artifacts/release/latest.md` records v0.66.2 publication, HTTPS confirmation, fresh-checkout probes, and install refresh.
 
 ## Discuss Before Activation
 
@@ -313,25 +314,50 @@ applies.
 
 ## Off-Goal Findings
 
-- none yet — off-goal findings route through `issue` but issue creation is not
-  implied by this goal.
+- Issue #436 (`https://github.com/corca-ai/charness/issues/436`) tracks the
+  repeated generated-sync discovery after an expensive verification lock. It is
+  a structural workflow follow-up, not a v0.66.2 release blocker.
 
 ## Final Verification
+
+Host metric window: started_at=2026-07-11T20:05:59+09:00 completed_at=2026-07-11T22:20:27+09:00 codex_session_file=/home/hwidong/.codex/sessions/2026/07/11/rollout-2026-07-11T12-42-43-019f4f45-3606-7892-a931-3a4bfdf739d6.jsonl
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
 retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md
+Host log probe: charness-artifacts/probe/2026-07-11-north-star-autonomous-two-hour-release.json
+Disposition review: charness-artifacts/critique/2026-07-11-north-star-autonomous-two-hour-release-disposition-review.md
+
+- Final broad verification lock passed on clean HEAD `24dc3a6f` before release;
+  changed-line mutation consumption returned `ok: true`, `blocking: []`.
+- The release helper published tag `v0.66.2` at `746510ec`, pushed public
+  evidence commit `68f24313`, passed fresh-checkout probes, and ran
+  `charness update` from 0.66.1 to 0.66.2.
+- A separate read-only observer used unauthenticated HTTPS at
+  2026-07-11T13:17:28Z and confirmed HTTP 200, visible tag/title, substantive
+  notes, Latest status, and two source assets. Reviewer boundary drift was zero.
+- `charness --version` returned 0.66.2; doctor reported nose 0.18.0 ready; local
+  HEAD and origin/main both read `68f24313`; #433 remained OPEN.
+- Non-claims: no isolated fresh-install test, no Cautilus evaluation, no #433
+  behavior resolution or issue close, and no provider other than GitHub was
+  exercised.
 
 ## User Verification Instructions
 
-- Pending final release URL, SHA, tag, update command, and #433 open-state readback.
+- Open `https://github.com/corca-ai/charness/releases/tag/v0.66.2` and confirm
+  title `Charness v0.66.2`, tag `v0.66.2`, Latest status, notes, and two source
+  assets.
+- Run `charness update`, then `charness --version`; expect `0.66.2`.
+- Run `charness tool doctor nose --json --no-write-locks`; expect
+  `doctor_disposition: ready` and observed nose version 0.18.0 or newer.
+- Confirm `https://github.com/corca-ai/charness/issues/433` remains OPEN.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #436 (recurs: #257 post-commit generated-mirror repair, the 2026-07-08 mutate-to-sync miss, the 2026-07-10 verification-lock sync stop, and two current SLOC cycles) — workflow: surface generated sync drift before an expensive verification lock while preserving the final clean-HEAD broad gate.
+- capability: issue #436 carries the reproduced 95–103 second rerun cost and leaves sync-only preflight versus fail-fast-after-sync as an open design choice.
+- memory: applied-in-session — the retro, `docs/handoff.md`, `recent-lessons.md`, and lesson-selection index bind the recurrence to #436 as the capture/surface rung; these memory artifacts are not claimed as structural teeth.
+Structural follow-up: issue #436 (recurs: closed #257 captured post-commit generated-mirror repair; the 2026-07-08 five-pack goal Slice 2 recorded a mutate-to-sync mirror miss and three pre-lock runs; the 2026-07-10 session retro recorded a verification-lock artifact ownership/sync stop; this closeout repeated SLOC drift after both test and handoff commits)

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-11",
-  "source_artifact_count": 308,
-  "candidate_count": 1386,
+  "source_artifact_count": 310,
+  "candidate_count": 1393,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -950,6 +950,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:328e11ed30e6",
+      "kind": "current_focus",
+      "lesson": "This retro covers the timeboxed north-star improvement campaign from activation at 20:05:59 KST through the public v0.66.2 release and its independent readback.",
+      "normalized_key": "this retro covers the timeboxed north star improvement campaign from activation at 20 05",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+          "date": "2026-07-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bcc3d6ef9295",
+      "kind": "next_improvement",
+      "lesson": "#436 carries the tool-level desired outcome and observed 95–103 second rerun evidence; the design remains open between sync-only preflight and fail-fast-after-sync.",
+      "normalized_key": "436 carries the tool level desired outcome and observed 95 103 second rerun evidence",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c8a039e0f33a",
       "kind": "next_improvement",
       "lesson": "applied — composed producer-to-final-consumer proof and five-bucket sibling triage now gate each repaired seam before implementation closeout.",
@@ -1004,46 +1044,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
-          "date": "2026-07-11",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:da56edf76029",
-      "kind": "next_improvement",
-      "lesson": "bind the final coverage producer and consumer to the same explicit campaign base so one locked proof is sufficient.",
-      "normalized_key": "bind the final coverage producer and consumer to the same explicit campaign base so",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
-      "latest_source_date": "2026-07-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
-          "date": "2026-07-11",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:11e389485f38",
-      "kind": "next_improvement",
-      "lesson": "carry both concrete defects in `docs/handoff.md`; do not add a new blocking gate or treat lexical counts as a target.",
-      "normalized_key": "carry both concrete defects in docs handoff md do not add a new blocking",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
-      "latest_source_date": "2026-07-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
           "date": "2026-07-11",
           "section": "Next Improvements"
         }
@@ -1987,6 +1987,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:328e11ed30e6",
+      "kind": "current_focus",
+      "lesson": "This retro covers the timeboxed north-star improvement campaign from activation at 20:05:59 KST through the public v0.66.2 release and its independent readback.",
+      "normalized_key": "this retro covers the timeboxed north star improvement campaign from activation at 20 05",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+          "date": "2026-07-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bcc3d6ef9295",
+      "kind": "next_improvement",
+      "lesson": "#436 carries the tool-level desired outcome and observed 95–103 second rerun evidence; the design remains open between sync-only preflight and fail-fast-after-sync.",
+      "normalized_key": "436 carries the tool level desired outcome and observed 95 103 second rerun evidence",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c8a039e0f33a",
       "kind": "next_improvement",
       "lesson": "applied — composed producer-to-final-consumer proof and five-bucket sibling triage now gate each repaired seam before implementation closeout.",
@@ -2087,6 +2127,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:328fd0e0abd5",
+      "kind": "next_improvement",
+      "lesson": "filed #436 so generated sync drift becomes visible before an expensive verification lock is bound, without weakening the final broad gate.",
+      "normalized_key": "filed 436 so generated sync drift becomes visible before an expensive verification lock is",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:47a593e3ada9",
       "kind": "next_improvement",
       "lesson": "make quality scaffold custom titles preserve the canonical H1 (for example as subtitle/metadata) and add a custom-title validator test.",
@@ -2101,6 +2161,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a41189234a7a",
+      "kind": "next_improvement",
+      "lesson": "this retro and the closeout handoff bind the recurrence to #436, so the next session can route from a live backlog item rather than rediscovering it.",
+      "normalized_key": "this retro and the closeout handoff bind the recurrence to 436 so the next",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
           "date": "2026-07-11",
           "section": "Next Improvements"
         }
@@ -2147,6 +2227,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:08f435e4000d",
+      "kind": "repeat_trap",
+      "lesson": "Coordination overhead was high: the scoped host probe records 24 subagent spawns and 113 waits. Much of that breadth was explicitly requested and produced independent perspectives; the reducible portion was repeated review after a concurrent worker changed the boundary fingerprint, forcing the first approval to be quarantined.",
+      "normalized_key": "coordination overhead was high the scoped host probe records 24 subagent spawns and 113",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:f2da8e02ef6d",
       "kind": "repeat_trap",
       "lesson": "Producer and final-consumer contracts were inspected separately, allowing a release carrier, resolved debug pointer, and pre-review packets to look valid locally while failing or overwriting at the next boundary.",
@@ -2161,6 +2261,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f23f3cd6156c",
+      "kind": "repeat_trap",
+      "lesson": "Publication-phase waste: the first release attempt spent 77.859 seconds in the release quality command before `docs/handoff.md` failed the references inventory. The gate did its job before external mutation, but the cheaper targeted references check should have been part of release-prep triage.",
+      "normalized_key": "publication phase waste the first release attempt spent 77 859 seconds in the release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
           "date": "2026-07-11",
           "section": "Waste"
         }
@@ -2241,6 +2361,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b6a0ec42caed",
+      "kind": "repeat_trap",
+      "lesson": "Verification-phase waste: generated SLOC drift was discovered after an expensive verification lock had already run. Committing the generated file correctly changed HEAD and invalidated the proof, so broad instrumented pytest had to run again. A later handoff-only correction repeated the sequence. Individual broad runs observed in closeout were roughly 95–103 seconds. The broad proof itself was necessary safety cost; discovering deterministic sync drift only after paying that cost was reducible waste.",
+      "normalized_key": "verification phase waste generated sloc drift was discovered after an expensive verification lock had",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md",
           "date": "2026-07-11",
           "section": "Waste"
         }
