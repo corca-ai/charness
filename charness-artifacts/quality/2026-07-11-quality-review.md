@@ -25,8 +25,8 @@ bundle and neither produced a release blocker.
 
 ## Runtime Signals
 
-- runtime source: `.charness/quality/runtime-signals.json`, rendered by
-  `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
+- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source -->,
+  rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
 - runtime hot spots: pytest 36.4s latest / 36.8s median against 140s budget;
   coverage 7.9s / 7.5s against 55s; secrets 5.2s / 5.2s against 6s.
 - coverage gate: focused proof passed; the binding changed-line mutation and
@@ -71,11 +71,15 @@ bundle and neither produced a release blocker.
   feedback and idempotent concurrent feedback append. Existing closeout and
   replay centers were strengthened at their owning orchestration boundaries;
   no new gate or public interface is recommended.
-- prose review result: command: `inventory_skill_ergonomics.py --summary` — 17
-  skill packages carried host-reference heuristic hits,
-  but the current bundle changes no skill trigger, progressive-disclosure,
-  helper-ownership, or dogfood surface. Treat the inventory as ambient, not a
-  portability verdict.
+- prose review result: command: `inventory_skill_ergonomics.py --summary` —
+  `scope_status=scanned`, `finding_status=heuristics_present`, and
+  `prose_review_status=required`; the required prose review is satisfied here.
+  It checked `checked_skill_count=22` packages and reported
+  `heuristic_finding_count=17`, all driven by
+  `host_surface_reference_count=85` (`subcheck_counts.host_surface_reference`).
+  The current bundle changes no
+  skill trigger, progressive-disclosure, helper-ownership, or dogfood surface,
+  so these are ambient adapter/integration references, not a portability verdict.
 - command: `check_python_lengths.py` reported 14 warn-band files. None is
   changed by this bundle;
   the touched production files retain at least 79 lines of hard-limit headroom.
