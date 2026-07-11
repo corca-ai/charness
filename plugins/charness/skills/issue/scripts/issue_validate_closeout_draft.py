@@ -102,6 +102,7 @@ def register_validate_closeout_draft_subparser(
         "--classification",
         choices=("bug", "feature", "deferred-work", "question", "decision-needed"),
         required=True,
+        help="Fix-unit classification; selects the required closeout ledger fields",
     )
     parser.add_argument("--body-file", type=Path, help="Draft closeout body to validate")
     parser.add_argument(
@@ -113,6 +114,7 @@ def register_validate_closeout_draft_subparser(
         "--carrier",
         choices=("direct-commit", "pr-body", "manual-fallback"),
         default="pr-body",
+        help="Draft carrier being rehearsed; selects the body source and publication path",
     )
     parser.add_argument(
         "--manual-fallback-reason",
@@ -121,6 +123,7 @@ def register_validate_closeout_draft_subparser(
             "auto-close-failed-after-remote-verification",
             "operator-directed-manual-close",
         ),
+        help="Reason code explaining why the manual-fallback carrier is required",
     )
     parser.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     parser.set_defaults(

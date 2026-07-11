@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import runpy
 import sys
 from dataclasses import replace
@@ -440,6 +441,17 @@ def _load_describe(rel: str, name: str):
     return module
 
 
+def _option_help_block(output: str, option: str) -> str:
+    """Return one wrapped option block from argparse output, not usage text."""
+    lines = output.splitlines()
+    options_start = lines.index("options:")
+    option_line = re.compile(rf"^  {re.escape(option)}(?:\s|$)")
+    start = next(i for i in range(options_start + 1, len(lines)) if option_line.match(lines[i]))
+    next_option = re.compile(r"^  --[a-z0-9][a-z0-9-]*(?:\s|$)")
+    end = next((i for i in range(start + 1, len(lines)) if next_option.match(lines[i])), len(lines))
+    return " ".join(" ".join(lines[start:end]).split())
+
+
 def test_closeout_draft_surface_is_author_time_shape_only() -> None:
     s = preflight.surface_for_type("closeout-draft")
     assert s is not None
@@ -460,6 +472,19 @@ def test_closeout_draft_describe_emits_the_named_required_fields() -> None:
     assert "COMMIT MESSAGE" in out and "direct-commit" in out
     assert "Closes #N" in out  # close keyword
     assert "Classification ledger fields" in out
+
+
+def test_closeout_draft_describe_help_describes_repo_root(capsys) -> None:
+    desc = _load_describe(
+        "skills/public/issue/scripts/describe_closeout_draft_shape.py", "help_dccs"
+    )
+    with pytest.raises(SystemExit) as exc:
+        desc.main(["--help"])
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "Repository root accepted by artifact-surface preflight" in _option_help_block(
+        output, "--repo-root"
+    )
 
 
 def test_closeout_draft_shape_pins_live_verifier_constants() -> None:

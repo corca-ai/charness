@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import runpy
 from argparse import Namespace
 from pathlib import Path
@@ -8,6 +9,29 @@ from pathlib import Path
 from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
+
+
+def _option_help(output: str, option: str) -> str:
+    """Return one option's wrapped help block, excluding the usage synopsis."""
+    lines = output.splitlines()
+    options_start = lines.index("options:")
+    option_line = re.compile(rf"^  {re.escape(option)}(?:\s|$)")
+    start = next(i for i in range(options_start + 1, len(lines)) if option_line.match(lines[i]))
+    next_option = re.compile(r"^  --[a-z0-9][a-z0-9-]*(?:\s|$)")
+    end = next((i for i in range(start + 1, len(lines)) if next_option.match(lines[i])), len(lines))
+    return " ".join(" ".join(lines[start:end]).split())
+
+
+def test_closeout_draft_cli_help_describes_each_option_without_usage_false_green() -> None:
+    validate = run_script(SCRIPT, "validate-closeout-draft", "--help")
+    assert validate.returncode == 0, validate.stderr
+    expected = {
+        "--classification": "Fix-unit classification; selects the required closeout ledger fields",
+        "--carrier": "Draft carrier being rehearsed; selects the body source and publication path",
+        "--manual-fallback-reason": "Reason code explaining why the manual-fallback carrier is required",
+    }
+    for option, description in expected.items():
+        assert description in _option_help(validate.stdout, option)
 
 
 def _bug_body(close_line: str = "Close #42.") -> str:

@@ -100,7 +100,12 @@ def stub() -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root accepted by artifact-surface preflight (default: current directory)",
+    )
     parser.add_argument("--stub", action="store_true", help="Emit a starter closeout body")
     args = parser.parse_args(argv)
     sys.stdout.write(stub() if args.stub else required_shape())
