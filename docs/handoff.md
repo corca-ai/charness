@@ -52,9 +52,12 @@
   · [quality proof](../charness-artifacts/quality/2026-07-11-issue-create-safety-quality-speed-sweep.md)
   · [retro](../charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md)
   · [#433 disposition review](../charness-artifacts/critique/2026-07-11-issue-create-safety-quality-speed-sweep-disposition-review.md)
+  · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-Refresh kept: #433's open external boundary, the next argparse-help package,
-the zero-feedback non-claim, and the verification sequence that prevents reruns.
+- Refresh kept: the [retro](../charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md)
+  preserves #433's open external boundary, the next argparse-help package, the
+  zero-feedback non-claim, and the verification sequence that prevents reruns.
 
-Refresh non-claims: no #433 close, new release, provider mutation, feedback
-observation, or full argparse-debt completion is claimed.
+- Refresh non-claims: the [completed goal](../charness-artifacts/goals/2026-07-11-issue-create-safety-quality-speed-sweep.md)
+  claims no #433 close, new release, provider mutation, feedback observation,
+  or full argparse-debt completion.
