@@ -26,6 +26,10 @@ failure.
 - Bundle Anyway: the six new tests moved into
   `test_quality_runner_runtime_aggregate.py` after the original module crossed
   its hard length limit; the original returned to its pre-slice 742/800 lines.
+- Bundle Anyway: the five existing coverage-selection scenarios moved into
+  `test_quality_runner_coverage_selection.py`; a separate bounded reviewer
+  confirmed exact scenario/assertion preservation and cohesive ownership with
+  zero reviewer-boundary drift. The general runner module is now 644/800 lines.
 
 ## Structured Findings
 

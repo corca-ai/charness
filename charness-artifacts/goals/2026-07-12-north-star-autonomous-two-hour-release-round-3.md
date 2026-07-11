@@ -252,7 +252,7 @@ applies.
 
 - Objective: Refresh mode-level runtime trend evidence on every unfiltered quality run
 - Why this approach: latest quality review found the aggregate sample 25 days stale despite successful runs
-- Commits: pending
+- Commits: `088840a2`
 - What changed: run-quality records full/read-only/release aggregate timing best-effort; six tests moved to a seam-specific module
 - Alternatives rejected: Rejected telemetry hard-fail, durable retry queue, and filtered-run samples masquerading as full runs
 - Targeted verification: six focused contract/failure tests plus original summary regression; bash -n, shellcheck, ruff, length headroom, fresh-eye approval
@@ -260,6 +260,20 @@ applies.
 - Critique: charness-artifacts/critique/2026-07-12-run-quality-aggregate-runtime-code-critique.md; HOLD fixed and final zero-drift approval
 - Off-goal findings: none
 - Lessons carried forward: Observability must not replace the primary quality verdict; check test-module headroom before adding fixtures
+- Metrics:
+
+### Slice 5: Quality runner coverage-selection test split
+
+- Objective: Restore structural headroom without changing quality-gate behavior
+- Why this approach: The general runner test module remained in a warning band; the five coverage-selection cases form one stable behavioral seam
+- Commits: pending
+- What changed: Moved the existing helper and five coverage-selection tests into test_quality_runner_coverage_selection.py; no production code changed
+- Alternatives rejected: Rejected deleting scenarios, weakening assertions, or mixing aggregate-runtime and coverage-selection fixtures
+- Targeted verification: five focused scenarios passed; ruff and diff check passed; original module 644/800 and new module 101/800
+- Test duplication pressure: none — existing tests moved with assertions preserved; test count unchanged
+- Critique: bounded fresh-eye reviewer approved exact move, import cleanup, and cohesive boundary with zero fingerprint drift
+- Off-goal findings: none
+- Lessons carried forward: Treat structural headroom as ownership design: split a complete behavior seam, not arbitrary line ranges
 - Metrics:
 
 ## Context Sources
