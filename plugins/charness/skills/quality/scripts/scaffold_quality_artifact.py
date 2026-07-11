@@ -67,7 +67,8 @@ def default_title(title: str | None) -> str:
 
 
 def render_template(*, title: str, date_text: str) -> str:
-    # Validator note: the first line must be exactly "# Quality Review"; the
+    # Validator note: the first line must be exactly "# Quality Review". Keep
+    # caller-provided titles as metadata below the required Date line; the
     # Runtime Signals/Advisory/Delegated Review/Recommended/History blocks below
     # carry the literal tokens validate_quality_artifact.py asserts on.
     # Fill-time guard comments surface the conditional rules that only fire
@@ -75,8 +76,9 @@ def render_template(*, title: str, date_text: str) -> str:
     # failed validator run at a time. Fill the slots in place; rewriting
     # sections from scratch is what reintroduces the conditional violations.
     lines = [
-        f"# {title}",
+        "# Quality Review",
         f"Date: {date_text}",
+        f"Title: {title}",
         "",
         "<!-- fill guard: fill the TODO slots in place; the payload's"
         " validator_command reports every rule violation in one pass -->",

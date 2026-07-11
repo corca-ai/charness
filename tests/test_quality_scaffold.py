@@ -114,6 +114,48 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     _validate_quality_artifact.validate_quality_artifact(artifact_path, repo_root=repo)
 
 
+def test_quality_scaffold_custom_title_keeps_canonical_h1_and_validates(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_adapter(repo, "demo")
+
+    payload = _scaffold_quality_artifact.payload_for(repo, title="Auth Migration")
+    template = payload["template"]
+    assert payload["title"] == "Auth Migration"
+    assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
+    assert template.startswith("# Quality Review\n")
+    assert "# Auth Migration" not in template
+    assert "Title: Auth Migration\n" in template
+
+    artifact_path = repo / payload["artifact_path"]
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_text(template, encoding="utf-8")
+    _validate_quality_artifact.validate_quality_artifact(artifact_path, repo_root=repo)
+
+
+def test_quality_scaffold_cli_custom_title_emits_validator_passing_artifact(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_adapter(repo, "demo")
+
+    result = run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Auth Migration")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["title"] == "Auth Migration"
+    assert payload["template"].startswith("# Quality Review\n")
+    assert "Title: Auth Migration\n" in payload["template"]
+
+    artifact_path = repo / payload["artifact_path"]
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_text(payload["template"], encoding="utf-8")
+    validation = subprocess.run(
+        shlex.split(payload["validator_command"]),
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert validation.returncode == 0, validation.stderr
+
+
 def test_quality_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _write_adapter(repo, "demo")
@@ -145,10 +187,13 @@ def test_exported_quality_scaffold_validator_command_runs_from_consumer_repo(tmp
     consumer = tmp_path / "consumer"
     _write_adapter(consumer, "consumer")
 
-    result = run_script(str(scaffold), "--repo-root", str(consumer))
+    result = run_script(str(scaffold), "--repo-root", str(consumer), "--title", "Auth Migration")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_role"] == "current_pointer"
+    assert payload["title"] == "Auth Migration"
+    assert payload["template"].startswith("# Quality Review\n")
+    assert "Title: Auth Migration\n" in payload["template"]
     assert str(plugin_root / "scripts") in payload["validator_command"]
     assert "validate_quality_artifact.py" in payload["validator_command"]
     # The single-source line budget must survive the plugin layout: the exported
