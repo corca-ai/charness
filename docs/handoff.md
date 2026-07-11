@@ -48,8 +48,10 @@
   · [retro](../charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: #433's external boundary, the local unpushed carrier, and the
-  evidence-triggered next move.
+- Refresh kept: [issue #433](https://github.com/corca-ai/charness/issues/433)'s
+  external boundary, the local unpushed carrier, and the evidence-triggered next
+  move.
 
-- Refresh non-claims: no push, issue close, release, provider mutation,
-  external behavior proof, or feedback observation.
+- Refresh non-claims: the [release carrier](../charness-artifacts/release/2026-07-11-v0.66.2-notes.md)
+  has no push, issue close, provider mutation, external behavior proof, or
+  feedback observation yet.
