@@ -10,7 +10,8 @@
 - Continue reversible improvement through judgment-led `quality`; treat push,
   release, and issue close as distinct-channel irreversible boundaries.
 - `origin/main` remains at the verified #433 carrier. Local `main` contains
-  nineteen unpushed improvement commits after this campaign; #433 remains OPEN.
+  twenty unpushed improvement commits after this campaign and auto-retro;
+  #433 remains OPEN.
 - The five perspectives repaired false instruction-priority claims, preserved
   standing delegation and independent review, generalized re-consent detection,
   routed the two reviewed host rows to their owners, and rejected a new gate or
@@ -22,13 +23,18 @@
 
 ## Next Session
 
-1. Keep the nineteen local commits unpushed until separately authorized. If
-   issue close is later authorized, first push and verify the carrier through a
-   distinct channel before closing #433.
-2. Do not sweep the 85 host-reference rows. Reopen classification only for a
-   concrete false route or operator misunderstanding.
-3. If a real setup consumer shows standing delegation was generated without
-   owner intent, review consent provenance then; do not add a speculative gate.
+1. First active reversible slice: fix `scaffold_quality_artifact.py --title` so
+   custom titles preserve the validator-required H1, with a custom-title test.
+2. Then align coverage anchors: only when closeout receives an explicit campaign
+   base, pass it to the fresh-marker producer so the changed-line consumer
+   accepts that marker without a second full run. Preserve the existing
+   `origin/main` default when no explicit base is supplied.
+3. Keep the twenty local commits unpushed until separately authorized. If issue
+   close is later authorized, push and verify the carrier through a distinct
+   channel before closing #433.
+4. Evidence-triggered only: revisit consent provenance if a real setup consumer
+   lacks owner intent; revisit host classification only for a concrete false
+   route or operator misunderstanding. Add no speculative gate or row sweep.
 
 ## Discuss
 
@@ -39,6 +45,7 @@
 
 - [quality proof](../charness-artifacts/quality/2026-07-11-truthful-standing-delegation.md)
   · [critique](../charness-artifacts/critique/2026-07-11-truthful-standing-delegation.md)
+  · [retro](../charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
 - Refresh kept: #433's external boundary, the local unpushed carrier, and the

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-11",
-  "source_artifact_count": 305,
-  "candidate_count": 1378,
+  "source_artifact_count": 307,
+  "candidate_count": 1385,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -860,6 +860,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a11a2e38e3d2",
+      "kind": "current_focus",
+      "lesson": "Auto-triggered after the truthful standing-delegation campaign changed exported setup/quality surfaces.",
+      "normalized_key": "auto triggered after the truthful standing delegation campaign changed exported setup quality surfaces",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:7c47d8eec1d1",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.66.1`.",
@@ -960,12 +980,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:c037c067f56d",
-      "kind": "repeat_trap",
-      "lesson": "Broad exploration itself was necessary: the goal explicitly asked for sibling discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/ defer—prevented that breadth from becoming speculative patches.",
-      "normalized_key": "broad exploration itself was necessary the goal explicitly asked for sibling discovery the triage",
+      "candidate_id": "next_improvement:da56edf76029",
+      "kind": "next_improvement",
+      "lesson": "bind the final coverage producer and consumer to the same explicit campaign base so one locked proof is sufficient.",
+      "normalized_key": "bind the final coverage producer and consumer to the same explicit campaign base so",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
       "latest_source_date": "2026-07-11",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -973,19 +993,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
           "date": "2026-07-11",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:f2da8e02ef6d",
-      "kind": "repeat_trap",
-      "lesson": "Producer and final-consumer contracts were inspected separately, allowing a release carrier, resolved debug pointer, and pre-review packets to look valid locally while failing or overwriting at the next boundary.",
-      "normalized_key": "producer and final consumer contracts were inspected separately allowing a release carrier resolved debug",
+      "candidate_id": "next_improvement:11e389485f38",
+      "kind": "next_improvement",
+      "lesson": "carry both concrete defects in `docs/handoff.md`; do not add a new blocking gate or treat lexical counts as a target.",
+      "normalized_key": "carry both concrete defects in docs handoff md do not add a new blocking",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
       "latest_source_date": "2026-07-11",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -993,19 +1013,19 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
           "date": "2026-07-11",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:168543b98717",
-      "kind": "repeat_trap",
-      "lesson": "Several implementation workers stopped at progress narration before editing; narrowing ownership and giving an exact falsifiable contract recovered the work, but repeated polling was reducible coordination waste.",
-      "normalized_key": "several implementation workers stopped at progress narration before editing narrowing ownership and giving an",
+      "candidate_id": "next_improvement:47a593e3ada9",
+      "kind": "next_improvement",
+      "lesson": "make quality scaffold custom titles preserve the canonical H1 (for example as subtitle/metadata) and add a custom-title validator test.",
+      "normalized_key": "make quality scaffold custom titles preserve the canonical h1 for example as subtitle metadata",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
       "latest_source_date": "2026-07-11",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -1013,29 +1033,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
           "date": "2026-07-11",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4a95b2ae7a42",
-      "kind": "repeat_trap",
-      "lesson": "The explicit broad quality gate ran only after the first coverage lock. It surfaced production duplicate families late, and the cleanup then required repeated full coverage passes as each newly visible branch was covered.",
-      "normalized_key": "the explicit broad quality gate ran only after the first coverage lock it surfaced",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
-      "latest_source_date": "2026-07-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
-          "date": "2026-07-11",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     }
@@ -1887,6 +1887,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a11a2e38e3d2",
+      "kind": "current_focus",
+      "lesson": "Auto-triggered after the truthful standing-delegation campaign changed exported setup/quality surfaces.",
+      "normalized_key": "auto triggered after the truthful standing delegation campaign changed exported setup quality surfaces",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:7c47d8eec1d1",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v0.66.1`.",
@@ -1987,6 +2007,86 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:da56edf76029",
+      "kind": "next_improvement",
+      "lesson": "bind the final coverage producer and consumer to the same explicit campaign base so one locked proof is sufficient.",
+      "normalized_key": "bind the final coverage producer and consumer to the same explicit campaign base so",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:11e389485f38",
+      "kind": "next_improvement",
+      "lesson": "carry both concrete defects in `docs/handoff.md`; do not add a new blocking gate or treat lexical counts as a target.",
+      "normalized_key": "carry both concrete defects in docs handoff md do not add a new blocking",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:47a593e3ada9",
+      "kind": "next_improvement",
+      "lesson": "make quality scaffold custom titles preserve the canonical H1 (for example as subtitle/metadata) and add a custom-title validator test.",
+      "normalized_key": "make quality scaffold custom titles preserve the canonical h1 for example as subtitle metadata",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fab28cae49f0",
+      "kind": "repeat_trap",
+      "lesson": "Authoring: `scaffold_quality_artifact.py --title ...` emitted a custom H1 even though the validator requires exactly `# Quality Review`, causing a reactive artifact-shape repair. This is a helper/validator contract defect, not author misunderstanding.",
+      "normalized_key": "authoring scaffold quality artifact py title emitted a custom h1 even though the validator",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:c037c067f56d",
       "kind": "repeat_trap",
       "lesson": "Broad exploration itself was necessary: the goal explicitly asked for sibling discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/ defer—prevented that breadth from becoming speculative patches.",
@@ -2047,6 +2147,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:a00c56d3bdb1",
+      "kind": "repeat_trap",
+      "lesson": "Signal interpretation: the lexical host count rose from 84 to 85 because the classifier source introduced two detector self-hits while deleting one bad policy hit. Treating the count as a target would have encouraged obfuscation; context and ownership were the correct evidence.",
+      "normalized_key": "signal interpretation the lexical host count rose from 84 to 85 because the classifier",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:4a95b2ae7a42",
       "kind": "repeat_trap",
       "lesson": "The explicit broad quality gate ran only after the first coverage lock. It surfaced production duplicate families late, and the cleanup then required repeated full coverage passes as each newly visible branch was covered.",
@@ -2081,6 +2201,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f3a886aae144",
+      "kind": "repeat_trap",
+      "lesson": "Verification: the closeout coverage producer stamps its configured `origin/main` anchor even when closeout receives an explicit campaign base; the campaign consumer therefore required a second full coverage run after a marker mismatch. The run was necessary once detected, but the anchor mismatch is transferable workflow waste.",
+      "normalized_key": "verification the closeout coverage producer stamps its configured origin main anchor even when closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md",
           "date": "2026-07-11",
           "section": "Waste"
         }
