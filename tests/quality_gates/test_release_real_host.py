@@ -32,14 +32,29 @@ def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
         "--paths",
         "integrations/tools/tokei.json",
         "scripts/doctor.py",
+        "plugins/charness/scripts/install_tools.py",
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["required"] is True
-    assert "integrations-and-control-plane" in payload["surface_hits"]
+    assert payload["surface_hits"] == ["external-tool-control-plane"]
     assert any("tool doctor" in item for item in payload["checklist"])
     assert any("tool install" in item for item in payload["checklist"])
     assert any("manifest-supported path" in item for item in payload["checklist"])
+
+
+def test_release_real_host_proof_stays_off_for_unrelated_derived_plugin_scripts() -> None:
+    result = _run_real_host_proof(
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "plugins/charness/scripts/run-quality.sh",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["required"] is False
+    assert payload["surface_hits"] == []
+    assert payload["path_hits"] == []
 
 
 def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:

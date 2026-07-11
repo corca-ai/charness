@@ -46,6 +46,9 @@ describe regressions in the target delta.
   coverage source is neither recollected nor rewritten.
 - Operability: unfiltered quality runs now emit mode-specific aggregate timing
   best-effort without replacing the primary gate exit status.
+- Operability: release real-host proof now subscribes to an exact external-tool
+  control-plane surface; unrelated derived plugin scripts no longer trigger a
+  host-tool checklist, while doctor/install/update paths and mirrors still do.
 - Portability/security: source and installed plugin mirrors are identical; the
   consumer command separates executable install root from target repo root;
   secret and supply-chain checks passed.

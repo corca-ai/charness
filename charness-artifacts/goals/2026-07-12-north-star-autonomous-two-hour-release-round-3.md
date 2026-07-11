@@ -304,6 +304,20 @@ applies.
 - Lessons carried forward: Release notes must teach recovery at the handoff seam, not only enumerate internal commits
 - Metrics:
 
+### Slice 8: Narrow release real-host trigger ownership
+
+- Objective: Stop unrelated plugin scripts from triggering a seven-step external-tool host checklist without losing real host-sensitive coverage
+- Why this approach: The release planner reproduced the false positive on this bundle; the broad derived plugin wildcard made reversible release preparation pay unrelated operator work
+- Commits: pending
+- What changed: Added external-tool-control-plane with exact source/plugin paths; release adapter subscribes to it; added unrelated-derived negative fixture
+- Alternatives rejected: Rejected removing host proof, raw-glob duplication, or a generic dependency graph
+- Targeted verification: six focused tests, surface/integration validators, dry-run support/update, current delta required=false; initial ownership HOLD fixed and stable reviews approved
+- Test duplication pressure: one regression fixture; existing positive/empty/unresolved cases retained
+- Critique: charness-artifacts/critique/2026-07-12-real-host-trigger-split-code-critique.md
+- Off-goal findings: future host-sensitive files must be added explicitly; actual clean-host proof remains a publication claim
+- Lessons carried forward: Trigger surfaces should name the risk seam, not reuse a broader validation surface merely because paths overlap
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

@@ -35,6 +35,8 @@ independent proof at the irreversible publication boundary.
 ## Surface-Lock Inventory
 
 - `.agents/surfaces.json`: the observed SLOC writer is sync-owned.
+- `.agents/surfaces.json` and release adapter: real-host proof subscribes to
+  the explicit external-tool control plane, not every derived plugin script.
 - `scripts/mutation_coverage_producer.py` and plugin mirror: resolved base,
   source path, and strict consumer command payload.
 - `scripts/run-quality.sh` and plugin mirror: mode-specific aggregate runtime
@@ -57,9 +59,9 @@ independent proof at the irreversible publication boundary.
   still provisional and must run after all evidence is committed.
 - Release notes must preserve the narrow #436 claim and the #433 lifecycle
   nonclaim; neither issue is authorized to close.
-- The adapter's broad integrations trigger exposes a nose checklist even though
-  this delta changes only generic derived plugin scripts. Record it honestly as
-  conservative scope, not as evidence that nose behavior changed.
+- The initial broad integrations trigger exposed a nose checklist even though
+  this delta changed only generic derived plugin scripts. A separate reviewed
+  slice moved release subscription to an exact host-sensitive tool surface.
 - Ambient length bands and stale noncritical timing labels are already visible
   and do not justify expanding the release.
 
@@ -76,8 +78,9 @@ independent proof at the irreversible publication boundary.
 
 ### Bundle Anyway
 
-- State that the real-host nose checklist is a conservative trigger whose
-  remaining items are not evidence of changed nose behavior.
+- Fixed — ship the narrow external-tool surface with the release so unrelated
+  plugin scripts stop triggering the nose checklist; preserve true host-tool
+  source and mirror paths plus fail-loud unresolved-id behavior.
 
 ### Over-Worry
 

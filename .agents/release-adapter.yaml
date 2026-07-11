@@ -34,7 +34,7 @@ update_instructions:
 - Run `charness update` to install the latest published Charness release.
 - Read the GitHub release notes for release-specific behavior changes, migrations, or rollback notes.
 real_host_required_surfaces:
-- integrations-and-control-plane
+- external-tool-control-plane
 real_host_required_path_globs:
 - README.md
 - docs/host-packaging.md

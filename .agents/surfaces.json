@@ -668,6 +668,47 @@
       ]
     },
     {
+      "surface_id": "external-tool-control-plane",
+      "description": "External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.",
+      "source_paths": [
+        "integrations/tools/**",
+        "scripts/control_plane_lib.py",
+        "scripts/control_plane_lifecycle_lib.py",
+        "scripts/control_plane_render.py",
+        "scripts/doctor.py",
+        "scripts/doctor_lib.py",
+        "scripts/install_provenance_lib.py",
+        "scripts/install_tools.py",
+        "scripts/support_sync_lib.py",
+        "scripts/sync_support.py",
+        "scripts/update_tools.py",
+        "scripts/upstream_release_lib.py"
+      ],
+      "derived_paths": [
+        "plugins/charness/integrations/tools/**",
+        "plugins/charness/scripts/control_plane_lib.py",
+        "plugins/charness/scripts/control_plane_lifecycle_lib.py",
+        "plugins/charness/scripts/control_plane_render.py",
+        "plugins/charness/scripts/doctor.py",
+        "plugins/charness/scripts/doctor_lib.py",
+        "plugins/charness/scripts/install_provenance_lib.py",
+        "plugins/charness/scripts/install_tools.py",
+        "plugins/charness/scripts/support_sync_lib.py",
+        "plugins/charness/scripts/sync_support.py",
+        "plugins/charness/scripts/update_tools.py",
+        "plugins/charness/scripts/upstream_release_lib.py"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate_integrations.py --repo-root .",
+        "python3 scripts/sync_support.py --repo-root . --json",
+        "python3 scripts/update_tools.py --repo-root . --json"
+      ],
+      "notes": [
+        "Keep release real-host proof scoped to host-sensitive tool control-plane files; unrelated checked-in plugin scripts are not host-proof triggers."
+      ]
+    },
+    {
       "surface_id": "integrations-and-control-plane",
       "description": "Integration manifests and control-plane helper scripts.",
       "source_paths": [
