@@ -31,6 +31,7 @@ def _load_preflight():
 
 _POST_CREATE_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_post_create.py"
 _RUNTIME_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_runtime.py"
+_RESUME_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_resume.py"
 
 
 def _load_post_create():
@@ -43,6 +44,14 @@ def _load_post_create():
 
 def _load_runtime():
     spec = importlib.util.spec_from_file_location("publish_release_runtime_under_test", _RUNTIME_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_resume():
+    spec = importlib.util.spec_from_file_location("publish_release_resume_under_test", _RESUME_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -82,6 +91,19 @@ def test_release_closeout_message_direct_loader_context_without_sys_modules() ->
     assert module_name not in sys.modules
     assert callable(module.release_commit_message)
     assert callable(module.validate_release_closeout_draft)
+
+
+def test_resume_common_loader_reports_unloadable_helper(monkeypatch) -> None:
+    resume = _load_resume()
+    monkeypatch.setattr(resume.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None)
+
+    try:
+        resume._load_release_common()
+    except ImportError as exc:
+        assert "Unable to load" in str(exc)
+        assert "publish_release_common.py" in str(exc)
+    else:
+        raise AssertionError("expected unloadable publish_release_common helper to raise")
 
 
 class _FakeShellResult:

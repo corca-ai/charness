@@ -51,6 +51,20 @@ def _release_commit_artifact_cli(commands: list[list[str]], write_counter: dict[
     )
 
 
+def _release_commit_artifact_cli_with_passed_probe(commands: list[list[str]], write_counter: dict[str, int]) -> SimpleNamespace:
+    probe_results = iter(({"status": "passed"}, {"status": "failed", "reason": "after amend"}))
+    amend_calls = {"count": 0}
+    cli = _release_commit_artifact_cli(commands, write_counter)
+    cli.run_fresh_checkout_probes = lambda *_a, **_k: next(probe_results)
+
+    def amend(*_args, **_kwargs):
+        amend_calls["count"] += 1
+
+    cli.amend_fresh_checkout_artifact = amend
+    cli.amend_calls = amend_calls
+    return cli
+
+
 def _release_commit_artifact_state() -> dict:
     return {
         "payload": {
@@ -245,6 +259,20 @@ def test_commit_release_artifact_falls_back_when_draft_paragraphs_empty() -> Non
 
     commit = next(command for command in commands if command[:2] == ["git", "commit"])
     assert commit == ["git", "commit", "-m", "Release v1.0.0", "-m", "fallback body"]
+
+
+def test_commit_release_artifact_rechecks_fresh_checkout_after_amend() -> None:
+    commands: list[list[str]] = []
+    writes = {"count": 0}
+    cli = _release_commit_artifact_cli_with_passed_probe(commands, writes)
+    args = SimpleNamespace(close_issue=[44], close_issue_behavior=[], remote="origin")
+    state = _release_commit_artifact_state()
+
+    result = _EXECUTE._commit_release_artifact(args, Path("."), state, {}, cli=cli)
+
+    assert result["fresh_checkout_payload"] == {"status": "failed", "reason": "after amend"}
+    assert result["payload"]["fresh_checkout_probe_status"] == "failed"
+    assert cli.amend_calls["count"] == 1
 
 
 # --- integration wiring: refuse on silence, proceed on presence -----------
