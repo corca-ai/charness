@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`; sources: 81)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`; sources: 82)
 - A manual changed-line consumer call omitted `--reuse-coverage` and used a tag label instead of the producer's resolved merge-base SHA. It reran 4,575 tests sequentially, generated a 2.8 GB contexts JSON, and still produced a stale-base warning. The focused producer plus exact marker later reduced this to seconds. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 - `inventory_sloc.py --output` is declared as a verify command even though it writes tracked state. Artifact edits therefore caused repeated post-proof SLOC drift and extra commits before the lock could bind to a clean HEAD. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 - Three fresh-eye attempts violated their read-only command envelope. They were correctly quarantined, but a narrow allowlist in the initial task would have avoided the retries. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`; sources: 81)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`; sources: 82)
 - carry the write-shaped-verifier audit and exact-base coverage command into the next handoff rather than opening speculative new issue scope now. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 - have closeout emit a copyable changed-line consumer command and classify tracked-write verify commands as sync or fail immediately after them. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 - pre-run every tracked writer, including SLOC, before the clean-HEAD verification lock; never call the coverage consumer without the producer's exact resolved base and `--reuse-coverage --require-fresh-coverage`. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
@@ -108,4 +108,5 @@
 - `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`
