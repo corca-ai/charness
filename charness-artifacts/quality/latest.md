@@ -1,1 +1,1 @@
-2026-07-11-truthful-standing-delegation.md
+2026-07-11-0662-full-carrier-release-readiness.md

@@ -13,11 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: shape and critique the two-hour autonomous improvement plan.
-- Current slice intent: fix the two evidence-backed follow-ups first, continue
-  through additional safe north-star slices until the closeout reserve, then
-  publish one reviewed patch release.
-- Next action: complete plan critique, pass pursue readiness, and start Slice A.
+- Current slice: lock and publish the full v0.66.1-to-HEAD release delta.
+- Current slice intent: preserve the five completed reversible slices, include
+  the eleven post-tag commits already on origin, and publish one reviewed patch
+  repair without closing #433.
+- Next action: commit corrected release readiness/notes/critique, run the locked
+  full-delta proof and dry-run, then publish through the release helper.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -50,9 +51,11 @@ whose public behavior is checked through a distinct evidence channel.
 - Reversible local mutation is authorized throughout the timebox.
 - Push, tag, GitHub release creation, and maintainer install refresh are
   authorized only for the final reviewed bundle. No per-slice push.
-- The release carrier is the complete `merge-base(origin/main, HEAD)..HEAD`
-  range: twenty pre-existing local commits plus this run. Preserve history; do
-  not squash, rebase, or cherry-pick the carrier.
+- The push carrier is `merge-base(origin/main, HEAD)..HEAD`, but the release
+  delta is the larger `v0.66.1..HEAD` range: eleven post-tag commits already on
+  origin plus twenty-five unpushed commits. Release inventory, notes, critique,
+  and proof bind to all thirty-six commits. Preserve history; do not squash,
+  rebase, or cherry-pick the carrier.
 - Release target is only a patch candidate (`0.66.2`). After mutation closes,
   inventory every consumer-visible surface in the full carrier and choose the
   lightest honest version before release mutation.
@@ -128,11 +131,11 @@ whose public behavior is checked through a distinct evidence channel.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Repair quality scaffold custom-title/H1 contract | Concrete repeat trap and first active handoff slice | focused scaffold + validator tests | planned |
-| B | Diagnose coverage producer/consumer anchor mismatch; fix only if reproduced | Avoids changing an intentional pre-push default from an ambiguous symptom | reproduction packet, then focused freshness/closeout tests or explicit not-reproduced disposition | planned |
-| C | Admit only evidence-backed safe improvement(s) | Continue without manufacturing work | captured failure/repeat-waste owner, bounded proof, commit before T+100m | planned |
-| D | Bundle critique, quality lock, release prep | Locks the final mutation set before publication | critique artifact, closeout, dry-run | planned |
-| E | Push and publish patch release | User-authorized irreversible boundary | public release URL, distinct-channel readback, install refresh | planned |
+| A | Repair quality scaffold custom-title/H1 contract | Concrete repeat trap and first active handoff slice | focused scaffold + validator tests | completed |
+| B | Diagnose coverage producer/consumer anchor mismatch; fix only if reproduced | Avoids changing an intentional pre-push default from an ambiguous symptom | reproduction packet, then focused freshness/closeout tests or explicit not-reproduced disposition | completed |
+| C | Admit only evidence-backed safe improvement(s) | Continue without manufacturing work | captured failure/repeat-waste owner, bounded proof, commit before T+100m | completed |
+| D | Bundle critique, quality lock, release prep | Locks the final mutation set before publication | critique artifact, closeout, dry-run | in progress |
+| E | Push and publish patch release | User-authorized irreversible boundary | public release URL, distinct-channel readback, install refresh | pending |
 
 ## Operator Decision Queue
 
@@ -251,7 +254,7 @@ applies.
 
 - Objective: Reduce repeated dead-code review waste by recognizing dataclass schema/output fields structurally.
 - Why this approach: Use AST line/name ownership rather than an exemption list; cache per path and preserve advisory-only posture.
-- Commits: pending this slice checkpoint
+- Commits: `8a810966` (`Stop re-triaging dataclass output fields`)
 - What changed: AST-aware dataclass field classification; direct/qualified/nested positive branches; ordinary class/module negatives; regenerated plugin mirror.
 - Alternatives rejected: Rejected exact-name allowlists, decorator import resolution, new blocking floors, and treating all class annotations as structured output.
 - Targeted verification: 12 focused tests; real advisory summary 5 structured-output fields and 7 review candidates; ruff/py_compile; mirror parity; reviewer branch recheck.
@@ -276,8 +279,13 @@ applies.
 - Mode family: artifact-only vs implementation-continuation; chosen
   implementation-continuation because the user said to proceed for two hours
   and release afterward; artifact-only rejected because it would strand work.
-- Version axis: patch/minor/major; chosen patch candidate `0.66.2`; minor and
-  major rejected because the planned fixes preserve public invocation shape.
+- Version axis: patch/minor/major; chosen patch `0.66.2`. The release-closeout
+  repair adds conditional `--close-issue-classification` and
+  `--close-issue-carrier-file` inputs, but the former invocation generated a
+  carrier rejected by its final consumer and was not a working supported path.
+  Treating the corrected invocation as a patch repair is therefore lighter and
+  more honest than calling broken automation a stable interface; minor/major
+  remain rejected because no working public invocation is removed.
 - External boundary family: push+release vs issue close; chosen final bundle
   push+release only; issue close rejected by explicit user scope.
 - Proof axis: backend readback vs distinct channel; chosen both, because release
