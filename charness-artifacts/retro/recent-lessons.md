@@ -3,21 +3,21 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v0.66.0`. (source: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`; sources: 2)
-- Auto-triggered after the truthful standing-delegation campaign changed exported setup/quality surfaces. (source: `charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md`)
+- The second north-star campaign shipped v0.66.3 after two evidence-backed reliability slices: verification-lock sync-drift fail-fast and concurrent usage-feedback replay serialization. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`; sources: 81)
-- Authoring: `scaffold_quality_artifact.py --title ...` emitted a custom H1 even though the validator requires exactly `# Quality Review`, causing a reactive artifact-shape repair. This is a helper/validator contract defect, not author misunderstanding. (source: `charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md`)
-- Broad exploration itself was necessary: the goal explicitly asked for sibling discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/ defer—prevented that breadth from becoming speculative patches. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
-- Coordination overhead was high: the scoped host probe records 24 subagent spawns and 113 waits. Much of that breadth was explicitly requested and produced independent perspectives; the reducible portion was repeated review after a concurrent worker changed the boundary fingerprint, forcing the first approval to be quarantined. (source: `charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md`)
+- A manual changed-line consumer call omitted `--reuse-coverage` and used a tag label instead of the producer's resolved merge-base SHA. It reran 4,575 tests sequentially, generated a 2.8 GB contexts JSON, and still produced a stale-base warning. The focused producer plus exact marker later reduced this to seconds. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
+- `inventory_sloc.py --output` is declared as a verify command even though it writes tracked state. Artifact edits therefore caused repeated post-proof SLOC drift and extra commits before the lock could bind to a clean HEAD. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
+- Three fresh-eye attempts violated their read-only command envelope. They were correctly quarantined, but a narrow allowlist in the initial task would have avoided the retries. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`; sources: 81)
-- #436 carries the tool-level desired outcome and observed 95–103 second rerun evidence; the design remains open between sync-only preflight and fail-fast-after-sync. (source: `charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md`)
-- applied — composed producer-to-final-consumer proof and five-bucket sibling triage now gate each repaired seam before implementation closeout. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
-- applied — debug, quality, critique, goal, and this retro preserve exact evidence, non-claims, and the speed comparison. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
+- carry the write-shaped-verifier audit and exact-base coverage command into the next handoff rather than opening speculative new issue scope now. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
+- have closeout emit a copyable changed-line consumer command and classify tracked-write verify commands as sync or fail immediately after them. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
+- pre-run every tracked writer, including SLOC, before the clean-HEAD verification lock; never call the coverage consumer without the producer's exact resolved base and `--reuse-coverage --require-fresh-coverage`. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 
 ## Selection Policy
 
@@ -104,10 +104,8 @@
 - `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`
-- `charness-artifacts/retro/2026-07-11-north-star-autonomous-two-hour-release-retro.md`
-- `charness-artifacts/retro/2026-07-11-truthful-standing-delegation-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`

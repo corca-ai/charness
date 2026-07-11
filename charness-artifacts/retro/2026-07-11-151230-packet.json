@@ -1,0 +1,22 @@
+{
+  "kind": "charness.retro_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-11T15:12:30Z",
+  "prepared_for": "v0.66.3 round-two autonomous release retro",
+  "changed_ref": null,
+  "adapter_path": ".agents/retro-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- (none — clean working tree)\n\nOwning surfaces:\n- (no surfaces matched the changed paths)\n\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 1,
+  "ok": true
+}

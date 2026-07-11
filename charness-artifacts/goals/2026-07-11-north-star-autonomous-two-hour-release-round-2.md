@@ -1,6 +1,6 @@
 # Achieve Goal: North-Star Autonomous Two-Hour Release Round 2
 
-Status: active
+Status: complete
 Created: 2026-07-11
 Activation: `/goal @charness-artifacts/goals/2026-07-11-north-star-autonomous-two-hour-release-round-2.md`
 Timebox: 2h
@@ -13,12 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: lift the conditional release-critique hold with the final
-  clean-HEAD verification lock and release dry-run.
-- Current slice intent: preserve the reviewed patch bundle exactly through the
-  final local proof, then publish without issue lifecycle changes.
-- Next action: commit the full-delta release critique, run the verification
-  lock with mutation coverage, then inspect the exact release dry-run payload.
+- Current slice: complete — v0.66.3 publication and lifecycle evidence are
+  independently verified and bound.
+- Current slice intent: preserve release truth without converting it into
+  issue-close or mixed-writer correctness claims.
+- Next action: continue only from `docs/handoff.md`; #436 writer ordering and
+  exact-base coverage handoff remain separate reversible work.
 - Current disposition: shaped, fresh-eye reviewed, and approved for activation
   by the user's explicit two-hour implementation-and-release request.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -147,22 +147,10 @@ release whose public content is confirmed by a different observer and channel.
 | A | Implement #436 fail-fast after sync drift | Handoff-first repeated waste; saves expensive false-start proof without weakening final gate | reproduction, focused branch tests, broad-run-not-called proof, fresh-eye critique | complete |
 | B | Repair usage-feedback concurrent replay TOCTOU | A 20-run race probe produced duplicate IDs that the validator rejected | serialized read/check/append, concurrent proof, validator and mirror parity | complete |
 | C | Probe a portability/ergonomics consumer perspective | Counter local implementation bias without requiring code | consumer-path evidence and admission decision, or explicit no-change disposition | deferred — evidence below did not meet the admission floor |
-| D | Full-delta critique, quality lock, and release | Freeze mutation before irreversible boundary | release notes, critique, verification lock, dry-run | in progress — critique conditions recorded |
-| E | Push and publish patch release | User-authorized final external lane | tag/release URL, independent HTTPS proof, install refresh | pending |
+| D | Full-delta critique, quality lock, and release | Freeze mutation before irreversible boundary | release notes, critique, verification lock, dry-run | complete |
+| E | Push and publish patch release | User-authorized final external lane | tag/release URL, independent HTTPS proof, install refresh | complete |
 
 ## Operator Decision Queue
-
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
 
 - none — the user explicitly authorized the final push/release lane; issue close
   is explicitly excluded and no other operator-only decision is currently open.
@@ -205,6 +193,7 @@ per the bullets above when that boundary is crossed):
 Routing: find-skills -> issue — #436 is the source-of-truth context and was classified deferred-work; impl owns reversible code, quality owns final proof, and release owns publication.
 Gather: n/a — no external source is input; GitHub issue state is consumed through the issue workflow rather than gathered as durable source content.
 Issue closeout: n/a — #433 and #436 are context only for this run and must remain OPEN.
+Release: release -> v0.66.3 — repo helper published tag/release at https://github.com/corca-ai/charness/releases/tag/v0.66.3; distinct unauthenticated HTTPS observation and installed 0.66.3 doctor proof are recorded in charness-artifacts/release/latest.md.
 
 ## Discuss Before Activation
 
@@ -346,13 +335,21 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md
+Host log probe: charness-artifacts/probe/2026-07-12-north-star-autonomous-two-hour-release-round-2-host-log.md
+Disposition review: charness-artifacts/critique/2026-07-12-north-star-autonomous-two-hour-release-round-2-disposition-review.md
 
 ## User Verification Instructions
 
+- Open https://github.com/corca-ai/charness/releases/tag/v0.66.3 in a logged-out
+  browser and confirm the title, value notes, compatibility/non-claims, and two
+  source archives; no uploaded binary asset is claimed.
+- Run `charness --version` and expect `0.66.3`; run `charness doctor --json` and
+  confirm checkout, cache, Claude, and Codex manifest versions agree.
+- Read GitHub issues #433 and #436 and confirm both remain OPEN after the final
+  lifecycle push.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: later bounded reviews used explicit read-only command allowlists; accepted-risk: the SLOC writer phase classification and copyable exact-base coverage consumer remain named next-session work because changing release-tested orchestration after publication would invalidate the lock.
+Structural follow-up: repo-local guard: docs/handoff.md#next-session
