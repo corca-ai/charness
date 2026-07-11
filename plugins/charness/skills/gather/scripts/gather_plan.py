@@ -211,10 +211,25 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Plan a gather run before acquiring or refreshing a source.")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--url", required=True)
-    parser.add_argument("--intent", choices=("single", "collect"), default="single")
-    parser.add_argument("--browser-mode", choices=("auto", "off", "always"), default="auto")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo root for gather adapter and route resolution.",
+    )
+    parser.add_argument("--url", required=True, help="Public URL to plan for gathering.")
+    parser.add_argument(
+        "--intent",
+        choices=("single", "collect"),
+        default="single",
+        help="Gather intent: single source or collection.",
+    )
+    parser.add_argument(
+        "--browser-mode",
+        choices=("auto", "off", "always"),
+        default="auto",
+        help="When to use a browser fallback.",
+    )
     args = parser.parse_args()
     payload = build_plan(args.repo_root.resolve(), args.url, intent=args.intent, browser_mode=args.browser_mode)
     sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
