@@ -55,15 +55,45 @@ def parse_args() -> argparse.Namespace:
             "gate_packets, evidence_packets, and real-host proof scope."
         )
     )
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--remote", default="origin")
-    parser.add_argument("--critique-artifact")
-    parser.add_argument("--critique-blocked")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repository root for adapter and release-surface resolution.",
+    )
+    parser.add_argument(
+        "--remote",
+        default="origin",
+        help="Git remote used to inspect release tags and history.",
+    )
+    parser.add_argument(
+        "--critique-artifact",
+        help="Path to the release critique artifact to include in planned publish commands.",
+    )
+    parser.add_argument(
+        "--critique-blocked",
+        help="Host signal explaining why the bounded critique could not run.",
+    )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--publish-current", action="store_true")
-    group.add_argument("--part", choices=("patch", "minor", "major"))
-    group.add_argument("--set-version")
-    parser.add_argument("--json", action="store_true")
+    group.add_argument(
+        "--publish-current",
+        action="store_true",
+        help="Plan publishing the current version without bumping it.",
+    )
+    group.add_argument(
+        "--part",
+        choices=("patch", "minor", "major"),
+        help="Version bump part to include in the release plan: patch, minor, or major.",
+    )
+    group.add_argument(
+        "--set-version",
+        help="Explicit target version to include in the release plan.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the release plan as JSON.",
+    )
     return parser.parse_args()
 
 

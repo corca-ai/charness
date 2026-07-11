@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -314,6 +315,35 @@ def test_release_run_planner_help_points_to_json_evidence_packets(
 
     assert excinfo.value.code == 0
     assert "evidence_packets" in capsys.readouterr().out
+
+
+def test_release_run_planner_help_describes_all_options(
+    capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(sys, "argv", ["plan_release_run.py", "--help"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        _PLANNER.parse_args()
+
+    assert excinfo.value.code == 0
+    output = capsys.readouterr().out
+    expected = {
+        "--repo-root": "Repository root for adapter and release-surface resolution.",
+        "--remote": "Git remote used to inspect release tags and history.",
+        "--critique-artifact": "Path to the release critique artifact to include in planned publish commands.",
+        "--critique-blocked": "Host signal explaining why the bounded critique could not run.",
+        "--publish-current": "Plan publishing the current version without bumping it.",
+        "--part": "Version bump part to include in the release plan: patch, minor, or major.",
+        "--set-version": "Explicit target version to include in the release plan.",
+        "--json": "Emit the release plan as JSON.",
+    }
+    for option, description in expected.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert description in option_block, f"missing help for {option}: {description}"
 
 
 def test_release_run_planner_bootstrap_missing_raises(monkeypatch: pytest.MonkeyPatch) -> None:
