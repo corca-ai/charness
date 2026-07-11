@@ -10,7 +10,7 @@ import sys
 from contextlib import contextmanager, nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 try:
     import fcntl
@@ -57,6 +57,30 @@ class FeedbackLockError(RuntimeError):
 
 
 @contextmanager
+def _locked_section(acquire: Callable[[], None], release: Callable[[], None]):
+    """Run a critical section with uniform lock/error precedence semantics."""
+
+    try:
+        acquire()
+    except OSError as exc:
+        raise FeedbackLockError(f"unable to lock usage-feedback stream: {exc}") from exc
+    body_failed = False
+    try:
+        yield
+    except BaseException:
+        body_failed = True
+        raise
+    finally:
+        try:
+            release()
+        except OSError as exc:
+            # Preserve an exception raised by the critical-section body; only
+            # report unlock failure when no body exception is active.
+            if not body_failed:
+                raise FeedbackLockError(f"unable to unlock usage-feedback stream: {exc}") from exc
+
+
+@contextmanager
 def _stream_lock(records_path: Path):
     """Serialize feedback read/validate/replay/append operations per stream.
 
@@ -76,27 +100,14 @@ def _stream_lock(records_path: Path):
         raise FeedbackLockError(f"unable to lock usage-feedback stream: {exc}") from exc
     with handle:
         if fcntl is not None:
-            try:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-            except OSError as exc:
-                raise FeedbackLockError(f"unable to lock usage-feedback stream: {exc}") from exc
-            body_failed = False
-            try:
+            with _locked_section(
+                lambda: fcntl.flock(handle.fileno(), fcntl.LOCK_EX),
+                lambda: fcntl.flock(handle.fileno(), fcntl.LOCK_UN),
+            ):
                 yield
-            except BaseException:
-                body_failed = True
-                raise
-            finally:
-                try:
-                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-                except OSError as exc:
-                    # Preserve an exception raised by the critical-section body;
-                    # only report unlock failure when no body exception is active.
-                    if not body_failed:
-                        raise FeedbackLockError(f"unable to unlock usage-feedback stream: {exc}") from exc
             return
         if msvcrt is not None:
-            try:
+            def acquire_windows() -> None:
                 # ``msvcrt.locking`` needs an existing byte at the lock
                 # offset.  All writers use byte zero of the stable lock file.
                 handle.seek(0, os.SEEK_END)
@@ -105,21 +116,13 @@ def _stream_lock(records_path: Path):
                     handle.flush()
                 handle.seek(0)
                 msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
-            except OSError as exc:
-                raise FeedbackLockError(f"unable to lock usage-feedback stream: {exc}") from exc
-            body_failed = False
-            try:
+
+            def release_windows() -> None:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+
+            with _locked_section(acquire_windows, release_windows):
                 yield
-            except BaseException:
-                body_failed = True
-                raise
-            finally:
-                try:
-                    handle.seek(0)
-                    msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-                except OSError as exc:
-                    if not body_failed:
-                        raise FeedbackLockError(f"unable to unlock usage-feedback stream: {exc}") from exc
             return
     raise FeedbackLockError("no supported platform file-locking primitive is available")
 

@@ -191,6 +191,22 @@ def test_feedback_stream_lock_preserves_body_errors_and_releases(tmp_path: Path)
         pass
 
 
+def test_locked_section_maps_acquire_and_clean_release_failures() -> None:
+    def fail_acquire() -> None:
+        raise OSError("acquire failure")
+
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="acquire failure"):
+        with record_usage_feedback._locked_section(fail_acquire, lambda: None):
+            pass
+
+    def fail_release() -> None:
+        raise OSError("release failure")
+
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="release failure"):
+        with record_usage_feedback._locked_section(lambda: None, fail_release):
+            pass
+
+
 def test_feedback_stream_lock_keeps_body_error_primary_when_unlock_fails(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
