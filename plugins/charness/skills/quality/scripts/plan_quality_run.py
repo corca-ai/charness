@@ -354,9 +354,18 @@ def format_human(plan: dict[str, Any]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root to inspect for skills and quality inputs.",
+    )
     parser.add_argument("--target-skill", help="Optional skill id or SKILL.md path for target-vs-ambient structural review")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the quality run plan as JSON.",
+    )
     args = parser.parse_args()
 
     plan = build_plan(args.repo_root.resolve(), target_skill=args.target_skill)

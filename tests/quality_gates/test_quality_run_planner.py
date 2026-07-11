@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import runpy
 import sys
 from pathlib import Path
@@ -24,6 +25,35 @@ PLAN_SPEC = importlib.util.spec_from_file_location("quality_run_plan_under_test"
 assert PLAN_SPEC is not None and PLAN_SPEC.loader is not None
 PLAN = importlib.util.module_from_spec(PLAN_SPEC)
 PLAN_SPEC.loader.exec_module(PLAN)
+
+
+def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
+    """Assert each option's wrapped argparse block contains its own help text."""
+    for option, fragment in expected_pairs.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_quality_run_plan_help_describes_repo_root_and_json(
+    capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(sys, "argv", ["plan_quality_run.py", "--help"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        PLAN.main()
+
+    assert excinfo.value.code == 0
+    _assert_help_pairs(
+        capsys.readouterr().out,
+        {
+            "--repo-root": "Repository root to inspect for skills and quality inputs.",
+            "--json": "Emit the quality run plan as JSON.",
+        },
+    )
 
 
 def _run_plan(repo: Path, *extra: str) -> dict[str, object]:

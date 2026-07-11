@@ -180,7 +180,12 @@ def _print_text(payload: dict[str, Any]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repository root containing the pytest files to inspect.",
+    )
     parser.add_argument(
         "--path",
         action="append",
@@ -188,7 +193,11 @@ def main() -> int:
         default=[],
         help="Selected pytest file to inspect; repeatable. Defaults to tests containing release_only.",
     )
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit full per-test JSON unless --summary selects compact summary output.",
+    )
     parser.add_argument(
         "--summary",
         action="store_true",

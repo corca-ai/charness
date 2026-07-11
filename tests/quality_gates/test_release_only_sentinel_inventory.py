@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = (
@@ -22,6 +26,36 @@ def _load_inventory():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
+    """Assert each option's wrapped argparse block contains its own help text."""
+    for option, fragment in expected_pairs.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_release_only_sentinel_help_describes_repo_root_and_json(
+    capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inventory = _load_inventory()
+    monkeypatch.setattr(sys, "argv", ["inventory_release_only_sentinels.py", "--help"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        inventory.main()
+
+    assert excinfo.value.code == 0
+    _assert_help_pairs(
+        capsys.readouterr().out,
+        {
+            "--repo-root": "Repository root containing the pytest files to inspect.",
+            "--json": "Emit full per-test JSON unless --summary selects compact summary output.",
+        },
+    )
 
 
 def test_release_only_sentinel_inventory_reports_counts_and_sentinel_names(
