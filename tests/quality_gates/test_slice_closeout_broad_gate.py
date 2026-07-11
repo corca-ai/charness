@@ -4,6 +4,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from .support import ROOT, run_script
 
 STANDING_PYTEST = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
@@ -350,3 +352,18 @@ def test_execute_plan_verification_lock_preserves_sync_failure(tmp_path: Path) -
     assert stopped is True
     assert payload["status"] == "failed"
     assert executed == ["sync"]
+
+
+def test_tracked_state_reports_git_inspection_failure(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import slice_closeout_command_executor as executor
+
+    class FailedGit:
+        returncode = 1
+        stdout = b""
+        stderr = b"git inspection failed"
+
+    monkeypatch.setattr(executor.subprocess, "run", lambda *_args, **_kwargs: FailedGit())
+    with pytest.raises(RuntimeError, match="git inspection failed"):
+        executor._tracked_state(tmp_path)

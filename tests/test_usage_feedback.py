@@ -225,6 +225,145 @@ def test_feedback_stream_lock_reports_unlock_failure_after_clean_body(
             pass
 
 
+def test_feedback_stream_lock_reports_sidecar_open_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    records_path = tmp_path / "usage_episode.jsonl"
+    original_open = Path.open
+
+    def fail_lock_open(path: Path, *args: object, **kwargs: object):
+        if path.name == ".usage_episode.jsonl.lock":
+            raise OSError("sidecar unavailable")
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", fail_lock_open)
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="sidecar unavailable"):
+        with record_usage_feedback._stream_lock(records_path):
+            pass
+
+
+def test_feedback_stream_lock_reports_posix_acquire_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    if record_usage_feedback.fcntl is None:
+        pytest.skip("POSIX flock-specific regression proof")
+
+    def fail_acquire(_file_descriptor: int, operation: int) -> None:
+        if operation == record_usage_feedback.fcntl.LOCK_EX:
+            raise OSError("acquire failure")
+
+    monkeypatch.setattr(record_usage_feedback.fcntl, "flock", fail_acquire)
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="acquire failure"):
+        with record_usage_feedback._stream_lock(tmp_path / "usage_episode.jsonl"):
+            pass
+
+
+def test_feedback_stream_lock_windows_branch_handles_empty_sidecar_and_body_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeMsvcrt:
+        LK_LOCK = 1
+        LK_UNLCK = 2
+
+        def __init__(self) -> None:
+            self.operations: list[int] = []
+
+        def locking(self, _file_descriptor: int, operation: int, _length: int) -> None:
+            self.operations.append(operation)
+
+    fake_msvcrt = FakeMsvcrt()
+    monkeypatch.setattr(record_usage_feedback, "fcntl", None)
+    monkeypatch.setattr(record_usage_feedback, "msvcrt", fake_msvcrt)
+    records_path = tmp_path / "usage_episode.jsonl"
+
+    with record_usage_feedback._stream_lock(records_path):
+        pass
+
+    assert (tmp_path / ".usage_episode.jsonl.lock").read_text(encoding="utf-8") == "0"
+    assert fake_msvcrt.operations == [fake_msvcrt.LK_LOCK, fake_msvcrt.LK_UNLCK]
+
+    def fail_unlock(_file_descriptor: int, operation: int, _length: int) -> None:
+        fake_msvcrt.operations.append(operation)
+        if operation == fake_msvcrt.LK_UNLCK:
+            raise OSError("windows unlock failure")
+
+    monkeypatch.setattr(fake_msvcrt, "locking", fail_unlock)
+    with pytest.raises(OSError, match="windows body failure"):
+        with record_usage_feedback._stream_lock(records_path):
+            raise OSError("windows body failure")
+    assert fake_msvcrt.operations[-2:] == [fake_msvcrt.LK_LOCK, fake_msvcrt.LK_UNLCK]
+
+
+def test_feedback_stream_lock_windows_branch_reports_acquire_and_unlock_failures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeMsvcrt:
+        LK_LOCK = 1
+        LK_UNLCK = 2
+
+        def __init__(self, failure_operation: int | None = None) -> None:
+            self.failure_operation = failure_operation
+
+        def locking(self, _file_descriptor: int, operation: int, _length: int) -> None:
+            if operation == self.failure_operation:
+                raise OSError("windows locking failure")
+
+    monkeypatch.setattr(record_usage_feedback, "fcntl", None)
+    acquire_failure = FakeMsvcrt(FakeMsvcrt.LK_LOCK)
+    monkeypatch.setattr(record_usage_feedback, "msvcrt", acquire_failure)
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="windows locking failure"):
+        with record_usage_feedback._stream_lock(tmp_path / "acquire.jsonl"):
+            pass
+
+    unlock_failure = FakeMsvcrt(FakeMsvcrt.LK_UNLCK)
+    monkeypatch.setattr(record_usage_feedback, "msvcrt", unlock_failure)
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="unable to unlock"):
+        with record_usage_feedback._stream_lock(tmp_path / "unlock.jsonl"):
+            pass
+
+
+def test_feedback_stream_lock_reports_unsupported_platform(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(record_usage_feedback, "fcntl", None)
+    monkeypatch.setattr(record_usage_feedback, "msvcrt", None)
+    with pytest.raises(record_usage_feedback.FeedbackLockError, match="no supported"):
+        with record_usage_feedback._stream_lock(tmp_path / "usage_episode.jsonl"):
+            pass
+
+
+def test_run_feedback_transaction_reports_lock_error_payload(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    class FailingLock:
+        def __enter__(self) -> None:
+            raise record_usage_feedback.FeedbackLockError("lock went away")
+
+        def __exit__(self, *_args: object) -> bool:
+            return False
+
+    monkeypatch.setattr(record_usage_feedback, "_stream_lock", lambda _path: FailingLock())
+    result = record_usage_feedback._run_feedback_transaction(
+        repo_root=tmp_path,
+        records_path=tmp_path / "usage_episode.jsonl",
+        storage=tmp_path,
+        schema={},
+        record=feedback_record(),
+        feedback_id="feedback-001",
+        execute=True,
+        as_json=True,
+    )
+
+    assert result == 2
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {
+        "errors": ["lock went away"],
+        "executed": False,
+        "feedback_id": "feedback-001",
+        "status": "feedback_lock_error",
+    }
+
+
 def test_plugin_feedback_writer_smoke(tmp_path: Path) -> None:
     write_adapter(tmp_path)
     write_records(tmp_path, [acme_episode()])
