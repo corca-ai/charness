@@ -209,7 +209,7 @@ applies.
 
 - Objective: Prevent a closeout campaign with an explicit base from producing a freshness marker over a different range or paying for a second full producer run.
 - Why this approach: Resolve the explicit ref once in closeout orchestration, reuse that SHA for committed-range collection and broad/focused producers, and leave omitted/auto behavior on origin/main.
-- Commits: pending this slice checkpoint
+- Commits: `9deca0ca` (`Keep coverage proof on one campaign anchor`)
 - What changed: Optional base_sha propagation; resolved-SHA changed-path helper; CLI help correction; root/plugin sync; causal explicit/default/auto and producer-consumer tests.
 - Alternatives rejected: Rejected a new CLI option, campaign-anchor object, double ref resolution, weakening freshness checks, and a broad closeout-module split.
 - Targeted verification: 78 focused tests passed; explicit main path proves one resolution and one SHA across range/broad/focused; omitted/auto prove None fallback; real marker accepted then rejected after pool drift; mirrors byte-identical.
@@ -218,6 +218,20 @@ applies.
 - Off-goal findings: run_slice_closeout remains at 478/480 code-line advisory headroom; broader decomposition is valid but not admitted into this bounded slice.
 - Lessons carried forward: A moving ref is state, not a string: resolve it once at the owner and pass the immutable value to all consumers. Test orchestration, not only helpers.
 - Metrics: 78 focused tests; 1 resolved SHA; 3 consumers; 0 remaining act-before-ship findings.
+
+### Slice 3: Slice C — delete one superseded regex, retain intentional markers
+
+- Objective: Remove confirmed internal dead code without laundering low-confidence advisory findings into broad cleanup.
+- Why this approach: Inspect static references, dynamic registries, history, and tests; delete only the regex replaced by AST detection and keep five intentional/deferred candidates.
+- Commits: pending this slice checkpoint
+- What changed: Removed MODULE_RELEASE_ONLY_RE from canonical quality helper and regenerated plugin mirror; no behavior or API change.
+- Alternatives rejected: Rejected deleting gate markers, public vocabulary constants, dynamic helpers, adding a dead-code floor, or changing the live AST implementation.
+- Targeted verification: 17 standing-test economics tests passed; ruff, AST parse, attention-state validator, mirror cmp, and diff check passed.
+- Test duplication pressure: No new tests; existing behavior suite already exercises the live AST replacement.
+- Critique: Fresh-eye candidate classification and post-change confirmation at charness-artifacts/critique/2026-07-11-superseded-release-regex.md; rail-1 zero drift.
+- Off-goal findings: Five advisory candidates retained with explicit dynamic/intentional/deferred dispositions.
+- Lessons carried forward: Low-confidence dead-code output is a review queue, not a deletion list; history can prove a constant is a marker rather than executable data.
+- Metrics: 6 candidates reviewed; 1 safe deletion; 5 retained; 8 derived lines removed; 0 remaining act-before-ship findings.
 
 ## Context Sources
 
