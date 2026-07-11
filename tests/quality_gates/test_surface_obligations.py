@@ -98,6 +98,28 @@ def test_retro_lesson_index_check_runs_at_slice_closeout() -> None:
     )
 
 
+def test_sloc_inventory_refresh_is_sync_obligation_not_verify() -> None:
+    command = (
+        "python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . "
+        "--output charness-artifacts/quality/sloc-inventory/latest.json"
+    )
+    result = run_script(
+        "scripts/check_changed_surfaces.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "charness-artifacts/quality/sloc-inventory/latest.json",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert "quality-inventory-artifacts" in {
+        surface["surface_id"] for surface in payload["matched_surfaces"]
+    }
+    assert command in payload["sync_commands"]
+    assert command not in payload["verify_commands"]
+
+
 def test_boundary_bypass_ratchet_runs_at_slice_closeout_for_new_test_file() -> None:
     # The boundary-ratchet motivating case (a new tests/ file with subprocess
     # calls) surfaces at slice closeout via the repo-python surface, not only at

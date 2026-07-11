@@ -379,10 +379,10 @@
         "charness-artifacts/quality/sloc-inventory/**"
       ],
       "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
+      "sync_commands": [
         "python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json"
       ],
+      "verify_commands": [],
       "notes": [
         "The local quality gate refreshes this tracked SLOC inventory; commit semantic count changes with the code or docs that caused them."
       ]

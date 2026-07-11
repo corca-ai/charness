@@ -99,6 +99,18 @@ def _with_coverage_env(env: dict[str, str], command: str) -> str:
     return f"{exports}; {command}"
 
 
+def consumer_command_for_produced_coverage(repo_root: Path, *, base_sha: str, coverage_json: Path) -> str:
+    """Return the copyable post-commit consumer command for this producer run."""
+    consumer_script = Path(__file__).resolve().with_name("check_changed_line_mutation_coverage.py")
+    return (
+        f"python3 {shlex.quote(str(consumer_script))} "
+        f"--repo-root {shlex.quote(str(repo_root))} "
+        f"--base-sha {shlex.quote(base_sha)} --head-sha HEAD "
+        f"--coverage-json {shlex.quote(str(coverage_json))} "
+        "--reuse-coverage --require-fresh-coverage"
+    )
+
+
 def produce_command_coverage(
     repo_root: Path,
     command: str,
@@ -129,8 +141,14 @@ def produce_command_coverage(
             repo_root, coverage_json, base_sha
         )
         result["produced_mutation_coverage"] = True
+        result["mutation_coverage_base_sha"] = base_sha
         result["mutation_coverage_json"] = str(coverage_json)
         result["mutation_coverage_fingerprint"] = fingerprint
+        result["mutation_coverage_consumer_command"] = consumer_command_for_produced_coverage(
+            repo_root,
+            base_sha=base_sha,
+            coverage_json=coverage_json,
+        )
     return result
 
 

@@ -6,6 +6,8 @@ stamps the freshness fingerprint marker the pre-push consumer trusts.
 """
 from __future__ import annotations
 
+import json
+import shlex
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
@@ -115,6 +117,18 @@ def test_produce_broad_coverage_emits_json_and_marker(tmp_path: Path, monkeypatc
     assert result["returncode"] == 0
     assert result["produced_mutation_coverage"] is True
     assert result["command"] == "pytest -q tests"  # original preserved for the proof cache
+    assert result["mutation_coverage_base_sha"] == base
+    assert result["mutation_coverage_json"] == str(cov)
+    consumer_tokens = shlex.split(result["mutation_coverage_consumer_command"])
+    assert consumer_tokens[:2] == [
+        "python3",
+        str(Path(prod.__file__).resolve().with_name("check_changed_line_mutation_coverage.py")),
+    ]
+    assert consumer_tokens[consumer_tokens.index("--base-sha") + 1] == base
+    assert consumer_tokens[consumer_tokens.index("--coverage-json") + 1] == str(cov)
+    assert consumer_tokens[consumer_tokens.index("--head-sha") + 1] == "HEAD"
+    assert "--reuse-coverage" in consumer_tokens
+    assert "--require-fresh-coverage" in consumer_tokens
     marker = cov.with_name(cov.name + ".fingerprint")
     assert marker.is_file()
     assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, base)
@@ -649,3 +663,63 @@ def test_explicit_campaign_base_marker_mismatch_is_detectable(tmp_path: Path, mo
     stale = consumer._coverage_source_skip(consumer_args, repo, cov, base, "HEAD")
     assert stale is not None
     assert "coverage source is stale" in stale["reason"]
+
+
+def test_produced_consumer_command_reuses_exact_base_and_coverage_without_recollecting(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    cov = repo / "reports" / "mutation" / "test-coverage.json"
+
+    def fake_run(repo_root, command, phase):
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    def fake_combine(repo_root, rcfile, data_file, coverage_json, env, *, show_contexts):
+        Path(coverage_json).write_text(
+            json.dumps(
+                {
+                    "files": {
+                        "scripts/foo.py": {
+                            "executed_lines": [1, 2, 5, 6],
+                            "missing_lines": [],
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(prod._sampling, "combine_and_export_coverage", fake_combine)
+    produced = prod.produce_command_coverage(
+        repo,
+        "pytest -q tests",
+        base_sha=base,
+        coverage_json=cov,
+        run_command=fake_run,
+    )
+
+    command = produced["mutation_coverage_consumer_command"]
+    tokens = shlex.split(command)
+    assert tokens[tokens.index("--base-sha") + 1] == produced["mutation_coverage_base_sha"]
+    assert tokens[tokens.index("--coverage-json") + 1] == produced["mutation_coverage_json"]
+    assert "--reuse-coverage" in tokens
+    assert "--require-fresh-coverage" in tokens
+
+    before_content = cov.read_bytes()
+    before_mtime = cov.stat().st_mtime_ns
+    result = subprocess.run(
+        tokens,
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["base_sha"] == base
+    assert payload["head_sha"] == "HEAD"
+    assert payload["blocking"] == []
+    assert cov.read_bytes() == before_content
+    assert cov.stat().st_mtime_ns == before_mtime
