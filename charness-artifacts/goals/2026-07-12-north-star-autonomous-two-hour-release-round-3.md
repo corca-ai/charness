@@ -12,11 +12,12 @@ This file is the living goal scratchpad for the active round-3 autonomous run.
 
 ## Active Operating Frame
 
-- Current slice: Slice A/B implementation for #436 residual proof-waste seams.
-- Current slice intent: eliminate repeated proof work at the existing sync to
-  verify boundary without weakening the final immutable-HEAD lock.
-- Next action: implement the fixed SLOC sync ownership and exact-base coverage
-  consumer handoff, then run focused proof and fresh-eye code critique.
+- Current slice: full-delta quality and release preparation after completed
+  Slices A/B and a no-change multi-lens Slice C probe.
+- Current slice intent: freeze one reviewed v0.66.4 candidate and prove it on a
+  clean immutable HEAD before any publication.
+- Next action: commit the updated goal/critique evidence, run final quality and
+  mutation-coverage lock, then inspect the exact release dry-run payload.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -125,10 +126,10 @@ publish one independently verified patch release.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Reclassify the observed SLOC writer in the surface manifest | Repeated post-sync proof drift remains from #436 | surface plan shows sync-before-verify; dirty and clean executor proof | planned |
-| B | Expose producer facts and format their exact consumer handoff | A wrong manual base caused an eight-minute duplicate run and 2.8 GB JSON | structured payload fields, wrong/stale negative proof, and roundtrip without recollection | planned |
-| C | Probe operator/security/portability siblings | Counter implementation anchoring with genuinely different lenses | bounded evidence plus admit/defer/no-change decision | planned |
-| D | Full-delta quality and release critique | Freeze one reviewed bundle before the irreversible boundary | quality artifact, release notes, critique, clean verification lock, dry-run | planned |
+| A | Reclassify the observed SLOC writer in the surface manifest | Repeated post-sync proof drift remains from #436 | surface plan shows sync-before-verify; dirty and clean executor proof | complete |
+| B | Expose producer facts and format their exact consumer handoff | A wrong manual base caused an eight-minute duplicate run and 2.8 GB JSON | structured payload fields, wrong/stale negative proof, and roundtrip without recollection | complete |
+| C | Probe operator/security/portability siblings | Counter implementation anchoring with genuinely different lenses | bounded evidence plus admit/defer/no-change decision | complete — no mutation admitted |
+| D | Full-delta quality and release critique | Freeze one reviewed bundle before the irreversible boundary | quality artifact, release notes, critique, clean verification lock, dry-run | in progress |
 | E | Push and publish the patch release | User-authorized final external lane | tag/release URL, distinct HTTPS proof, install/doctor and issue-state reads | planned |
 
 ## Operator Decision Queue
@@ -204,14 +205,33 @@ applies.
 
 - Objective: Eliminate two measured proof-waste seams without weakening the final verification lock.
 - Why this approach: #436 residual showed SLOC inventory drift after sync; round-2 retro showed exact-base coverage consumer mistakes caused expensive duplicate runs.
-- Commits: pending
+- Commits: `3f8528eb`
 - What changed: Moved the SLOC inventory refresh from verify_commands to sync_commands; added producer payload fields mutation_coverage_base_sha, mutation_coverage_json, and mutation_coverage_consumer_command; synced plugin mirror.
 - Alternatives rejected: Rejected generic write-shaped verifier detector, public sync-only CLI, and #436 closure.
-- Targeted verification: 82 focused tests passed; validate_surfaces, packaging validators, ruff, py_compile, source/plugin cmp, and pre-lock run_slice_closeout --skip-broad-pytest passed.
+- Targeted verification: independently rerun 69 focused tests passed;
+  validate_surfaces, packaging validators, ruff, source/plugin cmp, security,
+  supply-chain, and pre-lock run_slice_closeout --skip-broad-pytest passed.
 - Test duplication pressure: Added two focused tests; changed files remain below Python length warn bands.
-- Critique: [round3 slices A/B code critique](../critique/2026-07-12-round3-slices-a-b-code-critique.md); fresh-eye Act Before Ship resolved by cwd-proof executable model and coverage JSON no-recollection assertions.
+- Critique: [round3 slices A/B code critique](../critique/2026-07-12-round3-slices-a-b-code-critique.md); final valid post-commit fresh-eye review approved with zero drift. Unauthorized nested reviews and the worker's unrequested commit were quarantined as approvals, not silently counted.
 - Off-goal findings: #436 remains open for exhaustive all-writer audit; #433 untouched.
 - Lessons carried forward: When emitting copyable commands, separate executable install root from target repo root; prove reuse by asserting source bytes and mtime stay unchanged.
+- Metrics:
+
+### Slice 2: Slice C — operator security portability probe
+
+- Objective: Counter A/B implementation anchoring with operator, security, runtime, and release-trigger lenses.
+- Why this approach: The goal requires diverse perspectives and accepts no-change probes when no observed escape or cost earns mutation.
+- Commits: none — no code change admitted
+- What changed: No repo mutation; recorded probe evidence only.
+- Alternatives rejected: Rejected optional security/runtime rewrites because executed checks surfaced no blocker; stale runtime samples remain advisory.
+- Targeted verification: render_runtime_summary showed pytest 35.7s latest /
+  36.8s median within its 140s budget and stale run-quality/read-only samples;
+  check-secrets and check_supply_chain passed. Release real-host proof remains
+  a final release boundary, not a Slice C claim.
+- Test duplication pressure: none — no tests added
+- Critique: not-applicable no-change probe; no task-completing repo mutation in this slice
+- Off-goal findings: No issue closure; #433/#436 remain context only.
+- Lessons carried forward: Diverse perspective does not require nominal mutation when evidence says the current slice should proceed to bundle proof.
 - Metrics:
 
 ## Context Sources

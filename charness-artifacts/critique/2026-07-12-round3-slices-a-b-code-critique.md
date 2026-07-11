@@ -10,9 +10,11 @@ Target: `references/code-critique.md`.
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage.
-- Requested spawn fields: packet requested `model=gpt-5.5, reasoning_effort=medium, service_tier=priority`; live spawn used host-default reviewer fields.
-- Host exposure state: host-defaulted
-- Application state: host applied a separate default reviewer context; no provider-level model-field confirmation exposed.
+- Requested spawn fields: `model=gpt-5.5`, `reasoning_effort=medium`,
+  `service_tier=priority`.
+- Host exposure state: requested_fields_sent
+- Application state: host accepted the fields and returned a distinct reviewer;
+  provider-level application metadata was not independently exposed.
 
 ## Boundary Ownership
 
@@ -70,5 +72,10 @@ add a new blocking floor or public sync-only CLI.
 
 ## Next Move
 
-Commit Slice A/B with the proof artifacts, then continue to full-bundle quality
-and release critique before publishing v0.66.4.
+Commit `3f8528eb` carries Slice A/B and its proof artifacts. Continue to
+full-bundle quality and release critique before publishing v0.66.4.
+
+The final valid post-commit reviewer approved the exact code diff with zero
+boundary drift. An earlier malformed allowed diff command produced HOLD and was
+rerun; reviews produced through unauthorized nested delegation were quarantined
+and are not counted as this artifact's satisfaction evidence.
