@@ -14,9 +14,9 @@
   [release/latest.md](../charness-artifacts/release/latest.md).
 - `origin/main` contains the complete #433 repair and refreshed baton through
   `569ab2ea`; distinct GitHub readback matched that SHA and #433 remained open.
-- Local `main` also contains three unpushed argparse-help packages: web-fetch
-  cleared 18 findings, retro cleared 11, and the release planner cleared eight.
-  Each has focused executable proof, fresh-eye review, and packaged-mirror sync.
+- Local `main` contains eight unpushed argparse-help packages. The latest
+  five-iteration campaign cleared gather 4, handoff 4, issue 4, achieve 7, and
+  impl 1; all non-quality packages now report zero missing argparse help.
 - Final local proof passed standing pytest, 81/81 read-only quality gates, and
   fresh changed-line coverage for 13 mutation-pool modules. The bounded
   disposition review passed with zero reviewer-boundary drift.
@@ -28,12 +28,12 @@
 
 ## Next Session
 
-1. Keep the three follow-up commits local until another push is authorized. If the
+1. Keep the eight follow-up commits local until another push is authorized. If the
    operator separately authorizes issue close, first push and verify the
    published carrier through a distinct channel before closing #433.
-2. Continue the remaining 43 argparse-help findings one cohesive package at a
-   time. The next ranked package is gather's four findings in one planner file;
-   keep focused `--help` proof and do not promote the advisory to a floor.
+2. Continue the remaining 23 argparse-help findings inside quality one cohesive
+   cluster at a time. Start with `inventory_nose_clones.py`'s six findings;
+   keep focused proof and do not promote the advisory to a blocking floor.
 3. Run cheap structural/duplicate checks before the first coverage lock; run
    fresh-eye review before the final producer; then pay for one locked broad
    quality/coverage pass. D33 is already resolved by the report extraction and
@@ -65,3 +65,4 @@
 - Follow-up proof: [web-fetch quality](../charness-artifacts/quality/2026-07-11-web-fetch-argparse-help.md)
   · [retro quality](../charness-artifacts/quality/2026-07-11-retro-argparse-help.md)
   · [release quality](../charness-artifacts/quality/2026-07-11-release-argparse-help.md)
+  · [five-package campaign](../charness-artifacts/quality/2026-07-11-five-package-argparse-help.md)

@@ -36,7 +36,12 @@ _boundary_probe_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__,
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="impl cross-surface escalation probe (ownership override)")
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=REPO_ROOT,
+        help="Repository root used to resolve probe config and changed paths.",
+    )
     parser.add_argument("--changed-path", nargs="*", help="Explicit changed paths (bypasses git).")
     parser.add_argument("--changed-ref", help="Git ref/range for changed-path discovery (else working-tree diff).")
     parser.add_argument("--json", action="store_true", help="Emit the full payload as JSON.")
