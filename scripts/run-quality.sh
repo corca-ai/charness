@@ -356,7 +356,7 @@ flush_phase() {
 }
 
 print_final_summary() {
-  local end_ns elapsed_ms
+  local end_ns elapsed_ms status timestamp aggregate_label
 
   end_ns="$(date +%s%N)"
   elapsed_ms="$(((end_ns - RUN_QUALITY_START_NS) / 1000000))"
@@ -364,6 +364,21 @@ print_final_summary() {
     "$TOTAL_PASSES" \
     "$TOTAL_FAILURES" \
     "$(format_elapsed "$elapsed_ms")"
+
+  if [[ -z "$RUN_QUALITY_LABELS" ]]; then
+    status="pass"
+    if [[ "$OVERALL_RC" != "0" ]]; then
+      status="fail"
+    fi
+    aggregate_label="run-quality-${RUN_QUALITY_MODE}"
+    if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+      aggregate_label="${aggregate_label}-release"
+    fi
+    timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    if ! record_runtime "$aggregate_label" "$elapsed_ms" "$status" "$timestamp"; then
+      echo "run-quality: warning: failed to record aggregate runtime for ${aggregate_label}." >&2
+    fi
+  fi
 }
 
 if agent_browser_runtime_gate_enabled "agent-browser-runtime-baseline"; then

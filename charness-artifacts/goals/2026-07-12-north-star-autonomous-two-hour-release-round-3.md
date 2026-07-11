@@ -234,6 +234,34 @@ applies.
 - Lessons carried forward: Diverse perspective does not require nominal mutation when evidence says the current slice should proceed to bundle proof.
 - Metrics:
 
+### Slice 3: Issue 433 existing-fix probe
+
+- Objective: Check whether the release closeout-carrier mismatch still needs code
+- Why this approach: A live OPEN issue was the next release-operability candidate after A/B
+- Commits: none — existing fix is 041aa380
+- What changed: No code; verified carrier-file/classification/pre-mutation validation already ships
+- Alternatives rejected: Rejected duplicate implementation and issue closure
+- Targeted verification: issue body/comments read; 041aa380 inspected; 10 focused release close-issue tests passed
+- Test duplication pressure: none — no tests added
+- Critique: not-applicable no-change status probe
+- Off-goal findings: #433 stays OPEN by goal boundary despite existing behavior fix
+- Lessons carried forward: Tracker OPEN and behavior unresolved are different claims; inspect the carrier before adding code
+- Metrics:
+
+### Slice 4: Run-quality aggregate runtime observability
+
+- Objective: Refresh mode-level runtime trend evidence on every unfiltered quality run
+- Why this approach: latest quality review found the aggregate sample 25 days stale despite successful runs
+- Commits: pending
+- What changed: run-quality records full/read-only/release aggregate timing best-effort; six tests moved to a seam-specific module
+- Alternatives rejected: Rejected telemetry hard-fail, durable retry queue, and filtered-run samples masquerading as full runs
+- Targeted verification: six focused contract/failure tests plus original summary regression; bash -n, shellcheck, ruff, length headroom, fresh-eye approval
+- Test duplication pressure: six focused tests in new 132/800-line module; original module restored to 742/800
+- Critique: charness-artifacts/critique/2026-07-12-run-quality-aggregate-runtime-code-critique.md; HOLD fixed and final zero-drift approval
+- Off-goal findings: none
+- Lessons carried forward: Observability must not replace the primary quality verdict; check test-module headroom before adding fixtures
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
