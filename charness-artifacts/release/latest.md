@@ -48,7 +48,7 @@ Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-own
 - Surface hits: 1.
   - `checked-in-plugin-export`
 - Path hits: 0.
-- Evaluated changed paths: 22.
+- Evaluated changed paths: 23.
   - `.claude-plugin/marketplace.json`
   - `charness-artifacts/critique/2026-07-11-issue-435-release-critique.md`
   - `charness-artifacts/critique/2026-07-11-issue-435-release-packet.json`
@@ -56,6 +56,7 @@ Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-own
   - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
   - `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`
+  - `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
   - `docs/public-skill-dogfood.json`
@@ -68,8 +69,7 @@ Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-own
   - `plugins/charness/skills/quality/references/attention-state-visibility.json`
   - `skills/public/issue/SKILL.md`
   - `skills/public/issue/references/issue-backend.md`
-  - `skills/public/issue/scripts/issue_create.py`
-  - ... 2 more
+  - ... 3 more
 
 ## Real-Host Verification
 
@@ -96,13 +96,14 @@ Advanced `charness` toward release `0.66.1` (tag `v0.66.1`) through the repo-own
 
 ## Release Runtime
 
-- `requested_review_gate`: 0.002s
-- `cli_skill_surface_gate`: 1.876s
-- `quality_command`: 68.398s
+- `requested_review_gate`: 0.003s
+- `cli_skill_surface_gate`: 1.874s
+- `quality_command`: 85.684s
+- `fresh_checkout_probes_resume`: 2.838s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
