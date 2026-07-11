@@ -296,7 +296,7 @@ re-import the brittleness the floor philosophy avoids.
 Slice and final metrics use host-agnostic shallow signals. Prefer
 `retro`'s `probe_host_logs.py` for token / turn / tool-call availability rather
 than asserting counts the host log does not expose. Deep per-session counting is
-Codex-specific and best-effort; record `Metrics: when available` instead of
+host-dependent and best-effort; record `Metrics: when available` instead of
 fabricating numbers. Keep measured counts, proxy signals, and unavailable
 signals separate. Cached input by itself is a context-pressure signal, not a
 waste conclusion.
@@ -309,16 +309,18 @@ Host metric window: started_at=<ISO> completed_at=<ISO> <host>_session_file=<pat
 ```
 
 The session-file key names the host that produced the session log — exactly one
-of `codex_session_file` or `claude_session_file` per line (a dual-host line is
-rejected as ambiguous). Record it with the helper rather than hand-editing, so
-the probe sees a complete window instead of silently reporting `absent`:
+supported key, `claude_session_file` or `codex_session_file`, per line (a
+dual-host line is rejected as ambiguous). Record it with the helper rather than
+hand-editing, so the probe sees a complete window instead of silently reporting
+`absent`. Use exactly one of the helper's supported host-key forms:
 
 ```bash
-python3 "$SKILL_DIR/scripts/record_metric_window.py" --goal-path <artifact> \
-  --started-at <ISO> --completed-at <ISO> --codex-session-file <host adapter path>
-# or, for a goal run on a Claude host:
+# Claude project session JSONL
 python3 "$SKILL_DIR/scripts/record_metric_window.py" --goal-path <artifact> \
   --started-at <ISO> --completed-at <ISO> --claude-session-file <project session path>
+# Codex rollout JSONL
+python3 "$SKILL_DIR/scripts/record_metric_window.py" --goal-path <artifact> \
+  --started-at <ISO> --completed-at <ISO> --codex-session-file <host adapter path>
 ```
 
 The host adapter supplies the timestamps and rollout-file path it can prove; the
