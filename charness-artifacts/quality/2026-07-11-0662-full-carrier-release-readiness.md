@@ -20,7 +20,7 @@ preconditions, not claims already made by this readiness record.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
 - runtime hot spots: pytest 35.8s latest / 35.7s median against 140s budget; coverage 7.5s / 7.4s against 55s; markdown 5.6s / 5.4s against 11s; secrets 5.2s / 5.2s against 6s.
 - coverage gate: focused and pre-lock surface proof passed; final changed-line producer runs after release critique and mutation lock.
 - evaluator depth: deterministic gates and distinct fresh-eye reviews only; Cautilus stayed ask-before-run because no explicit log-backed behavior request existed.
