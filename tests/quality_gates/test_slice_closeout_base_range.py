@@ -23,6 +23,7 @@ from scripts.run_slice_closeout import (
 from scripts.surfaces_lib import (
     SurfaceError,
     collect_changed_paths_since_base,
+    collect_changed_paths_since_resolved_base,
     resolve_base_sha,
 )
 
@@ -59,6 +60,14 @@ def test_collect_changed_paths_since_base_covers_committed_range_and_worktree(tm
     (repo / "dirty.txt").write_text("dirty\n", encoding="utf-8")
 
     assert collect_changed_paths_since_base(repo, "auto") == ["committed.txt", "dirty.txt"]
+
+
+def test_collect_changed_paths_since_resolved_base_reuses_campaign_sha(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    base_sha = _git(repo, "merge-base", "origin/main", "HEAD")
+    (repo / "dirty.txt").write_text("dirty\n", encoding="utf-8")
+
+    assert collect_changed_paths_since_resolved_base(repo, base_sha) == ["committed.txt", "dirty.txt"]
 
 
 def test_resolve_base_sha_auto_matches_the_gate_range_anchor(tmp_path: Path) -> None:

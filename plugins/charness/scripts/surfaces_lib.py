@@ -307,11 +307,29 @@ def resolve_base_sha(repo_root: Path, base: str) -> str:
     return lines[0]
 
 
+def resolve_explicit_campaign_base(
+    repo_root: Path, base: str | None, *, has_paths: bool = False
+) -> str | None:
+    """Resolve a non-auto campaign ref, preserving path/default overrides."""
+    ref = str(base or "").strip()
+    if has_paths or ref in {"", BASE_AUTO}:
+        return None
+    return resolve_base_sha(repo_root, ref)
+
+
 def collect_changed_paths_since_base(repo_root: Path, base: str) -> list[str]:
     """Changed paths of the committed merge-base(base, HEAD)..HEAD range plus the
     current working-tree diff, so a post-commit closeout covers the committed
     bundle without a manual --paths list."""
     base_sha = resolve_base_sha(repo_root, base)
+    return collect_changed_paths_since_resolved_base(repo_root, base_sha)
+
+
+def collect_changed_paths_since_resolved_base(repo_root: Path, base_sha: str) -> list[str]:
+    """Collect a committed range using an already-resolved merge-base SHA."""
+    base_sha = base_sha.strip()
+    if not base_sha:
+        raise SurfaceError("resolved base SHA must be non-empty")
     return dedupe_preserve_order(
         collect_changed_paths_for_ref(repo_root, f"{base_sha}..HEAD") + collect_changed_paths(repo_root)
     )

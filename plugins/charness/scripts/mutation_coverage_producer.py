@@ -175,16 +175,20 @@ def make_closeout_producer(
     run_command: Callable[[Path, str, str], dict[str, object]],
     *,
     extra_pytest_targets: list[str] | tuple[str, ...] = (),
+    base_sha: str | None = None,
     base_sha_resolver: Callable[[Path], str] = default_mutation_base_sha,
 ) -> Callable[[Path, str, str], dict[str, object]]:
     """A ``(repo_root, command, phase) -> result`` producer bound to the current
     base SHA and the default coverage-json path, for the closeout executor."""
-    base_sha = base_sha_resolver(repo_root)
+    # An explicit closeout campaign base is resolved by the caller and bound
+    # here.  Keep the historical origin/main resolver for the default/auto
+    # path, and retain the callback shape consumed by the command executor.
+    resolved_base_sha = base_sha if base_sha is not None else base_sha_resolver(repo_root)
     coverage_json = repo_root / DEFAULT_COVERAGE_JSON
 
     def producer(rr: Path, command: str, phase: str) -> dict[str, object]:
         return produce_broad_coverage(
-            rr, command, base_sha=base_sha, coverage_json=coverage_json,
+            rr, command, base_sha=resolved_base_sha, coverage_json=coverage_json,
             run_command=run_command, phase=phase,
             extra_pytest_targets=extra_pytest_targets,
         )
@@ -215,6 +219,8 @@ def run_focused_closeout_coverage(
     repo_root: Path,
     payload: dict[str, object],
     run_command: Callable[[Path, str, str], dict[str, object]],
+    *,
+    base_sha: str | None = None,
 ) -> bool:
     """Run an explicit narrow pytest coverage producer after closeout commands.
 
@@ -229,7 +235,7 @@ def run_focused_closeout_coverage(
     result = produce_command_coverage(
         repo_root,
         command,
-        base_sha=default_mutation_base_sha(repo_root),
+        base_sha=base_sha if base_sha is not None else default_mutation_base_sha(repo_root),
         coverage_json=repo_root / DEFAULT_COVERAGE_JSON,
         run_command=run_command,
         phase="verify",
@@ -245,6 +251,8 @@ def closeout_producer_or_error(
     args: object,
     repo_root: Path,
     run_command: Callable[[Path, str, str], dict[str, object]],
+    *,
+    base_sha: str | None = None,
 ) -> tuple[Callable[[Path, str, str], dict[str, object]] | None, str | None]:
     """Resolve the closeout broad-pytest producer from parsed args.
 
@@ -261,8 +269,9 @@ def closeout_producer_or_error(
     focused_command = getattr(args, "mutation_coverage_command", None)
     if focused_command:
         return None, None
-    return make_closeout_producer(
-        repo_root,
-        run_command,
-        extra_pytest_targets=list(getattr(args, "mutation_coverage_extra_pytest_target", []) or []),
-    ), None
+    producer_kwargs = {
+        "extra_pytest_targets": list(getattr(args, "mutation_coverage_extra_pytest_target", []) or []),
+    }
+    if base_sha is not None:
+        producer_kwargs["base_sha"] = base_sha
+    return make_closeout_producer(repo_root, run_command, **producer_kwargs), None

@@ -322,6 +322,40 @@ def test_make_closeout_producer_binds_base_and_produces(tmp_path: Path, monkeypa
     assert marker.is_file()
 
 
+def test_make_closeout_producer_uses_explicit_campaign_base_once(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
+    from scripts.mutation_changed_files_lib import changed_pool_fingerprint
+
+    repo, base = _seed_repo(tmp_path)
+    explicit = _git(repo, "rev-parse", "HEAD~1")
+    resolver_called = False
+
+    def unexpected_default(_repo: Path) -> str:
+        nonlocal resolver_called
+        resolver_called = True
+        raise AssertionError("explicit campaign base must not use origin/main default resolver")
+
+    def fake_run(repo_root, command, phase):
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    def fake_combine(repo_root, rcfile, data_file, coverage_json, env, *, show_contexts):
+        Path(coverage_json).write_text('{"files": {}}', encoding="utf-8")
+
+    monkeypatch.setattr(prod._sampling, "combine_and_export_coverage", fake_combine)
+    producer = prod.make_closeout_producer(
+        repo,
+        fake_run,
+        base_sha=explicit,
+        base_sha_resolver=unexpected_default,
+    )
+    result = producer(repo, "pytest -q tests", "verify")
+
+    assert result["produced_mutation_coverage"] is True
+    marker = repo / "reports" / "mutation" / "test-coverage.json.fingerprint"
+    assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, explicit)
+    assert resolver_called is False
+
+
 def test_closeout_producer_or_error_branches(tmp_path: Path) -> None:
     from scripts.mutation_coverage_producer import (
         FOCUSED_REQUIRES_PRODUCE_ERROR,
@@ -459,6 +493,47 @@ def test_run_focused_closeout_coverage_appends_result(tmp_path: Path, monkeypatc
     assert payload["executed_commands"][-1]["produced_mutation_coverage"] is True
 
 
+def test_run_focused_closeout_coverage_uses_explicit_campaign_base(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    payload = {"executed_commands": []}
+    args = SimpleNamespace(
+        produce_mutation_coverage=True,
+        mutation_coverage_command="pytest -q tests/test_demo.py",
+    )
+    captured: dict = {}
+
+    def fake_produce(repo_root, command, *, base_sha, coverage_json, run_command, phase):
+        captured["base_sha"] = base_sha
+        return {
+            "phase": phase,
+            "command": command,
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "",
+            "produced_mutation_coverage": True,
+        }
+
+    monkeypatch.setattr(prod, "produce_command_coverage", fake_produce)
+    monkeypatch.setattr(
+        prod,
+        "default_mutation_base_sha",
+        lambda repo_root: (_ for _ in ()).throw(AssertionError("default resolver must not run")),
+    )
+
+    assert (
+        prod.run_focused_closeout_coverage(
+            args,
+            tmp_path,
+            payload,
+            run_command=lambda *args, **kwargs: None,
+            base_sha="campaign-sha",
+        )
+        is False
+    )
+    assert captured["base_sha"] == "campaign-sha"
+
+
 def test_run_focused_closeout_coverage_skips_without_command(tmp_path: Path) -> None:
     from scripts import mutation_coverage_producer as prod
 
@@ -507,3 +582,44 @@ def test_run_focused_closeout_coverage_marks_failed_payload(tmp_path: Path, monk
     assert should_stop is True
     assert payload["status"] == "failed"
     assert payload["executed_commands"][-1]["returncode"] == 1
+
+
+def test_explicit_campaign_base_marker_mismatch_is_detectable(tmp_path: Path, monkeypatch) -> None:
+    from scripts import check_changed_line_mutation_coverage as consumer
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    cov = repo / "reports" / "mutation" / "test-coverage.json"
+
+    def fake_run(repo_root, command, phase):
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    def fake_combine(repo_root, rcfile, data_file, coverage_json, env, *, show_contexts):
+        Path(coverage_json).write_text('{"files": {}}', encoding="utf-8")
+
+    monkeypatch.setattr(prod._sampling, "combine_and_export_coverage", fake_combine)
+    prod.produce_command_coverage(
+        repo,
+        "pytest -q tests",
+        base_sha=base,
+        coverage_json=cov,
+        run_command=fake_run,
+    )
+    marker = cov.with_name(cov.name + ".fingerprint")
+    assert marker.is_file()
+    consumer_args = SimpleNamespace(
+        require_fresh_coverage=True,
+        skip_if_no_coverage=False,
+        coverage_json=cov,
+    )
+    # Producer and consumer agree when both use the explicit campaign SHA.
+    assert consumer._coverage_source_skip(consumer_args, repo, cov, base, "HEAD") is None
+
+    # A changed pool file rotates the consumer's recomputed fingerprint, so the
+    # old marker is correctly rejected rather than treated as fresh coverage.
+    (repo / "scripts" / "foo.py").write_text(
+        "def a():\n    return 1\n\n\ndef b():\n    return 3\n", encoding="utf-8"
+    )
+    stale = consumer._coverage_source_skip(consumer_args, repo, cov, base, "HEAD")
+    assert stale is not None
+    assert "coverage source is stale" in stale["reason"]

@@ -303,12 +303,13 @@ def test_run_slice_closeout_preexecution_blocks_invalid_focused_command(
     assert "must start with" in payload["error"]
 
 
+@pytest.mark.parametrize("base", [None, "auto"])
 def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
-    tmp_path: Path, monkeypatch
+    tmp_path: Path, monkeypatch, base: str | None
 ) -> None:
     from scripts import run_slice_closeout as closeout
 
-    calls: list[str] = []
+    seen: dict[str, object] = {}
     payload = {
         "changed_paths": ["README.md"],
         "sync_commands": [],
@@ -316,7 +317,10 @@ def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
         "unmatched_paths": [],
         "executed_commands": [],
     }
-    monkeypatch.setattr(sys, "argv", ["run_slice_closeout.py", "--repo-root", str(tmp_path)])
+    argv = ["run_slice_closeout.py", "--repo-root", str(tmp_path)]
+    if base is not None:
+        argv += ["--base", base]
+    monkeypatch.setattr(sys, "argv", argv)
     monkeypatch.setattr(closeout, "_advise_staged_reversion", lambda repo_root: None)
     monkeypatch.setattr(closeout, "load_surfaces", lambda repo_root, surfaces_path=None: {"path": "manifest"})
     monkeypatch.setattr(closeout, "_resolve_changed_paths", lambda repo_root, args: ["README.md"])
@@ -331,12 +335,17 @@ def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
     monkeypatch.setattr(closeout, "should_block_broad_pytest_policy", lambda *args, **kwargs: False)
     monkeypatch.setattr(closeout, "_unsafe_command_blockers", lambda command_plan: [])
     monkeypatch.setattr(closeout, "_unsafe_blocker_command_plan", lambda command_plan, args: command_plan)
-    monkeypatch.setattr(closeout, "_resolve_broad_producer", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        closeout,
+        "_resolve_broad_producer",
+        lambda *args, **kwargs: seen.setdefault("broad", kwargs.get("base_sha")),
+    )
     monkeypatch.setattr(closeout, "execute_command_plan", lambda *args, **kwargs: False)
     monkeypatch.setattr(
         closeout,
         "run_focused_closeout_coverage",
-        lambda args, repo_root, payload, run_command: calls.append("focused") or False,
+        lambda args, repo_root, payload, run_command, **kwargs: seen.setdefault("focused", kwargs.get("base_sha"))
+        or False,
     )
     monkeypatch.setattr(closeout, "attach_gate_runtime_advisory", lambda payload: None)
     monkeypatch.setattr(closeout, "emit_usage_episode_for_slice_closeout", lambda repo_root, status: {"status": "emitted"})
@@ -344,7 +353,71 @@ def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
     monkeypatch.setattr(closeout, "_emit_payload", lambda payload, **kwargs: 0)
 
     assert closeout.main() == 0
-    assert calls == ["focused"]
+    assert seen == {"broad": None, "focused": None}
+
+
+def test_run_slice_closeout_main_reuses_explicit_campaign_sha_for_both_producers(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import run_slice_closeout as closeout
+
+    resolved: list[str] = []
+    seen: dict[str, object] = {}
+    payload = {
+        "changed_paths": ["README.md"],
+        "sync_commands": [],
+        "verify_commands": [],
+        "unmatched_paths": [],
+        "executed_commands": [],
+    }
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["run_slice_closeout.py", "--repo-root", str(tmp_path), "--base", "campaign-ref"],
+    )
+    monkeypatch.setattr(closeout, "_advise_staged_reversion", lambda repo_root: None)
+    monkeypatch.setattr(closeout, "load_surfaces", lambda repo_root, surfaces_path=None: {"path": "manifest"})
+    monkeypatch.setattr(
+        closeout,
+        "resolve_explicit_campaign_base",
+        lambda repo_root, base, *, has_paths=False: resolved.append(base) or "campaign-sha",
+    )
+    monkeypatch.setattr(
+        closeout,
+        "collect_changed_paths_since_resolved_base",
+        lambda repo_root, base_sha: ["README.md"] if base_sha == "campaign-sha" else [],
+    )
+    monkeypatch.setattr(closeout, "match_surfaces", lambda manifest, changed_paths: dict(payload))
+    monkeypatch.setattr(closeout, "headroom_for", lambda paths, repo_root: [])
+    monkeypatch.setattr(closeout, "_run_preexecution_blocks", lambda repo_root, payload, args: None)
+    monkeypatch.setattr(
+        closeout,
+        "plan_broad_pytest_policy",
+        lambda command_plan, **kwargs: {"command_plan": command_plan},
+    )
+    monkeypatch.setattr(closeout, "should_block_broad_pytest_policy", lambda *args, **kwargs: False)
+    monkeypatch.setattr(closeout, "_unsafe_command_blockers", lambda command_plan: [])
+    monkeypatch.setattr(closeout, "_unsafe_blocker_command_plan", lambda command_plan, args: command_plan)
+    monkeypatch.setattr(
+        closeout,
+        "_resolve_broad_producer",
+        lambda args, repo_root, run_command, *, base_sha=None: seen.setdefault("broad", base_sha),
+    )
+    monkeypatch.setattr(closeout, "execute_command_plan", lambda *args, **kwargs: False)
+    monkeypatch.setattr(
+        closeout,
+        "run_focused_closeout_coverage",
+        lambda args, repo_root, payload, run_command, *, base_sha=None: seen.setdefault("focused", base_sha)
+        or False,
+    )
+    monkeypatch.setattr(closeout, "attach_gate_runtime_advisory", lambda payload: None)
+    monkeypatch.setattr(closeout, "emit_usage_episode_for_slice_closeout", lambda repo_root, status: {"status": "emitted"})
+    monkeypatch.setattr(closeout, "_attach_closeout_telemetry", lambda repo_root, payload: None)
+    monkeypatch.setattr(closeout, "_emit_payload", lambda payload, **kwargs: 0)
+
+    assert closeout.main() == 0
+    assert resolved == ["campaign-ref"]
+    assert seen == {"broad": "campaign-sha", "focused": "campaign-sha"}
 
 
 def test_run_slice_closeout_main_fails_narrow_broad_pytest_proof_scope(

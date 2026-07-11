@@ -195,7 +195,7 @@ applies.
 
 - Objective: Repair custom-title scaffolding so every emitted quality artifact satisfies the validator-owned H1 invariant while preserving the caller title.
 - Why this approach: Fix the producer at the ownership boundary; keep the validator strict and preserve custom input as additive metadata.
-- Commits: pending this slice checkpoint
+- Commits: `b6c2b7fe` (`Keep quality scaffold titles validator-safe`)
 - What changed: Canonical # Quality Review H1; Title metadata; direct, CLI, and exported-plugin real-validator tests; regenerated plugin mirror.
 - Alternatives rejected: Rejected weakening the validator, dropping custom titles, adding a new title schema, or adding a mirror-only duplicate test.
 - Targeted verification: 24 focused tests passed; real validator executed across direct/CLI/exported paths; source/plugin cmp and ergonomics/anchor scans passed.
@@ -204,6 +204,20 @@ applies.
 - Off-goal findings: Coverage anchor mismatch remained separate Slice B; no Cautilus run because the repo contract is ask-before-run and deterministic/runtime proof is sufficient.
 - Lessons carried forward: Prepare critique packets without --changed-ref when the target is an uncommitted slice; a HEAD packet inventories the carrier rather than the worktree.
 - Metrics: 24 focused tests; 3 behavior paths; 0 remaining act-before-ship findings.
+
+### Slice 2: Slice B — one campaign anchor for coverage proof
+
+- Objective: Prevent a closeout campaign with an explicit base from producing a freshness marker over a different range or paying for a second full producer run.
+- Why this approach: Resolve the explicit ref once in closeout orchestration, reuse that SHA for committed-range collection and broad/focused producers, and leave omitted/auto behavior on origin/main.
+- Commits: pending this slice checkpoint
+- What changed: Optional base_sha propagation; resolved-SHA changed-path helper; CLI help correction; root/plugin sync; causal explicit/default/auto and producer-consumer tests.
+- Alternatives rejected: Rejected a new CLI option, campaign-anchor object, double ref resolution, weakening freshness checks, and a broad closeout-module split.
+- Targeted verification: 78 focused tests passed; explicit main path proves one resolution and one SHA across range/broad/focused; omitted/auto prove None fallback; real marker accepted then rejected after pool drift; mirrors byte-identical.
+- Test duplication pressure: Extended existing closeout and mutation producer modules; replaced a weak hash comparison with consumer-contract proof.
+- Critique: Full fresh-eye critique at charness-artifacts/critique/2026-07-11-coverage-anchor.md; F1/F2/F2R cleared over two revisions; three rail-1 verifies reported zero drift.
+- Off-goal findings: run_slice_closeout remains at 478/480 code-line advisory headroom; broader decomposition is valid but not admitted into this bounded slice.
+- Lessons carried forward: A moving ref is state, not a string: resolve it once at the owner and pass the immutable value to all consumers. Test orchestration, not only helpers.
+- Metrics: 78 focused tests; 1 resolved SHA; 3 consumers; 0 remaining act-before-ship findings.
 
 ## Context Sources
 

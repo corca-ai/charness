@@ -15,6 +15,8 @@ SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 collect_changed_paths_since_base = _scripts_surfaces_lib_module.collect_changed_paths_since_base
+collect_changed_paths_since_resolved_base = _scripts_surfaces_lib_module.collect_changed_paths_since_resolved_base
+resolve_explicit_campaign_base = _scripts_surfaces_lib_module.resolve_explicit_campaign_base
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 _scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan_cautilus_proof")
@@ -155,11 +157,13 @@ def _maybe_block_on_risk_interrupt(
     return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
 
 
-def _resolve_broad_producer(args, repo_root: Path, run_command):
+def _resolve_broad_producer(args, repo_root: Path, run_command, *, base_sha: str | None = None):
     """Resolve the closeout broad-pytest mutation-coverage producer (or None) from
     args. Raises ``SurfaceError`` on misuse (e.g. --produce-mutation-coverage
     without --verification-lock) so the entrypoint reports it and exits non-zero."""
-    producer, error = closeout_producer_or_error(args, repo_root, run_command)
+    producer, error = closeout_producer_or_error(
+        args, repo_root, run_command, base_sha=base_sha
+    )
     if error is not None:
         raise SurfaceError(error)
     return producer
@@ -198,7 +202,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "the same range anchor the changed-line mutation gate uses. Mutually exclusive "
             "with --paths; without --base the working-tree default is unchanged. Note: "
             "--produce-mutation-coverage always stamps its freshness fingerprint over the "
-            "gate's origin/main anchor, even when an explicit non-origin/main ref is passed."
+            "resolved campaign base, including an explicit non-origin/main ref."
         ),
     )
     parser.add_argument("--plan-only", action="store_true", help="Print obligations without executing commands.")
@@ -441,7 +445,12 @@ def main() -> int:
     _advise_staged_reversion(repo_root)
     manifest = load_surfaces(repo_root, surfaces_path=args.surfaces_path)
     assert manifest is not None
-    changed_paths = _resolve_changed_paths(repo_root, args)
+    campaign_base_sha = resolve_explicit_campaign_base(repo_root, args.base, has_paths=bool(args.paths))
+    changed_paths = (
+        collect_changed_paths_since_resolved_base(repo_root, campaign_base_sha)
+        if campaign_base_sha
+        else _resolve_changed_paths(repo_root, args)
+    )
     payload = match_surfaces(manifest, changed_paths)
     payload["surfaces_manifest_path"] = manifest["path"]
     payload["executed_commands"] = []
@@ -490,7 +499,9 @@ def main() -> int:
         payload["blockers"] = list(payload.get("blockers", [])) + unsafe_blockers
         return _emit_payload(payload, as_json=args.json)
 
-    broad_pytest_producer = _resolve_broad_producer(args, repo_root, run_command)
+    broad_pytest_producer = _resolve_broad_producer(
+        args, repo_root, run_command, base_sha=campaign_base_sha
+    )
 
     should_stop = execute_command_plan(
         repo_root,
@@ -502,7 +513,9 @@ def main() -> int:
         broad_pytest_producer=broad_pytest_producer,
     )
     if not should_stop:
-        should_stop = run_focused_closeout_coverage(args, repo_root, payload, run_command)
+        should_stop = run_focused_closeout_coverage(
+            args, repo_root, payload, run_command, base_sha=campaign_base_sha
+        )
 
     # Gate-baseline runtime advisory (spec achieve-efficiency-improvements C):
     # a gate that PASSES but is slow by design is code-quality debt. Runs
