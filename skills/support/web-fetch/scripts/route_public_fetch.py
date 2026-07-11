@@ -88,8 +88,8 @@ def acquisition_plan_for_route(route_id: str) -> list[dict[str, object]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", required=True)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--url", required=True, help="Public URL whose acquisition route should be resolved.")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repository root for capability and GitHub mode resolution.")
     args = parser.parse_args()
     print(json.dumps(route_for_url(args.url, repo_root=args.repo_root), ensure_ascii=False, indent=2))
     return 0

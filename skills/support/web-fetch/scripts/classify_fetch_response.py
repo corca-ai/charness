@@ -288,11 +288,11 @@ def load_input(path: str | None) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path")
-    parser.add_argument("--expect-text", action="append", default=[])
-    parser.add_argument("--expect-regex", action="append", default=[])
-    parser.add_argument("--expect-json-field", action="append", default=[])
-    parser.add_argument("--intent", choices=("single", "collect"), default="single")
+    parser.add_argument("--path", help="Read the response body from this file; otherwise read stdin.")
+    parser.add_argument("--expect-text", action="append", default=[], help="Require literal text as positive proof (repeatable).")
+    parser.add_argument("--expect-regex", action="append", default=[], help="Require a regex match as positive proof (repeatable).")
+    parser.add_argument("--expect-json-field", action="append", default=[], help="Require a non-empty JSON field path as proof (repeatable).")
+    parser.add_argument("--intent", choices=("single", "collect"), default="single", help="Classification intent: one source or a collection.")
     args = parser.parse_args()
     raw = load_input(args.path)
     print(
