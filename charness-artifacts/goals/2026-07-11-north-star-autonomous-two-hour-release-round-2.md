@@ -13,12 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: commit the reviewed Slice A/B bundle, then begin final quality
-  and release preparation.
-- Current slice intent: freeze the two evidence-backed repairs without widening
-  public surface or issue lifecycle state; keep #433/#436 open.
-- Next action: commit the reviewed slices, run pre-lock closeout, then prepare
-  the full-delta release critique and final verification lock.
+- Current slice: lift the conditional release-critique hold with the final
+  clean-HEAD verification lock and release dry-run.
+- Current slice intent: preserve the reviewed patch bundle exactly through the
+  final local proof, then publish without issue lifecycle changes.
+- Next action: commit the full-delta release critique, run the verification
+  lock with mutation coverage, then inspect the exact release dry-run payload.
 - Current disposition: shaped, fresh-eye reviewed, and approved for activation
   by the user's explicit two-hour implementation-and-release request.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -147,7 +147,7 @@ release whose public content is confirmed by a different observer and channel.
 | A | Implement #436 fail-fast after sync drift | Handoff-first repeated waste; saves expensive false-start proof without weakening final gate | reproduction, focused branch tests, broad-run-not-called proof, fresh-eye critique | complete |
 | B | Repair usage-feedback concurrent replay TOCTOU | A 20-run race probe produced duplicate IDs that the validator rejected | serialized read/check/append, concurrent proof, validator and mirror parity | complete |
 | C | Probe a portability/ergonomics consumer perspective | Counter local implementation bias without requiring code | consumer-path evidence and admission decision, or explicit no-change disposition | deferred — evidence below did not meet the admission floor |
-| D | Full-delta critique, quality lock, and release | Freeze mutation before irreversible boundary | release notes, critique, verification lock, dry-run | pending |
+| D | Full-delta critique, quality lock, and release | Freeze mutation before irreversible boundary | release notes, critique, verification lock, dry-run | in progress — critique conditions recorded |
 | E | Push and publish patch release | User-authorized final external lane | tag/release URL, independent HTTPS proof, install refresh | pending |
 
 ## Operator Decision Queue
