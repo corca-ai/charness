@@ -55,6 +55,18 @@ def _load_issue_closeout_body_lib():
     )
 
 
+def _load_local_release_module(module_name: str):
+    module_path = Path(__file__).resolve().with_name(f"{module_name}.py")
+    if not module_path.is_file():
+        raise ImportError(f"Unable to load {module_path}")
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 # Degrade to absence rather than crashing the whole release CLI at import time
 # (publish_release_cli.py / publish_release_plan.py load this module
 # unconditionally, so every release command -- not just --close-issue -- would
@@ -70,6 +82,13 @@ try:
 except ImportError as exc:
     _ISSUE_CLOSEOUT_BODY = None
     _ISSUE_CLOSEOUT_BODY_ERROR = str(exc)
+
+try:
+    _MESSAGE = _load_local_release_module("release_issue_closeout_message")
+    _MESSAGE_ERROR: str | None = None
+except ImportError as exc:
+    _MESSAGE = None
+    _MESSAGE_ERROR = str(exc)
 
 # Every release-linked issue close is, by definition, a user-facing behavior
 # claim (a released fix/feature/deferred-work item), so the classification gate
@@ -136,16 +155,78 @@ def github_repo_slug(repo_root: Path, backend: dict[str, Any], *, run) -> str | 
 def release_commit_body(
     payload: dict[str, Any], close_issues: list[int], behavior_lines: list[str] | None = None
 ) -> list[str]:
-    if not close_issues:
-        return []
-    lines = [
-        f"Release: {payload['tag_name']}",
-        f"Quality: {payload['quality_command']}",
-        "",
-    ]
-    lines.extend(f"Close #{number}." for number in close_issues)
-    lines.extend(behavior_lines or [])
-    return lines
+    if _MESSAGE is None:
+        raise SystemExit(
+            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
+            f"{_MESSAGE_ERROR}"
+        )
+    return _MESSAGE.release_commit_body(payload, close_issues, behavior_lines)
+
+
+def release_commit_message(payload: dict[str, Any], close_issues: list[int], behavior_lines: list[str] | None = None) -> str:
+    if _MESSAGE is None:
+        raise SystemExit(
+            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
+            f"{_MESSAGE_ERROR}"
+        )
+    return _MESSAGE.release_commit_message(payload, close_issues, behavior_lines)
+
+
+def validate_release_closeout_draft(
+    repo_root: Path,
+    *,
+    repo: str,
+    issue_numbers: list[int],
+    payload: dict[str, Any],
+    classification: str,
+    behavior_lines: list[str] | None = None,
+) -> dict[str, Any]:
+    if _MESSAGE is None:
+        raise SystemExit(
+            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
+            f"{_MESSAGE_ERROR}"
+        )
+    return _MESSAGE.validate_release_closeout_draft(
+        repo_root,
+        repo=repo,
+        issue_numbers=issue_numbers,
+        payload=payload,
+        classification=classification,
+        behavior_lines=behavior_lines,
+    )
+
+
+def fail_release_closeout_draft_validation(result: dict[str, Any]) -> None:
+    if _MESSAGE is None:
+        raise SystemExit(
+            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
+            f"{_MESSAGE_ERROR}"
+        )
+    _MESSAGE.fail_release_closeout_draft_validation(result)
+
+
+def validate_release_closeout_commit_message(
+    repo_root: Path,
+    *,
+    repo: str,
+    issue_numbers: list[int],
+    classification: str,
+    commit_message: str,
+    commit_ref: str | None = None,
+) -> dict[str, Any]:
+    if _MESSAGE is None:
+        raise SystemExit(
+            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
+            f"{_MESSAGE_ERROR}"
+        )
+    return _MESSAGE.validate_release_closeout_commit_message(
+        repo_root,
+        repo=repo,
+        issue_numbers=issue_numbers,
+        classification=classification,
+        commit_message=commit_message,
+        commit_ref=commit_ref,
+    )
 
 
 def issue_state(repo_root: Path, repo: str, number: int, *, run) -> dict[str, Any]:
@@ -164,11 +245,28 @@ def preflight_release_issues(
     payload: dict[str, Any],
     run,
     behavior_lines: list[str] | None = None,
+    classification: str | None = None,
+    carrier_file: Path | None = None,
 ) -> None:
     if not issue_numbers:
         payload["issue_closeout_preflight"] = {"status": "not_requested", "issues": []}
         payload["issue_closeout_behavioral_verdict"] = {"applies": False, "ok": True, "missing": []}
         return
+    if classification is None:
+        raise SystemExit(
+            "release --close-issue requires --close-issue-classification before quality or mutation"
+        )
+    if carrier_file is None:
+        raise SystemExit(
+            "release --close-issue requires --close-issue-carrier-file before quality or mutation"
+        )
+    if not carrier_file.is_file():
+        raise SystemExit(
+            f"release --close-issue carrier file not found before quality or mutation: {carrier_file}"
+        )
+    payload["issue_closeout_classification"] = classification
+    payload["issue_closeout_carrier_file"] = str(carrier_file)
+    payload["issue_closeout_carrier_body"] = carrier_file.read_text(encoding="utf-8").strip()
     behavioral_verdict = evaluate_release_behavioral_verdict(list(behavior_lines or []), issue_numbers)
     payload["issue_closeout_behavioral_verdict"] = behavioral_verdict
     if not behavioral_verdict["ok"]:
@@ -178,6 +276,17 @@ def preflight_release_issues(
             "release --close-issue requires a GitHub repo before mutation; "
             "pass --close-issue-repo or use a gh-backed release repository"
         )
+    draft_validation = validate_release_closeout_draft(
+        repo_root,
+        repo=repo,
+        issue_numbers=issue_numbers,
+        payload=payload,
+        classification=classification,
+        behavior_lines=behavior_lines,
+    )
+    payload["issue_closeout_draft_validation"] = draft_validation
+    if not draft_validation["ok"]:
+        fail_release_closeout_draft_validation(draft_validation)
     verified: list[dict[str, Any]] = []
     for number in issue_numbers:
         try:

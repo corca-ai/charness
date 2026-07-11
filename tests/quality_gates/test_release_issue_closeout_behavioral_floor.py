@@ -21,7 +21,10 @@ from types import SimpleNamespace
 
 import pytest
 
+from .issue_closeout_support import bug_closeout_body
+
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills" / "public" / "release" / "scripts"
+_HELPER = _SCRIPTS / "release_issue_closeout_message.py"
 
 
 def _load(name: str):
@@ -37,6 +40,7 @@ def _load_path(path: Path):
 
 
 _CLOSEOUT = _load("release_issue_closeout")
+_MESSAGE = _load_path(_HELPER)
 
 
 def _fake_run(states: dict[str, str], calls: list[list[str]]):
@@ -106,26 +110,37 @@ def test_evaluate_release_behavioral_verdict_refuses_with_typed_message_on_the_r
 # --- preflight_release_issues: fails BEFORE any GitHub mutation -----------
 
 
-def test_preflight_refuses_before_any_github_call_when_behavior_missing() -> None:
+def test_preflight_refuses_before_any_github_call_when_behavior_missing(tmp_path: Path) -> None:
     def run_never_called(*_args, **_kwargs):
         raise AssertionError("preflight must refuse before any GitHub call when behavior is missing")
 
     payload: dict = {}
+    carrier = tmp_path / "closeout.md"
+    carrier.write_text(bug_closeout_body(close_line="Close #44.", behavior_line=None) + "\n", encoding="utf-8")
     with pytest.raises(SystemExit, match="missing per-issue behavioral-verdict line"):
         _CLOSEOUT.preflight_release_issues(
             Path("."), repo="example/demo", issue_numbers=[44], payload=payload, run=run_never_called,
+            classification="bug", carrier_file=carrier,
         )
     assert payload["issue_closeout_behavioral_verdict"]["ok"] is False
     assert "issue_closeout_preflight" not in payload  # never reached the GH-view loop
 
 
-def test_preflight_proceeds_when_behavior_present() -> None:
+def test_preflight_proceeds_when_behavior_present(tmp_path: Path) -> None:
     calls: list[list[str]] = []
-    payload: dict = {}
+    payload: dict = {
+        "tag_name": "v1.0.0",
+        "quality_command": "./scripts/run-quality.sh",
+        "commit_message": "Release demo v1.0.0",
+    }
+    carrier = tmp_path / "closeout.md"
+    carrier.write_text(bug_closeout_body(close_line="Close #44.", behavior_line=None) + "\n", encoding="utf-8")
     _CLOSEOUT.preflight_release_issues(
         Path("."), repo="example/demo", issue_numbers=[44], payload=payload,
         run=_fake_run({"44": "OPEN"}, calls),
         behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
+        classification="bug",
+        carrier_file=carrier,
     )
     assert payload["issue_closeout_behavioral_verdict"]["ok"] is True
     assert payload["issue_closeout_preflight"]["status"] == "verified"
@@ -215,6 +230,21 @@ def test_load_issue_closeout_body_lib_covers_missing_and_unloadable_candidates(
         _CLOSEOUT._load_issue_closeout_body_lib()
 
 
+def test_load_issue_closeout_module_prefers_installed_layout_when_requested(tmp_path: Path, monkeypatch) -> None:
+    package_root = tmp_path / "pkg"
+    installed = package_root / "skills" / "issue" / "scripts"
+    installed.mkdir(parents=True)
+    (installed / "issue_validate_closeout_draft.py").write_text("VALUE = 'installed'\n", encoding="utf-8")
+    monkeypatch.setattr(_MESSAGE, "_package_root", lambda _here: (package_root, True))
+
+    module = _MESSAGE._load_issue_closeout_module(
+        "issue_validate_closeout_draft",
+        "release_issue_validate_closeout_draft_test",
+    )
+
+    assert module.VALUE == "installed"
+
+
 def test_module_level_absence_degrade_records_error_on_the_real_file(tmp_path: Path) -> None:
     # Covers the module-level `try/except ImportError` (lines ~67-72) itself, in
     # the REAL repo file: `module_from_spec` sets `__file__` before `exec_module`
@@ -246,6 +276,7 @@ def test_module_import_survives_missing_issue_skill(tmp_path: Path) -> None:
     fake_scripts = tmp_path / "skills" / "public" / "release" / "scripts"
     fake_scripts.mkdir(parents=True)
     shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
+    shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
 
     module = _load_path(fake_scripts / "release_issue_closeout.py")  # must not raise
 
@@ -257,6 +288,7 @@ def test_no_close_issue_still_works_when_issue_skill_missing(tmp_path: Path) -> 
     fake_scripts = tmp_path / "skills" / "public" / "release" / "scripts"
     fake_scripts.mkdir(parents=True)
     shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
+    shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
     module = _load_path(fake_scripts / "release_issue_closeout.py")
 
     # (a) a release that does not close any issue is unaffected by the absence.
@@ -273,6 +305,7 @@ def test_close_issue_refuses_with_typed_message_when_issue_skill_missing(tmp_pat
     fake_scripts = tmp_path / "skills" / "public" / "release" / "scripts"
     fake_scripts.mkdir(parents=True)
     shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
+    shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
     module = _load_path(fake_scripts / "release_issue_closeout.py")
 
     # (b) --close-issue with the lib missing refuses with a typed message
@@ -285,7 +318,10 @@ def test_close_issue_refuses_with_typed_message_when_issue_skill_missing(tmp_pat
         raise AssertionError("must refuse before any GitHub call")
 
     payload: dict = {}
+    carrier = tmp_path / "closeout.md"
+    carrier.write_text(bug_closeout_body(close_line="Close #44.", behavior_line=None) + "\n", encoding="utf-8")
     with pytest.raises(SystemExit, match="issue_verify_closeout_body.py"):
         module.preflight_release_issues(
             tmp_path, repo="example/demo", issue_numbers=[44], payload=payload, run=run_never_called,
+            classification="bug", carrier_file=carrier,
         )

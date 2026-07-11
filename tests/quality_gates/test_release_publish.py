@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from .issue_closeout_support import bug_closeout_body
 from .release_publish_fixtures import (
     _release_env,
     _run_publish_patch,
@@ -254,6 +255,55 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     ]
     assert issue_view_indexes[0] < release_create_index
     assert issue_view_indexes[-1] > release_create_index
+
+
+@pytest.mark.release_only
+def test_publish_release_accepts_full_bug_closeout_carrier(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
+    Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
+    carrier = tmp_path / "closeout.md"
+    carrier.write_text(
+        bug_closeout_body(
+            close_line="Close #44.",
+            behavior_line=None,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = _run_publish_patch(
+        repo,
+        env,
+        "--close-issue",
+        "44",
+        "--close-issue-classification",
+        "bug",
+        "--close-issue-carrier-file",
+        str(carrier),
+        "--close-issue-behavior",
+        "Behavior #44: confirmed via fresh checkout install",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    draft_validation = payload["issue_closeout_draft_validation"]
+    assert draft_validation["ok"] is True
+    assert draft_validation["missing_fields"] == []
+    assert draft_validation["missing_close_keywords"] == []
+    commit_body = subprocess.run(
+        ["git", "log", "--format=%B", "-2"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    assert "Classification: bug" in commit_body
+    assert "Root cause: the issue closeout carrier was prose-only." in commit_body
+    assert "Debug artifact: charness-artifacts/debug/latest.md." in commit_body
+    assert "Behavior #44: confirmed via fresh checkout install" in commit_body
 
 
 @pytest.mark.release_only

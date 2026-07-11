@@ -39,6 +39,8 @@ def print_failure_payload(
         "fresh_checkout_probe_status",
         "public_release_verification",
         "release_runtime",
+        "issue_closeout_draft_validation",
+        "resume_head_closeout_validation",
     )
     failure_payload = {key: payload[key] for key in visible_keys if key in payload}
     failure_payload["release_failure"] = {"status": "failed", "error": str(error)}

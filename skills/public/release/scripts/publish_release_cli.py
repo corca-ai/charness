@@ -51,6 +51,8 @@ commit_post_publish_artifact = _helpers.commit_post_publish_artifact
 release_commit_body = _issue_closeout.release_commit_body
 ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
 preflight_release_issues = _issue_closeout.preflight_release_issues
+validate_release_closeout_commit_message = _issue_closeout.validate_release_closeout_commit_message
+fail_release_closeout_draft_validation = _issue_closeout.fail_release_closeout_draft_validation
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
 enforce_release_critique_gate = _preflight.enforce_release_critique_gate
@@ -79,6 +81,8 @@ def _execution_context() -> SimpleNamespace:
         "backend_command",
         "expected_github_release_url",
         "preflight_release_issues",
+        "validate_release_closeout_commit_message",
+        "fail_release_closeout_draft_validation",
         "run_release_adapter_preflight",
         "run_bump",
         "ensure_release_surface",
@@ -119,6 +123,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--critique-blocked", help="Host signal (>=20 chars) when the bounded fresh-eye critique was genuinely blocked by the host runtime; mutually exclusive with --critique-artifact")
     parser.add_argument("--close-issue", action="append", type=int, default=[], help="Issue number to close at release time; repeat for multiple")
     parser.add_argument("--close-issue-repo", help="Repository (owner/repo) hosting --close-issue numbers; defaults to current repo")
+    parser.add_argument(
+        "--close-issue-classification",
+        choices=("bug", "feature", "deferred-work", "question", "decision-needed"),
+        help="Classification applied to every --close-issue number for the issue-owned draft validator",
+    )
+    parser.add_argument(
+        "--close-issue-carrier-file",
+        type=Path,
+        help="Path to the closeout carrier body to stitch into the release commit before the issue-owned draft validator runs",
+    )
     parser.add_argument(
         "--close-issue-behavior", action="append", default=[],
         help='Behavioral-verdict line for a --close-issue, e.g. "Behavior #42: confirmed via fresh checkout install" '

@@ -6,6 +6,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from .issue_closeout_support import bug_closeout_body
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLISH_SCRIPT = "skills/public/release/scripts/publish_release.py"
 REVIEW_GATE_SCRIPT = "skills/public/release/scripts/check_requested_review_gate.py"
@@ -175,6 +177,22 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
     # get a synthetic blocked-skip injected so they still reach their assertion.
     has_critique_flag = any(arg in ("--critique-artifact", "--critique-blocked") for arg in extra)
     extras = list(extra)
+    has_close_issue = "--close-issue" in extras
+    has_close_issue_classification = "--close-issue-classification" in extras
+    has_close_issue_carrier_file = "--close-issue-carrier-file" in extras
+    if has_close_issue and not has_close_issue_classification:
+        extras.extend(["--close-issue-classification", "bug"])
+    if has_close_issue and not has_close_issue_carrier_file:
+        carrier = repo.parent / "synthetic-release-closeout.md"
+        carrier.write_text(
+            bug_closeout_body(
+                close_line="Close #44.",
+                behavior_line=None,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        extras.extend(["--close-issue-carrier-file", str(carrier)])
     if not has_critique_flag:
         extras.extend([
             "--critique-blocked",

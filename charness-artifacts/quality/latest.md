@@ -1,1 +1,1 @@
-2026-07-10-repo-wide-quality-speed-release.md
+2026-07-11-issue-create-safety-quality-speed-sweep.md

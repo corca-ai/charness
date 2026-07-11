@@ -12,10 +12,12 @@ from .release_publish_fixtures import (
     _run_publish,
     _run_publish_patch,
     _seed_publish_release_repo,
+    bug_closeout_body,
 )
 
 PREFLIGHT_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_preflight.py"
 PUBLISH_CLI_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py"
+MESSAGE_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "release_issue_closeout_message.py"
 CRITIQUE_BLOCKED = "synthetic-test-harness does not spawn real critique subagents"
 
 
@@ -67,6 +69,19 @@ def test_publish_release_cli_direct_loader_context_without_sys_modules() -> None
     assert callable(module.execute_publish_plan)
     assert callable(context.run)
     assert hasattr(context, "_helpers")
+
+
+def test_release_closeout_message_direct_loader_context_without_sys_modules() -> None:
+    module_name = "release_issue_closeout_message_direct_loader_probe"
+    sys.modules.pop(module_name, None)
+    spec = importlib.util.spec_from_file_location(module_name, MESSAGE_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module_name not in sys.modules
+    assert callable(module.release_commit_message)
+    assert callable(module.validate_release_closeout_draft)
 
 
 class _FakeShellResult:
@@ -450,15 +465,112 @@ def test_publish_release_imports_from_exported_plugin_layout() -> None:
 # --- Gap 1: resumable / idempotent publish ------------------------------------
 
 
-def _simulate_partial_publish(repo: Path) -> None:
+def _simulate_partial_publish(repo: Path, *, closeout_body: str | None = None) -> None:
     # Reproduce the post-commit, pre-push partial state: a local `Release demo
     # 0.0.0` commit + tag v0.0.0 that never reached the remote and has no release.
     output_dir = repo / "charness-artifacts" / "release"
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "latest.md").write_text("# Release demo 0.0.0 (partial)\n", encoding="utf-8")
     _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", "Release demo 0.0.0")
+    commit_args = ["commit", "-m", "Release demo 0.0.0"]
+    if closeout_body is not None:
+        commit_args.extend(["-m", closeout_body])
+    _git(repo, *commit_args)
     _git(repo, "tag", "v0.0.0")
+
+
+def _resume_closeout_args(carrier: Path) -> tuple[str, ...]:
+    return (
+        "--close-issue", "44",
+        "--close-issue-classification", "bug",
+        "--close-issue-carrier-file", str(carrier),
+        "--close-issue-behavior", "Behavior #44: confirmed through the release resume fixture",
+    )
+
+
+def _resume_closeout_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
+    env = _release_env(tmp_path, bin_dir)
+    issue_state = tmp_path / "issue-state.json"
+    issue_state.write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
+    env["FAKE_GH_ISSUE_STATE"] = str(issue_state)
+    return env
+
+
+def _resume_closeout_body() -> str:
+    return bug_closeout_body(
+        close_line="Close #44.",
+        behavior_line="Behavior #44: confirmed through the release resume fixture",
+    )
+
+
+def _prepare_closeout_resume(
+    tmp_path: Path, *, head_closeout_body: str | None
+) -> tuple[Path, dict[str, str], Path]:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    carrier = tmp_path / "resume-closeout.md"
+    carrier.write_text(_resume_closeout_body() + "\n", encoding="utf-8")
+    _simulate_partial_publish(repo, closeout_body=head_closeout_body)
+    return repo, _resume_closeout_env(tmp_path, bin_dir), carrier
+
+
+def _run_closeout_resume(
+    repo: Path, env: dict[str, str], carrier: Path
+) -> subprocess.CompletedProcess[str]:
+    return _run_publish(
+        repo,
+        env,
+        "--resume",
+        "--publish-current",
+        "--execute",
+        *_resume_closeout_args(carrier),
+        "--critique-blocked",
+        CRITIQUE_BLOCKED,
+    )
+
+
+def test_resume_with_complete_existing_head_closeout_passes_preflight(tmp_path: Path) -> None:
+    repo, env, carrier = _prepare_closeout_resume(
+        tmp_path, head_closeout_body=_resume_closeout_body()
+    )
+
+    result = _run_closeout_resume(repo, env, carrier)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["resume_head_closeout_validation"]["ok"] is True
+    assert payload["resume_head_closeout_validation"]["commit_ref"] == "HEAD"
+
+
+def test_resume_refuses_thin_existing_head_before_quality_or_push(tmp_path: Path) -> None:
+    repo, env, carrier = _prepare_closeout_resume(tmp_path, head_closeout_body=None)
+
+    result = _run_closeout_resume(repo, env, carrier)
+
+    assert result.returncode != 0
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:1] == ["push"] for entry in git_log)
+    payload = _failure_payload(result.stderr)
+    assert "resume_head_closeout_validation" in payload, payload
+    assert payload["resume_head_closeout_validation"]["ok"] is False
+    assert "quality_command" not in {entry["label"] for entry in payload.get("release_runtime", [])}
+
+
+def test_resume_refuses_unintended_close_keyword_before_quality(tmp_path: Path) -> None:
+    repo, env, carrier = _prepare_closeout_resume(
+        tmp_path, head_closeout_body=_resume_closeout_body() + "\n\nClose #45."
+    )
+
+    result = _run_closeout_resume(repo, env, carrier)
+
+    assert result.returncode != 0
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:1] == ["push"] for entry in git_log)
+    payload = _failure_payload(result.stderr)
+    assert payload["issue_closeout_draft_validation"]["ok"] is True
+    assert payload["resume_head_closeout_validation"]["unexpected_close_keywords"] == [
+        {"repo": None, "number": 45}
+    ]
+    assert "quality_command" not in {entry["label"] for entry in payload.get("release_runtime", [])}
 
 
 def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:

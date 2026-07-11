@@ -121,7 +121,24 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     cli.preflight_release_issues(
         repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
         behavior_lines=args.close_issue_behavior,
+        classification=args.close_issue_classification,
+        carrier_file=args.close_issue_carrier_file.resolve() if args.close_issue_carrier_file else None,
     )
+    if args.close_issue:
+        head_commit_message = cli.run(
+            ["git", "show", "-s", "--format=%B", "HEAD"], cwd=repo_root
+        ).stdout
+        head_validation = cli.validate_release_closeout_commit_message(
+            repo_root,
+            repo=issue_repo,
+            issue_numbers=args.close_issue,
+            classification=args.close_issue_classification,
+            commit_message=head_commit_message,
+            commit_ref="HEAD",
+        )
+        payload["resume_head_closeout_validation"] = head_validation
+        if not head_validation["ok"]:
+            cli.fail_release_closeout_draft_validation(head_validation)
     payload["requested_review_gate"] = _runtime.timed(
         payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
     )

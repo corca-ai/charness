@@ -1,6 +1,6 @@
 # Achieve Goal: Issue-create safety, code-quality, and test-speed sweep
 
-Status: draft
+Status: active
 Created: 2026-07-11
 Activation: `/goal @charness-artifacts/goals/2026-07-11-issue-create-safety-quality-speed-sweep.md`
 
@@ -9,13 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: shaped implementation-continuation draft awaiting activation.
-- Current disposition: real draft/backlog awaiting explicit `/goal` activation;
-  reshape before activation if the acceptance boundary changes.
+- Current slice: Slice 2 — audit and fix real mutation/verification siblings
+  (in progress after the verified #433 checkpoint).
+- Current disposition: active local run; external publication, release, remote CI,
+  provider mutation, and issue close remain queued for separate authorization.
 - Current slice intent: evidence-ranked audit and repair of mutation/verification
   contract mismatches, followed by structural test-speed and code-quality work.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-07-11-issue-create-safety-quality-speed-sweep.md` after confirming the draft is
-  still intended.
+- Next action: reproduce and disposition the fresh-record scaffold pointer
+  mismatch, then scan other mutating helper interfaces by producer/carrier/final-
+  consumer shape; fix only confirmed mismatches.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -133,9 +135,9 @@ runtime comparison and a durable disposition for every surfaced finding.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Baseline and causal map | Prevent broad “quality” work from chasing smells or timing noise | runtime/inventory packet; producer-consumer sibling map; #433 issue read; no tests added | planned |
-| 1 | Resolve #433 and late carrier-validation waste | The defect reproduced during v0.66.1 and costs a full ~68–85s release-quality run per failed attempt | failing fixture first; exact final release-helper message passes the issue-owned consumer + commit-msg gate before quality; low test-pressure via shared fixture reuse | planned |
-| 2 | Audit and fix real mutation/verification siblings | Generalize the failure class without keyword overreach | five-bucket interface-shape disposition; only reproduced confirmed mismatches fixed; focused tests and explicit deferrals | planned |
+| 0 | Baseline and causal map | Prevent broad “quality” work from chasing smells or timing noise | runtime/inventory packet; producer-consumer sibling map; #433 issue read; no tests added | completed |
+| 1 | Resolve #433 and late carrier-validation waste | The defect reproduced during v0.66.1 and costs a full ~68–85s release-quality run per failed attempt | failing fixture first; exact final release-helper message passes the issue-owned consumer + commit-msg gate before quality; low test-pressure via shared fixture reuse | completed |
+| 2 | Audit and fix real mutation/verification siblings | Generalize the failure class without keyword overreach | five-bucket interface-shape disposition; only reproduced confirmed mismatches fixed; focused tests and explicit deferrals | in progress |
 | 3 | Improve standing pytest structure and speed | Pytest is the measured dominant cost (30.9s latest / 32.5s median); 146 standing files spawn nested CLIs | durations/profile evidence; structural boundary reductions; matched repeated timing; same behavioral coverage; test-pressure sample | planned |
 | 4 | Evidence-ranked code-quality cleanup | Remove code/test debt exposed by prior slices without metric gaming | limited to files touched by slices 1–3 unless Slice 0 separately ranks a finding; smaller interfaces/shared mechanical helpers; no baseline laundering | planned |
 | 5 | Bundle verification, critique, retro, and handoff | Prove improvement and preserve non-claims before any optional external action | full quality + fresh mutation coverage; before/after runtime; fresh-eye disposition; complete goal/quality/retro artifacts | planned |
@@ -221,6 +223,34 @@ applies.
   authorized; speed claims bind to matched local profile measurements.
 
 ## Slice Log
+
+### Slice 1: Baseline and causal map
+
+- Objective: Measure the standing test baseline and prove issue #433's producer-to-final-consumer mismatch before design.
+- Why this approach: Runtime and interface evidence prevent timing noise, keyword matches, or the issue's suggested solution from selecting the fix prematurely.
+- Commits: same checkpoint commit as Slice 1 implementation and this report
+- What changed: Activated the goal; recorded three standing pytest samples; persisted a validated #433 debug artifact and current pointer; built runtime/test-economics and producer/consumer maps.
+- Alternatives rejected: Rejected exhaustive keyword sweep, live provider proof, timing floors, and solution-first carrier design.
+- Targeted verification: GitHub #433 read with comments_read=true; exact release-generated body failed the commit-msg evaluator with behavior verdict passing; three component tests passed; pytest baseline 30.68s/30.66s/30.32s with 4,469 passing each; parent-delegated causal and quality reviews passed fingerprint verification.
+- Test duplication pressure:
+- Critique: Causal review confirmed bug/root cause/invariant and limited siblings to interface-shape evidence; quality review separated measured pytest cost from nested-CLI proxy counts.
+- Off-goal findings: none — the scaffold current-pointer mismatch is in-goal Slice 2 evidence, not an external finding.
+- Lessons carried forward: The final consumer, not producer-local form, is the acceptance oracle; runtime counts rank profiling targets but do not justify pruning.
+- Metrics: Host token/tool-call totals are not exposed; measured pytest median 30.66s and focused reproduction 0.55s.
+
+### Slice 2: Resolve #433 before expensive release work
+
+- Objective: Make normal and resumed release-close carriers pass the issue-owned validator and actual commit-msg consumer before quality or mutation.
+- Why this approach: Existing-gate reuse at the release/issue interface fixes the confirmed contract drift without weakening irreversible-boundary floors or duplicating the ledger schema.
+- Commits: same checkpoint commit as this report
+- What changed: Added classification and carrier-file CLI inputs; extracted exact message rendering/validation; reused validated paragraphs; validated resumed HEAD; rejected unintended close refs; synchronized plugin mirrors; documented the operator contract; persisted resolution critique and quality evidence.
+- Alternatives rejected: Rejected dropping close keywords/API-only close, weakening the commit-msg gate, building a release-owned ledger schema, and broad dynamic-loader redesign.
+- Targeted verification: 72 focused release/resume/issue/commit-msg tests passed in 22.55s; ruff, py_compile, packaging, debug/quality/critique validators, source/installed imports, and mirror sync passed. No live release/push/close ran.
+- Test duplication pressure: Slice-local nose scan over four changed release test files: new 25-line clone f8cca48b0d6e426c removed; resume repetition reduced to one 6-shared-line assertion family; pre-existing publish families left diagnostic-only. Length headroom: closeout 31, message helper 176, resume 161, changed tests >=156.
+- Critique: Standalone code critique: C1-C3 Act Before Ship (resume args, actual HEAD proof, extra close refs) fixed; fixture injection bundled with explicit regressions; loader redesign over-worry; classification-parser sharing valid but deferred. Artifact: charness-artifacts/critique/2026-07-11-433-resolution-critique.md.
+- Off-goal findings: none
+- Lessons carried forward: Resume is a distinct irreversible carrier path; validate what will actually be pushed. Exact intended-number equality closes the remaining direct-validator/final-gate gap.
+- Metrics: Focused suite 22.55s; host token/tool-call totals not exposed.
 
 ## Context Sources
 
