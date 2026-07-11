@@ -317,7 +317,12 @@ def run(repo_root: Path, args) -> dict:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Boy-scout duplicate ratchet gate.")
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path("."),
+        help="Repository root used to resolve adapter and ratchet paths.",
+    )
     parser.add_argument("--code-inventory", type=Path, help="Injected full-scan inventory_nose_clones --json file; else a full nose query scan runs.")
     parser.add_argument("--doc-inventory", type=Path, help="Injected inventory_doc_duplicates --json drift file; else the doc inventory runs.")
     parser.add_argument("--stagnation", type=int, default=None, help="Inject the stagnation commit distance (test seam); else derived from git.")
@@ -326,7 +331,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--baseline-delta-threshold", type=int, default=DEFAULT_BASELINE_DELTA_THRESHOLD, help="Large-delta guardrail for --write-baseline: added+removed family_ids over this requires --confirm-baseline-delta.")
     parser.add_argument("--accept-rotation", action="append", metavar="OLD_ID=NEW_ID", help="Scoped re-baseline: rotate one accepted fingerprint (repeatable). Refuses any other live delta not named here or via --accept-family.")
     parser.add_argument("--accept-family", action="append", metavar="NEW_ID", help="Scoped re-baseline: accept one new fingerprint into the baseline (repeatable). Combine with --accept-rotation; any unnamed live delta is refused.")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the ratchet report as JSON.")
     return parser.parse_args(argv)
 
 

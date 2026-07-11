@@ -131,10 +131,15 @@ def build_report(ratchet: dict[str, Any], inventory: dict[str, Any]) -> dict[str
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Draft a duplicate-ratchet triage packet.")
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path("."),
+        help="Repository root used to locate ratchet and inventory inputs.",
+    )
     parser.add_argument("--ratchet-report", type=Path, help="Existing check_dup_ratchet --json payload.")
     parser.add_argument("--code-inventory", type=Path, help="Existing inventory_nose_clones --json payload.")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Emit the triage packet as JSON.")
     return parser.parse_args(argv)
 
 

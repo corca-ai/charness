@@ -21,6 +21,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -59,6 +60,31 @@ def _run_inproc(repo: Path, *cli: str) -> dict:
     """Drive check_dup_ratchet.run() in-process (mirrors main()'s repo_root.resolve())."""
     args = check.parse_args(["--repo-root", str(repo), *cli])
     return check.run(args.repo_root.resolve(), args)
+
+
+def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
+    """Assert each option's wrapped argparse block contains its own help text."""
+    for option, fragment in expected_pairs.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_check_help_describes_repo_root_and_json(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        check.parse_args(["--help"])
+
+    assert excinfo.value.code == 0
+    _assert_help_pairs(
+        capsys.readouterr().out,
+        {
+            "--repo-root": "Repository root used to resolve adapter and ratchet paths.",
+            "--json": "Emit the ratchet report as JSON.",
+        },
+    )
 
 
 def _evaluate(**over):
