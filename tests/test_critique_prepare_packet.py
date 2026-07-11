@@ -18,15 +18,17 @@ from scripts.critique_packet_lib import (
     render_markdown,
     write_packet,
 )
+from scripts.prepare_packet_markdown_kind import prepare_packet_markdown_kind
 from scripts.surfaces_lib import collect_changed_paths_for_ref
+from scripts.validate_critique_artifacts import (
+    CRITIQUE_PREPARE_PACKET_TITLE_RE,
+    validate_critique_artifact,
+)
 from scripts.validate_critique_artifacts import (
     ValidationError as CritiqueValidationError,
 )
 from scripts.validate_critique_artifacts import (
     candidate_paths as critique_candidate_paths,
-)
-from scripts.validate_critique_artifacts import (
-    validate_critique_artifact,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -460,6 +462,40 @@ def test_wrong_prepare_packet_title_with_correct_critique_kind_still_fails_recor
         assert "Fresh-eye satisfaction" in str(exc)
     else:
         raise AssertionError("expected wrong-title critique packet lookalike to fail validation")
+
+
+def test_prepare_packet_markdown_kind_accepts_sequence_lines_only_for_matching_title_and_kind() -> None:
+    packet_path = Path("charness-artifacts/critique/demo-packet.md")
+    matching_lines = (
+        "# Critique Prepare Packet — demo",
+        "",
+        f"- **Kind**: `{PACKET_KIND}` (v1)",
+        "",
+        "## Decision Under Review",
+    )
+    wrong_title_lines = list(matching_lines)
+    wrong_title_lines[0] = "# Quality Prepare Packet — demo"
+    wrong_kind_lines = list(matching_lines)
+    wrong_kind_lines[2] = "- **Kind**: `quality.prepare-packet` (v1)"
+
+    assert prepare_packet_markdown_kind(
+        packet_path,
+        tuple(matching_lines),
+        expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
+    ) == PACKET_KIND
+    assert (
+        prepare_packet_markdown_kind(
+            packet_path,
+            tuple(wrong_title_lines),
+            expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
+        )
+        is None
+    )
+    assert prepare_packet_markdown_kind(
+        packet_path,
+        tuple(wrong_kind_lines),
+        expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
+    ) == "quality.prepare-packet"
 
 
 def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Path) -> None:

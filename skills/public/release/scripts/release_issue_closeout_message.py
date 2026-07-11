@@ -106,9 +106,14 @@ def release_commit_body(
     return _transported_paragraphs(payload, close_issues, behavior_lines)
 
 
+def release_commit_paragraphs(
+    payload: dict[str, Any], close_issues: list[int], behavior_lines: list[str] | None = None
+) -> list[str]:
+    return [payload["commit_message"], *release_commit_body(payload, close_issues, behavior_lines)]
+
+
 def release_commit_message(payload: dict[str, Any], close_issues: list[int], behavior_lines: list[str] | None = None) -> str:
-    paragraphs = [payload["commit_message"], *release_commit_body(payload, close_issues, behavior_lines)]
-    return "\n\n".join(paragraphs).rstrip() + "\n"
+    return "\n\n".join(release_commit_paragraphs(payload, close_issues, behavior_lines)).rstrip() + "\n"
 
 
 def validate_release_closeout_commit_message(
@@ -173,7 +178,7 @@ def validate_release_closeout_draft(
     classification: str,
     behavior_lines: list[str] | None = None,
 ) -> dict[str, Any]:
-    paragraphs = [payload["commit_message"], *release_commit_body(payload, issue_numbers, behavior_lines)]
+    paragraphs = release_commit_paragraphs(payload, issue_numbers, behavior_lines)
     commit_message = "\n\n".join(paragraphs).rstrip() + "\n"
     result = validate_release_closeout_commit_message(
         repo_root,

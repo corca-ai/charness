@@ -155,21 +155,20 @@ def github_repo_slug(repo_root: Path, backend: dict[str, Any], *, run) -> str | 
 def release_commit_body(
     payload: dict[str, Any], close_issues: list[int], behavior_lines: list[str] | None = None
 ) -> list[str]:
+    return _message_helper().release_commit_body(payload, close_issues, behavior_lines)
+
+
+def _message_helper():
     if _MESSAGE is None:
         raise SystemExit(
             "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
             f"{_MESSAGE_ERROR}"
         )
-    return _MESSAGE.release_commit_body(payload, close_issues, behavior_lines)
+    return _MESSAGE
 
 
 def release_commit_message(payload: dict[str, Any], close_issues: list[int], behavior_lines: list[str] | None = None) -> str:
-    if _MESSAGE is None:
-        raise SystemExit(
-            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
-            f"{_MESSAGE_ERROR}"
-        )
-    return _MESSAGE.release_commit_message(payload, close_issues, behavior_lines)
+    return _message_helper().release_commit_message(payload, close_issues, behavior_lines)
 
 
 def validate_release_closeout_draft(
@@ -181,12 +180,7 @@ def validate_release_closeout_draft(
     classification: str,
     behavior_lines: list[str] | None = None,
 ) -> dict[str, Any]:
-    if _MESSAGE is None:
-        raise SystemExit(
-            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
-            f"{_MESSAGE_ERROR}"
-        )
-    return _MESSAGE.validate_release_closeout_draft(
+    return _message_helper().validate_release_closeout_draft(
         repo_root,
         repo=repo,
         issue_numbers=issue_numbers,
@@ -197,12 +191,7 @@ def validate_release_closeout_draft(
 
 
 def fail_release_closeout_draft_validation(result: dict[str, Any]) -> None:
-    if _MESSAGE is None:
-        raise SystemExit(
-            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
-            f"{_MESSAGE_ERROR}"
-        )
-    _MESSAGE.fail_release_closeout_draft_validation(result)
+    _message_helper().fail_release_closeout_draft_validation(result)
 
 
 def validate_release_closeout_commit_message(
@@ -214,12 +203,7 @@ def validate_release_closeout_commit_message(
     commit_message: str,
     commit_ref: str | None = None,
 ) -> dict[str, Any]:
-    if _MESSAGE is None:
-        raise SystemExit(
-            "release --close-issue requires release_issue_closeout_message.py, but it was not found on this install: "
-            f"{_MESSAGE_ERROR}"
-        )
-    return _MESSAGE.validate_release_closeout_commit_message(
+    return _message_helper().validate_release_closeout_commit_message(
         repo_root,
         repo=repo,
         issue_numbers=issue_numbers,

@@ -524,6 +524,55 @@
       "note": "small idiom-sized span shared by pre-existing checker scripts (check_markdown_inline_code, check_skill_bootstrap_vars); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, not new duplication from this slice",
       "reviewed_at": "2026-07-10",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "22afbb476b430f1a",
+      "note": "portable sibling-module loaders in independently executable release and markdown-preview scripts; extracting them would add the import bootstrap dependency that these local loaders exist to avoid",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3f18bd389422968e",
+      "note": "cross-skill package-root discovery for source and installed layouts; this is bootstrap-before-import code and cannot live in a shared imported helper without circularly assuming the path it resolves",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5736586bc87d320a",
+      "note": "one-line append idiom shared by unrelated host-hook and debug-scaffold owners; a shared helper would add coupling without centralizing a contract",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "70725ebd1c848880",
+      "note": "small importlib loader guard idiom across independently executable repo and portable skill scripts; each loader retains local failure ownership and direct-execution portability",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "925b2e98584abeab",
+      "note": "four-line direct-execution path bootstrap shared across independent repo, issue, release, and support entrypoints; extraction would defeat the bootstrap boundary",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c86d5365eb700947",
+      "note": "debug and retro planners intentionally expose the same portable gate-packet envelope while retaining skill-specific packet semantics and install-local ownership; cross-skill extraction would couple public skill packages",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e32bc7ae8aa9104c",
+      "note": "scanner-reported zero-shared-line control-flow resemblance between release and achieve helpers; there is no shared body or contract to extract",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

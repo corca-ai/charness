@@ -8,16 +8,16 @@
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`; sources: 79)
-- After update, injected 0.63.1 skill paths were stale. The stable 0.64.0 resolver correctly re-resolved them, so no resolver change was needed. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
-- Background subagent completion produced no notification and `TaskOutput` could not find named agents, so waiting was polling `sleep` loops against worktree state and transcript files (~20 idle minutes across three reviewers). (source: `charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md`)
-- Release execution output was lost after its session closed. Release state had to be reconstructed from the checked-in release artifact, git/remote readbacks, the public HTTPS channel, and installed-machine proof. The resulting artifact/state readback was sufficient; no new code change was justified. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
+- Broad exploration itself was necessary: the goal explicitly asked for sibling discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/ defer—prevented that breadth from becoming speculative patches. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
+- Producer and final-consumer contracts were inspected separately, allowing a release carrier, resolved debug pointer, and pre-review packets to look valid locally while failing or overwriting at the next boundary. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
+- Several implementation workers stopped at progress narration before editing; narrowing ownership and giving an exact falsifiable contract recovered the work, but repeated polling was reducible coordination waste. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`; sources: 79)
-- applied: evidence-ranked slices, changed-line coverage, release helper, distinct-channel verification, and install refresh are now part of this goal's durable proof. (source: `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`)
-- applied-in-session — handoff and prompt-mutation disposition record the exact conditions required before the demotion candidate may be reopened. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
-- applied-in-session — reviewer-produced files were treated as untrusted, independently inspected, and regenerated through the retro packet/persistence helpers before closeout. (source: `charness-artifacts/retro/2026-07-10-session-retro.md`)
+- applied — composed producer-to-final-consumer proof and five-bucket sibling triage now gate each repaired seam before implementation closeout. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
+- applied — debug, quality, critique, goal, and this retro preserve exact evidence, non-claims, and the speed comparison. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
+- applied — release carrier validation, fresh-record routing, packet-kind recognition, and orchestration-focused pytest tests landed with owner gates intact. (source: `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`)
 
 ## Selection Policy
 
@@ -101,11 +101,9 @@
 - `charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md`
-- `charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md`
-- `charness-artifacts/retro/2026-07-10-session-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md`

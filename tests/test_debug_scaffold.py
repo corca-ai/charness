@@ -31,13 +31,30 @@ def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProce
     )
 
 
-def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
+def _seed_debug_adapter(repo: Path) -> None:
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "debug-adapter.yaml").write_text(
         "\n".join(["version: 1", "repo: demo", "language: en", "output_dir: charness-artifacts/debug", ""]),
         encoding="utf-8",
     )
+
+
+def _seed_resolved_debug_pointer(repo: Path) -> tuple[Path, Path]:
+    _seed_debug_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    target = debug_dir / f"{dt.date.today().isoformat()}-debug-review.md"
+    target.write_text(
+        "# Debug Review\n\n## Interrupt Decision\n\n- Resolution: resolved\n\n## Problem\n\nTODO\n",
+        encoding="utf-8",
+    )
+    (debug_dir / "latest.md").symlink_to(target.name)
+    return debug_dir, target
+
+
+def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_debug_adapter(repo)
 
     payload = _scaffold_debug.payload_for(repo, title=None)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
@@ -87,11 +104,7 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
 
 def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "debug-adapter.yaml").write_text(
-        "\n".join(["version: 1", "repo: demo", "language: en", "output_dir: charness-artifacts/debug", ""]),
-        encoding="utf-8",
-    )
+    _seed_debug_adapter(repo)
     debug_dir = repo / "charness-artifacts" / "debug"
     debug_dir.mkdir(parents=True)
     target = debug_dir / "debug-2026-05-06-demo.md"
@@ -109,11 +122,7 @@ def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path
 
 def test_debug_scaffold_resolved_current_pointer_emits_fresh_record_contract(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "debug-adapter.yaml").write_text(
-        "\n".join(["version: 1", "repo: demo", "language: en", "output_dir: charness-artifacts/debug", ""]),
-        encoding="utf-8",
-    )
+    _seed_debug_adapter(repo)
     debug_dir = repo / "charness-artifacts" / "debug"
     debug_dir.mkdir(parents=True)
     target = debug_dir / "debug-2026-05-06-demo.md"
@@ -135,28 +144,49 @@ def test_debug_scaffold_resolved_current_pointer_emits_fresh_record_contract(tmp
 
 def test_debug_scaffold_resolved_same_day_default_name_avoids_overwriting_current_target(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "debug-adapter.yaml").write_text(
-        "\n".join(["version: 1", "repo: demo", "language: en", "output_dir: charness-artifacts/debug", ""]),
-        encoding="utf-8",
-    )
-    debug_dir = repo / "charness-artifacts" / "debug"
-    debug_dir.mkdir(parents=True)
-    today_name = f"{dt.date.today().isoformat()}-debug-review.md"
-    target = debug_dir / today_name
-    target.write_text(
-        "# Debug Review\n\n## Interrupt Decision\n\n- Resolution: resolved\n\n## Problem\n\nTODO\n",
-        encoding="utf-8",
-    )
-    (debug_dir / "latest.md").symlink_to(target.name)
+    _debug_dir, target = _seed_resolved_debug_pointer(repo)
 
     payload = _scaffold_debug.payload_for(repo, title=None)
 
     assert payload["intent"] == "record"
-    assert payload["current_pointer_symlink_target"] == today_name
-    assert payload["write_artifact_path"] != f"charness-artifacts/debug/{today_name}"
+    assert payload["current_pointer_symlink_target"] == target.name
+    assert payload["write_artifact_path"] != f"charness-artifacts/debug/{target.name}"
     assert payload["write_artifact_path"].endswith("-debug-review-followup.md")
     assert payload["update_current_pointer_after_write"] is True
+
+
+def test_debug_scaffold_resolved_current_pointer_errors_when_default_followup_names_are_exhausted(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    _debug_dir, _target = _seed_resolved_debug_pointer(repo)
+
+    adapter = _scaffold_debug.load_adapter(repo)
+    for title in (
+        "Debug Review followup",
+        "Debug Review followup-2",
+        "Debug Review followup-3",
+        "Debug Review followup-4",
+    ):
+        record_payload = _scaffold_debug._resolve_artifact_path.payload_for(
+            repo,
+            "debug",
+            title,
+            intent="record",
+            artifact_date=dt.date.today(),
+            adapter=adapter,
+        )
+        write_path = repo / str(record_payload["write_artifact_path"])
+        write_path.parent.mkdir(parents=True, exist_ok=True)
+        write_path.write_text("# occupied\n", encoding="utf-8")
+
+    try:
+        _scaffold_debug.payload_for(repo, title=None)
+    except SystemExit as exc:
+        assert "--title <specific follow-up title>" in str(exc)
+        assert "every deterministic default slug for today already exists" in str(exc)
+    else:
+        raise AssertionError("expected exhausted deterministic follow-up names to abort with guidance")
 
 
 def test_exported_debug_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:

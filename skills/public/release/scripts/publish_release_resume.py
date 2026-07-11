@@ -14,15 +14,23 @@ The resume flow reuses the CLI module's already-bound helpers (passed in as
 """
 from __future__ import annotations
 
+import importlib.util
 import json
-import runpy
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any
 
-_runtime = SimpleNamespace(
-    **runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_runtime.py")))
-)
+
+def _load_release_common():
+    module_path = Path(__file__).resolve().with_name("publish_release_common.py")
+    spec = importlib.util.spec_from_file_location("publish_release_common_for_resume", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_common = _load_release_common()
 
 
 def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
@@ -118,12 +126,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # current target. The original attempt already passed the file-triggered
     # adapter/real-host preflights on this unchanged worktree, so resume re-runs the
     # gates that can flake at push time, not those one-time file-delta checks.
-    cli.preflight_release_issues(
-        repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
-        behavior_lines=args.close_issue_behavior,
-        classification=args.close_issue_classification,
-        carrier_file=args.close_issue_carrier_file.resolve() if args.close_issue_carrier_file else None,
-    )
+    _common.preflight_close_issue_carrier(repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli)
     if args.close_issue:
         head_commit_message = cli.run(
             ["git", "show", "-s", "--format=%B", "HEAD"], cwd=repo_root
@@ -139,12 +142,8 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         payload["resume_head_closeout_validation"] = head_validation
         if not head_validation["ok"]:
             cli.fail_release_closeout_draft_validation(head_validation)
-    payload["requested_review_gate"] = _runtime.timed(
-        payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
-    )
-    _runtime.timed(payload, "cli_skill_surface_gate", lambda: cli.run_cli_skill_surface_gate(repo_root, adapter_data))
-    _runtime.timed(payload, "quality_command", lambda: cli.run_shell(str(adapter_data["quality_command"]), cwd=repo_root))
-    fresh_checkout_payload = _runtime.timed(
+    _common.run_pre_push_quality_gates(repo_root, adapter_data, payload, cli=cli)
+    fresh_checkout_payload = _common.timed(
         payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root)
     )
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
@@ -185,7 +184,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         )
         return release_stdout, release_verify_result
 
-    release_stdout, release_verify_result = _runtime.timed(
+    release_stdout, release_verify_result = _common.timed(
         payload, "push_create_verify_release", push_create_verify_release
     )
     cli.finalize_release_payload(
@@ -193,46 +192,28 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         release_stdout=release_stdout, expected_release_url=expected_release_url,
         release_verified=release_verify_result.returncode == 0,
     )
+    state.update(
+        {
+            "artifact_relpath": artifact_relpath,
+            "backend": backend,
+            "branch": branch,
+            "expected_release_url": expected_release_url,
+            "fresh_checkout_payload": fresh_checkout_payload,
+            "host_payload": host_payload,
+            "tag_name": tag_name,
+        }
+    )
     # WS-1: the resumed publish crosses the same irreversible issue-close boundary,
     # so it gets the same rung-2 distinct-channel observer + rung-1 presence floor.
-    _runtime.timed(
-        payload,
-        "distinct_channel_verification",
-        lambda: cli.confirm_release_via_distinct_channel(
-            repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
-            tag_name=tag_name, expected_release_url=expected_release_url,
-            backend=backend, backend_command=cli.backend_command,
-        ),
-    )
-    if not cli.evaluate_release_distinct_channel(payload)["ok"]:
-        cli.commit_final_release_artifact(
-            repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
-            fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
-            expected_release_url=expected_release_url, remote=args.remote, branch=branch,
-            has_issue_closeout=False,
-        )
-        cli.fail_release_distinct_channel_floor(payload)
-    _runtime.timed(
-        payload,
-        "issue_closeout",
-        lambda: cli.ensure_release_issues_closed(
-            repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
-            behavior_lines=args.close_issue_behavior,
-        ),
-    )
     # A resumed publish is still a verified publish: auto-run the adapter-declared
     # install-refresh before the final artifact commit so the result is durable.
-    payload["install_refresh"] = _runtime.timed(
-        payload,
-        "post_publish_install_refresh",
-        lambda: cli.run_post_publish_install_refresh(
-            repo_root, command=adapter_data.get("post_publish_install_refresh", ""), run_shell=cli.run_shell
-        ),
-    )
-    cli.commit_final_release_artifact(
-        repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
-        fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
-        expected_release_url=expected_release_url, remote=args.remote, branch=branch,
-        has_issue_closeout=bool(args.close_issue),
+    _common.run_release_closeout_tail(
+        repo_root,
+        args=args,
+        adapter_data=adapter_data,
+        state=state,
+        issue_repo=issue_repo,
+        payload=payload,
+        cli=cli,
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))

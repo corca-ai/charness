@@ -4,12 +4,9 @@ import argparse
 import json
 import runpy
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any
 
-_runtime = SimpleNamespace(
-    **runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_runtime.py")))
-)
+_common = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_common.py")))
 
 
 def _prepare_release_attempt(
@@ -34,12 +31,7 @@ def _prepare_release_attempt(
     cli.run(cli.backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     expected_release_url = cli.expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_release_url
-    cli.preflight_release_issues(
-        repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
-        behavior_lines=args.close_issue_behavior,
-        classification=args.close_issue_classification,
-        carrier_file=args.close_issue_carrier_file.resolve() if args.close_issue_carrier_file else None,
-    )
+    _common["preflight_close_issue_carrier"](repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli)
     cli.run_release_adapter_preflight(repo_root, adapter_preflight_payload, run_command=cli.run)
     cli.run_bump(args, repo_root)
     cli.ensure_release_surface(repo_root, next_version)
@@ -63,11 +55,7 @@ def _prepare_release_attempt(
         quality_status="is queued for this publish attempt",
         fresh_checkout_payload=fresh_checkout_plan,
     )
-    payload["requested_review_gate"] = _runtime.timed(
-        payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
-    )
-    _runtime.timed(payload, "cli_skill_surface_gate", lambda: cli.run_cli_skill_surface_gate(repo_root, adapter_data))
-    _runtime.timed(payload, "quality_command", lambda: cli.run_shell(str(adapter_data["quality_command"]), cwd=repo_root))
+    _common["run_pre_push_quality_gates"](repo_root, adapter_data, payload, cli=cli)
     return {
         "payload": payload,
         "branch": plan["branch"],
@@ -116,7 +104,7 @@ def _commit_release_artifact(
     for body_line in body_lines:
         commit_command.extend(["-m", body_line])
     cli.run(commit_command, cwd=repo_root)
-    fresh_checkout_payload = _runtime.timed(
+    fresh_checkout_payload = _common["timed"](
         payload, "fresh_checkout_probes_initial", lambda: cli.run_fresh_checkout_probes(repo_root)
     )
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
@@ -134,7 +122,7 @@ def _commit_release_artifact(
             run_narrative_audit=cli.run_narrative_audit,
             run_command=cli.run,
         )
-        fresh_checkout_payload = _runtime.timed(
+        fresh_checkout_payload = _common["timed"](
             payload, "fresh_checkout_probes_after_amend", lambda: cli.run_fresh_checkout_probes(repo_root)
         )
         payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
@@ -184,7 +172,7 @@ def _publish_and_finalize(
         )
         return release_result, release_verify_result
 
-    release_result, release_verify_result = _runtime.timed(
+    release_result, release_verify_result = _common["timed"](
         payload, "push_create_verify_release", push_create_verify_release
     )
     release_verified = release_verify_result.returncode == 0
@@ -216,51 +204,14 @@ def _publish_and_finalize(
     # the verdict BEFORE the irreversible issue close. Issue-close advances on
     # rung-1 record-PRESENCE only (a confirmation or a typed disposition pass it
     # equally, F2a); a silent record refuses the close.
-    _runtime.timed(
-        payload,
-        "distinct_channel_verification",
-        lambda: cli.confirm_release_via_distinct_channel(
-            repo_root, payload, adapter_data=adapter_data, run_shell=cli.run_shell,
-            tag_name=tag_name, expected_release_url=expected_release_url,
-            backend=backend, backend_command=cli.backend_command,
-        ),
-    )
-    if not cli.evaluate_release_distinct_channel(payload)["ok"]:
-        cli.commit_final_release_artifact(
-            repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
-            fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
-            expected_release_url=expected_release_url, remote=args.remote, branch=branch,
-            has_issue_closeout=False,
-        )
-        cli.fail_release_distinct_channel_floor(payload)
-    _runtime.timed(
-        payload,
-        "issue_closeout",
-        lambda: cli.ensure_release_issues_closed(
-            repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=cli.run,
-            behavior_lines=args.close_issue_behavior,
-        ),
-    )
-    payload["install_refresh"] = _runtime.timed(
-        payload,
-        "post_publish_install_refresh",
-        lambda: cli.run_post_publish_install_refresh(
-            repo_root,
-            command=adapter_data.get("post_publish_install_refresh", ""),
-            run_shell=cli.run_shell,
-        ),
-    )
-    cli.commit_final_release_artifact(
+    _common["run_release_closeout_tail"](
         repo_root,
+        args=args,
         adapter_data=adapter_data,
+        state=state,
+        issue_repo=issue_repo,
         payload=payload,
-        host_payload=host_payload,
-        fresh_checkout_payload=fresh_checkout_payload,
-        artifact_relpath=artifact_relpath,
-        expected_release_url=expected_release_url,
-        remote=args.remote,
-        branch=branch,
-        has_issue_closeout=bool(args.close_issue),
+        cli=cli,
     )
 
 

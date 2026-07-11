@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-11",
-  "source_artifact_count": 303,
-  "candidate_count": 1369,
+  "source_artifact_count": 305,
+  "candidate_count": 1377,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -880,162 +880,162 @@
       ]
     },
     {
-      "candidate_id": "current_focus:867c73b994f8",
+      "candidate_id": "current_focus:ac736b860c1a",
       "kind": "current_focus",
-      "lesson": "Autonomous improvement run over the handoff backlog: fixed the credentials-less CI baseline failure blocking the #421 mutation gate, resolved #428 (reviewer read-only boundary enforcement: rail-1 worktree+index fingerprint + rail-2 read-only reviewer envelope), and shipped v0.65.0 (pushed, tagged, published, install-refreshed, #428 closed with a verified carrier).",
-      "normalized_key": "autonomous improvement run over the handoff backlog fixed the credentials less ci baseline failure",
+      "lesson": "This retro covers the activated goal that repaired issue #433's release-close carrier, audited sibling producer/final-consumer seams, and profiled standing pytest before one structural test-speed change.",
+      "normalized_key": "this retro covers the activated goal that repaired issue 433 s release close carrier",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-428-reviewer-boundary-enforcement-release.md",
-          "date": "2026-07-10",
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
           "section": "Context"
         }
       ]
     },
     {
-      "candidate_id": "current_focus:2cf68b9d54cd",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.64.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 64 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md",
-          "date": "2026-07-10",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:491348521b5e",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v0.65.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v0 65 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md",
-          "date": "2026-07-10",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:30ec029d5347",
-      "kind": "current_focus",
-      "lesson": "This retro covers the repo-wide quality, bug-fix, speed, and v0.64.0 release goal at `charness-artifacts/goals/2026-07-10-repo-wide-quality-speed-release.md`.",
-      "normalized_key": "this retro covers the repo wide quality bug fix speed and v0 64 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
-          "date": "2026-07-10",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:48a73046e66e",
-      "kind": "current_focus",
-      "lesson": "This retro reviews the autonomous outcome-driven improvement goal: adding a privacy-safe `usage_feedback` path, reconciling stale handoff state, and dispositioning the `#handoff/closeout-vocabulary` prompt-mutation demotion candidate without external writes or live capture.",
-      "normalized_key": "this retro reviews the autonomous outcome driven improvement goal adding a privacy safe usage",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-          "date": "2026-07-10",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9e42b18bc326",
+      "candidate_id": "next_improvement:c8a039e0f33a",
       "kind": "next_improvement",
-      "lesson": "applied: evidence-ranked slices, changed-line coverage, release helper, distinct-channel verification, and install refresh are now part of this goal's durable proof.",
-      "normalized_key": "applied evidence ranked slices changed line coverage release helper distinct channel verification and install",
+      "lesson": "applied — composed producer-to-final-consumer proof and five-bucket sibling triage now gate each repaired seam before implementation closeout.",
+      "normalized_key": "applied composed producer to final consumer proof and five bucket sibling triage now gate",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-repo-wide-quality-speed-release.md",
-          "date": "2026-07-10",
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:e4e8bd660d4f",
+      "candidate_id": "next_improvement:827b88c663b3",
       "kind": "next_improvement",
-      "lesson": "applied-in-session — handoff and prompt-mutation disposition record the exact conditions required before the demotion candidate may be reopened.",
-      "normalized_key": "applied in session handoff and prompt mutation disposition record the exact conditions required before",
+      "lesson": "applied — debug, quality, critique, goal, and this retro preserve exact evidence, non-claims, and the speed comparison.",
+      "normalized_key": "applied debug quality critique goal and this retro preserve exact evidence non claims and",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-          "date": "2026-07-10",
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:7c494e7311c3",
+      "candidate_id": "next_improvement:b09d6234b41b",
       "kind": "next_improvement",
-      "lesson": "applied-in-session — reviewer-produced files were treated as untrusted, independently inspected, and regenerated through the retro packet/persistence helpers before closeout.",
-      "normalized_key": "applied in session reviewer produced files were treated as untrusted independently inspected and regenerated",
+      "lesson": "applied — release carrier validation, fresh-record routing, packet-kind recognition, and orchestration-focused pytest tests landed with owner gates intact.",
+      "normalized_key": "applied release carrier validation fresh record routing packet kind recognition and orchestration focused pytest",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-      "latest_source_date": "2026-07-10",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-session-retro.md",
-          "date": "2026-07-10",
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c037c067f56d",
+      "kind": "repeat_trap",
+      "lesson": "Broad exploration itself was necessary: the goal explicitly asked for sibling discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/ defer—prevented that breadth from becoming speculative patches.",
+      "normalized_key": "broad exploration itself was necessary the goal explicitly asked for sibling discovery the triage",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f2da8e02ef6d",
+      "kind": "repeat_trap",
+      "lesson": "Producer and final-consumer contracts were inspected separately, allowing a release carrier, resolved debug pointer, and pre-review packets to look valid locally while failing or overwriting at the next boundary.",
+      "normalized_key": "producer and final consumer contracts were inspected separately allowing a release carrier resolved debug",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:168543b98717",
+      "kind": "repeat_trap",
+      "lesson": "Several implementation workers stopped at progress narration before editing; narrowing ownership and giving an exact falsifiable contract recovered the work, but repeated polling was reducible coordination waste.",
+      "normalized_key": "several implementation workers stopped at progress narration before editing narrowing ownership and giving an",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fc7edbe6e99b",
+      "kind": "repeat_trap",
+      "lesson": "The first artifact-contract fresh-eye review preceded the cheapest complete structural pre-lock, so length and subprocess-boundary findings caused an avoidable review/fix/re-review cycle.",
+      "normalized_key": "the first artifact contract fresh eye review preceded the cheapest complete structural pre lock",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
         }
       ]
     }
@@ -1903,6 +1903,166 @@
           "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md",
           "date": "2026-07-11",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ac736b860c1a",
+      "kind": "current_focus",
+      "lesson": "This retro covers the activated goal that repaired issue #433's release-close carrier, audited sibling producer/final-consumer seams, and profiled standing pytest before one structural test-speed change.",
+      "normalized_key": "this retro covers the activated goal that repaired issue 433 s release close carrier",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c8a039e0f33a",
+      "kind": "next_improvement",
+      "lesson": "applied — composed producer-to-final-consumer proof and five-bucket sibling triage now gate each repaired seam before implementation closeout.",
+      "normalized_key": "applied composed producer to final consumer proof and five bucket sibling triage now gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:827b88c663b3",
+      "kind": "next_improvement",
+      "lesson": "applied — debug, quality, critique, goal, and this retro preserve exact evidence, non-claims, and the speed comparison.",
+      "normalized_key": "applied debug quality critique goal and this retro preserve exact evidence non claims and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b09d6234b41b",
+      "kind": "next_improvement",
+      "lesson": "applied — release carrier validation, fresh-record routing, packet-kind recognition, and orchestration-focused pytest tests landed with owner gates intact.",
+      "normalized_key": "applied release carrier validation fresh record routing packet kind recognition and orchestration focused pytest",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c037c067f56d",
+      "kind": "repeat_trap",
+      "lesson": "Broad exploration itself was necessary: the goal explicitly asked for sibling discovery. The triage lock—confirmed mismatch/precondition/contract/overreach/ defer—prevented that breadth from becoming speculative patches.",
+      "normalized_key": "broad exploration itself was necessary the goal explicitly asked for sibling discovery the triage",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f2da8e02ef6d",
+      "kind": "repeat_trap",
+      "lesson": "Producer and final-consumer contracts were inspected separately, allowing a release carrier, resolved debug pointer, and pre-review packets to look valid locally while failing or overwriting at the next boundary.",
+      "normalized_key": "producer and final consumer contracts were inspected separately allowing a release carrier resolved debug",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:168543b98717",
+      "kind": "repeat_trap",
+      "lesson": "Several implementation workers stopped at progress narration before editing; narrowing ownership and giving an exact falsifiable contract recovered the work, but repeated polling was reducible coordination waste.",
+      "normalized_key": "several implementation workers stopped at progress narration before editing narrowing ownership and giving an",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fc7edbe6e99b",
+      "kind": "repeat_trap",
+      "lesson": "The first artifact-contract fresh-eye review preceded the cheapest complete structural pre-lock, so length and subprocess-boundary findings caused an avoidable review/fix/re-review cycle.",
+      "normalized_key": "the first artifact contract fresh eye review preceded the cheapest complete structural pre lock",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+      "latest_source_date": "2026-07-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste"
         }
       ]
     },

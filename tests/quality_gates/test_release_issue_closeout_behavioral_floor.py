@@ -211,6 +211,14 @@ def test_package_root_raises_when_neither_layout_matches() -> None:
         _CLOSEOUT._package_root(Path("/nowhere/foo.py"))
 
 
+def _seed_issue_helper(package_root: Path, *, installed: bool, filename: str, body: str = "OK = True\n") -> Path:
+    parts = ("skills", "issue", "scripts") if installed else ("skills", "public", "issue", "scripts")
+    candidate = package_root.joinpath(*parts)
+    candidate.mkdir(parents=True)
+    (candidate / filename).write_text(body, encoding="utf-8")
+    return candidate
+
+
 def test_load_issue_closeout_body_lib_covers_missing_and_unloadable_candidates(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -219,10 +227,7 @@ def test_load_issue_closeout_body_lib_covers_missing_and_unloadable_candidates(
     # `if spec is None or spec.loader is None: continue` branch), so the loop
     # exhausts to the final "not found" raise -- all three in one pass.
     package_root = tmp_path / "pkg"
-    (package_root / "skills" / "issue" / "scripts").mkdir(parents=True)
-    (package_root / "skills" / "issue" / "scripts" / "issue_verify_closeout_body.py").write_text(
-        "OK = True\n", encoding="utf-8"
-    )
+    _seed_issue_helper(package_root, installed=True, filename="issue_verify_closeout_body.py")
     monkeypatch.setattr(_CLOSEOUT, "_package_root", lambda _here: (package_root, False))
     monkeypatch.setattr(_CLOSEOUT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
 
@@ -230,11 +235,50 @@ def test_load_issue_closeout_body_lib_covers_missing_and_unloadable_candidates(
         _CLOSEOUT._load_issue_closeout_body_lib()
 
 
+def test_load_issue_closeout_body_lib_skips_loader_without_spec(tmp_path: Path, monkeypatch) -> None:
+    package_root = tmp_path / "pkg"
+    _seed_issue_helper(package_root, installed=False, filename="issue_verify_closeout_body.py")
+    monkeypatch.setattr(_CLOSEOUT, "_package_root", lambda _here: (package_root, True))
+    monkeypatch.setattr(_CLOSEOUT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+    with pytest.raises(ImportError, match="issue_verify_closeout_body.py not found"):
+        _CLOSEOUT._load_issue_closeout_body_lib()
+
+
+def test_release_closeout_wrappers_refuse_when_message_helper_missing(monkeypatch) -> None:
+    monkeypatch.setattr(_CLOSEOUT, "_MESSAGE", None)
+    monkeypatch.setattr(_CLOSEOUT, "_MESSAGE_ERROR", "missing helper (forced)")
+    calls = [
+        lambda: _CLOSEOUT.release_commit_body({}, [1]),
+        lambda: _CLOSEOUT.release_commit_message({"commit_message": "x"}, [1]),
+        lambda: _CLOSEOUT.validate_release_closeout_draft(
+            Path("."), repo="o/r", issue_numbers=[1], payload={}, classification="bug"
+        ),
+        lambda: _CLOSEOUT.fail_release_closeout_draft_validation({}),
+        lambda: _CLOSEOUT.validate_release_closeout_commit_message(
+            Path("."), repo="o/r", issue_numbers=[1], classification="bug", commit_message="x"
+        ),
+    ]
+    for call in calls:
+        with pytest.raises(SystemExit, match="release_issue_closeout_message.py"):
+            call()
+
+
+def test_load_local_release_module_missing_and_unloadable(monkeypatch) -> None:
+    with pytest.raises(ImportError, match="Unable to load"):
+        _CLOSEOUT._load_local_release_module("definitely_missing_release_module")
+    monkeypatch.setattr(_CLOSEOUT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+    with pytest.raises(ImportError, match="Unable to load"):
+        _CLOSEOUT._load_local_release_module("release_issue_closeout_message")
+
+
 def test_load_issue_closeout_module_prefers_installed_layout_when_requested(tmp_path: Path, monkeypatch) -> None:
     package_root = tmp_path / "pkg"
-    installed = package_root / "skills" / "issue" / "scripts"
-    installed.mkdir(parents=True)
-    (installed / "issue_validate_closeout_draft.py").write_text("VALUE = 'installed'\n", encoding="utf-8")
+    _seed_issue_helper(
+        package_root,
+        installed=True,
+        filename="issue_validate_closeout_draft.py",
+        body="VALUE = 'installed'\n",
+    )
     monkeypatch.setattr(_MESSAGE, "_package_root", lambda _here: (package_root, True))
 
     module = _MESSAGE._load_issue_closeout_module(
@@ -243,6 +287,48 @@ def test_load_issue_closeout_module_prefers_installed_layout_when_requested(tmp_
     )
 
     assert module.VALUE == "installed"
+
+
+def test_load_issue_closeout_module_skips_unloadable_candidate_and_raises(tmp_path: Path, monkeypatch) -> None:
+    package_root = tmp_path / "pkg"
+    _seed_issue_helper(
+        package_root,
+        installed=True,
+        filename="issue_validate_closeout_draft.py",
+        body="VALUE = 'installed'\n",
+    )
+    monkeypatch.setattr(_MESSAGE, "_package_root", lambda _here: (package_root, True))
+    monkeypatch.setattr(_MESSAGE.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+    with pytest.raises(ImportError, match="issue skill issue_validate_closeout_draft.py not found"):
+        _MESSAGE._load_issue_closeout_module("issue_validate_closeout_draft", "release_issue_validate_closeout_draft_test")
+
+
+def _load_message_module_with_isolated_file(tmp_path: Path):
+    isolated_file = tmp_path / "nowhere" / "release_issue_closeout_message.py"
+    isolated_file.parent.mkdir(parents=True)
+    spec = importlib.util.spec_from_file_location(
+        "release_issue_closeout_message_reexec", _HELPER
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    module.__file__ = str(isolated_file)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_message_module_level_absence_degrade_records_error(tmp_path: Path) -> None:
+    module = _load_message_module_with_isolated_file(tmp_path)
+    assert module._ISSUE_VALIDATE_CLOSEOUT_DRAFT is None
+    assert module._ISSUE_VERIFY_CLOSEOUT is None
+    assert module._ISSUE_CLOSEOUT_DRAFT_ERROR is not None
+
+
+def test_message_transport_adds_classification_without_carrier() -> None:
+    body = _MESSAGE.release_commit_body(
+        {"tag_name": "v1.0.0", "quality_command": "make quality", "issue_closeout_classification": "feature"},
+        [44],
+    )
+    assert "Classification: feature" in body
 
 
 def test_module_level_absence_degrade_records_error_on_the_real_file(tmp_path: Path) -> None:

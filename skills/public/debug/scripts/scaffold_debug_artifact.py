@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
 import datetime as dt
-import json
 import os
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -64,6 +61,10 @@ VALIDATOR_SCRIPT_NAMES = ("validate_debug_artifact.py", "validate-debug-artifact
 
 def default_title(title: str | None) -> str:
     return title if title else "Debug Review"
+
+
+def _append_placeholder_section(lines: list[str], heading: str) -> None:
+    lines.extend((heading, "", "TODO", ""))
 
 
 def render_template(*, title: str, date_text: str) -> str:
@@ -170,7 +171,7 @@ def render_template(*, title: str, date_text: str) -> str:
                 ]
             )
             continue
-        lines.extend([heading, "", "TODO", ""])
+        _append_placeholder_section(lines, heading)
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -286,13 +287,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scaffold the debug artifact into")
-    parser.add_argument("--title", help="Title for the scaffolded debug artifact")
-    args = parser.parse_args()
-    payload = payload_for(args.repo_root.resolve(), title=args.title)
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-    return 0
+    return _scaffold_lib.emit_payload_main(payload_for, artifact_label="debug")
 
 
 if __name__ == "__main__":

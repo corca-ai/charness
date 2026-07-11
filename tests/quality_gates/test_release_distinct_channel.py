@@ -33,6 +33,38 @@ def _shell_result(returncode: int, stdout: str = "", stderr: str = ""):
     return SimpleNamespace(returncode=returncode, stdout=stdout, stderr=stderr)
 
 
+def _release_commit_artifact_cli(commands: list[list[str]], write_counter: dict[str, int]) -> SimpleNamespace:
+    def write_artifact(*_args, **_kwargs):
+        write_counter["count"] += 1
+        return "release.md"
+
+    def run(command, *, cwd, check=True):
+        commands.append(command)
+        return _shell_result(0)
+
+    return SimpleNamespace(
+        write_current_artifact=write_artifact,
+        run_narrative_audit=lambda *_a, **_k: None,
+        run=run,
+        run_fresh_checkout_probes=lambda *_a, **_k: {"status": "failed", "reason": "test"},
+        release_commit_body=lambda *_a, **_k: ["fallback body"],
+    )
+
+
+def _release_commit_artifact_state() -> dict:
+    return {
+        "payload": {
+            "commit_message": "Release v1.0.0",
+            "issue_closeout_draft_validation": {"paragraphs": ["Release v1.0.0", "Body A", "Body B"]},
+        },
+        "tag_name": "v1.0.0",
+        "notes_file": None,
+        "expected_release_url": "https://x/v1.0.0",
+        "host_payload": {},
+        "fresh_checkout_plan": {},
+    }
+
+
 # --- rung-1 presence floor ------------------------------------------------
 
 
@@ -184,6 +216,35 @@ def test_observer_without_backend_kwargs_skips_the_same_proxy_check() -> None:
     )
     assert payload["distinct_channel_verification"]["status"] == "confirmed"
     assert calls == ["gh release view v1"]
+
+
+def test_commit_release_artifact_uses_validated_draft_body_lines() -> None:
+    """A draft's paragraphs, when present, are transported verbatim to git commit."""
+    commands: list[list[str]] = []
+    writes = {"count": 0}
+    cli = _release_commit_artifact_cli(commands, writes)
+    args = SimpleNamespace(close_issue=[44], close_issue_behavior=[], remote="origin")
+    state = _release_commit_artifact_state()
+    result = _EXECUTE._commit_release_artifact(args, Path("."), state, {}, cli=cli)
+    commit = next(command for command in commands if command[:2] == ["git", "commit"])
+    assert commit == ["git", "commit", "-m", "Release v1.0.0", "-m", "Body A", "-m", "Body B"]
+    assert result["artifact_relpath"] == "release.md"
+    assert writes["count"] == 1
+
+
+def test_commit_release_artifact_falls_back_when_draft_paragraphs_empty() -> None:
+    """Empty draft paragraphs are absence, so commit construction uses the release helper."""
+    commands: list[list[str]] = []
+    writes = {"count": 0}
+    cli = _release_commit_artifact_cli(commands, writes)
+    args = SimpleNamespace(close_issue=[44], close_issue_behavior=["Behavior #44: verified via installer"], remote="origin")
+    state = _release_commit_artifact_state()
+    state["payload"]["issue_closeout_draft_validation"]["paragraphs"] = []
+
+    _EXECUTE._commit_release_artifact(args, Path("."), state, {}, cli=cli)
+
+    commit = next(command for command in commands if command[:2] == ["git", "commit"])
+    assert commit == ["git", "commit", "-m", "Release v1.0.0", "-m", "fallback body"]
 
 
 # --- integration wiring: refuse on silence, proceed on presence -----------

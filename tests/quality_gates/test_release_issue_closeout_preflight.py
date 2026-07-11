@@ -7,6 +7,8 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
+
 from .issue_closeout_support import bug_closeout_body, load_verify_module
 from .release_publish_fixtures import _seed_publish_release_repo, _write_exec
 
@@ -47,6 +49,21 @@ def _load_commit_msg_checker():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _release_payload(
+    *,
+    classification: str,
+    carrier_body: str,
+    commit_message: str = "Release demo v1.0.0",
+) -> dict[str, str]:
+    return {
+        "tag_name": "v1.0.0",
+        "quality_command": "./scripts/run-quality.sh",
+        "commit_message": commit_message,
+        "issue_closeout_carrier_body": carrier_body,
+        "issue_closeout_classification": classification,
+    }
 
 
 def _feature_closeout_body(close_line: str = "Close #44.") -> str:
@@ -144,16 +161,13 @@ def test_release_generated_final_message_passes_issue_owned_direct_commit_draft_
     release_closeout = _load_release_closeout_module()
     validate_closeout_draft = _load_issue_validate_closeout_draft()
     verifier = load_verify_module()
-    payload = {
-        "tag_name": "v1.0.0",
-        "quality_command": "./scripts/run-quality.sh",
-        "commit_message": "Release demo v1.0.0",
-        "issue_closeout_carrier_body": bug_closeout_body(
+    payload = _release_payload(
+        classification="bug",
+        carrier_body=bug_closeout_body(
             close_line="Close #44.",
             behavior_line=None,
         ),
-        "issue_closeout_classification": "bug",
-    }
+    )
     commit_message = tmp_path / "message.txt"
     commit_message.write_text(
         "\n\n".join(
@@ -225,15 +239,12 @@ def test_release_generated_final_message_passes_commit_msg_gate(tmp_path: Path) 
         capture_output=True,
         text=True,
     )
-    payload = {
-        "tag_name": "v1.0.0",
-        "quality_command": "./scripts/run-quality.sh",
-        "commit_message": "Release demo v1.0.0",
-        "issue_closeout_carrier_body": _feature_closeout_body(
+    payload = _release_payload(
+        classification="feature",
+        carrier_body=_feature_closeout_body(
             close_line="Close #44.",
         ),
-        "issue_closeout_classification": "feature",
-    }
+    )
     message = tmp_path / "message.txt"
     message.write_text(
         release_closeout.release_commit_message(
@@ -261,12 +272,9 @@ def test_release_generated_final_message_passes_commit_msg_gate(tmp_path: Path) 
 
 def test_release_closeout_message_refuses_mismatched_carrier_classification() -> None:
     message_module = _load_release_closeout_message_module()
-    payload = {
-        "tag_name": "v1.0.0",
-        "quality_command": "./scripts/run-quality.sh",
-        "commit_message": "Release demo v1.0.0",
-        "issue_closeout_classification": "bug",
-        "issue_closeout_carrier_body": "\n\n".join(
+    payload = _release_payload(
+        classification="bug",
+        carrier_body="\n\n".join(
             [
                 "Classification: feature",
                 "Close #44.",
@@ -277,7 +285,7 @@ def test_release_closeout_message_refuses_mismatched_carrier_classification() ->
                 "Prevention: release preflight blocks conflicting classifications.",
             ]
         ),
-    }
+    )
 
     try:
         message_module.release_commit_body(
@@ -290,6 +298,35 @@ def test_release_closeout_message_refuses_mismatched_carrier_classification() ->
         assert "carrier=feature requested=bug" in str(exc)
     else:
         raise AssertionError("expected classification mismatch to refuse")
+
+
+def test_release_closeout_message_package_root_handles_installed_layout() -> None:
+    message_module = _load_release_closeout_message_module()
+
+    package_root, installed_first = message_module._package_root(
+        Path("/opt/plugin/skills/release/scripts/release_issue_closeout_message.py")
+    )
+
+    assert package_root == Path("/opt/plugin")
+    assert installed_first is True
+
+
+def test_release_closeout_message_refuses_commit_validation_when_issue_helpers_missing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    message_module = _load_release_closeout_message_module()
+    for helper_name in ("_ISSUE_VALIDATE_CLOSEOUT_DRAFT", "_ISSUE_VERIFY_CLOSEOUT"):
+        monkeypatch.setattr(message_module, helper_name, None)
+    monkeypatch.setattr(message_module, "_ISSUE_CLOSEOUT_DRAFT_ERROR", "missing issue helpers (forced)")
+
+    with pytest.raises(SystemExit, match="closeout draft helpers"):
+        message_module.validate_release_closeout_commit_message(
+            tmp_path,
+            repo="example/demo",
+            issue_numbers=[44],
+            classification="bug",
+            commit_message="Release demo v1.0.0\n",
+        )
 
 
 def _assert_stopped_before_mutation(repo: Path, tmp_path: Path, initial_head: str) -> None:
@@ -420,3 +457,33 @@ def test_close_issue_preflight_without_close_issue_skips_carrier_validation(tmp_
     )
 
     assert payload["issue_closeout_preflight"] == {"status": "not_requested", "issues": []}
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({}, "close-issue-classification"),
+        ({"classification": "bug"}, "close-issue-carrier-file"),
+        (
+            {
+                "classification": "bug",
+                "carrier_file": "missing.md",
+                "behavior_lines": ["Behavior #44: x"],
+            },
+            "carrier file not found",
+        ),
+    ],
+)
+def test_close_issue_preflight_requires_classification_and_existing_carrier(
+    tmp_path: Path, kwargs: dict[str, object], message: str
+) -> None:
+    release_closeout = _load_release_closeout_module()
+    resolved_kwargs = {
+        key: tmp_path / value if key == "carrier_file" else value
+        for key, value in kwargs.items()
+    }
+    with pytest.raises(SystemExit, match=message):
+        release_closeout.preflight_release_issues(
+            tmp_path, repo="example/demo", issue_numbers=[44], payload={}, run=None,
+            **resolved_kwargs,
+        )
