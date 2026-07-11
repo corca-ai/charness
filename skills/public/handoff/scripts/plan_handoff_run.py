@@ -394,16 +394,20 @@ def build_plan(
 def main() -> None:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="handoff plan_handoff_run")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(),
+                        help="Repository root used to resolve handoff adapter and artifact state.")
     parser.add_argument(
         "--intent",
         choices=("auto", "pickup", "refresh"),
         default="auto",
         help="Operator intent when known; auto derives only deterministic cases.",
     )
-    parser.add_argument("--invocation-text", default="")
-    parser.add_argument("--invoked-directly", action="store_true")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--invocation-text", default="",
+                        help="Original invocation text used to derive handoff intent and routing.")
+    parser.add_argument("--invoked-directly", action="store_true",
+                        help="Mark that the handoff skill was invoked directly for chunked routing.")
+    parser.add_argument("--json", action="store_true",
+                        help="Accepted for CLI compatibility; planner output is always JSON.")
     try:
         args = parser.parse_args()
         plan = build_plan(

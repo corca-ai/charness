@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -87,6 +88,38 @@ def run_plan(*args: str, cwd: Path | None = None) -> dict[str, object]:
     )
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)
+
+
+def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
+    """Assert each option's wrapped argparse block contains its own help text."""
+    for option, fragment in expected_pairs.items():
+        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
+        assert match, f"missing help option: {option}"
+        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
+        end = match.end() + next_option.start() if next_option else len(output)
+        option_block = re.sub(r"\s+", " ", output[match.start() : end])
+        assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_handoff_plan_help_describes_all_options() -> None:
+    result = subprocess.run(
+        ["python3", SCRIPT, "--help"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    _assert_help_pairs(
+        result.stdout,
+        {
+            "--repo-root": "Repository root used to resolve handoff adapter and artifact state.",
+            "--intent": "Operator intent when known; auto derives only deterministic cases.",
+            "--invocation-text": "Original invocation text used to derive handoff intent and routing.",
+            "--invoked-directly": "Mark that the handoff skill was invoked directly for chunked routing.",
+            "--json": "Accepted for CLI compatibility; planner output is always JSON.",
+        },
+    )
 
 
 def test_handoff_plan_bootstrap_reports_missing_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
