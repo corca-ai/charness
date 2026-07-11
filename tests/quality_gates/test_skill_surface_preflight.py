@@ -149,17 +149,50 @@ def test_check_commands_cover_full_portable_package_gate_set() -> None:
     } <= ids
 
 
-def test_run_checks_reports_all_portable_package_gates_on_real_repo() -> None:
-    # Integration: the extended gate set runs clean against the committed repo, so
-    # --run-checks is a true one-shot preflight rather than a partial subset.
-    from .support import ROOT
+def test_run_checks_reports_all_portable_package_gates_in_declared_order(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    # Fast in-process simulation: prove the one-shot preflight still runs the full
+    # portable gate set in declared order, maps ids/commands/results correctly, and
+    # blocks/surfaces tails when a gate fails.
+    repo = tmp_path / "repo"
+    skill_path = _write_skill(repo, skill_lines=_skill_near_cap(12))
+    repo_root = repo.resolve()
+    declared = preflight._check_commands(repo_root)
+    expected_ids = [check_id for check_id, _command in declared]
+    expected_commands = [command for _check_id, command in declared]
+    long_stdout = "stdout-" + ("a" * 1100)
+    long_stderr = "stderr-" + ("b" * 1100)
+    calls: list[tuple[list[list[str]], Path, None]] = []
 
-    report = preflight.build_report(ROOT, "skills/public/quality/SKILL.md", 0, True)
-    seen = {row["id"] for row in report["checks"]}
-    assert "validate_skill_ergonomics" in seen
-    assert "check_skill_ownership_overlap" in seen
-    assert "validate_attention_state_visibility" in seen
-    assert report["check_failures"] == []
+    def fake_run_processes_in_order(commands, *, cwd, timeout_seconds):
+        calls.append((commands, cwd, timeout_seconds))
+        return [
+            subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+            if index != 2
+            else subprocess.CompletedProcess(command, 7, stdout=long_stdout, stderr=long_stderr)
+            for index, command in enumerate(commands)
+        ]
+
+    monkeypatch.setattr(preflight, "run_processes_in_order", fake_run_processes_in_order)
+
+    checks = preflight._run_checks(repo_root)
+    assert calls == [(expected_commands, repo_root, None)]
+    assert [row["id"] for row in checks] == expected_ids
+    assert [row["command"] for row in checks] == [" ".join(command) for command in expected_commands]
+    assert checks[2]["returncode"] == 7
+    assert checks[2]["stdout_tail"] == long_stdout[-1000:]
+    assert checks[2]["stderr_tail"] == long_stderr[-1000:]
+
+    report = preflight.build_report(repo_root, str(skill_path), 0, True)
+    assert calls == [
+        (expected_commands, repo_root, None),
+        (expected_commands, repo_root, None),
+    ]
+    assert [row["id"] for row in report["checks"]] == expected_ids
+    assert report["check_failures"] == [expected_ids[2]]
+    assert report["status"] == "blocked"
 
 
 def test_skill_surface_preflight_rejects_non_skill_surface(tmp_path: Path) -> None:

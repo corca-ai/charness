@@ -24,7 +24,7 @@ artifact pointer and packet/session mismatches are now resolved.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json`
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
 - runtime hot spots: pytest 30.9s latest / 32.5s recent median vs 140s budget;
   three matched pre-change samples were 30.68s, 30.66s, and 30.32s (median
@@ -33,6 +33,9 @@ artifact pointer and packet/session mismatches are now resolved.
   changed-line mutation coverage are reserved for the final verification lock.
 - evaluator depth: deterministic-gates-only — no prompt/agent behavior claim
   needs Cautilus, and Cautilus remains ask-before-run.
+- speed slice: nested-gate node wall median changed 4.88s -> 0.655s (86.6%).
+  Isolated no-bytecode suite A/B medians were 53.09s -> 52.14s, but mixed pair
+  deltas (-4.38s, +0.63s, -0.65s) make the full-suite effect inconclusive.
 
 ## Healthy
 
@@ -45,9 +48,9 @@ artifact pointer and packet/session mismatches are now resolved.
   actionable failure replay, and a verbose escape hatch.
 - Debug fresh investigations now emit a non-conflicting dated record and an
   executable current-pointer refresh; critique/retro prepare packets retain
-  their pre-review kind without weakening completed-record floors. The composed
-  parent suite passed 95 tests in 4.56s, and all current critique/retro records
-  validate.
+  pre-review kind without weakening record floors; 95 composed tests passed.
+- The skill-surface preflight test now proves more of its unique orchestration
+  seam without rerunning six validators that remain live on owner surfaces.
 
 ## Weak
 
@@ -57,6 +60,8 @@ artifact pointer and packet/session mismatches are now resolved.
   must not rely on the injection when carrier behavior is their subject.
 - The current broad quality result is not yet locked; focused green evidence is
   sufficient for this slice, not final-goal completion.
+- Three unpaired current-worktree suite samples (34.25s/33.21s/33.56s wall,
+  4,491 passing) are not comparable to the 4,469-test activation baseline.
 
 ## Missing
 
@@ -118,11 +123,14 @@ artifact pointer and packet/session mismatches are now resolved.
 - Composed debug scaffold/planner, quality resolver, critique packet, and retro
   packet roundtrips; whole-corpus critique/retro/debug validators; packet-kind
   escape tests; same-day record-collision and executable-refresh tests.
+- One duration-profile standing run; three standalone before/after node samples;
+  three alternating isolated no-bytecode suite A/B pairs; three unpaired current
+  suite samples; slice-local nose clone scan; bounded speed-review fingerprint.
 
 ## Recommended Next Quality Moves
 
 - passive sibling interface monitoring because the reproduced current-pointer and packet/session mismatches are fixed and remaining matches are preconditions/contracts rather than confirmed defects; capability_needed=prevent producer/carrier/consumer drift; next_center=deferred until a new composed roundtrip fails; transformation=none; proof_boundary=95-test composed suite plus whole-corpus validators; enforcement_posture=describe-first.
-- active release test profile — capability_needed=reduce standing feedback time without losing delivery-boundary proof; next_center=release-only seeded publish and nested process hotspots; transformation=profile node/file durations then move repeated mechanical setup or contract proof below subprocess boundaries; proof_boundary=three matched standing samples and focused behavior parity; enforcement_posture=no-gate.
+- passive further speed cleanup because the top nested-gate hotspot is removed but full-suite impact remains inside observed A/B variance; capability_needed=reduce standing feedback time without losing delivery-boundary proof; next_center=release-only seeded publish or inference meta-validator only after a new profile ranks it on the critical path; transformation=none now; proof_boundary=targeted 86.6% reduction plus inconclusive full-suite A/B; enforcement_posture=no-gate.
 - passive worker-count or selector tuning until profiling identifies a dominant repeated family because file/process counts alone cannot distinguish valuable isolation from startup waste; capability_needed=faster safe selection; next_center=deferred; transformation=none yet; proof_boundary=missing profile; enforcement_posture=no-gate.
 
 ## History

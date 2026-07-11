@@ -9,15 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — profile and reduce standing pytest structural cost
-  after the verified sibling-contract checkpoint.
+- Current slice: Slice 5 — lock the bundle, verify, critique, and close the goal.
 - Current disposition: active local run; external publication, release, remote CI,
   provider mutation, and issue close remain queued for separate authorization.
-- Current slice intent: measure standing pytest hot paths, then reduce only
-  duplicated delivery-boundary work whose behavioral proof remains visible.
-- Next action: profile the standing command and ranked nested-CLI families on the
-  same runtime profile; select the smallest structural speed slice with an exact
-  before/after command and no coverage or gate weakening.
+- Current slice intent: freeze the verified mutation set, run broad quality and
+  changed-line proof, then finalize honest before/after and disposition evidence.
+- Next action: commit the verified speed/quality slice, run final verification
+  lock with fresh mutation coverage, and complete critique/retro/goal closeout.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -138,9 +136,9 @@ runtime comparison and a durable disposition for every surfaced finding.
 | 0 | Baseline and causal map | Prevent broad “quality” work from chasing smells or timing noise | runtime/inventory packet; producer-consumer sibling map; #433 issue read; no tests added | completed |
 | 1 | Resolve #433 and late carrier-validation waste | The defect reproduced during v0.66.1 and costs a full ~68–85s release-quality run per failed attempt | failing fixture first; exact final release-helper message passes the issue-owned consumer + commit-msg gate before quality; low test-pressure via shared fixture reuse | completed |
 | 2 | Audit and fix real mutation/verification siblings | Generalize the failure class without keyword overreach | five-bucket interface-shape disposition; only reproduced confirmed mismatches fixed; focused tests and explicit deferrals | completed |
-| 3 | Improve standing pytest structure and speed | Pytest is the measured dominant cost (30.9s latest / 32.5s median); 146 standing files spawn nested CLIs | durations/profile evidence; structural boundary reductions; matched repeated timing; same behavioral coverage; test-pressure sample | in progress |
-| 4 | Evidence-ranked code-quality cleanup | Remove code/test debt exposed by prior slices without metric gaming | limited to files touched by slices 1–3 unless Slice 0 separately ranks a finding; smaller interfaces/shared mechanical helpers; no baseline laundering | planned |
-| 5 | Bundle verification, critique, retro, and handoff | Prove improvement and preserve non-claims before any optional external action | full quality + fresh mutation coverage; before/after runtime; fresh-eye disposition; complete goal/quality/retro artifacts | planned |
+| 3 | Improve standing pytest structure and speed | Pytest is the measured dominant cost (30.9s latest / 32.5s median); 146 standing files spawn nested CLIs | durations/profile evidence; structural boundary reductions; matched repeated timing; same behavioral coverage; test-pressure sample | completed |
+| 4 | Evidence-ranked code-quality cleanup | Remove code/test debt exposed by prior slices without metric gaming | limited to files touched by slices 1–3 unless Slice 0 separately ranks a finding; smaller interfaces/shared mechanical helpers; no baseline laundering | completed |
+| 5 | Bundle verification, critique, retro, and handoff | Prove improvement and preserve non-claims before any optional external action | full quality + fresh mutation coverage; before/after runtime; fresh-eye disposition; complete goal/quality/retro artifacts | in progress |
 
 ## Operator Decision Queue
 
@@ -288,6 +286,39 @@ applies.
   final writer/validator; a pre-review transport cannot honestly claim
   post-review evidence.
 - Metrics: Parent composed suite 4.58s; host token/tool-call totals not exposed.
+
+### Slice 4: Remove duplicated nested-gate pytest work
+
+- Objective: Reduce the measured standing-test critical-path hotspot without
+  removing a validator, weakening an owner gate, or hiding behavioral assertions.
+- Why this approach: Duration profiling ranked one pytest node at 6.89s under
+  xdist; standalone measurement showed it spent a median 4.88s rerunning six
+  real validators whose correctness already belongs to individual/closeout
+  surfaces. Its unique orchestration contract was narrower and import-safe.
+- Commits: pending this slice checkpoint
+- What changed: Replaced the nested real-repo run with an in-process ordered
+  result simulation that proves command forwarding, id/command mapping,
+  diagnostics tails, nonzero failure aggregation, and blocked report status.
+- Alternatives rejected: Rejected test skipping/marker changes, worker-count or
+  budget tuning, removing any real gate, and claiming a suite speedup from
+  mixed/noisy A/B samples.
+- Targeted verification: Full file 25 tests passed; node wall median changed
+  4.88s -> 0.655s (86.6%). Three unpaired current suite samples passed 4,491
+  tests. Isolated no-bytecode A/B medians were 53.09s -> 52.14s with pair deltas
+  -4.38s/+0.63s/-0.65s, so full-suite effect is inconclusive.
+- Test duplication pressure: Slice-local nose scan found four pre-existing
+  families elsewhere in the file; none covers the replacement test. No new
+  fixture framework or hidden test body was added.
+- Critique: No blocker. Reviewer confirmed individual gates remain on their
+  owning surfaces and the replacement covers more of the unique orchestration
+  seam. Exact registry parity is valid-but-defer; demanding nested real gates is
+  over-worry. Artifact:
+  `charness-artifacts/critique/2026-07-11-slice-3-pytest-speed-resolution.md`.
+- Off-goal findings: none
+- Lessons carried forward: Profile the critical path, then move duplicated
+  delivery work below the boundary while retaining one explicit owner proof.
+- Metrics: Target node wall median -86.6%; full-suite delta non-claim;
+  host token/tool-call totals not exposed.
 
 ## Context Sources
 
