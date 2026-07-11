@@ -69,6 +69,7 @@ def _line_findings_for_pattern(
     heuristic: str,
     pattern: re.Pattern[str],
     skip: Callable[[str], bool] | None = None,
+    review_context: Callable[[Path, str], str] | None = None,
 ) -> list[dict[str, object]]:
     findings: list[dict[str, object]] = []
     for path in _iter_package_text_files(skill_dir):
@@ -81,14 +82,16 @@ def _line_findings_for_pattern(
                 continue
             if skip is not None and skip(line):
                 continue
-            findings.append(
-                {
-                    "heuristic": heuristic,
-                    "path": str(path.relative_to(repo_root)),
-                    "line": index,
-                    "excerpt": _excerpt(line),
-                }
-            )
+            relative_path = path.relative_to(repo_root)
+            finding: dict[str, object] = {
+                "heuristic": heuristic,
+                "path": str(relative_path),
+                "line": index,
+                "excerpt": _excerpt(line),
+            }
+            if review_context is not None:
+                finding["review_context"] = review_context(relative_path, line)
+            findings.append(finding)
     return findings
 
 
@@ -148,12 +151,66 @@ def dated_incident_package_findings(repo_root: Path, skill_dir: Path) -> list[di
     )
 
 
+def host_surface_review_context(path: Path, line: str) -> str:
+    """Route a host-surface hit to its most useful review context.
+
+    This is annotation only: every regex hit remains a finding regardless of
+    category, and the portable-prose fallback deliberately asks for the most
+    reviewer judgment.
+    """
+    normalized = f"/{path.as_posix().lower()}"
+    name = path.name.lower()
+    stem = path.stem.lower()
+    line_lower = line.lower()
+    in_quality_scripts = "/quality/scripts/" in normalized
+    if in_quality_scripts and (
+        name.startswith(("inventory_", "validate_", "check_"))
+        or "skill_text_quality" in name
+        or "skill_ergonomics" in name
+    ):
+        return "detector-definition"
+    if name.startswith("adapter.example.") or "/templates/" in normalized:
+        return "adapter-mapping"
+    if name in {"adapter-contract.md", "adapter-pattern.md"} or stem == "resolve_adapter" or stem.endswith("_adapter_policy"):
+        return "adapter-compatibility"
+    if path.suffix.lower() == ".json":
+        return "policy-fixture"
+    integration_path_markers = (
+        "goal-artifact",
+        "lifecycle",
+        "packag",
+        "phase-aware",
+        "routing",
+        "session",
+    )
+    integration_line_markers = (
+        "audit_codex_session",
+        "config.toml",
+        "host primitive",
+        "marketplace",
+        "plugin",
+        "resolve_skill_path",
+        "resolver",
+        "rollout jsonl",
+        "stop-hook",
+        "thread-goal",
+    )
+    if (
+        "/scripts/" in normalized
+        or any(marker in normalized for marker in integration_path_markers)
+        or any(marker in line_lower for marker in integration_line_markers)
+    ):
+        return "named-host-integration"
+    return "portable-prose"
+
+
 def host_surface_reference_findings(repo_root: Path, skill_dir: Path) -> list[dict[str, object]]:
     return _line_findings_for_pattern(
         repo_root,
         skill_dir,
         heuristic="portable_package_host_surface_reference",
         pattern=HOST_SURFACE_REFERENCE_RE,
+        review_context=host_surface_review_context,
     )
 
 

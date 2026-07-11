@@ -63,6 +63,11 @@ quality pass:
   package
 - host-surface references that need review before treating the package as host
   portable
+- a `review_context` on each host-surface finding routes review toward adapter
+  compatibility, adapter mapping, named-host integration, policy fixtures,
+  detector definitions, or the high-judgment `portable-prose` fallback. The
+  context is only a routing hint: it never suppresses a finding, marks one
+  clean, changes the headline count, or turns this advisory into a gate.
 - reference files that are not listed from `SKILL.md`, which makes the package
   hard to operate under line-budget pressure
 - deterministic-helper pressure: a skill that lists many helper/gate commands in
