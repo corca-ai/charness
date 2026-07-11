@@ -13,6 +13,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
 ValidationError = _artifact_validator.ValidationError
 add_changed_artifact_args = _artifact_validator.add_changed_artifact_args
 git_changed_paths = _artifact_validator.git_changed_paths
@@ -20,11 +21,13 @@ is_valid_followup_tail = _artifact_validator.is_valid_followup_tail
 run_validation_checks = _artifact_validator.run_validation_checks
 selected_changed_paths = _artifact_validator.selected_changed_paths
 selected_artifact_paths = _artifact_validator.selected_artifact_paths
+file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
 _boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
+CRITIQUE_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Critique Prepare Packet(?:\s+—\s+\S.*)?$")
 STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
 STRUCTURED_BINS = frozenset({"act-before-ship", "bundle-anyway", "over-worry", "valid-but-defer"})
 STRUCTURED_EVIDENCE = frozenset({"strong", "moderate", "weak", "contested"})
@@ -38,23 +41,10 @@ STRUCTURED_FINDING_FORM = (
     "action: <action> | note: <one-line rationale>"
 )
 REVIEWER_TIER_HEADING = "## Reviewer Tier Evidence"
-REVIEWER_TIER_REQUIRED_FIELDS = (
-    "requested tier",
-    "requested spawn fields",
-    "host exposure state",
-    "application state",
-)
-REVIEWER_TIER_HOST_STATES = frozenset(
-    {
-        "pending-parent-spawn",
-        "requested_fields_sent",
-        "metadata-hidden",
-        "host-defaulted",
-        "unsupported",
-        "applied",
-    }
-)
+REVIEWER_TIER_REQUIRED_FIELDS = ("requested tier", "requested spawn fields", "host exposure state", "application state")
+REVIEWER_TIER_HOST_STATES = frozenset({"pending-parent-spawn", "requested_fields_sent", "metadata-hidden", "host-defaulted", "unsupported", "applied"})
 PACKET_CONSUMED_RE = re.compile(r"(?im)^\s*packet consumed\s*:\s*(?P<path>\S+)")
+CRITIQUE_PREPARE_PACKET_KIND = "charness.critique_prepare_packet"
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -63,10 +53,7 @@ FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "current session delegation policy",
     "current developer instruction only permits",
 )
-DELEGATION_CONTRACT_MARKERS = (
-    "subagent delegation",
-    "repo-mandated bounded fresh-eye subagent reviews are already delegated",
-)
+DELEGATION_CONTRACT_MARKERS = ("subagent delegation", "repo-mandated bounded fresh-eye subagent reviews are already delegated")
 SIGNAL_HEADINGS = ("host signal", "tool signal")
 PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na", "blocked"}
 
@@ -101,20 +88,12 @@ FRESH_EYE_TODO_MARKER = "todo"
 BOUNDARY_OWNERSHIP_RULE_DATE = date(2026, 7, 6)
 BOUNDARY_OWNERSHIP_HEADING = "## Boundary Ownership"
 BOUNDARY_VERDICT_VALUES = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
-BOUNDARY_VERDICT_SUMMARY = (
-    "`single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec`"
-)
+BOUNDARY_VERDICT_SUMMARY = "`single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec`"
 # Undatable critique artifacts present when the boundary floor landed — a closed
 # allowlist, NOT fail-open (a NEW undatable artifact is still enforced; the
 # scaffold always emits a dated filename). Kept separate from the fresh-eye
 # allowlist so grandfathering here never weakens that floor's own enforcement.
-BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset(
-    {
-        "release-0-55-0-full-packet.md",
-        "release-0-55-1-packet.md",
-        "release-0-55-1-critique.md",
-    }
-)
+BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset({"release-0-55-0-full-packet.md", "release-0-55-1-packet.md", "release-0-55-1-critique.md"})
 # Closed, explicit allowlist — NOT a fail-open default. Every other undatable
 # critique artifact is now enforced as if post-cutoff (a new artifact with no
 # parseable date is itself the anomaly); only these two legacy prepare-packets,
@@ -122,12 +101,7 @@ BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset(
 # satisfaction:` line, are named exceptions. Extending this set requires the
 # same care as extending a `boundary-bypass-exemptions.txt` entry: one
 # artifact, one reason (this file has both — no date, pre-floor legacy).
-LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset(
-    {
-        "release-0-55-0-full-packet.md",
-        "release-0-55-1-packet.md",
-    }
-)
+LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset({"release-0-55-0-full-packet.md", "release-0-55-1-packet.md"})
 _CRITIQUE_DATE_LINE = re.compile(r"^date:\s*(\d{4}-\d{2}-\d{2})\b")
 # Leading markdown/quote markup stripped before matching a typed token, so a
 # backtick-wrapped or bulleted value (`` `parent-delegated`. `` — the observed
@@ -141,22 +115,34 @@ def changed_paths(repo_root: Path) -> list[str]:
 
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
     if all_artifacts:
-        return sorted((repo_root / CRITIQUE_ARTIFACT_PREFIX).glob("*.md"))
+        return [
+            path
+            for path in sorted((repo_root / CRITIQUE_ARTIFACT_PREFIX).glob("*.md"))
+            if not file_is_prepare_packet_markdown_kind(
+                path,
+                expected_kind=CRITIQUE_PREPARE_PACKET_KIND,
+                expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
+            )
+        ]
     candidates: list[Path] = []
     for relpath in paths:
         if relpath.startswith(CRITIQUE_ARTIFACT_PREFIX) and relpath.endswith(".md"):
             path = repo_root / relpath
-            if path.is_file():
+            if not file_is_prepare_packet_markdown_kind(
+                path,
+                expected_kind=CRITIQUE_PREPARE_PACKET_KIND,
+                expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
+            ) and path.is_file():
                 candidates.append(path)
     return sorted(candidates)
 
 
 def has_repo_delegation_contract(repo_root: Path) -> bool:
     agents_path = repo_root / "AGENTS.md"
-    if not agents_path.is_file():
-        return False
-    text = agents_path.read_text(encoding="utf-8").lower()
-    return all(marker in text for marker in DELEGATION_CONTRACT_MARKERS)
+    return agents_path.is_file() and all(
+        marker in agents_path.read_text(encoding="utf-8").lower()
+        for marker in DELEGATION_CONTRACT_MARKERS
+    )
 
 
 def _date_from_filename(path: Path) -> date | None:

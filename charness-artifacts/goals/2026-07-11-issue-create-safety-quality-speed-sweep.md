@@ -9,15 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — audit and fix real mutation/verification siblings
-  (in progress after the verified #433 checkpoint).
+- Current slice: Slice 3 — profile and reduce standing pytest structural cost
+  after the verified sibling-contract checkpoint.
 - Current disposition: active local run; external publication, release, remote CI,
   provider mutation, and issue close remain queued for separate authorization.
-- Current slice intent: evidence-ranked audit and repair of mutation/verification
-  contract mismatches, followed by structural test-speed and code-quality work.
-- Next action: reproduce and disposition the fresh-record scaffold pointer
-  mismatch, then scan other mutating helper interfaces by producer/carrier/final-
-  consumer shape; fix only confirmed mismatches.
+- Current slice intent: measure standing pytest hot paths, then reduce only
+  duplicated delivery-boundary work whose behavioral proof remains visible.
+- Next action: profile the standing command and ranked nested-CLI families on the
+  same runtime profile; select the smallest structural speed slice with an exact
+  before/after command and no coverage or gate weakening.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -137,8 +137,8 @@ runtime comparison and a durable disposition for every surfaced finding.
 | --- | --- | --- | --- | --- |
 | 0 | Baseline and causal map | Prevent broad “quality” work from chasing smells or timing noise | runtime/inventory packet; producer-consumer sibling map; #433 issue read; no tests added | completed |
 | 1 | Resolve #433 and late carrier-validation waste | The defect reproduced during v0.66.1 and costs a full ~68–85s release-quality run per failed attempt | failing fixture first; exact final release-helper message passes the issue-owned consumer + commit-msg gate before quality; low test-pressure via shared fixture reuse | completed |
-| 2 | Audit and fix real mutation/verification siblings | Generalize the failure class without keyword overreach | five-bucket interface-shape disposition; only reproduced confirmed mismatches fixed; focused tests and explicit deferrals | in progress |
-| 3 | Improve standing pytest structure and speed | Pytest is the measured dominant cost (30.9s latest / 32.5s median); 146 standing files spawn nested CLIs | durations/profile evidence; structural boundary reductions; matched repeated timing; same behavioral coverage; test-pressure sample | planned |
+| 2 | Audit and fix real mutation/verification siblings | Generalize the failure class without keyword overreach | five-bucket interface-shape disposition; only reproduced confirmed mismatches fixed; focused tests and explicit deferrals | completed |
+| 3 | Improve standing pytest structure and speed | Pytest is the measured dominant cost (30.9s latest / 32.5s median); 146 standing files spawn nested CLIs | durations/profile evidence; structural boundary reductions; matched repeated timing; same behavioral coverage; test-pressure sample | in progress |
 | 4 | Evidence-ranked code-quality cleanup | Remove code/test debt exposed by prior slices without metric gaming | limited to files touched by slices 1–3 unless Slice 0 separately ranks a finding; smaller interfaces/shared mechanical helpers; no baseline laundering | planned |
 | 5 | Bundle verification, critique, retro, and handoff | Prove improvement and preserve non-claims before any optional external action | full quality + fresh mutation coverage; before/after runtime; fresh-eye disposition; complete goal/quality/retro artifacts | planned |
 
@@ -251,6 +251,43 @@ applies.
 - Off-goal findings: none
 - Lessons carried forward: Resume is a distinct irreversible carrier path; validate what will actually be pushed. Exact intended-number equality closes the remaining direct-validator/final-gate gap.
 - Metrics: Focused suite 22.55s; host token/tool-call totals not exposed.
+
+### Slice 3: Repair artifact producer/final-consumer siblings
+
+- Objective: Fix only reproduced siblings where fresh-record or prepare-packet
+  state was lost before the final writer/validator.
+- Why this approach: A composed interface-shape audit separated two confirmed
+  mismatch families from quality current-pointer preconditions and broad
+  filename-only overreach.
+- Commits: pending this slice checkpoint
+- What changed: Debug resolved pointers now route to a non-conflicting dated
+  record and executable pointer refresh; quality fresh-review routing uses
+  record intent; critique/retro prepare packets are recognized by producer title
+  and kind instead of being forced through completed-record floors; source and
+  plugin mirrors are synchronized.
+- Alternatives rejected: Rejected rewriting the shared current-pointer helper,
+  filename-only packet exclusions, pre-filling post-review claims, restoring the
+  deleted circular packet validator, and changing legitimate rolling-summary
+  current edits.
+- Targeted verification: 95 composed tests passed in 4.56s; all 496 critique
+  records and 300 retro records validate; debug artifacts validate; artifact
+  preflight passes; bounded reviewer ran 75 focused tests and source/export
+  parity checks; fingerprint verification found zero worktree/index drift.
+- Test duplication pressure: Added one composed regression per confirmed seam
+  plus explicit escape/collision cases; reused existing producer and live
+  validator entry points rather than adding a parallel validator or fixture
+  framework.
+- Critique: One post-extraction Act-Before-Ship title-widening finding was fixed
+  with caller-owned Critique/Retro title regexes and wrong-title/correct-kind
+  tests. No remaining blocker or Bundle finding. Early-header packet-kind window
+  is valid-but-defer until the producer header intentionally expands; plugin
+  drift was over-worry and disproved. Artifact:
+  `charness-artifacts/critique/2026-07-11-slice-2-artifact-contract-resolution-critique.md`.
+- Off-goal findings: none
+- Lessons carried forward: Carry lifecycle and artifact kind explicitly to the
+  final writer/validator; a pre-review transport cannot honestly claim
+  post-review evidence.
+- Metrics: Parent composed suite 4.58s; host token/tool-call totals not exposed.
 
 ## Context Sources
 

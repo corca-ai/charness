@@ -95,8 +95,13 @@ def _risk_summary(path: Path) -> dict[str, Any]:
 
 def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, Any]:
     artifact_rel = str(scaffold["artifact_path"])
-    write_rel = str(scaffold["write_artifact_path"])
     artifact_path = repo_root / artifact_rel
+    current_target = scaffold.get("current_pointer_target_path")
+    write_rel = (
+        str(current_target)
+        if scaffold.get("current_pointer_is_symlink") and isinstance(current_target, str)
+        else artifact_rel
+    )
     write_path = repo_root / write_rel
     exists = artifact_path.is_file()
     write_exists = write_path.is_file()
@@ -109,7 +114,7 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
     # treat the pointer as a closed prior incident instead of a continuation, so a
     # closed artifact stops hijacking a fresh bug (#debug claim-fidelity mis-fire).
     resolution = "resolved" if (exists and (_parse_field(text, "Resolution") or "").strip().lower() == "resolved") else "open"
-    if exists and scaffold["write_artifact_role"] == "current_pointer_target":
+    if exists and scaffold.get("current_pointer_is_symlink"):
         status = "current_pointer_target_exists"
     elif exists:
         status = "current_pointer_exists"
@@ -249,6 +254,7 @@ def _on_demand_reads() -> list[dict[str, str]]:
 
 
 def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, Any]) -> list[dict[str, Any]]:
+    scaffold_command = _scaffold_command(scaffold)
     return [
         _packet(
             "adapter-readiness",
@@ -261,7 +267,7 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
         _packet(
             "debug-artifact-scaffold",
             "deterministic scaffold payload; trust write target and validator command",
-            command="python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .",
+            command=scaffold_command,
             artifact_path=scaffold["artifact_path"],
             write_artifact_path=scaffold["write_artifact_path"],
             write_artifact_role=scaffold["write_artifact_role"],
@@ -289,7 +295,12 @@ def _artifact_next_action(kind: str, instruction: str, artifact: dict[str, Any])
     }
 
 
-def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
+def _scaffold_command(scaffold: dict[str, Any]) -> str:
+    del scaffold
+    return "python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root ."
+
+
+def _next_action(artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str, Any]:
     if artifact["requires_interrupt"]:
         return _artifact_next_action(
             "interrupt-to-spec",
@@ -302,12 +313,22 @@ def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
             "read the current artifact, preserve observed facts, then continue with the cheapest falsifier before repair",
             artifact,
         )
-    return {
+    next_action = {
         "kind": "scaffold-debug-artifact",
-        "command": "python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .",
+        "command": _scaffold_command(scaffold),
         "instruction": "write the emitted template to write_artifact_path before broad search or repair",
-        "write_artifact_path": artifact["write_path"],
+        "artifact_path": scaffold["artifact_path"],
+        "write_artifact_path": scaffold["write_artifact_path"],
+        "write_artifact_role": scaffold["write_artifact_role"],
     }
+    if scaffold.get("update_current_pointer_after_write"):
+        next_action["instruction"] = (
+            "write the emitted template to write_artifact_path before broad search or repair, "
+            "then refresh the current pointer with refresh_current_pointer_command"
+        )
+        next_action["update_current_pointer_after_write"] = True
+        next_action["refresh_current_pointer_command"] = scaffold["refresh_current_pointer_command"]
+    return next_action
 
 
 def build_plan(repo_root: Path) -> dict[str, Any]:
@@ -328,7 +349,7 @@ def build_plan(repo_root: Path) -> dict[str, Any]:
     return ENVELOPE.build_envelope(
         schema_version="debug.run_plan.v1",
         required_reads=_required_reads(adapter=adapter, artifact=artifact, prior_incidents=prior_incidents),
-        next_action=_next_action(artifact),
+        next_action=_next_action(artifact, scaffold),
         gate_packets=_gate_packets(repo_root, adapter, scaffold),
         ok=bool(adapter.get("valid")),
         repo_root=str(repo_root),

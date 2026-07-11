@@ -55,11 +55,15 @@ the honest durable home for that evidence.
 Before editing the artifact, run:
 
 ```bash
-python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent current
+python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent record
 ```
 
-Edit the returned `write_artifact_path`, not `latest.md` by habit. The prior
-quality artifact is history, not the authoritative universe.
+Edit the returned `write_artifact_path`, not `latest.md` by habit. For a fresh
+quality review, `--intent record` is the default: write the dated record, then
+run the returned `refresh_current_pointer_command` when
+`update_current_pointer_after_write=true`. Keep `--intent current` only for an
+explicit rolling-summary edit. The prior quality artifact is history, not the
+authoritative universe.
 
 When the question is whether the repo's current-pointer layout itself is clear,
 run the repo inventory and use its `write_artifact_path` and symlink metadata

@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import datetime as dt
+import json
+import os
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +22,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+_resolve_artifact_path = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.resolve_artifact_path")
 
 # Single-source the artifact line budget from the validator (the one authority
 # for MAX_ARTIFACT_LINES) so the scaffold surfaces the exact ceiling the gate
@@ -173,29 +178,121 @@ def validator_command(repo_root: Path) -> str:
     return _scaffold_lib.validator_command(repo_root=repo_root, script_file=__file__, script_names=VALIDATOR_SCRIPT_NAMES)
 
 
+def _resolution(path: Path) -> str:
+    if not path.is_file():
+        return "open"
+    prefix = "- Resolution:"
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith(prefix):
+            return "resolved" if stripped[len(prefix) :].strip().lower() == "resolved" else "open"
+    return "open"
+
+
+def _current_pointer_symlink_target(repo_root: Path, artifact_path: str) -> str | None:
+    absolute_artifact_path = repo_root / artifact_path
+    if not absolute_artifact_path.is_symlink():
+        return None
+    return os.readlink(absolute_artifact_path)
+
+
+def _resolved_followup_record_payload(
+    repo_root: Path,
+    *,
+    adapter: dict[str, object],
+    resolved_title: str,
+    artifact_date: dt.date,
+    current_pointer_target_path: str | None,
+) -> dict[str, object]:
+    def _record_payload_for(title_text: str) -> dict[str, object]:
+        return _resolve_artifact_path.payload_for(
+            repo_root,
+            "debug",
+            title_text,
+            intent="record",
+            artifact_date=artifact_date,
+            adapter=adapter,
+        )
+
+    current_target = current_pointer_target_path or ""
+    candidate = _record_payload_for(resolved_title)
+    candidate_path = str(candidate["write_artifact_path"])
+    if candidate_path != current_target and not (repo_root / candidate_path).exists():
+        return candidate
+    for suffix in ("followup", "followup-2", "followup-3", "followup-4"):
+        candidate = _record_payload_for(f"{resolved_title} {suffix}")
+        candidate_path = str(candidate["write_artifact_path"])
+        if candidate_path != current_target and not (repo_root / candidate_path).exists():
+            return candidate
+    raise SystemExit(
+        "resolved current debug artifact needs a fresh dated follow-up record, but every deterministic "
+        "default slug for today already exists; rerun scaffold_debug_artifact.py with --title <specific follow-up title>"
+    )
+
+
 def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     adapter = load_adapter(repo_root)
-    output_dir = Path(adapter["data"]["output_dir"])
-    date_text = dt.date.today().isoformat()
+    artifact_date = dt.date.today()
+    date_text = artifact_date.isoformat()
     resolved_title = default_title(title)
     size_budget = (
         {"max_lines": _MAX_ARTIFACT_LINES, "guidance": SIZE_GUIDANCE}
         if _MAX_ARTIFACT_LINES is not None
         else None
     )
-    return _scaffold_lib.current_pointer_payload(
-        repo_root=repo_root,
-        output_dir=output_dir,
-        date_text=date_text,
-        title=resolved_title,
-        template=render_template(title=resolved_title, date_text=date_text),
-        validator_command=validator_command(repo_root),
-        size_budget=size_budget,
+    payload = _resolve_artifact_path.payload_for(
+        repo_root,
+        "debug",
+        resolved_title,
+        intent="current",
+        artifact_date=dt.date.today(),
+        adapter=adapter,
     )
+    current_write_path = repo_root / str(payload["write_artifact_path"])
+    if _resolution(current_write_path) == "resolved":
+        record_payload = _resolved_followup_record_payload(
+            repo_root,
+            adapter=adapter,
+            resolved_title=resolved_title,
+            artifact_date=artifact_date,
+            current_pointer_target_path=payload.get("current_pointer_target_path")
+            if isinstance(payload.get("current_pointer_target_path"), str)
+            else None,
+        )
+        for key in (
+            "intent",
+            "record_artifact_path",
+            "write_artifact_path",
+            "write_artifact_role",
+            "update_current_pointer_after_write",
+            "refresh_current_pointer_argv",
+            "refresh_current_pointer_command",
+            "frontmatter",
+        ):
+            payload[key] = record_payload[key]
+    payload.update(
+        {
+            "date": date_text,
+            "title": resolved_title,
+            "artifact_role": "current_pointer",
+            "current_pointer_symlink_target": _current_pointer_symlink_target(repo_root, str(payload["artifact_path"])),
+            "template": render_template(title=resolved_title, date_text=date_text),
+            "validator_command": validator_command(repo_root),
+        }
+    )
+    if size_budget is not None:
+        payload["size_budget"] = size_budget
+    return payload
 
 
 def main() -> int:
-    return _scaffold_lib.emit_payload_main(payload_for, artifact_label="debug")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scaffold the debug artifact into")
+    parser.add_argument("--title", help="Title for the scaffolded debug artifact")
+    args = parser.parse_args()
+    payload = payload_for(args.repo_root.resolve(), title=args.title)
+    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    return 0
 
 
 if __name__ == "__main__":

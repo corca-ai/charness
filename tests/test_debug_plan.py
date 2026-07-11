@@ -199,6 +199,35 @@ def test_debug_plan_preserves_symlinked_current_pointer_target(tmp_path: Path) -
     assert payload["next_action"]["write_artifact_path"] == "charness-artifacts/debug/debug-2026-05-06-demo.md"
 
 
+def test_debug_plan_resolved_symlinked_latest_scaffolds_new_record_and_refresh(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    target = debug_dir / "debug-2026-05-06-demo.md"
+    target.write_text(
+        "# Demo Debug\n\n## Interrupt Decision\n\n- Resolution: resolved\n\n## Problem\n\nTODO\n",
+        encoding="utf-8",
+    )
+    (debug_dir / "latest.md").symlink_to(target.name)
+
+    payload = run_plan(repo)
+
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["artifact"]["status"] == "current_pointer_target_exists"
+    assert payload["artifact"]["resolution"] == "resolved"
+    assert payload["scaffold"]["intent"] == "record"
+    assert payload["scaffold"]["write_artifact_role"] == "durable_record"
+    assert payload["scaffold"]["write_artifact_path"] != payload["artifact"]["write_path"]
+    assert payload["next_action"]["command"].endswith("scaffold_debug_artifact.py --repo-root .")
+    scaffold_gate = next(packet for packet in payload["gate_packets"] if packet["id"] == "debug-artifact-scaffold")
+    assert scaffold_gate["command"] == payload["next_action"]["command"]
+    assert payload["next_action"]["write_artifact_path"] == payload["scaffold"]["write_artifact_path"]
+    assert payload["next_action"]["update_current_pointer_after_write"] is True
+    assert "refresh_current_pointer.py" in payload["next_action"]["refresh_current_pointer_command"]
+    assert "refresh the current pointer" in payload["next_action"]["instruction"]
+
+
 def test_debug_plan_surfaces_prior_incidents_as_conditional_reads(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)

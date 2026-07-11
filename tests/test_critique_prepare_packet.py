@@ -19,6 +19,15 @@ from scripts.critique_packet_lib import (
     write_packet,
 )
 from scripts.surfaces_lib import collect_changed_paths_for_ref
+from scripts.validate_critique_artifacts import (
+    ValidationError as CritiqueValidationError,
+)
+from scripts.validate_critique_artifacts import (
+    candidate_paths as critique_candidate_paths,
+)
+from scripts.validate_critique_artifacts import (
+    validate_critique_artifact,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -348,6 +357,109 @@ packet_sections:
     assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
     artifact = tmp_path / "charness-artifacts/critique/smoke-packet.json"
     assert artifact.is_file()
+
+
+def test_prepare_packet_markdown_passes_live_critique_artifact_validator(tmp_path: Path) -> None:
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
+version: 1
+repo: rt
+packet_sections:
+  - id: smoke
+    title: Smoke
+    content_kind: static
+    content: smoke-body
+""")
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+    result = subprocess.run(
+        ["python3", str(runner), "--repo-root", str(tmp_path), "--prepared-for", "smoke", "--slug", "smoke"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    candidates = critique_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/critique/smoke-packet.md"],
+        all_artifacts=False,
+    )
+
+    assert candidates == []
+
+
+def test_renamed_or_mislabeled_packet_name_does_not_bypass_critique_record_floors(tmp_path: Path) -> None:
+    artifact = tmp_path / "charness-artifacts/critique/2026-07-10-fake-packet.md"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Critique Prepare Packet — demo",
+                "",
+                "- **Prepared for**: fake packet",
+                "",
+                "## Decision Under Review",
+                "",
+                "still a critique record with no packet envelope kind",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    candidates = critique_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/critique/2026-07-10-fake-packet.md"],
+        all_artifacts=False,
+    )
+
+    assert candidates == [artifact]
+    try:
+        validate_critique_artifact(
+            artifact,
+            repo_has_delegation_contract=False,
+            require_tier_evidence=True,
+        )
+    except CritiqueValidationError as exc:
+        assert "Fresh-eye satisfaction" in str(exc)
+    else:
+        raise AssertionError("expected mislabeled critique record to fail validation")
+
+
+def test_wrong_prepare_packet_title_with_correct_critique_kind_still_fails_record_floors(tmp_path: Path) -> None:
+    artifact = tmp_path / "charness-artifacts/critique/2026-07-10-fake-packet.md"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Quality Prepare Packet — demo",
+                "",
+                f"- **Kind**: `{PACKET_KIND}` (v1)",
+                "",
+                "## Decision Under Review",
+                "",
+                "wrong title should not bypass critique floors",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    candidates = critique_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/critique/2026-07-10-fake-packet.md"],
+        all_artifacts=False,
+    )
+
+    assert candidates == [artifact]
+    try:
+        validate_critique_artifact(
+            artifact,
+            repo_has_delegation_contract=False,
+            require_tier_evidence=True,
+        )
+    except CritiqueValidationError as exc:
+        assert "Fresh-eye satisfaction" in str(exc)
+    else:
+        raise AssertionError("expected wrong-title critique packet lookalike to fail validation")
 
 
 def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Path) -> None:

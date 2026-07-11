@@ -24,7 +24,7 @@ run the planner before broad gates or fixes. Missing binary handling follows
 # Required Tools: rg
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent current
+python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent record
 python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root . --json
 # For a target-skill review, add: --target-skill <skill-id>
 rg --files .
@@ -66,7 +66,12 @@ git status --short
    the payload as the artifact contract: write to fit its `size_budget.max_lines` on the first pass
    and heed `size_budget.guidance` on the judgment-heavy sections, rather than
    writing long and then trimming to fit against a ceiling the validator only
-   reveals at the end. Validate once with `validate_quality_artifact.py` — it
+   reveals at the end. For a fresh review, resolve with `--intent record`, write
+   the dated `write_artifact_path`, then run the emitted
+   `refresh_current_pointer_command` when
+   `update_current_pointer_after_write=true`; keep `--intent current` only for
+   an explicitly rolling-summary edit. Validate once with
+   `validate_quality_artifact.py` — it
    reports every remaining violation in one pass, so fix them together rather than
    iterating one error at a time.
 9. Run bounded fresh-eye review after initial inventory and before broad

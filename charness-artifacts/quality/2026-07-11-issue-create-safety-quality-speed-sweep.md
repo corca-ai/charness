@@ -3,14 +3,13 @@ Date: 2026-07-11
 
 ## Scope
 
-Target boundary: active-goal Slice 0/1 — issue #433's release producer,
-issue-owned carrier consumer, commit-msg final gate, and the measured standing
-pytest cost that should shape later speed work.
+Target boundary: active-goal Slices 0–2 — issue #433's release carrier seam,
+artifact fresh-record/prepare-packet siblings, and the measured standing pytest
+cost that should shape the next speed slice.
 
-Ambient repo findings: a debug/quality scaffold can return a resolved
-`latest.md` symlink target as the write path for a fresh record; pytest has 389
-files and 146 standing files with nested CLI sites, but those counts do not prove
-which tests are waste.
+Ambient repo findings: pytest has 389 files and 146 standing files with nested
+CLI sites, but those counts do not prove which tests are waste. The reproduced
+artifact pointer and packet/session mismatches are now resolved.
 
 ## Current Gates
 
@@ -44,6 +43,11 @@ which tests are waste.
   release mirrors are synchronized from the public source.
 - Standing gate output has quiet pytest/spec execution, structured phase signal,
   actionable failure replay, and a verbose escape hatch.
+- Debug fresh investigations now emit a non-conflicting dated record and an
+  executable current-pointer refresh; critique/retro prepare packets retain
+  their pre-review kind without weakening completed-record floors. The composed
+  parent suite passed 95 tests in 4.56s, and all current critique/retro records
+  validate.
 
 ## Weak
 
@@ -56,10 +60,6 @@ which tests are waste.
 
 ## Missing
 
-- Fresh-record scaffold pointer safety is missing for the reproduced resolved-
-  pointer case: the debug and quality scaffold payloads named prior canonical
-  targets rather than new dated records. Active goal Slice 2 owns the
-  producer/consumer disposition before any fix.
 - Live release/provider/installed-machine proof was not run and is not claimed;
   it remains an operator-approved external lane rather than a local gate gap.
 
@@ -115,10 +115,13 @@ which tests are waste.
 - Three standing pytest baseline samples; focused release/issue tests; ruff,
   py_compile, packaging validation, mirror sync, debug artifact validation,
   reviewer boundary snapshots/verifications, and standalone code critique.
+- Composed debug scaffold/planner, quality resolver, critique packet, and retro
+  packet roundtrips; whole-corpus critique/retro/debug validators; packet-kind
+  escape tests; same-day record-collision and executable-refresh tests.
 
 ## Recommended Next Quality Moves
 
-- active sibling interface audit — capability_needed=prevent producer/carrier/consumer drift; next_center=current-pointer and other mutating helper seams; transformation=five-bucket evidence disposition with fixes only for reproduced mismatches; proof_boundary=local payload plus final-consumer fixture; enforcement_posture=describe-first.
+- passive sibling interface monitoring because the reproduced current-pointer and packet/session mismatches are fixed and remaining matches are preconditions/contracts rather than confirmed defects; capability_needed=prevent producer/carrier/consumer drift; next_center=deferred until a new composed roundtrip fails; transformation=none; proof_boundary=95-test composed suite plus whole-corpus validators; enforcement_posture=describe-first.
 - active release test profile — capability_needed=reduce standing feedback time without losing delivery-boundary proof; next_center=release-only seeded publish and nested process hotspots; transformation=profile node/file durations then move repeated mechanical setup or contract proof below subprocess boundaries; proof_boundary=three matched standing samples and focused behavior parity; enforcement_posture=no-gate.
 - passive worker-count or selector tuning until profiling identifies a dominant repeated family because file/process counts alone cannot distinguish valuable isolation from startup waste; capability_needed=faster safe selection; next_center=deferred; transformation=none yet; proof_boundary=missing profile; enforcement_posture=no-gate.
 

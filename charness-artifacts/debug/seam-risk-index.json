@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 76,
-  "indexed_artifact_count": 64,
+  "source_artifact_count": 77,
+  "indexed_artifact_count": 65,
   "risk_class_counts": {
-    "contract-freeze-risk": 25,
+    "contract-freeze-risk": 24,
     "external-seam": 1,
     "host-disproves-local": 2,
-    "none": 15,
+    "none": 17,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 2,
-    "monitor": 59,
+    "monitor": 60,
     "none": 3
   },
   "entries": [
@@ -888,6 +888,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-11-artifact-scaffold-final-consumer-mismatch.md",
+      "is_current_pointer": false,
+      "interrupt_id": "artifact-kind-carrier-collapse",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "producer lifecycle/kind to final writer/validator",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-11-issue-433-release-closeout-carrier.md",
       "is_current_pointer": false,
       "interrupt_id": "issue-433-release-closeout-carrier",
@@ -904,15 +918,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-433-release-closeout-carrier",
+      "interrupt_id": "artifact-kind-carrier-collapse",
       "risk_classes": [
-        "contract-freeze-risk"
+        "none"
       ],
-      "seam": "release producer -> git commit paragraphs -> issue closeout verifier",
+      "seam": "producer lifecycle/kind to final writer/validator",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/debug/2026-07-11-issue-433-release-closeout-carrier.md",
+      "handoff_artifact": "none",
       "forced": false
     }
   ],

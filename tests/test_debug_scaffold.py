@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 import shlex
 import subprocess
@@ -41,9 +42,12 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     payload = _scaffold_debug.payload_for(repo, title=None)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
     assert payload["artifact_role"] == "current_pointer"
+    assert payload["intent"] == "current"
     assert payload["write_artifact_path"] == "charness-artifacts/debug/latest.md"
     assert payload["write_artifact_role"] == "current_pointer"
     assert payload["current_pointer_symlink_target"] is None
+    assert payload["update_current_pointer_after_write"] is False
+    assert payload["refresh_current_pointer_command"] is None
     assert payload["validator_command"].endswith("scripts/validate_debug_artifact.py --repo-root .")
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
@@ -96,9 +100,63 @@ def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path
 
     payload = _scaffold_debug.payload_for(repo, title=None)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
+    assert payload["intent"] == "current"
     assert payload["write_artifact_path"] == "charness-artifacts/debug/debug-2026-05-06-demo.md"
     assert payload["write_artifact_role"] == "current_pointer_target"
     assert payload["current_pointer_symlink_target"] == "debug-2026-05-06-demo.md"
+    assert payload["update_current_pointer_after_write"] is False
+
+
+def test_debug_scaffold_resolved_current_pointer_emits_fresh_record_contract(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "\n".join(["version: 1", "repo: demo", "language: en", "output_dir: charness-artifacts/debug", ""]),
+        encoding="utf-8",
+    )
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    target = debug_dir / "debug-2026-05-06-demo.md"
+    target.write_text(
+        "# Demo Debug\n\n## Interrupt Decision\n\n- Resolution: resolved\n\n## Problem\n\nTODO\n",
+        encoding="utf-8",
+    )
+    (debug_dir / "latest.md").symlink_to(target.name)
+
+    payload = _scaffold_debug.payload_for(repo, title="Current Debug")
+
+    assert payload["intent"] == "record"
+    assert payload["write_artifact_role"] == "durable_record"
+    assert payload["write_artifact_path"].startswith("charness-artifacts/debug/")
+    assert payload["write_artifact_path"].endswith("-current-debug.md")
+    assert payload["update_current_pointer_after_write"] is True
+    assert "refresh_current_pointer.py" in str(payload["refresh_current_pointer_command"])
+
+
+def test_debug_scaffold_resolved_same_day_default_name_avoids_overwriting_current_target(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "\n".join(["version: 1", "repo: demo", "language: en", "output_dir: charness-artifacts/debug", ""]),
+        encoding="utf-8",
+    )
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    today_name = f"{dt.date.today().isoformat()}-debug-review.md"
+    target = debug_dir / today_name
+    target.write_text(
+        "# Debug Review\n\n## Interrupt Decision\n\n- Resolution: resolved\n\n## Problem\n\nTODO\n",
+        encoding="utf-8",
+    )
+    (debug_dir / "latest.md").symlink_to(target.name)
+
+    payload = _scaffold_debug.payload_for(repo, title=None)
+
+    assert payload["intent"] == "record"
+    assert payload["current_pointer_symlink_target"] == today_name
+    assert payload["write_artifact_path"] != f"charness-artifacts/debug/{today_name}"
+    assert payload["write_artifact_path"].endswith("-debug-review-followup.md")
+    assert payload["update_current_pointer_after_write"] is True
 
 
 def test_exported_debug_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:

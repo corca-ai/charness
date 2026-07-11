@@ -379,6 +379,25 @@ def test_quality_resolver_reports_artifact_path_alias() -> None:
     assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
 
 
+def test_quality_resolver_record_intent_emits_refresh_contract() -> None:
+    module = _load_quality_resolver()
+
+    payload = module.payload_for(
+        ROOT,
+        slug="quality review",
+        intent="record",
+        artifact_date=date(2026, 6, 16),
+    )
+
+    assert payload["write_artifact_role"] == "durable_record"
+    assert payload["update_current_pointer_after_write"] is True
+    assert payload["refresh_current_pointer_argv"] is not None
+    assert payload["refresh_current_pointer_argv"][1].endswith("refresh_current_pointer.py")
+    assert payload["refresh_current_pointer_argv"][-1] == "--execute"
+    assert "refresh_current_pointer.py" in str(payload["refresh_current_pointer_command"])
+    assert "--execute" in str(payload["refresh_current_pointer_command"])
+
+
 def test_current_intent_resolves_symlinked_latest_to_write_target(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     artifact_dir = repo / "charness-artifacts" / "quality"

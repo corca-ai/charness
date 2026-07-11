@@ -13,12 +13,14 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+_prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_changed_artifact_args = _scripts_artifact_validator_module.add_changed_artifact_args
 git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
 selected_artifact_paths = _scripts_artifact_validator_module.selected_artifact_paths
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
+file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Shared single source of the disposition-form grammar (#329); imported same-root
 # so the session-retro `## Next Improvements` floor never forks achieve parsing.
@@ -35,6 +37,8 @@ RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 9)
 PERSISTED_FORM_RULE_DATE = date(2026, 6, 25)
 _DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\b")
 _PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
+RETRO_PREPARE_PACKET_KIND = "charness.retro_prepare_packet"
+RETRO_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Retro Prepare Packet(?:\s+—\s+\S.*)?$")
 
 RETRO_ARTIFACT_PREFIX = "charness-artifacts/retro/"
 GENERATED_DIGEST = "recent-lessons.md"
@@ -68,16 +72,28 @@ def _is_session_artifact(relpath: str) -> bool:
 
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
     if all_artifacts:
-        return sorted(
+        return [
             path
-            for path in (repo_root / RETRO_ARTIFACT_PREFIX).glob("*.md")
-            if path.name != GENERATED_DIGEST
-        )
+            for path in sorted(
+                path
+                for path in (repo_root / RETRO_ARTIFACT_PREFIX).glob("*.md")
+                if path.name != GENERATED_DIGEST
+            )
+            if not file_is_prepare_packet_markdown_kind(
+                path,
+                expected_kind=RETRO_PREPARE_PACKET_KIND,
+                expected_title_re=RETRO_PREPARE_PACKET_TITLE_RE,
+            )
+        ]
     candidates: list[Path] = []
     for relpath in paths:
         if _is_session_artifact(relpath):
             path = repo_root / relpath
-            if path.is_file():
+            if not file_is_prepare_packet_markdown_kind(
+                path,
+                expected_kind=RETRO_PREPARE_PACKET_KIND,
+                expected_title_re=RETRO_PREPARE_PACKET_TITLE_RE,
+            ) and path.is_file():
                 candidates.append(path)
     return sorted(candidates)
 

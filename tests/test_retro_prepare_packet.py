@@ -6,6 +6,9 @@ from pathlib import Path
 
 import pytest
 
+from scripts.validate_retro_artifact import ValidationError as RetroValidationError
+from scripts.validate_retro_artifact import candidate_paths as retro_candidate_paths
+from scripts.validate_retro_artifact import validate_retro_artifact
 from skills.public.retro.scripts import prepare_packet
 from skills.public.retro.scripts.resolve_adapter import load_adapter, validate_adapter_data
 
@@ -157,6 +160,113 @@ packet_sections:
     text = md_path.read_text(encoding="utf-8")
     assert "# Retro Prepare Packet" in text
     assert "retro-body" in text
+
+
+def test_retro_prepare_packet_markdown_passes_live_retro_artifact_validator(tmp_path: Path) -> None:
+    _write_yaml(
+        tmp_path / ".agents/retro-adapter.yaml",
+        """\
+version: 1
+repo: demo
+output_dir: charness-artifacts/retro
+packet_sections:
+  - id: static-context
+    title: Static Context
+    content_kind: static
+    content: retro-body
+""",
+    )
+
+    result = run_script(
+        PREPARE,
+        "--repo-root",
+        str(tmp_path),
+        "--prepared-for",
+        "unit",
+        "--slug",
+        "demo",
+    )
+
+    assert result.returncode == 0, result.stderr
+    candidates = retro_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/retro/demo-packet.md"],
+        all_artifacts=False,
+    )
+
+    assert candidates == []
+
+
+def test_packet_filename_and_heading_without_kind_still_fail_retro_record_floors(tmp_path: Path) -> None:
+    artifact = tmp_path / "charness-artifacts/retro/2026-07-10-demo-packet.md"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Retro Prepare Packet — demo",
+                "",
+                "Date: 2026-07-10",
+                "Mode: session",
+                "",
+                "## Waste",
+                "",
+                "- still a retro record with no packet kind line",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    candidates = retro_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/retro/2026-07-10-demo-packet.md"],
+        all_artifacts=False,
+    )
+
+    assert candidates == [artifact]
+    try:
+        validate_retro_artifact(artifact)
+    except RetroValidationError as exc:
+        assert "`## Persisted` must state" in str(exc)
+    else:
+        raise AssertionError("expected mislabeled retro record to fail validation")
+
+
+def test_wrong_prepare_packet_title_with_correct_retro_kind_still_fails_record_floors(tmp_path: Path) -> None:
+    artifact = tmp_path / "charness-artifacts/retro/2026-07-10-demo-packet.md"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Critique Prepare Packet — demo",
+                "",
+                "- **Kind**: `charness.retro_prepare_packet` (v1)",
+                "",
+                "Date: 2026-07-10",
+                "Mode: session",
+                "",
+                "## Waste",
+                "",
+                "- wrong title should not bypass retro floors",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    candidates = retro_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/retro/2026-07-10-demo-packet.md"],
+        all_artifacts=False,
+    )
+
+    assert candidates == [artifact]
+    try:
+        validate_retro_artifact(artifact)
+    except RetroValidationError as exc:
+        assert "`## Persisted` must state" in str(exc)
+    else:
+        raise AssertionError("expected wrong-title retro packet lookalike to fail validation")
 
 
 def test_retro_prepare_packet_uses_default_slug_when_none_given(tmp_path: Path) -> None:

@@ -6,6 +6,7 @@ import datetime as dt
 import json
 import os
 import runpy
+import shlex
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,6 +23,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 _artifact_naming = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
+_refresh_current_pointer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.refresh_current_pointer")
 dated_artifact_filename = _artifact_naming.dated_artifact_filename
 slugify = _artifact_naming.slugify
 
@@ -61,11 +63,25 @@ def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.da
         write_path = str(record_path)
         write_role = "durable_record"
         update_current = True
+        refresh_argv = [
+            "python3",
+            str(Path(_refresh_current_pointer.__file__).resolve()),
+            "--repo-root",
+            ".",
+            "--skill-id",
+            "quality",
+            "--record-artifact-path",
+            str(record_path),
+            "--execute",
+        ]
+        refresh_command = shlex.join(refresh_argv)
     else:
         target = pointer_state.get("current_pointer_target_path")
         write_path = target if pointer_state["current_pointer_is_symlink"] and isinstance(target, str) else str(current_path)
         write_role = "current_pointer_target" if pointer_state["current_pointer_is_symlink"] else "current_pointer"
         update_current = False
+        refresh_argv = None
+        refresh_command = None
     payload = {
         "skill_id": "quality",
         "intent": intent,
@@ -78,6 +94,8 @@ def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.da
         "write_artifact_path": write_path,
         "write_artifact_role": write_role,
         "update_current_pointer_after_write": update_current,
+        "refresh_current_pointer_argv": refresh_argv,
+        "refresh_current_pointer_command": refresh_command,
     }
     payload.update(pointer_state)
     return payload
