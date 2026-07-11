@@ -276,6 +276,20 @@ applies.
 - Lessons carried forward: Treat structural headroom as ownership design: split a complete behavior seam, not arbitrary line ranges
 - Metrics:
 
+### Slice 6: Diverse operator portability proof-economics probe
+
+- Objective: Challenge the current bundle from independent operator, host-boundary, and repeated-cost lenses
+- Why this approach: A diverse run should admit only observed escape or waste, not manufacture mutation to satisfy a quota
+- Commits: none — read-only probe
+- What changed: No code; identified stale handoff semantics for closeout and no additional portability or proof-economics defect
+- Alternatives rejected: Rejected speculative host abstraction and removal of the necessary final broad proof
+- Targeted verification: source/plugin cmp and packaging/surface/skill/shim/upstream validators passed; current runtime packets stayed within budgets; handoff semantic drift reproduced
+- Test duplication pressure: none
+- Critique: three independent read-only probes; portability and proof economics returned NO-CHANGE, operator probe bound the handoff refresh
+- Off-goal findings: none; #433/#436 remain open
+- Lessons carried forward: A structurally valid handoff can still misroute work when semantic state is stale; refresh it after public lifecycle proof
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
