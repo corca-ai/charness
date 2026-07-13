@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.capability_catalog as catalog
 import scripts.capability_catalog_sources as sources
 from scripts.capability_catalog import (
     CatalogRepoRootError,
@@ -184,6 +185,61 @@ def test_catalog_direct_main_refresh_invalid_root_is_clean_and_nonzero(tmp_path:
     output = capsys.readouterr()
     assert "not a directory" in output.err
     assert "Traceback" not in output.err
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [],
+        ["list"],
+        ["refresh"],
+        ["resolve-skill-path"],
+        ["resolve-skill-path", "--skill-id", "impl", "--reported-path", "/tmp/old.md"],
+        ["resolve-skill-path", "--repo-root", "/tmp/repo", "--reported-path", "/tmp/old.md"],
+        ["resolve-skill-path", "--repo-root", "/tmp/repo", "--skill-id", "impl"],
+    ],
+)
+def test_catalog_cli_rejects_missing_required_arguments(argv: list[str]) -> None:
+    """Keep every argparse required guard observable to mutation testing."""
+    with pytest.raises(SystemExit) as exc_info:
+        catalog_main(argv)
+    assert exc_info.value.code == 2
+
+
+def test_catalog_cli_dispatches_to_the_selected_handler(monkeypatch, tmp_path: Path, capsys) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    seen: list[str] = []
+
+    monkeypatch.setattr(catalog, "list_catalog", lambda _root: seen.append("list") or {"command": "list"})
+    monkeypatch.setattr(catalog, "refresh_catalog", lambda _root: seen.append("refresh") or {"command": "refresh"})
+    monkeypatch.setattr(
+        catalog,
+        "resolve_skill_path",
+        lambda **_kwargs: seen.append("resolve") or {"resolved_path": str(repo / "skill.md")},
+    )
+
+    assert catalog_main(["list", "--repo-root", str(repo), "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["command"] == "list"
+    assert catalog_main(["refresh", "--repo-root", str(repo), "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["command"] == "refresh"
+    assert (
+        catalog_main(
+            [
+                "resolve-skill-path",
+                "--repo-root",
+                str(repo),
+                "--skill-id",
+                "impl",
+                "--reported-path",
+                str(repo / "old.md"),
+                "--json",
+            ]
+        )
+        == 0
+    )
+    assert json.loads(capsys.readouterr().out)["resolved_path"].endswith("skill.md")
+    assert seen == ["list", "refresh", "resolve"]
 
 
 def test_catalog_sources_cover_dedup_frontmatter_references_and_duplicate_names(tmp_path: Path) -> None:
