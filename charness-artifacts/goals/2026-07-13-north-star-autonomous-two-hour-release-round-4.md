@@ -17,8 +17,8 @@ continuation run.
 - Current slice intent: turn the admitted slices and lens non-changes into one
   honest release-readiness record, adversarial critique, and clean verification
   lock before any publication mutation.
-- Next action: close and commit the Codex cache speed slice, then run the final
-  distinct quality lenses and bundle proof.
+- Next action: persist the release critique, run the exact clean verification
+  lock, then dry-run and execute the repo-owned patch release helper.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -239,7 +239,7 @@ applies.
 
 - Objective: Remove repeated Python recorder startup from aggregate-runtime tests without changing production behavior or proof depth.
 - Why this approach: Measured focused duration showed five tests at 3.74-3.85s each; the test spy launched 83 recorder processes per run while direct recorder tests already owned implementation fidelity.
-- Commits: pending
+- Commits: `eca5b359` (Speed aggregate runtime contract tests).
 - What changed: Only tests/quality_gates/test_quality_runner_runtime_aggregate.py: the generated python3 wrapper now intercepts the exact recorder path, parses four known fields, writes JSONL, and preserves aggregate failure exit 73.
 - Alternatives rejected: Rejected production runner changes, assertion deletion, general JSON serializer work, and moving recorder contract coverage out of its direct test module.
 - Targeted verification: Focused module improved from 6 passed in 19.5s to 6 passed in 5.81-5.92s. Combined aggregate plus direct-recorder modules passed 38 tests in 14.17s; ruff passed.
@@ -253,7 +253,7 @@ applies.
 
 - Objective: Return the existing resolve-target usage error before backend/auth preflight while preserving adapter precedence and valid paths.
 - Why this approach: A standing test measured 5.48s because deterministic invalid input paid live GitHub auth latency; fake delay proved the remote probe was the cause.
-- Commits: pending
+- Commits: `e88473e4` (Reject invalid issue target before preflight).
 - What changed: Moved the resolve+target guard after invalid-adapter handling and before resolve_backend; synced public issue source to plugin mirror; added exact in-process no-call regression and host-independent subprocess fixture; resolved the debug record.
 - Alternatives rejected: Rejected changing valid preflight behavior, moving validation into the backend, adding broad parse audits, and duplicating exact payload assertions across both test layers.
 - Targeted verification: 48 focused issue tests passed in 3.49s; the formerly slow target case no longer appears above 0.09s in the module durations; ruff, source/plugin cmp, packaging validators, and boundary escalation check passed.
@@ -267,7 +267,7 @@ applies.
 
 - Objective: Remove duplicated full-update cost while preserving official app-server, update-wiring, and actual rotation/staleness evidence.
 - Why this approach: The focused file measured 22.30s, with four update-boundary calls around behavior already exposed by pure cache helpers.
-- Commits: pending
+- Commits: `faacee3f` (Trim duplicate Codex cache update tests).
 - What changed: Retained two real update tests; folded actual rotation/staleness assertions into the official refresh smoke; moved stable/no-diff and unrelated-cache assertions to diff_cache_entries/session_staleness_payload.
 - Alternatives rejected: Rejected mocking the app-server seam, removing the real rotation payload assertion, changing production, and adding the optional full-diff assertion after approval.
 - Targeted verification: Same focused command: 7 passed in 22.30s before; 6 passed in 14.02s parent run after (worker repeats 9.85-13.53s); ruff and diff check passed.
@@ -341,6 +341,12 @@ re-verifies the folded revisions without re-running critique.
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
+
+- Managed-install serial test economics remain a measured candidate for a later
+  slice; this release kept only the narrower admitted speed repairs.
+- #433 and #436 remain open/context-only and were not closed or claimed fixed.
+- Full-suite speed improvement is not claimed; focused same-command improvements
+  are recorded above.
 
 ## Final Verification
 
