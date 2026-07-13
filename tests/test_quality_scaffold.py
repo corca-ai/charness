@@ -83,6 +83,8 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     # Runtime Signals carries the four prefixes the validator asserts on.
     assert "- runtime source: structured metrics" in template
     assert "rendered by `render_runtime_summary.py`" in template
+    runtime_source_line = next(line for line in template.splitlines() if "runtime-signals.json" in line)
+    assert "<!-- reproduction-source -->" in runtime_source_line
     assert "- runtime hot spots:" in template
     assert "- coverage gate:" in template
     assert "- evaluator depth:" in template

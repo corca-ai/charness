@@ -91,7 +91,8 @@ def render_template(*, title: str, date_text: str) -> str:
                     heading,
                     "",
                     "- runtime source: structured metrics from `.charness/quality/runtime-signals.json`"
-                    " rendered by `render_runtime_summary.py`; TODO profile (or state timing capture is missing).",
+                    " rendered by `render_runtime_summary.py`; TODO profile (or state timing capture is missing)."
+                    " <!-- reproduction-source -->",
                     "- runtime hot spots: TODO top gate timings (latest / median vs budget).",
                     "- coverage gate: TODO run-quality pass/fail.",
                     "- evaluator depth: TODO live Cautilus run or deterministic-gates-only, and why.",

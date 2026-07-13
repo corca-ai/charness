@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 80,
-  "indexed_artifact_count": 68,
+  "source_artifact_count": 81,
+  "indexed_artifact_count": 69,
   "risk_class_counts": {
-    "contract-freeze-risk": 24,
+    "contract-freeze-risk": 26,
     "external-seam": 2,
     "host-disproves-local": 2,
-    "none": 19,
+    "none": 18,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 61,
+    "monitor": 62,
     "none": 4
   },
   "entries": [
@@ -958,13 +958,27 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-13-quality-scaffold-reproduction-source-omission.md",
+      "is_current_pointer": false,
+      "interrupt_id": "quality-scaffold-durability-2026-07-13",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "scaffold output -> persisted quality artifact -> durability validator",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-invalid-target-preflight-order",
+      "interrupt_id": "quality-scaffold-durability-2026-07-13",
       "risk_classes": [
-        "none"
+        "contract-freeze-risk"
       ],
-      "seam": "parsed CLI arguments to GitHub backend preflight",
+      "seam": "scaffold output -> persisted quality artifact -> durability validator",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
