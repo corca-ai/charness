@@ -3,12 +3,12 @@ Date: 2026-07-13
 
 ## Scope
 
-Advanced `charness` toward release `1.0.1` (tag `v1.0.1`) through the repo-owned release helper.
+Advanced `charness` toward release `1.0.2` (tag `v1.0.2`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `1.0.0`
-- target version: `1.0.1`
+- previous version: `1.0.1`
+- target version: `1.0.2`
 - git branch: `main`
 - git remote: `origin`
 
@@ -17,26 +17,18 @@ Advanced `charness` toward release `1.0.1` (tag `v1.0.1`) through the repo-owned
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v1.0.1`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v1.0.2`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
-
-## Distinct-Channel Verification
-
-- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
-- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v1.0.1`
-- HTTP status: `200`
-- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
@@ -51,34 +43,33 @@ Advanced `charness` toward release `1.0.1` (tag `v1.0.1`) through the repo-owned
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-07-13-v1-0-1-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-07-13-v1-0-2-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
-- Surface hits: 2.
+- Surface hits: 1.
   - `checked-in-plugin-export`
-  - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 21.
+- Evaluated changed paths: 27.
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-07-13-v1-0-1-retired-hook-ledger-cleanup.md`
-  - `charness-artifacts/critique/v1-0-1-retired-hook-ledger-packet.json`
-  - `charness-artifacts/critique/v1-0-1-retired-hook-ledger-packet.md`
-  - `charness-artifacts/debug/2026-07-13-debug-review.md`
+  - `charness-artifacts/critique/2026-07-13-issue-resolve-preflight-ordering-code-critique.md`
+  - `charness-artifacts/critique/2026-07-13-round4-goal-plan-packet.json`
+  - `charness-artifacts/critique/2026-07-13-round4-goal-plan-packet.md`
+  - `charness-artifacts/critique/2026-07-13-round4-issue-preflight-packet.json`
+  - `charness-artifacts/critique/2026-07-13-round4-issue-preflight-packet.md`
+  - `charness-artifacts/critique/2026-07-13-v1-0-2-release-critique.md`
+  - `charness-artifacts/critique/2026-07-13-v1-0-2-release-packet.json`
+  - `charness-artifacts/critique/2026-07-13-v1-0-2-release-packet.md`
+  - `charness-artifacts/debug/2026-07-13-debug-review-followup-2.md`
+  - `charness-artifacts/debug/2026-07-13-debug-review-followup.md`
   - `charness-artifacts/debug/latest.md`
   - `charness-artifacts/debug/seam-risk-index.json`
-  - `charness-artifacts/metrics/rca-ledger.jsonl`
-  - `charness-artifacts/quality/sloc-inventory/latest.json`
-  - `charness-artifacts/release/2026-07-13-v1.0.1-notes.md`
+  - `charness-artifacts/goals/2026-07-13-north-star-autonomous-two-hour-release-round-4.md`
+  - `charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md`
+  - `charness-artifacts/quality/latest.md`
+  - `charness-artifacts/release/2026-07-13-v1.0.2-notes.md`
   - `charness-artifacts/release/latest.md`
-  - `charness-artifacts/retro/2026-07-13-v1-0-1-release-auto-retro.md`
-  - `charness-artifacts/retro/lesson-selection-index.json`
-  - `charness-artifacts/retro/recent-lessons.md`
-  - `charness-artifacts/spec/2026-07-13-retired-hook-ledger-cleanup.md`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
-  - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/scripts/host_hook_session_routing.py`
-  - `scripts/host_hook_session_routing.py`
-  - ... 1 more
+  - ... 7 more
 
 ## Real-Host Verification
 
@@ -90,7 +81,7 @@ Advanced `charness` toward release `1.0.1` (tag `v1.0.1`) through the repo-owned
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-07-13-v1-0-1-retired-hook-ledger-cleanup.md`.
+- Review proof: `charness-artifacts/critique/2026-07-13-v1-0-2-release-critique.md`.
 
 ## Requested Review Gate
 
@@ -99,43 +90,16 @@ Advanced `charness` toward release `1.0.1` (tag `v1.0.1`) through the repo-owned
 - Policy: `advisory-only`.
 - Configured command count: `0`.
 
-## Post-Publish Proof
-
-- Public release check: `gh release view v1.0.1`.
-
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Elapsed seconds: `8.871`
-- Stdout tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete
-PACKAGE: charness
-VERSION: 1.0.0 -> 1.0.1
-CHECKOUT: pulled /home/hwidong/.agents/src/charness
-SCOPE: self
-COMPLETED: codex_source_prepared, codex_marketplace_registered, upstream_support_skills_synced, claude_marketplace_updated, claude_plugin_updated, codex_cache_refreshed
-SESSION_STALENESS: cache paths rotated for active sessions
-  - local/charness 1.0.0 -> 1.0.1
-  -> Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/capability_catalog.py resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale> [--marketplace <m> --plugin <p>]`.
-NEXT_ACTION:
-  - codex: Codex host install markers are present. Start a new Codex session to load charness.
-  - claude: Claude host install markers are present. Restart Claude Code to load or refresh charness.`
+- Post-publish install refresh: pending final publish verification.
 
 ## Release Runtime
 
-- `requested_review_gate`: 0.003s
-- `cli_skill_surface_gate`: 0.075s
-- `quality_command`: 77.597s
-- `fresh_checkout_probes_initial`: 2.974s
-- `fresh_checkout_probes_after_amend`: 2.874s
-- `push_create_verify_release`: 64.600s
-- `distinct_channel_verification`: 0.544s
-- `issue_closeout`: 0.000s
-- `post_publish_install_refresh`: 8.871s
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 1.868s
+- `quality_command`: 75.250s
+- `fresh_checkout_probes_initial`: 2.924s
 
 ## Fresh Checkout Probes
 
@@ -146,7 +110,7 @@ NEXT_ACTION:
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
