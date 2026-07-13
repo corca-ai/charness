@@ -96,6 +96,7 @@ Advanced `charness` toward release `1.0.0` (tag `v1.0.0`) through the repo-owned
 ## Review Proof
 
 - Review proof: `charness-artifacts/critique/2026-07-13-find-skills-legacy-removal-v1-release-critique.md`.
+- Public-skill scenario review: representative `setup`, `quality`, `issue`, `impl`, and `handoff` registry/dogfood contracts remain valid; no maintained scenario change is required. No live Cautilus evaluation was run or claimed.
 
 ## Requested Review Gate
 
