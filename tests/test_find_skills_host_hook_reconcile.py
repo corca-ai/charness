@@ -25,6 +25,10 @@ def fake_home(tmp_path: Path) -> Path:
     return home
 
 
+def test_session_routing_prefers_canonical_intent_section() -> None:
+    assert fs._routing_intent({"session_routing": {"codex": "enabled"}}, "codex") == "enabled"
+
+
 def test_find_skills_codex_reconcile_removes_legacy_duplicate_block(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_codex_config_toml_path(fake_home)
     settings_path.parent.mkdir(parents=True)

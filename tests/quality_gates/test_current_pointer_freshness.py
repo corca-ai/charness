@@ -3,6 +3,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from scripts.validate_current_pointer_freshness import (
+    ValidationError,
+    _load_catalog_sanitizer,
+    validate_capability_catalog_integration_claims,
+)
+
 from .support import run_script
 
 
@@ -253,3 +261,20 @@ def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_
     assert result.returncode == 1
     assert "capability catalog pointer is stale" in result.stderr
     assert "integrations/tools/cautilus.json" in result.stderr
+
+    with pytest.raises(ValidationError, match="capability catalog pointer is stale"):
+        validate_capability_catalog_integration_claims(repo)
+
+    (inventory_dir / "latest.json").write_text(
+        json.dumps({"inventory": {"integrations": []}}) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValidationError, match="capability catalog pointer is stale"):
+        validate_capability_catalog_integration_claims(repo)
+
+
+def test_current_pointer_freshness_loads_catalog_sanitizer_in_process() -> None:
+    alias_path, sanitize = _load_catalog_sanitizer(Path(__file__).resolve().parents[2])
+    assert alias_path is not None
+    assert sanitize is not None
+    assert alias_path("integrations/tools/github-gh.json") == "integrations/tools/github-worker.json"

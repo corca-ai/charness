@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -98,7 +99,7 @@ def test_charness_update_emits_session_staleness_when_cache_rotates(
     assert ("local", "charness", "0.0.0-old", CURRENT_VERSION) in rotated_pairs
     affected = staleness.get("affected") or []
     assert any("0.0.0-old" in line for line in affected)
-    assert "resolve_skill_path.py" in (staleness.get("resolver_path") or "")
+    assert "capability_catalog.py" in (staleness.get("resolver_path") or "")
     assert "Restart" in (staleness.get("message") or "")
 
 
@@ -135,3 +136,51 @@ def test_session_staleness_without_cache_diff_returns_none(tmp_path: Path) -> No
     )
 
     assert payload is None
+
+
+def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(tmp_path: Path) -> None:
+    module = load_charness_module("charness_codex_cache_refresh_resolver_under_test")
+    diff = {"rotated": [{"marketplace": "local", "plugin": "charness", "old_version": "1", "new_version": "2"}], "removed": []}
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "capability_catalog.py").write_text("# repo resolver\n", encoding="utf-8")
+    payload = module.session_staleness_payload(diff, home_root=tmp_path / "home", repo_root=repo)
+    assert payload["resolver_path"] == str(repo / "scripts" / "capability_catalog.py")
+
+    fallback = tmp_path / "fallback-home" / ".agents" / "src" / "charness" / "scripts"
+    fallback.mkdir(parents=True)
+    (fallback / "capability_catalog.py").write_text("# managed resolver\n", encoding="utf-8")
+    payload = module.session_staleness_payload(diff, home_root=tmp_path / "fallback-home", repo_root=tmp_path / "missing-repo")
+    assert payload["resolver_path"] == str(fallback / "capability_catalog.py")
+
+
+def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, capsys) -> None:
+    module = load_charness_module("charness_catalog_loader_under_test")
+    backend = module._load_catalog_lib()
+    assert backend.list_catalog(Path.cwd())["artifacts"]["mode"] == "read-only"
+    root = str(Path.cwd().resolve())
+    original_path = list(module.sys.path)
+    try:
+        module.EMBEDDED_REPO_ROOT = None
+        module.sys.path[:] = [entry for entry in module.sys.path if entry != root]
+        assert module._load_catalog_lib() is backend
+    finally:
+        module.sys.path[:] = original_path
+
+    args = argparse.Namespace(repo_root=tmp_path, json=True)
+    assert module.cmd_catalog_list(args) == 0
+    capsys.readouterr()
+    assert module.cmd_catalog_refresh(args) == 0
+    capsys.readouterr()
+    resolve_args = argparse.Namespace(
+        repo_root=tmp_path,
+        skill_id="missing",
+        reported_path=tmp_path / "missing/SKILL.md",
+        home=tmp_path / "home",
+        codex_home=tmp_path / "codex",
+        marketplace="local",
+        plugin="charness",
+        json=True,
+    )
+    assert module.cmd_catalog_resolve_skill_path(resolve_args) == 1
+    capsys.readouterr()

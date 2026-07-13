@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
 
+import pytest
+
 import scripts.capability_catalog_sources as sources
-from scripts.capability_catalog import list_catalog, refresh_catalog
-from scripts.capability_catalog_resolver import resolve_skill_path
+from scripts.capability_catalog import _repo_root, list_catalog, refresh_catalog
+from scripts.capability_catalog import main as catalog_main
+from scripts.capability_catalog_artifact import persist_catalog
+from scripts.capability_catalog_resolver import _cache_candidates, resolve_skill_path
 
 
 def test_catalog_refresh_is_read_only_for_list_and_noop_on_second_refresh(tmp_path: Path) -> None:
@@ -113,3 +119,114 @@ def test_catalog_prefers_canonical_adapter_and_warns_on_legacy(tmp_path: Path) -
     canonical = sources.load_adapter(tmp_path)
     assert canonical["path"] == ".agents/capability-catalog-adapter.yaml"
     assert not any("legacy find-skills adapter" in warning for warning in canonical["warnings"])
+
+
+def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    assert _repo_root(None) == Path.cwd().resolve()
+    assert catalog_main(["list", "--repo-root", str(repo)]) == 0
+    capsys.readouterr()
+    assert catalog_main(["refresh", "--repo-root", str(repo), "--json"]) == 0
+    capsys.readouterr()
+    assert catalog_main(
+        [
+            "resolve-skill-path",
+            "--repo-root",
+            str(repo),
+            "--skill-id",
+            "missing",
+            "--reported-path",
+            str(repo / "missing"),
+            "--json",
+        ]
+    ) == 1
+    capsys.readouterr()
+
+    original_path = list(sys.path)
+    repo_path = str(Path(__file__).resolve().parents[1])
+    try:
+        sys.path[:] = [entry for entry in sys.path if entry != repo_path]
+        monkeypatch.setattr(sys, "argv", ["capability_catalog.py", "list", "--repo-root", str(repo)])
+        with pytest.raises(SystemExit) as exc_info:
+            runpy.run_path(str(Path(repo_path) / "scripts/capability_catalog.py"), run_name="__main__")
+        assert exc_info.value.code == 0
+    finally:
+        sys.path[:] = original_path
+    assert '"artifacts"' in capsys.readouterr().out
+
+
+def test_catalog_sources_cover_dedup_frontmatter_references_and_duplicate_names(tmp_path: Path) -> None:
+    assert sources._dedupe(["", "one", "one", "two"]) == ["one", "two"]
+    malformed = tmp_path / "malformed.md"
+    malformed.write_text("# no frontmatter\n", encoding="utf-8")
+    assert sources._frontmatter(malformed) == {}
+
+    repo = tmp_path / "repo"
+    skill_root = repo / "skills"
+    first = skill_root / "first"
+    second = skill_root / "second"
+    reference = first / "references" / "guide.md"
+    reference.parent.mkdir(parents=True)
+    reference.write_text("guide\n", encoding="utf-8")
+    for skill in (first, second):
+        skill.mkdir(parents=True, exist_ok=True)
+        (skill / "SKILL.md").write_text(
+            "---\nname: duplicate-name\ndescription: test\n---\nSee `references/guide.md`.\n",
+            encoding="utf-8",
+        )
+    entries = sources._skill_entries(
+        [("skills", skill_root), ("same-root", skill_root)], repo_root=repo, layer="public skill"
+    )
+    assert len(entries) == 1
+    assert entries[0]["referenced_paths"] == ["skills/first/references/guide.md"]
+
+
+def test_catalog_sources_cover_sibling_support_malformed_adapter_and_exported_root(tmp_path: Path, monkeypatch) -> None:
+    repo = tmp_path / "consumer"
+    sibling_skill = tmp_path / "charness-support" / "helper"
+    sibling_skill.mkdir(parents=True)
+    (sibling_skill / "capability.json").write_text(
+        json.dumps({"capability_id": "helper", "kind": "support", "summary": "helper"}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sources, "load_support_capabilities", lambda _root: [])
+    caps = sources._support_caps(repo)
+    assert caps[0]["id"] == "helper"
+
+    bad_adapter = repo / ".agents" / "capability-catalog-adapter.yaml"
+    bad_adapter.parent.mkdir(parents=True)
+    bad_adapter.write_text("- not-a-mapping\n", encoding="utf-8")
+    monkeypatch.setattr(sources, "load_yaml_file", lambda _path: ["not-a-mapping"])
+    loaded = sources.load_adapter(repo)
+    assert any("did not contain a mapping" in warning for warning in loaded["warnings"])
+
+    fake_root = tmp_path / "plugin-root"
+    (fake_root / ".codex-plugin").mkdir(parents=True)
+    (fake_root / ".codex-plugin" / "plugin.json").write_text("{}\n", encoding="utf-8")
+    plugin_skill = fake_root / "skills" / "plugin-skill"
+    plugin_skill.mkdir(parents=True)
+    (plugin_skill / "SKILL.md").write_text("---\nname: plugin-skill\ndescription: test\n---\n", encoding="utf-8")
+    monkeypatch.setattr(sources, "__file__", str(fake_root / "scripts" / "capability_catalog_sources.py"))
+    inventory = sources.build_inventory(repo)
+    assert any(item["id"] == "plugin-skill" for item in inventory["public_skills"])
+
+
+def test_catalog_persist_refuses_to_erase_existing_support_surface(tmp_path: Path) -> None:
+    prior = {"public_skills": [], "support_skills": [{"id": "keep-me"}], "support_capabilities": [], "integrations": []}
+    persist_catalog(tmp_path, prior)
+    with pytest.raises(ValueError, match="empty support_skills"):
+        persist_catalog(tmp_path, {"public_skills": [], "support_skills": [], "support_capabilities": [], "integrations": []})
+
+
+def test_catalog_resolver_handles_missing_cache_root_and_missing_skill_warning(tmp_path: Path) -> None:
+    assert _cache_candidates(tmp_path / "codex", "impl", "local", "charness") == []
+    payload = resolve_skill_path(
+        skill_id="missing",
+        repo_root=tmp_path / "repo",
+        home=tmp_path / "home",
+        codex_home=tmp_path / "codex",
+        reported_path=tmp_path / "missing/SKILL.md",
+    )
+    assert payload["status"] == "missing"
+    assert any("No installed or repo-local" in warning for warning in payload["warnings"])
