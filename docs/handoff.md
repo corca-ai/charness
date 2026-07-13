@@ -50,7 +50,10 @@
   · [quality](../charness-artifacts/quality/2026-07-13-round5-v1-0-4-release-readiness.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: v1.0.4 public/install state, session restart, evidence-admitted
-  host-proof probe, and #433/#436 authority boundaries change the next move.
-- Refresh non-claims: no Cautilus, remote CI, issue closure, test-speed gain,
+- Refresh kept: [the round-five goal](../charness-artifacts/goals/2026-07-13-north-star-autonomous-two-hour-release-round-5.md)
+  binds v1.0.4 public/install state, session restart, the evidence-admitted
+  host-proof probe, and #433/#436 authority boundaries because they change the
+  next move.
+- Refresh non-claims: [the release record](../charness-artifacts/release/latest.md)
+  does not claim Cautilus, remote CI, issue closure, test-speed gain,
   authenticated API proof, or real Claude custom-home execution.
