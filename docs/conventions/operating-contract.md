@@ -49,7 +49,7 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   [skills/public/gather/scripts/write_record.py](../../skills/public/gather/scripts/write_record.py)
   and [`gather_writer_lib`](../../skills/public/gather/scripts/gather_writer_lib.py).
   Other skills that publish a `latest.*` rolling pointer
-  (find-skills/quality/release/cautilus/debug/hitl/narrative/retro/critique)
+  (quality/release/cautilus/debug/hitl/narrative/retro/critique)
   inherit the same hazard and should reuse this writer once promoted to a
   shared helper, not reimplement open-and-overwrite.
 

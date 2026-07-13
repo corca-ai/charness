@@ -32,8 +32,8 @@ Use `ideation` when the question is still shaping the concept or work direction.
 Use `spec` when the decision locks build scope, acceptance, sequencing, or
 public contract vocabulary.
 
-Do not route an ordinary decision-shaped prompt through `find-skills` just
-because several skills are nearby. `find-skills` is still correct when the user
+Do not route an ordinary decision-shaped prompt through a capability inventory
+just because several skills are nearby. Catalog lookup is correct when the user
 explicitly asks which skill, support capability, helper, or integration should
 handle the task.
 

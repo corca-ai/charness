@@ -4,11 +4,11 @@ import json
 import subprocess
 from pathlib import Path
 
-import session_start_find_skills as hook
+import session_start_routing as hook
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_find_skills.py"
+HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_routing.py"
 
 # The session-start routing trigger is installed at USER level
 # (~/.claude/settings.json, ~/.codex/config.toml) pointing at the released
@@ -21,18 +21,17 @@ HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_find_skills.py"
 # installed metadata and model judgment.
 
 
-def test_directive_front_loads_pickup_discovery_and_otherwise_routes() -> None:
+def test_directive_front_loads_pickup_inventory_and_otherwise_routes() -> None:
     """The directive now states the routing rule directly, not just a pointer.
 
     Carries over the #240 protections: (1) a pickup deterministically drives
-    into the handoff-named workflow, (2) capability discovery stays owned by
-    `find-skills`, (3) the capability map is named so a missing/stale map or
-    an unclear route still falls back to `find-skills`.
+    into the handoff-named workflow and (2) hidden capability inventory stays
+    a deterministic catalog lookup rather than semantic routing.
     """
     directive = hook.build_additional_context()
     lowered = directive.lower()
     # (1) Pickup route: names the handoff doc, its Workflow Trigger, and the
-    # concrete skill to invoke -- this used to live only in find-skills.
+    # concrete skill to invoke.
     assert "pickup" in lowered
     assert "docs/handoff.md" in directive
     assert "workflow trigger" in lowered

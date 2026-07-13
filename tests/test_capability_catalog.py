@@ -91,11 +91,6 @@ def test_catalog_scans_exported_plugin_layout_and_trusted_roots(tmp_path: Path) 
     assert trusted_entries[0]["id"] == "trusted-skill"
 
 
-def test_catalog_inventory_excludes_removed_public_router(tmp_path: Path) -> None:
-    payload = list_catalog(tmp_path)["inventory"]
-    assert all(item["id"] != "find-skills" for item in payload["public_skills"])
-
-
 def test_catalog_lists_local_and_synced_support_skills(tmp_path: Path) -> None:
     local = tmp_path / "skills" / "support" / "local-helper"
     synced = tmp_path / "skills" / "support" / "generated" / "synced-helper"
@@ -108,17 +103,13 @@ def test_catalog_lists_local_and_synced_support_skills(tmp_path: Path) -> None:
     assert by_id["synced-helper"]["layer"] == "synced support skill"
 
 
-def test_catalog_prefers_canonical_adapter_and_warns_on_legacy(tmp_path: Path) -> None:
+def test_catalog_loads_canonical_adapter(tmp_path: Path) -> None:
     agents = tmp_path / ".agents"
     agents.mkdir()
-    (agents / "find-skills-adapter.yaml").write_text("trusted_skill_roots: []\n")
-    legacy = sources.load_adapter(tmp_path)
-    assert legacy["path"] == ".agents/find-skills-adapter.yaml"
-    assert any("legacy find-skills adapter" in warning for warning in legacy["warnings"])
     (agents / "capability-catalog-adapter.yaml").write_text("trusted_skill_roots: []\n")
     canonical = sources.load_adapter(tmp_path)
     assert canonical["path"] == ".agents/capability-catalog-adapter.yaml"
-    assert not any("legacy find-skills adapter" in warning for warning in canonical["warnings"])
+    assert canonical["warnings"] == []
 
 
 def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(tmp_path: Path, monkeypatch, capsys) -> None:

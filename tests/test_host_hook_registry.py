@@ -56,10 +56,10 @@ def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
     home = _fake_home(tmp_path)
     fourth = registry.SiblingHookIntent(
         key="hypothetical_fourth",
-        module="host_hook_find_skills",
-        reconcile_function="reconcile_find_skills_hooks",
-        status_function="find_skills_routing_status",
-        script_relative_attr="FIND_SKILLS_SCRIPT_RELATIVE",
+        module="host_hook_session_routing",
+        reconcile_function="reconcile_session_routing_hooks",
+        status_function="session_routing_status",
+        script_relative_attr="SESSION_ROUTING_SCRIPT_RELATIVE",
     )
     actions = registry.reconcile_sibling_hooks(
         repo, adapter={}, home=home, intents=(*registry.SIBLING_HOOK_INTENTS, fourth)
@@ -71,7 +71,7 @@ def test_sibling_reconcile_isolates_per_host_errors(tmp_path: Path, monkeypatch)
     # An enabled host's failure reports per-host and never aborts the chain:
     # claude's installer raising HostHookError still yields a codex result and
     # the second sibling intent still reconciles.
-    import host_hook_find_skills as fs
+    import host_hook_session_routing as routing
 
     repo = _fake_repo(tmp_path)
     home = _fake_home(tmp_path)
@@ -79,8 +79,8 @@ def test_sibling_reconcile_isolates_per_host_errors(tmp_path: Path, monkeypatch)
     def _boom(repo_root: Path, *, home: Path) -> dict[str, object]:
         raise lib.HostHookError("boom")
 
-    monkeypatch.setattr(fs, "install_find_skills_claude_hook", _boom)
-    adapter = {"find_skills_routing": {"claude": "enabled"}}
+    monkeypatch.setattr(routing, "install_session_routing_claude_hook", _boom)
+    adapter = {"session_routing": {"claude": "enabled"}}
     actions = registry.reconcile_sibling_hooks(repo, adapter=adapter, home=home)
     assert actions["session_routing"]["claude"]["error"] == "boom"
     assert "result" in actions["session_routing"]["codex"]
@@ -94,9 +94,9 @@ def test_import_module_fallback_inserts_scripts_dir(monkeypatch) -> None:
     scripts_dir = (REPO_ROOT / "scripts").resolve()
     cleaned = [p for p in sys.path if Path(p or ".").resolve() != scripts_dir]
     monkeypatch.setattr(sys, "path", cleaned)
-    monkeypatch.delitem(sys.modules, "host_hook_find_skills", raising=False)
-    module = registry._import_module("host_hook_find_skills")
-    assert module.__name__ == "host_hook_find_skills"
+    monkeypatch.delitem(sys.modules, "host_hook_session_routing", raising=False)
+    module = registry._import_module("host_hook_session_routing")
+    assert module.__name__ == "host_hook_session_routing"
 
 
 def test_liveness_flags_missing_script(tmp_path: Path) -> None:
@@ -169,17 +169,17 @@ def _claude_settings_payload(commands: list[str], event: str = "SessionStart") -
 def test_known_basenames_derive_from_owning_module_constants() -> None:
     # Pin the derived set against the live constants; a forked literal list
     # or a renamed script constant fails here, not in a consumer.
-    import host_hook_find_skills as fs
+    import host_hook_session_routing as routing
     import host_hook_skill_anchor_guard as guard
 
     assert registry.known_hook_script_basenames() == {
         lib.HOOK_SCRIPT_RELATIVE.name,
-        fs.FIND_SKILLS_SCRIPT_RELATIVE.name,
+        routing.SESSION_ROUTING_SCRIPT_RELATIVE.name,
         guard.GUARD_SCRIPT_RELATIVE.name,
     }
     assert registry.known_hook_script_basenames() == {
         "usage_episode_session_start.py",
-        "session_start_find_skills.py",
+        "session_start_routing.py",
         "post_edit_skill_anchor_guard.py",
     }
 
@@ -221,7 +221,7 @@ def test_settings_scan_passes_live_entry_and_scans_all_events(tmp_path: Path) ->
 
 def test_settings_scan_flags_leftover_in_codex_hooks_json(tmp_path: Path) -> None:
     home = _fake_home(tmp_path)
-    leftover = tmp_path / "gone" / "scripts" / "session_start_find_skills.py"
+    leftover = tmp_path / "gone" / "scripts" / "session_start_routing.py"
     hooks_json = home / ".codex" / "hooks.json"
     hooks_json.parent.mkdir(parents=True)
     hooks_json.write_text(

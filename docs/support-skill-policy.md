@@ -94,16 +94,18 @@ They should also stay visible in machine-readable operator state so a later
 agent can tell whether a dependency is native, upstream-consumed, or still
 waiting on manual install work.
 
-## `find-skills` Interaction
+## Capability Catalog Interaction
 
-`find-skills` should use this policy in order:
+The read-only capability catalog inventories these layers in order:
 
 - local public skills first
 - local support skills and local integration manifests next
 - adapter-configured trusted skill roots after that
 - generic external ecosystems only when the host explicitly allows them
 
-That keeps discovery honest without hiding host-trusted capability packs.
+That keeps hidden availability facts honest without turning inventory into
+semantic workflow routing. Installed skill metadata and model judgment own the
+ordinary route decision.
 
 ## Required Contracts
 

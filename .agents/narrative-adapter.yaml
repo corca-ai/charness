@@ -53,7 +53,7 @@ owner_doc_boundaries:
 - Deeper validation policy belongs in docs/public-skill-validation.md and adjacent owner docs.
 landing_danger_checks:
 - Do not flatten the public skill map into an undifferentiated list.
-- Do not make find-skills sound like a normal end-user command when it is usually internal routing support.
+- Keep ordinary workflow routing owned by installed skill metadata and model judgment; use the catalog only for hidden availability facts.
 - Keep cautilus in the support skill or integration layer rather than as the top-level product contrast.
 - Drop low-value inventory sections that do not help first-touch readers.
 remote_name: origin

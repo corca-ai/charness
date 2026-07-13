@@ -170,7 +170,7 @@ The achieve After-phase carries further presence-only floors, in
 and
 [`goal_artifact_phase_routing.py`](../skills/public/achieve/scripts/goal_artifact_phase_routing.py),
 wired through the same evidence gate. They give *teeth* to
-`find-skills`-routing boundaries the goal-artifact `## Coordination Cues` prose
+owner-skill routing boundaries the goal-artifact `## Coordination Cues` prose
 cue under-serves (skipping them is silent and costly). Same deterministic-floor
 philosophy as #253: presence/binding-only, clone-safe, block-the-blank, an
 explicit opt-out valve, grandfathered by `Created`.
@@ -178,8 +178,8 @@ explicit opt-out valve, grandfathered by `Created`.
 - **phase-routing floor** — trigger: recorded work sections show implementation
   (`What changed:` / `Commits:`), bug/RCA/debug cues, quality-gate cues, or
   issue-closeout cues. Satisfied by a `Routing:` line in `## Coordination Cues`
-  that names `find-skills` and the routed skill (`impl`, `debug`, `quality`, or
-  `issue`), or a `Routing: n/a — <reason>` opt-out (≥30 chars). This proves the
+  that names the routed skill (`impl`, `debug`, `quality`, or `issue`) and its
+  basis, or a `Routing: n/a — <reason>` opt-out (≥30 chars). This proves the
   owner-skill boundary was considered; it does not judge route prose quality.
 - **gather floor** — trigger: `## Context Sources` names an external source (an
   `http(s)://` URL — Slack / Notion / Google-Docs / Drive links and bare web URLs
@@ -208,8 +208,8 @@ applies to goals Created ≥ `2026-06-04`. The gather/release floors landed
 `2026-05-30`, but several same-day goals predate them, so the
 `2026-05-31` cutoff grandfathers every in-flight goal;
 missing/malformed `Created` fails closed. `achieve` owns the carrier + floors;
-`find-skills` owns *which* skill answers a boundary (never an inline phase→skill
-map). The bidirectional surface where a standalone `/issue` or `/debug` reads the
+installed skill metadata and model judgment own *which* skill answers a
+boundary (never an inline phase→skill map). The bidirectional surface where a standalone `/issue` or `/debug` reads the
 active goal is explicitly **deferred** to its own effort.
 
 ### Closeout Delegation (orchestrator/sub-goal external proof, #318)

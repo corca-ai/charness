@@ -115,7 +115,7 @@ inference-layer surface, not a banner repeated per invocation):
   function length is gated separately by ruff PLR0915):
   is a warn-band file an honest cohesive unit near its limit,
   or genuine over-accumulation THIS repo should split now?
-- recommendation rankings (`find-skills` `recommendation_interpretation`; this
+- recommendation rankings (model-judged interpretation; this
   artifact's `Recommended Next Quality Moves` ordering — see
   [gate-classification.md](./gate-classification.md)): does the top-ranked item
   genuinely fit THIS repo's current state, or is it a generic default / a

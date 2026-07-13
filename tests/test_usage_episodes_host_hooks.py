@@ -5,8 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-import host_hook_find_skills as fs
 import host_hook_install_lib as lib
+import host_hook_session_routing as routing
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -327,20 +327,20 @@ def test_status_reports_drift_when_intent_disabled_but_actual_present(fake_repo:
     assert any("claude" in item for item in status["drift"])
 
 
-def test_find_skills_status_reports_drift(fake_repo: Path, fake_home: Path) -> None:
-    status = lib.find_skills_routing_status(
+def test_session_routing_status_reports_drift(fake_repo: Path, fake_home: Path) -> None:
+    status = lib.session_routing_status(
         fake_repo,
-        adapter={"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled"}},
+        adapter={"version": 1, "enabled": True, "session_routing": {"claude": "enabled"}},
         home=fake_home,
     )
     assert status["in_sync"] is False
     assert status["hosts"]["claude"]["in_sync"] is False
     assert any("session_routing" in item for item in status["drift"])
 
-    fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
-    status = lib.find_skills_routing_status(
+    routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
+    status = lib.session_routing_status(
         fake_repo,
-        adapter={"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled"}},
+        adapter={"version": 1, "enabled": True, "session_routing": {"claude": "enabled"}},
         home=fake_home,
     )
     assert status["in_sync"] is True
@@ -474,7 +474,7 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
         (
             "version: 1\nenabled: true\n"
             "host_hooks:\n  claude: enabled\n"
-            "find_skills_routing:\n  claude: enabled\n"
+            "session_routing:\n  claude: enabled\n"
         ),
     )
     runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
@@ -489,11 +489,11 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
     assert payload["session_routing"]["hosts"]["claude"]["in_sync"] is False
 
     lib.install_claude_hook(fake_repo, home=fake_home)
-    fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
+    routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
     # The #343 liveness check flags state-tracked hooks whose script path does
     # not exist; seed the scripts so the in-sync verdict stays about drift.
     (fake_repo / "scripts" / "usage_episode_session_start.py").touch()
-    (fake_repo / "scripts" / "session_start_find_skills.py").touch()
+    (fake_repo / "scripts" / "session_start_routing.py").touch()
     result = subprocess.run(
         [sys.executable, str(runner), "--repo-root", str(fake_repo), "--home", str(fake_home), "--mode", "status"],
         capture_output=True,
@@ -505,7 +505,7 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
     assert payload["hook_liveness"]["dangling"] == []
 
 
-# --- find-skills routing hook (#244) ---
+# --- session-routing hook (#244) ---
 
 
 def _claude_session_start(settings_path: Path) -> list[dict]:
@@ -513,8 +513,8 @@ def _claude_session_start(settings_path: Path) -> list[dict]:
     return settings["hooks"]["SessionStart"]
 
 
-def test_find_skills_reconcile_installs_when_enabled(fake_repo: Path, fake_home: Path) -> None:
-    adapter = {"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled", "codex": "enabled"}}
+def test_session_routing_reconcile_installs_when_enabled(fake_repo: Path, fake_home: Path) -> None:
+    adapter = {"version": 1, "enabled": True, "session_routing": {"claude": "enabled", "codex": "enabled"}}
     actions = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
     fs_actions = actions["session_routing"]
     assert fs_actions["claude"]["result"]["action"] == "installed"
@@ -522,56 +522,56 @@ def test_find_skills_reconcile_installs_when_enabled(fake_repo: Path, fake_home:
     entries = _claude_session_start(settings_path)
     assert len(entries) == 1
     assert entries[0]["matcher"] == "startup|resume|clear"
-    assert entries[0]["hooks"][0]["command"].endswith("session_start_find_skills.py --host claude")
+    assert entries[0]["hooks"][0]["command"].endswith("session_start_routing.py --host claude")
     # usage-episodes intent absent -> its hook is NOT installed alongside.
     assert "claude" not in lib.read_state(fake_repo)
     assert lib.read_state(fake_repo)["claude:session_routing"]["kind"] == "claude-json"
 
 
-def test_find_skills_coexists_with_usage_episodes(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_coexists_with_usage_episodes(fake_repo: Path, fake_home: Path) -> None:
     adapter = {
         "version": 1, "enabled": True,
         "host_hooks": {"claude": "enabled"},
-        "find_skills_routing": {"claude": "enabled"},
+        "session_routing": {"claude": "enabled"},
     }
     lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
     commands = [e["hooks"][0]["command"] for e in _claude_session_start(lib.default_claude_settings_path(fake_home))]
     assert any(c.endswith("usage_episode_session_start.py --host claude") for c in commands)
-    assert any(c.endswith("session_start_find_skills.py --host claude") for c in commands)
+    assert any(c.endswith("session_start_routing.py --host claude") for c in commands)
     assert len(commands) == 2
     state = lib.read_state(fake_repo)
     assert "claude" in state and "claude:session_routing" in state
 
 
-def test_find_skills_install_is_idempotent(fake_repo: Path, fake_home: Path) -> None:
-    first = fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
-    second = fs.install_find_skills_claude_hook(fake_repo, home=fake_home)
+def test_session_routing_install_is_idempotent(fake_repo: Path, fake_home: Path) -> None:
+    first = routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
+    second = routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
     assert first["action"] == "installed"
     assert second["action"] == "noop"
     assert len(_claude_session_start(lib.default_claude_settings_path(fake_home))) == 1
 
 
-def test_find_skills_disabled_by_default(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_disabled_by_default(fake_repo: Path, fake_home: Path) -> None:
     actions = lib.reconcile_host_hooks(fake_repo, adapter={"version": 1, "enabled": True}, home=fake_home)
     assert actions["session_routing"]["claude"]["intent"] == "disabled"
     assert not lib.default_claude_settings_path(fake_home).is_file()
 
 
-def test_find_skills_codex_toml_uses_distinct_marker(fake_repo: Path, fake_home: Path) -> None:
-    result = fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+def test_session_routing_codex_toml_uses_distinct_marker(fake_repo: Path, fake_home: Path) -> None:
+    result = routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
     assert result["action"] == "installed"
     assert result["kind"] == "codex-toml"
     text = Path(result["settings_path"]).read_text(encoding="utf-8")
     assert "# charness:session-routing" in text
     assert "# charness:usage-episodes" not in text
     assert 'matcher = "startup|resume|clear"' in text
-    assert "session_start_find_skills.py" in text
+    assert "session_start_routing.py" in text
 
 
-def test_find_skills_uninstalled_when_intent_flipped(fake_repo: Path, fake_home: Path) -> None:
-    enabled = {"version": 1, "enabled": True, "find_skills_routing": {"claude": "enabled"}}
+def test_session_routing_uninstalled_when_intent_flipped(fake_repo: Path, fake_home: Path) -> None:
+    enabled = {"version": 1, "enabled": True, "session_routing": {"claude": "enabled"}}
     lib.reconcile_host_hooks(fake_repo, adapter=enabled, home=fake_home)
-    disabled = {"version": 1, "enabled": True, "find_skills_routing": {"claude": "disabled"}}
+    disabled = {"version": 1, "enabled": True, "session_routing": {"claude": "disabled"}}
     actions = lib.reconcile_host_hooks(fake_repo, adapter=disabled, home=fake_home)
     assert actions["session_routing"]["claude"]["result"]["action"] == "removed"
     assert "claude:session_routing" not in lib.read_state(fake_repo)
@@ -612,10 +612,10 @@ def test_install_codex_toml_dedups_across_two_checkouts(tmp_path: Path, fake_hom
     assert text.count("[[hooks.SessionStart]]") == 1
 
 
-def test_find_skills_dedups_across_two_checkouts(tmp_path: Path, fake_home: Path) -> None:
+def test_session_routing_dedups_across_two_checkouts(tmp_path: Path, fake_home: Path) -> None:
     repo_a, repo_b = _two_checkouts(tmp_path)
-    fs.install_find_skills_claude_hook(repo_a, home=fake_home)
-    second = fs.install_find_skills_claude_hook(repo_b, home=fake_home)
+    routing.install_session_routing_claude_hook(repo_a, home=fake_home)
+    second = routing.install_session_routing_claude_hook(repo_b, home=fake_home)
     assert second["action"] == "noop"
     assert len(_claude_session_start(lib.default_claude_settings_path(fake_home))) == 1
 
@@ -639,12 +639,12 @@ def test_foreign_python_hook_is_not_deduped_away(tmp_path: Path, fake_home: Path
     assert len(commands) == 2
 
 
-def test_codex_toml_uninstall_usage_episodes_preserves_find_skills_block(fake_repo: Path, fake_home: Path) -> None:
+def test_codex_toml_uninstall_usage_episodes_preserves_session_routing_block(fake_repo: Path, fake_home: Path) -> None:
     """Two distinct charness TOML markers can sit adjacent in one config.toml;
     uninstalling the first (usage-episodes) block must not swallow the
-    following find-skills block (#244/#245 marker-boundary regression)."""
+    following session-routing block (#244/#245 marker-boundary regression)."""
     lib.install_codex_hook(fake_repo, home=fake_home)
-    fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+    routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
     settings_path = lib.default_codex_config_toml_path(fake_home)
     text = settings_path.read_text(encoding="utf-8")
     assert "# charness:usage-episodes" in text and "# charness:session-routing" in text
@@ -652,15 +652,15 @@ def test_codex_toml_uninstall_usage_episodes_preserves_find_skills_block(fake_re
     text = settings_path.read_text(encoding="utf-8")
     assert "# charness:usage-episodes" not in text
     assert "# charness:session-routing" in text
-    assert "session_start_find_skills.py" in text
+    assert "session_start_routing.py" in text
     assert text.count("[[hooks.SessionStart]]") == 1
 
 
-def test_codex_toml_uninstall_find_skills_preserves_usage_episodes_block(fake_repo: Path, fake_home: Path) -> None:
+def test_codex_toml_uninstall_session_routing_preserves_usage_episodes_block(fake_repo: Path, fake_home: Path) -> None:
     lib.install_codex_hook(fake_repo, home=fake_home)
-    fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+    routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
     settings_path = lib.default_codex_config_toml_path(fake_home)
-    fs.uninstall_find_skills_codex_hook(fake_repo, home=fake_home)
+    routing.uninstall_session_routing_codex_hook(fake_repo, home=fake_home)
     text = settings_path.read_text(encoding="utf-8")
     assert "# charness:find-skills-routing" not in text
     assert "# charness:usage-episodes" in text

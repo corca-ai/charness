@@ -31,7 +31,6 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path, mon
     assert payload["recommended_action"] == "create_agents_with_skill_routing"
     assert payload["skill_routing_mode"] == "compact"
     assert payload["skill_routing_mode_source"] == "default"
-    assert "find-skills" not in payload["public_skills"]
     assert payload["listed_skill_ids"] == []
     # 2026-07-04 revision: session start routes directly instead of always
     # The hook/context path no longer invokes a public semantic router.
@@ -40,7 +39,6 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path, mon
     assert "charness catalog list --repo-root <repo> --json" in payload["markdown"]
     assert "installed skill metadata and model judgment" in payload["markdown"]
     assert "SessionStart hook" in payload["markdown"]
-    assert "find-skills" not in payload["markdown"]
     assert "release-note style summary or chat-ready human update" not in payload["markdown"]
 
 

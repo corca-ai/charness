@@ -106,7 +106,7 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
     assert "## Environment Prerequisites" in cli_payload["markdown"]
 
 
-def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_capability_catalog_lists_adapter_configured_trusted_roots(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     local_skill_dir = repo / "skills" / "public" / "local-demo"
     trusted_skill_dir = repo / "vendor" / "trusted-skills" / "trusted-demo"
@@ -123,7 +123,7 @@ def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path, monk
         "\n".join(["---", "name: trusted-demo", 'description: "Trusted demo skill."', "---", "", "# Trusted Demo"]),
         encoding="utf-8",
     )
-    (adapter_dir / "find-skills-adapter.yaml").write_text(
+    (adapter_dir / "capability-catalog-adapter.yaml").write_text(
         "\n".join(
             [
                 "version: 1",

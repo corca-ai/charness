@@ -103,7 +103,7 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
                         break
                     # Stop at the start of ANY charness block, not just this
                     # marker's — once a second distinct marker exists
-                    # (find-skills vs usage-episodes, #244/#245), breaking only
+                    # (session-routing vs usage-episodes, #244/#245), breaking only
                     # on the own marker would run past the next charness block's
                     # header and swallow it, so uninstalling one block would
                     # destroy the adjacent one.

@@ -216,7 +216,7 @@ def _load_catalog_sanitizer(repo_root: Path):
             sys.path.remove(repo_root_str)
 
 
-def validate_find_skills_integration_claims(repo_root: Path) -> None:
+def validate_capability_catalog_integration_claims(repo_root: Path) -> None:
     inventory_path = repo_root / CAPABILITY_CATALOG
     integrations_dir = repo_root / INTEGRATIONS_DIR
     if not inventory_path.is_file() or not integrations_dir.is_dir():
@@ -254,11 +254,6 @@ def validate_find_skills_integration_claims(repo_root: Path) -> None:
         )
 
 
-# Narrow compatibility alias for callers that still import the historical
-# validator symbol; the live pointer now belongs to capability-catalog.
-validate_capability_catalog_integration_claims = validate_find_skills_integration_claims
-
-
 def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_gate_is_queued(repo_root)
     validate_no_stale_claims(repo_root)
@@ -266,7 +261,7 @@ def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_runtime_smoothing_claim(repo_root)
     validate_quality_runtime_signal_claims(repo_root)
     validate_release_version_claim(repo_root)
-    validate_find_skills_integration_claims(repo_root)
+    validate_capability_catalog_integration_claims(repo_root)
 
 
 def main() -> int:

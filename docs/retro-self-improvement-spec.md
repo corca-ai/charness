@@ -116,8 +116,7 @@ If this work is implemented badly, the likely failure modes are:
 - How much of skill ergonomics should live in `quality` versus
   `public-skill-validation`?
 - Which skill families would actually benefit from a Jef Raskin anchor:
-  `create-cli`, `find-skills`, `setup`, or a smaller discoverability-only
-  reference?
+  `create-cli`, `setup`, or a smaller discoverability-only reference?
 
 ## Deferred Decisions
 
@@ -125,8 +124,8 @@ If this work is implemented badly, the likely failure modes are:
   for downstream automation
 - Whether host-log-derived metrics should live behind one shared helper or
   separate per-host helpers
-- Whether `find-skills` should surface retrospective memory hints directly when
-  a repo advertises them
+- Whether the capability catalog should inventory retrospective memory hints
+  directly when a repo advertises them, without turning inventory into routing
 - Whether `quality` should eventually fail on some skill ergonomics issues or
   keep them advisory-only
 

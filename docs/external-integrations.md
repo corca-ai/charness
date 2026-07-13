@@ -165,7 +165,7 @@ Expected fields:
 
 User repos that consume `charness` as a plugin do not need to copy every
 manifest. Discovery surfaces (quality `list_tool_recommendations`, narrative
-`list_tool_recommendations`, find-skills `list_capabilities`) merge plugin-
+`list_tool_recommendations`, and `charness catalog list`) merge plugin-
 shipped manifests as a fallback so a user repo without an
 `integrations/tools/` of its own still sees the full charness-owned tool
 set. When a user repo ships a manifest with the same `tool_id`, the user

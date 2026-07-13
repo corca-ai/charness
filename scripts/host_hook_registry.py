@@ -46,10 +46,10 @@ class SiblingHookIntent:
 SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
     SiblingHookIntent(
         key="session_routing",
-        module="host_hook_find_skills",
-        reconcile_function="reconcile_find_skills_hooks",
-        status_function="find_skills_routing_status",
-        script_relative_attr="FIND_SKILLS_SCRIPT_RELATIVE",
+        module="host_hook_session_routing",
+        reconcile_function="reconcile_session_routing_hooks",
+        status_function="session_routing_status",
+        script_relative_attr="SESSION_ROUTING_SCRIPT_RELATIVE",
     ),
     SiblingHookIntent(
         key="skill_anchor_edit_guard",

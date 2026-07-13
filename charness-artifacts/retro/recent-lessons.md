@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`; sources: 82)
+- bind this distinction into the v1 critique and release notes so future compatibility cuts do not reintroduce a shim to solve cleanup. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
+- every breaking removal plan must separate supported inputs, active internal names, historical evidence, and one-way deletion of already-owned external state before mutation. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
 - for future public-surface removal, lock a five-bucket matrix before mutation: active contract, generated export, compatibility alias, history, and external installed state. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
-- keep the critique and this retro with the slice so future removals inherit both the negative acceptance criteria and the compatibility classification. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
-- use `charness catalog list` only for deterministic hidden-capability availability; keep task routing in installed metadata and model judgment. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
 
 ## Selection Policy
 
@@ -112,3 +112,4 @@
 - `charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md`
 - `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`
 - `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`
+- `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`

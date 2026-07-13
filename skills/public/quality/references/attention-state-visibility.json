@@ -164,11 +164,11 @@
       "evidence_terms": ["skipped"],
       "rationale": "Skipped workflow steps are parsed as source facts for downstream gates, not closeout proof."
     },
-    "scripts/host_hook_find_skills.py": {
+    "scripts/host_hook_session_routing.py": {
       "states": ["disabled"],
       "visibility": ["terminal_payload"],
       "evidence_terms": ["intent", "disabled"],
-      "rationale": "find-skills routing hook install/uninstall library exposes the per-host find_skills_routing intent (enabled/disabled) in the reconcile payload under actions['find_skills_routing']; a disabled (opt-in default) intent uninstalls/no-ops and cannot read as a silent install."
+      "rationale": "Session-routing hook install/uninstall library exposes the per-host session_routing intent (enabled/disabled) in the reconcile payload under actions['session_routing']; a disabled (opt-in default) intent uninstalls/no-ops and cannot read as a silent install."
     },
     "scripts/host_hook_install_lib.py": {
       "states": ["disabled"],

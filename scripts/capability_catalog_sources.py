@@ -31,12 +31,6 @@ ADAPTER_CANDIDATES = (
     Path(".claude/capability-catalog-adapter.yaml"),
     Path("docs/capability-catalog-adapter.yaml"),
     Path("capability-catalog-adapter.yaml"),
-    # Compatibility with repos that still carry the pre-catalog adapter.
-    Path(".agents/find-skills-adapter.yaml"),
-    Path(".codex/find-skills-adapter.yaml"),
-    Path(".claude/find-skills-adapter.yaml"),
-    Path("docs/find-skills-adapter.yaml"),
-    Path("find-skills-adapter.yaml"),
 )
 
 
@@ -232,8 +226,6 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             value = optional_bool(raw.get(field), field, errors)
             if value is not None:
                 defaults[field] = value
-    if path is not None and "find-skills-adapter" in path.name:
-        warnings.append("Using legacy find-skills adapter path; rename it to capability-catalog-adapter.yaml.")
     return {"found": path is not None, "valid": not errors, "path": path.relative_to(repo_root).as_posix() if path else None, "data": defaults, "errors": errors, "warnings": warnings}
 
 
@@ -267,7 +259,7 @@ def build_inventory(repo_root: Path) -> dict[str, Any]:
         for plugin_root in plugin_roots:
             if plugin_root.is_dir():
                 public_roots.append(("installed-plugin-public", plugin_root))
-    public = [item for item in _skill_entries(public_roots, repo_root=root, layer="public skill") if item["id"] != "find-skills"]
+    public = _skill_entries(public_roots, repo_root=root, layer="public skill")
     trusted: list[dict[str, Any]] = []
     for index, relative in enumerate(adapter["data"].get("trusted_skill_roots", []), 1):
         trusted += _skill_entries([(f"trusted-root-{index}", (root / relative).resolve())], repo_root=root, layer="trusted skill")

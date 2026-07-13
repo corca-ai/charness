@@ -11,7 +11,7 @@ Wiring (installed at USER level so it fires in every session, pointing at the
 released plugin copy of this script — not committed into any one repo):
 
 - Claude Code: a `SessionStart` entry in `~/.claude/settings.json` runs
-  `python3 <plugin-source>/scripts/session_start_find_skills.py --host claude`.
+  `python3 <plugin-source>/scripts/session_start_routing.py --host claude`.
 - Codex: a `[[hooks.SessionStart]]` entry in `~/.codex/config.toml` runs the
   same script with `--host codex`.
 
@@ -22,8 +22,7 @@ falls back to plain stdout, which both hosts also add to context.
 
 Honest ceiling: a hook injects context the model must still honor; it cannot
 invoke a Skill tool directly. This strengthens routing via context-recency but
-is not hard execution-forcing — the same ceiling as before, now applied to the
-front-loaded rule text rather than only to the find-skills pointer.
+is not hard execution-forcing; the front-loaded rule text remains contextual.
 
 Failure modes are intentionally silent: hook script errors must never break a
 host session. Set `CHARNESS_SESSION_START_DEBUG=1` for stderr diagnostics.
@@ -53,7 +52,7 @@ DIRECTIVE = (
 
 def _debug(message: str) -> None:
     if os.environ.get("CHARNESS_SESSION_START_DEBUG", "").strip().lower() in {"1", "true", "yes", "on"}:
-        print(f"session_start_find_skills: {message}", file=sys.stderr)
+        print(f"session_start_routing: {message}", file=sys.stderr)
 
 
 def build_additional_context() -> str:

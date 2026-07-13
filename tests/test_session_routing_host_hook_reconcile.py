@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 import host_hook_codex_toml_lib as toml
-import host_hook_find_skills as fs
 import host_hook_install_lib as lib
+import host_hook_session_routing as routing
 import pytest
 
 
@@ -26,13 +26,13 @@ def fake_home(tmp_path: Path) -> Path:
 
 
 def test_session_routing_prefers_canonical_intent_section() -> None:
-    assert fs._routing_intent({"session_routing": {"codex": "enabled"}}, "codex") == "enabled"
+    assert routing._routing_intent({"session_routing": {"codex": "enabled"}}, "codex") == "enabled"
 
 
-def test_find_skills_codex_reconcile_removes_legacy_duplicate_block(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_codex_reconcile_removes_retired_duplicate_block(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_codex_config_toml_path(fake_home)
     settings_path.parent.mkdir(parents=True)
-    command = fs._command(fake_repo, "codex")
+    command = routing._retired_command(fake_repo, "codex")
     settings_path.write_text(
         "\n".join(
             [
@@ -53,23 +53,23 @@ def test_find_skills_codex_reconcile_removes_legacy_duplicate_block(fake_repo: P
         ),
         encoding="utf-8",
     )
-    adapter = {"version": 1, "enabled": True, "find_skills_routing": {"codex": "enabled"}}
+    adapter = {"version": 1, "enabled": True, "session_routing": {"codex": "enabled"}}
     actions = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
     result = actions["session_routing"]["codex"]["result"]
     assert result["action"] in {"installed", "updated"}
-    assert result["legacy_cleanup"][0]["action"] == "removed"
+    assert result["retired_state_cleanup"][0]["action"] == "removed"
     text = settings_path.read_text(encoding="utf-8")
     assert "find-skills session-start routing trigger (#240)" not in text
     assert text.count("# charness:session-routing") == 1
     assert text.count("[[hooks.SessionStart]]") == 1
-    assert text.count("session_start_find_skills.py") == 1
+    assert text.count("session_start_routing.py") == 1
     assert 'matcher = "startup|resume|clear"' in text
 
 
-def test_find_skills_codex_reconcile_migrates_legacy_only_block(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_codex_reconcile_replaces_retired_only_block(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_codex_config_toml_path(fake_home)
     settings_path.parent.mkdir(parents=True)
-    command = fs._command(fake_repo, "codex")
+    command = routing._retired_command(fake_repo, "codex")
     settings_path.write_text(
         "\n".join(
             [
@@ -84,10 +84,10 @@ def test_find_skills_codex_reconcile_migrates_legacy_only_block(fake_repo: Path,
         ),
         encoding="utf-8",
     )
-    adapter = {"version": 1, "enabled": True, "find_skills_routing": {"codex": "enabled"}}
+    adapter = {"version": 1, "enabled": True, "session_routing": {"codex": "enabled"}}
     result = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)["session_routing"]["codex"]["result"]
     assert result["action"] == "installed"
-    assert result["legacy_cleanup"][0]["action"] == "removed"
+    assert result["retired_state_cleanup"][0]["action"] == "removed"
     text = settings_path.read_text(encoding="utf-8")
     assert "find-skills session-start routing trigger (#240)" not in text
     assert text.count("# charness:session-routing") == 1
@@ -95,10 +95,10 @@ def test_find_skills_codex_reconcile_migrates_legacy_only_block(fake_repo: Path,
     assert 'matcher = "startup|resume|clear"' in text
 
 
-def test_find_skills_codex_update_preserves_following_foreign_sessionstart(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_codex_update_preserves_following_foreign_sessionstart(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_codex_config_toml_path(fake_home)
     settings_path.parent.mkdir(parents=True)
-    command = fs._command(fake_repo, "codex")
+    command = routing._command(fake_repo, "codex")
     settings_path.write_text(
         "\n".join(
             [
@@ -118,19 +118,19 @@ def test_find_skills_codex_update_preserves_following_foreign_sessionstart(fake_
         ),
         encoding="utf-8",
     )
-    result = fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+    result = routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
     assert result["action"] in {"installed", "updated"}
     text = settings_path.read_text(encoding="utf-8")
     assert text.count("[[hooks.SessionStart]]") == 2
-    assert text.count("session_start_find_skills.py") == 1
+    assert text.count("session_start_routing.py") == 1
     assert 'command = "python3 /opt/foreign/session_start.py"' in text
     assert 'matcher = "startup|resume|clear"' in text
 
 
-def test_find_skills_codex_disabled_removes_legacy_only_block(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_codex_disabled_removes_retired_only_block(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_codex_config_toml_path(fake_home)
     settings_path.parent.mkdir(parents=True)
-    command = fs._command(fake_repo, "codex")
+    command = routing._command(fake_repo, "codex")
     settings_path.write_text(
         "\n".join(
             [
@@ -145,24 +145,28 @@ def test_find_skills_codex_disabled_removes_legacy_only_block(fake_repo: Path, f
         ),
         encoding="utf-8",
     )
-    status = lib.find_skills_routing_status(fake_repo, adapter={"version": 1}, home=fake_home)
+    status = lib.session_routing_status(fake_repo, adapter={"version": 1}, home=fake_home)
     assert status["in_sync"] is False
-    assert "legacy_toml_markers_present" in status["hosts"]["codex"]["actual"]
+    assert "retired_toml_markers_present" in status["hosts"]["codex"]["actual"]
     actions = lib.reconcile_host_hooks(fake_repo, adapter={"version": 1}, home=fake_home)
     result = actions["session_routing"]["codex"]["result"]
-    assert result["legacy_cleanup"][0]["action"] == "removed"
+    assert result["retired_state_cleanup"][0]["action"] == "removed"
     assert "session_start_find_skills.py" not in settings_path.read_text(encoding="utf-8")
 
 
-def test_find_skills_codex_json_install_removes_toml_owned_blocks(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_codex_json_install_removes_retired_toml_owned_blocks(fake_repo: Path, fake_home: Path) -> None:
     hooks_json = lib.default_codex_hooks_json_path(fake_home)
     hooks_json.parent.mkdir(parents=True)
+    retired_command = routing._retired_command(fake_repo, "codex")
     hooks_json.write_text(
-        json.dumps({"hooks": {"PreToolUse": [{"matcher": "^Bash$", "hooks": [{"type": "command", "command": "echo bash"}]}]}}),
+        json.dumps({"hooks": {
+            "PreToolUse": [{"matcher": "^Bash$", "hooks": [{"type": "command", "command": "echo bash"}]}],
+            "SessionStart": [{"matcher": "startup", "hooks": [{"type": "command", "command": retired_command}]}],
+        }}),
         encoding="utf-8",
     )
     config_toml = lib.default_codex_config_toml_path(fake_home)
-    command = fs._command(fake_repo, "codex")
+    command = routing._command(fake_repo, "codex")
     config_toml.write_text(
         "\n".join(
             [
@@ -183,9 +187,9 @@ def test_find_skills_codex_json_install_removes_toml_owned_blocks(fake_repo: Pat
         ),
         encoding="utf-8",
     )
-    result = fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
+    result = routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
     assert result["kind"] == "codex-json"
-    assert result["legacy_cleanup"]
+    assert result["retired_state_cleanup"]
     assert "session_start_find_skills.py" not in config_toml.read_text(encoding="utf-8")
     data = json.loads(hooks_json.read_text(encoding="utf-8"))
     assert data["hooks"]["PreToolUse"][0]["hooks"][0]["command"] == "echo bash"
@@ -195,15 +199,15 @@ def test_find_skills_codex_json_install_removes_toml_owned_blocks(fake_repo: Pat
 
 
 def test_codex_toml_matching_existing_command_returns_none_for_foreign_command(fake_repo: Path) -> None:
-    command = fs._command(fake_repo, "codex")
+    command = routing._command(fake_repo, "codex")
 
     assert toml._matching_existing_command('command = "python3 /opt/foreign/session_start.py"', command) is None
 
 
-def test_find_skills_codex_json_uninstall_cleans_legacy_toml_markers(fake_repo: Path, fake_home: Path) -> None:
+def test_session_routing_codex_json_uninstall_cleans_retired_toml_markers(fake_repo: Path, fake_home: Path) -> None:
     hooks_json = lib.default_codex_hooks_json_path(fake_home)
     hooks_json.parent.mkdir(parents=True)
-    command = fs._command(fake_repo, "codex")
+    command = routing._command(fake_repo, "codex")
     hooks_json.write_text(
         json.dumps(
             {
@@ -235,9 +239,9 @@ def test_find_skills_codex_json_uninstall_cleans_legacy_toml_markers(fake_repo: 
         encoding="utf-8",
     )
 
-    result = fs.uninstall_find_skills_codex_hook(fake_repo, home=fake_home)
+    result = routing.uninstall_session_routing_codex_hook(fake_repo, home=fake_home)
 
     assert result["kind"] == "codex-json"
     assert result["action"] == "removed"
-    assert result["legacy_cleanup"][0]["action"] == "removed"
+    assert result["retired_state_cleanup"][0]["action"] == "removed"
     assert "find-skills session-start routing trigger (#240)" not in config_toml.read_text(encoding="utf-8")

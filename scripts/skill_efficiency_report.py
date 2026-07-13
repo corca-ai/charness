@@ -125,7 +125,7 @@ def build_report(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = N
         f"- n={config.get('runs')} per arm — read the [min–max] range, not just the mean; small-n means overlap is common.",
         "- output_lines is best-effort (added lines in the worktree vs the capture base ref, including any in-run commit's slice).",
         "- No LLM judge yet (over-build / completeness deferred) — these are process + size metrics only.",
-        "- Cross-ref arms hold project CLAUDE.md / find-skills routing constant, so a delta is the ref difference. A same-ref 'baseline' plain prompt still runs in the charness worktree and can auto-route to the skill (CONTAMINATION) — verify via each arm's Skill/tool trace before trusting a baseline-vs-skill delta.",
+        "- Cross-ref arms hold project instruction routing constant, so a delta is the ref difference. A same-ref 'baseline' plain prompt still runs in the charness worktree and can auto-route to the skill (CONTAMINATION) — verify via each arm's Skill/tool trace before trusting a baseline-vs-skill delta.",
         "",
     ]
     return "\n".join(lines)

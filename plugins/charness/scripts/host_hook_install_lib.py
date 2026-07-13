@@ -370,7 +370,7 @@ def reconcile_host_hooks(
                 actions[host]["result"] = uninstaller(repo_root, home=home)
         except HostHookError as exc:
             actions[host]["error"] = str(exc)
-    # Opt-in sibling hook intents (find-skills routing, anchor edit guard, ...)
+    # Opt-in sibling hook intents (session routing, anchor edit guard, ...)
     # reconcile in parallel via the registry table in host_hook_registry; a new
     # intent is a table row there, not another copied import block. Lazy import
     # keeps the sibling modules' dependency on this one acyclic.
@@ -444,7 +444,7 @@ def _hook_sync_status(
     detect_kwargs: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Shared intent-vs-actual SessionStart-hook drift status (session capture
-    and find-skills routing differ only in intent section, detect kwargs, and
+    and contextual session routing differ only in intent section, detect kwargs, and
     the drift noun/prefix)."""
     drift: list[str] = []
     per_host: dict[str, Any] = {}
@@ -463,10 +463,10 @@ def session_capture_status(repo_root: Path, *, adapter: dict[str, Any] | None, h
     return _hook_sync_status(repo_root, intents=intents, home=home, noun="charness SessionStart hook")
 
 
-def find_skills_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
-    from host_hook_find_skills import find_skills_routing_status as _find_skills_routing_status
+def session_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
+    from host_hook_session_routing import session_routing_status as _session_routing_status
 
-    return _find_skills_routing_status(repo_root, adapter=adapter, home=home)
+    return _session_routing_status(repo_root, adapter=adapter, home=home)
 
 
 def skill_anchor_guard_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:

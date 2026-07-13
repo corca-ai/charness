@@ -247,22 +247,12 @@ recommend a support binary, `charness` should say so proactively, explain why,
 and surface the install/verify path instead of hiding it behind operator
 rediscovery.
 
-First implementation slice:
+Current ownership:
 
-- add one shared helper that combines manifest metadata with current
-  detect/healthcheck/readiness/support-sync state
-- return a structured recommendation payload rather than prose-only advice
-- consume that helper first from `find-skills`
-- then reuse it from `quality` when a missing tool blocks stronger local proof
-
-Status:
-
-- The first code seam landed on 2026-04-13.
-- `find-skills` now has a structured recommendation payload through
-  `list_capabilities.py --recommend-for-skill <skill-id>` and the broader
-  validation/runtime query path through
-  `list_capabilities.py --recommendation-role <runtime|validation> --next-skill-id <skill-id>`.
-- `quality` now reuses the same shared payload through
+- `charness catalog list` exposes deterministic installed support and
+  integration availability without ranking workflows.
+- Installed skill metadata and model judgment own ordinary workflow selection.
+- `quality` consumes the structured recommendation payload through
   [`skills/public/quality/scripts/list_tool_recommendations.py`](../skills/public/quality/scripts/list_tool_recommendations.py) when a missing
   validation tool blocks stronger local proof.
 - Integration manifests may now declare:
@@ -271,14 +261,13 @@ Status:
 - Current dogfood proof in `charness`:
   - `gather` surfaces concrete runtime integrations such as `agent-browser` as
     `runtime`
-  - `find-skills` can now surface blocking validation tools directly through the
-    shared `recommendation_role` query path
+  - `quality` surfaces blocking validation tools directly through the shared
+    `recommendation_role` query path
   - `impl` and `spec` surface `cautilus` as a checked validation route
 - the `quality` dogfood path now surfaces `cautilus` as a blocking validation
   tool with exact install docs and a repo-owned verify command.
-- What still remains:
-  - route this payload through more public-skill flows beyond `find-skills` and
-    `quality` only when there is a concrete next consumer
+- What still remains: route this payload through more public-skill flows beyond
+  `quality` only when there is a concrete next consumer.
 
 Required payload fields:
 

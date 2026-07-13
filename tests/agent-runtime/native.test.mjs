@@ -63,7 +63,7 @@ test("normalizes legacy evaluation input into case suite", () => {
 			{
 				caseId: "routes-quality",
 				prompt: "Run validation.",
-				expectedRouting: { bootstrapHelper: "find-skills", workSkill: "quality" },
+				expectedRouting: { bootstrapHelper: "setup", workSkill: "quality" },
 			},
 		],
 	});
@@ -71,7 +71,7 @@ test("normalizes legacy evaluation input into case suite", () => {
 	assert.equal(suite.suiteId, "legacy");
 	assert.equal(suite.suiteDisplayName, "legacy");
 	assert.deepEqual(suite.evaluations[0].expectedRouting, {
-		bootstrapHelper: "find-skills",
+		bootstrapHelper: "setup",
 		workSkill: "quality",
 	});
 });
@@ -232,7 +232,7 @@ test("builds observed instruction-surface packets with fixture backend", () =>
 						},
 					],
 					expectedRouting: {
-						bootstrapHelper: "find-skills",
+						bootstrapHelper: "setup",
 						workSkill: "quality",
 					},
 				},
@@ -248,7 +248,7 @@ test("builds observed instruction-surface packets with fixture backend", () =>
 				loadedSupportingFiles: [],
 				routingDecision: {
 					selectedSkill: "charness:quality",
-					bootstrapHelper: "find-skills",
+					bootstrapHelper: "setup",
 					workSkill: "charness:quality",
 					selectedSupport: "none",
 					firstToolCall: "exec_command",
@@ -453,7 +453,7 @@ function observedFixture() {
 		loadedSupportingFiles: [],
 		routingDecision: {
 			selectedSkill: "quality",
-			bootstrapHelper: "find-skills",
+			bootstrapHelper: "none",
 			workSkill: "quality",
 			selectedSupport: "none",
 			firstToolCall: "none",

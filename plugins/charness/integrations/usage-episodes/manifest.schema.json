@@ -125,15 +125,6 @@
       },
       "description": "Per-host install intent for the contextual SessionStart routing hook. Reconciled by charness init/update and surfaced by `charness session-capture status`."
     },
-    "find_skills_routing": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "claude": {"type": "string", "enum": ["enabled", "disabled"]},
-        "codex": {"type": "string", "enum": ["enabled", "disabled"]}
-      },
-      "description": "Legacy compatibility alias for session_routing; migrate to session_routing."
-    },
     "skill_anchor_edit_guard": {
       "type": "object",
       "additionalProperties": false,

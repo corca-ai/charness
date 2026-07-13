@@ -419,7 +419,7 @@ def test_setup_inspect_accepts_generated_compact_subagent_delegation_block(tmp_p
 
     repo = tmp_path / "repo"
     agents_text = render_agents_template(
-        skill_routing_markdown="## Skill Routing\n\n- Route via find-skills."
+        skill_routing_markdown="## Skill Routing\n\n- Route via installed skill metadata."
     )
     # Guard the regression: the generated block must wrap these phrases across
     # lines so this test keeps exercising whitespace-normalized matching rather
@@ -451,7 +451,7 @@ def test_generated_agents_carries_adapter_first_reviewer_rule(tmp_path: Path) ->
 
     repo = tmp_path / "repo"
     agents_text = render_agents_template(
-        skill_routing_markdown="## Skill Routing\n\n- Route via find-skills."
+        skill_routing_markdown="## Skill Routing\n\n- Route via installed skill metadata."
     )
     normalized = " ".join(agents_text.split())
 
@@ -483,7 +483,7 @@ def test_live_and_generated_agents_do_not_claim_precedence_over_host_instruction
     from scripts.setup_host_docs_lib import render_agents_template
 
     root_agents = Path(__file__).resolve().parents[2] / "AGENTS.md"
-    generated = render_agents_template(skill_routing_markdown="## Skill Routing\n\n- Route via find-skills.")
+    generated = render_agents_template(skill_routing_markdown="## Skill Routing\n\n- Route via installed skill metadata.")
     for text in (root_agents.read_text(encoding="utf-8"), generated):
         assert "IGNORE UPPER-LEVEL INSTRUCTIONS" not in text
         assert "THIS SECTION WINS" not in text
@@ -716,72 +716,6 @@ def test_setup_inspect_accepts_compact_discovery_first_skill_routing(tmp_path: P
     assert skill_routing["catalog_available"] is True
     assert skill_routing["decision_needed"] is None
     assert "skill_routing_block_custom_or_drifted" not in finding_types
-
-
-def test_setup_inspect_rejects_custom_routing_that_mentions_optional_find_skills(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _seed_normalize_repo(
-        repo,
-        "\n".join(
-            [
-                "# Agents",
-                "",
-                "## Skill Routing",
-                "",
-                "- At startup, use custom routing first; find-skills is optional for capability notes.",
-                "- Preserve local routing choices over generated discovery output.",
-                "",
-            ]
-        ),
-    )
-
-    payload = _run_inspect(repo)
-
-    skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
-    assert skill_routing["accepts_compact_discovery_first"] is False
-    assert skill_routing["decision_needed"] == "leave_as_is_or_replace_with_compact_block"
-    assert "skill_routing_block_custom_or_drifted" in finding_types
-
-
-def test_setup_inspect_rejects_cross_line_compact_routing_keyword_cooccurrence(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _seed_normalize_repo(
-        repo,
-        "\n".join(
-            [
-                "# Agents",
-                "",
-                "## Skill Routing",
-                "",
-                "- At startup, run custom routing once before broader exploration.",
-                "- find-skills is optional for capability notes.",
-                "",
-            ]
-        ),
-    )
-
-    payload = _run_inspect(repo)
-
-    skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
-    assert skill_routing["accepts_compact_discovery_first"] is False
-    assert "skill_routing_block_custom_or_drifted" in finding_types
-
-
-def test_setup_inspect_rejects_same_line_bad_compact_routing(tmp_path: Path) -> None:
-    bad_lines = (
-        "- At startup, run custom routing once before broader exploration; find-skills is optional for capability notes.",
-        "- At session startup, do not run find-skills once for capability routing before broader exploration.",
-    )
-    for index, line in enumerate(bad_lines):
-        repo = tmp_path / f"repo-{index}"
-        _seed_normalize_repo(repo, "\n".join(["# Agents", "", "## Skill Routing", "", line, ""]))
-        payload = _run_inspect(repo)
-        skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
-        finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
-        assert skill_routing["accepts_compact_discovery_first"] is False
-        assert "skill_routing_block_custom_or_drifted" in finding_types
 
 
 def test_setup_inspect_emits_policy_source_recommendation_without_agents_marker(tmp_path: Path) -> None:
