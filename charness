@@ -158,6 +158,19 @@ def run(
     )
 
 
+def claude_subprocess_env(home_root: Path) -> dict[str, str] | None:
+    """Bind Claude's HOME to the workflow home when it is explicitly custom."""
+    if home_root.resolve() == default_home_root():
+        return None
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    return env
+
+
+def run_claude(command: list[str], *, cwd: Path, home_root: Path) -> subprocess.CompletedProcess[str]:
+    return run(command, cwd=cwd, env=claude_subprocess_env(home_root))
+
+
 def expect_success(result: subprocess.CompletedProcess[str], context: str) -> None:
     if result.returncode != 0:
         raise CharnessError(
@@ -1297,10 +1310,10 @@ def claude_installed_plugin(path: Path, plugin_ref: str) -> dict[str, object] | 
     return first if isinstance(first, dict) else None
 
 
-def claude_enabled_status(repo_root: Path) -> dict[str, object] | None:
+def claude_enabled_status(repo_root: Path, *, home_root: Path) -> dict[str, object] | None:
     if shutil.which("claude") is None:
         return None
-    result = run(["claude", "plugins", "list"], cwd=repo_root)
+    result = run_claude(["claude", "plugins", "list"], cwd=repo_root, home_root=home_root)
     if result.returncode != 0:
         return {"ok": False, "raw": result.stdout + result.stderr}
     plugin_ref = claude_plugin_ref(repo_root)
@@ -1381,19 +1394,19 @@ def ensure_claude_marketplace(repo_root: Path, *, home_root: Path) -> tuple[list
     existing_source = existing.get("source") if isinstance(existing, dict) else None
     existing_path = existing_source.get("path") if isinstance(existing_source, dict) else None
     if existing is None:
-        result = run(["claude", "plugins", "marketplace", "add", "--scope", "user", source], cwd=repo_root)
+        result = run_claude(["claude", "plugins", "marketplace", "add", "--scope", "user", source], cwd=repo_root, home_root=home_root)
         expect_success(result, f"claude marketplace add `{source}`")
-        update_result = run(["claude", "plugins", "marketplace", "update", name], cwd=repo_root)
+        update_result = run_claude(["claude", "plugins", "marketplace", "update", name], cwd=repo_root, home_root=home_root)
         expect_success(update_result, f"claude marketplace update `{name}`")
         actions.append("claude_marketplace_added")
         actions.append("claude_marketplace_updated")
         return actions, f"Claude marketplace `{name}` was added from `{source}`."
     if existing_path != source:
-        remove_result = run(["claude", "plugins", "marketplace", "remove", name], cwd=repo_root)
+        remove_result = run_claude(["claude", "plugins", "marketplace", "remove", name], cwd=repo_root, home_root=home_root)
         expect_success(remove_result, f"claude marketplace remove `{name}`")
-        add_result = run(["claude", "plugins", "marketplace", "add", "--scope", "user", source], cwd=repo_root)
+        add_result = run_claude(["claude", "plugins", "marketplace", "add", "--scope", "user", source], cwd=repo_root, home_root=home_root)
         expect_success(add_result, f"claude marketplace add `{source}`")
-        update_result = run(["claude", "plugins", "marketplace", "update", name], cwd=repo_root)
+        update_result = run_claude(["claude", "plugins", "marketplace", "update", name], cwd=repo_root, home_root=home_root)
         expect_success(update_result, f"claude marketplace update `{name}`")
         actions.extend(["claude_marketplace_replaced", "claude_marketplace_added", "claude_marketplace_updated"])
         return actions, f"Claude marketplace `{name}` was repointed to `{source}`."
@@ -1407,19 +1420,19 @@ def ensure_claude_plugin(repo_root: Path, *, home_root: Path, update: bool) -> t
     plugin_ref = claude_plugin_ref(repo_root)
     actions: list[str] = []
     if update:
-        result = run(["claude", "plugins", "marketplace", "update", marketplace_name], cwd=repo_root)
+        result = run_claude(["claude", "plugins", "marketplace", "update", marketplace_name], cwd=repo_root, home_root=home_root)
         expect_success(result, f"claude marketplace update `{marketplace_name}`")
         actions.append("claude_marketplace_updated")
     installed = claude_installed_plugin(default_claude_installed_plugins_path(home_root), plugin_ref)
     if installed is None:
-        result = run(["claude", "plugins", "install", "-s", "user", plugin_ref], cwd=repo_root)
+        result = run_claude(["claude", "plugins", "install", "-s", "user", plugin_ref], cwd=repo_root, home_root=home_root)
         expect_success(result, f"claude plugin install `{plugin_ref}`")
         actions.append("claude_plugin_installed")
     elif update:
-        result = run(["claude", "plugins", "update", "-s", "user", plugin_ref], cwd=repo_root)
+        result = run_claude(["claude", "plugins", "update", "-s", "user", plugin_ref], cwd=repo_root, home_root=home_root)
         expect_success(result, f"claude plugin update `{plugin_ref}`")
         actions.append("claude_plugin_updated")
-    result = run(["claude", "plugins", "enable", "-s", "user", plugin_ref], cwd=repo_root)
+    result = run_claude(["claude", "plugins", "enable", "-s", "user", plugin_ref], cwd=repo_root, home_root=home_root)
     if result.returncode == 0:
         actions.append("claude_plugin_enabled")
     return actions, "Restart Claude Code to load the updated charness plugin." if update else "Restart Claude Code to load charness."
@@ -2029,7 +2042,7 @@ def remove_claude_plugin(repo_root: Path, *, home_root: Path) -> bool:
     if shutil.which("claude") is None:
         return False
     plugin_ref = claude_plugin_ref(repo_root)
-    result = run(["claude", "plugins", "uninstall", "-s", "user", plugin_ref], cwd=repo_root)
+    result = run_claude(["claude", "plugins", "uninstall", "-s", "user", plugin_ref], cwd=repo_root, home_root=home_root)
     combined = f"{result.stdout}\n{result.stderr}".lower()
     if result.returncode != 0 and "not installed" not in combined and "not found" not in combined:
         raise CharnessError(f"claude plugin uninstall `{plugin_ref}` failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
@@ -2046,7 +2059,7 @@ def remove_claude_marketplace(repo_root: Path, *, home_root: Path) -> bool:
     if shutil.which("claude") is None:
         return False
     name = claude_marketplace_name(repo_root)
-    result = run(["claude", "plugins", "marketplace", "remove", name], cwd=repo_root)
+    result = run_claude(["claude", "plugins", "marketplace", "remove", name], cwd=repo_root, home_root=home_root)
     combined = f"{result.stdout}\n{result.stderr}".lower()
     if result.returncode != 0 and "not found" not in combined and "no marketplace" not in combined:
         raise CharnessError(f"claude marketplace remove `{name}` failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
@@ -2197,7 +2210,7 @@ def build_doctor_payload(
         if payload["claude_marketplace_name"]
         else None
     )
-    payload["claude_enabled_status"] = claude_enabled_status(repo_root) if source_manifest_present else None
+    payload["claude_enabled_status"] = claude_enabled_status(repo_root, home_root=home_root) if source_manifest_present else None
     claude_listed = (
         payload["claude_enabled_status"].get("present")
         if isinstance(payload.get("claude_enabled_status"), dict)

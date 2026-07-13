@@ -163,6 +163,8 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
 @pytest.mark.release_only
 def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    process_home = tmp_path / "unrelated-process-home"
+    env["HOME"] = str(process_home)
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@charness"]\nenabled = true\n', encoding="utf-8")
@@ -185,3 +187,4 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_
     assert payload["removed_host_state"] is True
     assert (home_root / ".local" / "bin" / "charness").is_file()
     assert not (home_root / ".local" / "state" / "charness" / "host-state.json").exists()
+    assert not (process_home / ".claude").exists()

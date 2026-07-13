@@ -13,12 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice C — independently measured follow-up candidate.
-- Current slice intent: use the remaining reversible-work window to reproduce
-  one independent operator or maintenance defect; stop without mutation when
-  current evidence supports only a no-change or defer decision.
-- Next action: probe the custom-home doctor boundary identified by the scout,
-  then either open a falsifiable debug record or close the candidate honestly.
+- Current slice: Slice D — freeze and verify the release bundle.
+- Current slice intent: stop reversible product mutation, synchronize generated
+  surfaces, run the exact verification lock, and critique the semver/release
+  boundary before publication.
+- Next action: close Slice C, commit it, then run locked broad/security/packaging
+  proof and prepare v1.0.4 release evidence.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -121,7 +121,7 @@ independently verify one patch release beyond v1.0.3.
 | --- | --- | --- | --- | --- |
 | A | Measure current bug/quality/speed/security candidates | Avoid backlog and prior-session anchoring | planner packets, timings, candidate ledger | completed |
 | B | Repair the highest-leverage reproduced defect | Serve observed behavior before cleanup | RCA, focused regression, critique, commit | completed |
-| C | Improve one independently measured test/maintenance seam | Use remaining time for honest economics | same-command delta, retained boundary coverage, critique | planned |
+| C | Improve one independently measured test/maintenance seam | Use remaining time for honest economics | same-command delta, retained boundary coverage, critique | completed |
 | D | Freeze and verify the bundle | Prevent local greens from becoming release confidence | exact lock, security/parity, semver and release review | planned |
 | E | Push/publish the patch and complete goal closeout | Complete the user-authorized release boundary, not any issue lifecycle | public refs/body, install/doctor, retro/handoff | planned |
 
@@ -226,6 +226,20 @@ applies.
 - Off-goal findings: Permission and symlink edge matrices deferred until operator evidence; list/resolve missing-root behavior intentionally unchanged.
 - Lessons carried forward: Validate mutation authority at the producer boundary and translate typed failure at each final consumer.
 - Metrics: RCA converted to durable test: writer-accepts-invalid-destination; ledger aggregate 35/42 seed-excluded, current 28d 11/11.
+
+### Slice 3: Slice C — custom-home Claude process isolation
+
+- Objective: Ensure explicit Charness home selection reaches every Claude plugin observation and mutation.
+- Why this approach: The two-home reproduction showed a final doctor verdict composed from conflicting state owners, and wrong-home mutation could escape beyond a false diagnostic.
+- Commits: pending this slice closeout commit.
+- What changed: Added one Claude subprocess adapter seam that preserves the environment and binds HOME only for custom workflows; routed list, marketplace, install/update/enable, uninstall/remove; added public split-home doctor/init/reset regressions.
+- Alternatives rejected: Rejected a doctor-only patch, generic subprocess HOME override, PATH/XDG rewrite, and per-call ad hoc env construction.
+- Targeted verification: Three public two-home tests passed in 6.57s; all managed-install + extended tests passed in worker verification; ruff; no raw Claude run call remains.
+- Test duplication pressure: Added three release-only real-boundary proofs (doctor 1.00s, init 4.42s, reset 0.49s); repo-copy invariants exclude them from standing pre-push. No separate update/helper test because init/reset plus centralized call routing cover both mutation directions.
+- Critique: Two fresh-eye angles plus separate counterweight; Act Before Ship init/reset proofs applied; fingerprints zero drift. Artifact: charness-artifacts/critique/2026-07-13-custom-home-claude-subprocess-code-critique.md.
+- Off-goal findings: Real Claude XDG and textual-symlink semantics remain nonclaims until field evidence; PATH intentionally stays inherited.
+- Lessons carried forward: Explicit file-state authority must cross the subprocess seam before final guidance or host mutation consumes it.
+- Metrics: RCA converted to public tests: explicit-home-not-propagated-to-host-process; wrong-home `.claude` creation is now a direct sentinel.
 
 ## Context Sources
 

@@ -171,6 +171,34 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
 
 
 @pytest.mark.release_only
+def test_charness_init_binds_claude_mutations_to_custom_home(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
+    home_root = tmp_path / "custom-home"
+    process_home = tmp_path / "unrelated-process-home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(process_home)
+    env["PATH"] = build_test_path(fake_claude.parent)
+
+    result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
+
+    assert result.returncode == 0, result.stderr
+    known_marketplaces = json.loads(
+        (home_root / ".claude" / "plugins" / "known_marketplaces.json").read_text(encoding="utf-8")
+    )
+    installed_plugins = json.loads(
+        (home_root / ".claude" / "plugins" / "installed_plugins.json").read_text(encoding="utf-8")
+    )
+    assert "corca-charness" in known_marketplaces
+    assert "charness@corca-charness" in installed_plugins["plugins"]
+    assert not (process_home / ".claude").exists()
+
+
+@pytest.mark.release_only
 def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -318,6 +346,25 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert host_state["last_init"]["doctor"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert isinstance(host_state["last_init"]["recorded_at"], str)
     assert_managed_checkout_has_no_tracked_runtime_dirt(home_root / ".agents" / "src" / "charness")
+
+
+@pytest.mark.release_only
+def test_charness_doctor_binds_claude_to_custom_home(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, _ = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    fake_claude = make_fake_claude(tmp_path)
+    process_home = tmp_path / "unrelated-process-home"
+    env = os.environ.copy()
+    env["HOME"] = str(process_home)
+    env["PATH"] = build_test_path(fake_claude.parent)
+
+    result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["claude_host_guidance"]["status"] == "installed"
+    assert payload["claude_enabled_status"]["present"] is True
+    assert payload["claude_installed_entry"]["version"] == "local"
+    assert not (process_home / ".claude").exists()
 
 
 @pytest.mark.release_only

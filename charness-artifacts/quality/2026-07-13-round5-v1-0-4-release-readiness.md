@@ -16,6 +16,8 @@ failure was found.
 
 - Read-only broad quality baseline: 81/81 phases passed.
 - Focused catalog proof: 21 tests passed; ruff and source/plugin parity passed.
+- Custom-home Claude proof: public doctor/init/reset two-home tests passed and
+  every Claude plugin subprocess now crosses the same selected-home seam.
 - Security baseline: secret scan and supply-chain checks passed.
 - Final verification-lock and release proof remain pending until the bundle is frozen.
 
@@ -32,6 +34,8 @@ failure was found.
   backend mirror is byte-identical after the change.
 - The reproduced invalid-root writer defect now has backend, direct CLI,
   in-process public handler, and actual public-process regression proof.
+- The reproduced custom-home leak now has observation plus both mutation
+  directions covered; unrelated process-home `.claude` creation is a sentinel.
 - Current secret, supply-chain, structural-waste, CLI-ergonomics, and brittle
   source-guard inventories produced no actionable failure.
 
@@ -76,6 +80,7 @@ failure was found.
 - `python3 scripts/check_test_production_ratio.py --repo-root .` (advisory 1.03).
 - structural, CLI-ergonomics, brittle-guard, skill-ergonomics, and test-economics inventories recorded in the active goal.
 - `pytest -q tests/test_capability_catalog.py tests/charness_cli/test_codex_cache_refresh.py --durations=10`
+- focused custom-home public doctor/init/reset pytest (3 passed in 6.57s).
 - focused ruff, plugin parity, debug/critique validators, and reviewer fingerprints.
 
 ## Recommended Next Quality Moves
