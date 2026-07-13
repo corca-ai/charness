@@ -29,6 +29,48 @@ def test_session_routing_prefers_canonical_intent_section() -> None:
     assert routing._routing_intent({"session_routing": {"codex": "enabled"}}, "codex") == "enabled"
 
 
+def test_session_routing_claude_install_reports_retired_state_cleanup(fake_repo: Path, fake_home: Path) -> None:
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True)
+    retired_command = routing._retired_command(fake_repo, "claude")
+    settings_path.write_text(
+        json.dumps({"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": retired_command}]}]}}),
+        encoding="utf-8",
+    )
+
+    result = routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
+
+    assert result["retired_state_cleanup"][0]["action"] == "removed"
+    entries = json.loads(settings_path.read_text(encoding="utf-8"))["hooks"]["SessionStart"]
+    assert entries[0]["hooks"][0]["command"] == routing._command(fake_repo, "claude")
+
+
+def test_session_routing_claude_uninstall_reports_retired_state_cleanup(fake_repo: Path, fake_home: Path) -> None:
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True)
+    current_command = routing._command(fake_repo, "claude")
+    retired_command = routing._retired_command(fake_repo, "claude")
+    settings_path.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {"hooks": [{"type": "command", "command": current_command}]},
+                        {"hooks": [{"type": "command", "command": retired_command}]},
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = routing.uninstall_session_routing_claude_hook(fake_repo, home=fake_home)
+
+    assert result["action"] == "removed"
+    assert result["retired_state_cleanup"][0]["action"] == "removed"
+    assert "hooks" not in json.loads(settings_path.read_text(encoding="utf-8"))
+
+
 def test_session_routing_codex_reconcile_removes_retired_duplicate_block(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_codex_config_toml_path(fake_home)
     settings_path.parent.mkdir(parents=True)

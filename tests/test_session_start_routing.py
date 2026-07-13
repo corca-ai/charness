@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import subprocess
 from pathlib import Path
@@ -97,3 +98,18 @@ def test_hook_is_silent_failing_on_garbage_stdin() -> None:
     assert result.returncode == 0, result.stderr
     # Still emits the directive even when the stdin payload is unparseable.
     assert "charness catalog list" in result.stdout
+
+
+def test_read_payload_reports_oserror_in_debug_mode(monkeypatch, capsys) -> None:
+    class BrokenStream:
+        def read(self) -> str:
+            raise OSError("stdin unavailable")
+
+    monkeypatch.setenv("CHARNESS_SESSION_START_DEBUG", "1")
+
+    assert hook._read_payload(BrokenStream()) == {}
+    assert "session_start_routing: stdin read failed: stdin unavailable" in capsys.readouterr().err
+
+
+def test_read_payload_empty_input_returns_empty_mapping() -> None:
+    assert hook._read_payload(io.StringIO("  \n")) == {}
