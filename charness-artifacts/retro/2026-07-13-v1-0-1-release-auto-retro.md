@@ -12,7 +12,7 @@ The release helper persisted this bounded retro before committing the release ar
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: none.
-- Evaluated changed paths: 17.
+- Evaluated changed paths: 21.
 
 ## Waste
 
