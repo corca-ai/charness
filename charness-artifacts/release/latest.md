@@ -16,7 +16,7 @@ Advanced `charness` toward release `1.0.0` (tag `v1.0.0`) through the repo-owned
 
 - `./scripts/run-quality.sh --release` passed: 82 checks passed, 0 failed, in 73.7 seconds.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- The changed-line mutation gate warned that eight uncommitted Python files were excluded; commit-based mutation proof remains required before publication.
+- Commit-based verification lock passed, including 4563 broad tests under mutation coverage; the exact merge-base changed-line check reported `blocking: []`.
 
 ## Release State
 

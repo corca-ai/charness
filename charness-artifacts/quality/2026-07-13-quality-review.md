@@ -19,7 +19,7 @@ Ambient repo findings: release-only validation exposed a Markdown wrapping warni
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json`, with the executed release-gate timings summarized by `run-quality.sh --release`. <!-- reproduction-source -->
 - runtime hot spots: pytest 54.2s, coverage 6.8s, Markdown 5.4s; total release-quality runtime 73.7s.
-- coverage gate: broad coverage passed, but changed-line mutation proof for the eight then-uncommitted Python files was explicitly excluded and must be regenerated after commit.
+- coverage gate: broad coverage passed; the final verification lock then reran 4563 tests with mutation coverage against committed `origin/main..HEAD`, and the exact merge-base changed-line check returned `blocking: []`.
 - evaluator depth: deterministic gates only. The Cautilus planner said live evaluator proof was not required, and no ask-before-run authorization was requested.
 
 ## Healthy
@@ -35,7 +35,7 @@ Ambient repo findings: release-only validation exposed a Markdown wrapping warni
 
 ## Missing
 
-- Commit-based changed-line mutation coverage is missing until the remediation and release mutation are committed and the verification lock is rerun.
+- No target release-quality proof remains missing before publication. Public tag/release readback and installed-machine refresh remain publication-phase evidence, not pre-publish quality evidence.
 
 ## Deferred
 
