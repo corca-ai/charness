@@ -12,7 +12,7 @@ The release helper persisted this bounded retro before committing the release ar
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `README.md`, `scripts/capability_catalog.py`, `scripts/capability_catalog_artifact.py`, `scripts/capability_catalog_resolver.py`, `scripts/capability_catalog_sources.py`.
-- Evaluated changed paths: 238.
+- Evaluated changed paths: 261.
 
 ## Waste
 

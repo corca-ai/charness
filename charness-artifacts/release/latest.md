@@ -14,21 +14,21 @@ Advanced `charness` toward release `1.0.0` (tag `v1.0.0`) through the repo-owned
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` passed: 82 checks passed, 0 failed, in 73.7 seconds.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- Commit-based verification lock passed, including 4563 broad tests under mutation coverage; the exact merge-base changed-line check reported `blocking: []`.
+- initial release push carried the release branch update and tag from the release helper.
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: not started; the first execute attempt stopped at the release-quality gate
-- GitHub release record: not created; target URL is `https://github.com/corca-ai/charness/releases/tag/v1.0.0`
+- branch/tag push: complete
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v1.0.0`; creation runs after the branch/tag push
 - public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: not started; no local or remote `v1.0.0` tag exists yet.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
@@ -54,7 +54,7 @@ Advanced `charness` toward release `1.0.0` (tag `v1.0.0`) through the repo-owned
   - `scripts/capability_catalog_artifact.py`
   - `scripts/capability_catalog_resolver.py`
   - `scripts/capability_catalog_sources.py`
-- Evaluated changed paths: 238.
+- Evaluated changed paths: 261.
   - `.agents/inference-interpretation-surfaces.json`
   - `.agents/narrative-adapter.yaml`
   - `.agents/retro-adapter.yaml`
@@ -75,7 +75,7 @@ Advanced `charness` toward release `1.0.0` (tag `v1.0.0`) through the repo-owned
   - `charness-artifacts/critique/2026-07-13-031004-packet.md`
   - `charness-artifacts/critique/2026-07-13-033046-packet.json`
   - `charness-artifacts/critique/2026-07-13-033046-packet.md`
-  - ... 218 more
+  - ... 241 more
 
 ## Real-Host Verification
 
@@ -96,11 +96,13 @@ Advanced `charness` toward release `1.0.0` (tag `v1.0.0`) through the repo-owned
 ## Review Proof
 
 - Review proof: `charness-artifacts/critique/2026-07-13-find-skills-legacy-removal-v1-release-critique.md`.
-- Public-skill scenario review: representative `setup`, `quality`, `issue`, `impl`, and `handoff` registry/dogfood contracts remain valid; no maintained scenario change is required. No live Cautilus evaluation was run or claimed.
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -108,11 +110,14 @@ Advanced `charness` toward release `1.0.0` (tag `v1.0.0`) through the repo-owned
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 0.096s
+- `quality_command`: 81.084s
+- `fresh_checkout_probes_initial`: 2.913s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
