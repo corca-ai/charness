@@ -29,6 +29,48 @@ def test_session_routing_prefers_canonical_intent_section() -> None:
     assert routing._routing_intent({"session_routing": {"codex": "enabled"}}, "codex") == "enabled"
 
 
+@pytest.mark.parametrize("host", ["claude", "codex"])
+@pytest.mark.parametrize("operation", ["install", "uninstall"])
+def test_session_routing_reconcile_removes_retired_state_only_entry(
+    fake_repo: Path,
+    fake_home: Path,
+    host: str,
+    operation: str,
+) -> None:
+    other_host = "codex" if host == "claude" else "claude"
+    other_canonical_key = routing._state_key(other_host)
+    other_canonical = {"sentinel": "canonical-survives"}
+    foreign_state = {"sentinel": "foreign-survives"}
+    lib.write_state(
+        fake_repo,
+        {
+            "schema_version": lib.STATE_SCHEMA_VERSION,
+            routing._retired_state_key(host): {"sentinel": "delete-only"},
+            other_canonical_key: other_canonical,
+            "foreign:state": foreign_state,
+        },
+    )
+
+    reconcile = getattr(routing, f"{operation}_session_routing_{host}_hook")
+    result = reconcile(fake_repo, home=fake_home)
+
+    cleanup = result["retired_state_cleanup"]
+    assert any(
+        item == {
+            "action": "removed",
+            "kind": "retired-state-ledger-entry",
+            "state_key": routing._retired_state_key(host),
+        }
+        for item in cleanup
+    )
+    state = lib.read_state(fake_repo)
+    assert routing._retired_state_key(host) not in state
+    assert state[other_canonical_key] == other_canonical
+    assert state["foreign:state"] == foreign_state
+    if operation == "install":
+        assert routing._state_key(host) in state
+
+
 def test_session_routing_claude_install_reports_retired_state_cleanup(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_claude_settings_path(fake_home)
     settings_path.parent.mkdir(parents=True)

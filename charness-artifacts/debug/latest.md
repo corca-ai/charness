@@ -1,1 +1,1 @@
-2026-07-11-artifact-scaffold-final-consumer-mismatch.md
+2026-07-13-debug-review.md

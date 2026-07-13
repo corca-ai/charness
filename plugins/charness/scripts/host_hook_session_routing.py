@@ -44,10 +44,33 @@ RETIRED_SESSION_ROUTING_TOML_MARKERS = (
     "charness:find-skills-routing",
     "charness:find-skills session-start routing trigger (#240)",
 )
+RETIRED_SESSION_ROUTING_STATE_SUFFIX = "find_skills_routing"
 
 
 def _state_key(host: str) -> str:
     return f"{host}:{INTENT_SECTION}"
+
+
+def _retired_state_key(host: str) -> str:
+    """Return the deletion-only pre-v1 ledger key for ``host``."""
+    return f"{host}:{RETIRED_SESSION_ROUTING_STATE_SUFFIX}"
+
+
+def _cleanup_retired_state_entry(repo_root: Path, host: str) -> list[dict[str, Any]]:
+    """Delete one retired ledger entry without treating it as live config."""
+    state_key = _retired_state_key(host)
+    state = install_lib.read_state(repo_root)
+    if state_key not in state:
+        return []
+    state.pop(state_key)
+    install_lib.write_state(repo_root, state)
+    return [
+        {
+            "action": "removed",
+            "kind": "retired-state-ledger-entry",
+            "state_key": state_key,
+        }
+    ]
 
 
 def _routing_intent(adapter: dict[str, Any] | None, host: str) -> str:
@@ -96,6 +119,7 @@ def install_session_routing_claude_hook(repo_root: Path, *, home: Path) -> dict[
     settings_path = install_lib.default_claude_settings_path(home)
     command = _command(repo_root, "claude")
     retired_state_cleanup = _cleanup_retired_json_entry(settings_path, repo_root, "claude")
+    retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "claude")
     result = install_lib._install_json_event(settings_path, command=command, matcher=SESSION_ROUTING_MATCHER)
     if retired_state_cleanup:
         result["retired_state_cleanup"] = retired_state_cleanup
@@ -115,6 +139,7 @@ def uninstall_session_routing_claude_hook(repo_root: Path, *, home: Path) -> dic
     settings_path = Path(entry["settings_path"]) if isinstance(entry, dict) and isinstance(entry.get("settings_path"), str) else install_lib.default_claude_settings_path(home)
     result = install_lib._uninstall_json_event(settings_path, command=command)
     retired_state_cleanup = _cleanup_retired_json_entry(settings_path, repo_root, "claude")
+    retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "claude")
     if retired_state_cleanup:
         result["retired_state_cleanup"] = retired_state_cleanup
     if result["action"] in {"removed", "absent", "not_installed"}:
@@ -133,6 +158,7 @@ def install_session_routing_codex_hook(repo_root: Path, *, home: Path) -> dict[s
     else:
         retired_state_cleanup = _cleanup_retired_codex_toml(settings_path, repo_root)
         result = install_codex_toml_block(settings_path, command, SESSION_ROUTING_MARKER, matcher=SESSION_ROUTING_MATCHER)
+    retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "codex")
     if retired_state_cleanup:
         result["retired_state_cleanup"] = retired_state_cleanup
     if result["action"] in {"installed", "updated"}:
@@ -161,6 +187,7 @@ def uninstall_session_routing_codex_hook(repo_root: Path, *, home: Path) -> dict
     else:
         result = uninstall_codex_toml_block(settings_path, command, SESSION_ROUTING_MARKER)
         retired_state_cleanup = _cleanup_retired_codex_toml(settings_path, repo_root)
+    retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "codex")
     if retired_state_cleanup:
         result["retired_state_cleanup"] = retired_state_cleanup
     if result["action"] in {"removed", "absent", "not_installed"}:
