@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 78,
-  "indexed_artifact_count": 66,
+  "source_artifact_count": 79,
+  "indexed_artifact_count": 67,
   "risk_class_counts": {
     "contract-freeze-risk": 24,
-    "external-seam": 3,
+    "external-seam": 2,
     "host-disproves-local": 2,
-    "none": 16,
+    "none": 18,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
-    "factor-now": 4,
+    "factor-now": 3,
     "monitor": 59,
-    "none": 3
+    "none": 5
   },
   "entries": [
     {
@@ -916,6 +916,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-13-debug-review-followup.md",
+      "is_current_pointer": false,
+      "interrupt_id": "standing-pytest-root-lockfile-attribution",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "local command to caller worktree",
+      "generalization_pressure": "none",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-13-debug-review.md",
       "is_current_pointer": false,
       "interrupt_id": "retired-hook-ledger-survives-reconcile",
@@ -932,16 +946,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "retired-hook-ledger-survives-reconcile",
+      "interrupt_id": "standing-pytest-root-lockfile-attribution",
       "risk_classes": [
-        "external-seam"
+        "none"
       ],
-      "seam": "installed host settings and Charness host-state ledger",
-      "generalization_pressure": "factor-now",
-      "critique_required": true,
-      "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-07-13-retired-hook-ledger-cleanup.md",
-      "forced": true
+      "seam": "local command to caller worktree",
+      "generalization_pressure": "none",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
     }
   ],
   "skipped_artifacts": [
