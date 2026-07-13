@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md`; sources: 86)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md`; sources: 87)
 - Exploration phase, moderate: the transient `uv.lock` hypothesis consumed a diagnostic branch, but repeated exact repro and syscall tracing disconfirmed attribution. This was necessary uncertainty reduction, not failed work; the no-fix outcome prevented a speculative regression. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
 - Gate-baseline runtime: final release quality remained about 72-75s and broad pytest about 37s. Those are measured safety costs within current budgets; only the two causally isolated duplicate-cost families were changed. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
 - Review phase, strong: three otherwise-useful fresh-eye results were quarantined because a worker or parent mutation overlapped the reviewer fingerprint window; one counterweight also staged shared files despite a read-only envelope. The guard prevented escape, but serializing parent writes around bounded reviews would avoid the reruns. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md`; sources: 86)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md`; sources: 87)
 - bind this distinction into the v1 critique and release notes so future compatibility cuts do not reintroduce a shim to solve cleanup. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
 - every breaking removal plan must separate supported inputs, active internal names, historical evidence, and one-way deletion of already-owned external state before mutation. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
 - for future public-surface removal, lock a five-bucket matrix before mutation: active contract, generated export, compatibility alias, history, and external installed state. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
@@ -115,4 +115,5 @@
 - `charness-artifacts/retro/2026-07-13-v1-0-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`
