@@ -25,7 +25,7 @@ are not regressions introduced by this delta.
 ## Runtime Signals
 
 - runtime source: structured metrics from
-  `.charness/quality/runtime-signals.json`, rendered by
+  `.charness/quality/runtime-signals.json`, <!-- reproduction-source --> rendered by
   `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
 - runtime hot spots: `run-quality-read-only` 144.2s latest / 61.9s median
   against 90s; `pytest` 106.4s / 52.4s against 140s; full-release 77.4s /
