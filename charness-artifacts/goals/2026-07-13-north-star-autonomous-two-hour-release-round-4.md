@@ -13,12 +13,11 @@ continuation run.
 
 ## Active Operating Frame
 
-- Current slice: Slice B — two bounded correctness-preserving speed repairs.
-- Current slice intent: replace an 83-process test spy with a lightweight call
-  spy and reject invalid issue-target input before any GitHub authentication;
-  preserve production runner behavior and exact CLI error semantics.
-- Next action: delegate implementation to a lower-power worker, then run exact
-  focused before/after proof, generated-surface sync, and code critique.
+- Current slice: Slice C — reject invalid issue target before remote preflight.
+- Current slice intent: preserve invalid-adapter precedence and exact rc/payload,
+  while preventing a deterministic usage error from paying GitHub auth latency.
+- Next action: commit the completed test-spy slice, then delegate the issue
+  ordering repair and its in-process plus CLI regression proof.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -124,8 +123,8 @@ independently verified release.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | A | Measure the current quality and runtime-test posture | Start from repo-owned evidence rather than backlog intuition | planner packets, runtime summary, focused inventories, candidate ledger | complete |
-| B | Implement the highest-leverage reproduced bug or structural seam | Reversible work should serve an observed escape/cost | focused regression proof, before/after signal, code critique, commit | in progress |
-| C | Probe independent test-speed, portability, security, and operator lenses | Counter implementation anchoring and admit only supported work | distinct-lens admit/defer/no-change decisions; optional second clean slice | pending |
+| B | Implement the highest-leverage reproduced bug or structural seam | Reversible work should serve an observed escape/cost | focused regression proof, before/after signal, code critique, commit | complete |
+| C | Probe independent test-speed, portability, security, and operator lenses | Counter implementation anchoring and admit only supported work | distinct-lens admit/defer/no-change decisions; optional second clean slice | in progress |
 | D | Freeze and verify the full bundle | Prevent local greens from becoming release confidence | quality artifact, bundle critique, verification lock, release dry-run | pending |
 | E | Push and publish | User-authorized irreversible boundary | remote/tag/release reads, HTTPS second-observer proof, install/doctor evidence | pending |
 
@@ -233,6 +232,20 @@ applies.
 - Off-goal findings: Managed-install and Codex cache boundary-test refactors are evidence-backed but deferred until the smaller admitted slices are complete; #433/#436 remain context-only.
 - Lessons carried forward: Temporal adjacency is not writer attribution; optimize test spies and invalid-input ordering only where focused observations preserve the actual contract.
 - Metrics: quality 60.6s; standing pytest 39.84s; 4567 tests; focused runtime-aggregate baseline 19.5s/6 tests; issue invalid-target host 1.48s wall vs fake gh 0.74s.
+
+### Slice 2: Slice B — runtime aggregate test call-spy
+
+- Objective: Remove repeated Python recorder startup from aggregate-runtime tests without changing production behavior or proof depth.
+- Why this approach: Measured focused duration showed five tests at 3.74-3.85s each; the test spy launched 83 recorder processes per run while direct recorder tests already owned implementation fidelity.
+- Commits: pending
+- What changed: Only tests/quality_gates/test_quality_runner_runtime_aggregate.py: the generated python3 wrapper now intercepts the exact recorder path, parses four known fields, writes JSONL, and preserves aggregate failure exit 73.
+- Alternatives rejected: Rejected production runner changes, assertion deletion, general JSON serializer work, and moving recorder contract coverage out of its direct test module.
+- Targeted verification: Focused module improved from 6 passed in 19.5s to 6 passed in 5.81-5.92s. Combined aggregate plus direct-recorder modules passed 38 tests in 14.17s; ruff passed.
+- Test duplication pressure: No new test cases; existing 6 aggregate assertions and 32 direct recorder tests remain. Test helper grew 27 lines but removes roughly 415 Python process launches across the five slow cases.
+- Critique: Short fresh-eye review APPROVE: exact interception, JSON shape, rc=73, fallthrough, and direct recorder ownership verified; zero reviewer-boundary drift. Caveat: generic JSON escaping is intentionally outside the constrained call-spy values.
+- Off-goal findings: Managed-install and Codex cache boundary refactors remain deferred; no production quality-runner defect claimed.
+- Lessons carried forward: A test double should model the call contract at the cheapest honest layer; separately owned direct tests keep implementation fidelity.
+- Metrics: focused 19.5s -> 5.81s, about 70 percent faster; combined 38 tests 14.17s.
 
 ## Context Sources
 
