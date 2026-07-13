@@ -15,6 +15,7 @@ rather than a semantic classifier.
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -73,6 +74,24 @@ def _cleanup_retired_state_entry(repo_root: Path, host: str) -> list[dict[str, A
     ]
 
 
+def _finish_result(
+    repo_root: Path,
+    result: dict[str, Any],
+    *,
+    host: str,
+    kind: str,
+    command: str,
+    retired_state_cleanup: list[dict[str, Any]],
+    clear_canonical_state: bool = False,
+) -> dict[str, Any]:
+    if retired_state_cleanup:
+        result["retired_state_cleanup"] = retired_state_cleanup
+    if clear_canonical_state and result["action"] in {"removed", "absent", "not_installed"}:
+        install_lib._clear_state_entry(repo_root, _state_key(host))
+    result.update(host=host, kind=kind, command=command, intent_section=INTENT_SECTION)
+    return result
+
+
 def _routing_intent(adapter: dict[str, Any] | None, host: str) -> str:
     """Read only the canonical session-routing intent."""
     return install_lib._intent_for(adapter or {}, host, section=INTENT_SECTION)
@@ -121,31 +140,19 @@ def install_session_routing_claude_hook(repo_root: Path, *, home: Path) -> dict[
     retired_state_cleanup = _cleanup_retired_json_entry(settings_path, repo_root, "claude")
     retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "claude")
     result = install_lib._install_json_event(settings_path, command=command, matcher=SESSION_ROUTING_MATCHER)
-    if retired_state_cleanup:
-        result["retired_state_cleanup"] = retired_state_cleanup
     if result["action"] == "installed":
         install_lib._record_state_entry(
             repo_root, state_key=_state_key("claude"), settings_path=settings_path,
             kind="claude-json", command=command,
         )
-    result.update(host="claude", kind="claude-json", command=command, intent_section=INTENT_SECTION)
-    return result
-
-
-def uninstall_session_routing_claude_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
-    state = install_lib.read_state(repo_root)
-    entry = state.get(_state_key("claude")) if isinstance(state.get(_state_key("claude")), dict) else None
-    command = _command(repo_root, "claude")
-    settings_path = Path(entry["settings_path"]) if isinstance(entry, dict) and isinstance(entry.get("settings_path"), str) else install_lib.default_claude_settings_path(home)
-    result = install_lib._uninstall_json_event(settings_path, command=command)
-    retired_state_cleanup = _cleanup_retired_json_entry(settings_path, repo_root, "claude")
-    retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "claude")
-    if retired_state_cleanup:
-        result["retired_state_cleanup"] = retired_state_cleanup
-    if result["action"] in {"removed", "absent", "not_installed"}:
-        install_lib._clear_state_entry(repo_root, _state_key("claude"))
-    result.update(host="claude", kind="claude-json", command=command, intent_section=INTENT_SECTION)
-    return result
+    return _finish_result(
+        repo_root,
+        result,
+        host="claude",
+        kind="claude-json",
+        command=command,
+        retired_state_cleanup=retired_state_cleanup,
+    )
 
 
 def install_session_routing_codex_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
@@ -159,41 +166,59 @@ def install_session_routing_codex_hook(repo_root: Path, *, home: Path) -> dict[s
         retired_state_cleanup = _cleanup_retired_codex_toml(settings_path, repo_root)
         result = install_codex_toml_block(settings_path, command, SESSION_ROUTING_MARKER, matcher=SESSION_ROUTING_MATCHER)
     retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "codex")
-    if retired_state_cleanup:
-        result["retired_state_cleanup"] = retired_state_cleanup
     if result["action"] in {"installed", "updated"}:
         install_lib._record_state_entry(
             repo_root, state_key=_state_key("codex"), settings_path=settings_path,
             kind=kind, command=command,
         )
-    result.update(host="codex", kind=kind, command=command, intent_section=INTENT_SECTION)
-    return result
+    return _finish_result(
+        repo_root,
+        result,
+        host="codex",
+        kind=kind,
+        command=command,
+        retired_state_cleanup=retired_state_cleanup,
+    )
 
 
-def uninstall_session_routing_codex_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
+def _uninstall_session_routing_hook(repo_root: Path, *, home: Path, host: str) -> dict[str, Any]:
     state = install_lib.read_state(repo_root)
-    entry = state.get(_state_key("codex")) if isinstance(state.get(_state_key("codex")), dict) else None
-    if isinstance(entry, dict):
+    entry = state.get(_state_key(host)) if isinstance(state.get(_state_key(host)), dict) else None
+    command = _command(repo_root, host)
+    if host == "claude":
+        settings_path = Path(entry["settings_path"]) if isinstance(entry, dict) and isinstance(entry.get("settings_path"), str) else install_lib.default_claude_settings_path(home)
+        kind = "claude-json"
+        result = install_lib._uninstall_json_event(settings_path, command=command)
+        retired_state_cleanup = _cleanup_retired_json_entry(settings_path, repo_root, host)
+    elif isinstance(entry, dict):
         settings_path = Path(entry["settings_path"])
         kind = entry.get("kind", "codex-toml")
-        command = _command(repo_root, "codex")
+        retired_state_cleanup = []
     else:
         settings_path, kind = install_lib.resolve_codex_target(home)
-        command = _command(repo_root, "codex")
-    if kind == "codex-json":
-        result = install_lib._uninstall_json_event(settings_path, command=command)
-        retired_state_cleanup = _cleanup_retired_json_entry(settings_path, repo_root, "codex")
-        retired_state_cleanup += _cleanup_retired_codex_toml(install_lib.default_codex_config_toml_path(home), repo_root)
-    else:
-        result = uninstall_codex_toml_block(settings_path, command, SESSION_ROUTING_MARKER)
-        retired_state_cleanup = _cleanup_retired_codex_toml(settings_path, repo_root)
-    retired_state_cleanup += _cleanup_retired_state_entry(repo_root, "codex")
-    if retired_state_cleanup:
-        result["retired_state_cleanup"] = retired_state_cleanup
-    if result["action"] in {"removed", "absent", "not_installed"}:
-        install_lib._clear_state_entry(repo_root, _state_key("codex"))
-    result.update(host="codex", kind=kind, command=command, intent_section=INTENT_SECTION)
-    return result
+        retired_state_cleanup = []
+    if host == "codex":
+        if kind == "codex-json":
+            result = install_lib._uninstall_json_event(settings_path, command=command)
+            retired_state_cleanup = _cleanup_retired_json_entry(settings_path, repo_root, host)
+            retired_state_cleanup += _cleanup_retired_codex_toml(install_lib.default_codex_config_toml_path(home), repo_root)
+        else:
+            result = uninstall_codex_toml_block(settings_path, command, SESSION_ROUTING_MARKER)
+            retired_state_cleanup = _cleanup_retired_codex_toml(settings_path, repo_root)
+    retired_state_cleanup += _cleanup_retired_state_entry(repo_root, host)
+    return _finish_result(
+        repo_root,
+        result,
+        host=host,
+        kind=kind,
+        command=command,
+        retired_state_cleanup=retired_state_cleanup,
+        clear_canonical_state=True,
+    )
+
+
+uninstall_session_routing_claude_hook = partial(_uninstall_session_routing_hook, host="claude")
+uninstall_session_routing_codex_hook = partial(_uninstall_session_routing_hook, host="codex")
 
 
 def reconcile_session_routing_hooks(repo_root: Path, *, adapter: dict[str, Any], home: Path) -> dict[str, Any]:
