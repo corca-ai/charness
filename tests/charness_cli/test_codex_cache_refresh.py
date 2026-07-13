@@ -194,6 +194,28 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
     capsys.readouterr()
     assert module.cmd_catalog_refresh(args) == 0
     capsys.readouterr()
+
+    missing = tmp_path / "missing-refresh-root"
+    invalid_args = argparse.Namespace(repo_root=missing, json=False)
+    assert module.cmd_catalog_refresh(invalid_args) == 2
+    error = capsys.readouterr()
+    assert "does not exist" in error.err
+    assert "Traceback" not in error.err
+    assert not missing.exists()
+
+    invalid_args.json = True
+    assert module.cmd_catalog_refresh(invalid_args) == 2
+    payload = json.loads(capsys.readouterr().out)
+    assert "does not exist" in payload["error"]
+
+    file_root = tmp_path / "refresh-file-root"
+    file_root.write_text("not a directory\n", encoding="utf-8")
+    invalid_args = argparse.Namespace(repo_root=file_root, json=False)
+    assert module.cmd_catalog_refresh(invalid_args) == 2
+    error = capsys.readouterr()
+    assert "not a directory" in error.err
+    assert "Traceback" not in error.err
+
     resolve_args = argparse.Namespace(
         repo_root=tmp_path,
         skill_id="missing",
@@ -206,3 +228,34 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
     )
     assert module.cmd_catalog_resolve_skill_path(resolve_args) == 1
     capsys.readouterr()
+
+
+def test_charness_catalog_refresh_invalid_roots_subprocess_contract(tmp_path: Path) -> None:
+    missing = tmp_path / "missing-refresh-root"
+    missing_result = run_cli(
+        "catalog",
+        "refresh",
+        "--repo-root",
+        str(missing),
+        "--json",
+    )
+    assert missing_result.returncode == 2
+    assert missing_result.stderr == ""
+    missing_payload = json.loads(missing_result.stdout)
+    assert missing_payload["repo_root"] == str(missing.resolve())
+    assert "does not exist" in missing_payload["error"]
+    assert "Traceback" not in missing_result.stdout
+    assert not missing.exists()
+
+    file_root = tmp_path / "refresh-file-root"
+    file_root.write_text("not a directory\n", encoding="utf-8")
+    file_result = run_cli(
+        "catalog",
+        "refresh",
+        "--repo-root",
+        str(file_root),
+    )
+    assert file_result.returncode == 2
+    assert file_result.stdout == ""
+    assert "not a directory" in file_result.stderr
+    assert "Traceback" not in file_result.stderr

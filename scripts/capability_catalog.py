@@ -16,6 +16,20 @@ from scripts.capability_catalog_resolver import resolve_skill_path
 from scripts.capability_catalog_sources import build_inventory
 
 
+class CatalogRepoRootError(ValueError):
+    """Raised when refresh is asked to mutate an invalid repository root."""
+
+    def __init__(self, repo_root: Path) -> None:
+        self.repo_root = repo_root
+        if not repo_root.exists():
+            reason = "does not exist"
+        elif not repo_root.is_dir():
+            reason = "is not a directory"
+        else:  # pragma: no cover - defensive; callers validate before raising
+            reason = "is invalid"
+        super().__init__(f"repo root {repo_root} {reason}")
+
+
 def _repo_root(value: Path | None) -> Path:
     return (value or Path.cwd()).expanduser().resolve()
 
@@ -25,6 +39,8 @@ def list_catalog(repo_root: Path) -> dict[str, object]:
 
 
 def refresh_catalog(repo_root: Path) -> dict[str, object]:
+    if not repo_root.exists() or not repo_root.is_dir():
+        raise CatalogRepoRootError(repo_root)
     inventory = build_inventory(repo_root)
     return {"inventory": inventory, "artifacts": persist_catalog(repo_root, inventory)}
 
@@ -49,12 +65,20 @@ def main(argv: list[str] | None = None) -> int:
     resolve_parser.add_argument("--plugin", default="charness")
     resolve_parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
-    if args.command == "list":
-        payload = list_catalog(_repo_root(args.repo_root))
-    elif args.command == "refresh":
-        payload = refresh_catalog(_repo_root(args.repo_root))
-    else:
-        payload = resolve_skill_path(skill_id=args.skill_id, repo_root=_repo_root(args.repo_root), home=args.home.expanduser().resolve(), codex_home=args.codex_home.expanduser().resolve(), reported_path=args.reported_path.expanduser(), marketplace=args.marketplace, plugin=args.plugin)
+    try:
+        if args.command == "list":
+            payload = list_catalog(_repo_root(args.repo_root))
+        elif args.command == "refresh":
+            payload = refresh_catalog(_repo_root(args.repo_root))
+        else:
+            payload = resolve_skill_path(skill_id=args.skill_id, repo_root=_repo_root(args.repo_root), home=args.home.expanduser().resolve(), codex_home=args.codex_home.expanduser().resolve(), reported_path=args.reported_path.expanduser(), marketplace=args.marketplace, plugin=args.plugin)
+    except CatalogRepoRootError as exc:
+        payload = {"error": str(exc), "repo_root": str(exc.repo_root)}
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print(str(exc), file=sys.stderr)
+        return 2
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:

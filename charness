@@ -4677,7 +4677,16 @@ def cmd_catalog_list(args: argparse.Namespace) -> int:
 
 
 def cmd_catalog_refresh(args: argparse.Namespace) -> int:
-    payload = _load_catalog_lib().refresh_catalog(args.repo_root.resolve())
+    catalog = _load_catalog_lib()
+    try:
+        payload = catalog.refresh_catalog(args.repo_root.resolve())
+    except catalog.CatalogRepoRootError as exc:
+        error = {"error": str(exc), "repo_root": str(exc.repo_root)}
+        if args.json:
+            print(json.dumps(error, ensure_ascii=False, indent=2))
+        else:
+            print(str(exc), file=sys.stderr)
+        return 2
     print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 

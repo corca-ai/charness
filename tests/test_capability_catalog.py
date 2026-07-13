@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 
 import scripts.capability_catalog_sources as sources
-from scripts.capability_catalog import _repo_root, list_catalog, refresh_catalog
+from scripts.capability_catalog import (
+    CatalogRepoRootError,
+    _repo_root,
+    list_catalog,
+    refresh_catalog,
+)
 from scripts.capability_catalog import main as catalog_main
 from scripts.capability_catalog_artifact import persist_catalog
 from scripts.capability_catalog_resolver import _cache_candidates, resolve_skill_path
@@ -24,6 +29,20 @@ def test_catalog_refresh_is_read_only_for_list_and_noop_on_second_refresh(tmp_pa
     assert second["artifacts"]["updated"] is False
     payload = json.loads((tmp_path / "charness-artifacts/capability-catalog/latest.json").read_text())
     assert payload["artifact_kind"] == "capability-catalog"
+
+
+def test_catalog_refresh_rejects_missing_root_without_creating_it(tmp_path: Path) -> None:
+    missing = tmp_path / "missing"
+    with pytest.raises(CatalogRepoRootError, match="does not exist"):
+        refresh_catalog(missing)
+    assert not missing.exists()
+
+
+def test_catalog_refresh_rejects_file_root(tmp_path: Path) -> None:
+    file_root = tmp_path / "repo-file"
+    file_root.write_text("not a directory\n", encoding="utf-8")
+    with pytest.raises(CatalogRepoRootError, match="not a directory"):
+        refresh_catalog(file_root)
 
 
 def test_catalog_resolver_recovers_rotated_cache(tmp_path: Path) -> None:
@@ -145,6 +164,26 @@ def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(t
     finally:
         sys.path[:] = original_path
     assert '"artifacts"' in capsys.readouterr().out
+
+
+def test_catalog_direct_main_refresh_invalid_root_is_clean_and_nonzero(tmp_path: Path, capsys) -> None:
+    missing = tmp_path / "missing"
+    assert catalog_main(["refresh", "--repo-root", str(missing)]) == 2
+    output = capsys.readouterr()
+    assert "does not exist" in output.err
+    assert "Traceback" not in output.err
+    assert not missing.exists()
+
+    assert catalog_main(["refresh", "--repo-root", str(missing), "--json"]) == 2
+    payload = json.loads(capsys.readouterr().out)
+    assert "does not exist" in payload["error"]
+
+    file_root = tmp_path / "refresh-file-root"
+    file_root.write_text("not a directory\n", encoding="utf-8")
+    assert catalog_main(["refresh", "--repo-root", str(file_root)]) == 2
+    output = capsys.readouterr()
+    assert "not a directory" in output.err
+    assert "Traceback" not in output.err
 
 
 def test_catalog_sources_cover_dedup_frontmatter_references_and_duplicate_names(tmp_path: Path) -> None:

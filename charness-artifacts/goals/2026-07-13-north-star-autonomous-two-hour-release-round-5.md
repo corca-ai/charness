@@ -13,13 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice A — current-state confirmation and evidence-admitted
-  candidate inventory.
-- Current slice intent: measure present bug/quality/test/security/operator pain
-  without replaying round-four conclusions; write every lens decision into the
-  candidate ledger before choosing implementation.
-- Next action: run the quality planner, current version/ref checks, focused
-  runtime inventories, and security baseline; then rank only admitted candidates.
+- Current slice: Slice C — independently measured follow-up candidate.
+- Current slice intent: use the remaining reversible-work window to reproduce
+  one independent operator or maintenance defect; stop without mutation when
+  current evidence supports only a no-change or defer decision.
+- Next action: probe the custom-home doctor boundary identified by the scout,
+  then either open a falsifiable debug record or close the candidate honestly.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -120,8 +119,8 @@ independently verify one patch release beyond v1.0.3.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Measure current bug/quality/speed/security candidates | Avoid backlog and prior-session anchoring | planner packets, timings, candidate ledger | planned |
-| B | Repair the highest-leverage reproduced defect | Serve observed behavior before cleanup | RCA, focused regression, critique, commit | planned |
+| A | Measure current bug/quality/speed/security candidates | Avoid backlog and prior-session anchoring | planner packets, timings, candidate ledger | completed |
+| B | Repair the highest-leverage reproduced defect | Serve observed behavior before cleanup | RCA, focused regression, critique, commit | completed |
 | C | Improve one independently measured test/maintenance seam | Use remaining time for honest economics | same-command delta, retained boundary coverage, critique | planned |
 | D | Freeze and verify the bundle | Prevent local greens from becoming release confidence | exact lock, security/parity, semver and release review | planned |
 | E | Push/publish the patch and complete goal closeout | Complete the user-authorized release boundary, not any issue lifecycle | public refs/body, install/doctor, retro/handoff | planned |
@@ -184,6 +183,8 @@ per the bullets above when that boundary is crossed):
 - `Routing: <skill> — <why this phase needs it>`
 
 Routing: quality — selected from installed metadata to own current quality, runtime, security, and structural evidence before implementation.
+Routing: debug — selected to require a falsifiable invalid-root hypothesis, detection gap, and sibling search before repair.
+Routing: impl — selected to own the smallest refresh-specific backend/consumer/test slice and generated plugin synchronization.
 
 ## Discuss Before Activation
 
@@ -197,6 +198,34 @@ applies.
 - Discuss before activation: approved — this repeated user request explicitly authorizes autonomous local work and the final locked-bundle push/release; issue closure, Cautilus, and a hollow release without an admissible delta remain excluded, and public success requires a separate observer plus separate channel.
 
 ## Slice Log
+
+### Slice 1: Slice A — evidence inventory
+
+- Objective: Measure current bug, maintainability, test-economics, security, and operator candidates without replaying round four.
+- Why this approach: North-star evidence admission prevents activity from becoming the objective.
+- Commits: ff4c40f6 starts the auditable goal; evidence closes with Slice B.
+- What changed: No product code; recorded current quality/runtime/security/structure/CLI/skill-ergonomics inventories.
+- Alternatives rejected: Rejected a forced speed refactor, blanket lint cleanup, and issue-state-driven work because current evidence did not justify them.
+- Targeted verification: run-quality --read-only 81/81 in 59.6s; secrets and supply-chain pass; structural/CLI/brittle-guard inventories clean.
+- Test duplication pressure: Managed-install standing boundary: 3 tests/0.61s; release-only boundary: 14 tests/78.78s; defer optimization because cases exercise distinct install/update boundaries. Standing nested CLI cluster: 44 tests/3.77s.
+- Critique: Plan critique accepted evidence ledger and no-hollow-release rules; zero reviewer fingerprint drift.
+- Off-goal findings: No test-speed claim. Future release-only managed-install economics require same-command measurement plus retained real-boundary smoke.
+- Lessons carried forward: Scaffold current-pointer output must be paired with the quality record resolver; the observed round4 target was contract-compliant, not a tool bug.
+- Metrics: lens ledger: bug/operator=admit catalog invalid root; test economics=defer; maintainability=no-change; security=no-change; skill ergonomics=no-change.
+
+### Slice 2: Slice B — catalog invalid-root repair
+
+- Objective: Prevent catalog refresh from turning an invalid explicit repo root into writes or a traceback.
+- Why this approach: The current public repro was operator-visible and crossed an artifact-writer boundary.
+- Commits: pending this slice closeout commit.
+- What changed: Added refresh-specific backend destination validation, typed error translation in both CLI consumers, synced plugin export, and backend/direct/handler/real-process regressions.
+- Alternatives rejected: Rejected a shared _repo_root guard, Git-checkout requirement, and broader list/resolve narrowing.
+- Targeted verification: 21 focused tests in 14.06s; ruff; plugin byte parity; missing/file real-process rc2 with clean channels and no missing-path creation.
+- Test duplication pressure: One 0.37s public process regression retains the delivery boundary; lower-layer tests own the broader input matrix.
+- Critique: Two distinct fresh-eye angles plus separate counterweight; Act Before Ship real-process test fixed; all fingerprint verifies zero drift. Artifact: charness-artifacts/critique/2026-07-13-catalog-refresh-invalid-root-code-critique.md.
+- Off-goal findings: Permission and symlink edge matrices deferred until operator evidence; list/resolve missing-root behavior intentionally unchanged.
+- Lessons carried forward: Validate mutation authority at the producer boundary and translate typed failure at each final consumer.
+- Metrics: RCA converted to durable test: writer-accepts-invalid-destination; ledger aggregate 35/42 seed-excluded, current 28d 11/11.
 
 ## Context Sources
 

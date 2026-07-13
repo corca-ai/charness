@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 81,
-  "indexed_artifact_count": 69,
+  "source_artifact_count": 82,
+  "indexed_artifact_count": 70,
   "risk_class_counts": {
-    "contract-freeze-risk": 26,
+    "contract-freeze-risk": 25,
     "external-seam": 2,
     "host-disproves-local": 2,
-    "none": 18,
+    "none": 20,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 62,
+    "monitor": 63,
     "none": 4
   },
   "entries": [
@@ -930,6 +930,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-13-debug-review-followup-3.md",
+      "is_current_pointer": false,
+      "interrupt_id": "catalog-refresh-invalid-repo-root",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "parsed CLI path to repo-owned current-pointer writer",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-13-debug-review-followup.md",
       "is_current_pointer": false,
       "interrupt_id": "standing-pytest-root-lockfile-attribution",
@@ -974,11 +988,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "quality-scaffold-durability-2026-07-13",
+      "interrupt_id": "catalog-refresh-invalid-repo-root",
       "risk_classes": [
-        "contract-freeze-risk"
+        "none"
       ],
-      "seam": "scaffold output -> persisted quality artifact -> durability validator",
+      "seam": "parsed CLI path to repo-owned current-pointer writer",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
