@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-13",
-  "source_artifact_count": 324,
-  "candidate_count": 1421,
+  "source_artifact_count": 325,
+  "candidate_count": 1429,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1010,6 +1010,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0f41019435cd",
+      "kind": "current_focus",
+      "lesson": "This retro reviews goal `north-star-autonomous-two-hour-release-round-4`: a timeboxed autonomous sweep that admitted one issue-planner bug fix, two measured test-economics repairs, and one scaffold producer repair discovered by exact-byte verification.",
+      "normalized_key": "this retro reviews goal north star autonomous two hour release round 4 a timeboxed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:ab32626deadc",
       "kind": "current_focus",
       "lesson": "This session removed the public `find-skills` workflow and its free-text recommendation engine, retained the session hook as a small compatibility surface, and introduced a deterministic capability catalog for hidden support and integration inventory.",
@@ -1084,26 +1104,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md",
-          "date": "2026-07-13",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e619ec1da8b2",
-      "kind": "next_improvement",
-      "lesson": "for future public-surface removal, lock a five-bucket matrix before mutation: active contract, generated export, compatibility alias, history, and external installed state.",
-      "normalized_key": "for future public surface removal lock a five bucket matrix before mutation active contract",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md",
-      "latest_source_date": "2026-07-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md",
           "date": "2026-07-13",
           "section": "Next Improvements"
         }
@@ -2107,6 +2107,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0f41019435cd",
+      "kind": "current_focus",
+      "lesson": "This retro reviews goal `north-star-autonomous-two-hour-release-round-4`: a timeboxed autonomous sweep that admitted one issue-planner bug fix, two measured test-economics repairs, and one scaffold producer repair discovered by exact-byte verification.",
+      "normalized_key": "this retro reviews goal north star autonomous two hour release round 4 a timeboxed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:ab32626deadc",
       "kind": "current_focus",
       "lesson": "This session removed the public `find-skills` workflow and its free-text recommendation engine, retained the session hook as a small compatibility surface, and introduced a deterministic capability catalog for hidden support and integration inventory.",
@@ -2227,6 +2247,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ecd01eee7a8d",
+      "kind": "next_improvement",
+      "lesson": "keep parent/worker mutations frozen from reviewer snapshot through verify; the existing fingerprint remains the repo-local enforcement and every overlap is quarantined rather than rationalized.",
+      "normalized_key": "keep parent worker mutations frozen from reviewer snapshot through verify the existing fingerprint remains",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6fe81626c96a",
       "kind": "next_improvement",
       "lesson": "keep the critique and this retro with the slice so future removals inherit both the negative acceptance criteria and the compatibility classification.",
@@ -2241,6 +2281,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md",
+          "date": "2026-07-13",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4352132f9bf7",
+      "kind": "next_improvement",
+      "lesson": "persist this retro plus the scaffold debug/RCA evidence and refresh recent lessons so the producer/final-consumer lesson is reconstructable.",
+      "normalized_key": "persist this retro plus the scaffold debug rca evidence and refresh recent lessons so",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:0f70019d4e41",
+      "kind": "next_improvement",
+      "lesson": "quality scaffold now emits the final consumer's reproduction- source grammar, with one generated-output regression and plugin parity.",
+      "normalized_key": "quality scaffold now emits the final consumer s reproduction source grammar with one generated",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
           "date": "2026-07-13",
           "section": "Next Improvements"
         }
@@ -2263,6 +2343,86 @@
           "artifact_path": "charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md",
           "date": "2026-07-13",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3d1831dfeba2",
+      "kind": "repeat_trap",
+      "lesson": "Exploration phase, moderate: the transient `uv.lock` hypothesis consumed a diagnostic branch, but repeated exact repro and syscall tracing disconfirmed attribution. This was necessary uncertainty reduction, not failed work; the no-fix outcome prevented a speculative regression.",
+      "normalized_key": "exploration phase moderate the transient uv lock hypothesis consumed a diagnostic branch but repeated",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6b4a29e1f6ef",
+      "kind": "repeat_trap",
+      "lesson": "Gate-baseline runtime: final release quality remained about 72-75s and broad pytest about 37s. Those are measured safety costs within current budgets; only the two causally isolated duplicate-cost families were changed.",
+      "normalized_key": "gate baseline runtime final release quality remained about 72 75s and broad pytest about",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:421930d02a85",
+      "kind": "repeat_trap",
+      "lesson": "Review phase, strong: three otherwise-useful fresh-eye results were quarantined because a worker or parent mutation overlapped the reviewer fingerprint window; one counterweight also staged shared files despite a read-only envelope. The guard prevented escape, but serializing parent writes around bounded reviews would avoid the reruns.",
+      "normalized_key": "review phase strong three otherwise useful fresh eye results were quarantined because a worker",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9f75a993a530",
+      "kind": "repeat_trap",
+      "lesson": "Verification phase, strong: the first v1.0.2 broad lock found a scaffold- produced ignored-path citation that the focused quality artifact validator did not reject. This was useful final-consumer detection but avoidable producer rework; the v1.0.3 producer marker and regression remove recurrence.",
+      "normalized_key": "verification phase strong the first v1 0 2 broad lock found a scaffold produced",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste"
         }
       ]
     },

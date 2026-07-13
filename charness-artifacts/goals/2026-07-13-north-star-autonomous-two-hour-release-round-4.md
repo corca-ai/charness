@@ -1,6 +1,6 @@
 # Achieve Goal: North-Star Autonomous Two-Hour Release Round 4
 
-Status: active
+Status: complete
 Created: 2026-07-13
 Activation: `/goal @charness-artifacts/goals/2026-07-13-north-star-autonomous-two-hour-release-round-4.md`
 Timebox: 2h
@@ -13,12 +13,11 @@ continuation run.
 
 ## Active Operating Frame
 
-- Current slice: Slice G — v1.0.3 exact lock and publication.
-- Current slice intent: ship the producer-side scaffold repair discovered by
-  the v1.0.2 lock, then close the full goal against distinct public/install
-  evidence without reopening implementation scope.
-- Next action: commit this goal update, run the exact v1.0.3 lock, then dry-run
-  and execute the repo-owned patch release helper.
+- Current slice: Closeout — v1.0.3 proof, retro, disposition, and handoff.
+- Current slice intent: bind final public/install evidence and every surfaced
+  improvement to durable closeout artifacts without reopening implementation.
+- Next action: complete disposition review, refresh handoff, validate the goal,
+  and push the lifecycle-only closeout commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -130,7 +129,7 @@ independently verified release.
 | D | Freeze and verify the full bundle | Prevent local greens from becoming release confidence | quality artifact, bundle critique, verification lock, release dry-run | complete |
 | E | Push and publish v1.0.2 | User-authorized irreversible boundary | remote/tag/release reads, HTTPS second-observer proof, install/doctor evidence | complete |
 | F | Repair quality scaffold evidence durability | v1.0.2 exact-byte lock exposed a producer/final-consumer mismatch | focused generated-output regression, final durability consumer, critique | complete |
-| G | Lock and publish v1.0.3 | End with the discovered producer repair actually installed | exact lock, patch helper, distinct public/install readback | pending |
+| G | Lock and publish v1.0.3 | End with the discovered producer repair actually installed | exact lock, patch helper, distinct public/install readback | complete |
 
 ### Candidate Ledger Schema
 
@@ -151,21 +150,8 @@ crossed; `decision: admit|defer|no-change`; `proof-artifact`; `non-claim`.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-none — the user explicitly authorized autonomous local work, push, and release;
-new issue closure, compatibility removal, or external provider writes outside
-the release helper remain out of scope.
+none — the user authorized local improvement and patch publication; no issue
+closure, compatibility decision, credential action, or manual proof remains.
 
 ## Coordination Cues
 
@@ -202,8 +188,9 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: <skill> — <why this phase needs it>`
 
-Routing: quality -> impl -> critique -> release — quality selects evidence-admitted moves, impl owns reversible slices, critique supplies fresh observers, and release owns publication.
+Routing: quality -> impl -> debug -> critique -> release — quality selects evidence-admitted moves, impl owns reversible slices, debug owns falsifiable RCA, critique supplies fresh observers, and release owns publication.
 Gather: n/a — no external URL needs conversion into working context; existing repo artifacts are the source set.
+Release: charness-artifacts/release/latest.md — repo helper published v1.0.3 and recorded fresh-checkout, public HTTPS, install refresh, and no-issue-close proof.
 Issue closeout: n/a — #433/#436 are context-only and remain open.
 
 ## Discuss Before Activation
@@ -371,13 +358,34 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md
+Host log probe: charness-artifacts/probe/2026-07-13-north-star-autonomous-two-hour-release-round-4-host-log.json
+Disposition review: charness-artifacts/critique/2026-07-13-north-star-autonomous-two-hour-release-round-4-disposition-review.md
+Host metric window: started_at=2026-07-13T15:04:06+09:00 completed_at=2026-07-13T16:44:24+09:00 codex_session_file=/home/hwidong/.codex/sessions/2026/07/13/rollout-2026-07-13T15-01-40-019f5a11-21e0-70c1-b766-3de517828830.jsonl
+
+- Exact v1.0.3 lock: broad pytest, focused changed-line mutation coverage,
+  durability, skill/dogfood, packaging/mirror, secrets, and artifact gates pass.
+- Publication: tag `v1.0.3` at `9be247ae`; remote main verification commit
+  `2a7400e7`; helper fresh checkout and install refresh pass.
+- Distinct observer: unauthenticated HTTPS page/API body, public refs, installed
+  `charness --version` 1.0.3, and doctor/cache no-drift pass with zero reviewer
+  fingerprint drift.
+- Closeout state: live public release and instance-synced maintainer install;
+  no tracked issue closure requested or claimed.
+- Non-claims: no Cautilus, remote CI, fresh-clone-by-second-observer, or
+  #433/#436 lifecycle action.
 
 ## User Verification Instructions
 
+- Run `charness --version` and expect `1.0.3`.
+- Run `charness doctor --json`; checkout/source/cache/Claude versions should be
+  `1.0.3` and `codex_source_cache_drift` should be false.
+- Open the public v1.0.3 release and confirm the quality scaffold durability
+  notes; restart active host sessions after the reported cache rotation.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: quality scaffold now emits the final consumer's same-line reproduction-source grammar with a focused generated-output regression and installed plugin parity (`bc65ee8d`, released v1.0.3).
+Retro dispositions: applied: shared reviewer fingerprint enforcement quarantined every overlapping mutation; accepted approvals all verified zero drift.
+Retro dispositions: applied: scaffold debug/RCA evidence and the full session retro were persisted and recent lessons regenerated.
+Structural follow-up: repo-local guard: skills/shared/scripts/reviewer_boundary_fingerprint.py
