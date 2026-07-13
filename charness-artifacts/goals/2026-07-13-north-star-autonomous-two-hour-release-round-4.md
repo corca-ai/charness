@@ -13,12 +13,12 @@ continuation run.
 
 ## Active Operating Frame
 
-- Current slice: Slice D — full-bundle quality and release lock.
-- Current slice intent: turn the admitted slices and lens non-changes into one
-  honest release-readiness record, adversarial critique, and clean verification
-  lock before any publication mutation.
-- Next action: persist the release critique, run the exact clean verification
-  lock, then dry-run and execute the repo-owned patch release helper.
+- Current slice: Slice G — v1.0.3 exact lock and publication.
+- Current slice intent: ship the producer-side scaffold repair discovered by
+  the v1.0.2 lock, then close the full goal against distinct public/install
+  evidence without reopening implementation scope.
+- Next action: commit this goal update, run the exact v1.0.3 lock, then dry-run
+  and execute the repo-owned patch release helper.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -127,8 +127,10 @@ independently verified release.
 | B | Implement the highest-leverage reproduced bug or structural seam | Reversible work should serve an observed escape/cost | focused regression proof, before/after signal, code critique, commit | complete |
 | C | Probe independent test-speed, portability, security, and operator lenses | Counter implementation anchoring and admit only supported work | distinct-lens admit/defer/no-change decisions; optional second clean slice | complete |
 | C2 | Move duplicated Codex cache payload proof below the CLI boundary | Serial timing found 4.4-5.7s update scenarios around existing pure helpers | same-command focused before/after, retained real-boundary smoke, critique | complete |
-| D | Freeze and verify the full bundle | Prevent local greens from becoming release confidence | quality artifact, bundle critique, verification lock, release dry-run | pending |
-| E | Push and publish | User-authorized irreversible boundary | remote/tag/release reads, HTTPS second-observer proof, install/doctor evidence | pending |
+| D | Freeze and verify the full bundle | Prevent local greens from becoming release confidence | quality artifact, bundle critique, verification lock, release dry-run | complete |
+| E | Push and publish v1.0.2 | User-authorized irreversible boundary | remote/tag/release reads, HTTPS second-observer proof, install/doctor evidence | complete |
+| F | Repair quality scaffold evidence durability | v1.0.2 exact-byte lock exposed a producer/final-consumer mismatch | focused generated-output regression, final durability consumer, critique | complete |
+| G | Lock and publish v1.0.3 | End with the discovered producer repair actually installed | exact lock, patch helper, distinct public/install readback | pending |
 
 ### Candidate Ledger Schema
 
@@ -276,6 +278,20 @@ applies.
 - Off-goal findings: Full-suite benchmark not claimed; managed-install serial costs remain deferred.
 - Lessons carried forward: When several scenarios pay the same slow boundary, keep one content-bearing boundary proof and move only directly owned pure transformations below it.
 - Metrics: focused 22.30s -> 14.02s parent confirmation (37%); fastest repeat 9.85s; test count 7 -> 6 with retained app-server and update wiring.
+
+### Slice 5: Slice F — quality scaffold evidence durability
+
+- Objective: Make the canonical quality scaffold emit a durability-valid runtime reproduction citation.
+- Why this approach: The v1.0.2 exact-byte lock reproduced one final-consumer failure: the producer template omitted a marker required for its gitignored runtime evidence path.
+- Commits: `bc65ee8d` (Fix quality scaffold evidence durability).
+- What changed: Added the same-line reproduction-source marker to quality source/plugin scaffold literals, one generated-output regression, debug/critique evidence, and v1.0.3 release notes.
+- Alternatives rejected: Rejected changing validator grammar, adding a duplicate end-to-end gate, generalizing a citation API, editing dogfood/scenarios, and running ask-only Cautilus.
+- Targeted verification: Focused scaffold 5 passed; full durability scan accepted 289 docs; source/plugin parity, ruff, packaging, public quality validation/dogfood, debug and critique validators passed.
+- Test duplication pressure: One two-line focused assertion composes with existing final-consumer grammar tests; no duplicate integration test was added.
+- Critique: Two high-leverage angles and a separate counterweight APPROVE; every accepted reviewer fingerprint verified zero drift.
+- Off-goal findings: Unrelated hand-authored ignored-path citations and broader ignored-evidence ergonomics remain outside this producer defect.
+- Lessons carried forward: A scaffold is a producer, not neutral prose: generated evidence claims must already satisfy their final consumer.
+- Metrics: One reproduced broad failure; smallest fix changes one generated line plus one regression; no Cautilus or issue lifecycle action.
 
 ## Context Sources
 
