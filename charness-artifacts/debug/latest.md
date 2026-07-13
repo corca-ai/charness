@@ -1,1 +1,1 @@
-2026-07-13-custom-home-claude-state-leakage.md
+2026-07-14-debug-review.md

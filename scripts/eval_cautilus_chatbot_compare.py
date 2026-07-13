@@ -242,6 +242,7 @@ def resolve_repo_pair(
             baseline_ref,
             "--output-dir",
             str(workspace_root),
+            "--json",
         ],
         cwd=repo_root,
         check=False,

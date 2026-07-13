@@ -62,7 +62,7 @@ def load_input_packet(path: Path) -> dict[str, object]:
 
 def run_scenario_propose(repo_root: Path, input_path: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["cautilus", "discover", "scenarios", "propose", "--input", str(input_path)],
+        ["cautilus", "discover", "scenarios", "propose", "--input", str(input_path), "--json"],
         cwd=repo_root,
         check=False,
         capture_output=True,
@@ -162,7 +162,15 @@ def build_summary(
         "families": proposals_packet.get("families", []),
         "tag_counts": tag_counts,
         "command": {
-            "argv": ["cautilus", "discover", "scenarios", "propose", "--input", str(input_path.relative_to(repo_root))],
+            "argv": [
+                "cautilus",
+                "discover",
+                "scenarios",
+                "propose",
+                "--input",
+                str(input_path.relative_to(repo_root)),
+                "--json",
+            ],
             "exit_code": command.returncode,
             "stderr": sanitize_diagnostic_text(command.stderr.strip(), repo_root=repo_root),
         },

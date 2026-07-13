@@ -1,82 +1,112 @@
 # Quality Review
 Date: 2026-07-14
-Title: Open Issue Resolution Proof
+Title: v1.0.5 Advisory Disposition and Release Readiness
 
 ## Scope
 
-Target boundary: issue-resolution validation for #433, #436, and #437; current
-mutation is test-only and production behavior for #433/#436 landed earlier.
+Target boundary: advisories surfaced while closing issues #433, #436, and #437,
+plus Cautilus 0.19.3 compatibility discovered by the release gate.
 
-Ambient repo findings: skill-ergonomics inventory reports host-surface lexical
-heuristics across 16 skills; no skill package changed, so those findings are
-ambient and not remediation candidates for this slice.
+Ambient repo findings: nine Python length warnings remain advisory after a
+cohesion/risk review; no public command, skill trigger, or release API changes.
 
 ## Current Gates
 
-- GitHub source reads included every issue comment before classification.
-- Five focused existing behavior tests cover the #433 carrier consumer and
-  #436 dirty-sync, clean-sync, and sync-failure paths.
-- Twenty-six focused tests cover #437's custom-HOME and parser/mutation seams.
-- The repo mutation coverage producer, not a naive coverage run, reaches every
-  changed-line target named in #437.
-- A targeted Cosmic Ray session over `scripts/capability_catalog.py` kills all
-  five `required=True` mutants and one reported dispatch comparison.
+- Focused split-module and Cautilus suite: 138 passed; Ruff and the boundary
+  ratchet pass.
+- Full read-only quality passed 81/81 gates and 4,587 tests after sync.
+- Release critique passed; release-gate proof and a distinct post-publish
+  observation remain mandatory.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
-- runtime hot spots: release quality 72.1s latest / 73.7s median; read-only quality 55.5s / 60.5s; pytest 35.7s / 48.1s.
-- coverage gate: focused producer passed; final repo closeout remains pending at artifact author time.
-- evaluator depth: deterministic gates only; Cautilus is neither needed for these executable seams nor authorized on demand.
+- runtime hot spots: release quality 72.1s latest / 73.7s median; read-only
+  quality 55.5s / 60.5s; pytest 35.7s / 48.1s.
+- coverage gate: focused coverage and boundary checks pass; full read-only
+  quality passed 81/81 gates and 4,587 tests.
+- evaluator depth: deterministic gates and installed Cautilus final consumers;
+  no Cautilus evaluation was run because the change is a CLI wire-contract fix.
 
 ## Healthy
 
-- Existing release and verification-lock floors remain unchanged.
-- The #437 fix adds narrow non-release proof instead of moving slow release-only
-  fixtures into the standing command or weakening mutation thresholds.
-- Reviewer-boundary snapshots verified clean after two angles and one separate
-  counterweight pass.
+- Cautilus stdout parsers now select JSON explicitly, and command-shape tests
+  guard both live consumers.
+- Three large test matrices were split without changing production behavior or
+  assertions, reducing Python length warnings from 12 to 9.
+- New file-qualified boundary keys have reasoned, revisit-bounded exemptions;
+  the candidate count remains neutral.
+- A real installed Claude CLI honored an isolated custom HOME during doctor.
 
 ## Weak
 
-- No fresh scheduled/provider mutation run exists for the patch. Targeted
-  outcomes prove the reported survivor delta, not future sample selection.
+- The manually dispatched mutation workflow passed at 89.0% Python and 93.0%
+  JavaScript, but proves commit `c6a1e828`, not the unreleased cleanup HEAD; it
+  remains provider evidence for #437 rather than a release-HEAD claim.
 
 ## Missing
 
-- None within the issue acceptance boundaries after final closeout runs.
+- None within the patch-release acceptance boundary once the release gate and
+  public post-create verification pass.
 
 ## Deferred
 
-- A real Claude custom-HOME host roundtrip remains unclaimed; fake-CLI and
-  final-consumer proof are the local contract for this test-only slice.
-- The next scheduled mutation run remains monitoring evidence, not a blocker.
+- `check_skill_surface_preflight.py` and `validate_critique_artifacts.py` show
+  genuine production accretion, but refactoring 479/480-line contract validators
+  during a release would create more risk than the advisory removes.
+- Seven other warned modules remain cohesive command/planner/test-support units;
+  splitting them would add shallow coordination surfaces without behavioral gain.
 
 ## Advisory
 
-- structural review result: capability needed is early, consumer-reachable proof; current centers are issue-owned carrier validation, sync-phase stopping, mutation coverage, and focused tests; the next center is the issue-specific carrier; use existing gates with no new floor. Evidence artifact: `charness-artifacts/critique/2026-07-14-issues-433-436-437-resolution-critique.md`.
-- prose review result: no public skill prose changed; trigger boundaries and progressive disclosure are out of target, while helper ownership remains with production and proof ownership with tests. Evidence command: `git diff --name-only`.
-- skill ergonomics advisory: `inventory_skill_ergonomics.py --summary` found only ambient host-surface lexical heuristics for this slice.
+- structural review result: inventory `inventory_skill_ergonomics.py` reported
+  `scope_status=scanned`, `checked_skill_count=21`,
+  `heuristic_finding_count=16`, and `host_surface_reference_count=74`; all 74
+  references are adapter/integration contexts (37 compatibility, 4 mapping, 6
+  detector, 25 named-host integration, 2 policy fixture). No core is overfilled.
+- prose review result: evidence from manual judgment after
+  `prose_review_status=required`; trigger boundaries, progressive disclosure, helper
+  ownership, path clarity, issue anchors, dated incidents, and reference
+  discoverability produced no actionable finding; host names remain on their
+  owning portable adapter/integration surfaces.
+- Python length advisory: command: `check_python_lengths.py`; nine warnings
+  remain by deliberate disposition; three
+  low-risk test matrices were split, while seven cohesive modules and two
+  high-risk validators were not churned for line-count compliance alone.
+- mutation advisory: evidence: provider run 29289933683 passed against
+  `c6a1e828` (Python 89.0%, 118/118 executed; JavaScript 93.0%, 86 reachable);
+  it is an evidence-channel observation, not a substitute for committed-HEAD gates.
 
 ## Delegated Review
 
-- Delegated Review: executed — `problem-framing-and-legibility`, `diagnostic-boundary-and-operations`, and separate `counterweight` lenses; verdict requires issue-specific proof mapping and no production expansion.
-- Slow-gate lenses: `fixture-economics`, `parallel-critical-path`, and `duplicated-proof` were not re-delegated because no slow-gate scope change or runtime recommendation is proposed; #436 reuses its existing executor behavior proof.
+- Delegated Review: executed — distinct operational sequencing and operator-
+  communication reviewers plus a separate counterweight passed; all three
+  reviewer-boundary fingerprint verifies reported no drift.
+- Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof):
+  not re-delegated because no gate topology or runtime recommendation changes.
 
 ## Commands Run
 
-- `issue_tool.py read` for #433, #436, and #437.
-- focused pytest for five existing #433/#436 cases and 26 #437 cases.
-- `mutation_sampling_lib.run_test_coverage` with the non-release focused command.
-- targeted Cosmic Ray baseline/init/exec/dump for `scripts/capability_catalog.py`.
-- quality runtime summary and skill-ergonomics summary inventories.
-- reviewer-boundary snapshot/verify around every delegated reviewer.
+- `inventory_skill_ergonomics.py --summary` and Python length inventory/review.
+- focused pytest for split matrices and both installed Cautilus consumers.
+- `check_boundary_bypass_ratchet.py`, Ruff, debug/spec validators, and sync tools.
+- isolated-home `charness doctor` through the installed Claude CLI.
+- GitHub Actions mutation workflow run 29289933683 and its score summary.
 
 ## Recommended Next Quality Moves
 
-- active carrier mapping — capability_needed=issue readers can distinguish landed behavior from current proof; next_center=issue-specific closeout carriers; transformation=record JTBD, exact proof, critique, and non-claims; proof_boundary=`validate-closeout-draft` plus post-push `verify-closeout`; enforcement_posture=existing-gate-reuse.
-- passive scheduled observation — capability_needed=future sample monitoring; next_center=scheduled mutation workflow; transformation=observe the next automatic run without delaying this focused fix; proof_boundary=provider run artifact; enforcement_posture=no-gate because current targeted proof already settles the reported fixed sample.
+- active release proof — capability_needed=public patch confidence;
+  next_center=full gate plus release critique; transformation=sync, verify,
+  publish, and read back through a distinct channel; proof_boundary=public tag
+  and release artifact; enforcement_posture=existing-gate-reuse.
+- passive validator decomposition because line count alone does not justify
+  release-slice churn — capability_needed=safer cohesive validators;
+  next_center=the two near-limit production validators; transformation=refactor
+  only alongside behavior work with characterization tests; proof_boundary=full
+  quality plus mutation proof; enforcement_posture=no-gate because line count
+  alone does not justify release-slice churn.
 
 ## History
 
+- [Open issue resolution proof](history/2026-07-14-open-issue-resolution-proof.md)
 - [pytest suite test-value audit](history/2026-07-03-pytest-suite-test-value-audit.md)

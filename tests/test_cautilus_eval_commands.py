@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -26,6 +27,11 @@ _VALIDATE_SCENARIOS = load_script_module(
     ROOT / "scripts" / "validate_cautilus_scenarios.py",
 )
 
+_CHATBOT_PROPOSALS = load_script_module(
+    "eval_cautilus_chatbot_proposals_for_test",
+    ROOT / "scripts" / "eval_cautilus_chatbot_proposals.py",
+)
+
 
 def _run_evals(*args: str):
     return run_loaded_script_main(
@@ -39,6 +45,29 @@ def _run_evals(*args: str):
 
 def _run_validate_scenarios(*args: str):
     return run_loaded_script_main("validate_cautilus_scenarios.py", _VALIDATE_SCENARIOS, *args)
+
+
+def test_chatbot_proposals_requests_json_output(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run(argv, **kwargs):
+        captured["argv"] = argv
+        return SimpleNamespace(returncode=0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(_CHATBOT_PROPOSALS.subprocess, "run", fake_run)
+    input_path = tmp_path / "inputs.json"
+    result = _CHATBOT_PROPOSALS.run_scenario_propose(ROOT, input_path)
+
+    assert result.returncode == 0
+    assert captured["argv"] == [
+        "cautilus",
+        "discover",
+        "scenarios",
+        "propose",
+        "--input",
+        str(input_path),
+        "--json",
+    ]
 
 
 def test_run_evals_supports_scenario_filter() -> None:
@@ -147,5 +176,6 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
     assert payload["proposal_telemetry"]["returnedProposalCount"] == 11
     assert sorted(payload["proposal_keys"]) == sorted(payload["candidate_keys"])
     assert payload["omitted_candidate_keys"] == []
+    assert payload["command"]["argv"][-1] == "--json"
     assert (output_dir / "latest.json").is_file()
     assert (output_dir / "latest.md").is_file()

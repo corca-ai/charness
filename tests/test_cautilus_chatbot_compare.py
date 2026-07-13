@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+
+from tests.script_main import load_script_module
 
 from .test_quality_artifact import cautilus_supports, run_script
 
@@ -15,6 +18,38 @@ requires_cautilus = pytest.mark.skipif(
     ),
     reason="cautilus with the `discover scenarios propose` and `evaluate comparison prepare` surfaces is required for live chatbot comparison eval tests",
 )
+
+_CHATBOT_COMPARE = load_script_module(
+    "eval_cautilus_chatbot_compare_for_test",
+    Path(__file__).resolve().parents[1] / "scripts" / "eval_cautilus_chatbot_compare.py",
+)
+
+
+def test_chatbot_compare_prepare_requests_json_output(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run(argv, **kwargs):
+        captured["argv"] = argv
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({
+                "baseline": {"path": str(tmp_path / "baseline")},
+                "candidate": {"path": str(tmp_path / "candidate")},
+            }),
+            stderr="",
+        )
+
+    monkeypatch.setattr(_CHATBOT_COMPARE.subprocess, "run", fake_run)
+    baseline, candidate = _CHATBOT_COMPARE.resolve_repo_pair(
+        repo_root=tmp_path,
+        baseline_repo=None,
+        candidate_repo=None,
+        baseline_ref="HEAD",
+    )
+
+    assert baseline == (tmp_path / "baseline").resolve()
+    assert candidate == (tmp_path / "candidate").resolve()
+    assert captured["argv"][-1] == "--json"
 
 
 @requires_cautilus

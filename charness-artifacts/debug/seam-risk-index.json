@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 83,
-  "indexed_artifact_count": 71,
+  "source_artifact_count": 84,
+  "indexed_artifact_count": 72,
   "risk_class_counts": {
     "contract-freeze-risk": 25,
-    "external-seam": 2,
+    "external-seam": 4,
     "host-disproves-local": 2,
-    "none": 21,
+    "none": 20,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 64,
+    "monitor": 65,
     "none": 4
   },
   "entries": [
@@ -1000,18 +1000,32 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "custom-home-claude-subprocess-state",
+      "artifact_path": "charness-artifacts/debug/2026-07-14-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "pre-release-advisory-integration",
       "risk_classes": [
-        "none"
+        "external-seam"
       ],
-      "seam": "explicit Charness home root to Claude plugin subprocess environment",
+      "seam": "installed Cautilus schema and output defaults consumed by integration scripts",
       "generalization_pressure": "monitor",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "none",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-14-cautilus-structured-output-compatibility.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "pre-release-advisory-integration",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "installed Cautilus schema and output defaults consumed by integration scripts",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-14-cautilus-structured-output-compatibility.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [

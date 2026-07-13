@@ -25,7 +25,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "retro structural cause contract",
           "threadKey": "dogfood-retro-structural-cause",
           "observedAt": "2026-04-19T00:30:00.000Z",
@@ -57,7 +57,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "quality proof layering contract",
           "threadKey": "dogfood-quality-proof-layering",
           "observedAt": "2026-04-19T00:10:00.000Z",
@@ -89,7 +89,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "critique canonical subagent contract",
           "threadKey": "dogfood-critique-canonical-subagent",
           "observedAt": "2026-04-19T01:00:00.000Z",
@@ -121,7 +121,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "handoff workflow trigger contract",
           "threadKey": "dogfood-handoff-workflow-trigger",
           "observedAt": "2026-04-19T00:50:00.000Z",
@@ -153,7 +153,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "setup partial normalization contract",
           "threadKey": "dogfood-setup-partial-normalization",
           "observedAt": "2026-04-18T20:05:00.000Z",
@@ -249,7 +249,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "debug diagnosis before repair",
           "threadKey": "dogfood-debug-exact-symptom-before-fix",
           "observedAt": "2026-04-18T16:10:00.000Z",
@@ -281,7 +281,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "release real-host proof boundary",
           "threadKey": "dogfood-release-real-host-proof",
           "observedAt": "2026-04-18T16:20:00.000Z",
@@ -313,7 +313,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "hitl bounded review loop",
           "threadKey": "dogfood-hitl-bounded-review-loop",
           "observedAt": "2026-04-18T16:30:00.000Z",
@@ -345,7 +345,7 @@
       ],
       "evidence": [
         {
-          "sourceKind": "skill_contract",
+          "sourceKind": "skill_evaluation",
           "title": "gather official path before browser fallback",
           "threadKey": "dogfood-gather-official-path-before-browser",
           "observedAt": "2026-04-19T00:20:00.000Z",

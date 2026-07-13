@@ -1,0 +1,42 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-13T22:55:35Z",
+  "prepared_for": "v1.0.5 advisory closeout and patch release",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/quality/2026-07-14-quality-review.md\n- evals/cautilus/chatbot-scenario-proposal-inputs.json\n- plugins/charness/scripts/boundary-bypass-exemptions.txt\n- plugins/charness/scripts/eval_cautilus_chatbot_compare.py\n- plugins/charness/scripts/eval_cautilus_chatbot_proposals.py\n- scripts/boundary-bypass-exemptions.txt\n- scripts/eval_cautilus_chatbot_compare.py\n- scripts/eval_cautilus_chatbot_proposals.py\n- tests/quality_gates/test_dup_ratchet.py\n- tests/quality_gates/test_python_and_security_gates.py\n- tests/quality_gates/test_run_slice_closeout_surface_obligations.py\n- tests/test_cautilus_chatbot_compare.py\n- tests/test_cautilus_eval_commands.py\n- charness-artifacts/debug/2026-07-14-debug-review.md\n- charness-artifacts/quality/history/2026-07-14-open-issue-resolution-proof.md\n- charness-artifacts/release/2026-07-14-v1.0.5-notes.md\n- charness-artifacts/spec/2026-07-14-cautilus-structured-output-compatibility.md\n- tests/quality_gates/test_dup_ratchet_scoped_rebaseline.py\n- tests/quality_gates/test_python_length_gates.py\n- tests/quality_gates/test_run_slice_closeout_review_obligations.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/boundary-bypass-exemptions.txt, scripts/eval_cautilus_chatbot_compare.py, scripts/eval_cautilus_chatbot_proposals.py\n  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/eval_cautilus_chatbot_compare.py, plugins/charness/scripts/eval_cautilus_chatbot_proposals.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/quality/2026-07-14-quality-review.md, charness-artifacts/debug/2026-07-14-debug-review.md, charness-artifacts/quality/history/2026-07-14-open-issue-resolution-proof.md, charness-artifacts/release/2026-07-14-v1.0.5-notes.md, charness-artifacts/spec/2026-07-14-cautilus-structured-output-compatibility.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- cautilus-chatbot-proposals: Checked-in long-context chatbot proposal packets and their current-pointer artifacts.\n  source matches: evals/cautilus/chatbot-scenario-proposal-inputs.json, scripts/eval_cautilus_chatbot_proposals.py\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root .\n- cautilus-chatbot-benchmark: A/B comparison runner and current-pointer artifacts for long-context chatbot proposal benchmarking.\n  source matches: scripts/eval_cautilus_chatbot_compare.py, scripts/eval_cautilus_chatbot_proposals.py\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root .\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/debug/2026-07-14-debug-review.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/eval_cautilus_chatbot_compare.py, plugins/charness/scripts/eval_cautilus_chatbot_proposals.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/eval_cautilus_chatbot_compare.py, scripts/eval_cautilus_chatbot_proposals.py, tests/quality_gates/test_dup_ratchet.py, tests/quality_gates/test_python_and_security_gates.py, tests/quality_gates/test_run_slice_closeout_surface_obligations.py, tests/test_cautilus_chatbot_compare.py, tests/test_cautilus_eval_commands.py, tests/quality_gates/test_dup_ratchet_scoped_rebaseline.py, tests/quality_gates/test_python_length_gates.py, tests/quality_gates/test_run_slice_closeout_review_obligations.py\n  derived matches: plugins/charness/scripts/eval_cautilus_chatbot_compare.py, plugins/charness/scripts/eval_cautilus_chatbot_proposals.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/eval_cautilus_chatbot_compare.py, scripts/eval_cautilus_chatbot_proposals.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "medium",
+      "service_tier": "priority"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  }
+}
