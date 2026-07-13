@@ -13,11 +13,12 @@ continuation run.
 
 ## Active Operating Frame
 
-- Current slice: Slice C — reject invalid issue target before remote preflight.
-- Current slice intent: preserve invalid-adapter precedence and exact rc/payload,
-  while preventing a deterministic usage error from paying GitHub auth latency.
-- Next action: commit the completed test-spy slice, then delegate the issue
-  ordering repair and its in-process plus CLI regression proof.
+- Current slice: Slice C2 — Codex cache payload proof below the CLI boundary.
+- Current slice intent: replace duplicated full-update payload assertions with
+  existing in-process cache helpers while retaining the official app-server
+  refresh smoke and one real update wiring path.
+- Next action: close out and commit the issue-ordering repair, then have a
+  lower-power worker prove whether the bounded cache test move is honest.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -124,7 +125,8 @@ independently verified release.
 | --- | --- | --- | --- | --- |
 | A | Measure the current quality and runtime-test posture | Start from repo-owned evidence rather than backlog intuition | planner packets, runtime summary, focused inventories, candidate ledger | complete |
 | B | Implement the highest-leverage reproduced bug or structural seam | Reversible work should serve an observed escape/cost | focused regression proof, before/after signal, code critique, commit | complete |
-| C | Probe independent test-speed, portability, security, and operator lenses | Counter implementation anchoring and admit only supported work | distinct-lens admit/defer/no-change decisions; optional second clean slice | in progress |
+| C | Probe independent test-speed, portability, security, and operator lenses | Counter implementation anchoring and admit only supported work | distinct-lens admit/defer/no-change decisions; optional second clean slice | complete |
+| C2 | Move duplicated Codex cache payload proof below the CLI boundary | Serial timing found 4.4-5.7s update scenarios around existing pure helpers | same-command focused before/after, retained real-boundary smoke, critique | pending |
 | D | Freeze and verify the full bundle | Prevent local greens from becoming release confidence | quality artifact, bundle critique, verification lock, release dry-run | pending |
 | E | Push and publish | User-authorized irreversible boundary | remote/tag/release reads, HTTPS second-observer proof, install/doctor evidence | pending |
 
@@ -246,6 +248,20 @@ applies.
 - Off-goal findings: Managed-install and Codex cache boundary refactors remain deferred; no production quality-runner defect claimed.
 - Lessons carried forward: A test double should model the call contract at the cheapest honest layer; separately owned direct tests keep implementation fidelity.
 - Metrics: focused 19.5s -> 5.81s, about 70 percent faster; combined 38 tests 14.17s.
+
+### Slice 3: Slice C — local issue misuse before remote preflight
+
+- Objective: Return the existing resolve-target usage error before backend/auth preflight while preserving adapter precedence and valid paths.
+- Why this approach: A standing test measured 5.48s because deterministic invalid input paid live GitHub auth latency; fake delay proved the remote probe was the cause.
+- Commits: pending
+- What changed: Moved the resolve+target guard after invalid-adapter handling and before resolve_backend; synced public issue source to plugin mirror; added exact in-process no-call regression and host-independent subprocess fixture; resolved the debug record.
+- Alternatives rejected: Rejected changing valid preflight behavior, moving validation into the backend, adding broad parse audits, and duplicating exact payload assertions across both test layers.
+- Targeted verification: 48 focused issue tests passed in 3.49s; the formerly slow target case no longer appears above 0.09s in the module durations; ruff, source/plugin cmp, packaging validators, and boundary escalation check passed.
+- Test duplication pressure: One focused in-process regression added; existing subprocess regression stabilized. Intent remains visible at both seam and public CLI layers; no broad duplicate gate pressure observed.
+- Critique: Full public-skill code critique: two angles plus separate counterweight APPROVE with no Act Before Ship findings; optional intersection test classified valid-but-defer and duplicate subprocess exactness over-worry; every reviewer fingerprint verified zero drift.
+- Off-goal findings: Broader issue CLI local-error ordering audit is diagnostic-only; #433/#436 lifecycle untouched.
+- Lessons carried forward: Deterministic local usage errors belong after configuration-shape validation but before provider readiness; prove absence with a no-call sentinel, not timing alone.
+- Metrics: host invalid command ~0.48s, immediate fake gh ~0.07s, fake 2s auth 2.10s before repair; focused suite 48 passed in 3.49s.
 
 ## Context Sources
 

@@ -199,3 +199,47 @@ def test_issue_plan_new_command_builds_new_plan(tmp_path: Path) -> None:
     assert emitted[0]["target"]["full_name"] == "corca-ai/demo"
     assert emitted[0]["adapter"]["feature_brief_pause"] == "on-open-decisions"
     assert emitted[0]["required_reads"][0]["path"] == "references/issue-shaping.md"
+
+
+def test_issue_plan_resolve_target_rejection_precedes_backend_preflight(tmp_path: Path) -> None:
+    module = runpy.run_path(str(ROOT / PLAN_SCRIPT))
+    emitted: list[dict[str, object]] = []
+
+    def unexpected(_repo_root: Path) -> object:
+        raise AssertionError("backend resolution should not run for an ignored resolve target")
+
+    def unexpected_preflight(_resolved: object) -> object:
+        raise AssertionError("backend preflight should not run for an ignored resolve target")
+
+    def unexpected_invocation(*_args: object) -> object:
+        raise AssertionError("resolve invocation should not run for an ignored target")
+
+    rc = module["command_plan"](
+        Namespace(repo_root=tmp_path, intent="resolve", target="corca-ai/other", values=["42"]),
+        adapter_module=SimpleNamespace(
+            load_adapter=lambda _repo_root: {
+                "valid": True,
+                "path": ".agents/issue-adapter.yaml",
+                "data": {},
+            },
+            DEFAULT_FEATURE_BRIEF_PAUSE="on-open-decisions",
+        ),
+        runtime_module=SimpleNamespace(),
+        brief_module=SimpleNamespace(build_invocation_payload=unexpected_invocation),
+        backend_module=SimpleNamespace(build_preflight_payload=unexpected_preflight),
+        resolve_backend=unexpected,
+        emit=emitted.append,
+    )
+
+    assert rc == 2
+    assert emitted == [
+        {
+            "ok": False,
+            "error": "`--target` is only valid with `--intent new`; pass resolve repo/selector as positional values",
+            "adapter": {
+                "valid": True,
+                "path": ".agents/issue-adapter.yaml",
+                "data": {},
+            },
+        }
+    ]

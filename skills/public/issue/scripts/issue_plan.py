@@ -204,23 +204,23 @@ def command_plan(
 ) -> int:
     repo_root = args.repo_root.resolve()
     adapter = adapter_module.load_adapter(repo_root)
-    resolved = resolve_backend(repo_root)
-    preflight = backend_module.build_preflight_payload(resolved)
     if not adapter["valid"]:
         emit({"ok": False, "adapter": adapter, "next_action": _ENVELOPE.next_action("repair_issue_adapter")})
         return 1
+    if args.intent == "resolve" and args.target:
+        emit({
+            "ok": False,
+            "error": "`--target` is only valid with `--intent new`; pass resolve repo/selector as positional values",
+            "adapter": adapter,
+        })
+        return 2
+    resolved = resolve_backend(repo_root)
+    preflight = backend_module.build_preflight_payload(resolved)
     try:
         if args.intent == "new":
             target = runtime_module.resolve_target(repo_root, args.target, adapter["data"])
             payload = build_new_plan(repo_root, target, adapter, preflight)
         else:
-            if args.target:
-                emit({
-                    "ok": False,
-                    "error": "`--target` is only valid with `--intent new`; pass resolve repo/selector as positional values",
-                    "adapter": adapter,
-                })
-                return 2
             invocation = brief_module.build_invocation_payload(
                 repo_root,
                 args.values,

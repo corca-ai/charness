@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 79,
-  "indexed_artifact_count": 67,
+  "source_artifact_count": 80,
+  "indexed_artifact_count": 68,
   "risk_class_counts": {
     "contract-freeze-risk": 24,
     "external-seam": 2,
     "host-disproves-local": 2,
-    "none": 18,
+    "none": 19,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 59,
-    "none": 5
+    "monitor": 61,
+    "none": 4
   },
   "entries": [
     {
@@ -916,6 +916,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-13-debug-review-followup-2.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-invalid-target-preflight-order",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "parsed CLI arguments to GitHub backend preflight",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-13-debug-review-followup.md",
       "is_current_pointer": false,
       "interrupt_id": "standing-pytest-root-lockfile-attribution",
@@ -946,13 +960,13 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "standing-pytest-root-lockfile-attribution",
+      "interrupt_id": "issue-invalid-target-preflight-order",
       "risk_classes": [
         "none"
       ],
-      "seam": "local command to caller worktree",
-      "generalization_pressure": "none",
-      "critique_required": false,
+      "seam": "parsed CLI arguments to GitHub backend preflight",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false

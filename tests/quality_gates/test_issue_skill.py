@@ -697,6 +697,7 @@ def test_issue_plan_resolve_rejects_ignored_target_flag(tmp_path: Path) -> None:
         "corca-ai/other",
         "--",
         "42",
+        env=fake_gh_env(tmp_path),
     )
 
     assert result.returncode == 2
