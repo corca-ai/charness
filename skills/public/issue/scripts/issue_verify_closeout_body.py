@@ -7,6 +7,13 @@ and the closing-keyword scanner; no IO and no subprocess.
 from __future__ import annotations
 
 import re
+import runpy
+from pathlib import Path
+
+_load_local = runpy.run_path(
+    str(Path(__file__).resolve().parent / "issue_local_import.py")
+)["sibling_loader"](__file__)
+_strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
 
 _CLOSING_KEYWORD_LAUNCH_RE = re.compile(
     r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
@@ -106,18 +113,6 @@ AI_PROVENANCE_MARKER = (
     "AI-provenance: agent-drafted via charness issue resolve; "
     "human-audited per the resolution critique"
 )
-
-
-def _strip_code_fences(text: str) -> list[str]:
-    lines: list[str] = []
-    in_fence = False
-    for line in text.splitlines():
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
-            continue
-        if not in_fence:
-            lines.append(line)
-    return lines
 
 
 def _normalize_field_name(value: str) -> str:

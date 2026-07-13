@@ -70,6 +70,7 @@ evaluate_hotl_dispositions = _BODY.evaluate_hotl_dispositions
 evaluate_ai_provenance = _BODY.evaluate_ai_provenance
 FLOOR_EXEMPT_CLASSIFICATIONS = _BODY.FLOOR_EXEMPT_CLASSIFICATIONS
 review_advisory_for_classification = _BODY.review_advisory_for_classification
+strip_code_fences = _BODY._strip_code_fences
 
 
 def _read_carrier_body(repo_root: Path, *, carrier: str, commit_ref: str | None, body_file: Path | None) -> str:

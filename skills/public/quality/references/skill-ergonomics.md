@@ -30,8 +30,9 @@ Stable review topics emitted by `inventory_skill_ergonomics.py`:
 - Would a cold reader know when to use this skill instead of a nearby one, or
   is there trigger overlap / undertrigger risk?
 - If this is a support skill hidden from the public list, can installed skill
-  metadata/model judgment locate it, with `charness catalog list --repo-root .
-  --json` available only for hidden availability facts?
+  metadata/model judgment locate it, with
+  `charness catalog list --repo-root . --json` available only for hidden
+  availability facts?
 - Does the skill still rely on repeated prose ritual where a helper script or
   validator should own the behavior?
 - Do validators pin exact prose because it is truly load-bearing classifier

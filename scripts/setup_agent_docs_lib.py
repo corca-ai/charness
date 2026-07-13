@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import Any, Callable
 
@@ -11,12 +10,16 @@ from scripts.setup_agent_docs_fresh_eye_lib import (
 )
 from scripts.setup_artifact_policy_lib import detect_charness_artifact_policy
 from scripts.setup_commit_discipline_lib import detect_commit_discipline_policy
+from scripts.setup_markdown_section_lib import extract_section
+from scripts.setup_skill_routing_lib import (
+    COMPACT_SKILL_ROUTING_CALL_RE,
+    COMPACT_SKILL_ROUTING_NEGATED_CALL_RE,
+    skill_routing_semantically_complete,
+)
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
 CRITIQUE_ADAPTER_RELATIVE_PATH = Path(".agents/critique-adapter.yaml")
-COMPACT_SKILL_ROUTING_CALL_RE = re.compile(r"\b(charness\s+catalog|catalog\s+list)\b")
-COMPACT_SKILL_ROUTING_NEGATED_CALL_RE = re.compile(r"\b(do not|don't|never)\s+(run|use)\s+.*catalog")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,
@@ -69,24 +72,6 @@ def _case_insensitive_path(repo_root: Path, relative_path: Path) -> Path:
 
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
-
-
-def _extract_section(text: str, heading: str) -> str:
-    lines = text.splitlines()
-    target = heading.strip().lower()
-    start: int | None = None
-    for index, line in enumerate(lines):
-        if line.strip().lower() == target:
-            start = index + 1
-            break
-    if start is None:
-        return ""
-    end = len(lines)
-    for index in range(start, len(lines)):
-        if lines[index].startswith("## "):
-            end = index
-            break
-    return "\n".join(lines[start:end])
 
 
 def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
@@ -300,7 +285,7 @@ def _detect_skill_routing_normalization(
     expected_markdown = str(payload.get("markdown", ""))
     missing_expected_snippets: list[str] = []
     matches_compact_block = bool(expected_markdown and expected_markdown in agents_text)
-    section_body = _extract_section(agents_text, "## Skill Routing") if has_skill_routing else ""
+    section_body = extract_section(agents_text, "## Skill Routing") if has_skill_routing else ""
     section_lower = section_body.lower()
     catalog_available = True
     compact_discovery_first_present = any(
@@ -311,12 +296,19 @@ def _detect_skill_routing_normalization(
         and ("catalog" in line or "capability" in line or "route" in line)
         for line in section_lower.splitlines()
     )
+    semantically_complete = skill_routing_semantically_complete(section_body)
     accepts_compact_discovery_first = (
-        has_skill_routing and not matches_compact_block and catalog_available and compact_discovery_first_present
+        has_skill_routing
+        and not matches_compact_block
+        and catalog_available
+        and (compact_discovery_first_present or semantically_complete)
     )
     recommended_action = str(payload.get("recommended_action", "inspect_manually"))
     decision_needed: str | None = None
     findings: list[dict[str, str]] = []
+
+    if matches_compact_block or accepts_compact_discovery_first:
+        recommended_action = "leave_as_is"
 
     if has_skill_routing and expected_markdown and not matches_compact_block and not accepts_compact_discovery_first:
         expected_lines = tuple(line for line in expected_markdown.splitlines() if line.strip() and line != "## Skill Routing")
@@ -335,6 +327,7 @@ def _detect_skill_routing_normalization(
         {
             "has_skill_routing": has_skill_routing,
             "matches_compact_block": matches_compact_block,
+            "semantically_complete": semantically_complete,
             "accepts_compact_discovery_first": accepts_compact_discovery_first,
             "catalog_available": catalog_available,
             "recommended_action": recommended_action,

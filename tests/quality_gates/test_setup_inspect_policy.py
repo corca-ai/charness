@@ -718,6 +718,40 @@ def test_setup_inspect_accepts_compact_discovery_first_skill_routing(tmp_path: P
     assert "skill_routing_block_custom_or_drifted" not in finding_types
 
 
+def test_setup_inspect_accepts_expanded_semantically_complete_skill_routing(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Skill Routing",
+                "",
+                "At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment.",
+                "When hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo> --json` inventory.",
+                "If the SessionStart hook is installed it may inject this context; it remains context-only, not a classifier.",
+                "External URLs or source links that should become working context route through `gather` before deciding from them.",
+                "Validation-shaped closeout and operator reading tests go through `quality` first.",
+                "After verification passes for task-completing repo work, commit before answering follow-up usage/status questions.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    skill_routing = normalization["skill_routing"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    assert skill_routing["matches_compact_block"] is False
+    assert skill_routing["semantically_complete"] is True
+    assert skill_routing["recommended_action"] == "leave_as_is"
+    assert skill_routing["decision_needed"] is None
+    assert skill_routing["missing_expected_snippets"] == []
+    assert "skill_routing_block_custom_or_drifted" not in finding_types
+
+
 def test_setup_inspect_emits_policy_source_recommendation_without_agents_marker(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")

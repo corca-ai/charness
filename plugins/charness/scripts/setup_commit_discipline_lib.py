@@ -34,6 +34,10 @@ COMMIT_DISCIPLINE_NOT_DONE_SNIPPETS = (
     "remains uncommitted",
     "left uncommitted",
 )
+COMMIT_DISCIPLINE_TASK_BOUNDARY_SNIPPETS = (
+    "after verification passes for task-completing repo work, commit before",
+    "commit before answering follow-up usage/status",
+)
 
 _WHITESPACE_RE = re.compile(r"\s+")
 
@@ -64,9 +68,11 @@ def commit_discipline_present(agents_text: str) -> bool:
     charness-artifacts/ commit-target policy does not falsely pass.
     """
 
-    return _has_any(agents_text, COMMIT_DISCIPLINE_SLICE_SNIPPETS) and _has_any(
+    classic_rule = _has_any(agents_text, COMMIT_DISCIPLINE_SLICE_SNIPPETS) and _has_any(
         agents_text, COMMIT_DISCIPLINE_NOT_DONE_SNIPPETS
     )
+    task_boundary_rule = _has_any(agents_text, COMMIT_DISCIPLINE_TASK_BOUNDARY_SNIPPETS)
+    return classic_rule or task_boundary_rule
 
 
 def detect_commit_discipline_policy(

@@ -608,6 +608,118 @@
       "note": "temporary scanner false-grouping suppression: two same-file functions have distinct contracts and consumers, while nose reports shared_lines=0 and removable=0 for semantic subdag overlap only",
       "reviewed_at": "2026-07-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1bac2c258fcda5ae",
+      "note": "five-line state-recording tail shared by two independent hook owners; a shared helper would couple hook lifecycles without owning their distinct payloads",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2826323f1e95a766",
+      "note": "one-line status delegate wrappers for two hook kinds; extracting the call would obscure the public names without reducing behavior duplication",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "43d64c0037d4c0a6",
+      "note": "standard five-line future/json/path typing import header in unrelated artifact and runtime-budget modules; not a shared behavior contract",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4caa2f2ef23871ab",
+      "note": "scanner reports zero shared lines across unrelated narrative and catalog-source control flow; there is no body to extract",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4d3ffbd0991be52a",
+      "note": "three-line direct-execution CLI import/bootstrap idiom across unrelated mutation and catalog tools; extraction would add bootstrap coupling",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "549a054b4552e20d",
+      "note": "six-line standard json/datetime/path import header shared by unrelated artifact and usage-record modules; not executable duplication",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5bdec49283c0883e",
+      "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6edaccbfec18eca5",
+      "note": "install and uninstall branches intentionally mirror state-file and result handling inside one standalone session-routing hook; symmetry is the lifecycle contract",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7722148e1daeefdc",
+      "note": "small frontmatter parsers remain local to dogfood and catalog-source owners because their validation and consumers differ; four shared parsing lines do not justify coupling",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7829f2db48725111",
+      "note": "two-line sibling-loader bootstrap in independently executable issue scripts; extraction would require importing before the loader can resolve local modules",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "98b8f8037638d203",
+      "note": "four-line environment-gated debug entrypoint idiom in two standalone SessionStart programs; local ownership prevents an every-session import dependency",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "abe665c6ff27d285",
+      "note": "critique parsing and closeout-body validation build similar result rows but own different grammars, error channels, and consumers; a callback abstraction would erase those contracts",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c53dd99b2f613e7b",
+      "note": "four-line hook result metadata tail is intentionally repeated between installer orchestration and the standalone session hook; payload ownership remains separate",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ceed7d71b2d8985f",
+      "note": "zero-shared-line fingerprint spanning eleven local UTC timestamp helpers; these tiny helpers preserve direct execution and domain-local naming",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d57cca2dff594954",
+      "note": "scanner reports zero shared lines between two distinct fresh-eye policy detectors in the same file; no common implementation body exists",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d7911c5fb9325bc2",
+      "note": "seven-line hook reconciliation branch is mirrored across installer and standalone runtime to preserve idempotent lifecycle behavior in both execution boundaries",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

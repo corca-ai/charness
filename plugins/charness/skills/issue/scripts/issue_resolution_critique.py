@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import runpy
 from pathlib import Path
 from typing import Any
 
@@ -29,18 +30,10 @@ _CRITIQUE_LINE = re.compile(
 _ISSUE_REF = re.compile(r"#(\d+)\b")
 _CRITIQUE_BLOCKED = re.compile(r"^blocked\s+(.+)$", re.IGNORECASE)
 CRITIQUE_REQUIRED_CLASSIFICATIONS = ("bug", "feature", "deferred-work")
-
-
-def _strip_code_fences(text: str) -> list[str]:
-    lines: list[str] = []
-    in_fence = False
-    for line in text.splitlines():
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
-            continue
-        if not in_fence:
-            lines.append(line)
-    return lines
+_load_local = runpy.run_path(
+    str(Path(__file__).resolve().parent / "issue_local_import.py")
+)["sibling_loader"](__file__)
+_strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
 
 
 def _critique_lines(body: str) -> list[dict[str, Any]]:

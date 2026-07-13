@@ -18,6 +18,9 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_ROUTING = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.setup_skill_routing_lib"
+)
 
 
 def _skill_roots() -> tuple[Path, Path | None]:
@@ -60,11 +63,17 @@ def _build_payload(repo_root: Path) -> dict[str, object]:
     markdown, listed_skill_ids = _render_skill_routing(public_skill_ids)
     has_skill_routing = "## Skill Routing" in agents_text
     matches_compact_block = bool(markdown and markdown in agents_text)
+    semantically_complete = bool(
+        has_skill_routing
+        and _ROUTING.agents_skill_routing_semantically_complete(agents_text)
+    )
     expected_lines = tuple(line for line in markdown.splitlines() if line.strip() and line != "## Skill Routing")
     missing_expected_snippets = [line for line in expected_lines if line not in agents_text] if has_skill_routing else []
+    if matches_compact_block or semantically_complete:
+        missing_expected_snippets = []
     if not agents.exists():
         action = "create_agents_with_skill_routing"
-    elif matches_compact_block:
+    elif matches_compact_block or semantically_complete:
         action = "leave_as_is"
     elif has_skill_routing:
         action = "review_existing_skill_routing"
@@ -77,6 +86,7 @@ def _build_payload(repo_root: Path) -> dict[str, object]:
         "agents_path": "AGENTS.md",
         "agents_has_skill_routing": has_skill_routing,
         "skill_routing_matches_compact_block": matches_compact_block,
+        "skill_routing_semantically_complete": semantically_complete,
         "missing_expected_snippets": missing_expected_snippets,
         "recommended_action": action,
         "skill_routing_mode": "compact",

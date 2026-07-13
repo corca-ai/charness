@@ -93,6 +93,21 @@ def test_greenfield_template_passes_inspector(tmp_path: Path) -> None:
     assert "commit_discipline_drift" not in finding_types
 
 
+def test_inspect_accepts_task_completion_commit_boundary(tmp_path: Path) -> None:
+    body = _agents(
+        _SKILL_ROUTING_BLOCK,
+        "Treat meaningful `charness-artifacts/` changes as repo state and commit them with the work they support.\n"
+        "After verification passes for task-completing repo work, commit before answering follow-up usage/status questions.",
+    )
+
+    normalization = _detect(tmp_path / "repo", body)
+
+    assert normalization["commit_discipline"]["commit_discipline_present"] is True
+    assert "commit_discipline_drift" not in {
+        finding["type"] for finding in normalization["findings"]
+    }
+
+
 def test_inspect_flags_goal_routing_without_commit_discipline(tmp_path: Path) -> None:
     # Acceptance (2): an AGENTS.md that carries Charness goal/skill routing but no
     # commit-discipline rule is flagged STALE (never rewritten) so the operator is

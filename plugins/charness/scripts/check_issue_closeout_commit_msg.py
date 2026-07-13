@@ -55,18 +55,6 @@ def _strip_commit_comments(body: str) -> str:
     return "\n".join(line for line in body.splitlines() if not _COMMENT_LINE_RE.match(line)).strip() + "\n"
 
 
-def _strip_code_fences(body: str) -> str:
-    lines: list[str] = []
-    in_fence = False
-    for line in body.splitlines():
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
-            continue
-        if not in_fence:
-            lines.append(line)
-    return "\n".join(lines)
-
-
 def _bare_close_keyword_numbers(sanitized_body: str, covered: set[int], iter_refs: Any) -> list[int]:
     """Issue numbers the commit message itself close-keywords, minus numbers
     already covered by a staged closeout artifact.
@@ -93,12 +81,12 @@ def _bare_close_keyword_numbers(sanitized_body: str, covered: set[int], iter_ref
     return sorted(number for number in found if number not in covered)
 
 
-def _issue_closeout_artifacts(repo_root: Path, iter_refs: Any) -> list[dict[str, Any]]:
+def _issue_closeout_artifacts(repo_root: Path, iter_refs: Any, strip_code_fences: Any) -> list[dict[str, Any]]:
     artifacts: list[dict[str, Any]] = []
     for path in _staged_paths(repo_root):
         if not (path.startswith("charness-artifacts/issue/") and path.endswith(".md")):
             continue
-        body = _strip_code_fences(_staged_file(repo_root, path))
+        body = "\n".join(strip_code_fences(_staged_file(repo_root, path)))
         numbers = sorted({number for _repo, number in iter_refs(body)})
         if not numbers:
             continue
@@ -174,7 +162,11 @@ def _exemption_advisories(reports: list[dict[str, Any]], advisory_fn: Any) -> li
 def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any]:
     issue_verify_closeout = _load_issue_verify_closeout()
     iter_refs = issue_verify_closeout.iter_close_keyword_refs
-    artifacts = _issue_closeout_artifacts(repo_root, iter_refs)
+    artifacts = _issue_closeout_artifacts(
+        repo_root,
+        iter_refs,
+        issue_verify_closeout.strip_code_fences,
+    )
     commit_msg_file = commit_msg_file.resolve()
     raw_body = commit_msg_file.read_text(encoding="utf-8")
     sanitized_body = _strip_commit_comments(raw_body)

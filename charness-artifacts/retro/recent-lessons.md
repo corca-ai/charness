@@ -3,18 +3,18 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v0.66.0`. (source: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`; sources: 2)
-- This session removed the public `find-skills` workflow and its free-text recommendation engine, retained the session hook as a small compatibility surface, and introduced a deterministic capability catalog for hidden support and integration inventory. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
+- Release publish triggered a configured automatic session retro for `v1.0.0`. (source: `charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`; sources: 82)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md`; sources: 83)
 - A manual changed-line consumer call omitted `--reuse-coverage` and used a tag label instead of the producer's resolved merge-base SHA. It reran 4,575 tests sequentially, generated a 2.8 GB contexts JSON, and still produced a stale-base warning. The focused producer plus exact marker later reduced this to seconds. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 - `inventory_sloc.py --output` is declared as a verify command even though it writes tracked state. Artifact edits therefore caused repeated post-proof SLOC drift and extra commits before the lock could bind to a clean HEAD. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
 - Several reviewer envelopes were not behaviorally binding: one reviewer spawned an unauthorized child and an earlier worker committed despite a no-commit brief. Fingerprint verification quarantined those approvals, but replacement reviews cost extra turns. (source: `charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`; sources: 82)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md`; sources: 83)
 - bind this distinction into the v1 critique and release notes so future compatibility cuts do not reintroduce a shim to solve cleanup. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
 - every breaking removal plan must separate supported inputs, active internal names, historical evidence, and one-way deletion of already-owned external state before mutation. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
 - for future public-surface removal, lock a five-bucket matrix before mutation: active contract, generated export, compatibility alias, history, and external installed state. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
@@ -112,4 +112,5 @@
 - `charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md`
 - `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`
 - `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`
+- `charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`

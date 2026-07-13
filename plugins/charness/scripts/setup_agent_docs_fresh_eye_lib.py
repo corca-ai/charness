@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 
+from scripts.setup_markdown_section_lib import extract_section
+
 FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "critique", "subagent review", "subagent reviews")
 FRESH_EYE_STALE_MARKERS = ("explicit consent", "local fallback")
 FRESH_EYE_SECTION_HEADING = "## Subagent Delegation"
@@ -75,26 +77,8 @@ def _deferred_reconsent_matches(text: str) -> list[str]:
     ]
 
 
-def _extract_section(text: str, heading: str) -> str:
-    lines = text.splitlines()
-    target = heading.strip().lower()
-    start: int | None = None
-    for index, line in enumerate(lines):
-        if line.strip().lower() == target:
-            start = index + 1
-            break
-    if start is None:
-        return ""
-    end = len(lines)
-    for index in range(start, len(lines)):
-        if lines[index].startswith("## "):
-            end = index
-            break
-    return "\n".join(lines[start:end])
-
-
 def fresh_eye_compact_contract_present(agents_text: str) -> bool:
-    section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING)
+    section_body = extract_section(agents_text, FRESH_EYE_SECTION_HEADING)
     section_lower = _normalize_whitespace(section_body).lower()
     same_agent_forbidden = any(
         _normalize_whitespace(snippet).lower() in section_lower
@@ -132,7 +116,7 @@ def detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object],
         and LEGACY_TASK_REVIEW_SCOPE_SNIPPET in lowered
     )
     stale_markers = [marker for marker in FRESH_EYE_STALE_MARKERS if marker in lowered]
-    section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING) if has_subagent_delegation_section else ""
+    section_body = extract_section(agents_text, FRESH_EYE_SECTION_HEADING) if has_subagent_delegation_section else ""
     weakening_caveats_detected = _deferred_reconsent_matches(section_body) if section_body else []
     findings: list[dict[str, str]] = []
     if stop_gate_detected and missing_required:
