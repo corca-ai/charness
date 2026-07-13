@@ -65,31 +65,6 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     assert refreshed_manifest.is_file()
     assert json.loads(refreshed_manifest.read_text(encoding="utf-8"))["version"] == CURRENT_VERSION
 
-
-@pytest.mark.release_only
-def test_charness_update_emits_session_staleness_when_cache_rotates(
-    tmp_path: Path, seeded_managed_home: dict[str, Path]
-) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    fake_codex = make_fake_codex(tmp_path)
-    env["PATH"] = build_test_path(fake_codex.parent)
-
-    config_path = home_root / ".codex" / "config.toml"
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    old_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "0.0.0-old" / ".codex-plugin" / "plugin.json"
-    old_manifest.parent.mkdir(parents=True, exist_ok=True)
-    old_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
-    third_party_manifest = (
-        home_root / ".codex" / "plugins" / "cache" / "openai-curated" / "github" / "cc8b2295" / ".codex-plugin" / "plugin.json"
-    )
-    third_party_manifest.parent.mkdir(parents=True, exist_ok=True)
-    third_party_manifest.write_text('{"version":"github-cc8b2295"}', encoding="utf-8")
-
-    update_result = run_cli("update", "--home-root", str(home_root), "--json", env=env)
-    assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
-
     staleness = payload.get("session_staleness")
     assert isinstance(staleness, dict), "expected session_staleness payload after cache rotation"
     rotated_pairs = {
@@ -103,27 +78,74 @@ def test_charness_update_emits_session_staleness_when_cache_rotates(
     assert "Restart" in (staleness.get("message") or "")
 
 
-@pytest.mark.release_only
-def test_charness_update_omits_session_staleness_when_cache_stable(
-    tmp_path: Path, seeded_managed_home: dict[str, Path]
-) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    fake_codex = make_fake_codex(tmp_path)
-    env["PATH"] = build_test_path(fake_codex.parent)
+def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
+    module = load_charness_module("charness_codex_cache_refresh_diff_under_test")
+    old_root = tmp_path / "cache" / "local" / "charness" / "0.0.0-old"
+    new_root = tmp_path / "cache" / "local" / "charness" / CURRENT_VERSION
+    old_root.mkdir(parents=True)
+    new_root.mkdir(parents=True)
+    old_root.rmdir()
+    third_party_root = tmp_path / "cache" / "openai-curated" / "github" / "cc8b2295"
+    third_party_root.mkdir(parents=True)
 
-    config_path = home_root / ".codex" / "config.toml"
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    same_version_manifest = (
-        home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION / ".codex-plugin" / "plugin.json"
-    )
-    same_version_manifest.parent.mkdir(parents=True, exist_ok=True)
-    same_version_manifest.write_text(json.dumps({"version": CURRENT_VERSION}), encoding="utf-8")
+    before = [
+        {
+            "marketplace": "local",
+            "plugin": "charness",
+            "version": "0.0.0-old",
+            "version_dir": str(old_root),
+            "manifest_path": str(old_root / ".codex-plugin" / "plugin.json"),
+            "manifest_version": "0.0.0-old",
+        },
+        {
+            "marketplace": "openai-curated",
+            "plugin": "github",
+            "version": "cc8b2295",
+            "version_dir": str(third_party_root),
+            "manifest_path": str(third_party_root / ".codex-plugin" / "plugin.json"),
+            "manifest_version": "github-cc8b2295",
+        },
+    ]
+    after = [
+        {
+            "marketplace": "local",
+            "plugin": "charness",
+            "version": CURRENT_VERSION,
+            "version_dir": str(new_root),
+            "manifest_path": str(new_root / ".codex-plugin" / "plugin.json"),
+            "manifest_version": CURRENT_VERSION,
+        },
+        before[1],
+    ]
 
-    update_result = run_cli("update", "--home-root", str(home_root), "--json", env=env)
-    assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
-    assert payload.get("session_staleness") is None
+    diff = module.diff_cache_entries(before, after)
+    assert diff["rotated"] == [
+        {
+            "marketplace": "local",
+            "plugin": "charness",
+            "old_version": "0.0.0-old",
+            "old_version_dir": str(old_root),
+            "new_version": CURRENT_VERSION,
+            "new_version_dir": str(new_root),
+        }
+    ]
+    payload = module.session_staleness_payload(diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo")
+    assert payload is not None
+    assert payload["affected"] == [f"local/charness 0.0.0-old -> {CURRENT_VERSION}"]
+    assert "Restart" in payload["message"]
+
+    stable_root = tmp_path / "cache" / "local" / "charness" / CURRENT_VERSION
+    stable = {
+        "marketplace": "local",
+        "plugin": "charness",
+        "version": CURRENT_VERSION,
+        "version_dir": str(stable_root),
+        "manifest_path": str(stable_root / ".codex-plugin" / "plugin.json"),
+        "manifest_version": CURRENT_VERSION,
+    }
+    stable_diff = module.diff_cache_entries([stable], [stable])
+    assert stable_diff == {"rotated": [], "removed": [], "added": []}
+    assert module.session_staleness_payload(stable_diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo") is None
 
 
 def test_session_staleness_without_cache_diff_returns_none(tmp_path: Path) -> None:

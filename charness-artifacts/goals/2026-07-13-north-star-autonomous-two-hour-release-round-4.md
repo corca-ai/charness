@@ -13,12 +13,12 @@ continuation run.
 
 ## Active Operating Frame
 
-- Current slice: Slice C2 — Codex cache payload proof below the CLI boundary.
-- Current slice intent: replace duplicated full-update payload assertions with
-  existing in-process cache helpers while retaining the official app-server
-  refresh smoke and one real update wiring path.
-- Next action: close out and commit the issue-ordering repair, then have a
-  lower-power worker prove whether the bounded cache test move is honest.
+- Current slice: Slice D — full-bundle quality and release lock.
+- Current slice intent: turn the admitted slices and lens non-changes into one
+  honest release-readiness record, adversarial critique, and clean verification
+  lock before any publication mutation.
+- Next action: close and commit the Codex cache speed slice, then run the final
+  distinct quality lenses and bundle proof.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -126,7 +126,7 @@ independently verified release.
 | A | Measure the current quality and runtime-test posture | Start from repo-owned evidence rather than backlog intuition | planner packets, runtime summary, focused inventories, candidate ledger | complete |
 | B | Implement the highest-leverage reproduced bug or structural seam | Reversible work should serve an observed escape/cost | focused regression proof, before/after signal, code critique, commit | complete |
 | C | Probe independent test-speed, portability, security, and operator lenses | Counter implementation anchoring and admit only supported work | distinct-lens admit/defer/no-change decisions; optional second clean slice | complete |
-| C2 | Move duplicated Codex cache payload proof below the CLI boundary | Serial timing found 4.4-5.7s update scenarios around existing pure helpers | same-command focused before/after, retained real-boundary smoke, critique | pending |
+| C2 | Move duplicated Codex cache payload proof below the CLI boundary | Serial timing found 4.4-5.7s update scenarios around existing pure helpers | same-command focused before/after, retained real-boundary smoke, critique | complete |
 | D | Freeze and verify the full bundle | Prevent local greens from becoming release confidence | quality artifact, bundle critique, verification lock, release dry-run | pending |
 | E | Push and publish | User-authorized irreversible boundary | remote/tag/release reads, HTTPS second-observer proof, install/doctor evidence | pending |
 
@@ -262,6 +262,20 @@ applies.
 - Off-goal findings: Broader issue CLI local-error ordering audit is diagnostic-only; #433/#436 lifecycle untouched.
 - Lessons carried forward: Deterministic local usage errors belong after configuration-shape validation but before provider readiness; prove absence with a no-call sentinel, not timing alone.
 - Metrics: host invalid command ~0.48s, immediate fake gh ~0.07s, fake 2s auth 2.10s before repair; focused suite 48 passed in 3.49s.
+
+### Slice 4: Slice C2 — Codex cache proof economics
+
+- Objective: Remove duplicated full-update cost while preserving official app-server, update-wiring, and actual rotation/staleness evidence.
+- Why this approach: The focused file measured 22.30s, with four update-boundary calls around behavior already exposed by pure cache helpers.
+- Commits: pending
+- What changed: Retained two real update tests; folded actual rotation/staleness assertions into the official refresh smoke; moved stable/no-diff and unrelated-cache assertions to diff_cache_entries/session_staleness_payload.
+- Alternatives rejected: Rejected mocking the app-server seam, removing the real rotation payload assertion, changing production, and adding the optional full-diff assertion after approval.
+- Targeted verification: Same focused command: 7 passed in 22.30s before; 6 passed in 14.02s parent run after (worker repeats 9.85-13.53s); ruff and diff check passed.
+- Test duplication pressure: Two redundant full update calls were removed, one pure helper scenario replaces them, and the distinct real-boundary assertions remain in one smoke.
+- Critique: Fresh-eye APPROVE on the frozen diff; reviewer fingerprint verified zero drift. A prior overlapping review was quarantined after fingerprint drift and supplies no approval.
+- Off-goal findings: Full-suite benchmark not claimed; managed-install serial costs remain deferred.
+- Lessons carried forward: When several scenarios pay the same slow boundary, keep one content-bearing boundary proof and move only directly owned pure transformations below it.
+- Metrics: focused 22.30s -> 14.02s parent confirmation (37%); fastest repeat 9.85s; test count 7 -> 6 with retained app-server and update wiring.
 
 ## Context Sources
 
