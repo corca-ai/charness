@@ -142,12 +142,6 @@ def write_unmanaged_resolver(repo: Path, skill_id: str) -> None:
 def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_minimal_resolver(repo, "quality", "charness-artifacts/quality")
-    write_minimal_resolver(
-        repo,
-        "find-skills",
-        "charness-artifacts/find-skills",
-        artifact_class="current",
-    )
     write_minimal_resolver(repo, "handoff", "docs", artifact_class="rolling")
     write_unmanaged_resolver(repo, "issue")
     (repo / "skills" / "public" / "create-cli").mkdir(parents=True)
@@ -157,9 +151,6 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     target = quality_dir / "2026-06-16-current-quality.md"
     target.write_text("# Quality\n", encoding="utf-8")
     (quality_dir / "latest.md").symlink_to(target.name)
-    find_skills_dir = repo / "charness-artifacts" / "find-skills"
-    find_skills_dir.mkdir(parents=True)
-    (find_skills_dir / "latest.md").write_text("# Find Skills\n", encoding="utf-8")
     cautilus_dir = repo / "charness-artifacts" / "cautilus"
     cautilus_dir.mkdir(parents=True)
     (cautilus_dir / "latest.md").write_text("# Cautilus\n", encoding="utf-8")
@@ -169,7 +160,7 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
 
     items = INVENTORY.inventory(
         repo,
-        selected=["quality", "find-skills", "handoff", "issue", "create-cli", "cautilus"],
+        selected=["quality", "handoff", "issue", "create-cli", "cautilus"],
         day=date(2026, 6, 16),
     )
 
@@ -179,8 +170,6 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     assert by_skill["quality"].write_artifact_path == (
         "charness-artifacts/quality/2026-06-16-current-quality.md"
     )
-    assert by_skill["find-skills"].artifact_class == "current"
-    assert by_skill["find-skills"].on_disk_layout == "regular_current_pointer"
     assert by_skill["handoff"].artifact_class == "rolling"
     assert by_skill["handoff"].on_disk_layout == "rolling_file"
     assert by_skill["issue"].status == "adapter_unmanaged"
@@ -498,34 +487,6 @@ def test_refresh_current_pointer_repoints_existing_symlink(tmp_path: Path) -> No
     payload = json.loads(result.stdout)
     assert payload["status"] == "updated"
     assert os.readlink(current) == "2026-04-15-quality-review.md"
-
-
-def test_refresh_current_pointer_blocks_current_class_records(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    write_minimal_resolver(repo, "find-skills", "charness-artifacts/find-skills", artifact_class="current")
-    artifact_dir = repo / "charness-artifacts" / "find-skills"
-    artifact_dir.mkdir(parents=True)
-    record = artifact_dir / "2026-04-15-find-skills.md"
-    record.write_text("# Find Skills\n", encoding="utf-8")
-
-    result = run_loaded_script_main(
-        "refresh_current_pointer.py",
-        refresh_current_pointer_module,
-        "--repo-root",
-        str(repo),
-        "--skill-id",
-        "find-skills",
-        "--record-artifact-path",
-        "charness-artifacts/find-skills/2026-04-15-find-skills.md",
-        "--execute",
-    )
-
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
-    assert payload["status"] == "blocked"
-    assert "does not support dated records" in payload["reason"]
-
-
 def test_invalid_artifact_class_fails_instead_of_defaulting_to_history(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_minimal_resolver(repo, "quality", "charness-artifacts/quality", artifact_class="typo")

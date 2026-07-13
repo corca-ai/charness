@@ -239,9 +239,7 @@
       "derived_paths": [
         "plugins/charness/skills/**",
         "plugins/charness/shared/**",
-        "plugins/charness/support/**",
-        "charness-artifacts/find-skills/latest.md",
-        "charness-artifacts/find-skills/latest.json"
+        "plugins/charness/support/**"
       ],
       "sync_commands": [],
       "verify_commands": [
@@ -254,6 +252,33 @@
         "Skill trigger contracts stay source-owned under skills/, not under plugins/.",
         "validate_skill_ergonomics.py is a fast structural checker (#314): portable-package issue anchors, dated incidents, and host-surface references fail at the commit boundary, not only at the broad/bundle quality gate.",
         "Cross-namespace mentions (charness-artifacts/<other>/, .agents/<other>-adapter.yaml) require an allowlist entry in scripts/check_skill_ownership_overlap.allowlist.txt with a written reason."
+      ]
+    },
+    {
+      "surface_id": "capability-catalog",
+      "description": "Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.",
+      "source_paths": [
+        "charness",
+        "scripts/capability_catalog.py",
+        "scripts/capability_catalog_artifact.py",
+        "scripts/capability_catalog_resolver.py",
+        "scripts/capability_catalog_sources.py"
+      ],
+      "derived_paths": [
+        "charness-artifacts/capability-catalog/latest.md",
+        "charness-artifacts/capability-catalog/latest.json",
+        "charness-artifacts/find-skills/latest.md",
+        "charness-artifacts/find-skills/latest.json"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 -m pytest -q tests/test_capability_catalog.py",
+        "python3 scripts/validate_current_pointer_freshness.py --repo-root .",
+        "python3 -m json.tool .agents/surfaces.json"
+      ],
+      "notes": [
+        "The legacy find-skills artifact paths are coverage-only retired outputs for migration/deletion matching; they are not regenerated.",
+        "Catalog list is read-only; refresh owns capability-catalog current-pointer writes and no-ops when semantic content is unchanged."
       ]
     },
     {
@@ -799,9 +824,9 @@
         "skills/public/quality/scripts/render_runtime_summary.py",
         "scripts/lint_ignore_inventory_lib.py",
         "scripts/check_python_lengths.py",
-        "skills/public/find-skills/scripts/list_capabilities_lib.py",
+        "scripts/capability_catalog_sources.py",
         "skills/public/quality/references/automation-promotion.md",
-        "skills/public/find-skills/references/discovery-order.md",
+        "scripts/capability_catalog_artifact.py",
         "skills/public/quality/references/gate-classification.md"
       ],
       "derived_paths": [],

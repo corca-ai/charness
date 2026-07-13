@@ -217,16 +217,16 @@ def run_setup_compact_skill_routing_discoverability(
                 "setup compact skill routing: unexpected mode source "
                 f"{compact.get('skill_routing_mode_source')!r}"
             )
-        if compact.get("listed_skill_ids") != ["find-skills"]:
+        if compact.get("listed_skill_ids") != []:
             raise error_type(
                 "setup compact skill routing: unexpected listed_skill_ids "
                 f"{compact.get('listed_skill_ids')!r}"
             )
         markdown = compact.get("markdown", "")
         expected_snippets = (
-            "At session start in this repo, route directly: a pickup follows docs/handoff.md",
-            "default map of installed public skills, support skills, synced support surfaces, and integrations",
-            "start the durable work skill that best matches",
+            "At session start, a pickup follows docs/handoff.md",
+            "charness catalog list --repo-root <repo> --json",
+            "installed skill metadata and model judgment",
         )
         for snippet in expected_snippets:
             if snippet not in markdown:

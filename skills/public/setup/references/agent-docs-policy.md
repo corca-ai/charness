@@ -28,7 +28,7 @@
   template below remains the safest copy-paste default, but validators should
   not force every consumer repo to keep the full rationale in root AGENTS.
 - when `<repo-root>/AGENTS.md` carries Charness goal/skill routing (a
-  `## Skill Routing` block that calls `find-skills`, or explicit Charness
+  `## Skill Routing` block that names installed skill metadata/catalog facts, or explicit Charness
   goal/achieve routing), it should carry a compact `## Commit Discipline` rule:
   commit meaningful implementation/workflow slices as they finish, keep commits
   scoped, and do not report a task-completing goal as done while meaningful work

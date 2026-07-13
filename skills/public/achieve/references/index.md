@@ -14,6 +14,6 @@ reference directly.
 - `references/goal-artifact.md` — artifact shape, helper scripts, active frame,
   metrics honesty, and producer contract.
 - `references/coordination.md` — boundaries with `impl`, `debug`, `quality`,
-  `issue`, `critique`, `retro`, `handoff`, and `find-skills` routing evidence.
+  `issue`, `critique`, `retro`, and `handoff` routing evidence.
 - `references/adapter-contract.md` — adapter lookup, publication defaults,
   issue-closeout carrier policy, and Auto-Retro disposition policy.

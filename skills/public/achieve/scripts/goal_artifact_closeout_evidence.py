@@ -331,7 +331,7 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # rung-1b skip on a subagent-blocked host still leaves the blank check active.
     apply_disposition_rungs(report, text, in_scope)
 
-    # Coordination floors: presence-only closeout evidence for find-skills
+    # Coordination floors: presence-only closeout evidence for owner-skill routing
     # routing boundaries the prose cue under-serves. Mirrors
     # the disposition floor — grandfathered by Created, block-the-blank at the
     # flip, explicit opt-out valve. Independent of the disposition scope (its own

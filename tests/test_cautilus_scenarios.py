@@ -75,11 +75,11 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     assert len(packet["evaluations"]) == len(cases["cases"])
 
     by_id = {item["evaluationId"]: item for item in packet["evaluations"]}
-    assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
+    assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "none"
     assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["workSkill"] == "impl"
-    assert by_id["compact-startup-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
+    assert by_id["compact-startup-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "none"
     assert by_id["compact-startup-bootstrap-before-impl"]["expectedRouting"]["workSkill"] == "impl"
-    assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
+    assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["bootstrapHelper"] == "none"
     assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["workSkill"] == "spec"
 
 

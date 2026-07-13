@@ -39,14 +39,14 @@ def _seed_state(repo: Path, entries: dict[str, dict[str, str]]) -> None:
 
 def test_registry_names_the_two_sibling_intents_in_payload_order() -> None:
     keys = [intent.key for intent in registry.SIBLING_HOOK_INTENTS]
-    assert keys == ["find_skills_routing", "skill_anchor_edit_guard"]
+    assert keys == ["session_routing", "skill_anchor_edit_guard"]
 
 
 def test_reconcile_host_hooks_payload_keys_match_pre_registry_shape(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
     home = _fake_home(tmp_path)
     actions = lib.reconcile_host_hooks(repo, adapter={}, home=home)
-    assert list(actions) == ["claude", "codex", "find_skills_routing", "skill_anchor_edit_guard"]
+    assert list(actions) == ["claude", "codex", "session_routing", "skill_anchor_edit_guard"]
 
 
 def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
@@ -64,7 +64,7 @@ def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
     actions = registry.reconcile_sibling_hooks(
         repo, adapter={}, home=home, intents=(*registry.SIBLING_HOOK_INTENTS, fourth)
     )
-    assert list(actions) == ["find_skills_routing", "skill_anchor_edit_guard", "hypothetical_fourth"]
+    assert list(actions) == ["session_routing", "skill_anchor_edit_guard", "hypothetical_fourth"]
 
 
 def test_sibling_reconcile_isolates_per_host_errors(tmp_path: Path, monkeypatch) -> None:
@@ -82,8 +82,8 @@ def test_sibling_reconcile_isolates_per_host_errors(tmp_path: Path, monkeypatch)
     monkeypatch.setattr(fs, "install_find_skills_claude_hook", _boom)
     adapter = {"find_skills_routing": {"claude": "enabled"}}
     actions = registry.reconcile_sibling_hooks(repo, adapter=adapter, home=home)
-    assert actions["find_skills_routing"]["claude"]["error"] == "boom"
-    assert "result" in actions["find_skills_routing"]["codex"]
+    assert actions["session_routing"]["claude"]["error"] == "boom"
+    assert "result" in actions["session_routing"]["codex"]
     assert "claude" in actions["skill_anchor_edit_guard"]
 
 

@@ -123,28 +123,28 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["candidate_count"] == 12
-    assert payload["proposal_count"] == 12
-    assert len(payload["candidate_keys"]) == 12
+    assert payload["candidate_count"] == 11
+    assert payload["proposal_count"] == 11
+    assert len(payload["candidate_keys"]) == 11
     assert payload["proposal_keys"][:5] == [
         "critique-canonical-subagent-followup",
         "handoff-workflow-trigger-followup",
-        "find-skills-canonical-artifact-followup",
         "retro-structural-cause-followup",
         "gather-official-path-before-browser-followup",
+        "quality-proof-layering-followup",
     ]
     assert payload["attention_view_proposal_keys"] == [
         "critique-canonical-subagent-followup",
         "handoff-workflow-trigger-followup",
-        "find-skills-canonical-artifact-followup",
         "retro-structural-cause-followup",
         "gather-official-path-before-browser-followup",
+        "quality-proof-layering-followup",
     ]
     assert payload["attention_view_selected_count"] == 5
     assert payload["attention_view_truncated"] is True
     assert payload["attention_view_fallback_used"] is False
-    assert payload["proposal_telemetry"]["mergedCandidateCount"] == 12
-    assert payload["proposal_telemetry"]["returnedProposalCount"] == 12
+    assert payload["proposal_telemetry"]["mergedCandidateCount"] == 11
+    assert payload["proposal_telemetry"]["returnedProposalCount"] == 11
     assert sorted(payload["proposal_keys"]) == sorted(payload["candidate_keys"])
     assert payload["omitted_candidate_keys"] == []
     assert (output_dir / "latest.json").is_file()

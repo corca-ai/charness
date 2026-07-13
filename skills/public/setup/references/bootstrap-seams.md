@@ -65,10 +65,9 @@ Keep the block startup-bootstrap-heavy and discovery-first. Use
 `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an add-block
 suggestion instead of a silent rewrite.
 
-If a mature repo already has a one- or two-line discovery-first rule that calls
-`find-skills` at session startup, setup normalization may accept it as compact
-routing when the installed `find-skills` capability or SessionStart hook owns
-the fuller catalog.
+If a mature repo already has a compact pickup/metadata/catalog fallback rule at
+session startup, setup normalization may accept it as compact routing when the
+SessionStart hook provides the same context.
 
 ## Repo-Owned Skill Proof
 

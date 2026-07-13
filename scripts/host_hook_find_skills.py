@@ -1,18 +1,16 @@
-"""Install/uninstall the find-skills SessionStart routing hook (#244).
+"""Install/uninstall the contextual SessionStart routing hook (#244).
 
 The #240 routing-reliability fix ships `scripts/session_start_find_skills.py`
 into the plugin, but the host-hook installer only ever wired the usage-episodes
 hook, so the routing trigger never fired without a manual per-machine edit. This
 module adds a second SessionStart hook — adapter-gated and opt-in via the
-`find_skills_routing` intent — installed *parallel* to usage-episodes through the
+`session_routing` intent — installed *parallel* to usage-episodes through the
 same primitives in `host_hook_install_lib` (carved into its own file to keep that
 module under the Python-length budget, the same split as
 `host_hook_codex_toml_lib`). This only wires the script; the 2026-07-04
-session-start-routing revision moved the pickup/discovery/otherwise routing
-rule into the wired script's directive text itself (see
-`skills/public/find-skills/references/session-start-routing.md`), so
-`find-skills` is invoked mainly for capability discovery or a genuinely
-unclear route rather than on every session open.
+session-start-routing revision moved the pickup/metadata/catalog routing hint
+into the wired script's directive text itself, so the hook remains context-only
+rather than a semantic classifier.
 """
 
 from __future__ import annotations
@@ -33,17 +31,30 @@ except ImportError:  # pragma: no cover - used when invoked as a module from els
         uninstall_codex_toml_block,
     )
 
-INTENT_SECTION = "find_skills_routing"
+INTENT_SECTION = "session_routing"
 FIND_SKILLS_SCRIPT_RELATIVE = Path("scripts/session_start_find_skills.py")
+SESSION_ROUTING_SCRIPT_RELATIVE = FIND_SKILLS_SCRIPT_RELATIVE
 # Claude SessionStart matcher: fire on session-open events, not on `compact`.
 FIND_SKILLS_MATCHER = "startup|resume|clear"
 # Distinct TOML marker so it dedups independently of the usage-episodes block.
-FIND_SKILLS_MARKER = "charness:find-skills-routing"
-LEGACY_FIND_SKILLS_MARKERS = ("charness:find-skills session-start routing trigger (#240)",)
+FIND_SKILLS_MARKER = "charness:session-routing"
+SESSION_ROUTING_MARKER = FIND_SKILLS_MARKER
+LEGACY_FIND_SKILLS_MARKERS = (
+    "charness:find-skills-routing",
+    "charness:find-skills session-start routing trigger (#240)",
+)
 
 
 def _state_key(host: str) -> str:
     return f"{host}:{INTENT_SECTION}"
+
+
+def _routing_intent(adapter: dict[str, Any] | None, host: str) -> str:
+    """Read the new intent, accepting the old key only as migration input."""
+    data = adapter or {}
+    if isinstance(data.get(INTENT_SECTION), dict):
+        return install_lib._intent_for(data, host, section=INTENT_SECTION)
+    return install_lib._intent_for(data, host, section="find_skills_routing")
 
 
 def _command(repo_root: Path, host: str) -> str:
@@ -139,15 +150,15 @@ def uninstall_find_skills_codex_hook(repo_root: Path, *, home: Path) -> dict[str
 
 
 def reconcile_find_skills_hooks(repo_root: Path, *, adapter: dict[str, Any], home: Path) -> dict[str, Any]:
-    """Install (intent enabled) or uninstall (default disabled) the find-skills
-    routing hook per host. Opt-in: an adapter with no `find_skills_routing`
+    """Install (intent enabled) or uninstall (default disabled) the contextual
+    session routing hook per host. Opt-in: an adapter with no `session_routing`
     section leaves every host disabled, so this is a no-op until enabled."""
     actions: dict[str, Any] = {}
     for host, installer, uninstaller in (
         ("claude", install_find_skills_claude_hook, uninstall_find_skills_claude_hook),
         ("codex", install_find_skills_codex_hook, uninstall_find_skills_codex_hook),
     ):
-        intent = install_lib._intent_for(adapter, host, section=INTENT_SECTION)
+        intent = _routing_intent(adapter, host)
         actions[host] = {"intent": intent}
         try:
             if intent == "enabled":
@@ -160,18 +171,18 @@ def reconcile_find_skills_hooks(repo_root: Path, *, adapter: dict[str, Any], hom
 
 
 def find_skills_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
-    intents = {host: install_lib._intent_for(adapter or {}, host, section=INTENT_SECTION) for host in ("claude", "codex")}
+    intents = {host: _routing_intent(adapter, host) for host in ("claude", "codex")}
     detect_kwargs = {
         host: {"state_key": _state_key(host), "script_relative": FIND_SKILLS_SCRIPT_RELATIVE, "toml_marker": FIND_SKILLS_MARKER}
         for host in ("claude", "codex")
     }
-    status = install_lib._hook_sync_status(repo_root, intents=intents, home=home, noun="SessionStart hook", drift_prefix="find_skills_routing ", detect_kwargs=detect_kwargs)
+    status = install_lib._hook_sync_status(repo_root, intents=intents, home=home, noun="SessionStart hook", drift_prefix="session_routing ", detect_kwargs=detect_kwargs)
     config_path = install_lib.default_codex_config_toml_path(home)
     text = install_lib.read_text_or_empty(config_path)
     command = _command(repo_root, "codex")
     legacy_markers = [marker for marker in LEGACY_FIND_SKILLS_MARKERS if install_lib.find_charness_toml_block(text, command, marker) is not None]
     if legacy_markers:
         status["in_sync"] = False
-        status["drift"].append(f"codex: find_skills_routing legacy TOML hook still present at {config_path} ({', '.join(legacy_markers)})")
+        status["drift"].append(f"codex: session_routing legacy TOML hook still present at {config_path} ({', '.join(legacy_markers)})")
         status["hosts"]["codex"]["actual"]["legacy_toml_markers_present"] = legacy_markers
     return status

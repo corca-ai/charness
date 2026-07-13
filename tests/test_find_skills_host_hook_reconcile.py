@@ -51,12 +51,12 @@ def test_find_skills_codex_reconcile_removes_legacy_duplicate_block(fake_repo: P
     )
     adapter = {"version": 1, "enabled": True, "find_skills_routing": {"codex": "enabled"}}
     actions = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
-    result = actions["find_skills_routing"]["codex"]["result"]
-    assert result["action"] == "updated"
+    result = actions["session_routing"]["codex"]["result"]
+    assert result["action"] in {"installed", "updated"}
     assert result["legacy_cleanup"][0]["action"] == "removed"
     text = settings_path.read_text(encoding="utf-8")
     assert "find-skills session-start routing trigger (#240)" not in text
-    assert text.count("# charness:find-skills-routing") == 1
+    assert text.count("# charness:session-routing") == 1
     assert text.count("[[hooks.SessionStart]]") == 1
     assert text.count("session_start_find_skills.py") == 1
     assert 'matcher = "startup|resume|clear"' in text
@@ -81,12 +81,12 @@ def test_find_skills_codex_reconcile_migrates_legacy_only_block(fake_repo: Path,
         encoding="utf-8",
     )
     adapter = {"version": 1, "enabled": True, "find_skills_routing": {"codex": "enabled"}}
-    result = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)["find_skills_routing"]["codex"]["result"]
+    result = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)["session_routing"]["codex"]["result"]
     assert result["action"] == "installed"
     assert result["legacy_cleanup"][0]["action"] == "removed"
     text = settings_path.read_text(encoding="utf-8")
     assert "find-skills session-start routing trigger (#240)" not in text
-    assert text.count("# charness:find-skills-routing") == 1
+    assert text.count("# charness:session-routing") == 1
     assert text.count("[[hooks.SessionStart]]") == 1
     assert 'matcher = "startup|resume|clear"' in text
 
@@ -115,7 +115,7 @@ def test_find_skills_codex_update_preserves_following_foreign_sessionstart(fake_
         encoding="utf-8",
     )
     result = fs.install_find_skills_codex_hook(fake_repo, home=fake_home)
-    assert result["action"] == "updated"
+    assert result["action"] in {"installed", "updated"}
     text = settings_path.read_text(encoding="utf-8")
     assert text.count("[[hooks.SessionStart]]") == 2
     assert text.count("session_start_find_skills.py") == 1
@@ -145,7 +145,7 @@ def test_find_skills_codex_disabled_removes_legacy_only_block(fake_repo: Path, f
     assert status["in_sync"] is False
     assert "legacy_toml_markers_present" in status["hosts"]["codex"]["actual"]
     actions = lib.reconcile_host_hooks(fake_repo, adapter={"version": 1}, home=fake_home)
-    result = actions["find_skills_routing"]["codex"]["result"]
+    result = actions["session_routing"]["codex"]["result"]
     assert result["legacy_cleanup"][0]["action"] == "removed"
     assert "session_start_find_skills.py" not in settings_path.read_text(encoding="utf-8")
 

@@ -540,7 +540,7 @@ def test_goal_closeout_describe_now_surfaces_the_enforced_forms() -> None:
     assert "## Final Verification" in out  # template block still present (backward compat)
     assert all(r in out for r in ("host-blocked-subagent", "host-log-not-exposed", "evaluator-unavailable"))
     assert "goal slug" in out  # bare-path + goal-slug binding
-    assert "Routing:" in out and "find-skills" in out  # Routing form
+    assert "Routing:" in out and "selected owner skill" in out  # Routing form
     assert "applied:" in out  # disposition form
 
 

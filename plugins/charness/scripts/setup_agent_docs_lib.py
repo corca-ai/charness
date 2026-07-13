@@ -15,8 +15,8 @@ from scripts.setup_commit_discipline_lib import detect_commit_discipline_policy
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
 CRITIQUE_ADAPTER_RELATIVE_PATH = Path(".agents/critique-adapter.yaml")
-COMPACT_SKILL_ROUTING_CALL_RE = re.compile(r"\b(call|invoke|run)\s+`?find-skills`?\b")
-COMPACT_SKILL_ROUTING_NEGATED_CALL_RE = re.compile(r"\b(do not|don't|never)\s+(call|invoke|run)\s+`?find-skills`?\b")
+COMPACT_SKILL_ROUTING_CALL_RE = re.compile(r"\b(charness\s+catalog|catalog\s+list)\b")
+COMPACT_SKILL_ROUTING_NEGATED_CALL_RE = re.compile(r"\b(do not|don't|never)\s+(run|use)\s+.*catalog")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,
@@ -302,18 +302,17 @@ def _detect_skill_routing_normalization(
     matches_compact_block = bool(expected_markdown and expected_markdown in agents_text)
     section_body = _extract_section(agents_text, "## Skill Routing") if has_skill_routing else ""
     section_lower = section_body.lower()
-    find_skills_available = "find-skills" in set(payload.get("listed_skill_ids") or payload.get("public_skills") or [])
+    catalog_available = True
     compact_discovery_first_present = any(
-        "find-skills" in line
-        and COMPACT_SKILL_ROUTING_CALL_RE.search(line)
+        COMPACT_SKILL_ROUTING_CALL_RE.search(line)
         and not COMPACT_SKILL_ROUTING_NEGATED_CALL_RE.search(line)
         and ("startup" in line or "sessionstart" in line or "session start" in line)
         and ("once" in line or "before broader exploration" in line)
-        and ("discover" in line or "capability" in line or "route" in line)
+        and ("catalog" in line or "capability" in line or "route" in line)
         for line in section_lower.splitlines()
     )
     accepts_compact_discovery_first = (
-        has_skill_routing and not matches_compact_block and find_skills_available and compact_discovery_first_present
+        has_skill_routing and not matches_compact_block and catalog_available and compact_discovery_first_present
     )
     recommended_action = str(payload.get("recommended_action", "inspect_manually"))
     decision_needed: str | None = None
@@ -337,7 +336,7 @@ def _detect_skill_routing_normalization(
             "has_skill_routing": has_skill_routing,
             "matches_compact_block": matches_compact_block,
             "accepts_compact_discovery_first": accepts_compact_discovery_first,
-            "find_skills_available": find_skills_available,
+            "catalog_available": catalog_available,
             "recommended_action": recommended_action,
             "decision_needed": decision_needed,
             "missing_expected_snippets": missing_expected_snippets,

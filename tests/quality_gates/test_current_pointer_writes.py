@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+from scripts.capability_catalog_artifact import persist_catalog
 from tests.script_loader import load_script_module
 
 from .support import ROOT, init_git_repo, run_script
@@ -26,14 +27,6 @@ RELEASE_SPEC = importlib.util.spec_from_file_location(
 assert RELEASE_SPEC is not None and RELEASE_SPEC.loader is not None
 RELEASE_ARTIFACT = importlib.util.module_from_spec(RELEASE_SPEC)
 RELEASE_SPEC.loader.exec_module(RELEASE_ARTIFACT)
-
-FIND_SKILLS_SPEC = importlib.util.spec_from_file_location(
-    "find_skills_inventory_artifact",
-    ROOT / "skills" / "public" / "find-skills" / "scripts" / "inventory_artifact.py",
-)
-assert FIND_SKILLS_SPEC is not None and FIND_SKILLS_SPEC.loader is not None
-FIND_SKILLS_ARTIFACT = importlib.util.module_from_spec(FIND_SKILLS_SPEC)
-FIND_SKILLS_SPEC.loader.exec_module(FIND_SKILLS_ARTIFACT)
 
 SCANNER_SPEC = importlib.util.spec_from_file_location(
     "check_current_pointer_writes",
@@ -144,9 +137,8 @@ def test_release_artifact_records_adapter_preflight_non_claim(tmp_path: Path) ->
     assert "Focused preflight commands: none executed." in text
 
 
-def test_find_skills_inventory_noops_when_canonical_inventory_unchanged(tmp_path: Path) -> None:
+def test_capability_catalog_noops_when_canonical_inventory_unchanged(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    output = repo / "charness-artifacts" / "find-skills"
     inventory = {
         "public_skills": [],
         "support_skills": [],
@@ -161,9 +153,10 @@ def test_find_skills_inventory_noops_when_canonical_inventory_unchanged(tmp_path
         "workflow_recommendations": [],
     }
 
-    first = FIND_SKILLS_ARTIFACT.persist_inventory(repo_root=repo, output_dir=output, inventory=inventory)
+    first = persist_catalog(repo, inventory)
+    output = repo / "charness-artifacts" / "capability-catalog"
     first_text = (output / "latest.json").read_text(encoding="utf-8")
-    second = FIND_SKILLS_ARTIFACT.persist_inventory(repo_root=repo, output_dir=output, inventory=inventory)
+    second = persist_catalog(repo, inventory)
 
     assert first["updated"] is True
     assert second["updated"] is False

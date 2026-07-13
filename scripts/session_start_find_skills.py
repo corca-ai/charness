@@ -1,20 +1,11 @@
 #!/usr/bin/env python3
-"""SessionStart hook payload script for the charness session-start routing trigger.
+"""SessionStart hook payload script for contextual session routing hints.
 
-2026-07-04 revision: this hook now carries the ROUTING RULE directly instead of
-only pointing at `charness:find-skills`. It injects the pickup ->
-`docs/handoff.md` `Workflow Trigger` -> `charness:handoff` route, the
-capability-discovery -> `charness:find-skills` route, and the otherwise ->
-matching-installed-skill route in one directive, so most sessions no longer pay
-for a full `find-skills` invocation just to re-confirm a cached inventory.
-Capability-discovery and recommendation intelligence still lives in
-`find-skills`, which still drives the routed workflow whenever it is invoked
-(discovery, a missing/stale capability map, or a genuinely unclear route). This
-front-load design was considered and rejected in #240 because a hook cannot
-hard-force a Skill invocation; it was adopted now that session-cost data showed
-`find-skills` running on effectively every session open. The three #240
-protections are carried over into the directive text itself. See
-`skills/public/find-skills/references/session-start-routing.md`.
+The hook carries context only: pickup follows the handoff, ordinary requests
+use installed skill metadata and model judgment, and deterministic inventory is
+available through `charness catalog list --json` when hidden support or
+integration availability is unclear. It is not a classifier and never invokes
+a public routing skill.
 
 Wiring (installed at USER level so it fires in every session, pointing at the
 released plugin copy of this script — not committed into any one repo):
@@ -52,12 +43,11 @@ DIRECTIVE = (
     "`## Workflow Trigger` (docs/handoff.md; skip this branch if the file "
     "doesn't exist) and invoke the workflow it names; for the default charness "
     "handoff that is `charness:handoff`. "
-    "(2) Capability discovery — a named skill/support/integration or a 'which "
-    "skill handles X' question: invoke `charness:find-skills`. (3) Otherwise "
-    "start the installed charness skill that matches the task. Use "
-    "`charness-artifacts/find-skills/latest.md` as the capability map when "
-    "present; invoke `charness:find-skills` when the map is missing or stale "
-    "or the route is genuinely unclear."
+    "(2) Ordinary requests — use installed skill metadata and your own judgment "
+    "to start the matching workflow. (3) Hidden support/integration inventory "
+    "or an unclear availability question — run the read-only `charness catalog "
+    "list --repo-root <repo> --json` command; do not treat its facts as a "
+    "semantic recommendation."
 )
 
 

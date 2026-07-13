@@ -37,7 +37,7 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   in those memory surfaces
 - validation and commit discipline when the repo has them
 - when the repo routes work through Charness goal/skill routing (a
-  `## Skill Routing` block that calls `find-skills`, or explicit Charness
+  `## Skill Routing` block that names installed skill metadata/catalog facts, or explicit Charness
   goal/achieve routing), keep a compact `## Commit Discipline` rule so a long
   autonomous run does not leave the whole implementation uncommitted: commit
   meaningful implementation/workflow slices as they finish, keep commits scoped,
@@ -76,14 +76,10 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   scale-to-the-task guardrail. This is the orchestration sibling of the
   delegation standing request: a generic "only orchestrate when explicitly asked"
   host default is satisfied by the repo contract for appropriate work
-- a short `Skill Routing` block that tells sessions to call the shared/public
-  charness skill `find-skills` once at startup before broader exploration
-- after that bootstrap pass, tell the agent to choose the durable work skill
-  from the installed charness surface instead of copying a long checked-in
-  catalog into `<repo-root>/AGENTS.md`
-- compact AGENTS profiles may compress that routing block to one or two
-  discovery-first lines when installed `find-skills` capability or a
-  SessionStart hook provides the detailed routing surface
+- a short `Skill Routing` fallback paragraph: pickup follows the handoff,
+  ordinary routing uses installed skill metadata and model judgment, and
+  `charness catalog list --json` provides hidden support/integration inventory
+  when needed; a SessionStart hook may inject the same context
 - when the repo keeps repo-owned skills, keep one short policy that semantic
   skill changes should freeze the current intent before broad edits by deciding
   whether reviewed dogfood, maintained evaluator scenarios, or checked-in

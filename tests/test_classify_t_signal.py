@@ -162,9 +162,9 @@ def test_convention_doc_modified(tmp_path: Path, classify) -> None:
 def test_skill_or_reference_modified(tmp_path: Path, classify) -> None:
     repo = tmp_path / "repo"
     env = _setup_with_baseline(repo)
-    _write(repo, "skills/public/find-skills/SKILL.md", "# a\n")
+    _write(repo, "skills/public/quality/SKILL.md", "# a\n")
     _commit(repo, "seed skill", env)
-    _write(repo, "skills/public/find-skills/SKILL.md", "# b\n")
+    _write(repo, "skills/public/quality/SKILL.md", "# b\n")
     _commit(repo, "tweak skill", env)
 
     result = classify(repo)
@@ -222,9 +222,9 @@ def test_issue_closed_via_commit_message(tmp_path: Path, classify) -> None:
 def test_strongest_rule_wins_high_over_low(tmp_path: Path, classify) -> None:
     repo = tmp_path / "repo"
     env = _setup_with_baseline(repo)
-    _write(repo, "skills/public/find-skills/SKILL.md", "# a\n")
+    _write(repo, "skills/public/quality/SKILL.md", "# a\n")
     _commit(repo, "seed", env)
-    _write(repo, "skills/public/find-skills/SKILL.md", "# b\n")
+    _write(repo, "skills/public/quality/SKILL.md", "# b\n")
     _write(repo, "charness-artifacts/retro/2026-05-22-other-session.md", "lesson\n")
     _commit(repo, "tweak skill and add retro", env)
 

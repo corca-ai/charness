@@ -1517,8 +1517,8 @@ def session_staleness_payload(
     removed = cache_diff.get("removed") or []
     if not rotated and not removed:
         return None
-    resolver_path = repo_root / "skills" / "public" / "find-skills" / "scripts" / "resolve_skill_path.py"
-    fallback_resolver_path = managed_checkout_root(home_root) / "skills" / "public" / "find-skills" / "scripts" / "resolve_skill_path.py"
+    resolver_path = repo_root / "scripts" / "capability_catalog.py"
+    fallback_resolver_path = managed_checkout_root(home_root) / "scripts" / "capability_catalog.py"
     resolver = str(resolver_path if resolver_path.is_file() else fallback_resolver_path)
     affected = [
         f"{record.get('marketplace')}/{record.get('plugin')} {record.get('old_version')} -> {record.get('new_version', '(removed)')}"
@@ -1531,7 +1531,7 @@ def session_staleness_payload(
         "message": (
             "Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths "
             "injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with "
-            f"`python3 {resolver} --skill-id <id> --reported-path <stale> "
+            f"`python3 {resolver} resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale> "
             "[--marketplace <m> --plugin <p>]`."
         ),
         "resolver_path": resolver,
@@ -4661,6 +4661,42 @@ def cmd_goal_check(args: argparse.Namespace) -> int:
     return result.returncode
 
 
+def _load_catalog_lib():
+    """Load the stable catalog backend from the selected Charness checkout."""
+    repo_root = EMBEDDED_REPO_ROOT or Path(__file__).resolve().parent
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+    from scripts import capability_catalog
+    return capability_catalog
+
+
+def cmd_catalog_list(args: argparse.Namespace) -> int:
+    payload = _load_catalog_lib().list_catalog(args.repo_root.resolve())
+    print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_catalog_refresh(args: argparse.Namespace) -> int:
+    payload = _load_catalog_lib().refresh_catalog(args.repo_root.resolve())
+    print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_catalog_resolve_skill_path(args: argparse.Namespace) -> int:
+    catalog = _load_catalog_lib()
+    payload = catalog.resolve_skill_path(
+        skill_id=args.skill_id,
+        repo_root=args.repo_root.resolve(),
+        home=args.home.expanduser().resolve(),
+        codex_home=args.codex_home.expanduser().resolve(),
+        reported_path=args.reported_path.expanduser(),
+        marketplace=args.marketplace,
+        plugin=args.plugin,
+    )
+    print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0 if payload.get("resolved_path") else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Thin charness CLI for managed local install, capability resolution, and external tool install/update/doctor flows."
@@ -4856,6 +4892,39 @@ def build_parser() -> argparse.ArgumentParser:
     )
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
+
+    catalog_parser = subparsers.add_parser(
+        "catalog",
+        help="Inspect or refresh deterministic installed capability inventory and resolve stale skill paths.",
+    )
+    catalog_subparsers = catalog_parser.add_subparsers(dest="catalog_command", required=True)
+
+    catalog_list_parser = catalog_subparsers.add_parser(
+        "list", help="Read installed public/support/synced/integration inventory without writing artifacts."
+    )
+    catalog_list_parser.add_argument("--repo-root", type=Path, required=True)
+    catalog_list_parser.add_argument("--json", action="store_true")
+    catalog_list_parser.set_defaults(func=cmd_catalog_list)
+
+    catalog_refresh_parser = catalog_subparsers.add_parser(
+        "refresh", help="Write the canonical capability catalog current-pointer artifacts."
+    )
+    catalog_refresh_parser.add_argument("--repo-root", type=Path, required=True)
+    catalog_refresh_parser.add_argument("--json", action="store_true")
+    catalog_refresh_parser.set_defaults(func=cmd_catalog_refresh)
+
+    catalog_resolve_parser = catalog_subparsers.add_parser(
+        "resolve-skill-path", help="Resolve a stale host-reported skill path after plugin cache rotation."
+    )
+    catalog_resolve_parser.add_argument("--repo-root", type=Path, required=True)
+    catalog_resolve_parser.add_argument("--skill-id", required=True)
+    catalog_resolve_parser.add_argument("--reported-path", type=Path, required=True)
+    catalog_resolve_parser.add_argument("--home", type=Path, default=Path.home())
+    catalog_resolve_parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")))
+    catalog_resolve_parser.add_argument("--marketplace", default="local")
+    catalog_resolve_parser.add_argument("--plugin", default="charness")
+    catalog_resolve_parser.add_argument("--json", action="store_true")
+    catalog_resolve_parser.set_defaults(func=cmd_catalog_resolve_skill_path)
 
     capability_parser = subparsers.add_parser(
         "capability",

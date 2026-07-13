@@ -19,7 +19,6 @@ stays as the short human-readable contract for the same reviewed cases.
 - `create-cli`
 - `create-skill`
 - `debug`
-- `find-skills`
 - `gather`
 - `handoff`
 - `hitl`

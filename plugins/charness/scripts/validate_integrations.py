@@ -133,7 +133,7 @@ def detect_missing_intent_triggers_for_external_binary_with_skill(
         return None
     return (
         f"{path}: kind=external_binary_with_skill manifests should declare a non-empty "
-        "intent_triggers list so find-skills --recommend-for-task can match natural-language "
+        "intent_triggers list so the capability catalog can expose support-bearing manifest intent "
         "queries against this support-bearing manifest. Advisory only; will not fail CI."
     )
 

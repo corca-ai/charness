@@ -26,7 +26,7 @@ rotation:
 host_hooks:
   claude: enabled
   codex: enabled
-find_skills_routing:
+session_routing:
   claude: enabled
   codex: enabled
 # skill_anchor_edit_guard installs a Claude PostToolUse(Edit|Write|MultiEdit)

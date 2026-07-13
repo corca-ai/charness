@@ -60,13 +60,13 @@ Queue item form:
 
 ## Coordination Cues
 
-Phase-appropriate routing for this run, deferred to `find-skills` (its
-`--recommend-for-task` / `--recommendation-role --next-skill-id` recommendation
-engine) — never a hard-coded phase-to-skill list here. `achieve` owns this slot
-and the floors below; `find-skills` owns *which* skill answers a boundary. Fill
-during the run:
+Phase-appropriate routing for this run, chosen from installed skill metadata and
+model judgment — never a hard-coded phase-to-skill list here. Use the catalog
+only for hidden availability facts. `achieve` owns this slot and the floors
+below. Fill during the run:
 
-- **Routing** — ask `find-skills` to recommend the skill for the current phase or
+- **Routing** — choose the skill for the current phase or boundary from installed
+  metadata/model judgment, and record the route. At completion, recorded
   boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
@@ -86,12 +86,12 @@ during the run:
 
 Routing step line — record it on ONE physical line so the floor reads the whole
 value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
-form below and replace `<skill>` with the find-skills-recommended skill; the
+form below and replace `<skill>` with the selected installed skill; the
 placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: find-skills -> <skill> — <why this phase needs it>`
+- `Routing: <skill> — <why this phase needs it>`
 
 ## Discuss Before Activation
 

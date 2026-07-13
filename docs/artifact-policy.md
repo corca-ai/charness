@@ -242,7 +242,7 @@ The repo currently intends these families to be history-default:
 
 The repo currently intends these families to be `current`:
 
-- `find-skills`, because the value is the current local-first inventory, not a
+- `capability-catalog`, because the value is the current local-first inventory, not a
   checked-in invocation log
 - `hitl`, because checked-in state is a current human-facing review surface
   while runtime queues and event logs stay under `.charness/`
@@ -273,7 +273,7 @@ These are intentional exceptions to the simple defaults:
   `charness-artifacts/spec/*.md` without a dedicated adapter-managed `latest.md`
   flow when the repo is keeping a design contract rather than a rolling skill
   artifact.
-- `find-skills` stays current-pointer-first because repeated startup inventory
+- `capability-catalog` stays current-pointer-first because repeated startup inventory
   runs would otherwise create low-signal dated churn.
 - `hitl` and `setup` split visible current summary from hidden runtime or
   bootstrap state rather than keeping a checked-in dated artifact stream by

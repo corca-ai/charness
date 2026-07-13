@@ -29,7 +29,7 @@
     },
     "coordination.md": {
       "engagement": "engage-always",
-      "rationale": "The coordination gist is inlined in SKILL.md: the `## Coordination` section (128-137) carries the per-skill role list (ideation/spec/impl/debug/quality/issue/critique/retro) and the do-not-absorb rule, and the find-skills-deferred routing-cue concept lives in Output Shape's `## Coordination Cues` (151-154), the coordination-floors Workflow step (116-119), and Guardrails (165), so a run engages coordination from the always-loaded body plus find-skills without force-opening the doc (why it is engage-always yet classTag INLINE, not an RCF floor; the `_comment` states the same demotion basis). coordination.md stays engage-always for the genuinely doc-only depth: the full per-skill role table, the Resolving-A-Tracked-Issue debug-before-fix and close-keyword staging protocol and issue-closeout ledger, the full find-skills-routing and closeout-floor enforcement detail, and the Activation, `handoff` boundary, and Off-Goal-Findings handling.",
+      "rationale": "The coordination gist is inlined in SKILL.md: the `## Coordination` section carries the per-skill role list and do-not-absorb rule, while the owner-skill routing cue lives in Output Shape's `## Coordination Cues`, the coordination-floors Workflow step, and Guardrails. A run engages coordination from the always-loaded body without force-opening this reference; the remaining doc-only depth is the role table, tracked-issue closeout protocol, closeout-floor detail, and Activation/handoff/off-goal handling.",
       "claimRole": "coordination-framework",
       "classTag": "INLINE"
     },

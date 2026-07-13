@@ -81,7 +81,7 @@ def _normalize_routing(text: str) -> tuple[str, int]:
     return _sub_with_count(
         ROUTING_RE,
         text,
-        lambda match: f"{match.group('prefix')}Routing: find-skills -> {match.group('skill')} \u2014 ",
+        lambda match: f"{match.group('prefix')}Routing: {match.group('skill')} \u2014 ",
     )
 
 
@@ -136,7 +136,7 @@ def normalize(text: str, *, complete: bool = False) -> tuple[str, list[str]]:
         fixes.append(f"stripped backticks from {count} closeout evidence line(s)")
     updated2, count = _normalize_routing(updated)
     if count:
-        fixes.append(f"normalized {count} Routing line(s) to name find-skills")
+        fixes.append(f"normalized {count} Routing line(s) to name the selected owner skill")
     updated3, changed = _clear_operator_queue_scaffold(updated2)
     if changed:
         fixes.append("replaced Operator Decision Queue scaffold with a none disposition")

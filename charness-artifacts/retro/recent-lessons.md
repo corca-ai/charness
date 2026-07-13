@@ -3,7 +3,7 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v0.66.0`. (source: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`; sources: 2)
-- The second north-star campaign shipped v0.66.3 after two evidence-backed reliability slices: verification-lock sync-drift fail-fast and concurrent usage-feedback replay serialization. (source: `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`)
+- This session removed the public `find-skills` workflow and its free-text recommendation engine, retained the session hook as a small compatibility surface, and introduced a deterministic capability catalog for hidden support and integration inventory. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`; sources: 82)
-- applied — exact external-tool trigger ownership plus a negative derived-plugin regression prevents the measured seven-step false positive. (source: `charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md`)
-- applied — refresh `docs/handoff.md` to remove completed round-two work and preserve only issue lifecycle/nonclaims for the next pickup. (source: `charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md`)
-- applied — run the existing inventory-consumption and evidence- durability checks immediately after changing a quality record; this session repaired and proved both before the final successful lock. (source: `charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md`)
+- for future public-surface removal, lock a five-bucket matrix before mutation: active contract, generated export, compatibility alias, history, and external installed state. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
+- keep the critique and this retro with the slice so future removals inherit both the negative acceptance criteria and the compatibility classification. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
+- use `charness catalog list` only for deterministic hidden-capability availability; keep task routing in installed metadata and model judgment. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
 
 ## Selection Policy
 
@@ -111,3 +111,4 @@
 - `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-12-north-star-autonomous-two-hour-release-round-3-retro.md`
 - `charness-artifacts/retro/2026-07-12-v0663-round2-autonomous-release.md`
+- `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`

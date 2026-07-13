@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-07-03T12:59:56Z",
+  "artifact_kind": "capability-catalog",
+  "generated_at": "2026-07-13T01:17:51Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -9,10 +9,7 @@
       "valid": true,
       "path": null,
       "warnings": [
-        "No find-skills adapter found. Using local-first discovery defaults.",
-        "First run leaves `charness-artifacts/find-skills/latest.md` as the current capability inventory artifact.",
-        "With no trusted roots configured, discovery stays inside this repo and its declared integrations only.",
-        "Create .agents/find-skills-adapter.yaml to declare trusted skill roots or registry policy."
+        "No capability catalog adapter found; using local-first discovery defaults."
       ],
       "trusted_skill_roots": [],
       "allow_external_registry": false,
@@ -27,16 +24,11 @@
         "path": "skills/public/achieve/SKILL.md",
         "skill_dir": "skills/public/achieve",
         "canonical_path": "skills/public/achieve/SKILL.md",
-        "trigger_phrases": [
-          "achieve",
-          "achieve skill",
-          "achieve 스킬",
-          "charness:achieve"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/achieve/references/lifecycle.md",
           "skills/public/achieve/references/goal-artifact.md",
+          "skills/public/achieve/references/lifecycle-after.md",
           "skills/shared/references/retro-issue-destination-split.md",
           "skills/public/achieve/references/coordination.md",
           "skills/public/achieve/references/index.md"
@@ -52,12 +44,6 @@
         "path": "skills/public/announcement/SKILL.md",
         "skill_dir": "skills/public/announcement",
         "canonical_path": "skills/public/announcement/SKILL.md",
-        "trigger_phrases": [
-          "announcement",
-          "announcement skill",
-          "announcement 스킬",
-          "charness:announcement"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/announcement/references/large-window-fanout.md",
@@ -78,12 +64,6 @@
         "path": "skills/public/create-cli/SKILL.md",
         "skill_dir": "skills/public/create-cli",
         "canonical_path": "skills/public/create-cli/SKILL.md",
-        "trigger_phrases": [
-          "create-cli",
-          "create-cli skill",
-          "create-cli 스킬",
-          "charness:create-cli"
-        ],
         "referenced_paths": [
           "skills/shared/references/binary-preflight.md",
           "skills/public/create-cli/references/intent-first-grammar.md",
@@ -110,12 +90,6 @@
         "path": "skills/public/create-skill/SKILL.md",
         "skill_dir": "skills/public/create-skill",
         "canonical_path": "skills/public/create-skill/SKILL.md",
-        "trigger_phrases": [
-          "create-skill",
-          "create-skill skill",
-          "create-skill 스킬",
-          "charness:create-skill"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/shared/references/external-capability-proof-ladder.md",
@@ -147,15 +121,9 @@
         "path": "skills/public/critique/SKILL.md",
         "skill_dir": "skills/public/critique",
         "canonical_path": "skills/public/critique/SKILL.md",
-        "trigger_phrases": [
-          "critique",
-          "critique skill",
-          "critique 스킬",
-          "charness:critique"
-        ],
         "referenced_paths": [
           "skills/public/critique/references/cadence.md",
-          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/shared/references/disposition-reviewer-brief.md",
           "skills/public/critique/references/autonomous-trigger.md",
           "skills/public/critique/references/premortem-decision.md",
           "skills/public/critique/references/code-critique.md",
@@ -165,6 +133,7 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/critique/references/prepare-packet.md",
           "skills/public/critique/references/angle-selection.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/critique/references/counterweight-triage.md",
           "skills/public/critique/references/confirmed-input-over-anchoring.md",
           "skills/public/critique/references/adapter-contract.md",
@@ -181,12 +150,6 @@
         "path": "skills/public/debug/SKILL.md",
         "skill_dir": "skills/public/debug",
         "canonical_path": "skills/public/debug/SKILL.md",
-        "trigger_phrases": [
-          "debug",
-          "debug skill",
-          "debug 스킬",
-          "charness:debug"
-        ],
         "referenced_paths": [
           "skills/public/issue/references/causal-review.md",
           "skills/shared/references/bootstrap-resolution.md",
@@ -207,34 +170,6 @@
         "layer": "public skill"
       },
       {
-        "id": "find-skills",
-        "name": "find-skills",
-        "description": "Use when the user asks which skill, support capability, or integration should handle a task, or names a skill/support/capability such as `X skill`, `X 스킬`, `support/X`, or `X integration`. Call this before filesystem search for named capabilities; support skills are intentionally hidden from the default skill list.",
-        "summary": "Use when the user asks which skill, support capability, or integration should handle a task, or names a skill/support/capability such as `X skill`, `X 스킬`, `support/X`, or `X integration`. Call this before filesystem search for named capabilities; support skills are intentionally hidden from the default skill list.",
-        "path": "skills/public/find-skills/SKILL.md",
-        "skill_dir": "skills/public/find-skills",
-        "canonical_path": "skills/public/find-skills/SKILL.md",
-        "trigger_phrases": [
-          "find-skills",
-          "find-skills skill",
-          "find-skills 스킬",
-          "charness:find-skills"
-        ],
-        "referenced_paths": [
-          "skills/public/find-skills/references/session-start-routing.md",
-          "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/find-skills/references/support-consumption.md",
-          "skills/public/find-skills/adapter.example.yaml",
-          "skills/public/find-skills/references/adapter-contract.md",
-          "skills/public/find-skills/references/discovery-order.md",
-          "skills/public/ideation/references/decision-question-response.md",
-          "skills/public/find-skills/scripts/list_capabilities.py",
-          "skills/public/find-skills/scripts/list_capabilities_lib.py"
-        ],
-        "source": "local-public",
-        "layer": "public skill"
-      },
-      {
         "id": "gather",
         "name": "gather",
         "description": "Use when a public web page, GitHub content, a published or exported document, an arbitrary URL, a local file, or other public source should become a durable local knowledge asset instead of a transient answer. Gather is public-source only: credentialed organizational data (Slack, Notion, private Google Workspace) is out of scope and belongs to the consuming runtime's own capability/connector. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.",
@@ -242,12 +177,6 @@
         "path": "skills/public/gather/SKILL.md",
         "skill_dir": "skills/public/gather",
         "canonical_path": "skills/public/gather/SKILL.md",
-        "trigger_phrases": [
-          "gather",
-          "gather skill",
-          "gather 스킬",
-          "charness:gather"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/gather/references/adapter-contract.md",
@@ -275,12 +204,6 @@
         "path": "skills/public/handoff/SKILL.md",
         "skill_dir": "skills/public/handoff",
         "canonical_path": "skills/public/handoff/SKILL.md",
-        "trigger_phrases": [
-          "handoff",
-          "handoff skill",
-          "handoff 스킬",
-          "charness:handoff"
-        ],
         "referenced_paths": [
           "skills/public/handoff/references/continuation-sequence.md",
           "skills/shared/references/bootstrap-resolution.md",
@@ -303,12 +226,6 @@
         "path": "skills/public/hitl/SKILL.md",
         "skill_dir": "skills/public/hitl",
         "canonical_path": "skills/public/hitl/SKILL.md",
-        "trigger_phrases": [
-          "hitl",
-          "hitl skill",
-          "hitl 스킬",
-          "charness:hitl"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/hitl/references/chunk-contract.md",
@@ -334,12 +251,6 @@
         "path": "skills/public/hotl/SKILL.md",
         "skill_dir": "skills/public/hotl",
         "canonical_path": "skills/public/hotl/SKILL.md",
-        "trigger_phrases": [
-          "hotl",
-          "hotl skill",
-          "hotl 스킬",
-          "charness:hotl"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/hotl/references/ledger-and-dispositions.md",
@@ -360,12 +271,6 @@
         "path": "skills/public/ideation/SKILL.md",
         "skill_dir": "skills/public/ideation",
         "canonical_path": "skills/public/ideation/SKILL.md",
-        "trigger_phrases": [
-          "ideation",
-          "ideation skill",
-          "ideation 스킬",
-          "charness:ideation"
-        ],
         "referenced_paths": [
           "skills/shared/references/generative-sequence.md",
           "skills/public/ideation/references/sequence-discipline.md",
@@ -392,12 +297,6 @@
         "path": "skills/public/impl/SKILL.md",
         "skill_dir": "skills/public/impl",
         "canonical_path": "skills/public/impl/SKILL.md",
-        "trigger_phrases": [
-          "impl",
-          "impl skill",
-          "impl 스킬",
-          "charness:impl"
-        ],
         "referenced_paths": [
           "skills/public/impl/references/sequence-discipline.md",
           "skills/public/impl/references/verification-ladder.md",
@@ -408,6 +307,7 @@
           "skills/shared/references/source-bound-records.md",
           "skills/public/impl/SKILL.md",
           "skills/shared/references/active-goal-coordination.md",
+          "skills/public/quality/references/cautilus-on-demand.md",
           "skills/shared/references/prescribed-path-self-test.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/impl/references/contract-consumption.md",
@@ -425,21 +325,16 @@
         "path": "skills/public/issue/SKILL.md",
         "skill_dir": "skills/public/issue",
         "canonical_path": "skills/public/issue/SKILL.md",
-        "trigger_phrases": [
-          "issue",
-          "issue skill",
-          "issue 스킬",
-          "charness:issue"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/issue/adapter.example.yaml",
           "skills/public/issue/references/resolve-flow.md",
           "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/resolution-brief.md",
           "skills/public/issue/references/causal-review.md",
           "skills/public/issue/references/issue-backend.md",
           "skills/public/issue/references/closeout-discipline.md",
-          "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/shared/references/rca-ledger-append.md",
           "skills/shared/references/active-goal-coordination.md",
@@ -456,12 +351,6 @@
         "path": "skills/public/narrative/SKILL.md",
         "skill_dir": "skills/public/narrative",
         "canonical_path": "skills/public/narrative/SKILL.md",
-        "trigger_phrases": [
-          "narrative",
-          "narrative skill",
-          "narrative 스킬",
-          "charness:narrative"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/narrative/references/landing-rewrite-loop.md",
@@ -485,19 +374,6 @@
         "path": "skills/public/quality/SKILL.md",
         "skill_dir": "skills/public/quality",
         "canonical_path": "skills/public/quality/SKILL.md",
-        "trigger_phrases": [
-          "quality",
-          "quality skill",
-          "quality 스킬",
-          "charness:quality",
-          "test quality",
-          "testability",
-          "test DSL",
-          "test helper ergonomics",
-          "boundary-bypass ratchet",
-          "boundary bypass",
-          "quality gate"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/shared/references/binary-preflight.md",
@@ -517,12 +393,6 @@
         "path": "skills/public/release/SKILL.md",
         "skill_dir": "skills/public/release",
         "canonical_path": "skills/public/release/SKILL.md",
-        "trigger_phrases": [
-          "release",
-          "release skill",
-          "release 스킬",
-          "charness:release"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/release/references/critique-boundary.md",
@@ -543,12 +413,6 @@
         "path": "skills/public/retro/SKILL.md",
         "skill_dir": "skills/public/retro",
         "canonical_path": "skills/public/retro/SKILL.md",
-        "trigger_phrases": [
-          "retro",
-          "retro skill",
-          "retro 스킬",
-          "charness:retro"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/retro/references/expert-lens.md",
@@ -575,12 +439,6 @@
         "path": "skills/public/setup/SKILL.md",
         "skill_dir": "skills/public/setup",
         "canonical_path": "skills/public/setup/SKILL.md",
-        "trigger_phrases": [
-          "setup",
-          "setup skill",
-          "setup 스킬",
-          "charness:setup"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/setup/references/greenfield-flow.md",
@@ -606,12 +464,6 @@
         "path": "skills/public/spec/SKILL.md",
         "skill_dir": "skills/public/spec",
         "canonical_path": "skills/public/spec/SKILL.md",
-        "trigger_phrases": [
-          "spec",
-          "spec skill",
-          "spec 스킬",
-          "charness:spec"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/spec/references/public-executable-contracts.md",
@@ -641,16 +493,6 @@
         "path": "skills/support/markdown-preview/SKILL.md",
         "skill_dir": "skills/support/markdown-preview",
         "canonical_path": "skills/support/markdown-preview/SKILL.md",
-        "trigger_phrases": [
-          "markdown-preview",
-          "markdown-preview skill",
-          "markdown-preview 스킬",
-          "charness:markdown-preview",
-          "support/markdown-preview",
-          "markdown-preview support",
-          "markdown-preview support skill",
-          "markdown-preview helper"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/support/markdown-preview/references/runtime-contract.md",
@@ -667,16 +509,6 @@
         "path": "skills/support/web-fetch/SKILL.md",
         "skill_dir": "skills/support/web-fetch",
         "canonical_path": "skills/support/web-fetch/SKILL.md",
-        "trigger_phrases": [
-          "web-fetch",
-          "web-fetch skill",
-          "web-fetch 스킬",
-          "charness:web-fetch",
-          "support/web-fetch",
-          "web-fetch support",
-          "web-fetch support skill",
-          "web-fetch helper"
-        ],
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
           "skills/support/web-fetch/references/runtime-contract.md",
@@ -701,23 +533,6 @@
           "degraded"
         ],
         "capability_requirements": {},
-        "intent_triggers": [
-          "rendered markdown review",
-          "markdown preview",
-          "README readability",
-          "docs preview artifacts"
-        ],
-        "trigger_phrases": [
-          "markdown-preview",
-          "Markdown preview artifacts",
-          "markdown-preview support",
-          "markdown-preview support skill",
-          "support/markdown-preview",
-          "rendered markdown review",
-          "markdown preview",
-          "README readability",
-          "docs preview artifacts"
-        ],
         "config_layers": [
           {
             "layer_id": "markdown-preview-authenticated-binary",
@@ -753,7 +568,25 @@
           "quality"
         ],
         "source": "local-support-capability",
-        "layer": "support capability"
+        "layer": "support capability",
+        "trigger_phrases": [
+          "markdown-preview",
+          "Markdown preview artifacts",
+          "markdown-preview support",
+          "support/markdown-preview",
+          "rendered markdown review",
+          "markdown preview",
+          "README readability",
+          "docs preview artifacts"
+        ],
+        "intent_triggers": [
+          "rendered markdown review",
+          "markdown preview",
+          "README readability",
+          "docs preview artifacts"
+        ],
+        "strong_intent_triggers": [],
+        "recommendation_role": null
       },
       {
         "id": "web-fetch",
@@ -773,14 +606,6 @@
             "web.search"
           ]
         },
-        "intent_triggers": [],
-        "trigger_phrases": [
-          "web-fetch",
-          "Public web fetch routing",
-          "web-fetch support",
-          "web-fetch support skill",
-          "support/web-fetch"
-        ],
         "config_layers": [
           {
             "layer_id": "web-fetch-runtime-grant",
@@ -815,7 +640,16 @@
           "gather"
         ],
         "source": "local-support-capability",
-        "layer": "support capability"
+        "layer": "support capability",
+        "trigger_phrases": [
+          "web-fetch",
+          "Public web fetch routing",
+          "web-fetch support",
+          "support/web-fetch"
+        ],
+        "intent_triggers": [],
+        "strong_intent_triggers": [],
+        "recommendation_role": null
       }
     ],
     "integrations": [
@@ -832,21 +666,6 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [
-          "browser automation",
-          "headless browser",
-          "headless screenshot",
-          "browser screenshot",
-          "playwright",
-          "js-rendered",
-          "javascript-rendered",
-          "dom inspection",
-          "live dom",
-          "browser debugging",
-          "headed verification",
-          "browser-mediated gather"
-        ],
-        "strong_intent_triggers": [],
         "config_layers": [
           {
             "layer_id": "agent-browser-saved-auth-state",
@@ -868,6 +687,21 @@
         "supports_public_skills": [
           "gather"
         ],
+        "intent_triggers": [
+          "browser automation",
+          "headless browser",
+          "headless screenshot",
+          "browser screenshot",
+          "playwright",
+          "js-rendered",
+          "javascript-rendered",
+          "dom inspection",
+          "live dom",
+          "browser debugging",
+          "headed verification",
+          "browser-mediated gather"
+        ],
+        "strong_intent_triggers": [],
         "recommendation_role": "runtime",
         "path": "integrations/tools/agent-browser.json",
         "source": "local-integration",
@@ -886,6 +720,13 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "impl",
+          "quality",
+          "spec"
+        ],
         "intent_triggers": [
           "evaluator-backed behavior review",
           "behavior evaluation",
@@ -900,13 +741,6 @@
           "동작 평가"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "impl",
-          "quality",
-          "spec"
-        ],
         "recommendation_role": "validation",
         "path": "integrations/tools/cautilus.json",
         "source": "local-integration",
@@ -924,6 +758,11 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "gather"
+        ],
         "intent_triggers": [
           "defuddle",
           "reader extraction",
@@ -935,11 +774,6 @@
           "article extraction"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "gather"
-        ],
         "recommendation_role": "runtime",
         "path": "integrations/tools/defuddle.json",
         "source": "local-integration",
@@ -958,16 +792,6 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [
-          "github issue",
-          "github pull request",
-          "github discussion",
-          "github repository",
-          "github gather",
-          "gh cli",
-          "github private"
-        ],
-        "strong_intent_triggers": [],
         "config_layers": [
           {
             "layer_id": "authenticated-gh",
@@ -984,6 +808,16 @@
         "supports_public_skills": [
           "issue"
         ],
+        "intent_triggers": [
+          "github issue",
+          "github pull request",
+          "github discussion",
+          "github repository",
+          "github gather",
+          "gh cli",
+          "github private"
+        ],
+        "strong_intent_triggers": [],
         "recommendation_role": null,
         "path": "integrations/tools/github-worker.json",
         "source": "local-integration",
@@ -1001,6 +835,11 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
         "intent_triggers": [
           "secret scan",
           "secret detection",
@@ -1010,11 +849,6 @@
           "git secret scan"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "quality"
-        ],
         "recommendation_role": "validation",
         "path": "integrations/tools/gitleaks.json",
         "source": "local-integration",
@@ -1032,6 +866,12 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "narrative",
+          "quality"
+        ],
         "intent_triggers": [
           "render markdown",
           "markdown render",
@@ -1041,12 +881,6 @@
           "narrative render"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "narrative",
-          "quality"
-        ],
         "recommendation_role": "runtime",
         "path": "integrations/tools/glow.json",
         "source": "local-integration",
@@ -1055,7 +889,7 @@
       {
         "id": "nose",
         "kind": "external_binary",
-        "summary": "Required (>=0.15.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed dup-ratchet/clone baselines are seeded on 0.15.0 (schema v6) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.",
+        "summary": "Required (>=0.17.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed dup-ratchet/clone baselines are seeded on 0.17.0 (schema v7) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.",
         "access_modes": [
           "binary"
         ],
@@ -1063,6 +897,11 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
         "intent_triggers": [
           "nose",
           "clone family",
@@ -1076,11 +915,6 @@
           "코드 중복"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "quality"
-        ],
         "recommendation_role": "validation",
         "path": "integrations/tools/nose.json",
         "source": "local-integration",
@@ -1097,6 +931,11 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
         "intent_triggers": [
           "python lint",
           "lint python",
@@ -1106,11 +945,6 @@
           "python complexity"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "quality"
-        ],
         "recommendation_role": "validation",
         "path": "integrations/tools/ruff.json",
         "source": "local-integration",
@@ -1129,6 +963,9 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [],
         "intent_triggers": [
           "*.spec.md",
           ".spec.md",
@@ -1159,9 +996,6 @@
           "executable spec",
           "spec syntax"
         ],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [],
         "recommendation_role": null,
         "path": "integrations/tools/specdown.json",
         "source": "local-integration",
@@ -1179,6 +1013,11 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
         "intent_triggers": [
           "sloc",
           "source lines of code",
@@ -1189,11 +1028,6 @@
           "language inventory"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "quality"
-        ],
         "recommendation_role": "validation",
         "path": "integrations/tools/tokei.json",
         "source": "local-integration",
@@ -1211,6 +1045,12 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality",
+          "setup"
+        ],
         "intent_triggers": [
           "dead code",
           "dead file",
@@ -1220,63 +1060,12 @@
           "stale module"
         ],
         "strong_intent_triggers": [],
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "quality",
-          "setup"
-        ],
         "recommendation_role": "validation",
         "path": "integrations/tools/vulture.json",
         "source": "local-integration",
         "layer": "external integration"
       }
     ],
-    "workflow_integrations": [
-      {
-        "id": "worktree-create",
-        "layer": "workflow integration",
-        "path": "integrations/worktree/adapter.example.yaml",
-        "summary": "Create and prepare git worktrees through the Charness worktree CLI.",
-        "trigger_phrases": [
-          "worktree",
-          "git worktree",
-          "create worktree",
-          "add worktree",
-          "worktree create",
-          "worktree add",
-          "fresh worktree",
-          "new worktree",
-          "prepare worktree"
-        ],
-        "next_step": "Use `charness worktree create --prepare --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` when the operator wants adapter-declared setup to run immediately."
-      },
-      {
-        "id": "worktree-cleanup",
-        "layer": "workflow integration",
-        "path": "integrations/worktree/adapter.example.yaml",
-        "summary": "Safely remove finished git worktrees through the Charness worktree CLI.",
-        "trigger_phrases": [
-          "cleanup worktree",
-          "clean up worktree",
-          "remove worktree",
-          "delete worktree",
-          "worktree cleanup",
-          "worktree remove",
-          "worktree teardown"
-        ],
-        "next_step": "Use `charness worktree cleanup --path <worktree>` for a dry-run plan; add `--delete-merged-branch --yes` only after local branch containment is the intended cleanup policy."
-      }
-    ],
-    "trusted_skills": [],
-    "tool_recommendations": [],
-    "tool_recommendation_query": null,
-    "support_skill_recommendations": [],
-    "support_recommendation_query": null,
-    "workflow_recommendations": [],
-    "public_skill_recommendations": [],
-    "public_recommendation_query": null,
-    "support_recommendation_note": null,
-    "next_step": null
+    "trusted_skills": []
   }
 }

@@ -343,7 +343,7 @@ def test_gather_triggered_without_step_refuses(tmp_path: Path) -> None:
     created = "2026-05-31"
     _seed_other_evidence(tmp_path, created)
     report = ce.check_complete_evidence(
-        tmp_path, _full_goal(created=created, context_sources=_URL_SOURCE, coordination="Routing: see find-skills\n")
+        tmp_path, _full_goal(created=created, context_sources=_URL_SOURCE, coordination="Routing: impl — selected from installed metadata\n")
     )
     assert report["gather_floor"]["triggered"] is True
     assert report["gather_floor"]["satisfied"] is False
@@ -420,7 +420,7 @@ def test_release_triggered_without_step_refuses(tmp_path: Path) -> None:
         _full_goal(
             created=created,
             context_sources=_LOCAL_SOURCE,
-            coordination="Routing: see find-skills\n",
+            coordination="Routing: impl — selected from installed metadata\n",
             release_work="- What changed: ran bump_version.py --part patch\n",
         ),
     )
@@ -470,7 +470,7 @@ def test_both_floors_can_refuse_together(tmp_path: Path) -> None:
         _full_goal(
             created=created,
             context_sources=_URL_SOURCE,
-            coordination="Routing: see find-skills\n",
+            coordination="Routing: impl — selected from installed metadata\n",
             release_work="- bumped via bump_version.py\n",
         ),
     )
@@ -486,7 +486,7 @@ def test_issue_closeout_triggered_without_step_refuses(tmp_path: Path) -> None:
         _full_goal(
             created=created,
             context_sources="- GitHub issue #277: closeout binding regression\n",
-            coordination="Routing: see find-skills\n",
+            coordination="Routing: impl — selected from installed metadata\n",
         ),
     )
     assert report["issue_closeout_floor"]["triggered"] is True
@@ -551,7 +551,7 @@ def test_github_issue_url_context_triggers_gather_and_issue_floors(tmp_path: Pat
         _full_goal(
             created=created,
             context_sources="- https://github.com/corca-ai/charness/issues/277\n",
-            coordination="Routing: see find-skills\n",
+            coordination="Routing: impl — selected from installed metadata\n",
         ),
     )
     assert report["gather_floor"]["triggered"] is True
@@ -568,7 +568,7 @@ def test_issue_closeout_grandfathers_pre_rule_goal(tmp_path: Path) -> None:
         _full_goal(
             created=created,
             context_sources="- GitHub issue #277: closeout binding regression\n",
-            coordination="Routing: see find-skills\n",
+            coordination="Routing: impl — selected from installed metadata\n",
         ),
     )
     assert report["issue_closeout_floor"]["in_scope"] is False
@@ -600,7 +600,7 @@ def test_phase_route_triggers_do_not_treat_regression_suite_as_debug() -> None:
     }
 
 
-def test_phase_routing_triggered_without_required_skill_refuses(tmp_path: Path) -> None:
+def test_phase_routing_selected_owner_skill_with_basis_satisfies(tmp_path: Path) -> None:
     created = "2026-06-04"
     _seed_other_evidence(tmp_path, created)
     report = ce.check_complete_evidence(
@@ -608,18 +608,17 @@ def test_phase_routing_triggered_without_required_skill_refuses(tmp_path: Path) 
         _full_goal(
             created=created,
             context_sources=_LOCAL_SOURCE,
-            coordination="Routing: see find-skills for current phase\n",
+            coordination="Routing: impl — selected from installed metadata\n",
             release_work="- What changed: updated goal helper behavior\n",
         ),
     )
     assert report["phase_routing_floor"]["triggered"] is True
     assert report["phase_routing_floor"]["required"] == ["impl"]
-    assert report["phase_routing_floor"]["evidence"] == {"impl": "ref_incomplete"}
-    assert {e["floor"] for e in report["coordination_missing"]} == {"phase_routing"}
-    assert report["ok"] is False
+    assert report["phase_routing_floor"]["evidence"] == {"impl": "ref"}
+    assert not any(e["floor"] == "phase_routing" for e in report.get("coordination_missing", []))
 
 
-def test_phase_routing_satisfied_by_find_skills_skill_reference(tmp_path: Path) -> None:
+def test_phase_routing_satisfied_by_selected_owner_skill_reference(tmp_path: Path) -> None:
     created = "2026-06-04"
     _seed_other_evidence(tmp_path, created)
     report = ce.check_complete_evidence(
@@ -627,7 +626,7 @@ def test_phase_routing_satisfied_by_find_skills_skill_reference(tmp_path: Path) 
         _full_goal(
             created=created,
             context_sources=_LOCAL_SOURCE,
-            coordination="Routing: find-skills selected impl and quality for this slice\n",
+            coordination="Routing: impl and quality selected from installed metadata for this slice\n",
             release_work=(
                 "- What changed: updated goal helper behavior\n"
                 "- Targeted verification: pytest -q tests/quality_gates/test_goal_coordination_floors.py\n"
@@ -645,10 +644,10 @@ def test_phase_routing_satisfied_by_find_skills_skill_reference(tmp_path: Path) 
 
 def test_join_soft_wraps_joins_continuation_but_not_adjacent_field() -> None:
     joined = md.join_soft_wraps(
-        "Routing: find-skills recommends\nimpl and quality here\nGather: n/a — x\n"
+        "Routing: impl selected from installed metadata\nquality here\nGather: n/a — x\n"
     )
     # the bare continuation line merges into the Routing value...
-    assert "Routing: find-skills recommends impl and quality here" in joined
+    assert "Routing: impl selected from installed metadata quality here" in joined
     # ...but the following `Gather:` field line stays its own line (no over-join).
     assert "\nGather: n/a — x" in joined
 
@@ -663,7 +662,7 @@ def test_phase_routing_satisfied_when_routed_skill_wraps_to_continuation(tmp_pat
         _full_goal(
             created=created,
             context_sources=_LOCAL_SOURCE,
-            coordination="Routing: find-skills recommends\nimpl and quality for this slice\n",
+            coordination="Routing: impl selected from installed metadata\nquality for this slice\n",
             release_work=(
                 "- What changed: updated goal helper behavior\n"
                 "- Targeted verification: pytest -q tests/quality_gates/test_goal_coordination_floors.py\n"
@@ -819,7 +818,7 @@ def _complete_goal_missing_gather(created: str, slug: str) -> str:
         f"Activation: `/goal @charness-artifacts/goals/{created}-{slug}.md`\n\n"
         "## Goal\n\nx\n\n"
         f"## Context Sources\n\n- https://example.com/spec the external design source\n\n"
-        "## Coordination Cues\n\nRouting: see find-skills (no Gather step recorded)\n\n"
+        "## Coordination Cues\n\nRouting: impl — selected from installed metadata (no Gather step recorded)\n\n"
         f"{sections}"
         "## Final Verification\n\n"
         f"Retro: charness-artifacts/retro/{created}-{slug}.md\n"
@@ -862,7 +861,7 @@ def test_coordination_floors_missing_created_fails_closed_and_runs() -> None:
     cf.apply_coordination_floors(
         report,
         "## Context Sources\n\n- https://example.com/spec\n\n"
-        "## Coordination Cues\n\nRouting: see find-skills\n",
+        "## Coordination Cues\n\nRouting: impl — selected from installed metadata\n",
     )
 
     assert report["coordination_scope"]["in_scope"] is True

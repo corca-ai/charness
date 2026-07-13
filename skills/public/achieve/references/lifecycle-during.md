@@ -103,18 +103,17 @@ rejected by one of these gates, run the aggregate to surface **all** of them at
 once rather than fix-and-retry one rejection at a time — serial single-gate
 rejections after a green suite are pure waste the aggregate removes.
 
-### Coordination cues (find-skills routing)
+### Coordination cues (owner-skill routing)
 
 The goal template seeds a `## Coordination Cues` section the agent fills *during*
 the run — not a phase→skill map baked into `achieve`. Defer *which* skill answers
-a phase or boundary to `find-skills`' recommendation engine — `--recommend-for-task`,
-or `--recommendation-role <runtime|validation> --next-skill-id <skill>` — and
-record the route it returns. `achieve` owns the
-slot and the two closeout floors below; `find-skills` owns the recommendation
-content. Seeding the cue in the artifact (where the agent reads it mid-run), not
-only in a reference read once at `/achieve` shaping, is deliberate: a read-once
-role table is inert exactly when the cue would fire, and an inline map would
-duplicate find-skills' shipped engine as a staler copy.
+a phase or boundary to installed skill metadata/model judgment, and record the
+selected owner skill and basis. Use the read-only catalog only when hidden
+support or integration availability is unclear. `achieve` owns the slot and the
+two closeout floors below. Seeding the cue in the artifact (where the agent
+reads it mid-run), not only in a reference read once at `/achieve` shaping, is
+deliberate: a read-once role table is inert exactly when the cue would fire, and
+an inline map would be a staler copy.
 
 Stop and ask the user when an unexpected blocker, an evidence conflict, or a
 policy/product decision appears that cannot be resolved autonomously. Flip the

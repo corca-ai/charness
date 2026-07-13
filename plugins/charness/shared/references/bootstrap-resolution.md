@@ -51,12 +51,12 @@ SKILL_DIR="$(realpath path/to/cache/charness/skills/<skill-id>)"
 
 For Codex plugin caches the path is host-defined and rotates on
 `charness update`. When a documented path goes stale, use
-[resolve_skill_path.py](../../public/find-skills/scripts/resolve_skill_path.py)
+[charness catalog resolve-skill-path](../../../scripts/capability_catalog.py)
 from any directory whose `$SKILL_DIR` is known to discover the current
 location:
 
 ```bash
-python3 "$SKILL_DIR/scripts/resolve_skill_path.py" \
+charness catalog resolve-skill-path --repo-root . \
   --skill-id <id> --marketplace <m> --plugin <p> --reported-path <stale>
 ```
 

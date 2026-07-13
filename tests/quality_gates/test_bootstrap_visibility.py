@@ -9,13 +9,8 @@ from runtime_bootstrap import load_path_module
 
 from .support import ROOT
 
-FIND_SKILLS_SCRIPT = "skills/public/find-skills/scripts/resolve_adapter.py"
 ANNOUNCEMENT_SCRIPT = "skills/public/announcement/scripts/resolve_adapter.py"
 NARRATIVE_SCRIPT = "skills/public/narrative/scripts/resolve_adapter.py"
-_find_skills_resolve_adapter = load_path_module(
-    "skills.public.find_skills.scripts.resolve_adapter",
-    ROOT / FIND_SKILLS_SCRIPT,
-)
 _announcement_resolve_adapter = load_path_module(
     "skills.public.announcement.scripts.resolve_adapter",
     ROOT / ANNOUNCEMENT_SCRIPT,
@@ -62,26 +57,6 @@ def test_narrative_resolve_adapter_fallback_prefers_richer_truth_docs(tmp_path: 
     ]
     assert "charness-artifacts/narrative/latest.md" in payload["warnings"][1]
     assert "pin .agents/narrative-adapter.yaml" in payload["warnings"][2]
-
-
-def test_find_skills_resolve_adapter_explains_local_first_boundary(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-
-    result = run_resolve_adapter(
-        monkeypatch,
-        capsys,
-        FIND_SKILLS_SCRIPT,
-        _find_skills_resolve_adapter,
-        "--repo-root",
-        str(repo),
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["artifact_path"] == "charness-artifacts/find-skills/latest.md"
-    assert "local-first capability inventory" in payload["bootstrap_expectations"]["what_you_get_after_one_run"]
-    assert "does not search arbitrary external registries" in payload["bootstrap_expectations"]["what_this_does_not_do"]
-    assert "stays inside this repo" in payload["warnings"][2]
 
 
 def test_announcement_resolve_adapter_explains_draft_only_defaults(tmp_path: Path, monkeypatch, capsys) -> None:

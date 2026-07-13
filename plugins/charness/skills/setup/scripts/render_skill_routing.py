@@ -39,24 +39,15 @@ def _installed_skill_ids(root: Path | None) -> list[str]:
 
 
 def _render_skill_routing(public_skill_ids: list[str]) -> tuple[str, list[str]]:
-    installed = set(public_skill_ids)
     lines = [
         "## Skill Routing",
         "",
-        "At session start in this repo, route directly: a pickup follows docs/handoff.md `## Workflow Trigger`, capability discovery invokes the shared/public charness skill `find-skills`, and other requests start the durable work skill that best matches. Invoke `find-skills` when the capability map (`charness-artifacts/find-skills/latest.*`) is missing or stale, or when the route is genuinely unclear.",
+        "At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; otherwise choose the durable workflow from installed skill metadata and model judgment. If hidden support/integration availability is unclear, use the read-only `charness catalog list --repo-root <repo> --json` inventory. When a request names an external URL or source, use `gather` before deciding; validation closeout or operator-reading tests go through `quality`.",
         "",
-        "Use `charness-artifacts/find-skills/latest.*` as the default map of installed public skills, support skills, synced support surfaces, and integrations.",
-        "",
-        "When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, ask the `find-skills` skill to recommend a route for the task before ad hoc shell or tool use; recommendation-shaped probes are read-only by default, while plain inventory refreshes own `charness-artifacts/find-skills/latest.*`.",
-        "",
-        "External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.",
-        "",
-        "Validation-shaped closeout or operator reading test requests go through `quality` validation recommendations before HITL or same-agent manual review.",
-        "",
-        "Keep this block short. Detailed routing belongs in installed skill metadata and `find-skills` output, not in a long checked-in catalog.",
+        "The SessionStart hook may inject this context when installed; this block is the fallback when it is absent.",
         "",
     ]
-    listed_skill_ids = ["find-skills"] if "find-skills" in installed else []
+    listed_skill_ids = []
     return "\n".join(lines) + "\n", listed_skill_ids
 
 

@@ -9,14 +9,14 @@ Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --outp
 
 ```text
 usage: charness [-h]
-                {init,update,doctor,version,uninstall,reset,task,capability,goal,tool,session-capture,worktree}
+                {init,update,doctor,version,uninstall,reset,task,catalog,capability,goal,tool,session-capture,worktree}
                 ...
 
 Thin charness CLI for managed local install, capability resolution, and
 external tool install/update/doctor flows.
 
 positional arguments:
-  {init,update,doctor,version,uninstall,reset,task,capability,goal,tool,session-capture,worktree}
+  {init,update,doctor,version,uninstall,reset,task,catalog,capability,goal,tool,session-capture,worktree}
     init                Bootstrap or refresh the managed local install
                         surface, cloning the managed checkout first when it is
                         missing.
@@ -31,6 +31,8 @@ positional arguments:
                         preserving the managed checkout and CLI.
     task                Claim, submit, abort, or inspect a repo-local agent
                         task envelope.
+    catalog             Inspect or refresh deterministic installed capability
+                        inventory and resolve stale skill paths.
     capability          Resolve repo-local logical capabilities through
                         `<repo-root>/.charness/local/capability.json` and
                         inspect provider readiness.

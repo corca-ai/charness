@@ -6,7 +6,6 @@
   "bundles": {
     "public_skills": [
       "create-skill",
-      "find-skills",
       "quality",
       "release"
     ],
@@ -26,8 +25,7 @@
   },
   "validation": {
     "smoke_scenarios": [
-      "quality-adapter-checked-in",
-      "find-skills-local-first"
+      "quality-adapter-checked-in"
     ]
   },
   "notes": [

@@ -1,7 +1,7 @@
 """Sibling host-hook intent registry and state-liveness checks.
 
 `reconcile_host_hooks` fans out to every opt-in sibling hook intent
-(find-skills routing, the skill anchor edit-time guard). Each sibling used to
+(session routing, the skill anchor edit-time guard). Each sibling used to
 be a copied lazy-import block in `host_hook_install_lib`; this registry makes
 a new hook intent a table row instead. Per-host error isolation stays inside
 each sibling's own reconcile function (an enabled host's failure reports
@@ -45,7 +45,7 @@ class SiblingHookIntent:
 
 SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
     SiblingHookIntent(
-        key="find_skills_routing",
+        key="session_routing",
         module="host_hook_find_skills",
         reconcile_function="reconcile_find_skills_hooks",
         status_function="find_skills_routing_status",

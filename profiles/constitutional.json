@@ -13,8 +13,7 @@
       "debug",
       "retro",
       "handoff",
-      "create-skill",
-      "find-skills"
+      "create-skill"
     ],
     "preset_ids": [
       "portable-defaults"

@@ -95,8 +95,8 @@ def required_shape() -> str:
         f"  - OR `skipped: <reason>: <detail>` where <reason> is one of: {skip_enum}",
         f"    (free text is rejected) and the whole reason is >= {min_skip} chars.",
         "",
-        "`## Coordination Cues` — `Routing:` must NAME both `find-skills` and the routed",
-        "skill for recorded work (e.g. `Routing: find-skills recommended achieve for the",
+        "`## Coordination Cues` — `Routing:` must NAME the selected owner skill and basis",
+        "for recorded work (e.g. `Routing: impl — selected from installed metadata for the",
         "goal lifecycle`), or `Routing: n/a — <reason>` (>= 30 chars). Gather/Release/Issue",
         "closeout floors fire the same way — see `--type goal-coordination` for the full shape.",
         "",
@@ -199,7 +199,7 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
                  "detail": (sf or {}).get("reason") if sf else
                  "the cited retro names transferable waste; add a `Structural follow-up: <destination>` line"})
     for key, sub, label in (
-        ("phase_routing", "phase_routing_floor", "`Routing:` names find-skills + the routed skill"),
+        ("phase_routing", "phase_routing_floor", "`Routing:` names the selected owner skill + basis"),
         ("gather", "gather_floor", "`Gather:` routes the external source through gather"),
         ("release", "release_floor", "`Release:` verifies the release surface"),
         ("issue_closeout", "issue_closeout_floor", "`Issue closeout:` stages the tracked-issue close"),

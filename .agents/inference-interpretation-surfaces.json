@@ -71,15 +71,6 @@
       "note": "Length smell (warn band / --headroom near-limit) ONLY. The hard over-limit file gate is a verified fact and never carries the declaration (function length is gated separately by ruff PLR0915, a tool rule); this validator is file-granular and relies on the per-surface #322 tests for that intra-file boundary."
     },
     {
-      "surface_id": "find-skills-recommendation",
-      "kind": "python",
-      "declaration_file": "skills/public/find-skills/scripts/list_capabilities_lib.py",
-      "declaration_symbol": "RECOMMENDATION_INTERPRETATION",
-      "consumer_reference": "skills/public/find-skills/references/discovery-order.md",
-      "consumer_anchor": "does the top-ranked route actually fit THIS task and repo state",
-      "note": "Recommendation ranking. Declaration rides only when a ranking is produced (has_recommendations); the plain capability inventory is a verified fact and stays clean."
-    },
-    {
       "surface_id": "runtime-hot-spots",
       "kind": "python",
       "declaration_file": "skills/public/quality/scripts/render_runtime_summary.py",

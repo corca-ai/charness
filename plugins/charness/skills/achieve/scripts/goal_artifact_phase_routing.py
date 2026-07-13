@@ -94,7 +94,7 @@ def _parse_routing_step(section_body: str | None, skill: str) -> tuple[str | Non
         kind, value = _classify_step(match.group(1).strip())
         if kind == "optout":
             return kind, value
-        if kind == "ref" and _skill_named(value, "find-skills") and _skill_named(value, skill):
+        if kind == "ref" and _skill_named(value, skill):
             return kind, value
         if first[0] is None:
             first = (kind if kind != "ref" else "ref_incomplete", value)
@@ -104,7 +104,7 @@ def _parse_routing_step(section_body: str | None, skill: str) -> tuple[str | Non
 def apply_phase_routing_floor(report: dict[str, Any], text: str) -> None:
     """Attach the phase-routing floor verdict to ``report``.
 
-    ``find-skills`` owns the actual route recommendation. This floor only proves
+    Installed skill metadata/model judgment owns the route decision. This floor only proves
     that recorded implementation/debug/quality/issue work did not remain
     ``achieve``-only at closeout.
     """
@@ -131,11 +131,11 @@ def apply_phase_routing_floor(report: dict[str, Any], text: str) -> None:
     }
     if missing_routes:
         reason = (
-            "this goal's recorded work crossed phase boundaries ("
+        "this goal's recorded work crossed phase boundaries ("
             + ", ".join(missing_routes)
             + ") but `## Coordination Cues` records no `Routing:` line that names "
-            "`find-skills` and the routed skill, and no `Routing: n/a — <reason>` "
-            "opt-out (>=30 chars); ask `find-skills` for the phase route and record it "
+            "the routed skill, and no `Routing: n/a — <reason>` opt-out (>=30 chars); "
+            "choose the phase route from installed skill metadata/model judgment and record it "
             "before flipping to complete"
         )
         report["phase_routing_floor"]["reason"] = reason

@@ -141,7 +141,6 @@ The rest of the public surface groups by intent:
   [`hitl`](./skills/hitl/SKILL.md) agent -> person,
   [`issue`](./skills/issue/SKILL.md) GitHub issue filing and resolution
 - operate the harness:
-  [`find-skills`](./skills/find-skills/SKILL.md),
   [`create-skill`](./skills/create-skill/SKILL.md),
   [`create-cli`](./skills/create-cli/SKILL.md),
   [`release`](./skills/release/SKILL.md)

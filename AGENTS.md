@@ -5,7 +5,7 @@
 ## Start Here
 
 - [docs/design-north-star.md](./docs/design-north-star.md) is the governing design standard: the harness briefs a capable judge and keeps teeth only where a wrong answer escapes. Default to judgment on reversible work; at irreversible boundaries (issue/PR close, release publish, external writes, deletions) success is provisional — confirm with a different observer and a different evidence channel, never a terminal green. When a gate, doc, or contract conflicts with this, the north star wins and the conflicting surface is what gets fixed.
-- Session-opening routing, capability discovery, the `gather` rule for external sources, and validation-before-`hitl` routing are all owned by `## Skill Routing` below.
+- Session-opening routing, capability inventory, the `gather` rule for external sources, and validation-before-`hitl` routing are all owned by `## Skill Routing` below.
 - Load matching skills before improvising, and continue active repo work from [docs/handoff.md](./docs/handoff.md).
 - Cautilus is eval-only and ask-before-run: before any `cautilus evaluate ...`, consult `python3 scripts/plan_cautilus_proof.py --repo-root . --json` and use the repo wrapper `python3 scripts/run_cautilus_eval.py` instead of a bare `cautilus evaluate` call. Full eval-only/disabled-surface contract: [skills/public/quality/references/cautilus-on-demand.md](./skills/public/quality/references/cautilus-on-demand.md).
 - Read [charness-artifacts/retro/recent-lessons.md](./charness-artifacts/retro/recent-lessons.md) before changing repo operating contracts, prompt or skill surfaces, exports, or artifacts.
@@ -14,17 +14,13 @@
 
 ## Skill Routing
 
-At session start in this repo, route directly: a pickup follows docs/handoff.md `## Workflow Trigger`, capability discovery invokes the shared/public charness skill `find-skills`, and other requests start the durable work skill that best matches. Invoke `find-skills` when the capability map (`charness-artifacts/find-skills/latest.*`) is missing or stale, or when the route is genuinely unclear.
-
-Use `charness-artifacts/find-skills/latest.*` as the default map of installed public skills, support skills, synced support surfaces, and integrations.
-
-When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, ask the `find-skills` skill to recommend a route for the task before ad hoc shell or tool use; recommendation-shaped probes are read-only by default, while plain inventory refreshes own `charness-artifacts/find-skills/latest.*`.
+At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment. When hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo> --json` inventory. If the SessionStart hook is installed it may inject this context; it remains context-only, not a classifier.
 
 External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.
 
 Validation-shaped closeout or operator reading test requests go through `quality` validation recommendations before HITL or same-agent manual review.
 
-Keep this block short. Detailed routing belongs in installed skill metadata and `find-skills` output, not in a long checked-in catalog.
+Keep this block short. Detailed routing belongs in installed skill metadata and model judgment, not in a long checked-in catalog.
 
 ## Subagent Delegation
 

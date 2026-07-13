@@ -327,7 +327,7 @@ only when its trigger is present, and is satisfied by a step line in
 - **phase-routing floor** — when recorded work sections show implementation
   (`What changed:` / `Commits:`), bug/RCA/debug cues, quality-gate cues, or
   issue-closeout cues, the run must record a `Routing:` line that names
-  `find-skills` and the routed skill (`impl`, `debug`, `quality`, or `issue`),
+  the selected owner skill (`impl`, `debug`, `quality`, or `issue`) and its basis,
   or `Routing: n/a — <reason>` (≥30 chars). This floor is presence-only: it
   proves `achieve` coordinated the owner skill boundary, not that the prose route
   was semantically perfect.

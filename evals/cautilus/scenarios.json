@@ -17,12 +17,6 @@
           ]
         },
         {
-          "skill_id": "find-skills",
-          "scenario_ids": [
-            "find-skills-local-first"
-          ]
-        },
-        {
           "skill_id": "gather",
           "scenario_ids": [
             "gather-adapter-bootstrap"

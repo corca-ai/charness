@@ -7,7 +7,6 @@
     "create-skill",
     "critique",
     "debug",
-    "find-skills",
     "gather",
     "handoff",
     "hitl",
@@ -229,38 +228,6 @@
         "Essence/deletion redesign (2026-06-21): `SKILL.md` was distilled rather than relocated. The `bug-class issue resolve invokes the same substrate through causal-review.md Lens N` cross-reference is now stated once in the intro (naming that causal-review.md's lenses map onto the debug steps) instead of being repeated at the five-whys step, the detection-gap step, and the sibling-search step; and the Bootstrap five-bullet `canonical artifact contract shortcut` restatement of the scaffold helper's JSON output was folded into one sentence that points at the helper (preserving the unique consumer-repo `do not copy validator scripts` note). 193->185 lines. The public `debug` consumer contract is unchanged: every test-pinned phrase (`five-whys-causal-chain`, `disconfirmer-first.md` claim rung + `cheapest falsifier first`, the `callable directly` standalone marker, the classified-sibling-scan phrases `wrong mental model` / `classify each sibling decision` / `proof level separately from the decision`, and the invariant-first phrases) stays at a canonical body home; `debug` carries no CORE/PACKAGE contract rows, so zero edits to `scripts/check_skill_contracts.py` or any test were needed (tests/quality_gates/test_debug_rca_reference_cite_chain.py and tests/test_debug_scaffold.py stay green at 21 passed). Routing, trigger selection, adapter behavior, the scaffold helper/validator command, and maintained Cautilus scenarios are unchanged. Scenario review: the `debug` dogfood scenario (investigate a regression, leave a durable charness-artifacts/debug/latest.md record) is unaffected because the deleted prose was duplicate cross-references and a helper-output restatement, not workflow steps. One bounded fresh-eye reviewer confirmed essence preserved.",
         "Capability-first rollout slice (2026-06-27): debug now names the user or operator capability that failed when it matters, states the capability restored by correct behavior, and adds `Capability Failure` to the durable artifact shape. This preserves routing to `debug`, adapter/scaffold behavior, and maintained `debug-adapter-bootstrap` scenario coverage; no live Cautilus run or scenario registry mutation is claimed.",
         "Falsifiability internalization, Plan A (2026-06-30): the scaffold now seeds `## Reproduction`, `## Hypothesis`, and `## Verification` with method hints (smallest-reproduction-or-`n/a — could not reproduce` escape; `falsifiable claim ... | disconfirmer:`; confirmed/disconfirmed result), and `validate_debug_artifact.py` requires the current `latest.md` `## Hypothesis` to carry a `disconfirmer:` honesty marker (a justified `disconfirmer: n/a — <why>` escape or the trivial-fix short-circuit satisfies it). This internalizes the `five-steps.md` step-5 / `disconfirmer-first.md` falsifiable-hypothesis rule that the prior bare-`TODO` seeds left un-internalized, proven by the 2026-06-30 debug claim-fidelity re-capture (`falsifiable-hypothesis-before-fix` outcome FAIL on a static-scan-only run). The marker is an honesty contract surfaced for fresh-eye review, NOT an anti-gaming gate — the OUTCOME assertion in `evals/cautilus/debug-claim-fidelity/outcome-assertions.json` stays the substance bar, which a `disconfirmer: n/a` static-only run still fails. Routing, adapter, the scaffold helper/validator command, section order/count, and the maintained `debug-adapter-bootstrap` scenario are unchanged (no routing/bootstrap change); deterministic coverage lives in `tests/test_debug_artifact.py`. No live Cautilus run or scenario-registry mutation is claimed."
-      ]
-    },
-    {
-      "skill_id": "find-skills",
-      "prompt": "Which skill should handle this named capability, and what existing support surface already covers it?",
-      "repo_shape": "repo with multiple public and support skills where the user names a capability instead of a file path",
-      "expected_skill": "find-skills",
-      "expected_artifact": "charness-artifacts/find-skills/latest.md",
-      "validation_tier": "evaluator-required",
-      "adapter_requirement": "required",
-      "acceptance_evidence": [
-        "routes the prompt to `find-skills` instead of an adjacent public skill",
-        "names or refreshes `charness-artifacts/find-skills/latest.md` when the skill persists durable state",
-        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
-        "uses the named skill or capability lookup path before falling back to broad filesystem search",
-        "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`"
-      ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-06-04",
-      "observed_evidence": [
-        "`validate_current_pointer_freshness.validate_find_skills_integration_claims` now applies the find-skills provider-id alias (`_alias_path`) and text sanitization (`_sanitize_value`) to the on-disk manifest values before comparing them against `charness-artifacts/find-skills/latest.json`. This keeps the inventory's provider-detail abstraction intact (the eval `find-skills-split-package-surface` continues to forbid raw provider details such as `github-gh` and secret env names anywhere in the inventory output) while making the freshness validator able to confirm that every on-disk integration manifest is represented and that its `intent_triggers`/`supports_public_skills`/`recommendation_role` values match the inventory's sanitized form.",
-        "The checked-in public core now treats `charness-artifacts/find-skills/latest.*` as the canonical capability inventory artifact, while recommendation queries stay ad hoc and should not rewrite that durable surface just because the invocation shape changed.",
-        "The current repo memory at `charness-artifacts/retro/recent-lessons.md` explicitly records the repeat trap here: canonical inventory and ad hoc recommendation output must stay separate so ordinary inspection does not create false dirty state or erode operator trust.",
-        "That keeps `find-skills-canonical-artifact-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to distinguish canonical evidence from query-shaped output still maps directly to checked-in `find-skills` behavior and artifact policy.",
-        "`find-skills --recommend-for-task` now covers support-skill discoverability when workflow language implies a hidden support surface; the Specdown fixture routes `.spec.md`, `docs/specs`, and `check:jq` to `support/specdown` without polluting the canonical inventory artifact.",
-        "The canonical inventory artifact now has a durable `workflow_integrations` section for worktree create/cleanup while keeping ad hoc `workflow_recommendations` query output out of the persisted startup artifact.",
-        "Worktree workflow recommendations now point at packaged `integrations/worktree/adapter.example.yaml` instead of source-only docs, so installed plugin users can read the emitted path.",
-        "The task-text recommendation path is bounded by negative proof: weak singleton or generic `report.json` / doctest language without a strong Specdown anchor does not route unrelated work through `support/specdown`.",
-        "Slack URL task text now surfaces `gather-slack` from support capability intent triggers in read-only recommendation mode, so `find-skills` no longer hides the checked-in Slack gather wrapper behind a broad no-match note.",
-        "Issue #264 (2026-05-31): public-skill portability sweep marker-qualified authoring-repo-only docs/tests/source-tree cites and converted same-plugin sibling skill references to exported-layout relative paths, while validate_skills now rejects bare author-only docs/tests/source-tree skill cites and preserves operator-surface allowlists. This changes vendored reference hygiene only; routing, trigger selection, adapter behavior, and maintained Cautilus scenarios remain unchanged. Guarded by tests/quality_gates/test_skill_validation.py and validate_skills.",
-        "Issue #277 (2026-06-02): recommendation-shaped `find-skills` invocations now default to read-only artifact mode unless `--write-artifact` is explicit, while canonical inventory refreshes still own `charness-artifacts/find-skills/latest.*`. The maintained `find-skills-local-first` scenario remains a routing/inventory scenario; deterministic coverage proves read-only recommendation mode and forced artifact writes.",
-        "Workflow-review closeout (2026-06-02): routing-only recommendation probes can now pass `--summary` to emit counts plus recommendation results without dumping full `public_skills` / `support_skills` inventory arrays. Guarded by `test_recommend_for_task_summary_keeps_routing_output_compact`."
       ]
     },
     {

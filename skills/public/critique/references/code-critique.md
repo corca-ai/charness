@@ -79,10 +79,10 @@ not a paste.
 
 When a counterweight bin surfaces a missing capability — for example, a
 gate that should exist but does not, an integration manifest that the diff
-implies but does not declare, an adapter the diff hardcodes around — route
-the gap through `find-skills` so the next move resolves to the right
-skill, support capability, or integration instead of inventing a new one
-inline.
+implies but does not declare, an adapter the diff hardcodes around — inspect
+installed skill metadata/model judgment first. If hidden support or integration
+availability is unclear, run `charness catalog list --repo-root . --json`; do
+not treat catalog facts as a semantic classifier.
 
 ## Output Shape
 
@@ -93,6 +93,6 @@ records:
 - `Defect Class Cross-Link` — when applicable, retro-lessons path that
   matches the surfaced concern
 - `Capability Gap` — when applicable, the missing capability and the
-  `find-skills` query that should resolve it
+  installed skill metadata/model judgment or catalog availability check that should resolve it
 - `Pre-Merge Action` — for each `Act Before Ship` concern, the concrete
   diff edit, test add, or rollback path required before merge

@@ -107,7 +107,9 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
 4. Verify with the strongest honest path. `references/verification-ladder.md`
    owns the per-surface rules — browser output, the lint gate, external /
    third-party APIs, and the completion-report categories. Prefer executed proof
-   over code inspection, resolve runtime support via `find-skills`, and when
+   over code inspection, use installed skill metadata/model judgment for runtime
+   support (and `charness catalog list --repo-root . --json` only for hidden
+   availability), and when
    runtime proof is unavailable say explicitly that it did not run.
    - for validation-shaped review, closeout, or operator reading work, run
      deterministic gates first; the repo's cautilus adapter and

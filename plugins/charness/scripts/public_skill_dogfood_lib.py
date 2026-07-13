@@ -21,7 +21,6 @@ REPO_SHAPE_HINTS = {
     "create-cli": "tooling repo where ad hoc shell or Python entrypoints already exist and the command surface needs to be normalized",
     "create-skill": "skills repo with adjacent public/support surfaces, references, and packaging constraints already present",
     "debug": "active repo slice with a reproducible failure, existing logs or tests, and enough local state to preserve a durable debug artifact",
-    "find-skills": "repo with multiple public and support skills where the user names a capability instead of a file path",
     "gather": "repo that already keeps gathered artifacts and a source identity that may need refresh-in-place behavior",
     "handoff": "mature repo with an existing handoff artifact and enough adjacent state that the next pickup path can be ambiguous",
     "hitl": "repo with a bounded review target and a decision that must stay explicitly human-owned",
@@ -44,7 +43,6 @@ PROMPT_HINTS = {
     "create-cli": "We keep adding ad hoc scripts here; normalize this into one repo-owned CLI before the command surface sprawls further.",
     "create-skill": "Improve this skill package first so the trigger, references, and helper surface stay portable.",
     "debug": "Investigate this regression and leave a durable record of what actually failed before changing code.",
-    "find-skills": "Which skill should handle this named capability, and what existing support surface already covers it?",
     "gather": "Fetch this external source into a durable local artifact instead of giving me a one-turn summary.",
     "handoff": "Use docs/handoff.md as the pickup surface and continue the next highest-leverage workflow from there.",
     "hotl": "We shipped the scheduled digest to the live channel yesterday — close the loop on it with actual evidence, and tell me what cannot be proven yet.",
@@ -76,10 +74,6 @@ EVIDENCE_OVERRIDES = {
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
         "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts",
         "starts public-skill adapter/bootstrap/example changes from the changed skill's customer journey",
-    ],
-    "find-skills": [
-        "uses the named skill or capability lookup path before falling back to broad filesystem search",
-        "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`",
     ],
     "gather": [
         "runs or follows a gather plan that names the support owner, route order, exact-source policy, and typed stop conditions before acquisition",

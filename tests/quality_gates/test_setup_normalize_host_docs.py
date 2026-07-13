@@ -6,7 +6,7 @@ from scripts.setup_host_docs_lib import normalize_host_docs
 
 
 def _routing_payload(_: Path) -> dict[str, object]:
-    return {"markdown": "## Skill Routing\n\nUse `find-skills` first.\n"}
+    return {"markdown": "## Skill Routing\n\nUse installed skill metadata; consult `charness catalog list --repo-root . --json` only for hidden availability.\n"}
 
 
 def _normalize(repo: Path, *, execute: bool = False) -> dict[str, object]:

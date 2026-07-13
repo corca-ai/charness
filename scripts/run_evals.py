@@ -227,160 +227,6 @@ def scenario_handoff_relative_links(root: Path) -> None:
         )
         result = run_command(["python3", "scripts/check_doc_links.py", "--repo-root", str(tmp)], cwd=root)
         expect_success(result, "handoff relative-link portability")
-def seed_find_skills_fixture(tmp: Path) -> None:
-    local_skill_dir = tmp / "skills" / "public" / "local-demo"
-    trusted_skill_dir = tmp / "vendor" / "trusted-skills" / "trusted-demo"
-    adapter_dir = tmp / ".agents"
-    integrations_dir = tmp / "integrations" / "tools"
-    local_skill_dir.mkdir(parents=True)
-    trusted_skill_dir.mkdir(parents=True)
-    adapter_dir.mkdir(parents=True)
-    integrations_dir.mkdir(parents=True)
-
-    (local_skill_dir / "SKILL.md").write_text(
-        "\n".join(["---", "name: local-demo", 'description: "Local demo skill."', "---", "", "# Local Demo"]) + "\n",
-        encoding="utf-8",
-    )
-    (trusted_skill_dir / "SKILL.md").write_text(
-        "\n".join(["---", "name: trusted-demo", 'description: "Trusted demo skill."', "---", "", "# Trusted Demo"])
-        + "\n",
-        encoding="utf-8",
-    )
-    (adapter_dir / "find-skills-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                f"repo: {tmp.name}",
-                "language: en",
-                "output_dir: charness-artifacts/find-skills",
-                "preset_id: portable-defaults",
-                "customized_from: portable-defaults",
-                "trusted_skill_roots:",
-                "- vendor/trusted-skills",
-                "prefer_local_first: true",
-                "allow_external_registry: false",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    (integrations_dir / "demo-tool.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "tool_id": "demo-tool",
-                "kind": "external_binary",
-                "upstream_repo": "https://example.com/demo-tool",
-                "homepage": "https://example.com/demo-tool",
-                "lifecycle": {
-                    "install": {"commands": ["demo-tool install"], "notes": "Install demo-tool."},
-                    "update": {"commands": ["demo-tool update"], "notes": "Update demo-tool."},
-                },
-                "checks": {
-                    "detect": {"commands": ["demo-tool --version"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {"commands": ["demo-tool health"], "success_criteria": ["exit_code:0"]},
-                },
-                "access_modes": ["binary", "degraded"],
-                "capability_requirements": {
-                    "permission_scopes": ["browser.session"],
-                },
-                "readiness_checks": [
-                    {
-                        "check_id": "browser-setup",
-                        "summary": "Browser setup is complete.",
-                        "commands": ["test -f .browser-ready"],
-                        "success_criteria": ["exit_code:0"],
-                    }
-                ],
-                "version_expectation": {"policy": "advisory", "constraint": "latest"},
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    (tmp / ".browser-ready").write_text("ready\n", encoding="utf-8")
-
-
-def assert_find_skills_payload(payload: dict[str, object]) -> None:
-    if payload["public_skills"][0]["id"] != "local-demo":
-        raise EvalError(f"find-skills local-first discovery: unexpected public skills {payload['public_skills']!r}")
-    if payload["trusted_skills"][0]["id"] != "trusted-demo":
-        raise EvalError(f"find-skills local-first discovery: unexpected trusted skills {payload['trusted_skills']!r}")
-    integration = payload["integrations"][0]
-    if integration["id"] != "demo-tool":
-        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
-    if integration["kind"] != "external_binary":
-        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
-    if integration["access_modes"] != ["binary", "degraded"]:
-        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
-    if integration["capability_requirements"] != {"permission_scopes": ["browser.session"]}:
-        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
-    if integration["readiness_checks"] != [{"check_id": "browser-setup", "summary": "Browser setup is complete."}]:
-        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
-    artifacts = payload.get("artifacts", {})
-    if artifacts.get("markdown_path") != "charness-artifacts/find-skills/latest.md":
-        raise EvalError(f"find-skills local-first discovery: unexpected artifacts {artifacts!r}")
-    if artifacts.get("json_path") != "charness-artifacts/find-skills/latest.json":
-        raise EvalError(f"find-skills local-first discovery: unexpected artifacts {artifacts!r}")
-    if not isinstance(artifacts.get("generated_at"), str):
-        raise EvalError(f"find-skills local-first discovery: unexpected artifacts {artifacts!r}")
-
-def scenario_find_skills_local_first(root: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="charness-eval-find-skills-") as tmpdir:
-        tmp = Path(tmpdir)
-        seed_find_skills_fixture(tmp)
-
-        result = run_command(
-            ["python3", "skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(tmp)],
-            cwd=root,
-        )
-        expect_success(result, "find-skills local-first discovery")
-        payload = json.loads(result.stdout)
-        assert_find_skills_payload(payload)
-        markdown_path = tmp / payload["artifacts"]["markdown_path"]
-        json_path = tmp / payload["artifacts"]["json_path"]
-        if not markdown_path.is_file() or not json_path.is_file():
-            raise EvalError("find-skills local-first discovery: expected latest.md/latest.json artifacts to be written")
-        markdown_text = markdown_path.read_text(encoding="utf-8")
-        if "## Support Skills" not in markdown_text:
-            raise EvalError("find-skills local-first discovery: markdown artifact missing support skill section")
-
-def scenario_find_skills_split_package_surface(root: Path) -> None:
-    script_path = root / "skills" / "find-skills" / "scripts" / "list_capabilities.py"
-    if not script_path.is_file():
-        script_path = root / "skills" / "public" / "find-skills" / "scripts" / "list_capabilities.py"
-    result = run_command(
-        ["python3", str(script_path), "--repo-root", str(root), "--read-only"],
-        cwd=root,
-    )
-    expect_success(result, "find-skills split package surface")
-    inventory = json.loads(result.stdout)
-    raw_output = result.stdout
-    if len(inventory["support_skills"]) < 2:
-        raise EvalError(
-            "find-skills split package surface: expected support skills from sibling package, "
-            f"got {len(inventory['support_skills'])}"
-        )
-    if len(inventory["support_capabilities"]) < 2:
-        raise EvalError(
-            "find-skills split package surface: expected support capabilities from sibling package, "
-            f"got {len(inventory['support_capabilities'])}"
-        )
-    integration_ids = {entry["id"] for entry in inventory["integrations"]}
-    for expected in ("github-worker",):
-        if expected not in integration_ids:
-            raise EvalError(f"find-skills split package surface: missing integration {expected}")
-    for forbidden in (
-        "github-gh",
-        "SLACK" + "_BOT_TOKEN",
-        "authenticated `gh`",
-        "www.googleapis" + ".com",
-    ):
-        if forbidden in raw_output:
-            raise EvalError(f"find-skills split package surface: leaked provider detail {forbidden!r}")
-
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
@@ -411,8 +257,6 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "setup-operator-acceptance-synthesis": scenario_setup_operator_acceptance_synthesis,
         "setup-compact-skill-routing-discoverability": scenario_setup_compact_skill_routing_discoverability,
         "handoff-relative-links": scenario_handoff_relative_links,
-        "find-skills-local-first": scenario_find_skills_local_first,
-        "find-skills-split-package-surface": scenario_find_skills_split_package_surface,
         "support-sync-contracts": scenario_support_sync_contracts,
         "representative-skill-contracts": scenario_representative_skill_contracts,
         "issue-sibling-search-concept-fixtures": scenario_issue_sibling_search_concept_fixtures,
@@ -431,9 +275,7 @@ def ensure_fixtures_present(root: Path) -> None:
             raise EvalError(f"missing required eval fixture `{path.relative_to(root)}`")
 
 
-NO_FIXTURE_SCENARIOS = {
-    "find-skills-split-package-surface",
-}
+NO_FIXTURE_SCENARIOS: set[str] = set()
 
 
 def run_selected_scenarios(root: Path, selected: list[Scenario], jobs: int) -> None:

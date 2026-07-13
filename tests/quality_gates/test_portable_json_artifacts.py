@@ -18,10 +18,6 @@ ANNOUNCEMENT_RECORD = load_script_module(
     "tests.quality_gates.portable_record_announcement",
     ROOT / "skills/public/announcement/scripts/record_announcement.py",
 )
-FIND_SKILLS_LIST = load_script_module(
-    "tests.quality_gates.portable_list_capabilities",
-    ROOT / "skills/public/find-skills/scripts/list_capabilities.py",
-)
 HITL_CHECK_REVIEW_STATE = load_script_module(
     "tests.quality_gates.portable_hitl_check_review_state",
     ROOT / "skills/public/hitl/scripts/check_review_state.py",
@@ -68,46 +64,6 @@ def run_loaded_script(monkeypatch, capsys, script_name: str, module: object, *ar
 def _assert_no_repo_absolute_path(payload: object, repo: Path) -> None:
     rendered = json.dumps(payload, ensure_ascii=False)
     assert str(repo.resolve()) not in rendered
-
-
-def test_find_skills_inventory_persists_portable_adapter_paths(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    agents_dir = repo / ".agents"
-    skill_dir.mkdir(parents=True)
-    agents_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text("---\nname: demo\ndescription: Demo.\n---\n\n# Demo\n", encoding="utf-8")
-    (agents_dir / "find-skills-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "language: en",
-                "output_dir: charness-artifacts/find-skills",
-                "trusted_skill_roots: []",
-                "prefer_local_first: true",
-                "allow_external_registry: false",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    result = run_loaded_script(
-        monkeypatch,
-        capsys,
-        "list_capabilities.py",
-        FIND_SKILLS_LIST,
-        "--repo-root",
-        str(repo),
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["adapter"]["path"] == ".agents/find-skills-adapter.yaml"
-    latest = json.loads((repo / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
-    assert latest["inventory"]["adapter"]["path"] == ".agents/find-skills-adapter.yaml"
-    _assert_no_repo_absolute_path(latest, repo)
 
 
 def test_markdown_preview_manifest_omits_absolute_repo_root(tmp_path: Path, monkeypatch, capsys) -> None:

@@ -66,7 +66,7 @@ def test_normalize_common_closeout_form_errors() -> None:
 
     assert "Status: complete" in updated
     assert "Retro: charness-artifacts/retro/2026-07-09-demo.md" in updated
-    assert "- Routing: find-skills -> quality \u2014 used the quality planner." in updated
+    assert "- Routing: quality \u2014 used the quality planner." in updated
     assert "none \u2014 no operator-only decision remains" in updated
     assert "Retro dispositions: applied:" in updated
     assert len(fixes) == 5

@@ -57,13 +57,13 @@ tracked issues or publication: missing adapters are safe `audit-only`; a repo
 adapter may choose `handoff-only` or a publish-capable carrier and may require
 the `issue` skill's direct-commit draft validator before push.
 
-## Coordination Cues (find-skills routing + closeout floors)
+## Coordination Cues (owner-skill routing + closeout floors)
 
 The role table above is the standalone-skill reference, not the run-time router.
 During an active run the goal artifact's `## Coordination Cues` section is where
-phase-appropriate routing actually happens, and it **defers which skill answers a
-boundary to `find-skills`** (`--recommend-for-task` /
-`--recommendation-role --next-skill-id`) — `achieve` never bakes a phase→skill
+phase-appropriate routing actually happens, and it selects the owner skill from
+installed metadata/model judgment (with the read-only catalog available only for
+hidden availability) — `achieve` never bakes a phase→skill
 map into the template or this reference. Seeding the cue in the artifact (read
 mid-run), not only in a table read once at shaping, is deliberate: a read-once
 table is inert exactly when the cue would fire.
@@ -73,9 +73,9 @@ alone gets skipped under context pressure and the miss is silent and costly:
 
 - **phase routing** — when recorded work shows implementation, bug/RCA,
   quality-gate, or issue-closeout boundaries, the run records a `Routing:` line
-  naming `find-skills` and the routed skill (`impl`, `debug`, `quality`, or
-  `issue`) or `Routing: n/a — <reason>`. This proves the goal did not remain
-  `achieve`-only; it does not replace the `find-skills` recommendation.
+  naming the selected owner skill (`impl`, `debug`, `quality`, or `issue`) and
+  its basis, or `Routing: n/a — <reason>`. This proves the goal did not remain
+  `achieve`-only.
 - **gather** — when `## Context Sources` names an external source (URL / Slack /
   Notion / Docs / Drive), the run records a `Gather:` step (or
   `Gather: n/a — <reason>`). Mandated by `CLAUDE.md`'s external-source routing.

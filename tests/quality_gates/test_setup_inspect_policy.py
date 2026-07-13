@@ -700,7 +700,7 @@ def test_setup_inspect_accepts_compact_discovery_first_skill_routing(tmp_path: P
                 "",
                 "## Skill Routing",
                 "",
-                "- At session startup, call `find-skills` once to discover capability routing before broader exploration.",
+                    "- At session startup, use installed skill metadata/model judgment; run `charness catalog list --repo-root . --json` before broader exploration only for hidden capability availability.",
                 "- Then choose the installed durable work skill that best matches the task.",
                 "",
             ]
@@ -713,7 +713,7 @@ def test_setup_inspect_accepts_compact_discovery_first_skill_routing(tmp_path: P
     finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
     assert skill_routing["matches_compact_block"] is False
     assert skill_routing["accepts_compact_discovery_first"] is True
-    assert skill_routing["find_skills_available"] is True
+    assert skill_routing["catalog_available"] is True
     assert skill_routing["decision_needed"] is None
     assert "skill_routing_block_custom_or_drifted" not in finding_types
 

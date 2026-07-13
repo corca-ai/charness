@@ -290,8 +290,7 @@ Required payload fields:
 
 Likely touch points:
 
-- [skills/public/find-skills/SKILL.md](../skills/public/find-skills/SKILL.md)
-- [skills/public/find-skills/scripts/list_capabilities.py](../skills/public/find-skills/scripts/list_capabilities.py)
+- [scripts/capability_catalog.py](../scripts/capability_catalog.py)
 - shared control-plane helpers under `scripts/`
 - possibly [docs/control-plane.md](./control-plane.md) if the operator-facing
   contract needs one small addition

@@ -3,14 +3,15 @@ from __future__ import annotations
 import re
 
 # Charness goal/skill routing markers. An AGENTS.md that routes work through the
-# Charness goal/skill surface (a `## Skill Routing` block that calls `find-skills`,
+# Charness goal/skill surface (a `## Skill Routing` block that names installed
+# metadata or the capability catalog,
 # or explicit Charness goal/achieve routing) is a repo where long autonomous
 # slices accumulate. Such a repo should carry a commit-discipline rule so the
 # whole implementation does not sit uncommitted until a human notices it after a
 # long autonomous run.
 GOAL_ROUTING_HEADING = "## Skill Routing"
 GOAL_ROUTING_MARKERS = (
-    "find-skills",
+    "charness catalog",
     "charness goal",
     "charness:achieve",
     "charness-artifacts/goals",

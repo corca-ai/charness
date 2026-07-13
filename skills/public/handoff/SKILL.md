@@ -118,7 +118,8 @@ substring-matches these); the compression and spill WHY-prose stays in
 
 ## Guardrails
 
-- On a session-open pickup — including one routed here by `find-skills` after a
+- On a session-open pickup — including one routed here by the SessionStart hook
+  or the handoff Workflow Trigger after a
   bare handoff-doc mention — invoke the workflow named in the `Workflow Trigger`
   instead of only re-reading the handoff; mention-only reading is the
   recurring routing miss this contract guards against.

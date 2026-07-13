@@ -191,16 +191,13 @@ def test_impl_skill_routes_validation_and_browser_proof_explicitly() -> None:
     verification_ladder = (
         ROOT / "skills" / "public" / "impl" / "references" / "verification-ladder.md"
     ).read_text(encoding="utf-8")
-    find_skills = (ROOT / "skills" / "public" / "find-skills" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
 
     assert "operator reading" in skill_text
-    assert "--recommendation-role validation --next-skill-id" in find_skills
+    assert "hidden availability" in verification_ladder
     assert "say explicitly that it did not run" in skill_text
     assert "code/fixture" in skill_text
     assert "Browser-Facing Output" in verification_ladder
-    assert "same-agent/manual review" in verification_ladder
+    assert "metadata/model judgment" in verification_ladder
     assert "operator reading test" in dispatch
     assert "before downgrading to HITL" in dispatch
 

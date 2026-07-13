@@ -109,7 +109,7 @@ def test_charness_artifacts_subdirectory_is_allowlisted() -> None:
         [
             "charness-artifacts/goals/2026-05-28-x.md",
             "charness-artifacts/retro/2026-05-28-y.md",
-            "charness-artifacts/find-skills/latest.json",
+            "charness-artifacts/capability-catalog/latest.json",
         ]
     )
     assert result["classification"] == "docs-artifact-only"

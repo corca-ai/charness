@@ -150,8 +150,9 @@ brief's `closeout_handoff` note when starting closeout.
   verification, residual risk, non-claims, and the operator decision queue
 - at completion, an explicit disposition for each surfaced improvement
   (`applied: <what>` or `tracked issue`) — never prose-only memory
-- a `## Coordination Cues` section that defers phase routing to `find-skills`
-  (never an inline phase→skill map) and, at completion, `Routing:` / `Gather:`
+- a `## Coordination Cues` section that records routing from installed skill
+  metadata/model judgment (never an inline phase→skill map; use the catalog only
+  for hidden availability facts) and, at completion, `Routing:` / `Gather:`
   / `Release:` / `Issue closeout:` evidence (or an `n/a — <reason>` opt-out)
   whenever the matching closeout floor is triggered
 
@@ -164,7 +165,7 @@ brief's `closeout_handoff` note when starting closeout.
   nothing (pursue-only), slice/quality cadence, named proof levels (no provider/live
   claim from local checks), `handoff`-is-not-the-scratchpad, frame-over-slice-log,
   cached-input-is-not-waste, the inline-and-persisted `retro`, the
-  presence-only disposition floor, and `find-skills`-deferred coordination routing.
+  presence-only disposition floor, and metadata/model-judgment coordination routing.
 - Do not fabricate token, time, or tool-call metrics the host log does not expose.
 
 ## References

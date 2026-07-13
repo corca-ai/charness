@@ -58,7 +58,7 @@ def test_quality_behavior_recommendation_can_render_markdown_gate(monkeypatch, c
         "--behavior-seam",
         "skill-routing",
         "--subject-ref",
-        "skills/public/find-skills/SKILL.md",
+        "skills/public/quality/SKILL.md",
         "--risk-focus",
         "wrong skill selected for support-backed tasks",
         "--deterministic-gap",

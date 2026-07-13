@@ -4,16 +4,13 @@ import json
 import sys
 from pathlib import Path
 
+from scripts import capability_catalog as CAPABILITY_CATALOG
 from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES, synthesize_operator_acceptance
 from scripts.validate_quality_closeout_contract import validate_quality_closeout_contract
 from tests.script_loader import load_script_module
 
 from .support import ROOT
 
-LIST_CAPABILITIES = load_script_module(
-    "tests.quality_gates.script_behaviors_list_capabilities",
-    ROOT / "skills/public/find-skills/scripts/list_capabilities.py",
-)
 SURVEY_VERIFICATION = load_script_module(
     "tests.quality_gates.script_behaviors_survey_verification",
     ROOT / "skills/public/impl/scripts/survey_verification.py",
@@ -132,7 +129,7 @@ def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path, monk
                 "version: 1",
                 "repo: repo",
                 "language: en",
-                "output_dir: charness-artifacts/find-skills",
+                "output_dir: charness-artifacts/capability-catalog",
                 "trusted_skill_roots:",
                 "- vendor/trusted-skills",
                 "prefer_local_first: true",
@@ -143,9 +140,7 @@ def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path, monk
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(sys, "argv", ["list_capabilities.py", "--repo-root", str(repo)])
-    LIST_CAPABILITIES.main()
-    payload = json.loads(capsys.readouterr().out)
+    payload = CAPABILITY_CATALOG.list_catalog(repo)["inventory"]
     assert payload["public_skills"][0]["id"] == "local-demo"
     assert payload["trusted_skills"][0]["id"] == "trusted-demo"
 
