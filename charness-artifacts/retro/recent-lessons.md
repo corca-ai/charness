@@ -8,16 +8,16 @@
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md`; sources: 87)
+- Broad standing-test timing probes added little after the existing structured runtime and bounded scouts had already shown no safe speed candidate. The useful result was the explicit no-change decision, not more duration sampling. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`)
 - Exploration phase, moderate: the transient `uv.lock` hypothesis consumed a diagnostic branch, but repeated exact repro and syscall tracing disconfirmed attribution. This was necessary uncertainty reduction, not failed work; the no-fix outcome prevented a speculative regression. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
 - Gate-baseline runtime: final release quality remained about 72-75s and broad pytest about 37s. Those are measured safety costs within current budgets; only the two causally isolated duplicate-cost families were changed. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
-- Review phase, strong: three otherwise-useful fresh-eye results were quarantined because a worker or parent mutation overlapped the reviewer fingerprint window; one counterweight also staged shared files despite a read-only envelope. The guard prevented escape, but serializing parent writes around bounded reviews would avoid the reruns. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md`; sources: 87)
+- after publish, reconcile quality/goal/handoff claims from the release artifact before the final quality reviewer, then use that reviewer as a real contradiction check rather than a stale-text detector. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`)
 - bind this distinction into the v1 critique and release notes so future compatibility cuts do not reintroduce a shim to solve cleanup. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
-- every breaking removal plan must separate supported inputs, active internal names, historical evidence, and one-way deletion of already-owned external state before mutation. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
-- for future public-surface removal, lock a five-bucket matrix before mutation: active contract, generated export, compatibility alias, history, and external installed state. (source: `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`)
+- evaluate whether the release adapter needs a narrow declared surface for root `charness` host-plugin mutations; add a trigger only if it can request a safe, scoped host proof instead of forcing destructive real-host work. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`)
 
 ## Selection Policy
 
@@ -109,7 +109,7 @@
 - `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-13-find-skills-public-removal-retro.md`
+- `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`
 - `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-1-release-auto-retro.md`

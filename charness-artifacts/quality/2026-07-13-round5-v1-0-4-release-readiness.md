@@ -19,7 +19,10 @@ failure was found.
 - Custom-home Claude proof: public doctor/init/reset two-home tests passed and
   every Claude plugin subprocess now crosses the same selected-home seam.
 - Security baseline: secret scan and supply-chain checks passed.
-- Final verification-lock and release proof remain pending until the bundle is frozen.
+- Frozen-bundle standing broad pytest passed under the verification lock in
+  94.92s; the release gate then passed in 72.297s.
+- v1.0.4 public content and installed source/cache/host state were confirmed by
+  a bounded observer through unauthenticated REST and local doctor readback.
 
 ## Runtime Signals
 
@@ -52,8 +55,9 @@ failure was found.
 
 ## Missing
 
-- Final locked-bundle proof, semver/release critique, public release readback,
-  installed-version doctor/cache proof, and distinct-observer confirmation.
+- None for v1.0.4 acceptance. The locked bundle, semver/release critique,
+  substantive public readback, installed doctor/cache proof, and distinct
+  observer are bound to checked-in closeout evidence.
 
 ## Deferred
 
@@ -61,6 +65,8 @@ failure was found.
   before/after evidence and at least one retained real install/update smoke.
 - Do not broaden catalog root validation to list/resolve, permission matrices,
   symlink matrices, or Git-checkout requirements without operator evidence.
+- Real Claude custom-home execution remains an explicit nonclaim; evaluate a
+  safe root-CLI host-proof trigger separately rather than expanding this patch.
 
 ## Advisory
 
@@ -72,6 +78,10 @@ failure was found.
 
 - Delegated Review: executed — bounded speed and structure scouts independently measured test economics and structural/CLI surfaces; code critique then used two distinct angles and a separate counterweight, all read-only with zero fingerprint drift.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof): re-delegated for fixture economics and nested-process boundaries; parallelism and proof deletion were rejected because the measured cases exercise distinct stateful delivery boundaries.
+- Post-release review: the first bounded quality pass correctly returned HOLD
+  because durable artifacts lagged the already-passing release proof. Its public
+  and installed evidence requests are checked in; the final bounded re-review
+  passed with zero fingerprint drift before the goal flipped complete.
 
 ## Commands Run
 
@@ -82,10 +92,25 @@ failure was found.
 - `pytest -q tests/test_capability_catalog.py tests/charness_cli/test_codex_cache_refresh.py --durations=10`
 - focused custom-home public doctor/init/reset pytest (3 passed in 6.57s).
 - focused ruff, plugin parity, debug/critique validators, and reviewer fingerprints.
+- `run_slice_closeout.py --base v1.0.3 --verification-lock
+  --produce-mutation-coverage` (standing broad pytest passed in 94.92s).
+- repo release helper dry-run and execute; release quality passed in 72.297s,
+  fresh-checkout probes passed, public HTTPS returned 200, and install refresh
+  completed in 8.757s.
+- bounded observer read remote refs, unauthenticated GitHub REST content, and
+  installed doctor/cache state; evidence is durable in
+  `charness-artifacts/probe/2026-07-13-v1.0.4-independent-release-observer.json`.
 
 ## Recommended Next Quality Moves
 
-- active freeze and publish the catalog invalid-root repair only after final lock — capability_needed=release confidence; next_center=operator no-write safety; transformation=focused verified slice to patch bundle; proof_boundary=verification-lock plus distinct public observer; enforcement_posture=existing gates. North-star: prevent a wrong result escaping at publication. Floor-addition restraint: reuse focused regression and release gates; add no broad gate.
+- active preserve agreement among quality, goal, retro, and handoff whenever
+  post-release evidence changes —
+  capability_needed=durable closeout truth; next_center=post-release memory;
+  transformation=verified release to reconstructable next-session state;
+  proof_boundary=checked-in observer plus disposition review;
+  enforcement_posture=existing goal/artifact gates. North-star: prevent a
+  correct release from leaving a wrong durable answer. Floor-addition restraint:
+  use the existing closeout contract; add no broad gate.
 - passive revisit release-only managed-install economics only after a same-command retained-boundary experiment because distinct real install/update states currently justify the cost — capability_needed=test economics; next_center=release-only fixture setup; transformation=repeated setup to proven cheaper shared setup; proof_boundary=before/after command plus retained process smoke; enforcement_posture=no-gate because no safe delta is yet demonstrated.
 
 ## History

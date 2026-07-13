@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "kind": "independent-release-observer",
+  "goal_slug": "north-star-autonomous-two-hour-release-round-5",
+  "observed_at": "2026-07-13T18:00:00+09:00",
+  "observer": "bounded-fresh-eye",
+  "release": {
+    "tag": "v1.0.4",
+    "tag_sha": "ef4016b822bc6d3fc69e12c1618828aec20bc394",
+    "remote_main_sha": "843546969297ad64181d257c4fffdc9a78a37c27",
+    "api_url": "https://api.github.com/repos/corca-ai/charness/releases/tags/v1.0.4",
+    "html_url": "https://github.com/corca-ai/charness/releases/tag/v1.0.4",
+    "http_status": 200,
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-07-13T08:54:58Z",
+    "substantive_body": {
+      "catalog_invalid_root_fix": true,
+      "custom_home_claude_fix": true
+    }
+  },
+  "installed": {
+    "cli_version": "1.0.4",
+    "checkout_version": "1.0.4",
+    "provenance_version": "1.0.4",
+    "codex_source_version": "1.0.4",
+    "codex_cache_manifest_version": "1.0.4",
+    "claude_installed_version": "1.0.4",
+    "codex_source_cache_drift": false,
+    "checkout_git_head": "ef4016b8",
+    "claude_git_commit_sha": "ef4016b822bc6d3fc69e12c1618828aec20bc394"
+  },
+  "verdict": "confirmed",
+  "nonclaims": [
+    "remote main equals the release tag",
+    "real Claude custom-home runtime was exercised",
+    "the GitHub API readback was authenticated"
+  ]
+}

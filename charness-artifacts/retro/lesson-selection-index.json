@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-13",
-  "source_artifact_count": 326,
-  "candidate_count": 1430,
+  "source_artifact_count": 328,
+  "candidate_count": 1437,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1040,6 +1040,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:e9cbec1d78f8",
+      "kind": "current_focus",
+      "lesson": "Reviewed the evidence-admitted two-hour improvement run that fixed two operator boundary defects and published v1.0.4.",
+      "normalized_key": "reviewed the evidence admitted two hour improvement run that fixed two operator boundary defects",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+          "date": "2026-07-13",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0f41019435cd",
       "kind": "current_focus",
       "lesson": "This retro reviews goal `north-star-autonomous-two-hour-release-round-4`: a timeboxed autonomous sweep that admitted one issue-planner bug fix, two measured test-economics repairs, and one scaffold producer repair discovered by exact-byte verification.",
@@ -1096,26 +1116,6 @@
           "artifact_path": "charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md",
           "date": "2026-07-13",
           "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1150aad63b8b",
-      "kind": "next_improvement",
-      "lesson": "bind this distinction into the v1 critique and release notes so future compatibility cuts do not reintroduce a shim to solve cleanup.",
-      "normalized_key": "bind this distinction into the v1 critique and release notes so future compatibility cuts",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md",
-      "latest_source_date": "2026-07-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md",
-          "date": "2026-07-13",
-          "section": "Next Improvements"
         }
       ]
     }
@@ -2147,6 +2147,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:e9cbec1d78f8",
+      "kind": "current_focus",
+      "lesson": "Reviewed the evidence-admitted two-hour improvement run that fixed two operator boundary defects and published v1.0.4.",
+      "normalized_key": "reviewed the evidence admitted two hour improvement run that fixed two operator boundary defects",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+          "date": "2026-07-13",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0f41019435cd",
       "kind": "current_focus",
       "lesson": "This retro reviews goal `north-star-autonomous-two-hour-release-round-4`: a timeboxed autonomous sweep that admitted one issue-planner bug fix, two measured test-economics repairs, and one scaffold producer repair discovered by exact-byte verification.",
@@ -2207,6 +2227,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:2ac750ebe11a",
+      "kind": "next_improvement",
+      "lesson": "after publish, reconcile quality/goal/handoff claims from the release artifact before the final quality reviewer, then use that reviewer as a real contradiction check rather than a stale-text detector.",
+      "normalized_key": "after publish reconcile quality goal handoff claims from the release artifact before the final",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+          "date": "2026-07-13",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1150aad63b8b",
       "kind": "next_improvement",
       "lesson": "bind this distinction into the v1 critique and release notes so future compatibility cuts do not reintroduce a shim to solve cleanup.",
@@ -2221,6 +2261,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md",
+          "date": "2026-07-13",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:79b681b5fec4",
+      "kind": "next_improvement",
+      "lesson": "evaluate whether the release adapter needs a narrow declared surface for root `charness` host-plugin mutations; add a trigger only if it can request a safe, scoped host proof instead of forcing destructive real-host work.",
+      "normalized_key": "evaluate whether the release adapter needs a narrow declared surface for root charness host",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
           "date": "2026-07-13",
           "section": "Next Improvements"
         }
@@ -2327,6 +2387,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:af3b75829cb4",
+      "kind": "next_improvement",
+      "lesson": "keep the independent observer's substantive REST and installed doctor/cache evidence in a durable probe/disposition artifact, not only chat.",
+      "normalized_key": "keep the independent observer s substantive rest and installed doctor cache evidence in a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+          "date": "2026-07-13",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4352132f9bf7",
       "kind": "next_improvement",
       "lesson": "persist this retro plus the scaffold debug/RCA evidence and refresh recent lessons so the producer/final-consumer lesson is reconstructable.",
@@ -2387,6 +2467,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:7823886ab066",
+      "kind": "repeat_trap",
+      "lesson": "Broad standing-test timing probes added little after the existing structured runtime and bounded scouts had already shown no safe speed candidate. The useful result was the explicit no-change decision, not more duration sampling.",
+      "normalized_key": "broad standing test timing probes added little after the existing structured runtime and bounded",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3d1831dfeba2",
       "kind": "repeat_trap",
       "lesson": "Exploration phase, moderate: the transient `uv.lock` hypothesis consumed a diagnostic branch, but repeated exact repro and syscall tracing disconfirmed attribution. This was necessary uncertainty reduction, not failed work; the no-fix outcome prevented a speculative regression.",
@@ -2427,6 +2527,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:7d223abc08a5",
+      "kind": "repeat_trap",
+      "lesson": "Post-release quality reconciliation happened only after the closeout reviewer caught stale `Missing` text. Release proof and the quality memory were both correct in isolation but temporarily disagreed at their consumer boundary.",
+      "normalized_key": "post release quality reconciliation happened only after the closeout reviewer caught stale missing text",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:421930d02a85",
       "kind": "repeat_trap",
       "lesson": "Review phase, strong: three otherwise-useful fresh-eye results were quarantined because a worker or parent mutation overlapped the reviewer fingerprint window; one counterweight also staged shared files despite a read-only envelope. The guard prevented escape, but serializing parent writes around bounded reviews would avoid the reruns.",
@@ -2441,6 +2561,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:83eaa0302490",
+      "kind": "repeat_trap",
+      "lesson": "The quality-scaffold current pointer briefly looked like an overwrite bug because the required record resolver was skipped; reading the skill contract corrected the invocation without a product change.",
+      "normalized_key": "the quality scaffold current pointer briefly looked like an overwrite bug because the required",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
+      "latest_source_date": "2026-07-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md",
           "date": "2026-07-13",
           "section": "Waste"
         }

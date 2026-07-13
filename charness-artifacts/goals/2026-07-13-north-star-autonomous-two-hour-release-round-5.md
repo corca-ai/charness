@@ -1,6 +1,6 @@
 # Achieve Goal: North-Star Autonomous Two-Hour Release Round 5
 
-Status: active
+Status: complete
 Created: 2026-07-13
 Activation: `/goal @charness-artifacts/goals/2026-07-13-north-star-autonomous-two-hour-release-round-5.md`
 Timebox: 2h
@@ -13,12 +13,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice D — freeze and verify the release bundle.
-- Current slice intent: stop reversible product mutation, synchronize generated
-  surfaces, run the exact verification lock, and critique the semver/release
-  boundary before publication.
-- Next action: close Slice C, commit it, then run locked broad/security/packaging
-  proof and prepare v1.0.4 release evidence.
+- Current slice: complete — v1.0.4 published, installed, independently observed,
+  and reconciled into durable closeout state.
+- Current slice intent: none — the user-authorized endpoint and every triggered
+  proof floor are satisfied.
+- Next action: none — restart active host sessions before using the rotated
+  plugin cache; future candidates remain evidence-admitted handoff work.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -122,8 +122,8 @@ independently verify one patch release beyond v1.0.3.
 | A | Measure current bug/quality/speed/security candidates | Avoid backlog and prior-session anchoring | planner packets, timings, candidate ledger | completed |
 | B | Repair the highest-leverage reproduced defect | Serve observed behavior before cleanup | RCA, focused regression, critique, commit | completed |
 | C | Improve one independently measured test/maintenance seam | Use remaining time for honest economics | same-command delta, retained boundary coverage, critique | completed |
-| D | Freeze and verify the bundle | Prevent local greens from becoming release confidence | exact lock, security/parity, semver and release review | planned |
-| E | Push/publish the patch and complete goal closeout | Complete the user-authorized release boundary, not any issue lifecycle | public refs/body, install/doctor, retro/handoff | planned |
+| D | Freeze and verify the bundle | Prevent local greens from becoming release confidence | exact lock, security/parity, semver and release review | completed |
+| E | Push/publish the patch and complete goal closeout | Complete the user-authorized release boundary, not any issue lifecycle | public refs/body, install/doctor, retro/handoff | completed |
 
 ### Candidate/Lens Ledger Contract
 
@@ -135,17 +135,9 @@ off-goal deferrals also enter `## Off-Goal Findings` with a reopen trigger.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+none — publication and install refresh completed under the user's explicit
+authority; no credential, issue-lifecycle, or manual verification decision is
+left for the operator.
 
 ## Coordination Cues
 
@@ -185,6 +177,12 @@ per the bullets above when that boundary is crossed):
 Routing: quality — selected from installed metadata to own current quality, runtime, security, and structural evidence before implementation.
 Routing: debug — selected to require a falsifiable invalid-root hypothesis, detection gap, and sibling search before repair.
 Routing: impl — selected to own the smallest refresh-specific backend/consumer/test slice and generated plugin synchronization.
+Routing: release — selected to own semver, frozen-bundle proof, publication, install refresh, and public readback.
+Routing: retro — selected to persist run waste, decisions, counterfactuals, and the host-proof sibling search.
+Routing: handoff — selected to leave v1.0.4 installed state, nonclaims, and the next evidence-admitted probe reconstructable.
+Gather: n/a — no external source became implementation context; live GitHub REST was release verification, not gathered knowledge.
+Release: charness-artifacts/release/latest.md — v1.0.4 published, refreshed, and verified.
+Issue closeout: n/a — #433 and #436 remained context-only and no issue lifecycle action was requested.
 
 ## Discuss Before Activation
 
@@ -217,7 +215,7 @@ applies.
 
 - Objective: Prevent catalog refresh from turning an invalid explicit repo root into writes or a traceback.
 - Why this approach: The current public repro was operator-visible and crossed an artifact-writer boundary.
-- Commits: pending this slice closeout commit.
+- Commits: c33b8e1c (`Reject invalid catalog refresh roots`).
 - What changed: Added refresh-specific backend destination validation, typed error translation in both CLI consumers, synced plugin export, and backend/direct/handler/real-process regressions.
 - Alternatives rejected: Rejected a shared _repo_root guard, Git-checkout requirement, and broader list/resolve narrowing.
 - Targeted verification: 21 focused tests in 14.06s; ruff; plugin byte parity; missing/file real-process rc2 with clean channels and no missing-path creation.
@@ -231,7 +229,7 @@ applies.
 
 - Objective: Ensure explicit Charness home selection reaches every Claude plugin observation and mutation.
 - Why this approach: The two-home reproduction showed a final doctor verdict composed from conflicting state owners, and wrong-home mutation could escape beyond a false diagnostic.
-- Commits: pending this slice closeout commit.
+- Commits: 588488bd (`Bind Claude operations to custom home`).
 - What changed: Added one Claude subprocess adapter seam that preserves the environment and binds HOME only for custom workflows; routed list, marketplace, install/update/enable, uninstall/remove; added public split-home doctor/init/reset regressions.
 - Alternatives rejected: Rejected a doctor-only patch, generic subprocess HOME override, PATH/XDG rewrite, and per-call ad hoc env construction.
 - Targeted verification: Three public two-home tests passed in 6.57s; all managed-install + extended tests passed in worker verification; ruff; no raw Claude run call remains.
@@ -240,6 +238,34 @@ applies.
 - Off-goal findings: Real Claude XDG and textual-symlink semantics remain nonclaims until field evidence; PATH intentionally stays inherited.
 - Lessons carried forward: Explicit file-state authority must cross the subprocess seam before final guidance or host mutation consumes it.
 - Metrics: RCA converted to public tests: explicit-home-not-propagated-to-host-process; wrong-home `.claude` creation is now a direct sentinel.
+
+### Slice 4: Slice D — frozen bundle verification
+
+- Objective: Freeze the accepted code delta and prove the exact release candidate.
+- Why this approach: Publication confidence must come from the immutable bundle, not accumulated focused greens.
+- Commits: d4d8a37c prepared the reviewed v1.0.4 bundle.
+- What changed: Synchronized release notes, release critique, generated surfaces, and the verification-lock evidence; no further product mutation entered the bundle.
+- Alternatives rejected: Rejected helper-only confidence, an earlier-HEAD broad result, and Cautilus without operator approval.
+- Targeted verification: Standing broad pytest passed under verification lock in 94.92s with mutation coverage; release quality passed in 72.297s; security, supply-chain, parity, and fresh-checkout probes passed.
+- Test duplication pressure: No speedup claimed; locked proof preserved the standing delivery boundary and release-only managed-install cases.
+- Critique: Patch semver accepted; rollback and real-Claude nonclaim recorded in charness-artifacts/critique/2026-07-13-v1-0-4-release-critique.md.
+- Off-goal findings: Real-host trigger taxonomy for root CLI host mutation deferred to a safe scoped design probe.
+- Lessons carried forward: A frozen verification result must identify the exact bundle and remain separate from later evidence-only commits.
+- Metrics: verification lock 94.92s; release gate 72.297s; fresh checkout initial/after amend 2.891s/2.806s.
+
+### Slice 5: Slice E — v1.0.4 publication and closeout
+
+- Objective: Publish, install, independently observe, and durably close v1.0.4 without touching issue lifecycle.
+- Why this approach: The user authorized the irreversible boundary, while the north star requires a different observer and channel before success is final.
+- Commits: ef4016b8 is the v1.0.4 release tag; 84354696 records post-publish verification on main.
+- What changed: Published the GitHub release, refreshed installed source and host caches, recorded public/install evidence, and reconciled quality, goal, retro, and handoff state.
+- Alternatives rejected: Rejected terminal helper green, tag-presence-only proof, issue closure, and an invented test-speed claim.
+- Targeted verification: Unauthenticated GitHub REST returned HTTP 200 with both fixes; remote refs matched expected tag/main roles; CLI, checkout, provenance, Codex source/cache, and Claude state read 1.0.4 with no Codex drift.
+- Test duplication pressure: No new product tests after freeze; closeout reused release and observer evidence.
+- Critique: Fresh release observer confirmed public/install state; post-release quality reviewer HOLD drove durable reconciliation; disposition artifact records remaining nonclaims.
+- Off-goal findings: #433/#436 remained open; Cautilus and remote CI were not run; real Claude custom-home execution remains unclaimed.
+- Lessons carried forward: After publish, reconcile consumer-facing quality memory before asking a final reviewer to close the goal.
+- Metrics: publish/create/verify 60.055s; install refresh 8.757s; API published_at 2026-07-13T08:54:58Z.
 
 ## Context Sources
 
@@ -306,8 +332,12 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
-- None at shaping time; record findings only after current reproduction or
-  measurement distinguishes them from round-four history.
+- Release-only managed-install proof remains expensive, but the measured cases
+  cross distinct stateful delivery boundaries. Reopen only with a same-command
+  cheaper setup and at least one retained real install/update smoke.
+- The release planner does not currently classify root `charness` host-plugin
+  mutations as real-host proof triggers. Reopen only with a safe scoped proof
+  design; v1.0.4 keeps real Claude custom-home execution as a nonclaim.
 
 ## Final Verification
 
@@ -316,9 +346,15 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md
+Host log probe: charness-artifacts/probe/2026-07-13-v1.0.4-independent-release-observer.json
+Disposition review: charness-artifacts/critique/2026-07-13-north-star-round-5-disposition-review.md
+
+Early close rationale: the user-authorized terminal endpoint is published, installed, and independently verified; another mutation would create unshipped work after the frozen release and re-enter a separately scoped publication lane.
+Early close report: charness-artifacts/goals/2026-07-13-north-star-autonomous-two-hour-release-round-5-early-close-report.md
+Next slice candidate: release-only managed-install fixture economics | decision: defer | reason: no safe same-command improvement was demonstrated, and a future slice must retain a real install/update smoke.
+Next slice candidate: root CLI host-plugin real-host trigger | decision: defer | reason: the first-sighting taxonomy gap needs a safe scoped proof design and must not force destructive host mutation merely for coverage.
+Outcome sufficiency check: sufficient: two current operator-boundary defects were reproduced and fixed, locked deterministic gates passed, v1.0.4 was published and installed, and a different observer confirmed substantive public content plus no-drift installed state.
 
 ## User Verification Instructions
 
@@ -329,5 +365,5 @@ Disposition review: TODO — create or explicitly skip only when policy allows b
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied post-release memory reconciliation in this closeout; retained the measured no-change decision for test economics; deferred a narrow root-CLI real-host trigger probe to the handoff; persisted the independent observer evidence.
+Structural follow-up: none — the root-CLI host-proof mapping is a first-sighting design probe with an explicit release nonclaim, so docs/handoff.md carries the reopen condition until evidence justifies a guard.
