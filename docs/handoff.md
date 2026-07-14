@@ -2,68 +2,46 @@
 
 ## Workflow Trigger
 
-- Pickup with no explicit task invokes `charness:handoff` and runs chunked
-  routing over this baton plus live issues. Restart first only when that pickup
-  will test installed-plugin behavior, not for repo-local triage. An explicit
-  user task keeps its own authority.
+- With no explicit task, invoke `charness:handoff` and run chunked routing over
+  this baton and live issues. Restart first only when testing installed-plugin
+  behavior; an explicit user task keeps its own authority.
 
 ## Current State
 
-- Continue from the verified v1.0.7 public/install state; admit new work only
-  from a current issue, reproduction, measurement, or operator request.
-- v1.0.7 is public at tag `264df378`; clean local/remote main `08b15814` is the
-  expected post-publish evidence commit, and GitHub has no open issues.
-- Installed CLI, source checkout, Codex source/cache, and Claude plugin state
-  read 1.0.7. Active sessions may retain stale injected cache paths; restart
-  Claude Code and Codex before judging the refreshed plugin.
-- Release quality, fresh-checkout probes, public HTTP/API readback, installed
-  readback, and a separate fresh-eye observer passed. The release artifact owns
-  the detailed evidence and presence-versus-behavior boundary.
-- Provider mutation run 29289933683 passed on issue-resolution commit
-  `c6a1e828` (Python 89.0%, JavaScript 93.0%); it is not release-HEAD proof.
-- Cautilus 0.19.3 is current. Charness now selects JSON explicitly for parsed
-  commands; no Cautilus evaluation was run or claimed.
-- Nine Python length advisories remain intentionally: seven cohesive units and
-  two production validators deferred to behavior-led refactoring.
-- The v1.0.7 release contains the lifecycle-feedback truthfulness,
-  the shared `SKILL_DIR` shell bootstrap contract, and reviewer-boundary
-  consumer portability fixes. Installed cache proof confirms Claude's packaged
-  reviewer asset, Codex's native `explorer` mapping, and the fingerprint command
-  from an unrelated consumer repository.
+- v1.0.8 is public at tag `f1b0009e`; post-publish evidence commit `a04b9d21`
+  is on `main` and the release's GitHub/API and distinct HTTPS checks passed.
+- Release quality and fresh-checkout probes passed. The installed CLI, Codex
+  source/cache, and Claude plugin read 1.0.8; active host sessions may retain
+  old injected skill paths and must restart before installed-behavior judgment.
+- Charness now requests `gpt-5.6-terra` with `medium` effort and
+  `fork_turns: "none"` for its coding, review, and dynamic-workflow subagents.
+  This is a request contract, not proof that a provider applied those settings.
+  The next operator can rely on the release artifact for detailed evidence.
 
 ## Next Session
 
-1. With no explicit task, run the handoff chunker. The baton can still surface
-   deferred discussion when GitHub issues are empty; if it yields no work, wait
+1. With no explicit task, run the handoff chunker; if it yields no work, wait
    for an operator request or a fresh measured failure.
-2. Restart active Claude Code and Codex sessions before plugin or installed-
-   surface behavior checks; restart is not a prerequisite for repo-local triage.
-3. If behavior work touches `check_skill_surface_preflight.py` or
-   `validate_critique_artifacts.py`, consider a characterized cohesive split;
-   do not refactor them for line count alone.
-4. Treat a live Claude envelope-bind proof or Codex reviewer-tier-application
-   proof as a separate host experiment. The current release proves packaged
-   assets and the native Codex mapping, not a host-side tool restriction.
+2. Restart Codex or Claude Code before testing installed-plugin behavior; no
+   restart is needed for repo-local triage.
+3. Treat provider-side model/effort application or host tool restrictions as a
+   separate live-host experiment, not as a claim made by this release.
 
 ## Discuss
 
-- Whether same-command evidence can reduce the release-only managed-install
-  runtime while retaining one real install/update smoke.
-- Whether a third parsed Cautilus subprocess should trigger a shared explicit-
-  format helper; two consumers do not yet justify that abstraction.
+- Whether a live Codex experiment can add provider-applied reviewer-profile
+  evidence without confusing it with the requested configuration contract.
 
 ## References
 
-- [release](../charness-artifacts/release/latest.md)
-  · [quality](../charness-artifacts/quality/2026-07-14-quality-review.md)
-  · [release critique](../charness-artifacts/critique/2026-07-14-v1-0-7-reviewer-boundary-portability-release-critique.md)
-  · [installed consumer proof](../charness-artifacts/probe/2026-07-14-v1.0.7-installed-reviewer-boundary-consumer.json)
-  · [auto retro](../charness-artifacts/retro/2026-07-14-v1-0-7-release-auto-retro.md)
-  · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [release state](../charness-artifacts/release/latest.md)
+  · [v1.0.8 notes](../charness-artifacts/release/2026-07-14-v1.0.8-notes.md)
+  · [release critique](../charness-artifacts/critique/2026-07-14-v1-0-8-codex-v2-defaults-release-critique.md)
+  · [auto retro](../charness-artifacts/retro/2026-07-14-v1-0-8-release-auto-retro.md)
 
 - Refresh kept: [release state](../charness-artifacts/release/latest.md),
-  conditional restart, scoped mutation evidence, and behavior-led advisory
-  decisions because each changes the first action.
-- Refresh non-claims: [quality](../charness-artifacts/quality/2026-07-14-quality-review.md)
-  makes no Cautilus evaluation, release-HEAD provider mutation, installed
-  functional rerun, or line-count-only refactor claim.
+  conditional restart, and the requested-versus-applied boundary because each
+  changes the first action.
+- Refresh non-claims: [release state](../charness-artifacts/release/latest.md)
+  makes no provider-applied model/effort, installed functional rerun, or live
+  host-restriction claim.
