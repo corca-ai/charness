@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-07-14",
+  "release": "v1.0.6",
+  "observer": "post-publish unrelated-repo installed-cache smoke",
+  "installed_skill_dir": "~/.codex/plugins/cache/local/charness/1.0.6/skills/debug",
+  "consumer_repo": "/tmp/charness-v106-consumer.myEj62",
+  "invocation_contract": "export SKILL_DIR=<installed-debug-skill>; python3 \"$SKILL_DIR/scripts/<helper>.py\" ...",
+  "checks": {
+    "installed_manifest_version": "1.0.6",
+    "resolve_adapter": {
+      "executed": true,
+      "adapter_found": false,
+      "expected_without_consumer_adapter": true
+    },
+    "plan_debug_run_help": "passed",
+    "scaffold_debug_artifact_help": "passed",
+    "root_scripts_fallback_observed": false
+  },
+  "verdict": "passed",
+  "non_claim": "This proves installed-path expansion and helper startup from one unrelated temporary repo; it is not a general shell-dialect or host-compatibility proof."
+}

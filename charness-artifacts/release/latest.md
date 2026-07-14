@@ -115,6 +115,13 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
 ## Post-Publish Proof
 
 - Public release check: `gh release view v1.0.6`.
+- Installed cache manifest: `1.0.6` at the refreshed Codex cache.
+- Unrelated-repo bootstrap smoke: passed for installed `debug` skill
+  `resolve_adapter.py`, `plan_debug_run.py --help`, and
+  `scaffold_debug_artifact.py --help` after exporting `SKILL_DIR` before the
+  dependent expansion; no `/scripts/...` fallback was observed.
+- Durable bootstrap proof:
+  `charness-artifacts/probe/2026-07-14-v1.0.6-installed-bootstrap-consumer.json`.
 
 ## Install Refresh
 
