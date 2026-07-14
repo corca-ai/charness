@@ -76,6 +76,13 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   scale-to-the-task guardrail. This is the orchestration sibling of the
   delegation standing request: a generic "only orchestrate when explicitly asked"
   host default is satisfied by the repo contract for appropriate work
+- for Charness-managed Codex spawning, the `## Subagent Delegation` contract
+  should apply the Codex default profile to every coding, review, and
+  dynamic-workflow subagent: `gpt-5.6-terra`, `medium` reasoning effort, and
+  `fork_turns: "none"` when caller-provided model/reasoning overrides are used.
+  A bounded parent-history count is the conscious exception; Codex V2 defaults
+  to `fork_turns: "all"`, which rejects those overrides. This is a Codex host
+  mapping, not portable policy for other hosts.
 - a short `Skill Routing` fallback paragraph: pickup follows the handoff,
   ordinary routing uses installed skill metadata and model judgment, and
   `charness catalog list --json` provides hidden support/integration inventory

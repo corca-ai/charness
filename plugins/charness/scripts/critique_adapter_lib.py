@@ -26,8 +26,8 @@ ADAPTER_CANDIDATES = (
 )
 STRING_FIELDS = ("repo", "language", "output_dir")
 VALID_CONTENT_KINDS = ("static", "script")
-VALID_REVIEWER_TIERS = ("high-leverage", "standard")
-REVIEWER_TIER_FIELDS = ("model", "reasoning_effort", "service_tier")
+VALID_REVIEWER_TIERS = ("high-leverage", "medium", "standard")
+REVIEWER_TIER_FIELDS = ("model", "reasoning_effort", "service_tier", "fork_turns")
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:

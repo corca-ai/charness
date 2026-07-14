@@ -7,9 +7,14 @@ output_dir: charness-artifacts/critique
 # their host-specific reviewer model.
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.5
+    model: gpt-5.6-terra
     reasoning_effort: medium
     service_tier: priority
+    fork_turns: none
+  medium:
+    model: gpt-5.6-terra
+    reasoning_effort: medium
+    fork_turns: none
 # Declare sections to opt into the critique prepare-packet contract.
 # Without any entry, critique runs unchanged.
 # See skills/public/critique/references/adapter-contract.md.

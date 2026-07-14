@@ -11,3 +11,21 @@
   effort unless it says otherwise; that is a per-adapter default, not a claim
   that every subagent is medium. If the required adapter or tier cannot be
   applied, stop and report the concrete signal.
+- In Codex MultiAgent V2, pass the adapter's model, reasoning-effort, and
+  `fork_turns` fields explicitly. For every Charness-spawned coding, review,
+  and dynamic-workflow subagent, request `gpt-5.6-terra` with `medium`
+  reasoning effort when Codex exposes those controls. Use `fork_turns: "none"`
+  unless a bounded parent-history count is needed: Codex V2 defaults to
+  `fork_turns: "all"`, which rejects caller-provided model/reasoning overrides.
+  This is Codex-specific; other hosts use their own adapter mappings.
+
+## Dynamic Workflows
+
+- The repo owner has a standing request to use a dynamic workflow / multi-agent
+  orchestration when the agent judges it earns its cost — fan-out coverage,
+  independent-perspective confidence, adversarial verification, or scale one
+  context cannot hold — when the host permits it. Do not wait for a second user
+  message solely to repeat that request.
+- A higher-priority system, developer, or host instruction may prohibit a
+  workflow; the repo request cannot override it. Scale to the task instead of
+  using orchestration for trivial work.

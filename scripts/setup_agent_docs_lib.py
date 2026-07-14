@@ -20,6 +20,12 @@ from scripts.setup_skill_routing_lib import (
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
 CRITIQUE_ADAPTER_RELATIVE_PATH = Path(".agents/critique-adapter.yaml")
+CODEX_DEFAULT_REVIEWER_TIER_FIELDS = {
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "medium",
+    "fork_turns": "none",
+}
+CODEX_DEFAULT_REVIEWER_TIERS = ("high-leverage", "medium")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,
@@ -34,7 +40,9 @@ FINDING_RECOMMENDATION_PRIORITIES = {
     "fresh_eye_review_still_requires_consent_or_fallback": "review_required",
     "fresh_eye_delegation_caveat_weakens_contract": "advisory",
     "critique_adapter_missing_for_fresh_eye_review": "review_required",
-    "critique_adapter_codex_reasoning_effort_drift": "review_required",
+    "critique_adapter_codex_profile_drift": "review_required",
+    "agents_missing_charness_dynamic_workflow_policy": "review_required",
+    "agents_missing_codex_subagent_profile_policy": "review_required",
     "skill_routing_block_custom_or_drifted": "review_required",
     "charness_artifacts_commit_policy_drift": "review_required",
     "commit_discipline_drift": "review_required",
@@ -120,6 +128,7 @@ def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tup
 def _detect_critique_adapter_normalization(
     repo_root: Path,
     *,
+    agents_text: str,
     fresh_eye_review: dict[str, object],
 ) -> tuple[dict[str, object], list[dict[str, str]]]:
     from scripts.critique_adapter_lib import load_adapter
@@ -132,6 +141,7 @@ def _detect_critique_adapter_normalization(
         if isinstance(reviewer_tiers.get("high-leverage"), dict)
         else {}
     )
+    medium = reviewer_tiers.get("medium", {}) if isinstance(reviewer_tiers.get("medium"), dict) else {}
     model = str(high_leverage.get("model", ""))
     reasoning_effort = str(high_leverage.get("reasoning_effort", ""))
     stop_gate_detected = bool(fresh_eye_review.get("stop_gate_detected"))
@@ -147,15 +157,30 @@ def _detect_critique_adapter_normalization(
                 "recommended_action": "run_critique_init_adapter_or_add_reviewer_tiers",
             }
         )
-    if adapter.get("found") and model.startswith("gpt-") and reasoning_effort != "medium":
+    codex_policy_evidenced = repo_root.name == "charness" or "codex multiagent v2" in agents_text.lower()
+    if adapter.get("found") and codex_policy_evidenced:
+        tiers = {"high-leverage": high_leverage, "medium": medium}
+        drifted_tiers = {
+            name: {
+                field: tier.get(field)
+                for field, expected in CODEX_DEFAULT_REVIEWER_TIER_FIELDS.items()
+                if tier.get(field) != expected
+            }
+            for name, tier in tiers.items()
+        }
+        drifted_tiers = {name: fields for name, fields in drifted_tiers.items() if fields}
+    else:
+        drifted_tiers = {}
+    if drifted_tiers:
         findings.append(
             {
-                "type": "critique_adapter_codex_reasoning_effort_drift",
+                "type": "critique_adapter_codex_profile_drift",
                 "message": (
-                    "Critique adapter maps the Codex high-leverage reviewer tier without "
-                    "`reasoning_effort: medium`, so spawned reviewers can drift to high."
+                    "Critique adapter's Codex reviewer tiers drift from the default "
+                    "`gpt-5.6-terra` / `medium` / `fork_turns: none` profile: "
+                    f"{', '.join(sorted(drifted_tiers))}."
                 ),
-                "recommended_action": "set_codex_high_leverage_reasoning_effort_medium",
+                "recommended_action": "set_codex_reviewer_tiers_default_profile",
             }
         )
     return (
@@ -169,6 +194,63 @@ def _detect_critique_adapter_normalization(
             ),
             "high_leverage_model": model or None,
             "high_leverage_reasoning_effort": reasoning_effort or None,
+            "medium_model": str(medium.get("model", "")) or None,
+            "medium_reasoning_effort": str(medium.get("reasoning_effort", "")) or None,
+        },
+        findings,
+    )
+
+
+def _detect_charness_subagent_policy(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
+    """Report missing Charness-specific standing policies without rewriting AGENTS.md."""
+
+    lowered = " ".join(agents_text.lower().translate(str.maketrans("", "", "`*~")).split())
+    charness_managed = skill_routing_semantically_complete(
+        extract_section(agents_text, "## Skill Routing")
+    )
+    dynamic_section = " ".join(
+        extract_section(agents_text, "## Dynamic Workflows")
+        .lower()
+        .translate(str.maketrans("", "", "`*~"))
+        .split()
+    )
+    dynamic_complete = all(
+        token in dynamic_section
+        for token in ("standing request", "earns its cost", "higher-priority", "host")
+    )
+    profile_complete = all(
+        token in lowered
+        for token in (
+            "every charness-spawned",
+            "gpt-5.6-terra",
+            "medium reasoning effort",
+            'fork_turns: "none"',
+            'fork_turns: "all"',
+            "rejects those overrides",
+        )
+    )
+    findings: list[dict[str, str]] = []
+    if charness_managed and not dynamic_complete:
+        findings.append(
+            {
+                "type": "agents_missing_charness_dynamic_workflow_policy",
+                "message": "Charness-managed AGENTS.md is missing the standing, judgment-gated Dynamic Workflows policy.",
+                "recommended_action": "add_charness_dynamic_workflow_standing_policy",
+            }
+        )
+    if charness_managed and not profile_complete:
+        findings.append(
+            {
+                "type": "agents_missing_codex_subagent_profile_policy",
+                "message": "Charness-managed AGENTS.md is missing the Codex Terra/medium/fork_turns default-profile policy.",
+                "recommended_action": "add_codex_subagent_default_profile_policy",
+            }
+        )
+    return (
+        {
+            "charness_managed": charness_managed,
+            "dynamic_workflow_complete": dynamic_complete,
+            "codex_subagent_profile_complete": profile_complete,
         },
         findings,
     )
@@ -362,8 +444,10 @@ def detect_agent_docs(
     fresh_eye_review, fresh_eye_findings = detect_fresh_eye_normalization(agents_text)
     critique_adapter, critique_adapter_findings = _detect_critique_adapter_normalization(
         repo_root,
+        agents_text=agents_text,
         fresh_eye_review=fresh_eye_review,
     )
+    charness_subagent_policy, charness_subagent_policy_findings = _detect_charness_subagent_policy(agents_text)
     charness_artifacts, charness_artifact_findings = detect_charness_artifact_policy(repo_root, agents_text)
     commit_discipline, commit_discipline_findings = detect_commit_discipline_policy(agents_text)
     skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
@@ -384,6 +468,7 @@ def detect_agent_docs(
         *retro_findings,
         *fresh_eye_findings,
         *critique_adapter_findings,
+        *charness_subagent_policy_findings,
         *charness_artifact_findings,
         *commit_discipline_findings,
         *skill_routing_findings,
@@ -403,6 +488,7 @@ def detect_agent_docs(
             "retro_memory": retro_memory,
             "fresh_eye_review": fresh_eye_review,
             "critique_adapter": critique_adapter,
+            "charness_subagent_policy": charness_subagent_policy,
             "charness_artifacts": charness_artifacts,
             "commit_discipline": commit_discipline,
             "skill_routing": skill_routing,

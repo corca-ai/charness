@@ -4,9 +4,14 @@ language: en
 output_dir: charness-artifacts/critique
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.5
+    model: gpt-5.6-terra
     reasoning_effort: medium
     service_tier: priority
+    fork_turns: none
+  medium:
+    model: gpt-5.6-terra
+    reasoning_effort: medium
+    fork_turns: none
 # Declared sections opt this repo into the critique prepare-packet
 # contract. See skills/public/critique/references/prepare-packet.md.
 packet_sections:

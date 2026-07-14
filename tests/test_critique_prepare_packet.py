@@ -291,9 +291,10 @@ version: 1
 repo: rt
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.5
+    model: gpt-5.6-terra
     reasoning_effort: medium
     service_tier: priority
+    fork_turns: none
 packet_sections:
   - id: only
     title: Only
@@ -305,13 +306,14 @@ packet_sections:
     evidence = packet["reviewer_tier_evidence"]
     assert evidence["requested_tier"] == "high-leverage"
     assert evidence["requested_spawn_fields"] == {
-        "model": "gpt-5.5",
+        "model": "gpt-5.6-terra",
         "reasoning_effort": "medium",
         "service_tier": "priority",
+        "fork_turns": "none",
     }
     assert evidence["host_exposure_state"] == "pending-parent-spawn"
     md = render_markdown(packet)
-    assert "model=gpt-5.5" in md
+    assert "model=gpt-5.6-terra" in md
     assert "pending-parent-spawn" in md
 
 

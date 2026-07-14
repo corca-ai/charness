@@ -82,6 +82,21 @@ def test_greenfield_template_fragments_live_in_template_assets() -> None:
     ).read_text(encoding="utf-8") == host_docs.COMPACT_SUBAGENT_DELEGATION
 
 
+def test_greenfield_template_sets_clean_codex_override_context() -> None:
+    agents_text = render_agents_template(skill_routing_markdown=_SKILL_ROUTING_BLOCK)
+
+    assert "every Charness-spawned coding, review," in agents_text
+    assert "dynamic-workflow subagent" in agents_text
+    assert "gpt-5.6-terra" in agents_text
+    assert "`medium`" in agents_text
+    assert '`fork_turns: "none"`' in agents_text
+    assert '`fork_turns: "all"`' in agents_text
+    assert "rejects caller-provided model/reasoning overrides" in agents_text
+    assert "## Dynamic Workflows" in agents_text
+    assert "when the agent judges it earns its cost" in agents_text
+    assert "A higher-priority system, developer, or host instruction may prohibit" in agents_text
+
+
 def test_greenfield_template_passes_inspector(tmp_path: Path) -> None:
     agents_text = render_agents_template(skill_routing_markdown=_SKILL_ROUTING_BLOCK)
     normalization = _detect(tmp_path / "repo", agents_text)

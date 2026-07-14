@@ -6,18 +6,26 @@ output_dir: charness-artifacts/critique
 # skills/shared/references/fresh-eye-subagent-review.md. The portable policy
 # names only the tier; each host maps it to that host's reviewer fields.
 # Set the values for the host this repo runs on. Known host defaults:
-#   Codex host:        high-leverage -> model: gpt-5.5,
-#                        reasoning_effort: medium, service_tier: priority
-#                      medium -> inherited model, reasoning_effort: medium
+#   Codex host:        high-leverage -> model: gpt-5.6-terra,
+#                        reasoning_effort: medium, service_tier: priority,
+#                        fork_turns: none
+#                      medium -> model: gpt-5.6-terra, reasoning_effort: medium,
+#                        fork_turns: none
 #   Claude Code host:  high-leverage -> model: sonnet-4.6
 # reasoning_effort / service_tier only apply where the host exposes them.
+# These are requested spawn fields. Host acceptance or sending does not prove the
+# provider applied them; record application only when the host confirms it. A
+# Codex role / `agent_type` may override caller-selected model or effort.
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.5
+    model: gpt-5.6-terra
     reasoning_effort: medium
     service_tier: priority
+    fork_turns: none
   medium:
+    model: gpt-5.6-terra
     reasoning_effort: medium
+    fork_turns: none
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces

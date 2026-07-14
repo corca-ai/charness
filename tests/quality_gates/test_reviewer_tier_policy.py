@@ -37,7 +37,9 @@ def test_named_skills_reference_shared_reviewer_policy() -> None:
 def test_portable_surfaces_do_not_hardcode_provider_models() -> None:
     surfaces = [SHARED_REVIEW.read_text(encoding="utf-8")]
     surfaces.extend(_skill_md(skill) for skill in NAMED_SKILLS)
-    surfaces.extend(path.read_text(encoding="utf-8") for path in DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES)
+    surfaces.extend(
+        path.read_text(encoding="utf-8") for path in DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES
+    )
     for text in surfaces:
         for token in PROVIDER_MODEL_TOKENS:
             assert token not in text, (
@@ -83,9 +85,15 @@ def test_live_critique_adapter_pins_codex_high_leverage_default() -> None:
     assert errors == []
     tier = data["reviewer_tiers"]["high-leverage"]
     assert tier == {
-        "model": "gpt-5.5",
+        "model": "gpt-5.6-terra",
         "reasoning_effort": "medium",
         "service_tier": "priority",
+        "fork_turns": "none",
+    }
+    assert data["reviewer_tiers"]["medium"] == {
+        "model": "gpt-5.6-terra",
+        "reasoning_effort": "medium",
+        "fork_turns": "none",
     }
 
 
@@ -100,9 +108,15 @@ def test_critique_init_adapter_scaffolds_reviewer_tiers(tmp_path) -> None:
     raw = load_yaml_file(tmp_path / ".agents" / "critique-adapter.yaml")
     data, errors, _ = validate_adapter_data(raw if isinstance(raw, dict) else {}, tmp_path)
     assert errors == []
-    assert data["reviewer_tiers"]["high-leverage"]["model"] == "gpt-5.5"
+    assert data["reviewer_tiers"]["high-leverage"]["model"] == "gpt-5.6-terra"
     assert data["reviewer_tiers"]["high-leverage"]["reasoning_effort"] == "medium"
     assert data["reviewer_tiers"]["high-leverage"]["service_tier"] == "priority"
+    assert data["reviewer_tiers"]["high-leverage"]["fork_turns"] == "none"
+    assert data["reviewer_tiers"]["medium"] == {
+        "model": "gpt-5.6-terra",
+        "reasoning_effort": "medium",
+        "fork_turns": "none",
+    }
 
 
 def test_critique_init_adapter_scaffold_lives_in_template_asset(tmp_path) -> None:
@@ -138,8 +152,7 @@ def test_missing_critique_adapter_does_not_infer_host_specific_tier(tmp_path) ->
 def test_adapter_example_keeps_host_plural_guidance() -> None:
     text = ADAPTER_EXAMPLE.read_text(encoding="utf-8")
     assert "Codex" in text and "Claude Code" in text, (
-        "the adapter example must name both known hosts so it cannot silently "
-        "regress to Codex-only"
+        "the adapter example must name both known hosts so it cannot silently regress to Codex-only"
     )
 
 
@@ -151,9 +164,7 @@ def test_critique_adapter_rejects_unknown_reviewer_tier_field() -> None:
 
 
 def test_critique_adapter_warns_on_unknown_reviewer_tier() -> None:
-    _, _, warnings = validate_adapter_data(
-        {"reviewer_tiers": {"mystery": {"model": "x"}}}, ROOT
-    )
+    _, _, warnings = validate_adapter_data({"reviewer_tiers": {"mystery": {"model": "x"}}}, ROOT)
     assert any("mystery" in warning for warning in warnings)
 
 
@@ -163,3 +174,6 @@ def test_adapter_contract_delegates_concrete_host_defaults_to_owned_assets() -> 
         assert token not in text
     assert "../adapter.example.yaml" in text
     assert "../scripts/templates/critique_adapter.yaml" in text
+    assert "does not prove the provider applied" in text
+    assert "only when the host confirms it" in text
+    assert "Codex `agent_type`" in text

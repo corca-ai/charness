@@ -32,8 +32,10 @@ reviewer_tiers:        # optional portable-tier to host-field mapping
     model: "<host-specific model>"
     reasoning_effort: "<host-specific effort>"
     service_tier: "<host-specific service tier>"
+    fork_turns: "<host-specific context fork>"
   medium:
     reasoning_effort: "<host-specific effort>"
+    fork_turns: "<host-specific context fork>"
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces
@@ -69,12 +71,21 @@ Field semantics:
   into the values for whichever host this repo runs on. Use `medium` for
   routine bounded fresh-eye packets and reserve `high-leverage` for release,
   issue, quality closeout, deployment-confidence, or explicitly justified
-  high-risk reviews. Each tier value may set `model`, `reasoning_effort`, and
-  `service_tier` (all strings, all optional); `reasoning_effort` /
-  `service_tier` apply only where the host exposes them. Unknown tier names
+  high-risk reviews. Each tier value may set `model`, `reasoning_effort`,
+  `service_tier`, and `fork_turns` (all strings, all optional);
+  `reasoning_effort` / `service_tier` / `fork_turns` apply only where the host
+  exposes them. Unknown tier names
   warn; unknown sub-fields error. A host without subagent model overrides
   ignores it. Use the example or scaffolded adapter for concrete host mappings
   instead of copying provider-specific model/version values into this reference.
+
+Reviewer-tier fields are requested spawn fields, not provider-application
+evidence. A host accepting or sending them does not prove the provider applied
+them; record application only when the host confirms it. On hosts whose roles
+can override caller-selected fields (such as Codex `agent_type`), either omit
+that role or ensure its mapping preserves the requested model and reasoning
+effort. This remains host-specific: other hosts own their own role and
+application semantics.
 
 Each `packet_sections` entry:
 

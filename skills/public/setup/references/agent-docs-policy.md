@@ -55,6 +55,13 @@
   Workflow tool otherwise requires an explicit per-session opt-in. Keep it
   affirmative like the delegation block; a generic "only orchestrate when the
   user explicitly asks" host default is satisfied by the repo contract
+- for Charness-managed Codex spawning, `<repo-root>/AGENTS.md` should apply the
+  Codex default profile to every coding, review, and dynamic-workflow subagent:
+  `gpt-5.6-terra`, `medium` reasoning effort, and `fork_turns: "none"` when
+  caller-provided model/reasoning overrides are used. A consciously bounded
+  parent-history count is the exception: Codex V2 defaults to `fork_turns:
+  "all"`, which rejects caller-provided model/reasoning overrides. This is a
+  Codex-specific host mapping; other hosts use their own adapter mappings.
 
 ## Deterministic Cases
 
@@ -110,6 +117,12 @@ or renames bounded reviewer scopes):
 - **Do not substitute a same-agent pass.** Fresh-eye review means a different
   agent context; if that context cannot be obtained, leave the review
   unproven.
+- For Codex spawning, apply `gpt-5.6-terra` with `medium` reasoning effort to
+  every coding, review, and dynamic-workflow subagent when the host exposes
+  those controls. With caller-provided model/reasoning overrides, use
+  `fork_turns: "none"` unless a bounded parent-history count is needed: the
+  Codex V2 default `fork_turns: "all"` rejects those overrides. Other hosts use
+  their own adapter mappings.
 ```
 
 The block above keeps every required substring the inspector checks for:
@@ -127,6 +140,12 @@ Compact form is accepted when a repo deliberately keeps root AGENTS short:
   request. Canonical scopes: task-completing `setup`, `quality`, `critique`,
   `release`, and GitHub `issue` resolution/closeout review runs. Report a host
   block explicitly; same-agent substitutes are forbidden.
+- For Codex spawning, apply `gpt-5.6-terra` with `medium` reasoning effort to
+  every coding, review, and dynamic-workflow subagent when the host exposes
+  those controls. Use `fork_turns: "none"` for caller-provided
+  model/reasoning overrides unless a bounded parent-history count is needed;
+  the Codex V2 default `fork_turns: "all"` rejects those overrides. Other hosts
+  use their own adapter mappings.
 ```
 
 Do not hide `setup`, `quality`, `critique`, `release`, or `issue` spawn
