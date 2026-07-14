@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-07-14",
+  "release": "v1.0.7",
+  "observer": "post-publish installed-cache consumer smoke",
+  "codex_plugin_root": "~/.codex/plugins/cache/local/charness/1.0.7",
+  "claude_plugin_root": "~/.claude/plugins/cache/corca-charness/charness/1.0.7",
+  "consumer_repo": "temporary unrelated Git repository",
+  "invocation_contract": "export SKILL_DIR=<installed-critique-skill>; python3 \"$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py\" snapshot --repo-root <consumer-repo>",
+  "checks": {
+    "installed_cli_version": "1.0.7",
+    "codex_cache_manifest_version": "1.0.7",
+    "codex_shared_fingerprint_helper": "present",
+    "claude_bounded_reviewer_agent": "present",
+    "claude_agent_matches_release_source": true,
+    "installed_codex_host_mapping": "native explorer; Claude envelope rail unsupported",
+    "clean_consumer_snapshot": "passed"
+  },
+  "verdict": "passed",
+  "non_claim": "This proves current installed asset presence and the fingerprint command from one unrelated temporary repository. It does not prove a live Claude envelope bind or Codex reviewer-tier application."
+}

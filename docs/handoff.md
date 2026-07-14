@@ -9,12 +9,12 @@
 
 ## Current State
 
-- Continue from the verified v1.0.6 public/install state; admit new work only
+- Continue from the verified v1.0.7 public/install state; admit new work only
   from a current issue, reproduction, measurement, or operator request.
-- v1.0.6 is public at tag `05873e63`; clean local/remote main `942442e7` is the
+- v1.0.7 is public at tag `264df378`; clean local/remote main `08b15814` is the
   expected post-publish evidence commit, and GitHub has no open issues.
 - Installed CLI, source checkout, Codex source/cache, and Claude plugin state
-  read 1.0.6. Active sessions may retain stale injected cache paths; restart
+  read 1.0.7. Active sessions may retain stale injected cache paths; restart
   Claude Code and Codex before judging the refreshed plugin.
 - Release quality, fresh-checkout probes, public HTTP/API readback, installed
   readback, and a separate fresh-eye observer passed. The release artifact owns
@@ -25,11 +25,11 @@
   commands; no Cautilus evaluation was run or claimed.
 - Nine Python length advisories remain intentionally: seven cohesive units and
   two production validators deferred to behavior-led refactoring.
-- A local post-v1.0.6 north-star slice fixes lifecycle feedback truthfulness,
+- The v1.0.7 release contains the lifecycle-feedback truthfulness,
   the shared `SKILL_DIR` shell bootstrap contract, and reviewer-boundary
-  consumer portability. It is not published: checked-in plugin exports now
-  carry the Claude reviewer envelope and document Codex's native `explorer`
-  path, but installed v1.0.6 caches do not contain these source fixes.
+  consumer portability fixes. Installed cache proof confirms Claude's packaged
+  reviewer asset, Codex's native `explorer` mapping, and the fingerprint command
+  from an unrelated consumer repository.
 
 ## Next Session
 
@@ -41,11 +41,9 @@
 3. If behavior work touches `check_skill_surface_preflight.py` or
    `validate_critique_artifacts.py`, consider a characterized cohesive split;
    do not refactor them for line count alone.
-4. If publication is authorized, carry the post-v1.0.6 lifecycle/bootstrap/
-   reviewer-boundary slice through the normal release proof and installed-cache
-   update boundary. Confirm the released Claude `agents/` asset and keep the
-   Codex native-agent mapping distinct from a custom-agent-envelope claim;
-   until then, do not claim the released plugin contains these fixes.
+4. Treat a live Claude envelope-bind proof or Codex reviewer-tier-application
+   proof as a separate host experiment. The current release proves packaged
+   assets and the native Codex mapping, not a host-side tool restriction.
 
 ## Discuss
 
@@ -58,8 +56,9 @@
 
 - [release](../charness-artifacts/release/latest.md)
   · [quality](../charness-artifacts/quality/2026-07-14-quality-review.md)
-  · [release critique](../charness-artifacts/critique/2026-07-14-v1-0-5-release-critique.md)
-  · [auto retro](../charness-artifacts/retro/2026-07-13-v1-0-5-release-auto-retro.md)
+  · [release critique](../charness-artifacts/critique/2026-07-14-v1-0-7-reviewer-boundary-portability-release-critique.md)
+  · [installed consumer proof](../charness-artifacts/probe/2026-07-14-v1.0.7-installed-reviewer-boundary-consumer.json)
+  · [auto retro](../charness-artifacts/retro/2026-07-14-v1-0-7-release-auto-retro.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
 - Refresh kept: [release state](../charness-artifacts/release/latest.md),
