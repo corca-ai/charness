@@ -218,6 +218,39 @@ def test_private_helpers_cover_fallbacks_and_rejections(tmp_path: Path, monkeypa
     assert lifecycle._valid_adapter(tmp_path / "missing.yaml", tmp_path)[0] is None
 
 
+def test_load_sibling_inserts_fallback_parent_on_sys_path(tmp_path: Path) -> None:
+    import sys
+
+    parent = str(Path(lifecycle.__file__).resolve().parent)
+    original = list(sys.path)
+    try:
+        sys.path[:] = [entry for entry in sys.path if entry != parent]
+        assert parent not in sys.path
+        lifecycle._load_sibling(tmp_path, "lifecycle_usage_capture")
+        assert sys.path[0] == parent
+    finally:
+        sys.path[:] = original
+
+
+def test_schema_root_prefers_repo_local_integration(tmp_path: Path) -> None:
+    integration = tmp_path / "integrations" / "usage-episodes"
+    integration.mkdir(parents=True)
+    (integration / "manifest.schema.json").write_text("{}", encoding="utf-8")
+    (integration / "episode.schema.json").write_text("{}", encoding="utf-8")
+
+    assert lifecycle._schema_root(tmp_path) == integration
+
+
+def test_valid_adapter_rejects_non_mapping_yaml(tmp_path: Path) -> None:
+    adapter = tmp_path / "adapter.yaml"
+    adapter.write_text("- not-a-mapping\n", encoding="utf-8")
+
+    result, error = lifecycle._valid_adapter(adapter, tmp_path)
+
+    assert result is None
+    assert error and "usage-episodes adapter must be a mapping" in error
+
+
 def test_capture_rejects_unsupported_kind_and_other_invalid_inputs(tmp_path: Path) -> None:
     unsupported = capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="other", evidence_locator="v1")
     assert unsupported == {"status": "invalid", "appended": False, "errors": ["unsupported lifecycle kind: other"]}
@@ -256,6 +289,19 @@ def test_capture_handles_storage_and_outer_exceptions(tmp_path: Path, monkeypatc
     assert capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="issue_close", evidence_locator="v1")["status"] == "capture_error"
 
 
+def test_capture_rejects_privacy_enabled_adapter_after_validation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _adapter(tmp_path)
+    monkeypatch.setattr(
+        lifecycle,
+        "_valid_adapter",
+        lambda *_a: ({"enabled": True, "events": ["usage_episode", "usage_feedback"], "privacy": {"raw_prompt": True, "raw_transcript": False}}, None),
+    )
+
+    result = capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="issue_close", evidence_locator="v1")
+
+    assert result["status"] == "invalid_adapter"
+
+
 @pytest.mark.parametrize("script", [
     "skills/public/issue/scripts/issue_close.py",
     "skills/public/release/scripts/publish_release_common.py",
@@ -288,3 +334,20 @@ def test_lifecycle_producers_report_missing_helper_and_capture_errors(tmp_path: 
         kwargs.update(tag_name="v1.0.0")
     result = capture(**kwargs)
     assert result["status"] == "capture_error" and "boom" in result["errors"][0]
+
+
+def test_issue_capture_delegates_successfully(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    module = runpy.run_path("skills/public/issue/scripts/issue_close.py")
+    capture = module["_capture_lifecycle"]
+    observed: dict[str, object] = {}
+
+    def fake_capture(**kwargs):
+        observed.update(kwargs)
+        return {"status": "appended"}
+
+    monkeypatch.setattr(module["runpy"], "run_path", lambda *_a, **_k: {"capture_lifecycle_outcome": fake_capture})
+
+    result = capture(repo_root=tmp_path, repo="acme/demo", number=42)
+
+    assert result == {"status": "appended"}
+    assert observed == {"repo_root": tmp_path, "lifecycle_kind": "issue_close", "evidence_locator": "acme/demo#42"}
