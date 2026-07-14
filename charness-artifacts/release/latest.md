@@ -14,7 +14,7 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -29,6 +29,10 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
 ## Public Release Verification
 
 - GitHub release publication: expected after branch/tag push; not verified yet.
+
+## Lifecycle Usage Capture
+
+- Lifecycle capture status: not recorded by this helper invocation.
 
 ## Release Adapter Preflight
 
@@ -53,7 +57,7 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
   - `skills/public/release/scripts/publish_release_artifact_sections.py`
   - `skills/public/release/scripts/publish_release_cli.py`
   - `skills/public/release/scripts/publish_release_common.py`
-- Evaluated changed paths: 61.
+- Evaluated changed paths: 73.
   - `.claude-plugin/marketplace.json`
   - `charness-artifacts/critique/2026-07-13-231102-packet.json`
   - `charness-artifacts/critique/2026-07-13-231102-packet.md`
@@ -64,6 +68,9 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
   - `charness-artifacts/critique/2026-07-14-skill-directory-shell-bootstrap-packet.json`
   - `charness-artifacts/critique/2026-07-14-skill-directory-shell-bootstrap-packet.md`
   - `charness-artifacts/critique/2026-07-14-v1-0-5-handoff-refresh-critique.md`
+  - `charness-artifacts/critique/2026-07-14-v1-0-6-dup-ratchet-packet.json`
+  - `charness-artifacts/critique/2026-07-14-v1-0-6-dup-ratchet-packet.md`
+  - `charness-artifacts/critique/2026-07-14-v1-0-6-dup-ratchet-resolution-critique.md`
   - `charness-artifacts/critique/2026-07-14-v1-0-6-pre-release-critique.md`
   - `charness-artifacts/critique/2026-07-14-v1-0-6-pre-release-packet.json`
   - `charness-artifacts/critique/2026-07-14-v1-0-6-pre-release-packet.md`
@@ -71,10 +78,7 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
   - `charness-artifacts/debug/2026-07-14-skill-directory-shell-expansion-debug.md`
   - `charness-artifacts/debug/latest.md`
   - `charness-artifacts/debug/seam-risk-index.json`
-  - `charness-artifacts/metrics/rca-ledger.jsonl`
-  - `charness-artifacts/quality/2026-07-14-quality-review.md`
-  - `charness-artifacts/release/2026-07-14-v1.0.6-notes.md`
-  - ... 41 more
+  - ... 53 more
 
 ## Real-Host Verification
 
@@ -90,7 +94,10 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -98,11 +105,14 @@ Advanced `charness` toward release `1.0.6` (tag `v1.0.6`) through the repo-owned
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 0.081s
+- `quality_command`: 77.393s
+- `fresh_checkout_probes_initial`: 3.002s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
