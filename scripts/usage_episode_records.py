@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import jsonschema
+import yaml
 from usage_episode_feedback import semantic_feedback_errors
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -33,6 +34,25 @@ def resolve_records_path(
     storage_path = adapter.get("storage_path")
     storage_dir = repo_root / storage_path if isinstance(storage_path, str) else repo_root / DEFAULT_STORAGE
     return (storage_dir / EVENT_FILENAME).resolve()
+
+
+def load_validated_adapter(
+    adapter_path: Path,
+    manifest_schema_root: Path,
+) -> tuple[dict[str, Any] | None, Exception | None]:
+    """Load and validate one usage-episodes adapter, preserving its exception."""
+
+    try:
+        adapter = yaml.safe_load(adapter_path.read_text(encoding="utf-8"))
+        if not isinstance(adapter, dict):
+            raise ValueError("usage-episodes adapter must be a mapping")
+        manifest_schema = json.loads(
+            (manifest_schema_root / "manifest.schema.json").read_text(encoding="utf-8")
+        )
+        jsonschema.validate(adapter, manifest_schema)
+    except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
+        return None, exc
+    return adapter, None
 
 
 def parse_timestamp(value: str) -> datetime:

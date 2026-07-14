@@ -401,9 +401,23 @@
     },
     {
       "class": "intentional",
-      "id": "6962d4713943ed31",
-      "note": "usage validator and usage reporter terminal renderers share JSON dispatch and a short error loop, while their successful plain-output contracts are deliberately different; nine shared lines do not justify coupling the two command renderers",
-      "reviewed_at": "2026-07-10",
+      "id": "3a2a1a48f75e2333",
+      "note": "rotation of reviewed family 6962d4713943ed31 after the usage reporter added objective-lifecycle output; validator and reporter terminal renderers still share only JSON dispatch and a short error loop, while their successful plain-output contracts remain deliberately different",
+      "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "76dbe167ecaf4a81",
+      "note": "distinct-channel and lifecycle release-artifact sections share four generic Markdown list-building lines, but their gating, evidence fields, and truth/non-claim semantics differ; a generic renderer would couple proof meanings without centralizing stable behavior",
+      "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "82b2e7b16bc79773",
+      "note": "issue and release keep thin skill-local post-boundary lifecycle loaders so source and installed-plugin layouts retain standalone failure containment; lifecycle IDs, schemas, append behavior, and conflicts are already owned by the shared lifecycle capture implementation",
+      "reviewed_at": "2026-07-14",
       "surface": "code"
     },
     {

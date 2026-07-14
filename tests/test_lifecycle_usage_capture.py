@@ -202,15 +202,16 @@ def test_private_helpers_cover_fallbacks_and_rejections(tmp_path: Path, monkeypa
     try:
         loaded = lifecycle._load_sibling(tmp_path, "lifecycle_usage_capture")
         assert "capture_lifecycle_outcome" in loaded
-        monkeypatch.setattr(lifecycle.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
-        with pytest.raises(ImportError, match="unable to load"):
-            lifecycle._load_sibling(tmp_path, "lifecycle_usage_capture")
+        with monkeypatch.context() as patch:
+            patch.setattr(lifecycle.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+            with pytest.raises(ImportError, match="unable to load"):
+                lifecycle._load_sibling(tmp_path, "lifecycle_usage_capture")
     finally:
         __import__("sys").path[:] = sys_path_before
 
-    monkeypatch.setattr(lifecycle, "__file__", str(tmp_path / "lifecycle_usage_capture.py"))
-    with pytest.raises(FileNotFoundError):
-        lifecycle._schema_root(tmp_path)
+    # Schema discovery is delegated to the shared records runtime, whose
+    # installed-plugin fallback is rooted at that sibling module.
+    assert lifecycle._schema_root(tmp_path).name == "usage-episodes"
     assert lifecycle._portable_path(tmp_path, tmp_path / "inside") == "inside"
     assert lifecycle._portable_path(tmp_path, Path("/outside")) == "/outside"
     assert lifecycle._privacy_ok({"privacy": "bad"}) is False

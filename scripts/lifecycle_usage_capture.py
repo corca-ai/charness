@@ -14,12 +14,10 @@ import json
 import os
 import sys
 from contextlib import contextmanager
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import jsonschema
-import yaml
 
 DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
 EVENT_FILENAME = "usage_episode.jsonl"
@@ -44,15 +42,8 @@ def _load_sibling(repo_root: Path, name: str) -> dict[str, Any]:
 
 
 def _schema_root(repo_root: Path) -> Path:
-    candidate = repo_root / "integrations" / "usage-episodes"
-    if (candidate / "manifest.schema.json").is_file() and (candidate / "episode.schema.json").is_file():
-        return candidate
-    # Installed plugins keep the integration beside their exported scripts.
-    for parent in (Path(__file__).resolve().parents):
-        candidate = parent / "integrations" / "usage-episodes"
-        if (candidate / "manifest.schema.json").is_file() and (candidate / "episode.schema.json").is_file():
-            return candidate
-    raise FileNotFoundError("usage-episodes schemas are unavailable")
+    records = _load_sibling(Path(__file__).resolve().parent.parent, "usage_episode_records")
+    return records["schema_root"](repo_root)
 
 
 def episode_id_for(lifecycle_kind: str, evidence_locator: str, product_id: str = "") -> str:
@@ -77,39 +68,31 @@ def _feedback_id_for(
     )
 
 
+def _feedback_runtime() -> dict[str, Any]:
+    return _load_sibling(Path(__file__).resolve().parent.parent, "record_usage_feedback")
+
+
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return _feedback_runtime()["_timestamp"]()
 
 
 def _portable_path(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root))
-    except ValueError:
-        return str(path)
+    return _feedback_runtime()["_portable_path"](repo_root, path)
 
 
 @contextmanager
 def _stream_lock(records_path: Path):
     """Reuse the feedback writer's cross-platform advisory lock."""
 
-    module = _load_sibling(Path(__file__).resolve().parent.parent, "record_usage_feedback")
+    module = _feedback_runtime()
     with module["_stream_lock"](records_path):
         yield
 
 
-def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 def _valid_adapter(adapter_path: Path, schema_root: Path) -> tuple[dict[str, Any] | None, str | None]:
-    try:
-        adapter = yaml.safe_load(adapter_path.read_text(encoding="utf-8"))
-        if not isinstance(adapter, dict):
-            raise ValueError("usage-episodes adapter must be a mapping")
-        jsonschema.validate(adapter, _load_json(schema_root / "manifest.schema.json"))
-    except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
-        return None, f"{exc.__class__.__name__}: {exc}"
-    return adapter, None
+    records = _load_sibling(Path(__file__).resolve().parent.parent, "usage_episode_records")
+    adapter, error = records["load_validated_adapter"](adapter_path, schema_root)
+    return adapter, f"{error.__class__.__name__}: {error}" if error is not None else None
 
 
 def _privacy_ok(adapter: dict[str, Any]) -> bool:
@@ -264,7 +247,8 @@ def capture_lifecycle_outcome(
         timestamp = _timestamp()
         delivery = _episode_record(resolved_product_id, episode_id, evidence_locator, lifecycle_kind, timestamp)
         feedback = _feedback_record(resolved_product_id, episode_id, evidence_locator, lifecycle_kind, timestamp)
-        result = _append_pair_locked(repo_root=repo_root, records_path=records_path, schema=_load_json(schema_root / "episode.schema.json"), delivery=delivery, feedback=feedback)
+        episode_schema = _feedback_runtime()["_load_json"](schema_root / "episode.schema.json")
+        result = _append_pair_locked(repo_root=repo_root, records_path=records_path, schema=episode_schema, delivery=delivery, feedback=feedback)
         result.update({"lifecycle_kind": lifecycle_kind, "evidence_locator": evidence_locator, "episode_id": episode_id, "feedback_id": feedback["feedback_id"]})
         return result
     except Exception as exc:

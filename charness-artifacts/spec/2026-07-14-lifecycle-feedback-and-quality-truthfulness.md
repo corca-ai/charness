@@ -85,6 +85,9 @@ time and points to the release artifact for later publication state.
 - Keep runtime JSONL local and ignored; checked-in tests and artifacts are the
   durable evidence.
 - Keep the helper available in the checked-in plugin export.
+- Reuse `record_usage_feedback.py` for timestamp, portable-path, lock, and JSON
+  mechanics and `usage_episode_records.py` for schema discovery and manifest
+  validation; lifecycle capture must not grow parallel owners for those rules.
 - Follow `mutate -> sync -> verify`; no publication is part of this slice.
 
 ## Success Criteria
@@ -112,6 +115,8 @@ time and points to the release artifact for later publication state.
 - `integration`: checked-in plugin helper smoke test validates installed layout.
 - `integration`: focused suites plus the locked repository closeout pass after
   plugin sync.
+- `quality`: the duplication ratchet must pass after code-reduction-first review;
+  any retained family needs a scoped rotation/acceptance and fresh-eye critique.
 - `manual`: report and quality artifacts are reread for non-claims and temporal
   consistency.
 
@@ -157,6 +162,14 @@ disposition is:
 - Over-Worry: no new standing gate, concurrency framework, validator refactor, or
   retroactive v1.0.5 behavior smoke.
 - Valid but Defer: rotated mixed-stream reconciliation and richer human feedback.
+
+The v1.0.6 release gate later exposed seven new duplicate families. Four were
+removed structurally by moving manifest validation to `usage_episode_records.py`
+and reusing existing feedback helpers. The three residual families were resolved
+as one reviewed fingerprint rotation and two intentional portability/rendering
+families in
+`charness-artifacts/critique/2026-07-14-v1-0-6-dup-ratchet-resolution-critique.md`;
+the ratchet then passed with no new unreviewed families.
 
 Fresh-Eye Satisfaction: parent-delegated. Packet Consumed:
 `charness-artifacts/critique/2026-07-14-003710-packet.md`.

@@ -31,8 +31,14 @@ from usage_episode_feedback import (
     semantic_feedback_errors,
     signal_allowed_for_source,
 )
-from usage_episode_records import read_schema_valid_records, resolve_records_path
-from usage_episode_records import schema_root as _schema_root
+from usage_episode_records import (
+    load_validated_adapter,
+    read_schema_valid_records,
+    resolve_records_path,
+)
+from usage_episode_records import (
+    schema_root as _schema_root,
+)
 
 DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
 
@@ -217,13 +223,13 @@ def main() -> int:
         _print({"status": "no_adapter", "executed": False, "errors": ["usage-episodes adapter is required"]}, args.json)
         return 2
     try:
-        adapter = yaml.safe_load(adapter_path.read_text(encoding="utf-8"))
-        if not isinstance(adapter, dict):
-            raise ValueError("usage-episodes adapter must be a mapping")
         schema_root = _schema_root(repo_root)
-        jsonschema.validate(adapter, _load_json(schema_root / "manifest.schema.json"))
+        adapter, adapter_error = load_validated_adapter(adapter_path, schema_root)
     except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
         _print({"status": "invalid_adapter", "executed": False, "errors": [str(exc)]}, args.json)
+        return 2
+    if adapter is None:
+        _print({"status": "invalid_adapter", "executed": False, "errors": [str(adapter_error)]}, args.json)
         return 2
     if not adapter.get("enabled", False) or "usage_feedback" not in adapter.get("events", ["usage_episode", "usage_feedback"]):
         _print({"status": "disabled", "executed": False, "errors": ["usage_feedback is not enabled by the adapter"]}, args.json)
