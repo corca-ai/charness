@@ -69,6 +69,12 @@ The Codex export must map the shared bundle into:
 - optional future `.mcp.json`, `.app.json`, and `assets/`
 - optional repo marketplace at [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json)
 
+Codex does not discover Claude-style markdown files from a plugin-root
+`agents/` directory. Bounded fresh-eye reviewers therefore use Codex's native
+`explorer` agent with the bounded review packet. Reviewer-tier spawn fields are
+passed when exposed; this is not the Claude tool envelope. The parent-side
+fingerprint rail remains mandatory.
+
 The current contract fixes the Codex repo-marketplace path because the official
 Codex plugin docs use that location for repo-scoped plugin catalogs.
 
@@ -80,11 +86,12 @@ The Claude export must map the shared bundle into:
 - `skills/` with flat public skill directories
 - `support/` for non-discoverable support assets
 - optional future `.mcp.json`
-- optional future `commands/` and `agents/`
+- plugin-native `agents/` with the bounded reviewer envelope
+- optional future `commands/`
 
-`commands/` and `agents/` stay host-specific outputs. They should only appear
-when a future export iteration has a clear shared source or a clearly bounded
-host adapter.
+`commands/` remains a future host-specific output and should only appear when
+a future export iteration has a clear shared source or a clearly bounded host
+adapter.
 
 ## Current Export Scope
 
@@ -100,6 +107,7 @@ What it materializes today:
 - `presets/`
 - `integrations/tools/`
 - both host plugin manifests inside one checked-in plugin root
+- Claude's typed bounded-reviewer envelope under plugin-native `agents/`
 - an optional Codex repo marketplace file
 
 Upstream-consumed support skills such as `agent-browser`, `specdown`, and
@@ -109,7 +117,8 @@ installed plugin from `support_skill_source` metadata.
 
 What it intentionally does not materialize yet:
 
-- generated `commands/` or `agents/`
+- generated Codex `commands/` or custom-agent TOML files (those are project
+  surfaces owned by the Codex host, not plugin assets)
 - richer install-surface metadata for published plugin catalogs
 - release-time overrides beyond version stamping
 

@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-14",
   "source_artifact_count": 331,
-  "candidate_count": 1443,
+  "candidate_count": 1444,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -975,6 +975,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:917984123880",
+      "kind": "next_improvement",
+      "lesson": "applied in this follow-up — a known deferred portability seam is not complete until a clean consumer test covers the named installed command, its host asset, and the truthful host mapping.",
+      "normalized_key": "applied in this follow up a known deferred portability seam is not complete until",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-14-session-retro.md",
+      "latest_source_date": "2026-07-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-14-session-retro.md",
+          "date": "2026-07-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:578dc516dc0f",
       "kind": "next_improvement",
       "lesson": "applied in this slice — objective lifecycle follow-through has a separate report count and rate instead of inflating satisfaction.",
@@ -1017,7 +1037,7 @@
     {
       "candidate_id": "next_improvement:a523bfcc761c",
       "kind": "next_improvement",
-      "lesson": "persist this retro and refresh `recent-lessons.md`; no new handoff item is needed for lifecycle behavior smoke or behavior-led validator splits; the handoff now explicitly owns the unpublished bootstrap fix's later authorized release/update boundary.",
+      "lesson": "persist this retro and refresh `recent-lessons.md`; no new handoff item is needed for lifecycle behavior smoke or behavior-led validator splits; the handoff now explicitly owns the unpublished bootstrap/reviewer-boundary fix's later authorized release/update boundary.",
       "normalized_key": "persist this retro and refresh recent lessons md no new handoff item is needed",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-14-session-retro.md",
@@ -1114,26 +1134,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-2-release-auto-retro.md",
-          "date": "2026-07-13",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:9b7a7cbd7cda",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v1.0.3`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v1 0 3",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md",
-      "latest_source_date": "2026-07-13",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md",
           "date": "2026-07-13",
           "section": "Context"
         }
@@ -2102,6 +2102,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:917984123880",
+      "kind": "next_improvement",
+      "lesson": "applied in this follow-up — a known deferred portability seam is not complete until a clean consumer test covers the named installed command, its host asset, and the truthful host mapping.",
+      "normalized_key": "applied in this follow up a known deferred portability seam is not complete until",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-14-session-retro.md",
+      "latest_source_date": "2026-07-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-14-session-retro.md",
+          "date": "2026-07-14",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:578dc516dc0f",
       "kind": "next_improvement",
       "lesson": "applied in this slice — objective lifecycle follow-through has a separate report count and rate instead of inflating satisfaction.",
@@ -2144,7 +2164,7 @@
     {
       "candidate_id": "next_improvement:a523bfcc761c",
       "kind": "next_improvement",
-      "lesson": "persist this retro and refresh `recent-lessons.md`; no new handoff item is needed for lifecycle behavior smoke or behavior-led validator splits; the handoff now explicitly owns the unpublished bootstrap fix's later authorized release/update boundary.",
+      "lesson": "persist this retro and refresh `recent-lessons.md`; no new handoff item is needed for lifecycle behavior smoke or behavior-led validator splits; the handoff now explicitly owns the unpublished bootstrap/reviewer-boundary fix's later authorized release/update boundary.",
       "normalized_key": "persist this retro and refresh recent lessons md no new handoff item is needed",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-14-session-retro.md",

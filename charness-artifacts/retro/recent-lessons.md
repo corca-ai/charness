@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-14-v1-0-6-release-auto-retro.md`; sources: 89)
+- applied in this follow-up — a known deferred portability seam is not complete until a clean consumer test covers the named installed command, its host asset, and the truthful host mapping. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
 - applied in this slice — objective lifecycle follow-through has a separate report count and rate instead of inflating satisfaction. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
 - applied in this slice — producer wiring, attention-state visibility, public-skill dogfood evidence, and durable artifact status are one mutation checklist before pre-lock proof. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
-- persist this retro and refresh `recent-lessons.md`; no new handoff item is needed for lifecycle behavior smoke or behavior-led validator splits; the handoff now explicitly owns the unpublished bootstrap fix's later authorized release/update boundary. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
 
 ## Selection Policy
 

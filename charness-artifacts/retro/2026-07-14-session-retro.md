@@ -15,6 +15,11 @@ artifact with the already-published v1.0.5 release, and repaired the shared
 configured retro trigger fired because installed release and skill surfaces
 changed.
 
+A follow-up consumer report then showed that the reviewer-boundary contract
+still named Charness source paths from the consuming repository. The requested
+outcome was explicit first-class consumption by both Claude and Codex, rather
+than a Claude-only packaging repair.
+
 ## Evidence Summary
 
 - The canonical spec is
@@ -36,6 +41,12 @@ changed.
 - `sh`, `bash`, and `zsh` reproduced the reported command-scoped assignment
   failure; source and synchronized plugin debug resolvers then ran from an
   unrelated temporary repository using one persistent export/invocation block.
+- A clean consumer Git repository now invokes the reviewer fingerprint through
+  the installed skill directory. The plugin exporter carries Claude's bounded
+  reviewer envelope under `agents/`, while Codex uses a documented native
+  `explorer` mapping rather than a false claim that it loads Claude markdown.
+- Two independent fresh-eye angles and a counterweight confirmed the consumer,
+  host-mapping, and proof boundaries; parent-side fingerprints remained clean.
 
 ## Waste
 
@@ -51,6 +62,11 @@ with an exported shell variable. Its non-exported examples invited a plausible
 environment-prefix command, and focused proof initially missed both aggregate
 quality-mode inheritance and source-cwd/shell-lifetime first-reader traps.
 
+The reviewer-boundary portability seam was already recognized as deferred, but
+the earlier closeout did not turn it into a consumer-path acceptance check. That
+left an ordinary installed use path free to cite a source checkout until the
+operator reported the failure.
+
 ## Critical Decisions
 
 - Use the exact deterministic delivery/feedback identity, one append-mode write
@@ -65,6 +81,9 @@ quality-mode inheritance and source-cwd/shell-lifetime first-reader traps.
 - Treat path discovery, exported shell state, current directory, and shell
   lifetime as separate interfaces: use an absolute skill path outside the
   source root and keep export plus dependent expansion in one tool invocation.
+- Treat the helper path and host discovery path as separate consumer contracts:
+  package Claude's envelope where Claude loads it, map Codex to its native
+  reviewer, and do not substitute shared markdown for a Codex custom agent.
 
 ## Expert Counterfactuals
 
@@ -83,6 +102,10 @@ quality-mode inheritance and source-cwd/shell-lifetime first-reader traps.
   lifecycle completion as human satisfaction. That question correctly makes
   taxonomy separation a release-worthy fix, while leaving reversible cleanup
   and speculative smoke work deferred.
+- Applied to the reviewer seam, the same question would have required a clean
+  consumer repository to exercise every command named in the policy before the
+  earlier repair was considered complete. That is now the portability test's
+  detection point.
 
 ## Sibling Search
 
@@ -97,8 +120,12 @@ quality-mode inheritance and source-cwd/shell-lifetime first-reader traps.
   separate report count and rate instead of inflating satisfaction.
 - memory: persist this retro and refresh `recent-lessons.md`; no new handoff item
   is needed for lifecycle behavior smoke or behavior-led validator splits; the
-  handoff now explicitly owns the unpublished bootstrap fix's later authorized
-  release/update boundary.
+  handoff now explicitly owns the unpublished bootstrap/reviewer-boundary fix's
+  later authorized release/update boundary.
+
+- workflow: applied in this follow-up — a known deferred portability seam is
+  not complete until a clean consumer test covers the named installed command,
+  its host asset, and the truthful host mapping.
 
 ## Persisted
 

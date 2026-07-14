@@ -150,9 +150,9 @@ no-write brief. Two enforcement rails now back the rule instead of
 instruction-following alone.
 
 1. Parent-side integrity proof. Before spawning shared-tree reviewers, run
-   `python3 <repo-root>/skills/shared/scripts/reviewer_boundary_fingerprint.py snapshot --repo-root <repo-root>`.
+   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" snapshot --repo-root <repo-root>`.
    After EACH reviewer returns, run
-   `python3 <repo-root>/skills/shared/scripts/reviewer_boundary_fingerprint.py verify --repo-root <repo-root>`.
+   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" verify --repo-root <repo-root>`.
    A non-zero verify is a concrete, auditable violation signal: quarantine
    that review's approvals, restore state deliberately, and re-run verify to
    a full-clean result before re-snapshotting for the next reviewer (the
@@ -160,8 +160,8 @@ instruction-following alone.
    necessarily every one). Closeout evidence should cite the verify result,
    not reviewer self-report.
 2. Host envelope. Hosts that expose typed subagent definitions spawn bounded
-   reviewers under a read-only envelope (this repo ships
-   `<repo-root>/.claude/agents/bounded-reviewer.md`: Read/Grep/Glob only), so
+   reviewers under a read-only envelope (Claude Code receives the installed
+   plugin's `agents/bounded-reviewer.md` (Read/Grep/Glob only), so
    that, where the envelope binds, writes, index mutation, and undelegated
    nested spawning fail with the host's concrete tool-unavailable signal. An
    enveloped reviewer has no shell, so prior-version content (`git show`) rides
@@ -174,6 +174,13 @@ instruction-following alone.
    host, treat rail 2 as unproven, rely on rail 1 plus the shared-tree rules
    above, and have parents audit reviewer tool-use events rather than trust
    self-report.
+
+   Codex does not discover Claude's markdown envelope from a plugin root. On the
+   current Codex host, use its native `explorer` agent with the bounded review
+   packet; pass reviewer-tier spawn fields when the host exposes them. This is
+   not the Claude tool envelope: its binding must be recorded separately, and
+   the Claude envelope rail is `unsupported` on Codex. Keep the parent-side
+   fingerprint rail as enforcement.
 
 Rail 1 covers the git-state class: worktree writes, index mutation, HEAD
 moves, and untracked churn on non-ignored paths. A reviewer action that

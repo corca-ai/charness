@@ -108,8 +108,12 @@
       "source_paths": [
         ".claude/agents/**"
       ],
-      "derived_paths": [],
-      "sync_commands": [],
+      "derived_paths": [
+        "plugins/charness/agents/**"
+      ],
+      "sync_commands": [
+        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+      ],
       "verify_commands": [
         "./scripts/check-markdown.sh",
         "./scripts/check-secrets.sh",
@@ -118,7 +122,7 @@
       "notes": [
         "Each definition's YAML frontmatter (name/description/tools) scopes a host-spawned subagent's tool access; `bounded-reviewer.md` is the first entry, the read-only reviewer envelope for issue #428.",
         "tests/quality_gates/test_bounded_reviewer_envelope.py pins the read-only frontmatter tool set; markdownlint and the secrets scan (already repo-wide via the checked-in git file listing) remain the base floor. Envelope binding stays a per-host live-probe claim recorded under charness-artifacts/probe/ (issue #430).",
-        "Host-specific: charness does not read or package this directory, unlike skills/public|support/**; Claude Code resolves it directly."
+        "Host-specific authoring lives under .claude/agents/**; the plugin exporter packages it into plugin-native plugins/charness/agents/** for Claude installs."
       ]
     },
     {

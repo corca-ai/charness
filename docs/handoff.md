@@ -9,12 +9,12 @@
 
 ## Current State
 
-- Continue from the verified v1.0.5 public/install state; admit new work only
+- Continue from the verified v1.0.6 public/install state; admit new work only
   from a current issue, reproduction, measurement, or operator request.
-- v1.0.5 is public at tag `86e85052`; clean local/remote main `7bd4ad1a` is the
+- v1.0.6 is public at tag `05873e63`; clean local/remote main `942442e7` is the
   expected post-publish evidence commit, and GitHub has no open issues.
 - Installed CLI, source checkout, Codex source/cache, and Claude plugin state
-  read 1.0.5. Active sessions may retain stale injected cache paths; restart
+  read 1.0.6. Active sessions may retain stale injected cache paths; restart
   Claude Code and Codex before judging the refreshed plugin.
 - Release quality, fresh-checkout probes, public HTTP/API readback, installed
   readback, and a separate fresh-eye observer passed. The release artifact owns
@@ -25,10 +25,11 @@
   commands; no Cautilus evaluation was run or claimed.
 - Nine Python length advisories remain intentionally: seven cohesive units and
   two production validators deferred to behavior-led refactoring.
-- A local post-v1.0.5 north-star slice fixes lifecycle feedback truthfulness and
-  the shared `SKILL_DIR` shell bootstrap contract. It is not published, so
-  installed v1.0.5 caches still require export-before-use and do not contain
-  this source fix.
+- A local post-v1.0.6 north-star slice fixes lifecycle feedback truthfulness,
+  the shared `SKILL_DIR` shell bootstrap contract, and reviewer-boundary
+  consumer portability. It is not published: checked-in plugin exports now
+  carry the Claude reviewer envelope and document Codex's native `explorer`
+  path, but installed v1.0.6 caches do not contain these source fixes.
 
 ## Next Session
 
@@ -40,8 +41,10 @@
 3. If behavior work touches `check_skill_surface_preflight.py` or
    `validate_critique_artifacts.py`, consider a characterized cohesive split;
    do not refactor them for line count alone.
-4. If publication is authorized, carry the post-v1.0.5 lifecycle/bootstrap
-   slice through the normal release proof and installed-cache update boundary;
+4. If publication is authorized, carry the post-v1.0.6 lifecycle/bootstrap/
+   reviewer-boundary slice through the normal release proof and installed-cache
+   update boundary. Confirm the released Claude `agents/` asset and keep the
+   Codex native-agent mapping distinct from a custom-agent-envelope claim;
    until then, do not claim the released plugin contains these fixes.
 
 ## Discuss

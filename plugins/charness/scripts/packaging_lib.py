@@ -196,6 +196,13 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     shared_refs_root = repo_root / "skills" / "shared"
     replace_tree_if_present(shared_refs_root, plugin_root / "shared")
 
+    # Claude Code discovers typed subagent definitions from a plugin-native
+    # ``agents/`` directory.  Keep the authoring surface host-specific under
+    # ``.claude/agents`` and materialize it only in the installed plugin;
+    # consuming repos must not be told to read a source-tree path.
+    claude_agents_root = repo_root / ".claude" / "agents"
+    replace_tree_if_present(claude_agents_root, plugin_root / "agents")
+
     support_root = repo_root / source["support_skills_dir"]
     exported_support_root = plugin_root / "support"
     if exported_support_root.exists():
