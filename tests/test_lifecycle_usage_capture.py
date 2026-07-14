@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+import scripts.lifecycle_usage_capture as lifecycle
 from scripts.lifecycle_usage_capture import capture_lifecycle_outcome, episode_id_for
 
 
@@ -194,3 +195,96 @@ def test_exported_plugin_capture_smoke(tmp_path: Path) -> None:
     assert first["status"] == "appended"
     assert replay["status"] == "replay_noop"
     assert [row["event_type"] for row in _rows(tmp_path)] == ["usage_episode", "usage_feedback"]
+
+
+def test_private_helpers_cover_fallbacks_and_rejections(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    sys_path_before = list(__import__("sys").path)
+    try:
+        loaded = lifecycle._load_sibling(tmp_path, "lifecycle_usage_capture")
+        assert "capture_lifecycle_outcome" in loaded
+        monkeypatch.setattr(lifecycle.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+        with pytest.raises(ImportError, match="unable to load"):
+            lifecycle._load_sibling(tmp_path, "lifecycle_usage_capture")
+    finally:
+        __import__("sys").path[:] = sys_path_before
+
+    monkeypatch.setattr(lifecycle, "__file__", str(tmp_path / "lifecycle_usage_capture.py"))
+    with pytest.raises(FileNotFoundError):
+        lifecycle._schema_root(tmp_path)
+    assert lifecycle._portable_path(tmp_path, tmp_path / "inside") == "inside"
+    assert lifecycle._portable_path(tmp_path, Path("/outside")) == "/outside"
+    assert lifecycle._privacy_ok({"privacy": "bad"}) is False
+    assert lifecycle._records_path(tmp_path, {"storage_path": "../outside"})[1] == "storage_path must stay under repo_root"
+    assert lifecycle._valid_adapter(tmp_path / "missing.yaml", tmp_path)[0] is None
+
+
+def test_capture_rejects_unsupported_kind_and_other_invalid_inputs(tmp_path: Path) -> None:
+    unsupported = capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="other", evidence_locator="v1")
+    assert unsupported == {"status": "invalid", "appended": False, "errors": ["unsupported lifecycle kind: other"]}
+    _adapter(tmp_path)
+    assert capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="issue_close", evidence_locator="v1", product_id="bad id")["status"] == "invalid"
+    (tmp_path / ".agents/usage-episodes-adapter.yaml").write_text(
+        yaml.safe_dump({"version": 1, "repo": "fixture", "enabled": True, "events": ["usage_episode", "usage_feedback"], "privacy": {"raw_prompt": True, "raw_transcript": False, "user_identity": "none"}}), encoding="utf-8"
+    )
+    assert capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="issue_close", evidence_locator="v1")["status"] == "invalid_adapter"
+
+
+def test_append_pair_handles_stream_semantic_schema_and_unexpected_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    class Lock:
+        def __enter__(self): return self
+        def __exit__(self, *_): return False
+
+    monkeypatch.setattr(lifecycle, "_stream_lock", lambda _path: Lock())
+    delivery = {"episode_id": "episode-1", "event_type": "usage_episode"}
+    feedback = {"feedback_id": "feedback-1", "event_type": "usage_feedback"}
+    monkeypatch.setattr(lifecycle, "_load_sibling", lambda _root, name: {"read_schema_valid_records": lambda *_a: ([], ["bad"])} if name == "usage_episode_records" else {})
+    assert lifecycle._append_pair_locked(repo_root=tmp_path, records_path=tmp_path / "records", schema={}, delivery=delivery, feedback=feedback)["status"] == "invalid_stream"
+    monkeypatch.setattr(lifecycle, "_load_sibling", lambda _root, name: {"read_schema_valid_records": lambda *_a: ([], []), "semantic_feedback_errors": lambda *_a: ["bad"]} if name == "usage_episode_records" else {"semantic_feedback_errors": lambda *_a: ["bad"]})
+    assert lifecycle._append_pair_locked(repo_root=tmp_path, records_path=tmp_path / "records", schema={}, delivery=delivery, feedback=feedback)["status"] == "invalid_stream"
+    monkeypatch.setattr(lifecycle, "_load_sibling", lambda *_a: {"read_schema_valid_records": lambda *_a: ([], []), "semantic_feedback_errors": lambda *_a: []})
+    assert lifecycle._append_pair_locked(repo_root=tmp_path, records_path=tmp_path / "records", schema={"type": "object", "required": ["missing"]}, delivery=delivery, feedback=feedback)["status"] == "invalid_record"
+    monkeypatch.setattr(lifecycle, "_load_sibling", lambda *_a: (_ for _ in ()).throw(RuntimeError("boom")))
+    result = lifecycle._append_pair_locked(repo_root=tmp_path, records_path=tmp_path / "records", schema={}, delivery=delivery, feedback=feedback)
+    assert result["status"] == "capture_error" and "boom" in result["errors"][0]
+
+
+def test_capture_handles_storage_and_outer_exceptions(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _adapter(tmp_path)
+    monkeypatch.setattr(lifecycle, "_records_path", lambda *_a: (None, "bad storage"))
+    assert capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="issue_close", evidence_locator="v1")["status"] == "invalid_storage_path"
+    monkeypatch.setattr(lifecycle, "_schema_root", lambda *_a: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert capture_lifecycle_outcome(repo_root=tmp_path, lifecycle_kind="issue_close", evidence_locator="v1")["status"] == "capture_error"
+
+
+@pytest.mark.parametrize("script", [
+    "skills/public/issue/scripts/issue_close.py",
+    "skills/public/release/scripts/publish_release_common.py",
+])
+def test_lifecycle_producers_report_missing_helper_and_capture_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, script: str) -> None:
+    module = runpy.run_path(script)
+    capture = module["_capture_lifecycle"]
+    class NoParentsPath:
+        def resolve(self):
+            return self
+
+        @property
+        def parents(self):
+            return ()
+
+    capture.__globals__["Path"] = lambda *_a, **_k: NoParentsPath()
+    kwargs = {"repo_root": tmp_path}
+    if script.endswith("issue_close.py"):
+        kwargs.update(repo="acme/demo", number=1)
+    else:
+        kwargs.update(tag_name="v1.0.0")
+    assert capture(**kwargs)["status"] == "capture_error"
+    capture.__globals__["Path"] = Path
+
+    monkeypatch.setattr(module["runpy"], "run_path", lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("boom")))
+    kwargs = {"repo_root": tmp_path}
+    if script.endswith("issue_close.py"):
+        kwargs.update(repo="acme/demo", number=1)
+    else:
+        kwargs.update(tag_name="v1.0.0")
+    result = capture(**kwargs)
+    assert result["status"] == "capture_error" and "boom" in result["errors"][0]

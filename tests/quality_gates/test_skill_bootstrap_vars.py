@@ -59,3 +59,27 @@ def test_unknown_var_still_requires_inline_assignment(tmp_path: Path) -> None:
     failures = gate.check_file(skill)
 
     assert failures and "CUSTOM_DIR" in failures[0]
+
+
+def test_non_shell_fence_is_ignored_and_main_reports_reference_failure(tmp_path: Path, capsys) -> None:
+    reference = tmp_path / "bootstrap-resolution.md"
+    reference.write_text("```text\nSKILL_DIR=/path\n```\n```bash\nSKILL_DIR=/path\n```\n", encoding="utf-8")
+    assert gate.check_canonical_reference(reference) == [
+        f"{reference}: shell example line 1 assigns SKILL_DIR without export; "
+        "export it in a separate command before expanding $SKILL_DIR"
+    ]
+    canonical = tmp_path / "skills" / "shared" / "references" / "bootstrap-resolution.md"
+    canonical.parent.mkdir(parents=True)
+    canonical.write_text(reference.read_text(encoding="utf-8"), encoding="utf-8")
+
+    assert gate.main(["--repo-root", str(tmp_path)]) == 1
+    assert "without export" in capsys.readouterr().err
+
+
+def test_main_validates_reference_when_present(tmp_path: Path, capsys) -> None:
+    canonical = tmp_path / "skills" / "shared" / "references" / "bootstrap-resolution.md"
+    canonical.parent.mkdir(parents=True)
+    canonical.write_text("```bash\nexport SKILL_DIR=/path\n```\n", encoding="utf-8")
+
+    assert gate.main(["--repo-root", str(tmp_path)]) == 0
+    assert "Validated" in capsys.readouterr().out
