@@ -25,8 +25,9 @@ host injection.
   command environment variable remains unset.
 - Warn against command-scoped assignment when the same command expands the
   variable.
-- Extend the existing bootstrap-variable validator so an unsafe canonical
-  example cannot silently return.
+- Extend the existing bootstrap-variable validator so the exact unsafe pattern
+  cannot silently return from either the canonical reference or an individual
+  skill Bootstrap block that cites it.
 - Prove source and synchronized plugin bootstrap commands from an unrelated
   temporary repository directory.
 
@@ -38,8 +39,8 @@ host injection.
   and shell environment state as different interfaces.
 - Keep the individual skill bootstrap commands unchanged; their shared
   reference owns resolution and export semantics.
-- A validator protects the canonical reference because every public/support
-  skill delegates this portability boundary to it.
+- The existing validator protects both the canonical reference and the sibling
+  public/support skill Bootstrap seams without becoming a general shell parser.
 
 ## Non-Goals
 
@@ -56,15 +57,16 @@ host injection.
    unset.
 3. The reference no longer claims that the agent runtime necessarily injects a
    shell environment variable.
-4. `check_skill_bootstrap_vars.py` fails when the canonical reference contains
-   a non-exported `SKILL_DIR=` assignment in a positive shell example.
+4. `check_skill_bootstrap_vars.py` fails when the canonical reference or an
+   individual skill Bootstrap contains a non-exported `SKILL_DIR=` assignment
+   in a positive shell example, even when the skill cites the reference.
 5. Source and plugin copies stay synchronized and the debug resolver runs from
    an unrelated temporary repository using the documented two-step export.
 
 ## Acceptance Checks
 
 - `unit`: validator accepts exported assignments and rejects a non-exported
-  canonical assignment.
+  assignment in the canonical reference and in a citing skill Bootstrap.
 - `shell`: demonstrate the reported command-scoped assignment expands to
   `/scripts/...`, while export-before-use expands to the resolved path.
 - `integration`: run source and plugin debug resolver helpers from an unrelated
@@ -85,7 +87,7 @@ which helper commands to run; host adapters own path discovery metadata.
   resolved path for export-before-use.
 - Source and synchronized plugin debug resolvers ran from an unrelated
   temporary repository directory.
-- Five focused validator tests and all 21 skill-package validations passed.
+- Nine focused validator tests and all 21 skill-package validations passed.
 - The released v1.0.5 cache is deliberately not claimed as updated; delivery
   requires a later authorized release/update boundary.
 
@@ -107,6 +109,9 @@ which helper commands to run; host adapters own path discovery metadata.
 - Act Before Ship: make source-relative paths conditional on the Charness repo
   root; show an absolute source path from a consuming repo; and keep export plus
   dependent expansion in one persistent shell/tool invocation. Applied.
+- Pre-release guard propagation: reuse the exact detector for individual skill
+  Bootstrap blocks so a canonical citation cannot mask the same unsafe pattern.
+  Applied after a separate release critique and counterweight pass.
 - Bundle Anyway: keep the critique scope explicit in its durable artifact.
 - Valid but Defer: installed-cache publication/readback belongs to a later
   authorized release boundary.

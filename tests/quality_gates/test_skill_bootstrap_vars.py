@@ -53,6 +53,28 @@ def test_skill_canonical_var_still_requires_reference_citation(tmp_path: Path) -
     ]
 
 
+def test_skill_environment_prefix_assignment_is_rejected_even_with_citation(tmp_path: Path) -> None:
+    skill = _skill(
+        tmp_path,
+        "See `skills/shared/references/bootstrap-resolution.md`.\n\n"
+        '```bash\nSKILL_DIR=/path/to/skill python3 "$SKILL_DIR/scripts/check.py"\n```\n',
+    )
+
+    failures = gate.check_file(skill)
+
+    assert failures and "without export" in failures[0]
+
+
+def test_skill_exported_assignment_is_allowed_with_citation(tmp_path: Path) -> None:
+    skill = _skill(
+        tmp_path,
+        "See `skills/shared/references/bootstrap-resolution.md`.\n\n"
+        '```bash\nexport SKILL_DIR=/path/to/skill\npython3 "$SKILL_DIR/scripts/check.py"\n```\n',
+    )
+
+    assert gate.check_file(skill) == []
+
+
 def test_unknown_var_still_requires_inline_assignment(tmp_path: Path) -> None:
     skill = _skill(tmp_path, '```bash\npython3 "$CUSTOM_DIR/scripts/check.py"\n```\n')
 

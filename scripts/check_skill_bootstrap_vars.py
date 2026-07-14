@@ -68,9 +68,8 @@ def _inline_assignments(section: str) -> set[str]:
     return {match.group(1) for match in ASSIGN_RE.finditer(section)}
 
 
-def check_canonical_reference(reference: Path) -> list[str]:
+def _check_non_exported_skill_dir_assignments(text: str, source: Path) -> list[str]:
     """Reject non-exported SKILL_DIR assignments in shell examples."""
-    text = reference.read_text(encoding="utf-8")
     failures: list[str] = []
     for fence_match in CODE_FENCE_RE.finditer(text):
         language = fence_match.group(1).strip()
@@ -79,11 +78,16 @@ def check_canonical_reference(reference: Path) -> list[str]:
         for line_number, line in enumerate(fence_match.group(2).splitlines(), start=1):
             if NON_EXPORTED_SKILL_DIR_RE.match(line) and not EXPORTED_SKILL_DIR_RE.match(line):
                 failures.append(
-                    f"{reference}: shell example line {line_number} assigns SKILL_DIR "
+                    f"{source}: shell example line {line_number} assigns SKILL_DIR "
                     "without export; "
                     "export it in a separate command before expanding $SKILL_DIR"
                 )
     return failures
+
+
+def check_canonical_reference(reference: Path) -> list[str]:
+    text = reference.read_text(encoding="utf-8")
+    return _check_non_exported_skill_dir_assignments(text, reference)
 
 
 def check_file(skill_md: Path) -> list[str]:
@@ -97,6 +101,7 @@ def check_file(skill_md: Path) -> list[str]:
     cite_present = _has_canonical_cite(section)
     assigned = _inline_assignments(section)
     failures: list[str] = []
+    failures.extend(_check_non_exported_skill_dir_assignments(section, skill_md))
     for var in sorted(vars_used):
         if var in KNOWN_RESOLVED_VARS:
             if not cite_present:
