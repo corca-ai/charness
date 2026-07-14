@@ -194,6 +194,12 @@
       "evidence_terms": ["mode", "disabled"],
       "rationale": "Tool installation reports disabled adapter state as structured skipped output."
     },
+    "scripts/lifecycle_usage_capture.py": {
+      "states": ["disabled", "no_adapter"],
+      "visibility": ["artifact_visible", "terminal_payload"],
+      "evidence_terms": ["status", "appended", "errors"],
+      "rationale": "Verified issue/release lifecycle capture returns missing or disabled usage-adapter state as a structured best-effort telemetry disposition. Issue close JSON carries the nested lifecycle_capture payload and release closeout renders it in the durable Lifecycle Usage Capture artifact section; neither disposition means telemetry was appended or lifecycle closeout succeeded."
+    },
     "skills/public/quality/scripts/inventory_nose_clones.py": {
       "states": ["skipped"],
       "visibility": ["stdout_attention", "terminal_payload"],

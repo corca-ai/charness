@@ -15,6 +15,7 @@ from scripts.usage_episode_feedback import (
     FEEDBACK_SIGNALS,
     FRICTION_SIGNALS,
     NEUTRAL_SIGNALS,
+    OBJECTIVE_LIFECYCLE_SIGNALS,
     SATISFACTION_SIGNALS,
     classification_counts,
     feedback_id_for,
@@ -628,6 +629,7 @@ def test_report_reconciles_one_delivery_and_one_feedback_event(tmp_path: Path) -
     assert payload["feedback_event_count"] == 1
     assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
     assert payload["product_evidence"]["satisfaction_signal_count"] == 1
+    assert payload["product_evidence"]["objective_lifecycle_signal_count"] == 0
     assert payload["feedback_reconciliation"] == {
         "linked_count": 1,
         "unlinked_count": 0,
@@ -673,7 +675,37 @@ def test_report_rejects_semantically_invalid_feedback(
 
 
 def test_feedback_signal_classification_covers_the_closed_vocabulary() -> None:
-    assert FEEDBACK_SIGNALS == SATISFACTION_SIGNALS | FRICTION_SIGNALS | NEUTRAL_SIGNALS
+    assert FEEDBACK_SIGNALS == SATISFACTION_SIGNALS | OBJECTIVE_LIFECYCLE_SIGNALS | FRICTION_SIGNALS | NEUTRAL_SIGNALS
     assert NEUTRAL_SIGNALS == {"edited"}
+    assert SATISFACTION_SIGNALS == {"accepted", "human_confirmed"}
+    assert OBJECTIVE_LIFECYCLE_SIGNALS == {"closed_issue", "released"}
     classified = classification_counts([{"feedback_signal": signal} for signal in FEEDBACK_SIGNALS])
-    assert classified == {"satisfaction": 4, "friction": 4, "neutral": 1, "unclassified": 0}
+    assert classified == {
+        "satisfaction": 2,
+        "objective_lifecycle": 2,
+        "friction": 4,
+        "neutral": 1,
+        "unclassified": 0,
+    }
+
+
+def test_objective_lifecycle_signal_is_not_satisfaction_but_keeps_coverage(tmp_path: Path) -> None:
+    write_adapter(tmp_path)
+    delivery = acme_episode()
+    delivery.pop("feedback_signal")
+    lifecycle = feedback_record(
+        feedback_signal="closed_issue",
+        source_kind="issue_lifecycle",
+        evidence_ref={"kind": "issue", "ref": "acme/repo#1"},
+    )
+    write_records(tmp_path, [delivery, lifecycle])
+
+    result = run(REPORTER, "--repo-root", str(tmp_path), "--json")
+    assert result.returncode == 0, result.stderr
+    evidence = json.loads(result.stdout)["product_evidence"]
+    assert evidence["feedback_coverage_count"] == 1
+    assert evidence["feedback_coverage_rate"] == 1.0
+    assert evidence["satisfaction_signal_count"] == 0
+    assert evidence["objective_lifecycle_signal_count"] == 1
+    assert evidence["objective_lifecycle_signal_rate"] == 1.0
+    assert "no_satisfaction_signal" in evidence["veto_gaps"]

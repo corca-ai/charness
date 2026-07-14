@@ -160,6 +160,8 @@ def test_report_usage_episodes_aggregates_counts_sessions_and_gaps(tmp_path: Pat
     assert payload["product_evidence"]["feedback_coverage_rate"] == 0.75
     assert payload["product_evidence"]["satisfaction_signal_count"] == 2
     assert payload["product_evidence"]["satisfaction_signal_rate"] == 0.5
+    assert payload["product_evidence"]["objective_lifecycle_signal_count"] == 0
+    assert payload["product_evidence"]["objective_lifecycle_signal_rate"] == 0.0
     assert payload["product_evidence"]["friction_or_followup_signal_count"] == 1
     assert payload["product_evidence"]["friction_or_followup_signal_rate"] == 0.25
     assert payload["product_evidence"]["missing_feedback_signal_count"] == 1
@@ -175,6 +177,7 @@ def test_report_usage_episodes_aggregates_counts_sessions_and_gaps(tmp_path: Pat
     assert "Usage episodes: 4 delivery record(s); feedback events: 0; across 3 session group(s)." in plain.stdout
     assert "Product evidence: first_value_floor=4/4 (100.0%)" in plain.stdout
     assert "feedback_coverage=75.0%" in plain.stdout
+    assert "objective_lifecycle_signals=0" in plain.stdout
     assert "Product-success veto gaps: missing_feedback, single_trigger_type." in plain.stdout
     assert "Non-claims:" in plain.stdout
 

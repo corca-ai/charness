@@ -32,6 +32,7 @@ def product_evidence(
     ]
     classes = classification_counts(feedback_records)
     satisfaction_count = classes["satisfaction"]
+    objective_lifecycle_count = classes["objective_lifecycle"]
     friction_targets = {
         (str(record.get("product_id")), str(record.get("target_episode_id", record.get("episode_id"))))
         for record in feedback_records
@@ -53,6 +54,8 @@ def product_evidence(
         "feedback_coverage_rate": _rate(coverage_count, total),
         "satisfaction_signal_count": satisfaction_count,
         "satisfaction_signal_rate": _rate(satisfaction_count, total),
+        "objective_lifecycle_signal_count": objective_lifecycle_count,
+        "objective_lifecycle_signal_rate": _rate(objective_lifecycle_count, total),
         "friction_or_followup_signal_count": friction_count,
         "friction_or_followup_signal_rate": _rate(friction_count, total),
         "missing_feedback_signal_count": missing_feedback_count,

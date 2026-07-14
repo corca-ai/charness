@@ -6,9 +6,10 @@ Every charness skill's `## Bootstrap` section runs commands of the form
 python3 "$SKILL_DIR/scripts/<name>.py" --repo-root .
 ```
 
-`$SKILL_DIR` is the directory that holds the SKILL.md being executed. In
-agent runtime, the host injects `$SKILL_DIR` automatically. In a fresh
-shell (or any non-agent context), it is unset and the commands fail with
+`$SKILL_DIR` is the directory that holds the SKILL.md being executed. An
+agent runtime may know the skill source location without exporting a
+`SKILL_DIR` variable into the command shell. In a fresh shell (or any
+non-agent context), it is unset and the commands fail with
 `python3: can't open file '/scripts/<name>.py'`.
 
 This reference is the single source of truth for resolving `$SKILL_DIR`
@@ -25,19 +26,34 @@ The directory layout determines the value.
 From the repo root:
 
 ```bash
-SKILL_DIR=skills/public/<skill-id>    # for public skills
-SKILL_DIR=skills/support/<skill-id>   # for support skills
+{
+  export SKILL_DIR=skills/public/<skill-id>    # for public skills
+  # or: export SKILL_DIR=skills/support/<skill-id>
+  python3 "$SKILL_DIR/scripts/<name>.py" --repo-root .
+}
 ```
 
-Use the directory's relative path, not the absolute path; bootstrap
-commands pair `$SKILL_DIR` with `--repo-root .`, so a relative
-`$SKILL_DIR` from the current shell directory works the same as the
-agent-injected value.
+When the command is launched from the Charness source root, this relative
+path pairs with `--repo-root .`. If it is launched from another directory,
+resolve an absolute skill path and pass the consuming repository's absolute
+root instead:
+
+```bash
+{
+  export SKILL_DIR="$(realpath /path/to/charness/skills/public/<skill-id>)"
+  python3 "$SKILL_DIR/scripts/<name>.py" --repo-root /path/to/consuming-repo
+}
+```
+
+Keep the export and every dependent expansion in the same persistent shell
+session/tool invocation; exporting in one ephemeral tool call does not set
+the variable for a later call.
 
 ### Inside a consuming repo via Claude Code or Codex agent
 
-The agent runtime injects `$SKILL_DIR` automatically. No operator action
-needed — the commands run as written.
+The runtime's skill source locator is not proof that the command environment
+contains `$SKILL_DIR`. Check it (`printf '%s\n' "${SKILL_DIR-}"`) and export
+the resolved path in the shell when it is missing.
 
 ### Inside a consuming repo from a manual shell
 
@@ -46,8 +62,20 @@ manager determines this path) and point `$SKILL_DIR` at its parent
 directory:
 
 ```bash
-SKILL_DIR="$(realpath path/to/cache/charness/skills/<skill-id>)"
+{
+  export SKILL_DIR="$(realpath path/to/cache/charness/skills/<skill-id>)"
+  python3 "$SKILL_DIR/scripts/<name>.py" --repo-root /path/to/consuming-repo
+}
 ```
+
+Do not put the assignment in front of the command as an environment prefix:
+
+```text
+SKILL_DIR=/path/to/skill python3 "$SKILL_DIR/scripts/<name>.py"
+```
+
+Shell expands `"$SKILL_DIR"` before applying that temporary assignment, so
+this can use the previous value (including an unset value and `/scripts/...`).
 
 For Codex plugin caches the path is host-defined and rotates on
 `charness update`. When a documented path goes stale, use
@@ -85,6 +113,6 @@ assets, or that materialize multiple plugin caches at different hashes,
 need an explicit injection seam.
 
 `$SKILL_DIR` from the runtime plus `$CHARNESS_SUPPORT_DIR` when the
-support tree is split is that seam. The agent runtime sets `$SKILL_DIR`
-implicitly; operators set both manually when running bootstrap commands
-outside the agent.
+support tree is split is that seam. A host may provide the skill source
+locator without exporting `$SKILL_DIR`; operators set both manually when
+running bootstrap commands outside the agent.

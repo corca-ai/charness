@@ -1,11 +1,13 @@
 # Quality Review
 Date: 2026-07-14
-Title: v1.0.5 Advisory Disposition and Release Readiness
+Title: v1.0.5 Advisory Disposition and Release Outcome
 
 ## Scope
 
 Target boundary: advisories surfaced while closing issues #433, #436, and #437,
-plus Cautilus 0.19.3 compatibility discovered by the release gate.
+plus Cautilus 0.19.3 compatibility discovered by the release gate. This review
+began before publication; later release state is reconciled below from the
+release-owned artifact.
 
 Ambient repo findings: nine Python length warnings remain advisory after a
 cohesion/risk review; no public command, skill trigger, or release API changes.
@@ -15,8 +17,9 @@ cohesion/risk review; no public command, skill trigger, or release API changes.
 - Focused split-module and Cautilus suite: 138 passed; Ruff and the boundary
   ratchet pass.
 - Full read-only quality passed 81/81 gates and 4,587 tests after sync.
-- Release critique passed; release-gate proof and a distinct post-publish
-  observation remain mandatory.
+- Release critique, release-gate proof, public publication, and the distinct
+  post-publish observation completed. The durable later-state record is
+  [`charness-artifacts/release/latest.md`](../release/latest.md).
 
 ## Runtime Signals
 
@@ -46,8 +49,9 @@ cohesion/risk review; no public command, skill trigger, or release API changes.
 
 ## Missing
 
-- None within the patch-release acceptance boundary once the release gate and
-  public post-create verification pass.
+- None within the patch-release acceptance boundary. The release gate and public
+  post-create verification subsequently passed; see the release-owned artifact
+  rather than treating this earlier review as publication proof.
 
 ## Deferred
 
@@ -95,10 +99,11 @@ cohesion/risk review; no public command, skill trigger, or release API changes.
 
 ## Recommended Next Quality Moves
 
-- active release proof — capability_needed=public patch confidence;
-  next_center=full gate plus release critique; transformation=sync, verify,
-  publish, and read back through a distinct channel; proof_boundary=public tag
-  and release artifact; enforcement_posture=existing-gate-reuse.
+- passive release proof because v1.0.5 publication and distinct-channel readback
+  completed — capability_needed=public patch confidence; next_center=release
+  artifact for later state; transformation=preserve the completed proof rather
+  than rerun it; proof_boundary=public tag and release artifact;
+  enforcement_posture=existing-gate-reuse.
 - passive validator decomposition because line count alone does not justify
   release-slice churn — capability_needed=safer cohesive validators;
   next_center=the two near-limit production validators; transformation=refactor

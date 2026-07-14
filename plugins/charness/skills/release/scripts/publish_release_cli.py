@@ -207,6 +207,7 @@ def write_current_artifact(
         requested_review_gate=payload.get("requested_review_gate"),
         retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
         distinct_channel_verification=payload.get("distinct_channel_verification"),
+        lifecycle_capture=payload.get("lifecycle_capture"),
         release_runtime=payload.get("release_runtime"),
     )
 

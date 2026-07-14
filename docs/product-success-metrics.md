@@ -15,8 +15,9 @@ gather-slack wrapper). At the baseline review the maintainer explicitly
 accepted the acme-captured GitHub issue body as the working source for this
 decision. Non-claim: the original Slack thread was never re-read; if a future
 re-read surfaces intent the GitHub capture missed, the numeric-target decision
-is the surface to revisit. Runtime capture activation for consumer repos
-remains a separate deferred decision.
+is the surface to revisit. Runtime capture remains opt-in per consumer-repo
+adapter; verified issue-close and release-publish producers now emit linked
+lifecycle feedback when that adapter enables both events.
 
 ## One-Page Summary
 
@@ -55,9 +56,10 @@ and trust the harness to make the next right workflow move, leaving durable
 evidence instead of false confidence. That is the success definition the
 [One-Page Summary](#one-page-summary) and
 [Core Success Criteria](#core-success-criteria) describe. It remains provisional
-for #184 and is not yet directly measurable, because Charness does not yet
-capture operator-side task outcomes (consumer-repo measurement depends on the
-deferred usage-episode capture surface).
+for #184 and is not yet directly measurable as a product-wide outcome. Opted-in
+repos can now measure verified issue-close and release-publish follow-through
+through the privacy-bounded usage-episode stream; this remains evidence of
+objective lifecycle signals, not human approval or general satisfaction.
 
 The **first instrumented objective** — the one number Charness optimizes today —
 is the **repeated-mistake-to-learning conversion rate**: the share of RCA events
@@ -90,8 +92,8 @@ Decisions (2026-05-24, issue #184):
   [rca-conversion-ledger spec](../charness-artifacts/spec/rca-conversion-ledger.md).
 - Numeric target: baseline-first. Observe 2-4 weeks of ledger data before
   committing a target; do not set a guessed number now.
-- Scope: Charness self-development dogfood first. Consumer-repo measurement
-  depends on usage-episode capture, which stays a separate deferred decision.
+- Scope: Charness self-development dogfood first. Consumer-repo measurement is
+  opt-in and depends on each repo's usage-episodes adapter.
 
 The ledger schema, append discipline, aggregation script, and review-loop wiring
 are specced separately (issue #185).
@@ -209,7 +211,8 @@ target, and the baseline window opens only as live (non-seed) events accrue.
 | --- | --- | --- | --- |
 | Skill routing success | Task-oriented sessions start with the expected skill or explicit capability discovery when required. | Proves Charness is reducing workflow ambiguity. | Partly measurable through Cautilus fixtures, public-skill dogfood artifacts, issue closeout notes, and manual review. |
 | First-value evidence floor | First durable output that changes repo state or operator understanding, such as a spec, issue, commit, gathered record, quality artifact, or handoff update. This is a minimum evidence floor, not satisfaction proof. | Separates "the agent produced something inspectable" from raw activity, while preventing artifact existence from being counted as user satisfaction. | Capturable for `slice_closeout` when usage episodes are enabled; summarized by `python3 scripts/report_usage_episodes.py --repo-root .`. |
-| Satisfaction and friction signals | Observable follow-through after the first-value floor: acceptance, human confirmation, issue closure, release, correction, retry, ignored output, or follow-up request. `edited` is explicit neutral: it does not establish satisfaction or failure. | Measures whether the artifact was useful enough to accept or reuse, or whether it created more work. | Partly measurable through linked `usage_feedback` events; delivery alone never supplies feedback coverage. |
+| Human satisfaction and friction signals | Observable follow-through after the first-value floor: acceptance, human confirmation, correction, retry, ignored output, or follow-up request. `edited` is explicit neutral: it does not establish satisfaction or failure. | Measures whether a human accepted the result or whether it created more work. | Partly measurable through linked `usage_feedback` events; delivery alone never supplies feedback coverage. |
+| Objective lifecycle follow-through | A verified issue close or release publication linked to the delivery episode that owned it. | Separates objective repository/release state from human approval and general satisfaction. | Measurable for opted-in issue and release workflows through `issue_lifecycle:closed_issue` and `release_lifecycle:released`. |
 | Closeout proof strength | Highest proof level reached before commit or handoff: deterministic local gate, release gate, provider roundtrip, bounded fresh-eye review, or explicit weak proof. | Prevents green-looking but under-proven work. | Measurable from artifacts and command logs; not summarized automatically. |
 | Resume clarity | Whether [handoff](./handoff.md) points to the correct next move and stale completed work is removed. | Measures long-running agent continuity. | Manually reviewable; handoff validators cover structure but not semantic sufficiency. |
 | Quality gate health | [run-quality](../scripts/run-quality.sh) phase count, pass/fail state, runtime hot spots, and warnings. | Keeps the product maintainable as skills and validators grow. | Measured in [quality latest](../charness-artifacts/quality/latest.md) and .charness/quality/runtime-signals.json. |
@@ -255,7 +258,7 @@ The proposed Charness-owned vocabulary for the fields called out in
 | `core_action` | `normalized_repo_surface`, `landed_verified_change`, `preserved_debug_learning`, `captured_source_context`, `produced_quality_posture`, `published_release_surface`, `refreshed_handoff`, `persisted_retro_lesson`, `explained_current_state` | Use the valuable product behavior, not the tool call. |
 | `agent_action.surface` | `public_skill_workflow`, `support_capability`, `github_issue`, `git_commit`, `quality_gate`, `release_helper`, `gather_record`, `handoff_artifact`, `critique_review`, `operator_reply` | Use the surface that delivered value. |
 | `first_value_ref.kind` | `commit`, `issue`, `artifact`, `doc`, `test_result`, `release`, `comment`, `answer` | Keep `ref` opaque and non-PII; use `path` for repo-root-relative artifacts. |
-| `feedback_signal` | `accepted`, `edited`, `corrected`, `ignored`, `retried`, `follow_up_requested`, `human_confirmed`, `closed_issue`, `released` | `accepted`, `human_confirmed`, `closed_issue`, and `released` are satisfaction; `corrected`, `ignored`, `retried`, and `follow_up_requested` are friction; `edited` is explicit neutral. |
+| `feedback_signal` | `accepted`, `edited`, `corrected`, `ignored`, `retried`, `follow_up_requested`, `human_confirmed`, `closed_issue`, `released` | `accepted` and `human_confirmed` are human satisfaction; `closed_issue` and `released` are objective lifecycle follow-through only; `corrected`, `ignored`, `retried`, and `follow_up_requested` are friction; `edited` is explicit neutral. |
 | `outcome_status` | `delivered`, `abandoned`, `corrected`, `escalated`, `failed` | Closed enum owned by the schema; summarize it, do not extend it in docs. |
 | `t_status` | `none`, `candidate`, `promoted`, `rejected` | Closed enum owned by the schema; use it to connect episodes to durable learning. |
 
@@ -307,14 +310,13 @@ Usage episodes become product-success evidence only through a review layer, not
 by raw record count.
 
 The review unit is one privacy-safe episode that approximates a user intent
-moving toward first inspectable value. For current self-dev dogfood, the
-implemented `slice_closeout` emitter records that approximation at workflow
-closeout. Future emitters may cover issue closeout, handoff refresh/pickup,
-debug/RCA, gather, quality review, or release proof, but each must keep the same
-privacy boundary: no raw prompt, no transcript, no private source body, and no
-user identity.
+moving toward first inspectable value. Current emitters cover `slice_closeout`
+plus verified issue-close and release-publish outcomes. Future emitters may cover
+handoff refresh/pickup, debug/RCA, gather, or quality review, but each must keep
+the same privacy boundary: no raw prompt, no transcript, no private source body,
+and no user identity.
 
-Interpret records in four tiers:
+Interpret records in five tiers:
 
 1. **Capture coverage**: a session or workflow produced a valid usage episode.
    Missing capture is a denominator gap, not a success or failure.
@@ -322,10 +324,13 @@ Interpret records in four tiers:
    admits the episode into product review, but it does not prove satisfaction;
    Charness often leaves artifacts even when the user is unhappy or the direction
    is wrong.
-3. **Satisfaction evidence**: `feedback_signal` values such as `accepted`,
-   `human_confirmed`, `closed_issue`, or `released` show observable acceptance or
-   reuse. These are the first signals that can support a product-value claim.
-4. **Friction evidence**: `feedback_signal` values such as `corrected`,
+3. **Objective lifecycle follow-through**: `closed_issue` and `released` show a
+   verified repository or release outcome linked to its delivery episode. They
+   do not establish human approval, acceptance, or general satisfaction.
+4. **Human satisfaction evidence**: `accepted` and `human_confirmed` show
+   observable human acceptance. These are the first signals that can support a
+   product-value claim.
+5. **Friction evidence**: `feedback_signal` values such as `corrected`,
    `retried`, `ignored`, or `follow_up_requested`, plus non-delivered
    `outcome_status` values, show that the artifact floor was not enough.
    Feedback values outside the documented satisfaction/friction buckets are
@@ -394,13 +399,15 @@ Currently measurable:
   [usage episode validator](../scripts/validate_usage_episodes.py)
 - usage-episode counts, session grouping, T-signal rate, and capture gaps
   through the [usage episode report](../scripts/report_usage_episodes.py)
-- usage-episode first-value floor, feedback coverage, satisfaction signals, and
-  friction/follow-up signals through the same report
+- usage-episode first-value floor, feedback coverage, human satisfaction,
+  objective lifecycle, and friction/follow-up signals through the same report
 - Corca-internal review-window `first_seen_at` / `last_seen_at` summaries and
   dry-run reporter packets through
   [report_usage_product_review.py](../scripts/report_usage_product_review.py)
 - `slice_closeout` emission path when the usage-episodes adapter is enabled in
   a fixture or consumer repo
+- verified issue-close and release-publish lifecycle capture when the adapter
+  enables both `usage_episode` and `usage_feedback`
 - release and quality proof through current artifacts
 - public-skill validation tiers and dogfood records
 - issue and commit closeout evidence through GitHub and git history
@@ -410,9 +417,9 @@ Needs implementation before product-success measurement:
 - a maintainer-owned product-success frame for #184
 - a broader denominator for uncaptured sessions, disabled hooks, and non-closeout
   workflows
-- broader emitter coverage beyond `slice_closeout`
-- stronger feedback capture so satisfaction and friction signals are not mostly
-  missing
+- broader emitter coverage beyond slice closeout and issue/release boundaries
+- stronger human feedback capture so satisfaction and friction signals are not
+  mostly missing; objective lifecycle follow-through does not fill that gap
 
 ## Review Loops
 

@@ -20,7 +20,8 @@ FEEDBACK_SIGNALS = frozenset(
         "released",
     }
 )
-SATISFACTION_SIGNALS = frozenset({"accepted", "human_confirmed", "closed_issue", "released"})
+SATISFACTION_SIGNALS = frozenset({"accepted", "human_confirmed"})
+OBJECTIVE_LIFECYCLE_SIGNALS = frozenset({"closed_issue", "released"})
 FRICTION_SIGNALS = frozenset({"corrected", "ignored", "retried", "follow_up_requested"})
 NEUTRAL_SIGNALS = frozenset({"edited"})
 SOURCE_KINDS = frozenset({"operator", "issue_lifecycle", "release_lifecycle", "repository_state"})
@@ -170,12 +171,17 @@ def classification_counts(records: list[dict[str, Any]]) -> dict[str, int]:
     values = Counter(str(record.get("feedback_signal")) for record in records)
     return {
         "satisfaction": sum(values[signal] for signal in SATISFACTION_SIGNALS),
+        "objective_lifecycle": sum(values[signal] for signal in OBJECTIVE_LIFECYCLE_SIGNALS),
         "friction": sum(values[signal] for signal in FRICTION_SIGNALS),
         "neutral": sum(values[signal] for signal in NEUTRAL_SIGNALS),
         "unclassified": sum(
             count
             for signal, count in values.items()
-            if signal not in SATISFACTION_SIGNALS | FRICTION_SIGNALS | NEUTRAL_SIGNALS
+            if signal
+            not in SATISFACTION_SIGNALS
+            | OBJECTIVE_LIFECYCLE_SIGNALS
+            | FRICTION_SIGNALS
+            | NEUTRAL_SIGNALS
         ),
     }
 

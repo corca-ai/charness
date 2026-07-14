@@ -46,6 +46,30 @@ CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
 VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
 
 
+def _capture_lifecycle(repo_root: Path, *, repo: str, number: int) -> dict[str, Any]:
+    """Best-effort shared usage capture after the issue state readback."""
+
+    helper_path = next(
+        (
+            parent / "scripts" / "lifecycle_usage_capture.py"
+            for parent in Path(__file__).resolve().parents
+            if (parent / "scripts" / "lifecycle_usage_capture.py").is_file()
+        ),
+        None,
+    )
+    if helper_path is None:
+        return {"status": "capture_error", "appended": False, "errors": ["lifecycle capture helper unavailable"]}
+    try:
+        capture = runpy.run_path(str(helper_path))["capture_lifecycle_outcome"]
+        return capture(
+            repo_root=repo_root,
+            lifecycle_kind="issue_close",
+            evidence_locator=f"{repo}#{number}",
+        )
+    except Exception as exc:  # telemetry must never undo a completed close
+        return {"status": "capture_error", "appended": False, "errors": [f"{exc.__class__.__name__}: {exc}"]}
+
+
 def close_with_comment(
     repo: str,
     number: int,
@@ -135,6 +159,7 @@ def close_with_comment(
     # live to confirm, so the only obligation is surfacing that the
     # classification-driven exemption applied, never blocking on it.
     review_advisory = _CLOSE_COMMENT_FLOOR.review_advisory_for_classification(classification)
+    lifecycle_capture = _capture_lifecycle(repo_root, repo=repo, number=number)
     return {
         "ok": True,
         "repo": repo,
@@ -145,4 +170,5 @@ def close_with_comment(
         "verified_state": verified_state,
         "reason": reason,
         "review_advisory": review_advisory,
+        "lifecycle_capture": lifecycle_capture,
     }

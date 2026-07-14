@@ -22,6 +22,7 @@ post_publish_proof_lines = _sections.post_publish_proof_lines
 install_refresh_lines = _sections.install_refresh_lines
 public_release_verification_lines = _sections.public_release_verification_lines
 distinct_channel_verification_lines = _sections.distinct_channel_verification_lines
+lifecycle_capture_lines = _sections.lifecycle_capture_lines
 real_host_lines = _sections.real_host_lines
 fresh_checkout_lines = _sections.fresh_checkout_lines
 release_runtime_lines = _sections.release_runtime_lines
@@ -52,6 +53,7 @@ def write_release_artifact(
     requested_review_gate: dict[str, Any] | None = None,
     retro_trigger_evaluation: dict[str, Any] | None = None,
     distinct_channel_verification: dict[str, Any] | None = None,
+    lifecycle_capture: dict[str, Any] | None = None,
     release_runtime: list[dict[str, Any]] | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
@@ -94,6 +96,7 @@ def write_release_artifact(
     )
     lines.extend(public_release_verification_lines(public_release_verification, release_url))
     lines.extend(distinct_channel_verification_lines(distinct_channel_verification))
+    lines.extend(lifecycle_capture_lines(lifecycle_capture))
     lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
     lines.extend(retro_trigger_evaluation_lines(retro_trigger_evaluation))
     lines.extend(real_host_lines(real_host_payload, install_refresh=install_refresh))

@@ -29,6 +29,7 @@ DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
 NON_CLAIMS = [
     "Usage episodes are an engineering usage signal, not product-success proof.",
     PRODUCT_EVIDENCE_NON_CLAIM,
+    "Objective issue/release lifecycle signals are not human approval or general satisfaction evidence.",
     "Counts cover only records captured under the configured storage_path; missing hooks or disabled adapters are outside the denominator.",
     "The report does not infer raw prompts, transcripts, user identity, or private source content.",
 ]
@@ -261,6 +262,7 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
             f"({evidence['first_value_floor_rate']:.1%}), "
             f"feedback_coverage={evidence['feedback_coverage_rate']:.1%}, "
             f"satisfaction_signals={evidence['satisfaction_signal_count']}, "
+            f"objective_lifecycle_signals={evidence['objective_lifecycle_signal_count']}, "
             f"friction_or_followup={evidence['friction_or_followup_signal_count']}."
         )
         gaps = payload["capture_gaps"]

@@ -1,1 +1,1 @@
-2026-07-14-debug-review.md
+2026-07-14-skill-directory-shell-expansion-debug.md

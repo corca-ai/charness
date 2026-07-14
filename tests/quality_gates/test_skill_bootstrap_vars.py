@@ -1,0 +1,61 @@
+from __future__ import annotations
+
+import importlib
+from pathlib import Path
+
+gate = importlib.import_module("scripts.check_skill_bootstrap_vars")
+
+
+def _skill(tmp_path: Path, body: str) -> Path:
+    path = tmp_path / "SKILL.md"
+    path.write_text("# Demo\n\n## Bootstrap\n\n" + body, encoding="utf-8")
+    return path
+
+
+def test_exported_skill_dir_example_is_allowed(tmp_path: Path) -> None:
+    reference = tmp_path / "bootstrap-resolution.md"
+    reference.write_text(
+        "```bash\nexport SKILL_DIR=/path/to/skill\npython3 \"$SKILL_DIR/scripts/check.py\"\n```\n",
+        encoding="utf-8",
+    )
+
+    assert gate.check_canonical_reference(reference) == []
+
+
+def test_plain_skill_dir_assignment_is_rejected(tmp_path: Path) -> None:
+    reference = tmp_path / "bootstrap-resolution.md"
+    reference.write_text("```bash\nSKILL_DIR=/path/to/skill\n```\n", encoding="utf-8")
+
+    failures = gate.check_canonical_reference(reference)
+
+    assert failures
+    assert "without export" in failures[0]
+
+
+def test_environment_prefix_skill_dir_assignment_is_rejected(tmp_path: Path) -> None:
+    reference = tmp_path / "bootstrap-resolution.md"
+    reference.write_text(
+        "```bash\nSKILL_DIR=/path/to/skill python3 \"$SKILL_DIR/scripts/check.py\"\n```\n",
+        encoding="utf-8",
+    )
+
+    assert gate.check_canonical_reference(reference)
+
+
+def test_skill_canonical_var_still_requires_reference_citation(tmp_path: Path) -> None:
+    skill = _skill(tmp_path, '```bash\npython3 "$SKILL_DIR/scripts/check.py"\n```\n')
+
+    failures = gate.check_file(skill)
+
+    assert failures == [
+        "uses `$SKILL_DIR` in `## Bootstrap` shell block but does not cite "
+        "`shared/references/bootstrap-resolution.md`"
+    ]
+
+
+def test_unknown_var_still_requires_inline_assignment(tmp_path: Path) -> None:
+    skill = _skill(tmp_path, '```bash\npython3 "$CUSTOM_DIR/scripts/check.py"\n```\n')
+
+    failures = gate.check_file(skill)
+
+    assert failures and "CUSTOM_DIR" in failures[0]

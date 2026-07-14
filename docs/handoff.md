@@ -25,6 +25,10 @@
   commands; no Cautilus evaluation was run or claimed.
 - Nine Python length advisories remain intentionally: seven cohesive units and
   two production validators deferred to behavior-led refactoring.
+- A local post-v1.0.5 north-star slice fixes lifecycle feedback truthfulness and
+  the shared `SKILL_DIR` shell bootstrap contract. It is not published, so
+  installed v1.0.5 caches still require export-before-use and do not contain
+  this source fix.
 
 ## Next Session
 
@@ -36,6 +40,9 @@
 3. If behavior work touches `check_skill_surface_preflight.py` or
    `validate_critique_artifacts.py`, consider a characterized cohesive split;
    do not refactor them for line count alone.
+4. If publication is authorized, carry the post-v1.0.5 lifecycle/bootstrap
+   slice through the normal release proof and installed-cache update boundary;
+   until then, do not claim the released plugin contains these fixes.
 
 ## Discuss
 

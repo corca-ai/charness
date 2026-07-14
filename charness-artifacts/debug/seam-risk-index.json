@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 84,
-  "indexed_artifact_count": 72,
+  "source_artifact_count": 86,
+  "indexed_artifact_count": 74,
   "risk_class_counts": {
     "contract-freeze-risk": 25,
-    "external-seam": 4,
+    "external-seam": 5,
     "host-disproves-local": 2,
-    "none": 20,
+    "none": 21,
     "operator-visible-recovery": 20,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 65,
-    "none": 4
+    "monitor": 66,
+    "none": 5
   },
   "entries": [
     {
@@ -1014,17 +1014,45 @@
       "forced": true
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "pre-release-advisory-integration",
+      "artifact_path": "charness-artifacts/debug/2026-07-14-lifecycle-capture-quality-mode-test-isolation-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "lifecycle-capture-quality-mode-test-isolation",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "standing pytest environment to lifecycle unit-test fixture",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-14-lifecycle-feedback-and-quality-truthfulness.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-07-14-skill-directory-shell-expansion-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "skill-dir-shell-expansion",
       "risk_classes": [
         "external-seam"
       ],
-      "seam": "installed Cautilus schema and output defaults consumed by integration scripts",
+      "seam": "skill source locator to shell environment and installed helper command",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-07-14-cautilus-structured-output-compatibility.md",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-14-skill-directory-shell-bootstrap.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "skill-dir-shell-expansion",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "skill source locator to shell environment and installed helper command",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-14-skill-directory-shell-bootstrap.md",
       "forced": true
     }
   ],

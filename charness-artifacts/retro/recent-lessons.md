@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The north-star improvement slice added deterministic lifecycle follow-through for successful issue close and release publish operations, separated objective lifecycle evidence from human satisfaction, reconciled the current quality artifact with the already-published v1.0.5 release, and repaired the shared `SKILL_DIR` bootstrap contract after a consuming-repo failure report. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
 - Release publish triggered a configured automatic session retro for `v0.66.0`. (source: `charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md`; sources: 2)
-- Release publish triggered a configured automatic session retro for `v1.0.0`. (source: `charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-13-v1-0-5-release-auto-retro.md`; sources: 88)
-- after publish, reconcile quality/goal/handoff claims from the release artifact before the final quality reviewer, then use that reviewer as a real contradiction check rather than a stale-text detector. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`)
-- bind this distinction into the v1 critique and release notes so future compatibility cuts do not reintroduce a shim to solve cleanup. (source: `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`)
-- evaluate whether the release adapter needs a narrow declared surface for root `charness` host-plugin mutations; add a trigger only if it can request a safe, scoped host proof instead of forcing destructive real-host work. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`)
+- applied in this slice — objective lifecycle follow-through has a separate report count and rate instead of inflating satisfaction. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
+- applied in this slice — producer wiring, attention-state visibility, public-skill dogfood evidence, and durable artifact status are one mutation checklist before pre-lock proof. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
+- persist this retro and refresh `recent-lessons.md`; no new handoff item is needed for lifecycle behavior smoke or behavior-led validator splits; the handoff now explicitly owns the unpublished bootstrap fix's later authorized release/update boundary. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
 
 ## Selection Policy
 
@@ -117,4 +117,4 @@
 - `charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-5-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-13-v1-legacy-compatibility-cleanup-retro.md`
+- `charness-artifacts/retro/2026-07-14-session-retro.md`

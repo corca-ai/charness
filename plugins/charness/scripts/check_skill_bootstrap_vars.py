@@ -33,9 +33,12 @@ KNOWN_RESOLVED_VARS = {"SKILL_DIR", "CHARNESS_SUPPORT_DIR", "CHARNESS_REPO_ROOT"
 
 BOOTSTRAP_HEADER_RE = re.compile(r"^##\s+Bootstrap\s*$", re.MULTILINE)
 NEXT_H2_RE = re.compile(r"^##\s+", re.MULTILINE)
-CODE_FENCE_RE = re.compile(r"^```[^\n]*\n(.*?)^```", re.DOTALL | re.MULTILINE)
+CODE_FENCE_RE = re.compile(r"^```([^\n]*)\n(.*?)^```", re.DOTALL | re.MULTILINE)
 SHELL_VAR_RE = re.compile(r"\$\{?([A-Z][A-Z0-9_]+)\}?")
 ASSIGN_RE = re.compile(r"^\s*(?:export\s+)?([A-Z][A-Z0-9_]+)=", re.MULTILINE)
+NON_EXPORTED_SKILL_DIR_RE = re.compile(r"^\s*SKILL_DIR\s*=", re.MULTILINE)
+EXPORTED_SKILL_DIR_RE = re.compile(r"^\s*export\s+SKILL_DIR\s*=", re.MULTILINE)
+SHELL_FENCE_RE = re.compile(r"(?:bash|sh|shell|zsh)", re.IGNORECASE)
 
 
 def _extract_bootstrap_section(text: str) -> str | None:
@@ -51,7 +54,7 @@ def _extract_bootstrap_section(text: str) -> str | None:
 def _shell_vars_in_code_blocks(section: str) -> set[str]:
     found: set[str] = set()
     for fence_match in CODE_FENCE_RE.finditer(section):
-        body = fence_match.group(1)
+        body = fence_match.group(2)
         for var_match in SHELL_VAR_RE.finditer(body):
             found.add(var_match.group(1))
     return found
@@ -63,6 +66,24 @@ def _has_canonical_cite(section: str) -> bool:
 
 def _inline_assignments(section: str) -> set[str]:
     return {match.group(1) for match in ASSIGN_RE.finditer(section)}
+
+
+def check_canonical_reference(reference: Path) -> list[str]:
+    """Reject non-exported SKILL_DIR assignments in shell examples."""
+    text = reference.read_text(encoding="utf-8")
+    failures: list[str] = []
+    for fence_match in CODE_FENCE_RE.finditer(text):
+        language = fence_match.group(1).strip()
+        if not SHELL_FENCE_RE.search(language):
+            continue
+        for line_number, line in enumerate(fence_match.group(2).splitlines(), start=1):
+            if NON_EXPORTED_SKILL_DIR_RE.match(line) and not EXPORTED_SKILL_DIR_RE.match(line):
+                failures.append(
+                    f"{reference}: shell example line {line_number} assigns SKILL_DIR "
+                    "without export; "
+                    "export it in a separate command before expanding $SKILL_DIR"
+                )
+    return failures
 
 
 def check_file(skill_md: Path) -> list[str]:
@@ -99,6 +120,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
 
+    reference = root / "skills" / CANONICAL_CITE
+    reference_failures = check_canonical_reference(reference) if reference.is_file() else []
+
     patterns = (
         "skills/public/*/SKILL.md",
         "skills/support/*/SKILL.md",
@@ -116,7 +140,10 @@ def main(argv: list[str] | None = None) -> int:
         if per_file:
             failures[path] = per_file
 
-    if failures:
+    if reference_failures:
+        for msg in reference_failures:
+            print(msg, file=sys.stderr)
+    if failures or reference_failures:
         for path, msgs in sorted(failures.items()):
             for msg in msgs:
                 rel = path.relative_to(root) if path.is_relative_to(root) else path
