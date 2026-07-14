@@ -14,7 +14,7 @@ Advanced `charness` toward release `1.0.8` (tag `v1.0.8`) through the repo-owned
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -53,7 +53,7 @@ Advanced `charness` toward release `1.0.8` (tag `v1.0.8`) through the repo-owned
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 44.
+- Evaluated changed paths: 49.
   - `.agents/critique-adapter.yaml`
   - `.claude-plugin/marketplace.json`
   - `AGENTS.md`
@@ -70,11 +70,11 @@ Advanced `charness` toward release `1.0.8` (tag `v1.0.8`) through the repo-owned
   - `charness-artifacts/critique/2026-07-14-codex-v2-terra-medium-defaults-code-critique.md`
   - `charness-artifacts/critique/2026-07-14-v1-0-8-codex-v2-defaults-release-critique.md`
   - `charness-artifacts/probe/2026-07-14-v1.0.7-installed-reviewer-boundary-consumer.json`
+  - `charness-artifacts/quality/dup-review.json`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/2026-07-14-v1.0.8-notes.md`
   - `charness-artifacts/release/latest.md`
-  - `docs/handoff.md`
-  - `packaging/charness.json`
-  - ... 24 more
+  - ... 29 more
 
 ## Real-Host Verification
 
@@ -90,7 +90,10 @@ Advanced `charness` toward release `1.0.8` (tag `v1.0.8`) through the repo-owned
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -98,11 +101,14 @@ Advanced `charness` toward release `1.0.8` (tag `v1.0.8`) through the repo-owned
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.001s
+- `cli_skill_surface_gate`: 0.095s
+- `quality_command`: 80.392s
+- `fresh_checkout_probes_initial`: 2.997s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
