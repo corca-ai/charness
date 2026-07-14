@@ -513,6 +513,13 @@
     },
     {
       "class": "intentional",
+      "id": "80c5b9827dc39f57",
+      "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
+      "reviewed_at": "2026-07-14",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
       "id": "e89e772efc0ba634",
       "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
       "reviewed_at": "2026-06-24",

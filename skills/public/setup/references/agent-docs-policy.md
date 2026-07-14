@@ -59,8 +59,8 @@
   Codex default profile to every coding, review, and dynamic-workflow subagent:
   `gpt-5.6-terra`, `medium` reasoning effort, and `fork_turns: "none"` when
   caller-provided model/reasoning overrides are used. A consciously bounded
-  parent-history count is the exception: Codex V2 defaults to `fork_turns:
-  "all"`, which rejects caller-provided model/reasoning overrides. This is a
+  parent-history count is the exception: Codex V2 defaults to `fork_turns: "all"`,
+  which rejects caller-provided model/reasoning overrides. This is a
   Codex-specific host mapping; other hosts use their own adapter mappings.
 
 ## Deterministic Cases
