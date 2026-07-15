@@ -144,7 +144,7 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
-    result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
+    result = run_cli("init", "--detail", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["plugin_root"] == str(home_root / ".codex" / "plugins" / "charness")
@@ -215,7 +215,7 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
     env["HOME"] = str(home_root)
     env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
     result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        [sys.executable, str(standalone_cli), "init", "--detail", "--home-root", str(home_root), "--repo-url", str(source_repo)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -282,7 +282,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     env["HOME"] = str(home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
     result = subprocess.run(
-        [sys.executable, str(embedded_cli), "init", "--home-root", str(home_root)],
+        [sys.executable, str(embedded_cli), "init", "--detail", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -303,7 +303,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
 @pytest.mark.release_only
 def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
+    doctor_result = run_cli("doctor", "--detail", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = yaml.safe_load(doctor_result.stdout)
     assert payload["package_id"] == "charness"
@@ -358,7 +358,7 @@ def test_charness_doctor_binds_claude_to_custom_home(tmp_path: Path, seeded_mana
     env["HOME"] = str(process_home)
     env["PATH"] = build_test_path(fake_claude.parent)
 
-    result = run_cli("doctor", "--home-root", str(home_root), env=env)
+    result = run_cli("doctor", "--detail", "--home-root", str(home_root), env=env)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -585,7 +585,7 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"
     doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
+        [sys.executable, str(installed_cli), "doctor", "--detail", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,

@@ -144,7 +144,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     installed_cli.chmod(0o755)
 
     doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
+        [sys.executable, str(installed_cli), "doctor", "--detail", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,

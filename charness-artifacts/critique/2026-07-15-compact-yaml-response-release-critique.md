@@ -27,7 +27,7 @@ emit compact YAML summaries by default and reserve full evidence for `--detail`.
 
 - F1 | bin: act-before-ship | evidence: strong | ref: tests/charness_cli/test_tool_lifecycle.py | action: fix | note: legacy full-payload lifecycle tests now invoke `--detail`, while summary tests retain the compact contract.
 - F2 | bin: act-before-ship | evidence: strong | ref: charness | action: fix | note: `doctor --detail --next-action` is rejected as mutually exclusive so neither flag is silently ignored.
-- F3 | bin: bundle-anyway | evidence: moderate | ref: tests/charness_cli/test_yaml_output_branch_coverage.py | action: fix | note: high-fanout handler coverage now proves summary routing and detail preservation.
+- F3 | bin: bundle-anyway | evidence: strong | ref: tests/charness_cli/test_yaml_output_branch_coverage.py | action: fix | note: high-fanout handler coverage plus raw-field integration and Specdown assertions now prove summary routing and detail preservation.
 - F4 | bin: over-worry | evidence: moderate | ref: charness | action: defer | note: arbitrary response byte limits would conceal data rather than address the raw execution-graph leak.
 
 ## Reviewer Tier Evidence

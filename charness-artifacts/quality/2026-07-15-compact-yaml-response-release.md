@@ -28,6 +28,8 @@ Ambient repo findings: none identified by the focused inventories.
   step while hiding commands, release metadata, routes, and probe output.
 - `--detail` returns the complete YAML payload, so evidence inspection remains
   available without making the ordinary `update all` response unbounded.
+- Legacy integration and executable-spec assertions that inspect raw fields now
+  select `--detail`; ordinary assertions continue to exercise the summary.
 - The parser rejects `doctor --detail --next-action`, eliminating a silently
   ignored selection flag.
 
@@ -55,6 +57,11 @@ Ambient repo findings: none identified by the focused inventories.
   records the independent release review and the repaired migration gaps.
 - `command: pytest -q tests/charness_cli` is the direct regression
   proof; a live evaluator is unnecessary for a deterministic YAML schema path.
+- The installed `nose` scanner moved from 0.18.0 to 0.19.0, so both clone
+  baselines were deliberately regenerated rather than treating scanner IDs as
+  new product duplication. `inventory_nose_clones.py` returned
+  `status=baseline-written`, `family_count=639`, and paths `scripts`,
+  `skills/public`, and `skills/support`.
 
 ## Delegated Review
 
@@ -70,6 +77,8 @@ Ambient repo findings: none identified by the focused inventories.
   `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
 - `python3 scripts/check_command_docs.py --repo-root .` and
   `python3 scripts/validate_packaging.py --repo-root .`.
+- `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --write-baseline --confirm-baseline-delta`.
+- `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --write-baseline --json`.
 
 ## Recommended Next Quality Moves
 

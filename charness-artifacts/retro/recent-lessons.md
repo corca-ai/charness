@@ -3,18 +3,18 @@
 ## Current Focus
 
 - An agent in a consumer repository attempted the removed `charness find-skills` command, then treated its rejection as an inability to inspect skills. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
-- Release publish triggered a configured automatic session retro for `v1.0.9`. (source: `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`)
+- Release publish triggered a configured automatic session retro for `v1.0.10`. (source: `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`; sources: 92)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`; sources: 93)
 - Broad standing-test timing probes added little after the existing structured runtime and bounded scouts had already shown no safe speed candidate. The useful result was the explicit no-change decision, not more duration sampling. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`)
 - Exploration phase, moderate: the transient `uv.lock` hypothesis consumed a diagnostic branch, but repeated exact repro and syscall tracing disconfirmed attribution. This was necessary uncertainty reduction, not failed work; the no-fix outcome prevented a speculative regression. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
 - Gate-baseline runtime: final release quality remained about 72-75s and broad pytest about 37s. Those are measured safety costs within current budgets; only the two causally isolated duplicate-cost families were changed. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`; sources: 92)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`; sources: 93)
 - applied: persist this retro and the matching debug record with the focused installed-CLI regression proof. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
 - applied: session and generated-AGENTS routing state the matching-workflow action and command-failure reporting action without a prohibition list. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
 - applied: state direct ordinary-task routing and the exact conditional inventory action in the same replacement contract. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
@@ -121,4 +121,5 @@
 - `charness-artifacts/retro/2026-07-14-v1-0-7-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-14-v1-0-8-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`
+- `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`
