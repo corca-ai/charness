@@ -14,7 +14,7 @@ Advanced `charness` toward release `1.0.11` (tag `v1.0.11`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -53,7 +53,7 @@ Advanced `charness` toward release `1.0.11` (tag `v1.0.11`) through the repo-own
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 33.
+- Evaluated changed paths: 37.
   - `.claude-plugin/marketplace.json`
   - `charness`
   - `charness-artifacts/critique/2026-07-15-083904-packet.json`
@@ -67,14 +67,14 @@ Advanced `charness` toward release `1.0.11` (tag `v1.0.11`) through the repo-own
   - `charness-artifacts/gather/latest.md`
   - `charness-artifacts/quality/2026-07-15-quality-review.md`
   - `charness-artifacts/quality/latest.md`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
   - `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`
+  - `charness-artifacts/retro/2026-07-15-v1-0-11-release-auto-retro.md`
+  - `charness-artifacts/retro/lesson-selection-index.json`
+  - `charness-artifacts/retro/recent-lessons.md`
   - `docs/control-plane.md`
-  - `docs/generated/cli-reference.md`
-  - `integrations/tools/gitleaks.json`
-  - `integrations/tools/ruff.json`
-  - `integrations/tools/specdown.json`
-  - ... 13 more
+  - ... 17 more
 
 ## Real-Host Verification
 
@@ -98,7 +98,10 @@ Advanced `charness` toward release `1.0.11` (tag `v1.0.11`) through the repo-own
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -106,11 +109,14 @@ Advanced `charness` toward release `1.0.11` (tag `v1.0.11`) through the repo-own
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.005s
+- `cli_skill_surface_gate`: 1.880s
+- `quality_command`: 88.788s
+- `fresh_checkout_probes_resume`: 3.024s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
