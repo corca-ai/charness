@@ -14,7 +14,7 @@ Advanced `charness` toward release `1.0.10` (tag `v1.0.10`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -54,28 +54,28 @@ Advanced `charness` toward release `1.0.10` (tag `v1.0.10`) through the repo-own
   - `integrations-and-control-plane`
 - Path hits: 1.
   - `README.md`
-- Evaluated changed paths: 24.
+- Evaluated changed paths: 38.
   - `.agents/command-docs.yaml`
+  - `.charness/specdown/report.json`
+  - `.charness/specdown/report/tool-doctor.html`
   - `.claude-plugin/marketplace.json`
   - `README.md`
   - `charness`
   - `charness-artifacts/critique/2026-07-15-070557-packet.json`
   - `charness-artifacts/critique/2026-07-15-070557-packet.md`
   - `charness-artifacts/critique/2026-07-15-compact-yaml-response-release-critique.md`
+  - `charness-artifacts/debug/2026-07-15-release-execute-noop-debug.md`
+  - `charness-artifacts/debug/latest.md`
+  - `charness-artifacts/debug/seam-risk-index.json`
   - `charness-artifacts/quality/2026-07-15-compact-yaml-response-release.md`
+  - `charness-artifacts/quality/dup-ratchet-baseline.json`
   - `charness-artifacts/quality/latest.md`
+  - `charness-artifacts/quality/nose-baseline.json`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
+  - `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`
   - `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`
-  - `docs/control-plane.md`
-  - `docs/generated/cli-reference.md`
-  - `packaging/charness.json`
-  - `plugins/charness/.claude-plugin/plugin.json`
-  - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/README.md`
-  - `plugins/charness/scripts/render_cli_reference.py`
-  - `scripts/render_cli_reference.py`
-  - `tests/charness_cli/test_codex_cache_refresh.py`
-  - ... 4 more
+  - ... 18 more
 
 ## Real-Host Verification
 
@@ -99,7 +99,10 @@ Advanced `charness` toward release `1.0.10` (tag `v1.0.10`) through the repo-own
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -107,11 +110,14 @@ Advanced `charness` toward release `1.0.10` (tag `v1.0.10`) through the repo-own
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.005s
+- `cli_skill_surface_gate`: 1.896s
+- `quality_command`: 89.214s
+- `fresh_checkout_probes_resume`: 3.016s
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
