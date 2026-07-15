@@ -105,7 +105,12 @@ Advanced `charness` toward release `1.0.9` (tag `v1.0.9`) through the repo-owned
 
 - Release-time real-host proof is required for this slice.
 - Executed maintainer install refresh: `charness update` (status `refreshed`, return code `0`).
-- Remaining real-host checklist items, if any, still require explicit proof before full closeout.
+- Checklist disposition: completed on the maintainer machine after publication.
+- `charness doctor --repo-root /home/hwidong/.agents/src/charness` reported installed checkout, Codex cache, and host-facing manifests at `1.0.9`, with `codex_source_cache_drift: false`.
+- `charness tool doctor nose --no-write-locks` reported `doctor_disposition: ready`; installed `nose 0.18.0` satisfies the `>=0.17.0` constraint, so no new installation was needed.
+- `charness tool install nose --dry-run` retained the manifest-supported upstream installer route and discovered latest release `v0.19.0`.
+- `charness tool sync-support nose` confirmed the intentional integration-only disposition (`support status: skipped`, no support skill source).
+- `inventory_nose_clones.py --json` completed with `status: clean` and no displayed extractable clone family.
 - On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
 - Run `charness tool doctor nose --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
 - Run `charness tool install nose --dry-run` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
