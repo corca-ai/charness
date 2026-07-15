@@ -80,17 +80,13 @@ def run_help(repo_root: Path, command: tuple[str, ...]) -> str:
     return (result.stdout + result.stderr).rstrip()
 
 
-def collect_help_outputs(repo_root: Path) -> dict[str, str]:
-    with ThreadPoolExecutor(max_workers=len(COMMANDS)) as executor:
-        futures = [
-            (title, executor.submit(run_help, repo_root, command))
-            for title, command in COMMANDS
-        ]
-        return {title: future.result() for title, future in futures}
-
-
 def render_cli_reference(repo_root: Path) -> str:
-    help_outputs = collect_help_outputs(repo_root)
+    with ThreadPoolExecutor(max_workers=len(COMMANDS)) as executor:
+        help_futures = {
+            title: executor.submit(run_help, repo_root, command)
+            for title, command in COMMANDS
+        }
+        help_outputs = {title: future.result() for title, future in help_futures.items()}
     sections = [
         "<!-- GENERATED: do not edit. Regenerate via `python3 scripts/render_cli_reference.py --repo-root .` -->",
         "",

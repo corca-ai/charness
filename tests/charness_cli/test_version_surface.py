@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import builtins
+import importlib.machinery
+import importlib.util
 import json
 import os
 import subprocess
@@ -9,6 +12,15 @@ from pathlib import Path
 import yaml
 
 from .support import ROOT, run_cli
+
+
+def load_charness_module(module_name: str):
+    loader = importlib.machinery.SourceFileLoader(module_name, str(ROOT / "charness"))
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def version_state_path(home_root: Path) -> Path:
@@ -45,6 +57,23 @@ def test_standalone_version_falls_back_to_valid_yaml_without_pyyaml() -> None:
 
     assert result.returncode == 0, result.stderr
     assert yaml.safe_load(result.stdout) == {"version": expected}
+
+
+def test_renderer_falls_back_to_json_yaml_when_pyyaml_is_unavailable(monkeypatch) -> None:
+    module = load_charness_module("charness_yaml_renderer_fallback_under_test")
+    original_import = builtins.__import__
+
+    def import_without_yaml(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "yaml":
+            raise ImportError("simulated missing PyYAML")
+        return original_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", import_without_yaml)
+
+    rendered = module.render_yaml({"message": "안녕하세요", "items": [1, 2]})
+
+    assert json.loads(rendered) == {"message": "안녕하세요", "items": [1, 2]}
+    assert yaml.safe_load(rendered) == {"message": "안녕하세요", "items": [1, 2]}
 
 
 def test_legacy_json_is_accepted_but_hidden_and_ignored() -> None:

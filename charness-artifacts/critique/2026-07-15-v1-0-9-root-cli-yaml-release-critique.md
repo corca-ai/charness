@@ -6,7 +6,8 @@ Date: 2026-07-15
 Publish `v1.0.9`: every operational root `charness` response is one YAML
 document; the former root `--json` switch is accepted but ignored and no longer
 advertised. The release also closes the command-surface and side-effect-contract
-drift that let that obsolete guidance persist.
+drift that let that obsolete guidance persist, including the two release-gate
+defects found during the publish attempt.
 
 Packet Consumed: charness-artifacts/critique/2026-07-15-v1-0-9-root-cli-yaml-release-packet.md
 
@@ -28,6 +29,8 @@ a YAML parser; no persistent-state migration is involved.
   `charness-artifacts/release/2026-07-15-v1.0.9-notes.md`.
 - Release-manifest and install artifacts to be version-bumped and synchronized
   by the repo-owned release helper.
+- Release-gate recovery: `scripts/render_cli_reference.py` and its plugin
+  mirror, plus the x86 runtime-budget profile in `.agents/quality-adapter.yaml`.
 
 ## Failure Angles
 
@@ -37,6 +40,9 @@ a YAML parser; no persistent-state migration is involved.
   compatibility, update, and rollback narrative.
 - Raskin interface review checked stdout/stderr boundaries and discovered that
   a copied CLI could lack PyYAML before bootstrap provisioning.
+- The release-gate rerun found one new extractable renderer clone and a stale
+  2.5-second x86 budget; both were reviewed as release blockers rather than
+  waived as ambient gate noise.
 - A separate counterweight pass rejected per-command legacy-flag duplication
   and deferred payload-schema versioning as broader work.
 
@@ -51,6 +57,9 @@ a YAML parser; no persistent-state migration is involved.
   more honest boundary.
 - Defer versioned schemas for each command payload; the current release changes
   formatting, not every payload's semantic schema.
+- Do not accept the clone into the ratchet baseline or simply widen an
+  unmeasured limit: merge the renderer's two equivalent collection paths and
+  size the bounded runtime budget from the recorded release window.
 
 ## Structured Findings
 
@@ -60,6 +69,8 @@ a YAML parser; no persistent-state migration is involved.
 - F4 | bin: bundle-anyway | evidence: strong | ref: .agents/cli-side-effect-probes.json:1 | action: fix | note: added version --verbose and all root primary mutating modes to the checked probe contract
 - F5 | bin: over-worry | evidence: strong | ref: charness:5220 | action: document | note: central exact-token stripping makes a per-subcommand legacy --json matrix unnecessary
 - F6 | bin: valid-but-defer | evidence: moderate | ref: docs/generated/cli-reference.md:5 | action: defer | note: versioned semantic schemas for every root command payload are useful future work but not required for this output migration
+- F7 | bin: act-before-ship | evidence: strong | ref: scripts/render_cli_reference.py:83 | action: fix | note: folded the duplicate concurrent help-collection helper into the renderer; the duplicate ratchet is clean and root/plugin mirrors match
+- F8 | bin: act-before-ship | evidence: strong | ref: .agents/quality-adapter.yaml:142 | action: fix | note: raised the stale x86 check-spec-evidence-durability budget from 2500ms to a still-bounded 5000ms after the 20-sample median reached 2513ms and release peak reached 4404ms
 
 ## Operator Action Required
 
@@ -90,6 +101,13 @@ parent-delegated. Two independent release-angle reviewers and one separate
 counterweight reviewer consumed the prepared packet. The post-fix reviewer
 approved the standalone YAML fallback; parent fingerprint verification reported
 no worktree or index drift for every accepted review.
+
+The post-recovery fresh-eye review found no ship blocker: it verified that the
+merged renderer preserves command and first-failure ordering, that the clone was
+actually removed rather than rebaselined, that both mirrors are byte-identical,
+and that the 5-second bound is supported by the recorded release window. Parent
+fingerprint verification again reported no reviewer-caused worktree or index
+drift.
 
 ## Boundary Ownership
 

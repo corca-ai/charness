@@ -139,7 +139,10 @@ runtime_budget_profiles:
       check-inventory-declaration-coverage: 500
       check-references-link-inventory: 1500
       check-seed-fixture-budget: 5000
-      check-spec-evidence-durability: 2500
+      # The 2.5s limit was set in May.  The current 20-sample median is 2513ms
+      # and the release gate observed a 4404ms peak, so retain a bounded 5s
+      # budget (also used by the slower aarch64 profile) instead of a flaky bar.
+      check-spec-evidence-durability: 5000
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 1000
       inventory-ubiquitous-language: 1200
