@@ -27,7 +27,7 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
+        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -64,7 +64,7 @@ def test_charness_version_skips_notice_when_latest_release_matches_current(
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
+        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -88,7 +88,7 @@ def test_charness_version_skips_notice_when_latest_release_is_older(
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
+        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -134,7 +134,7 @@ def test_charness_version_preserves_prerelease_tag_in_update_notice(
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
+        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -159,7 +159,7 @@ def test_charness_version_without_writable_state_cache_degrades_to_payload(tmp_p
     (home_root / ".local").write_text("not a directory\n", encoding="utf-8")
 
     version_result = subprocess.run(
-        [sys.executable, str(CLI), "version", "--home-root", str(home_root), "--json"],
+        [sys.executable, str(CLI), "version", "--verbose", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,

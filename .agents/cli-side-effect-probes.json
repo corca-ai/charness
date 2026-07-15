@@ -1,95 +1,194 @@
 {
-  "version": 1,
+  "version": 2,
+  "coverage_scope": "Every root charness command or explicit mode whose primary action can mutate repository, managed-install, host-hook, integration, or git-worktree state.",
   "commands": [
     {
       "command": "./charness init",
       "mutating": true,
       "help_probe": "./charness init --help",
       "dry_run_waiver": "The install/update implementation owns real machine-local paths; fixture-level preview is covered by bootstrap and packaging tests until init grows a product dry-run.",
-      "side_effect_watch_paths": [
-        "~/.codex/plugins",
-        "~/.claude/plugins",
-        "~/.local/bin/charness"
-      ]
+      "side_effect_watch_paths": ["~/.codex/plugins", "~/.claude/plugins", "~/.local/bin/charness"]
     },
     {
       "command": "./charness update",
       "mutating": true,
       "help_probe": "./charness update --help",
       "dry_run_waiver": "Update refreshes the managed install surface and may pull source; dry-run remains a tracked product gap rather than a hidden assumption.",
-      "side_effect_watch_paths": [
-        "~/.codex/plugins",
-        "~/.claude/plugins",
-        "~/.local/bin/charness"
-      ]
+      "side_effect_watch_paths": ["~/.codex/plugins", "~/.claude/plugins", "~/.local/bin/charness"]
+    },
+    {
+      "command": "./charness doctor --write-state",
+      "mutating": true,
+      "help_probe": "./charness doctor --help",
+      "plan_probe": "./charness doctor --next-action",
+      "side_effect_watch_paths": ["~/.local/state/charness/host-state.json"]
+    },
+    {
+      "command": "./charness version --check",
+      "mutating": true,
+      "help_probe": "./charness version --help",
+      "dry_run_waiver": "The explicit release check records the current provenance and remote release result; its deterministic fixture coverage owns the network boundary.",
+      "side_effect_watch_paths": ["~/.local/state/charness/version-state.json"]
+    },
+    {
+      "command": "./charness version --verbose",
+      "mutating": true,
+      "help_probe": "./charness version --help",
+      "dry_run_waiver": "Verbose version output records current provenance; version-surface fixtures own its isolated state-write coverage.",
+      "side_effect_watch_paths": ["~/.local/state/charness/version-state.json"]
     },
     {
       "command": "./charness reset",
       "mutating": true,
       "help_probe": "./charness reset --help",
       "dry_run_waiver": "Reset is intentionally destructive to host plugin state; closeout must use explicit watched paths or a sandboxed fixture before execution.",
-      "side_effect_watch_paths": [
-        "~/.codex/plugins",
-        "~/.claude/plugins"
-      ]
+      "side_effect_watch_paths": ["~/.codex/plugins", "~/.claude/plugins"]
     },
     {
       "command": "./charness uninstall",
       "mutating": true,
       "help_probe": "./charness uninstall --help",
       "dry_run_waiver": "Uninstall is intentionally destructive and requires explicit delete flags for checkout or CLI removal; execution belongs in a sandboxed fixture.",
-      "side_effect_watch_paths": [
-        "~/.codex/plugins",
-        "~/.claude/plugins",
-        "~/.local/bin/charness"
-      ]
+      "side_effect_watch_paths": ["~/.codex/plugins", "~/.claude/plugins", "~/.local/bin/charness"]
     },
     {
-      "command": "./charness tool install",
+      "command": "./charness task claim",
       "mutating": true,
-      "positional_args": [
-        "tool_ids"
-      ],
-      "help_probe": "./charness tool install --help",
-      "option_like_positional_probes": [
-        "./charness tool install --not-a-tool"
-      ],
-      "dry_run_probe": "./charness tool install --dry-run --not-a-tool",
-      "side_effect_watch_paths": [
-        "integrations/locks",
-        "skills/support"
-      ]
+      "positional_args": ["task_id"],
+      "help_probe": "./charness task claim --help",
+      "option_like_positional_probes": ["./charness task claim --not-a-task"],
+      "dry_run_waiver": "Task claims deliberately create a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
+      "side_effect_watch_paths": [".charness/tasks"]
     },
     {
-      "command": "./charness tool update",
+      "command": "./charness task submit",
       "mutating": true,
-      "positional_args": [
-        "tool_ids"
-      ],
-      "help_probe": "./charness tool update --help",
-      "option_like_positional_probes": [
-        "./charness tool update --not-a-tool"
-      ],
-      "dry_run_probe": "./charness tool update --dry-run --not-a-tool",
-      "side_effect_watch_paths": [
-        "integrations/locks",
-        "skills/support"
-      ]
+      "positional_args": ["task_id"],
+      "help_probe": "./charness task submit --help",
+      "option_like_positional_probes": ["./charness task submit --not-a-task"],
+      "dry_run_waiver": "Task submission deliberately updates a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
+      "side_effect_watch_paths": [".charness/tasks"]
+    },
+    {
+      "command": "./charness task abort",
+      "mutating": true,
+      "positional_args": ["task_id"],
+      "help_probe": "./charness task abort --help",
+      "option_like_positional_probes": ["./charness task abort --not-a-task --reason fixture"],
+      "dry_run_waiver": "Task abort deliberately updates a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
+      "side_effect_watch_paths": [".charness/tasks"]
+    },
+    {
+      "command": "./charness catalog refresh",
+      "mutating": true,
+      "help_probe": "./charness catalog refresh --help",
+      "dry_run_waiver": "Catalog refresh is the canonical current-pointer writer; current-pointer tests own its isolated execution.",
+      "side_effect_watch_paths": ["charness-artifacts/capability-catalog"]
+    },
+    {
+      "command": "./charness capability init",
+      "mutating": true,
+      "help_probe": "./charness capability init --help",
+      "dry_run_waiver": "Capability init scaffolds deliberately; capability-resolution fixtures own isolated execution and gitignore assertions.",
+      "side_effect_watch_paths": [".charness/local", ".charness/capability.example.json", ".gitignore"]
+    },
+    {
+      "command": "./charness tool doctor",
+      "mutating": true,
+      "help_probe": "./charness tool doctor --help",
+      "plan_probe": "./charness tool doctor --no-write-locks",
+      "side_effect_watch_paths": ["integrations/locks"]
+    },
+    {
+      "command": "./charness tool repair --execute",
+      "mutating": true,
+      "positional_args": ["tool_ids"],
+      "help_probe": "./charness tool repair --help",
+      "option_like_positional_probes": ["./charness tool repair --execute --not-a-tool"],
+      "plan_probe": "./charness tool repair agent-browser",
+      "side_effect_watch_paths": ["integrations/locks"]
     },
     {
       "command": "./charness tool sync-support",
       "mutating": true,
-      "positional_args": [
-        "tool_ids"
-      ],
+      "positional_args": ["tool_ids"],
       "help_probe": "./charness tool sync-support --help",
-      "option_like_positional_probes": [
-        "./charness tool sync-support --not-a-tool"
-      ],
+      "option_like_positional_probes": ["./charness tool sync-support --not-a-tool"],
       "dry_run_probe": "./charness tool sync-support --dry-run --not-a-tool",
-      "side_effect_watch_paths": [
-        "skills/support"
-      ]
+      "side_effect_watch_paths": ["skills/support"]
+    },
+    {
+      "command": "./charness tool install",
+      "mutating": true,
+      "positional_args": ["tool_ids"],
+      "help_probe": "./charness tool install --help",
+      "option_like_positional_probes": ["./charness tool install --not-a-tool"],
+      "dry_run_probe": "./charness tool install --dry-run --not-a-tool",
+      "side_effect_watch_paths": ["integrations/locks", "skills/support"]
+    },
+    {
+      "command": "./charness tool update",
+      "mutating": true,
+      "positional_args": ["tool_ids"],
+      "help_probe": "./charness tool update --help",
+      "option_like_positional_probes": ["./charness tool update --not-a-tool"],
+      "dry_run_probe": "./charness tool update --dry-run --not-a-tool",
+      "side_effect_watch_paths": ["integrations/locks", "skills/support"]
+    },
+    {
+      "command": "./charness session-capture install",
+      "mutating": true,
+      "help_probe": "./charness session-capture install --help",
+      "dry_run_waiver": "Session-capture install edits real host configuration; usage-episode host-hook fixtures own isolated Claude and Codex roundtrips.",
+      "side_effect_watch_paths": ["~/.claude/settings.json", "~/.codex/config.toml", "~/.codex/hooks.json", ".charness/usage-episodes/host-hooks-state.json"]
+    },
+    {
+      "command": "./charness session-capture uninstall",
+      "mutating": true,
+      "help_probe": "./charness session-capture uninstall --help",
+      "dry_run_waiver": "Session-capture uninstall edits real host configuration; usage-episode host-hook fixtures own isolated Claude and Codex roundtrips.",
+      "side_effect_watch_paths": ["~/.claude/settings.json", "~/.codex/config.toml", "~/.codex/hooks.json", ".charness/usage-episodes/host-hooks-state.json"]
+    },
+    {
+      "command": "./charness worktree create",
+      "mutating": true,
+      "positional_args": ["path"],
+      "help_probe": "./charness worktree create --help",
+      "option_like_positional_probes": ["./charness worktree create --path --not-a-path"],
+      "dry_run_probe": "./charness worktree create --path /tmp/charness-worktree-probe --dry-run",
+      "side_effect_watch_paths": [".git/worktrees"]
+    },
+    {
+      "command": "./charness worktree add",
+      "mutating": true,
+      "positional_args": ["path"],
+      "help_probe": "./charness worktree add --help",
+      "option_like_positional_probes": ["./charness worktree add --path --not-a-path"],
+      "dry_run_probe": "./charness worktree add --path /tmp/charness-worktree-probe --dry-run",
+      "side_effect_watch_paths": [".git/worktrees"]
+    },
+    {
+      "command": "./charness worktree prepare",
+      "mutating": true,
+      "help_probe": "./charness worktree prepare --help",
+      "dry_run_waiver": "The repo-owned worktree adapter defines arbitrary prepare commands; its fixture suite owns isolated execution.",
+      "side_effect_watch_paths": [".git/hooks", ".lefthook", ".husky"]
+    },
+    {
+      "command": "./charness worktree audit --prune",
+      "mutating": true,
+      "help_probe": "./charness worktree audit --help",
+      "plan_probe": "./charness worktree audit",
+      "side_effect_watch_paths": [".git/worktrees"]
+    },
+    {
+      "command": "./charness worktree cleanup --yes",
+      "mutating": true,
+      "positional_args": ["path"],
+      "help_probe": "./charness worktree cleanup --help",
+      "option_like_positional_probes": ["./charness worktree cleanup --path --not-a-path"],
+      "plan_probe": "./charness worktree cleanup --path /tmp/charness-worktree-probe",
+      "side_effect_watch_paths": [".git/worktrees", ".git/refs/heads"]
     }
   ]
 }

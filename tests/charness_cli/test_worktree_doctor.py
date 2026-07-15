@@ -269,7 +269,7 @@ def test_prepare_no_manifest_emits_actionable_next_step(tmp_path: Path) -> None:
 def test_cli_doctor_subcommand_returns_yaml(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     result = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "doctor", "--repo-root", str(repo), "--json"],
+        [sys.executable, str(ROOT / "charness"), "worktree", "doctor", "--repo-root", str(repo)],
         check=False,
         capture_output=True,
         text=True,
@@ -303,7 +303,6 @@ def test_cli_prepare_subcommand_runs_command(tmp_path: Path) -> None:
             "--repo-root",
             str(repo),
             "--force",
-            "--json",
         ],
         check=False,
         capture_output=True,
@@ -338,7 +337,6 @@ def test_cli_worktree_doctor_via_path_shim_routes_to_managed_checkout(tmp_path: 
             str(home),
             "--repo-root",
             str(repo),
-            "--json",
         ],
         check=False,
         capture_output=True,
@@ -366,7 +364,6 @@ def test_cli_worktree_doctor_via_path_shim_missing_checkout_emits_actionable_err
             str(home),
             "--repo-root",
             str(repo),
-            "--json",
         ],
         check=False,
         capture_output=True,
@@ -396,7 +393,6 @@ def test_cli_worktree_doctor_via_path_shim_explicit_checkout(tmp_path: Path) -> 
             str(ROOT),
             "--repo-root",
             str(repo),
-            "--json",
         ],
         check=False,
         capture_output=True,

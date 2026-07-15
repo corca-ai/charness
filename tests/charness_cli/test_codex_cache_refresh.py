@@ -31,7 +31,7 @@ def test_charness_update_reports_codex_version_drift(
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
-    update_result = run_cli("update", "--home-root", str(home_root), "--skip-codex-cache-refresh", "--json", env=env)
+    update_result = run_cli("update", "--home-root", str(home_root), "--skip-codex-cache-refresh", env=env)
     assert update_result.returncode == 0, update_result.stderr
     payload = yaml.safe_load(update_result.stdout)
     assert payload["codex_source_version"] == CURRENT_VERSION
@@ -58,7 +58,7 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
-    update_result = run_cli("update", "--home-root", str(home_root), "--json", env=env)
+    update_result = run_cli("update", "--home-root", str(home_root), env=env)
     assert update_result.returncode == 0, update_result.stderr
     payload = yaml.safe_load(update_result.stdout)
 
@@ -260,7 +260,6 @@ def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path
             "list",
             "--repo-root",
             str(consumer_repo),
-            "--json",
         ],
         cwd=tmp_path,
         check=False,
@@ -282,7 +281,6 @@ def test_charness_catalog_refresh_invalid_roots_subprocess_contract(tmp_path: Pa
         "refresh",
         "--repo-root",
         str(missing),
-        "--json",
     )
     assert missing_result.returncode == 2
     assert missing_result.stderr == ""

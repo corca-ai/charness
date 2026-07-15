@@ -115,7 +115,7 @@ Use this only to confirm that a newly added public skill became visible after
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        ["python3", str(installed_cli), "update", "--home-root", str(home_root), "--json"],
+        ["python3", str(installed_cli), "update", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,

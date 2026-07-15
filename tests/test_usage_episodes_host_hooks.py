@@ -423,7 +423,7 @@ def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path, f
     assert claude_settings.is_file()
     assert codex_settings.is_file()
     status = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo), "--json"],
+        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo)],
         capture_output=True,
         text=True,
     )
@@ -452,14 +452,14 @@ def test_session_capture_cli_status_exit_codes(fake_home: Path, fake_charness_re
     cli = REPO_ROOT / "charness"
     live_state_before = _snapshot_live_usage_episodes()
     in_sync = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo), "--json"],
+        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo)],
         capture_output=True,
         text=True,
     )
     assert in_sync.returncode == 0
     lib.install_claude_hook(fake_charness_repo, home=fake_home)
     drift = subprocess.run(
-        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo), "--json"],
+        [sys.executable, str(cli), "session-capture", "status", "--home-root", str(fake_home), "--repo-root", str(fake_charness_repo)],
         capture_output=True,
         text=True,
     )

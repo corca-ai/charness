@@ -240,7 +240,7 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path,
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
-    result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "--json", "cautilus", env=env)
+    result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "cautilus", env=env)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     cautilus = payload["results"]["cautilus"]
@@ -283,7 +283,6 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
         str(repo_root),
         "--dry-run",
         "--skip-sync-support",
-        "--json",
         "--recommendation-role",
         "validation",
         "--next-skill-id",
@@ -319,7 +318,6 @@ def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_pa
         str(repo_root),
         "--dry-run",
         "--skip-sync-support",
-        "--json",
         "--recommendation-role",
         "validation",
         "--next-skill-id",
@@ -341,7 +339,7 @@ def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
-    result = run_cli("tool", "install", "--home-root", str(home_root), "--json", "cautilus", env=env)
+    result = run_cli("tool", "install", "--home-root", str(home_root), "cautilus", env=env)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     cautilus = payload["results"]["cautilus"]
@@ -377,10 +375,10 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
-    sync_result = run_cli("tool", "sync-support", "--home-root", str(home_root), "--json", "cautilus", env=env)
+    sync_result = run_cli("tool", "sync-support", "--home-root", str(home_root), "cautilus", env=env)
     assert sync_result.returncode == 0, sync_result.stderr
 
-    doctor_result = run_cli("tool", "doctor", "--home-root", str(home_root), "--json", "cautilus", env=env)
+    doctor_result = run_cli("tool", "doctor", "--home-root", str(home_root), "cautilus", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = yaml.safe_load(doctor_result.stdout)
     cautilus = payload["results"]["cautilus"]["doctor"]
@@ -419,7 +417,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
-    sync_result = run_cli("tool", "sync-support", "--home-root", str(home_root), "--json", "cautilus", env=env)
+    sync_result = run_cli("tool", "sync-support", "--home-root", str(home_root), "cautilus", env=env)
     assert sync_result.returncode == 0, sync_result.stderr
     payload = yaml.safe_load(sync_result.stdout)
     cautilus = payload["results"]["cautilus"]
@@ -479,7 +477,7 @@ def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_p
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
     env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
 
-    result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
+    result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "agent-browser", env=env)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     browser = payload["results"]["agent-browser"]
@@ -517,7 +515,7 @@ def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, see
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
     env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
 
-    result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
+    result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "agent-browser", env=env)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     browser = payload["results"]["agent-browser"]
@@ -546,7 +544,7 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     env["GOPATH"] = str(specdown_script.parent.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
-    result = run_cli_in_repo(repo_root, "tool", "doctor", "--repo-root", str(repo_root), "--json", "specdown", env=env)
+    result = run_cli_in_repo(repo_root, "tool", "doctor", "--repo-root", str(repo_root), "specdown", env=env)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     specdown = payload["results"]["specdown"]
@@ -575,7 +573,7 @@ def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path,
     env["PATH"] = build_test_path(fake_agent_browser.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
-    preview = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
+    preview = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "agent-browser", env=env)
     assert preview.returncode == 0, preview.stderr
     preview_payload = yaml.safe_load(preview.stdout)
     preview_browser = preview_payload["results"]["agent-browser"]
@@ -593,7 +591,6 @@ def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path,
         "--repo-root",
         str(repo_root),
         "--execute",
-        "--json",
         "agent-browser",
         env=env,
     )
@@ -617,7 +614,7 @@ def test_tool_repair_reports_unsupported_tools(tmp_path: Path, seeded_charness_r
     env = os.environ.copy()
     env["PATH"] = build_test_path()
 
-    result = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "--json", "specdown", env=env)
+    result = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "specdown", env=env)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -661,7 +658,7 @@ def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path
     env["GOPATH"] = str(gopath)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
-    result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "--json", "glow", env=env)
+    result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "glow", env=env)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     glow = payload["results"]["glow"]
@@ -695,7 +692,6 @@ def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path, seeded_ch
         "update",
         "--repo-root",
         str(repo_root),
-        "--json",
         "--skip-sync-support",
         "specdown",
         env=env,

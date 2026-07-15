@@ -13,9 +13,11 @@ commands:
       - reset
       - uninstall
       - task
+      - catalog
       - capability
       - goal
       - tool
+      - session-capture
       - worktree
     required_doc_contains:
       - The CLI is there so humans and agents can inspect local harness state instead of guessing.
@@ -76,6 +78,15 @@ commands:
       - charness update
       - charness update all
       - Refresh the installed surface
+  version:
+    help_command: ./charness version --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - --verbose
+      - --check
+    required_doc_contains:
+      - charness version
   reset:
     help_command: ./charness reset --help
     doc_paths:
@@ -118,6 +129,7 @@ commands:
       - docs/handoff.md
     required_help_contains:
       - doctor
+      - repair
       - sync-support
       - install
       - update
@@ -189,6 +201,43 @@ commands:
       - task_id
     required_doc_contains:
       - charness task status
+  catalog:
+    help_command: ./charness catalog --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - list
+      - refresh
+      - resolve-skill-path
+    required_doc_contains:
+      - charness catalog list
+      - charness catalog refresh
+  catalog-list:
+    help_command: ./charness catalog list --help
+    doc_paths:
+      - AGENTS.md
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - --repo-root
+    required_doc_contains:
+      - charness catalog list --repo-root <repo>
+  catalog-refresh:
+    help_command: ./charness catalog refresh --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - --repo-root
+    required_doc_contains:
+      - charness catalog refresh
+  catalog-resolve-skill-path:
+    help_command: ./charness catalog resolve-skill-path --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - --skill-id
+      - --reported-path
+    required_doc_contains:
+      - charness catalog resolve-skill-path
   capability-init:
     help_command: ./charness capability init --help
     doc_paths:
@@ -246,6 +295,15 @@ commands:
       - tool_ids
     required_doc_contains:
       - charness tool doctor cautilus
+  tool-repair:
+    help_command: ./charness tool repair --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+      - docs/control-plane.md
+    required_help_contains:
+      - --execute
+    required_doc_contains:
+      - charness tool repair
   tool-sync-support:
     help_command: ./charness tool sync-support --help
     doc_paths:
@@ -276,6 +334,40 @@ commands:
       - tool_ids
     required_doc_contains:
       - charness tool update agent-browser
+  session-capture:
+    help_command: ./charness session-capture --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - status
+      - install
+      - uninstall
+    required_doc_contains:
+      - charness session-capture status
+  session-capture-status:
+    help_command: ./charness session-capture status --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - --home-root
+    required_doc_contains:
+      - charness session-capture status
+  session-capture-install:
+    help_command: ./charness session-capture install --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - --host
+    required_doc_contains:
+      - charness session-capture install
+  session-capture-uninstall:
+    help_command: ./charness session-capture uninstall --help
+    doc_paths:
+      - docs/generated/cli-reference.md
+    required_help_contains:
+      - --host
+    required_doc_contains:
+      - charness session-capture uninstall
   worktree:
     help_command: ./charness worktree --help
     doc_paths:

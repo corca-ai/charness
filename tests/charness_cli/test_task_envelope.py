@@ -20,7 +20,6 @@ def test_task_claim_submit_and_status_are_structured(tmp_path: Path) -> None:
         "task",
         "--repo-root",
         str(repo_root),
-        "--json",
         "claim",
         "slice-1",
         "--summary",
@@ -39,7 +38,6 @@ def test_task_claim_submit_and_status_are_structured(tmp_path: Path) -> None:
         "task",
         "--repo-root",
         str(repo_root),
-        "--json",
         "submit",
         "slice-1",
         "--summary",
@@ -59,7 +57,6 @@ def test_task_claim_submit_and_status_are_structured(tmp_path: Path) -> None:
         "task",
         "--repo-root",
         str(repo_root),
-        "--json",
         "status",
         "slice-1",
         env=env,
@@ -77,9 +74,9 @@ def test_task_claim_conflict_and_abort_reason_are_structured(tmp_path: Path) -> 
     env_b = {**os.environ, "CHARNESS_AGENT_ID": "agent-b"}
     root = Path(__file__).resolve().parents[2]
 
-    first = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "--json", "claim", "slice-2", env=env_a)
+    first = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "claim", "slice-2", env=env_a)
     assert first.returncode == 0, first.stderr
-    conflict = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "--json", "claim", "slice-2", env=env_b)
+    conflict = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "claim", "slice-2", env=env_b)
     assert conflict.returncode == 1
     conflict_payload = yaml.safe_load(conflict.stdout)
     assert conflict_payload["event"] == "rejected"
@@ -91,7 +88,6 @@ def test_task_claim_conflict_and_abort_reason_are_structured(tmp_path: Path) -> 
         "task",
         "--repo-root",
         str(repo_root),
-        "--json",
         "abort",
         "slice-2",
         "--reason",

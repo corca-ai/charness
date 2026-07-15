@@ -54,7 +54,6 @@ def test_capability_resolve_reads_repo_local_config(tmp_path: Path) -> None:
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "github.default",
     )
     assert result.returncode == 0, result.stderr
@@ -116,7 +115,6 @@ def test_capability_doctor_reuses_provider_metadata_for_resolved_profile(tmp_pat
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "web-fetch.default",
     )
     assert result.returncode == 0, result.stderr
@@ -133,7 +131,6 @@ def test_capability_init_scaffolds_repo_local_config_and_updates_gitignore(tmp_p
         "init",
         "--target-repo-root",
         str(target_repo),
-        "--json",
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -173,7 +170,6 @@ def test_capability_init_does_not_duplicate_gitignore_line_when_already_present(
         "init",
         "--target-repo-root",
         str(target_repo),
-        "--json",
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -191,7 +187,6 @@ def test_capability_resolve_reports_missing_config_when_file_does_not_exist(tmp_
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "slack.default",
     )
     assert result.returncode != 0
@@ -209,7 +204,6 @@ def test_capability_resolve_failure_points_at_retired_xdg_layout(tmp_path: Path)
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "slack.default",
     )
     assert result.returncode != 0
@@ -245,7 +239,6 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "gather",
     )
     assert gather_result.returncode == 0, gather_result.stderr
@@ -263,7 +256,6 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "announcement",
     )
     assert announcement_result.returncode == 0, announcement_result.stderr
@@ -310,7 +302,6 @@ def test_capability_explain_keeps_unwired_thread_reply_draft_only(tmp_path: Path
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "announcement",
     )
     assert result.returncode == 0, result.stderr
@@ -356,7 +347,6 @@ def test_capability_explain_keeps_thread_reply_before_parent_draft_only(tmp_path
         str(ROOT),
         "--target-repo-root",
         str(target_repo),
-        "--json",
         "announcement",
     )
     assert result.returncode == 0, result.stderr

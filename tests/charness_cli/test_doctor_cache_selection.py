@@ -37,7 +37,7 @@ enabled = true
     current_cache.parent.mkdir(parents=True, exist_ok=True)
     current_cache.write_text(json.dumps({"version": CURRENT_VERSION}), encoding="utf-8")
 
-    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
+    doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = yaml.safe_load(doctor_result.stdout)
     assert payload["codex_enabled_plugin_ids"] == ["charness@charness", "charness@local"]

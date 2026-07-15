@@ -25,7 +25,7 @@ def test_charness_doctor_selects_primary_next_action(
     home_root, env = clone_seeded_managed_home(
         tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
     )
-    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
+    doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = yaml.safe_load(doctor_result.stdout)
     assert payload["next_action"]["kind"] == "restart"
@@ -73,7 +73,7 @@ def test_charness_doctor_next_action_without_source_uses_manual_guidance(tmp_pat
     installed_cli.chmod(0o755)
 
     doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
+        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -106,7 +106,6 @@ def test_charness_doctor_can_surface_repo_onboarding_as_primary_next_action(
             "doctor",
             "--home-root",
             str(home_root),
-            "--json",
             "--target-repo-root",
             str(consumer_repo),
         ],

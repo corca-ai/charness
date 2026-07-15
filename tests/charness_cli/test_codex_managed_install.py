@@ -93,7 +93,7 @@ def test_charness_doctor_reports_codex_version_drift(
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
-    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
+    doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = yaml.safe_load(doctor_result.stdout)
     assert payload["codex_source_version"] == CURRENT_VERSION

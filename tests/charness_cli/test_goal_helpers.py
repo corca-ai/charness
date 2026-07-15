@@ -53,7 +53,6 @@ def test_goal_check_uses_stable_cli_surface_for_achieve_helper() -> None:
         "--goal-path",
         GOAL_PATH,
         "--pursue-ready",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
@@ -78,7 +77,6 @@ def test_goal_check_resolves_relative_goal_path_under_target_repo(tmp_path: Path
         "--charness-checkout",
         str(ROOT),
         "--pursue-ready",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
@@ -101,7 +99,6 @@ def test_goal_check_blocks_unresolved_activation_discussion(tmp_path: Path) -> N
         "--charness-checkout",
         str(ROOT),
         "--pursue-ready",
-        "--json",
     )
 
     assert result.returncode == 1, result.stderr
@@ -146,7 +143,6 @@ def test_goal_check_concise_output_surfaces_draft_frame_warning(tmp_path: Path) 
         "--charness-checkout",
         str(ROOT),
         "--pursue-ready",
-        "--json",
     )
 
     assert json_result.returncode == 0, json_result.stderr

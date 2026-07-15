@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import argparse
+import ast
 import importlib.util
+import json
+import runpy
+import shlex
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT, run_script, write_executable
 
@@ -16,6 +22,40 @@ def _load_render_cli_reference():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _parser_command_paths(parser: argparse.ArgumentParser, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
+    paths: set[tuple[str, ...]] = set()
+    for action in parser._actions:
+        if not isinstance(action, argparse._SubParsersAction):
+            continue
+        for name, child in action.choices.items():
+            current = (*prefix, name)
+            paths.add(current)
+            paths.update(_parser_command_paths(child, current))
+    return paths
+
+
+def _root_cli_command_paths() -> set[tuple[str, ...]]:
+    return _parser_command_paths(runpy.run_path(str(ROOT / "charness"))["build_parser"]())
+
+
+def _command_doc_paths() -> set[tuple[str, ...]]:
+    contract = yaml.safe_load((ROOT / ".agents" / "command-docs.yaml").read_text(encoding="utf-8"))
+    return {
+        tuple(shlex.split(entry["help_command"])[1:-1])
+        for entry in contract["commands"].values()
+    }
+
+
+def _command_registry_paths() -> set[tuple[str, ...]]:
+    registry = json.loads((ROOT / ".agents" / "command-registry.json").read_text(encoding="utf-8"))
+    return {tuple(entry["path"]) for entry in registry["commands"]}
+
+
+def _side_effect_probe_commands() -> set[str]:
+    contract = json.loads((ROOT / ".agents" / "cli-side-effect-probes.json").read_text(encoding="utf-8"))
+    return {entry["command"] for entry in contract["commands"]}
 
 
 def seed_command_docs_repo(tmp_path: Path) -> Path:
@@ -102,6 +142,64 @@ def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert output.read_text(encoding="utf-8") == (ROOT / "docs" / "generated" / "cli-reference.md").read_text(encoding="utf-8")
+
+
+def test_root_cli_command_contracts_cover_every_parser_path() -> None:
+    expected = _root_cli_command_paths()
+    rendered = {
+        tuple(title.split()[1:])
+        for title, _command in _load_render_cli_reference().COMMANDS
+    }
+
+    assert _command_doc_paths() == {(), *expected}
+    assert _command_registry_paths() == expected
+    assert rendered == {(), *expected}
+
+
+def test_root_cli_legacy_json_flag_appears_only_in_compatibility_tests() -> None:
+    cli_test_dir = ROOT / "tests" / "charness_cli"
+    files_with_legacy_flag = {
+        path.name
+        for path in cli_test_dir.glob("test_*.py")
+        if any(
+            isinstance(node, ast.Constant) and node.value == "--json"
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+        )
+    }
+
+    assert files_with_legacy_flag == {
+        "test_task_envelope.py",
+        "test_version_surface.py",
+    }
+
+
+def test_root_cli_mutating_modes_have_side_effect_probe_contracts() -> None:
+    assert _side_effect_probe_commands() == {
+        "./charness init",
+        "./charness update",
+        "./charness doctor --write-state",
+        "./charness version --check",
+        "./charness version --verbose",
+        "./charness reset",
+        "./charness uninstall",
+        "./charness task claim",
+        "./charness task submit",
+        "./charness task abort",
+        "./charness catalog refresh",
+        "./charness capability init",
+        "./charness tool doctor",
+        "./charness tool repair --execute",
+        "./charness tool sync-support",
+        "./charness tool install",
+        "./charness tool update",
+        "./charness session-capture install",
+        "./charness session-capture uninstall",
+        "./charness worktree create",
+        "./charness worktree add",
+        "./charness worktree prepare",
+        "./charness worktree audit --prune",
+        "./charness worktree cleanup --yes",
+    }
 
 
 # --- #260 score-path survivors in render_cli_reference -----------------------

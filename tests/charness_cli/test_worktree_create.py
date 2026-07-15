@@ -167,7 +167,6 @@ def test_cli_worktree_create_json_executes_and_reports_doctor(tmp_path: Path) ->
             "cli-feature",
             "--base",
             "main",
-            "--json",
         ],
         check=False,
         capture_output=True,

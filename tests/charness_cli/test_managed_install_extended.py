@@ -73,7 +73,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "all", "--home-root", str(home_root), "--skip-codex-cache-refresh", "--json"],
+        [sys.executable, str(installed_cli), "update", "all", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -144,7 +144,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     installed_cli.chmod(0o755)
 
     doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
+        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -173,7 +173,7 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text("{}", encoding="utf-8")
 
-    reset_result = run_cli("reset", "--home-root", str(home_root), "--json", env=env)
+    reset_result = run_cli("reset", "--home-root", str(home_root), env=env)
     assert reset_result.returncode == 0, reset_result.stderr
     payload = yaml.safe_load(reset_result.stdout)
     assert payload["removed_plugin_root"] is True

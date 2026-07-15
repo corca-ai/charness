@@ -36,11 +36,13 @@ class CharnessError(Exception):
 
 def render_yaml(payload: object) -> str:
     """Render one portable YAML document for the public CLI boundary."""
+    normalized = json.loads(json.dumps(payload, ensure_ascii=False, allow_nan=False))
     try:
         import yaml
-    except ImportError as exc:
-        raise CharnessError("PyYAML is required for structured `charness` output.") from exc
-    normalized = json.loads(json.dumps(payload, ensure_ascii=False, allow_nan=False))
+    except ImportError:
+        # JSON is valid YAML. Keep the copied standalone CLI usable before the
+        # managed bootstrap runtime has provisioned PyYAML.
+        return json.dumps(normalized, ensure_ascii=False, separators=(",", ":")) + "\n"
     return yaml.safe_dump(normalized, allow_unicode=True, sort_keys=False)
 
 
@@ -1019,8 +1021,6 @@ def should_auto_refresh_self_release(args: argparse.Namespace, provenance: dict[
     if bool_env("CHARNESS_NO_UPDATE_CHECK"):
         return False
     if bool_env("CI"):
-        return False
-    if getattr(args, "json", False):
         return False
     if getattr(args, "command", None) == "version" and getattr(args, "check", False):
         return False

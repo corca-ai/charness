@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -25,6 +27,21 @@ def test_top_level_version_alias_matches_version_subcommand() -> None:
 def test_source_checkout_version_uses_embedded_packaging_manifest() -> None:
     result = run_cli("--version")
     expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+
+    assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(result.stdout) == {"version": expected}
+
+
+def test_standalone_version_falls_back_to_valid_yaml_without_pyyaml() -> None:
+    expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+
+    result = subprocess.run(
+        [sys.executable, "-S", str(ROOT / "charness"), "version"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
     assert result.returncode == 0, result.stderr
     assert yaml.safe_load(result.stdout) == {"version": expected}

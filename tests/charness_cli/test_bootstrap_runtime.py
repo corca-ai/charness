@@ -47,7 +47,7 @@ def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: P
     runtime_python = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
     commands: list[list[str]] = []
     requirements_installed = {"value": False}
-    module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
+    module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging', 'yaml']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
 
     def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
         del cwd
@@ -96,7 +96,7 @@ def test_bootstrap_runtime_repairs_stale_launcher_when_base_has_modules(tmp_path
     runtime_python.parent.mkdir(parents=True, exist_ok=True)
     runtime_python.write_text("# stale launcher\n", encoding="utf-8")
     commands: list[list[str]] = []
-    module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
+    module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging', 'yaml']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
 
     def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
         del cwd
@@ -132,7 +132,7 @@ def test_bootstrap_runtime_reuses_existing_runtime_when_modules_are_present(tmp_
     runtime_python.parent.mkdir(parents=True, exist_ok=True)
     runtime_python.write_text("", encoding="utf-8")
     commands: list[list[str]] = []
-    module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
+    module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging', 'yaml']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
 
     def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
         del cwd

@@ -303,7 +303,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
 @pytest.mark.release_only
 def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
+    doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = yaml.safe_load(doctor_result.stdout)
     assert payload["package_id"] == "charness"
@@ -358,7 +358,7 @@ def test_charness_doctor_binds_claude_to_custom_home(tmp_path: Path, seeded_mana
     env["HOME"] = str(process_home)
     env["PATH"] = build_test_path(fake_claude.parent)
 
-    result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
+    result = run_cli("doctor", "--home-root", str(home_root), env=env)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -452,7 +452,7 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh", "--json"],
+        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -488,7 +488,6 @@ def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path, se
             "--home-root",
             str(home_root),
             "--skip-codex-cache-refresh",
-            "--json",
         ],
         cwd=cwd_repo,
         check=False,
@@ -586,7 +585,7 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"
     doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
+        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -606,7 +605,7 @@ def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_hom
     home_root, env = clone_seeded_managed_home(
         tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
     )
-    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", "--write-state", env=env)
+    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--write-state", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = yaml.safe_load(doctor_result.stdout)
     host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))

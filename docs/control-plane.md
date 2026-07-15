@@ -160,6 +160,20 @@ Rules:
 - tools with `kind = external_skill` are skipped unless they also declare a
   binary lifecycle
 
+### `charness tool repair`
+
+Purpose:
+preview or execute a manifest-backed repair for detected external-tool runtime
+drift, then refresh the affected doctor state.
+
+Rules:
+
+- preview is the default; `--execute` is required before a repair action runs
+- repair output is mitigation evidence, not a claim that upstream runtime
+  behavior is permanently corrected
+- the follow-up doctor result must remain structured so later operators can
+  distinguish repair preview, execution, and remaining drift
+
 ### `charness tool doctor`
 
 Purpose:

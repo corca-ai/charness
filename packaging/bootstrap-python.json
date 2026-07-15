@@ -7,6 +7,7 @@
   "requirements_file": "packaging/bootstrap-requirements.txt",
   "required_modules": [
     "jsonschema",
-    "packaging"
+    "packaging",
+    "yaml"
   ]
 }
