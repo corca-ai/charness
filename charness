@@ -3461,6 +3461,58 @@ def _tool_result_status(result: dict[str, object]) -> str | None:
     return None
 
 
+def _tool_attention_groups(result: dict[str, object]) -> set[str]:
+    """Classify the bounded set of tool ids worth surfacing in an aggregate."""
+    groups: set[str] = set()
+    for action in ("install", "update", "repair", "support"):
+        payload = result.get(action)
+        if not isinstance(payload, dict):
+            continue
+        status = payload.get("status")
+        if status in {"failed", "updated-not-ready", "refreshed-not-ready", "installed-not-ready"}:
+            groups.add("failed")
+        elif status == "manual":
+            groups.add("manual")
+    doctor = result.get("doctor")
+    if isinstance(doctor, dict):
+        disposition = doctor.get("doctor_disposition")
+        status = doctor.get("doctor_status")
+        if disposition in BLOCKING_DOCTOR_DISPOSITIONS or status in {"failed", "missing", "unhealthy"}:
+            groups.add("not_ready")
+    return groups
+
+
+def _project_single_tool_result(raw_result: dict[str, object]) -> tuple[dict[str, object], str | None]:
+    result: dict[str, object] = {}
+    for action in ("install", "update", "repair", "support", "doctor"):
+        compact_action = _compact_tool_action(action, raw_result.get(action))
+        if compact_action is not None:
+            result[action] = compact_action
+    next_step = raw_result.get("next_step")
+    if isinstance(next_step, str) and next_step:
+        result["next_step"] = next_step
+    status = _tool_result_status(raw_result)
+    if status is not None:
+        result["status"] = status
+    return result, status
+
+
+def _project_tool_results(raw_results: object) -> tuple[dict[str, dict[str, object]], dict[str, int]]:
+    projected_results: dict[str, dict[str, object]] = {}
+    status_counts: dict[str, int] = {}
+    if not isinstance(raw_results, dict):
+        return projected_results, status_counts
+    for tool_id in sorted(raw_results):
+        raw_result = raw_results.get(tool_id)
+        if not isinstance(raw_result, dict):
+            continue
+        result, status = _project_single_tool_result(raw_result)
+        if status is not None:
+            status_counts[status] = status_counts.get(status, 0) + 1
+        projected_results[tool_id] = result
+    return projected_results, status_counts
+
+
 def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str, object]:
     """Return the stable, compact public view of a tool-operation payload.
 
@@ -3470,26 +3522,7 @@ def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str
     operator-facing status, transition, and next action for each tool.
     """
     raw_results = payload.get("results")
-    projected_results: dict[str, dict[str, object]] = {}
-    status_counts: dict[str, int] = {}
-    if isinstance(raw_results, dict):
-        for tool_id in sorted(raw_results):
-            raw_result = raw_results.get(tool_id)
-            if not isinstance(raw_result, dict):
-                continue
-            result: dict[str, object] = {}
-            for action in ("install", "update", "repair", "support", "doctor"):
-                compact_action = _compact_tool_action(action, raw_result.get(action))
-                if compact_action is not None:
-                    result[action] = compact_action
-            next_step = raw_result.get("next_step")
-            if isinstance(next_step, str) and next_step:
-                result["next_step"] = next_step
-            status = _tool_result_status(raw_result)
-            if status is not None:
-                result["status"] = status
-                status_counts[status] = status_counts.get(status, 0) + 1
-            projected_results[tool_id] = result
+    projected_results, status_counts = _project_tool_results(raw_results)
     response: dict[str, object] = {
         "event": event,
         "response_level": "summary",
@@ -3502,7 +3535,20 @@ def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str
         "tool_count": len(projected_results),
         "status_counts": dict(sorted(status_counts.items())),
     }
-    response["results"] = projected_results
+    if len(projected_results) <= 1:
+        response["results"] = projected_results
+        return response
+
+    attention: dict[str, list[str]] = {}
+    if isinstance(raw_results, dict):
+        for tool_id, raw_result in raw_results.items():
+            if not isinstance(tool_id, str) or not isinstance(raw_result, dict):
+                continue
+            for group in _tool_attention_groups(raw_result):
+                attention.setdefault(f"{group}_tool_ids", []).append(tool_id)
+    if attention:
+        response["attention"] = {key: sorted(tool_ids) for key, tool_ids in sorted(attention.items())}
+        response["next_action"] = "Use --detail to inspect the listed tool records."
     return response
 
 

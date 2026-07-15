@@ -61,6 +61,13 @@ without re-deriving machine conditions.
 - root `charness tool` commands should emit a compact YAML status, transition,
   and next-action summary by default; their full command, release, route, and
   probe evidence remains in lock state or an explicit `--detail` YAML response
+- aggregate tool operations report status counts and only the bounded ids that
+  need attention; default output must not repeat every per-tool record
+- this replaces the former aggregate `results` payload; automation that needs
+  individual tool records must request `--detail`
+- automatic external-tool updates require a recognized installation provenance;
+  an otherwise healthy path installation reports a manual next step instead of
+  guessing from another package manager that happens to be on PATH
 - mutations should persist under `integrations/locks/*.json`, the user cache,
   and installed plugin support paths when relevant
 - manual-only steps should still record explicit upstream docs and remaining

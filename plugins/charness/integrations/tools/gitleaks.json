@@ -15,7 +15,7 @@
     "install": {
       "mode": "script",
       "commands": [
-        "if command -v go >/dev/null 2>&1; then go install github.com/gitleaks/gitleaks/v8@latest && mkdir -p \"$HOME/.local/bin\" && ln -sf \"$(go env GOPATH)/bin/gitleaks\" \"$HOME/.local/bin/gitleaks\"; elif command -v brew >/dev/null 2>&1; then brew upgrade gitleaks || brew install gitleaks; else echo 'Update gitleaks from https://github.com/gitleaks/gitleaks#installing'; exit 1; fi"
+        "if command -v go >/dev/null 2>&1; then go install github.com/zricethezav/gitleaks/v8@latest && mkdir -p \"$HOME/.local/bin\" && ln -sf \"$(go env GOPATH)/bin/gitleaks\" \"$HOME/.local/bin/gitleaks\"; elif command -v brew >/dev/null 2>&1; then brew install gitleaks; else echo 'Install gitleaks from https://github.com/gitleaks/gitleaks#installing'; exit 1; fi"
       ],
       "docs_url": "https://github.com/gitleaks/gitleaks#installing",
       "notes": [
@@ -24,13 +24,10 @@
       ]
     },
     "update": {
-      "mode": "script",
-      "commands": [
-        "if command -v go >/dev/null 2>&1; then go install github.com/gitleaks/gitleaks/v8@latest && mkdir -p \"$HOME/.local/bin\" && ln -sf \"$(go env GOPATH)/bin/gitleaks\" \"$HOME/.local/bin/gitleaks\"; elif command -v brew >/dev/null 2>&1; then brew upgrade gitleaks || brew install gitleaks; else echo 'Update gitleaks from https://github.com/gitleaks/gitleaks#installing'; exit 1; fi"
-      ],
+      "mode": "manual",
       "docs_url": "https://github.com/gitleaks/gitleaks/releases",
       "notes": [
-        "Update through the same package manager or release path that originally installed `gitleaks`."
+        "Charness updates `gitleaks` only when its install provenance is a recognized package-manager path; otherwise update through the same release or package-manager path that installed it."
       ]
     }
   },
@@ -63,6 +60,14 @@
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported gitleaks release.",
     "detected_by": "stdout"
+  },
+  "package_managers": {
+    "go": {
+      "package_name": "github.com/zricethezav/gitleaks/v8",
+      "notes": [
+        "The upstream Go module keeps the historical `github.com/zricethezav/gitleaks/v8` module path."
+      ]
+    }
   },
   "supports_public_skills": [
     "quality"

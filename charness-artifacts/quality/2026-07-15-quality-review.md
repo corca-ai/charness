@@ -1,90 +1,85 @@
 # Quality Review
 Date: 2026-07-15
-Title: CLI YAML stdout contract
+Title: Compact Aggregate YAML Response Follow-Up Quality Review
 
 ## Scope
 
-Target boundary: root `charness` operational command stdout, its legacy
-`--json` compatibility behavior, and the public command guidance that teaches it.
+Target boundary: installed CLI aggregate YAML responses and external-tool update
+provenance.
 
-Ambient repo findings: the final read-only gate reported existing Python
-length-band warnings only; none are caused by this output-contract slice.
+Ambient repo findings: the skills ergonomics inventory reports existing
+host-surface references, but no changed skill surface or quality move.
 
 ## Current Gates
 
-- Focused root CLI, integration, usage-hook, command-doc, and executable-spec
-  checks: 111 passed.
-- `./scripts/run-quality.sh --read-only`: passed all configured validation,
-  packaging, documentation, compile, and ruff gates.
-- `python3 scripts/validate_critique_artifacts.py --repo-root . --paths
-  charness-artifacts/critique/2026-07-15-cli-yaml-stdout-contract.md`: passed.
+- Focused CLI/control-plane regressions passed; standing release quality remains
+  to be run after the mutation set is locked.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json`, rendered by `scripts/render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
-- runtime hot spots: final read-only `check-markdown` and `check-secrets` each took 5.4s; these are repository-wide gates rather than a YAML-output regression.
-- coverage gate: focused behavior tests passed and the final read-only quality gate passed.
-- evaluator depth: deterministic Cautilus registry/proof/diagnostic validators passed; live Cautilus execution remains ask-before-run and was not requested.
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json`. <!-- reproduction-source -->
+  rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`.
+- runtime hot spots: `run-quality-full-release` 89.1s latest / 83.0s median;
+  this is a necessary release proof, not a new optimization finding.
+- coverage gate: focused evidence passed; locked-diff release quality is pending.
+- evaluator depth: deterministic-gates-only; Cautilus is ask-before-run and is
+  not needed for this structured CLI seam.
 
 ## Healthy
 
-- Root handlers now publish JSON-shaped payloads through one YAML emitter, while
-  progress remains on stderr and structured failures remain YAML on stdout.
-- The parser removes exact legacy `--json` tokens before dispatch; help and
-  public root-command guidance no longer advertise the flag.
-- Generated CLI reference, Cautilus routing fixture, source docs, tests, and
-  checked-in plugin mirrors carry the same root-output contract.
+- The shared projector now has a direct fixture proof for an aggregate response
+  and a retained `--detail` evidence path.
 
 ## Weak
 
-- Root `--help` and argparse usage remain human-oriented stdout, outside the
-  operational payload boundary; the generated reference states that distinction.
+- v1.0.10's release proof did not run the real installed `update all` path,
+  allowing a composed per-tool list to escape.
 
 ## Missing
 
-- No already-installed executable or open-host-session readback is included in
-  this source-checkout proof boundary.
+- No missing deterministic mechanism is proposed: the added fixture boundary
+  closes the identified composition seam without a new standing floor.
 
 ## Deferred
 
-- Private helper scripts keep their explicit JSON protocols because they are
-  subprocess boundaries, not root `charness` responses.
+- Tool installations whose provenance remains only `path` stay manual; adding
+  provenance inference needs a separate evidence-backed design.
 
 ## Advisory
 
-- `command: ./scripts/run-quality.sh --read-only` reports ten pre-existing
-  Python length-band warnings; no touched file is named by that advisory.
-- `artifact: charness-artifacts/critique/2026-07-15-cli-yaml-stdout-contract.md`
-  records the fresh-eye distinction between root YAML output and private JSON.
-- `artifact: evals/cautilus/scenarios.json` was reviewed against the changed
-  critique/hitl/impl/quality/setup/spec guidance: root-command flag removal
-  changes neither skill routing nor acceptance evidence, so registry IDs and
-  maintained scenarios remain unchanged; no live evaluator run is claimed.
+- structural review result: evidence: the aggregate projector is the shared
+  owner, and the fixture proves its counts-plus-attention boundary.
+- prose review result: evidence: `docs/control-plane.md` and the generated CLI
+  reference define the same aggregate/detail boundary; skills are ambient.
+- `inventory_skill_ergonomics.py --summary` found 16 existing host-surface
+  reference heuristics across 21 skills; this slice changes no inspected skill.
+- command: `pytest -q -m 'not release_only' tests/control_plane/test_update_manifest_contract.py
+  tests/control_plane/test_sync_support.py tests/charness_cli/test_update_output.py
+  tests/charness_cli/test_tool_lifecycle.py::test_tool_install_can_select_quality_validation_recommendations
+  tests/charness_cli/test_yaml_output_branch_coverage.py` passed 20 tests and
+  deselected two release-only tests.
 
 ## Delegated Review
 
-- Delegated Review: executed — separate documentation/export and counterweight
-  reviewers found no remaining ship blocker; parent fingerprint checks reported
-  no worktree or index drift. Slow-gate lenses (fixture-economics,
-  parallel-critical-path, duplicated-proof): not re-delegated because this
-  slice changes neither gate topology nor runtime recommendations.
+- Delegated Review: not_applicable — this quality record does not replace the
+  required fresh-eye release critique, which is tracked in the critique artifact.
+- Slow-gate lenses: not applicable; no slow-gate design change is proposed.
 
 ## Commands Run
 
-- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
-- `specdown run -quiet -no-report -jobs 4` and
-  `python3 scripts/check_command_docs.py --repo-root .`.
-- Focused pytest command over root CLI, usage-hook, integration, and command-doc
-  tests (111 passed), plus `ruff check` for touched Python surfaces.
-- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`.
-- `./scripts/run-quality.sh --read-only`.
-- `python3 scripts/run_slice_closeout.py --repo-root . --allow-unmatched
-  --verification-lock --produce-mutation-coverage
-  --ack-cautilus-skill-review`.
+- `pytest -q -m 'not release_only'` focused CLI/control-plane
+  selection — passed 20 tests and deselected two release-only tests.
+- `python3 scripts/validate_integrations.py --repo-root .` — passed.
+- `python3 scripts/sync_support.py --repo-root . --json` — dry-run diagnostics.
+- `python3 scripts/update_tools.py --repo-root . --json` — `gitleaks`, `ruff`,
+  and `specdown` now report manual rather than a guessed updater failure.
 
 ## Recommended Next Quality Moves
 
-- passive released-install readback — capability_needed=operator update confidence; next_center=release workflow; transformation=verify an installed binary after an authorized update; proof_boundary=installed CLI and new host session; enforcement_posture=release-gate because this source slice does not update an installed executable.
+- passive provenance inference because capability_needed=automatic updates for
+  non-symlink package installs; next_center=install provenance; transformation=
+  collect stronger installer evidence before any inference; proof_boundary=a
+  separate design and runtime fixtures; enforcement_posture=no-gate.
 
 ## History
 

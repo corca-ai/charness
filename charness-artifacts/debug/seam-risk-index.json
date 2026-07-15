@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 88,
-  "indexed_artifact_count": 76,
+  "source_artifact_count": 89,
+  "indexed_artifact_count": 77,
   "risk_class_counts": {
     "contract-freeze-risk": 25,
     "external-seam": 4,
     "host-disproves-local": 2,
     "none": 22,
-    "operator-visible-recovery": 22,
+    "operator-visible-recovery": 23,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 68,
+    "monitor": 69,
     "none": 5
   },
   "entries": [
@@ -1042,6 +1042,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-15-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "aggregate-yaml-summary-leak",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "helper payload -> nested root YAML response -> installed CLI operator.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/quality/2026-07-15-quality-review.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-15-release-execute-noop-debug.md",
       "is_current_pointer": false,
       "interrupt_id": "release-execute-noop",
@@ -1072,15 +1086,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "release-execute-noop",
+      "interrupt_id": "aggregate-yaml-summary-leak",
       "risk_classes": [
         "operator-visible-recovery"
       ],
-      "seam": "local release mutation to public tag and GitHub release.",
+      "seam": "helper payload -> nested root YAML response -> installed CLI operator.",
       "generalization_pressure": "monitor",
-      "critique_required": false,
+      "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "none",
+      "handoff_artifact": "charness-artifacts/quality/2026-07-15-quality-review.md",
       "forced": false
     }
   ],

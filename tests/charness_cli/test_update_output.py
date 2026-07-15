@@ -94,14 +94,36 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert payload["scope"] == "all"
     assert payload["response_level"] == "summary"
     assert payload["tool_update"]["response_level"] == "summary"
-    assert payload["tool_update"]["results"]["agent-browser"]["update"]["status"] == "updated"
-    assert payload["tool_update"]["results"]["cautilus"]["update"]["status"] == "manual"
-    assert payload["tool_update"]["results"]["nose"]["update"]["status"] == "updated"
-    assert "commands" not in payload["tool_update"]["results"]["agent-browser"]["update"]
+    assert payload["tool_update"]["summary"]["tool_count"] == 13
+    assert {"cautilus", "github-gh"}.issubset(payload["tool_update"]["attention"]["manual_tool_ids"])
+    assert payload["tool_update"]["attention"]["not_ready_tool_ids"]
+    assert "results" not in payload["tool_update"]
     assert "STEP: updating tracked external tools" in update_result.stderr
     assert "STEP: syncing support surfaces" in update_result.stderr
     assert "STEP: refreshing tool doctor state" in update_result.stderr
     assert "DONE: update complete" in update_result.stderr
+
+    detail_result = subprocess.run(
+        [
+            sys.executable,
+            str(installed_cli),
+            "update",
+            "all",
+            "--detail",
+            "--home-root",
+            str(home_root),
+            "--skip-codex-cache-refresh",
+        ],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert detail_result.returncode == 0, detail_result.stderr
+    detail_payload = yaml.safe_load(detail_result.stdout)
+    assert detail_payload["response_level"] == "detail"
+    assert detail_payload["tool_update"]["results"]["agent-browser"]["update"]["status"] in {"updated", "refreshed"}
 
 
 def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) -> None:
@@ -223,6 +245,58 @@ def test_tool_response_projection_hides_raw_probe_evidence_by_default() -> None:
     assert "commands" not in str(projected)
     assert "asset_names" not in str(projected)
     assert "verbose probe output" not in str(projected)
+
+
+def test_aggregate_tool_response_hides_per_tool_records_but_names_attention() -> None:
+    module = load_charness_module("charness_aggregate_tool_response_projection_under_test")
+    payload = {
+        "repo_root": "/tmp/charness",
+        "managed_checkout": True,
+        "tool_ids": [],
+        "results": {
+            "failed-tool": {
+                "update": {
+                    "status": "failed",
+                    "mode": "script",
+                    "commands": [{"command": "curl https://example.invalid/install.sh | sh"}],
+                },
+                "doctor": {"doctor_status": "ok", "doctor_disposition": "ready"},
+                "next_step": "Verbose failure evidence.",
+            },
+            "manual-tool": {
+                "update": {"status": "manual", "mode": "manual"},
+                "doctor": {"doctor_status": "ok", "doctor_disposition": "ready"},
+                "next_step": "Manual updater details.",
+            },
+            "ready-tool": {
+                "update": {"status": "updated", "mode": "script"},
+                "doctor": {"doctor_status": "ok", "doctor_disposition": "ready"},
+            },
+            "not-ready-tool": {
+                "update": {"status": "skipped", "mode": "script"},
+                "doctor": {
+                    "doctor_status": "missing",
+                    "doctor_disposition": "blocking-install-needed",
+                },
+            },
+        },
+    }
+
+    projected = module.project_tool_response(payload, event="tool-update")
+
+    assert projected["summary"] == {
+        "tool_count": 4,
+        "status_counts": {"failed": 1, "manual": 1, "skipped": 1, "updated": 1},
+    }
+    assert projected["attention"] == {
+        "failed_tool_ids": ["failed-tool"],
+        "manual_tool_ids": ["manual-tool"],
+        "not_ready_tool_ids": ["not-ready-tool"],
+    }
+    assert projected["next_action"] == "Use --detail to inspect the listed tool records."
+    assert "results" not in projected
+    assert "commands" not in str(projected)
+    assert "Verbose failure evidence." not in str(projected)
 
 
 def test_package_manager_tool_next_step_includes_version_transition() -> None:

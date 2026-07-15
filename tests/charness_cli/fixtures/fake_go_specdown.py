@@ -28,7 +28,7 @@ args = sys.argv[1:]
 if args == ["env", "GOPATH"]:
     print(gopath)
     raise SystemExit(0)
-if args == ["install", "github.com/gitleaks/gitleaks/v8@latest"]:
+if args == ["install", "github.com/zricethezav/gitleaks/v8@latest"]:
     for target in (install_root / "gitleaks", bin_dir / "gitleaks"):
         copy_executable(fixtures / "fake_gitleaks.py", target)
     print("installed gitleaks")

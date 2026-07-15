@@ -13,10 +13,7 @@
   "status": "active",
   "lifecycle": {
     "install": {
-      "mode": "script",
-      "commands": [
-        "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
-      ],
+      "mode": "manual",
       "install_url": "https://github.com/corca-ai/specdown",
       "docs_url": "https://github.com/corca-ai/specdown",
       "notes": [
@@ -25,13 +22,10 @@
       ]
     },
     "update": {
-      "mode": "script",
-      "commands": [
-        "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
-      ],
+      "mode": "manual",
       "docs_url": "https://github.com/corca-ai/specdown/releases",
       "notes": [
-        "Use the same mechanism that originally installed the binary."
+        "Charness updates Specdown only when its install provenance is a recognized package-manager path; otherwise use the same release, Homebrew, or Go path that installed it."
       ]
     }
   },

@@ -103,9 +103,11 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert tool_update["results"]["nose"]["update"]["status"] == "updated"
     assert tool_update["results"]["nose"]["doctor"]["doctor_status"] == "ok"
     assert tool_update["results"]["specdown"]["update"]["status"] == "updated"
-    assert tool_update["results"]["specdown"]["update"]["mode"] == "script"
+    assert tool_update["results"]["specdown"]["update"]["mode"] == "package_manager"
+    assert tool_update["results"]["specdown"]["update"]["package_manager"] == "go"
+    assert tool_update["results"]["specdown"]["update"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
     assert tool_update["results"]["specdown"]["update"]["commands"][0]["command"] == (
-        "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
+        "go install github.com/corca-ai/specdown/cmd/specdown@latest"
     )
 
     assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
@@ -118,7 +120,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert cautilus_lock["doctor"]["doctor_status"] == "ok"
     assert json.loads((managed_repo / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))["update"][
         "mode"
-    ] == "script"
+    ] == "package_manager"
 
 
 def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None:

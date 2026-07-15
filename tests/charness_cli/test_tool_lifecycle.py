@@ -205,7 +205,7 @@ def test_fake_go_installers_honor_gobin(tmp_path: Path) -> None:
     env = {**os.environ, "GOBIN": str(gobin)}
 
     gitleaks_result = subprocess.run(
-        [str(specdown_go), "install", "github.com/gitleaks/gitleaks/v8@latest"],
+        [str(specdown_go), "install", "github.com/zricethezav/gitleaks/v8@latest"],
         check=False,
         capture_output=True,
         text=True,
@@ -299,7 +299,8 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
         "selected_tool_ids": ["cautilus", "gitleaks", "nose", "ruff", "tokei", "vulture"],
     }
     assert payload["tool_ids"] == ["cautilus", "gitleaks", "nose", "ruff", "tokei", "vulture"]
-    assert set(payload["results"]) == {"cautilus", "gitleaks", "nose", "ruff", "tokei", "vulture"}
+    assert payload["summary"]["tool_count"] == 6
+    assert "results" not in payload
 
 
 @pytest.mark.release_only
@@ -702,10 +703,14 @@ def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path, seeded_ch
     payload = yaml.safe_load(result.stdout)
     specdown = payload["results"]["specdown"]
     assert specdown["update"]["status"] == "updated"
-    assert specdown["update"]["mode"] == "script"
-    assert specdown["update"]["commands"][0]["command"] == "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
+    assert specdown["update"]["mode"] == "package_manager"
+    assert specdown["update"]["package_manager"] == "go"
+    assert specdown["update"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
+    assert specdown["update"]["commands"][0]["command"] == "go install github.com/corca-ai/specdown/cmd/specdown@latest"
     assert specdown["doctor"]["provenance"]["install_method"] == "go"
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))
     assert lock_payload["provenance"]["install_method"] == "go"
-    assert lock_payload["update"]["mode"] == "script"
-    assert lock_payload["update"]["commands"][0]["command"] == "curl -fsSL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh | sh"
+    assert lock_payload["update"]["mode"] == "package_manager"
+    assert lock_payload["update"]["package_manager"] == "go"
+    assert lock_payload["update"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
+    assert lock_payload["update"]["commands"][0]["command"] == "go install github.com/corca-ai/specdown/cmd/specdown@latest"
