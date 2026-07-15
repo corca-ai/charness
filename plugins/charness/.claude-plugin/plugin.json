@@ -1,6 +1,6 @@
 {
   "name": "charness",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.",
   "author": {
     "name": "Corca",

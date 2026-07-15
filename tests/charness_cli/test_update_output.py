@@ -299,6 +299,29 @@ def test_aggregate_tool_response_hides_per_tool_records_but_names_attention() ->
     assert "Verbose failure evidence." not in str(projected)
 
 
+def test_tool_response_projection_tolerates_malformed_result_entries() -> None:
+    module = load_charness_module("charness_tool_response_projection_malformed_entries_under_test")
+
+    empty = module.project_tool_response({"results": ["not-a-mapping"]}, event="tool-update")
+    assert empty["summary"] == {"tool_count": 0, "status_counts": {}}
+    assert empty["results"] == {}
+
+    projected = module.project_tool_response(
+        {
+            "results": {
+                "manual-tool": {"update": {"status": "manual", "mode": "manual"}},
+                "ready-tool": {"update": {"status": "updated", "mode": "script"}},
+                "malformed-tool": ["not-a-tool-record"],
+            }
+        },
+        event="tool-update",
+    )
+
+    assert projected["summary"] == {"tool_count": 2, "status_counts": {"manual": 1, "updated": 1}}
+    assert projected["attention"] == {"manual_tool_ids": ["manual-tool"]}
+    assert "malformed-tool" not in str(projected)
+
+
 def test_package_manager_tool_next_step_includes_version_transition() -> None:
     module = load_charness_module("charness_package_manager_next_step_under_test")
 

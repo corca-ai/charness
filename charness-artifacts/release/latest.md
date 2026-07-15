@@ -3,49 +3,36 @@ Date: 2026-07-15
 
 ## Scope
 
-Advanced `charness` toward release `1.0.10` (tag `v1.0.10`) through the repo-owned release helper.
+Advanced `charness` toward release `1.0.11` (tag `v1.0.11`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `1.0.9`
-- target version: `1.0.10`
+- previous version: `1.0.10`
+- target version: `1.0.11`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` passed before publish.
+- `./scripts/run-quality.sh --release` is queued for this publish attempt.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v1.0.10`
-- public release surface verification: verified
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v1.0.11`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
-
-## Distinct-Channel Verification
-
-- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
-- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v1.0.10`
-- HTTP status: `200`
-- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Lifecycle Usage Capture
 
-- Lifecycle capture status: `appended`.
-- Local telemetry pair appended: `True`.
-- Delivery episode ID: `episode-c35cb5ef06fff87f1749183f55ac317f27fcb84ab0984425cae1534d36fcf02d`.
-- Linked feedback ID: `feedback-9edde34d9984a61d7120552c7c8565d43a6e52f1c7efccf2ae9fc033f6aecab6`.
-- Capture error count: `0`.
-- Non-claim: objective lifecycle capture is not human approval or general satisfaction evidence.
+- Lifecycle capture status: not recorded by this helper invocation.
 
 ## Release Adapter Preflight
 
@@ -60,46 +47,43 @@ Advanced `charness` toward release `1.0.10` (tag `v1.0.10`) through the repo-own
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-07-15-v1-0-11-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
-- Path hits: 1.
-  - `README.md`
-- Evaluated changed paths: 38.
-  - `.agents/command-docs.yaml`
-  - `.charness/specdown/report.json`
-  - `.charness/specdown/report/tool-doctor.html`
+- Path hits: 0.
+- Evaluated changed paths: 33.
   - `.claude-plugin/marketplace.json`
-  - `README.md`
   - `charness`
-  - `charness-artifacts/critique/2026-07-15-070557-packet.json`
-  - `charness-artifacts/critique/2026-07-15-070557-packet.md`
-  - `charness-artifacts/critique/2026-07-15-compact-yaml-response-release-critique.md`
-  - `charness-artifacts/debug/2026-07-15-release-execute-noop-debug.md`
+  - `charness-artifacts/critique/2026-07-15-083904-packet.json`
+  - `charness-artifacts/critique/2026-07-15-083904-packet.md`
+  - `charness-artifacts/critique/2026-07-15-update-all-aggregate-provenance-release-critique.md`
+  - `charness-artifacts/debug/2026-07-15-debug-review.md`
   - `charness-artifacts/debug/latest.md`
   - `charness-artifacts/debug/seam-risk-index.json`
-  - `charness-artifacts/quality/2026-07-15-compact-yaml-response-release.md`
-  - `charness-artifacts/quality/dup-ratchet-baseline.json`
+  - `charness-artifacts/gather/2026-07-15-raw-githubusercontent-com-gitleaks-gitleaks-master-go-mod-e21d9f59.md`
+  - `charness-artifacts/gather/2026-07-15-specdown-install-readme.md`
+  - `charness-artifacts/gather/latest.md`
+  - `charness-artifacts/quality/2026-07-15-quality-review.md`
   - `charness-artifacts/quality/latest.md`
-  - `charness-artifacts/quality/nose-baseline.json`
-  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
   - `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`
-  - `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`
-  - ... 18 more
+  - `docs/control-plane.md`
+  - `docs/generated/cli-reference.md`
+  - `integrations/tools/gitleaks.json`
+  - `integrations/tools/ruff.json`
+  - `integrations/tools/specdown.json`
+  - ... 13 more
 
 ## Real-Host Verification
 
 - Release-time real-host verification was triggered for this slice.
-- Adapter-declared maintainer install-refresh proof was executed by the release helper for installed-vs-repo skew.
+- Real-host checklist items remain open until their executed proof is recorded.
 
 ## Real-Host Proof
 
 - Release-time real-host proof is required for this slice.
-- Executed maintainer install refresh: `charness update` (status `refreshed`, return code `0`).
-- Remaining real-host checklist items, if any, still require explicit proof before full closeout.
 - On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
 - Run `charness tool doctor nose --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
 - Run `charness tool install nose --dry-run` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
@@ -110,92 +94,30 @@ Advanced `charness` toward release `1.0.10` (tag `v1.0.10`) through the repo-own
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-07-15-compact-yaml-response-release-critique.md`.
+- Review proof: `charness-artifacts/critique/2026-07-15-update-all-aggregate-provenance-release-critique.md`.
 
 ## Requested Review Gate
 
-- Requested-review gate status: `ok`.
-- Configuration status: `advisory_only`.
-- Policy: `advisory-only`.
-- Configured command count: `0`.
-
-## Post-Publish Proof
-
-- Public release check: `gh release view v1.0.10`.
+- Requested-review gate status: not recorded by this helper invocation.
 
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Elapsed seconds: `8.871`
-- Stdout tail: `le absolute skill paths injected into their system prompt. Restart those sessions,
-    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/capability_catalog.py
-    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>
-    [--marketplace <m> --plugin <p>]`.
-  resolver_path: /home/hwidong/.agents/src/charness/scripts/capability_catalog.py
-codex_host_guidance:
-  status: installed
-  manual_action_required: false
-  message: Codex host install markers are present. Start a new Codex session to load
-    charness.
-claude_host_guidance:
-  status: installed
-  manual_action_required: false
-  message: Claude host install markers are present. Restart Claude Code to load or
-    refresh charness.
-repo_onboarding:
-  target_repo_root: /home/hwidong/codes/charness
-  status: skipped
-  manual_action_required: false
-  message: null
-  source: repo_onboarding
-  reason: skipped during update unless --target-repo-root is provided
-next_action:
-  kind: restart
-  host: codex
-  status: installed
-  manual_action_required: false
-  message: Codex host install markers are present. Start a new Codex session to load
-    charness.
-  source: codex_host_guidance
-checkout_version: 1.0.10
-codex_source_version: 1.0.10
-codex_cache_manifest_version: 1.0.10
-codex_source_cache_drift: false
-target_repo_root: /home/hwidong/codes/charness
-checkout:
-  repo_root: /home/hwidong/.agents/src/charness
-  managed: true
-  cloned: false
-  pulled: true
-scope: self`
-- Stderr tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete`
+- Post-publish install refresh: pending final publish verification.
 
 ## Release Runtime
 
-- `requested_review_gate`: 0.005s
-- `cli_skill_surface_gate`: 1.896s
-- `quality_command`: 89.214s
-- `fresh_checkout_probes_resume`: 3.016s
-- `push_create_verify_release`: 60.710s
-- `distinct_channel_verification`: 0.568s
-- `issue_closeout`: 0.000s
-- `post_publish_install_refresh`: 8.871s
+- Release helper runtime: not recorded by this helper invocation.
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: passed.
+- Fresh-checkout probe status: configured.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
