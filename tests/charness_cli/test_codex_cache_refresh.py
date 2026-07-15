@@ -58,7 +58,7 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
-    update_result = run_cli("update", "--home-root", str(home_root), env=env)
+    update_result = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
     assert update_result.returncode == 0, update_result.stderr
     payload = yaml.safe_load(update_result.stdout)
 

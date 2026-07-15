@@ -58,6 +58,9 @@ Control-plane actions should leave state that a later agent can continue from
 without re-deriving machine conditions.
 
 - command stdout should stay structured and machine-readable
+- root `charness tool` commands should emit a compact YAML status, transition,
+  and next-action summary by default; their full command, release, route, and
+  probe evidence remains in lock state or an explicit `--detail` YAML response
 - mutations should persist under `integrations/locks/*.json`, the user cache,
   and installed plugin support paths when relevant
 - manual-only steps should still record explicit upstream docs and remaining

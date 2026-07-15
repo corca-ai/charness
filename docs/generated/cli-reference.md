@@ -3,7 +3,7 @@
 # CLI Reference
 
 This file is generated from `./charness --help` and subcommand help output in the current checkout.
-Operational command payloads, including structured command failures, are emitted as a single YAML document on stdout; progress and unstructured fatal errors use stderr.
+Operational command payloads, including structured command failures, are emitted as a single YAML document on stdout; progress and unstructured fatal errors use stderr. Default operational responses are compact summaries. Commands with aggregated host or tool diagnostics expose the full evidence only through `--detail`, which still emits one YAML document.
 Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/generated/cli-reference.md`.
 
 ## `charness`
@@ -60,7 +60,7 @@ usage: charness init [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                      [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                      [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
                      [--cli-path CLI_PATH] [--skip-cli-install]
-                     [--skip-claude-wrapper]
+                     [--skip-claude-wrapper] [--detail]
 
 options:
   -h, --help            show this help message and exit
@@ -80,6 +80,8 @@ options:
   --cli-path CLI_PATH
   --skip-cli-install
   --skip-claude-wrapper
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
 ```
 
 ## `charness update`
@@ -91,7 +93,7 @@ usage: charness update [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                        [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                        [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
                        [--cli-path CLI_PATH] [--skip-cli-install]
-                       [--skip-claude-wrapper] [--no-pull]
+                       [--skip-claude-wrapper] [--detail] [--no-pull]
                        [--skip-codex-cache-refresh]
                        [{all}]
 
@@ -118,6 +120,8 @@ options:
   --cli-path CLI_PATH
   --skip-cli-install
   --skip-claude-wrapper
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
   --no-pull             Skip the default `git pull --ff-only` when the managed
                         checkout already contains the exact source you want.
   --skip-codex-cache-refresh
@@ -135,6 +139,7 @@ usage: charness doctor [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                        [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                        [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
                        [--cli-path CLI_PATH] [--next-action] [--write-state]
+                       [--detail]
 
 options:
   -h, --help            show this help message and exit
@@ -153,6 +158,8 @@ options:
   --write-state         Persist the current doctor snapshot to the machine-
                         local charness state directory for later proof
                         comparison.
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
 ```
 
 ## `charness version`
@@ -551,7 +558,8 @@ options:
 ```text
 usage: charness tool doctor [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--plugin-root PLUGIN_ROOT] [--no-write-locks]
+                            [--plugin-root PLUGIN_ROOT] [--detail]
+                            [--no-write-locks]
                             [tool_ids ...]
 
 positional arguments:
@@ -567,6 +575,8 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
   --no-write-locks      Skip updating integrations/locks/*.json when you only
                         want a read-only probe.
 ```
@@ -576,7 +586,7 @@ options:
 ```text
 usage: charness tool repair [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--plugin-root PLUGIN_ROOT] [--execute]
+                            [--plugin-root PLUGIN_ROOT] [--detail] [--execute]
                             [tool_ids ...]
 
 Run repo-owned post-hoc repair actions for external tool runtime drift, then
@@ -596,6 +606,8 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
   --execute             Execute the repair. Defaults to a dry-run preview.
 ```
 
@@ -605,7 +617,7 @@ options:
 usage: charness tool sync-support [-h] [--home-root HOME_ROOT]
                                   [--repo-root REPO_ROOT]
                                   [--repo-url REPO_URL]
-                                  [--plugin-root PLUGIN_ROOT]
+                                  [--plugin-root PLUGIN_ROOT] [--detail]
                                   [--upstream-checkout UPSTREAM_CHECKOUT]
                                   [--dry-run]
                                   [tool_ids ...]
@@ -623,6 +635,8 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
 ```
@@ -632,7 +646,7 @@ options:
 ```text
 usage: charness tool install [-h] [--home-root HOME_ROOT]
                              [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                             [--plugin-root PLUGIN_ROOT]
+                             [--plugin-root PLUGIN_ROOT] [--detail]
                              [--upstream-checkout UPSTREAM_CHECKOUT]
                              [--dry-run] [--skip-sync-support]
                              [--recommend-for-skill RECOMMEND_FOR_SKILL]
@@ -653,6 +667,8 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
   --skip-sync-support   Skip support skill rematerialization after install
@@ -679,7 +695,7 @@ charness tool install --recommendation-role validation --next-skill-id quality
 ```text
 usage: charness tool update [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--plugin-root PLUGIN_ROOT]
+                            [--plugin-root PLUGIN_ROOT] [--detail]
                             [--upstream-checkout UPSTREAM_CHECKOUT]
                             [--dry-run] [--skip-sync-support]
                             [tool_ids ...]
@@ -697,6 +713,8 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
+  --detail              Emit the full diagnostic YAML payload instead of the
+                        default compact operational summary.
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
   --skip-sync-support   Skip support skill rematerialization after update.

@@ -5,6 +5,7 @@ from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 import yaml
 
 from .test_managed_install import load_charness_module
@@ -21,6 +22,7 @@ def _doctor_payload() -> dict[str, object]:
         "codex_source_version": "1.0.9",
         "codex_cache_manifest_version": "1.0.9",
         "codex_source_cache_drift": False,
+        "raw_probe_dump": "full host probe evidence",
     }
 
 
@@ -35,6 +37,7 @@ def _runtime_args(home_root: Path, repo_root: Path) -> Namespace:
         no_pull=True,
         skip_codex_cache_refresh=True,
         scope=None,
+        detail=False,
     )
 
 
@@ -45,7 +48,7 @@ def _patch_runtime_dependencies(module, monkeypatch, repo_root: Path, home_root:
     monkeypatch.setattr(module, "enforce_managed_cli_contract", lambda **_kwargs: None)
     monkeypatch.setattr(module, "resolve_runtime_paths", lambda _args: runtime_paths)
     monkeypatch.setattr(module, "ensure_checkout", lambda *_args, **_kwargs: {"repo_root": str(repo_root)})
-    monkeypatch.setattr(module, "install_surface", lambda *_args, **_kwargs: {"next_steps": {}})
+    monkeypatch.setattr(module, "install_surface", lambda *_args, **_kwargs: {"next_steps": {}, "raw_install_trace": "verbose installer evidence"})
     monkeypatch.setattr(module, "reconcile_usage_episodes_host_hooks", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(module, "build_doctor_payload", lambda **_kwargs: _doctor_payload())
     monkeypatch.setattr(module, "maybe_install_codex_host", lambda **_kwargs: {"status": "skipped"})
@@ -68,10 +71,21 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     args = _runtime_args(tmp_path / "home", repo_root)
 
     assert module.cmd_init(args) == 0
-    assert yaml.safe_load(capsys.readouterr().out)["checkout"]["repo_root"] == str(repo_root)
+    init_output = yaml.safe_load(capsys.readouterr().out)
+    assert init_output["response_level"] == "summary"
+    assert init_output["checkout"]["repo_root"] == str(repo_root)
+    assert "raw_install_trace" not in init_output
+
+    args.detail = True
+    assert module.cmd_init(args) == 0
+    init_detail = yaml.safe_load(capsys.readouterr().out)
+    assert init_detail["response_level"] == "detail"
+    assert init_detail["raw_install_trace"] == "verbose installer evidence"
+    args.detail = False
 
     assert module.cmd_update(args) == 0
     update_output = capsys.readouterr()
+    assert yaml.safe_load(update_output.out)["response_level"] == "summary"
     assert yaml.safe_load(update_output.out)["scope"] == "self"
     assert "STEP: refreshing source checkout" in update_output.err
     assert "DONE: update complete" in update_output.err
@@ -86,13 +100,23 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
         cli_path=None,
         next_action=True,
         write_state=False,
+        detail=False,
     )
     assert module.cmd_doctor(doctor_args) == 0
     assert yaml.safe_load(capsys.readouterr().out)["next_action"] == "No manual host action is currently required."
 
     doctor_args.next_action = False
     assert module.cmd_doctor(doctor_args) == 0
-    assert yaml.safe_load(capsys.readouterr().out)["checkout_version"] == "1.0.9"
+    doctor_summary = yaml.safe_load(capsys.readouterr().out)
+    assert doctor_summary["response_level"] == "summary"
+    assert doctor_summary["checkout_version"] == "1.0.9"
+    assert "raw_probe_dump" not in doctor_summary
+
+    doctor_args.detail = True
+    assert module.cmd_doctor(doctor_args) == 0
+    doctor_detail = yaml.safe_load(capsys.readouterr().out)
+    assert doctor_detail["response_level"] == "detail"
+    assert doctor_detail["raw_probe_dump"] == "full host probe evidence"
 
 
 def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -146,25 +170,76 @@ def test_tool_command_outputs_are_routed_through_yaml(tmp_path: Path, monkeypatc
         recommend_for_skill=None,
         recommendation_role=None,
         next_skill_id="quality",
+        detail=False,
     )
 
     assert module.cmd_tool_doctor(base_args) == 0
-    assert yaml.safe_load(capsys.readouterr().out)["results"] == {}
+    doctor_output = yaml.safe_load(capsys.readouterr().out)
+    assert doctor_output["response_level"] == "summary"
+    assert doctor_output["results"] == {}
 
     base_args.tool_ids = ["unsupported-tool"]
     assert module.cmd_tool_repair(base_args) == 1
-    assert "unsupported-tool" in yaml.safe_load(capsys.readouterr().out)["results"]
+    repair_output = yaml.safe_load(capsys.readouterr().out)
+    assert repair_output["response_level"] == "summary"
+    assert "unsupported-tool" in repair_output["results"]
 
     base_args.tool_ids = []
     assert module.cmd_tool_sync_support(base_args) == 0
-    assert yaml.safe_load(capsys.readouterr().out)["tool_ids"] == []
+    sync_output = yaml.safe_load(capsys.readouterr().out)
+    assert sync_output["response_level"] == "summary"
+    assert sync_output["tool_ids"] == []
 
     assert module.cmd_tool_install(base_args) == 0
-    assert yaml.safe_load(capsys.readouterr().out)["results"] == {}
+    install_output = yaml.safe_load(capsys.readouterr().out)
+    assert install_output["response_level"] == "summary"
+    assert install_output["results"] == {}
 
     monkeypatch.setattr(module, "run_tool_update_flow", lambda **_kwargs: ({"results": {}}, False))
     assert module.cmd_tool_update(base_args) == 0
-    assert yaml.safe_load(capsys.readouterr().out)["results"] == {}
+    update_output = yaml.safe_load(capsys.readouterr().out)
+    assert update_output["response_level"] == "summary"
+    assert update_output["results"] == {}
+
+
+def test_operational_response_detail_preserves_the_full_payload(capsys) -> None:
+    module = load_charness_module("charness_yaml_detail_output_under_test")
+    raw_payload = {
+        "repo_root": "/tmp/charness",
+        "results": {
+            "demo": {
+                "update": {"status": "updated", "commands": [{"command": "demo update"}]},
+                "next_step": "No action required.",
+            }
+        },
+    }
+
+    module.emit_operational_response(
+        Namespace(detail=False),
+        raw_payload,
+        event="tool-update",
+        projector=lambda data: module.project_tool_response(data, event="tool-update"),
+    )
+    summary = yaml.safe_load(capsys.readouterr().out)
+    assert summary["response_level"] == "summary"
+    assert "commands" not in summary["results"]["demo"]["update"]
+
+    module.emit_operational_response(
+        Namespace(detail=True),
+        raw_payload,
+        event="tool-update",
+        projector=lambda data: module.project_tool_response(data, event="tool-update"),
+    )
+    detail = yaml.safe_load(capsys.readouterr().out)
+    assert detail["response_level"] == "detail"
+    assert detail["results"]["demo"]["update"]["commands"] == [{"command": "demo update"}]
+
+
+def test_doctor_rejects_conflicting_detail_and_next_action_flags() -> None:
+    module = load_charness_module("charness_yaml_doctor_output_flags_under_test")
+
+    with pytest.raises(SystemExit):
+        module.build_parser().parse_args(["doctor", "--detail", "--next-action"])
 
 
 def test_worktree_and_goal_helper_fallback_keep_stdout_yaml(tmp_path: Path, monkeypatch, capsys) -> None:

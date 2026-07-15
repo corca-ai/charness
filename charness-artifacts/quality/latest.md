@@ -1,1 +1,1 @@
-2026-07-15-quality-review.md
+2026-07-15-compact-yaml-response-release.md

@@ -73,7 +73,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "all", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        [sys.executable, str(installed_cli), "update", "all", "--detail", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
         cwd=tmp_path,
         check=False,
         capture_output=True,

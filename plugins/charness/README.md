@@ -54,6 +54,11 @@ of guessing. For day-to-day operation, start with `charness --help`,
 Use `charness update all` when you also want to refresh tracked external tools
 and bundled support skills.
 
+Operational commands emit one YAML document on stdout. Their default response
+is a compact status and next-action summary; use a command's `--detail` flag,
+for example `charness update all --detail`, when the full host or tool
+diagnostic evidence is needed.
+
 For the full command surface, see [CLI Reference](https://github.com/corca-ai/charness/blob/main/docs/generated/cli-reference.md).
 
 ## Workflow Routes

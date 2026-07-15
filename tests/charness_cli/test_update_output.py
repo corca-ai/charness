@@ -92,9 +92,12 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     payload = yaml.safe_load(update_result.stdout)
     assert payload["package_id"] == "charness"
     assert payload["scope"] == "all"
+    assert payload["response_level"] == "summary"
+    assert payload["tool_update"]["response_level"] == "summary"
     assert payload["tool_update"]["results"]["agent-browser"]["update"]["status"] == "updated"
     assert payload["tool_update"]["results"]["cautilus"]["update"]["status"] == "manual"
     assert payload["tool_update"]["results"]["nose"]["update"]["status"] == "updated"
+    assert "commands" not in payload["tool_update"]["results"]["agent-browser"]["update"]
     assert "STEP: updating tracked external tools" in update_result.stderr
     assert "STEP: syncing support surfaces" in update_result.stderr
     assert "STEP: refreshing tool doctor state" in update_result.stderr
@@ -173,6 +176,53 @@ def test_tool_update_lines_empty_results_render_nothing(capsys) -> None:
 
     output = capsys.readouterr().out
     assert "TOOLS:" not in output
+
+
+def test_tool_response_projection_hides_raw_probe_evidence_by_default() -> None:
+    module = load_charness_module("charness_tool_response_projection_under_test")
+    payload = {
+        "repo_root": "/tmp/charness",
+        "managed_checkout": True,
+        "tool_ids": [],
+        "results": {
+            "demo": {
+                "update": {
+                    "status": "updated",
+                    "mode": "script",
+                    "version_transition": {"from": "1.0.0", "to": "1.1.0"},
+                    "commands": [{"command": "curl https://example.invalid/install.sh | sh"}],
+                    "release": {"asset_names": ["demo-linux-amd64.tar.gz"]},
+                },
+                "doctor": {
+                    "doctor_status": "ok",
+                    "doctor_disposition": "ok",
+                    "support_state": "upstream-consumed",
+                    "healthcheck": {"status": "ok", "output": "verbose probe output"},
+                },
+                "next_step": "No action required.",
+            }
+        },
+    }
+
+    projected = module.project_tool_response(payload, event="tool-update")
+
+    result = projected["results"]["demo"]
+    assert projected["response_level"] == "summary"
+    assert projected["detail_available"] is True
+    assert projected["summary"] == {"tool_count": 1, "status_counts": {"updated": 1}}
+    assert result["update"] == {
+        "status": "updated",
+        "mode": "script",
+        "version_transition": {"from": "1.0.0", "to": "1.1.0"},
+    }
+    assert result["doctor"] == {
+        "doctor_status": "ok",
+        "doctor_disposition": "ok",
+        "healthcheck": {"status": "ok"},
+    }
+    assert "commands" not in str(projected)
+    assert "asset_names" not in str(projected)
+    assert "verbose probe output" not in str(projected)
 
 
 def test_package_manager_tool_next_step_includes_version_transition() -> None:

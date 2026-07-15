@@ -49,6 +49,7 @@ commands:
     required_help_contains:
       - --skip-cli-install
       - --skip-claude-wrapper
+      - --detail
     required_doc_contains:
       - Make sure your machine has Python 3.
       - /tmp/charness-init.sh
@@ -63,6 +64,7 @@ commands:
     required_help_contains:
       - --write-state
       - --next-action
+      - --detail
     required_doc_contains:
       - charness doctor
       - --next-action
@@ -74,6 +76,7 @@ commands:
     required_help_contains:
       - --no-pull
       - --skip-codex-cache-refresh
+      - --detail
     required_doc_contains:
       - charness update
       - charness update all
@@ -292,6 +295,7 @@ commands:
       - docs/control-plane.md
     required_help_contains:
       - --no-write-locks
+      - --detail
       - tool_ids
     required_doc_contains:
       - charness tool doctor cautilus
@@ -302,6 +306,7 @@ commands:
       - docs/control-plane.md
     required_help_contains:
       - --execute
+      - --detail
     required_doc_contains:
       - charness tool repair
   tool-sync-support:
@@ -312,6 +317,7 @@ commands:
     required_help_contains:
       - --upstream-checkout
       - --dry-run
+      - --detail
     required_doc_contains:
       - charness tool sync-support cautilus
   tool-install:
@@ -322,6 +328,7 @@ commands:
     required_help_contains:
       - --recommendation-role
       - --next-skill-id
+      - --detail
     required_doc_contains:
       - charness tool install --recommendation-role validation --next-skill-id quality
   tool-update:
@@ -331,6 +338,7 @@ commands:
       - docs/control-plane.md
     required_help_contains:
       - --skip-sync-support
+      - --detail
       - tool_ids
     required_doc_contains:
       - charness tool update agent-browser

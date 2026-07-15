@@ -15,6 +15,7 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Callable
 
 PACKAGE_ID = "charness"
 REPO_URL = "https://github.com/corca-ai/charness"
@@ -3418,6 +3419,191 @@ def print_tool_human_summary(payload: dict[str, object]) -> None:
         _print_tool_result_block(tool_id, result)
 
 
+def _compact_mapping(payload: object, keys: tuple[str, ...]) -> dict[str, object] | None:
+    if not isinstance(payload, dict):
+        return None
+    compact = {key: payload[key] for key in keys if key in payload}
+    return compact or None
+
+
+def _compact_healthcheck(payload: dict[str, object]) -> dict[str, object] | None:
+    return _compact_mapping(payload.get("healthcheck"), ("status",))
+
+
+def _compact_tool_action(action: str, payload: object) -> dict[str, object] | None:
+    if not isinstance(payload, dict):
+        return None
+    if action == "doctor":
+        compact = _compact_mapping(payload, ("doctor_status", "doctor_disposition", "observed_version"))
+    elif action == "repair":
+        compact = _compact_mapping(payload, ("status", "execute"))
+    else:
+        compact = _compact_mapping(
+            payload,
+            ("status", "mode", "package_manager", "package_name", "version_transition"),
+        )
+    if compact is None:
+        compact = {}
+    healthcheck = _compact_healthcheck(payload)
+    if healthcheck is not None:
+        compact["healthcheck"] = healthcheck
+    return compact or None
+
+
+def _tool_result_status(result: dict[str, object]) -> str | None:
+    for action in ("install", "update", "repair", "support"):
+        payload = result.get(action)
+        if isinstance(payload, dict) and isinstance(payload.get("status"), str):
+            return payload["status"]
+    doctor = result.get("doctor")
+    if isinstance(doctor, dict) and isinstance(doctor.get("doctor_status"), str):
+        return doctor["doctor_status"]
+    return None
+
+
+def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str, object]:
+    """Return the stable, compact public view of a tool-operation payload.
+
+    The underlying helper payload is intentionally richer than the root CLI
+    response: it contains commands, releases, routes, and probe evidence for
+    lock files and diagnosis.  The default root response keeps only the
+    operator-facing status, transition, and next action for each tool.
+    """
+    raw_results = payload.get("results")
+    projected_results: dict[str, dict[str, object]] = {}
+    status_counts: dict[str, int] = {}
+    if isinstance(raw_results, dict):
+        for tool_id in sorted(raw_results):
+            raw_result = raw_results.get(tool_id)
+            if not isinstance(raw_result, dict):
+                continue
+            result: dict[str, object] = {}
+            for action in ("install", "update", "repair", "support", "doctor"):
+                compact_action = _compact_tool_action(action, raw_result.get(action))
+                if compact_action is not None:
+                    result[action] = compact_action
+            next_step = raw_result.get("next_step")
+            if isinstance(next_step, str) and next_step:
+                result["next_step"] = next_step
+            status = _tool_result_status(raw_result)
+            if status is not None:
+                result["status"] = status
+                status_counts[status] = status_counts.get(status, 0) + 1
+            projected_results[tool_id] = result
+    response: dict[str, object] = {
+        "event": event,
+        "response_level": "summary",
+        "detail_available": True,
+    }
+    for key in ("repo_root", "managed_checkout", "tool_ids", "tool_selection", "execute"):
+        if key in payload:
+            response[key] = payload[key]
+    response["summary"] = {
+        "tool_count": len(projected_results),
+        "status_counts": dict(sorted(status_counts.items())),
+    }
+    response["results"] = projected_results
+    return response
+
+
+def _compact_guidance(payload: object) -> dict[str, object] | None:
+    return _compact_mapping(payload, ("status", "manual_action_required", "message", "reason"))
+
+
+def _compact_next_action(payload: object) -> dict[str, object] | None:
+    return _compact_mapping(payload, ("kind", "host", "status", "manual_action_required", "message", "source"))
+
+
+def _compact_release_check(payload: object) -> dict[str, object] | None:
+    return _compact_mapping(payload, ("status", "latest_tag", "latest_version", "update_available", "checked_at"))
+
+
+def _compact_host_refresh(payload: object) -> dict[str, object] | None:
+    return _compact_mapping(payload, ("status", "action", "method", "reason", "error"))
+
+
+def _compact_session_staleness(payload: object) -> dict[str, object] | None:
+    compact = _compact_mapping(payload, ("status", "message"))
+    if compact is None:
+        return None
+    if isinstance(payload, dict) and isinstance(payload.get("affected"), list):
+        compact["affected_count"] = len(payload["affected"])
+    return compact
+
+
+def project_runtime_response(payload: dict[str, object], *, event: str) -> dict[str, object]:
+    """Return the compact public view for init, update, and doctor commands."""
+    response: dict[str, object] = {
+        "event": event,
+        "response_level": "summary",
+        "detail_available": True,
+    }
+    for key in (
+        "package_id",
+        "repo_root",
+        "managed_checkout",
+        "target_repo_root",
+        "scope",
+        "previous_checkout_version",
+        "checkout_version",
+        "checkout_git_head",
+        "codex_source_version",
+        "codex_cache_manifest_version",
+        "codex_source_cache_drift",
+        "codex_enabled_plugin_id",
+        "codex_enabled_plugin_ids",
+        "completed_actions",
+    ):
+        if key in payload:
+            response[key] = payload[key]
+    checkout = _compact_mapping(payload.get("checkout"), ("repo_root", "pulled", "cloned"))
+    if checkout is not None:
+        response["checkout"] = checkout
+    latest_release_check = _compact_release_check(payload.get("latest_release_check"))
+    if latest_release_check is not None:
+        response["latest_release_check"] = latest_release_check
+    for source, target in (
+        ("codex_cache_refresh", "codex_cache_refresh"),
+        ("codex_host_install", "codex_host_install"),
+    ):
+        compact = _compact_host_refresh(payload.get(source))
+        if compact is not None:
+            response[target] = compact
+    for host in ("codex", "claude"):
+        guidance = _compact_guidance(payload.get(f"{host}_host_guidance"))
+        if guidance is not None:
+            response[f"{host}_host_guidance"] = guidance
+    next_steps = payload.get("next_steps")
+    if isinstance(next_steps, dict):
+        response["next_steps"] = next_steps
+    repo_onboarding = _compact_guidance(payload.get("repo_onboarding"))
+    if repo_onboarding is not None:
+        response["repo_onboarding"] = repo_onboarding
+    next_action = _compact_next_action(payload.get("next_action"))
+    if next_action is not None:
+        response["next_action"] = next_action
+    session_staleness = _compact_session_staleness(payload.get("session_staleness"))
+    if session_staleness is not None:
+        response["session_staleness"] = session_staleness
+    tool_update = payload.get("tool_update")
+    if isinstance(tool_update, dict):
+        response["tool_update"] = project_tool_response(tool_update, event="tool-update")
+    return response
+
+
+def emit_operational_response(
+    args: argparse.Namespace,
+    payload: dict[str, object],
+    *,
+    event: str,
+    projector: Callable[[dict[str, object]], dict[str, object]],
+) -> None:
+    if getattr(args, "detail", False):
+        emit_yaml({"event": event, "response_level": "detail", **payload})
+        return
+    emit_yaml(projector(payload))
+
+
 def reconcile_usage_episodes_host_hooks(
     repo_root: Path,
     *,
@@ -3559,7 +3745,12 @@ def cmd_init(args: argparse.Namespace) -> int:
     )
     write_host_state(home_root, key="last_init", payload=doctor_payload)
     payload["checkout"] = checkout
-    emit_yaml(payload)
+    emit_operational_response(
+        args,
+        payload,
+        event="init",
+        projector=lambda data: project_runtime_response(data, event="init"),
+    )
     return 0
 
 
@@ -3716,7 +3907,12 @@ def cmd_update(args: argparse.Namespace) -> int:
         if tool_update_payload["results"]:
             payload.setdefault("completed_actions", []).append("external_tools_updated")
     emit_progress("DONE: update complete", json_mode=True)
-    emit_yaml(payload)
+    emit_operational_response(
+        args,
+        payload,
+        event="update",
+        projector=lambda data: project_runtime_response(data, event="update"),
+    )
     return 1 if tool_update_failed else 0
 
 
@@ -3742,7 +3938,12 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         message = next_action.get("message") if isinstance(next_action, dict) else None
         emit_yaml({"next_action": message if isinstance(message, str) and message else "No manual host action is currently required."})
     else:
-        emit_yaml(payload)
+        emit_operational_response(
+            args,
+            payload,
+            event="doctor",
+            projector=lambda data: project_runtime_response(data, event="doctor"),
+        )
     return 0
 
 
@@ -4055,7 +4256,12 @@ def cmd_tool_doctor(args: argparse.Namespace) -> int:
             for tool_id, result in tool_result_map(doctor_results).items()
         },
     }
-    emit_yaml(payload)
+    emit_operational_response(
+        args,
+        payload,
+        event="tool-doctor",
+        projector=lambda data: project_tool_response(data, event="tool-doctor"),
+    )
     doctor_map = tool_result_map(doctor_results)
     if any(result.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS for result in doctor_map.values()):
         return 1
@@ -4172,7 +4378,12 @@ def cmd_tool_repair(args: argparse.Namespace) -> int:
         "execute": args.execute,
         "results": results,
     }
-    emit_yaml(payload)
+    emit_operational_response(
+        args,
+        payload,
+        event="tool-repair",
+        projector=lambda data: project_tool_response(data, event="tool-repair"),
+    )
     return 1 if failed else 0
 
 
@@ -4208,7 +4419,12 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
             for tool_id in sorted(set([*support_map.keys(), *doctor_map.keys()]))
         },
     }
-    emit_yaml(payload)
+    emit_operational_response(
+        args,
+        payload,
+        event="tool-sync-support",
+        projector=lambda data: project_tool_response(data, event="tool-sync-support"),
+    )
     if any(
         isinstance(result, dict)
         and isinstance(result.get("doctor"), dict)
@@ -4263,7 +4479,12 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
             for tool_id in sorted(set([*install_map.keys(), *support_map.keys(), *doctor_map.keys()]))
         },
     }
-    emit_yaml(payload)
+    emit_operational_response(
+        args,
+        payload,
+        event="tool-install",
+        projector=lambda data: project_tool_response(data, event="tool-install"),
+    )
     if any(
         isinstance(result, dict)
         and isinstance(result.get("install"), dict)
@@ -4287,7 +4508,12 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
         upstream_checkouts=args.upstream_checkout,
         json_mode=True,
     )
-    emit_yaml(payload)
+    emit_operational_response(
+        args,
+        payload,
+        event="tool-update",
+        projector=lambda data: project_tool_response(data, event="tool-update"),
+    )
     return 1 if failed else 0
 
 
@@ -4664,11 +4890,19 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--skip-cli-install", action="store_true")
         command.add_argument("--skip-claude-wrapper", action="store_true")
 
+    def add_detail_output_arg(command: argparse.ArgumentParser) -> None:
+        command.add_argument(
+            "--detail",
+            action="store_true",
+            help="Emit the full diagnostic YAML payload instead of the default compact operational summary.",
+        )
+
     init_parser = subparsers.add_parser(
         "init",
         help="Bootstrap or refresh the managed local install surface, cloning the managed checkout first when it is missing.",
     )
     add_common_runtime_args(init_parser)
+    add_detail_output_arg(init_parser)
     init_parser.set_defaults(func=cmd_init)
 
     update_parser = subparsers.add_parser(
@@ -4676,6 +4910,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Refresh the installed surface, pulling the managed checkout first by default.",
     )
     add_common_runtime_args(update_parser)
+    add_detail_output_arg(update_parser)
     update_parser.add_argument(
         "--no-pull",
         action="store_true",
@@ -4712,7 +4947,8 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
     )
     doctor_parser.add_argument("--cli-path", type=Path)
-    doctor_parser.add_argument(
+    doctor_output_parser = doctor_parser.add_mutually_exclusive_group()
+    doctor_output_parser.add_argument(
         "--next-action",
         action="store_true",
         help="Print only the current primary next action message.",
@@ -4721,6 +4957,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--write-state",
         action="store_true",
         help="Persist the current doctor snapshot to the machine-local charness state directory for later proof comparison.",
+    )
+    doctor_output_parser.add_argument(
+        "--detail",
+        action="store_true",
+        help="Emit the full diagnostic YAML payload instead of the default compact operational summary.",
     )
     doctor_parser.set_defaults(func=cmd_doctor)
 
@@ -4954,6 +5195,7 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--repo-root", type=Path, help="Use an explicit existing source checkout instead of the managed default checkout.")
         command.add_argument("--repo-url", default=REPO_URL)
         command.add_argument("--plugin-root", type=Path, help="Installed plugin root where upstream support skills are materialized.")
+        add_detail_output_arg(command)
         command.add_argument("tool_ids", nargs="*")
 
     def add_support_sync_args(command: argparse.ArgumentParser) -> None:
