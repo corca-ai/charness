@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 87,
-  "indexed_artifact_count": 75,
+  "source_artifact_count": 88,
+  "indexed_artifact_count": 76,
   "risk_class_counts": {
     "contract-freeze-risk": 25,
     "external-seam": 4,
     "host-disproves-local": 2,
-    "none": 23,
-    "operator-visible-recovery": 20,
+    "none": 22,
+    "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 67,
+    "monitor": 68,
     "none": 5
   },
   "entries": [
@@ -1042,6 +1042,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-15-release-execute-noop-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "release-execute-noop",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "local release mutation to public tag and GitHub release.",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-15-session-routing-catalog-cli-debug.md",
       "is_current_pointer": false,
       "interrupt_id": "installed-cli-catalog-backend",
@@ -1058,13 +1072,13 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "installed-cli-catalog-backend",
+      "interrupt_id": "release-execute-noop",
       "risk_classes": [
-        "none"
+        "operator-visible-recovery"
       ],
-      "seam": "none",
+      "seam": "local release mutation to public tag and GitHub release.",
       "generalization_pressure": "monitor",
-      "critique_required": true,
+      "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
