@@ -24,7 +24,7 @@ from scripts.setup_host_docs_lib import render_agents_template
 
 _SKILL_ROUTING_BLOCK = (
     "## Skill Routing\n\n"
-    "- At session startup, use installed skill metadata/model judgment; run `charness catalog list --repo-root . --json` only for hidden availability.\n"
+    "- At session startup, use installed skill metadata/model judgment; run `charness catalog list --repo-root .` only for hidden availability.\n"
 )
 _COMMIT_DISCIPLINE_BLOCK = (
     "## Commit Discipline\n\n"

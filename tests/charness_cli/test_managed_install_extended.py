@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -80,7 +81,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
         env=env,
     )
     assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
+    payload = yaml.safe_load(update_result.stdout)
     managed_repo = home_root / ".agents" / "src" / "charness"
     plugin_root = home_root / ".codex" / "plugins" / "charness"
 
@@ -151,7 +152,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["checkout_present"] is False
     assert payload["plugin_preamble"] is None
@@ -174,7 +175,7 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_
 
     reset_result = run_cli("reset", "--home-root", str(home_root), "--json", env=env)
     assert reset_result.returncode == 0, reset_result.stderr
-    payload = json.loads(reset_result.stdout)
+    payload = yaml.safe_load(reset_result.stdout)
     assert payload["removed_plugin_root"] is True
     assert payload["removed_codex_marketplace_entry"] is True
     assert payload["removed_codex_cache"] is True

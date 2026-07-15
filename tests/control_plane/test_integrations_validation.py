@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 import scripts.doctor as doctor_module
 import scripts.install_tools as install_tools_module
@@ -388,7 +389,7 @@ def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path
     )
 
     assert cli_doctor.returncode == 1, cli_doctor.stderr
-    cli_payload = json.loads(cli_doctor.stdout)
+    cli_payload = yaml.safe_load(cli_doctor.stdout)
     demo_doctor = cli_payload["results"]["demo-tool"]["doctor"]
     assert demo_doctor["doctor_status"] == "not-ready"
     assert demo_doctor["doctor_disposition"] == "blocking-failure"

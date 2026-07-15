@@ -8,6 +8,7 @@ from pathlib import Path
 import host_hook_install_lib as lib
 import host_hook_session_routing as routing
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -415,7 +416,7 @@ def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path, f
         text=True,
     )
     assert install.returncode == 0, install.stderr
-    install_payload = json.loads(install.stdout)
+    install_payload = yaml.safe_load(install.stdout)
     assert install_payload["mode"] == "install"
     claude_settings = fake_home / ".claude" / "settings.json"
     codex_settings = fake_home / ".codex" / "config.toml"
@@ -426,7 +427,7 @@ def test_session_capture_cli_install_and_uninstall_round_trip(fake_home: Path, f
         capture_output=True,
         text=True,
     )
-    status_payload = json.loads(status.stdout)
+    status_payload = yaml.safe_load(status.stdout)
     assert status_payload["hosts"]["claude"]["actual"]["present"] is True
     assert status_payload["hosts"]["codex"]["actual"]["present"] is True
     uninstall = subprocess.run(
@@ -463,7 +464,7 @@ def test_session_capture_cli_status_exit_codes(fake_home: Path, fake_charness_re
         text=True,
     )
     assert drift.returncode == 1
-    drift_payload = json.loads(drift.stdout)
+    drift_payload = yaml.safe_load(drift.stdout)
     assert drift_payload["in_sync"] is False
     _assert_live_usage_episodes_unchanged(live_state_before)
 

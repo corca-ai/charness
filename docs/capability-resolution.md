@@ -57,7 +57,7 @@ This slice does not add:
 - Profiles may reference env var names, but not env values.
 - Bindings are repo-local. One repo binds one logical capability id to one
   named profile per logical capability.
-- The CLI uses JSON so it stays stdlib-only.
+- The CLI emits YAML using the packaged PyYAML runtime dependency.
 - Backward compatibility for older machine-global capability config layouts is
   not a goal.
 

@@ -700,7 +700,7 @@ def test_setup_inspect_accepts_compact_discovery_first_skill_routing(tmp_path: P
                 "",
                 "## Skill Routing",
                 "",
-                    "- At session startup, use installed skill metadata/model judgment; run `charness catalog list --repo-root . --json` before broader exploration only for hidden capability availability.",
+                    "- At session startup, use installed skill metadata/model judgment; run `charness catalog list --repo-root .` before broader exploration only for hidden capability availability.",
                 "- Then choose the installed durable work skill that best matches the task.",
                 "",
             ]
@@ -729,7 +729,7 @@ def test_setup_inspect_accepts_expanded_semantically_complete_skill_routing(tmp_
                 "## Skill Routing",
                 "",
                 "At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly.",
-                "When hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo> --json` inventory.",
+                "When hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo>` inventory.",
                 "If the command returns nonzero, report the command failure rather than concluding that skills are unavailable.",
                 "If the SessionStart hook is installed it may inject this context; it remains context-only, not a classifier.",
                 "External URLs or source links that should become working context route through `gather` before deciding from them.",

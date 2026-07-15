@@ -16,7 +16,7 @@ Start by surveying the repo's best available self-verification tools:
 When the task is shaped as review, evaluation, closeout, an operator reading
 test, `검증`, `평가`, or `리뷰`, choose the installed validation skill from its
 metadata/model judgment before treating same-agent/manual review as the best
-available path. Use `charness catalog list --repo-root . --json` only when
+available path. Use `charness catalog list --repo-root .` only when
 hidden validation support availability is unclear.
 
 Actively look for the best available way to prove the slice, including:
@@ -35,7 +35,7 @@ For HTML, CSS, static reports, screenshots, browser-readable artifacts, or UI
 surfaces, code-level checks and fixture renders are partial proof by default.
 Prefer a real browser/runtime pass when a host or support seam exists. If that
 capability may be hidden behind support-skill discovery, route through
-installed skill metadata/model judgment before improvising local search or stopping at tests; consult `charness catalog list --repo-root . --json` only for hidden availability.
+installed skill metadata/model judgment before improvising local search or stopping at tests; consult `charness catalog list --repo-root .` only for hidden availability.
 
 If an equivalent local browser seam is used instead, name it explicitly. If no
 browser/runtime pass ran, say the UI or rendered surface was not visually

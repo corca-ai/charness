@@ -47,7 +47,7 @@
         "exit_code:0",
         "stdout_contains:nose"
       ],
-      "failure_hint": "Install nose >=0.17.0; the quality `doc-duplicates` phase fails closed without it (run `charness tool doctor nose --json`)."
+      "failure_hint": "Install nose >=0.17.0; the quality `doc-duplicates` phase fails closed without it (run `charness tool doctor nose`)."
     }
   },
   "access_modes": [

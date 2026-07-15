@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import shutil
 import subprocess
@@ -8,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import worktree_doctor_lib as lib
 
@@ -266,7 +266,7 @@ def test_prepare_no_manifest_emits_actionable_next_step(tmp_path: Path) -> None:
     assert ".agents/worktree-adapter.yaml" in (payload["next_action"] or "")
 
 
-def test_cli_doctor_subcommand_returns_json(tmp_path: Path) -> None:
+def test_cli_doctor_subcommand_returns_yaml(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     result = subprocess.run(
         [sys.executable, str(ROOT / "charness"), "worktree", "doctor", "--repo-root", str(repo), "--json"],
@@ -275,7 +275,7 @@ def test_cli_doctor_subcommand_returns_json(tmp_path: Path) -> None:
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    assert '"status": "pass"' in result.stdout
+    assert yaml.safe_load(result.stdout)["status"] == "pass"
 
 
 def test_cli_prepare_subcommand_runs_command(tmp_path: Path) -> None:
@@ -345,7 +345,7 @@ def test_cli_worktree_doctor_via_path_shim_routes_to_managed_checkout(tmp_path: 
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "pass"
 
 
@@ -403,7 +403,7 @@ def test_cli_worktree_doctor_via_path_shim_explicit_checkout(tmp_path: Path) -> 
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "pass"
 
 

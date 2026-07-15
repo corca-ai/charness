@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -49,7 +50,7 @@ def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path, se
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["codex_host_install"]["status"] == "installed"
     assert payload["codex_host_install"]["action"] == "install"
     assert payload["codex_host_guidance"]["status"] == "installed"
@@ -94,7 +95,7 @@ def test_charness_doctor_reports_codex_version_drift(
 
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] == "0.0.0-old"
     assert payload["codex_source_cache_drift"] is True

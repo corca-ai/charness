@@ -3,6 +3,7 @@
 # CLI Reference
 
 This file is generated from `./charness --help` and subcommand help output in the current checkout.
+Operational command payloads, including structured command failures, are emitted as a single YAML document on stdout; progress and unstructured fatal errors use stderr.
 Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/generated/cli-reference.md`.
 
 ## `charness`
@@ -59,7 +60,7 @@ usage: charness init [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                      [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                      [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
                      [--cli-path CLI_PATH] [--skip-cli-install]
-                     [--skip-claude-wrapper] [--json]
+                     [--skip-claude-wrapper]
 
 options:
   -h, --help            show this help message and exit
@@ -79,7 +80,6 @@ options:
   --cli-path CLI_PATH
   --skip-cli-install
   --skip-claude-wrapper
-  --json
 ```
 
 ## `charness update`
@@ -91,7 +91,7 @@ usage: charness update [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                        [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                        [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
                        [--cli-path CLI_PATH] [--skip-cli-install]
-                       [--skip-claude-wrapper] [--json] [--no-pull]
+                       [--skip-claude-wrapper] [--no-pull]
                        [--skip-codex-cache-refresh]
                        [{all}]
 
@@ -118,7 +118,6 @@ options:
   --cli-path CLI_PATH
   --skip-cli-install
   --skip-claude-wrapper
-  --json
   --no-pull             Skip the default `git pull --ff-only` when the managed
                         checkout already contains the exact source you want.
   --skip-codex-cache-refresh
@@ -135,8 +134,7 @@ usage: charness doctor [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                        [--plugin-root PLUGIN_ROOT]
                        [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                        [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
-                       [--cli-path CLI_PATH] [--json | --next-action]
-                       [--write-state]
+                       [--cli-path CLI_PATH] [--next-action] [--write-state]
 
 options:
   -h, --help            show this help message and exit
@@ -151,7 +149,6 @@ options:
   --codex-marketplace-path CODEX_MARKETPLACE_PATH
   --claude-wrapper-path CLAUDE_WRAPPER_PATH
   --cli-path CLI_PATH
-  --json
   --next-action         Print only the current primary next action message.
   --write-state         Persist the current doctor snapshot to the machine-
                         local charness state directory for later proof
@@ -162,7 +159,7 @@ options:
 
 ```text
 usage: charness version [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
-                        [--cli-path CLI_PATH] [--json] [--verbose] [--check]
+                        [--cli-path CLI_PATH] [--verbose] [--check]
 
 options:
   -h, --help            show this help message and exit
@@ -171,7 +168,6 @@ options:
                         Inspect an explicit source checkout instead of the
                         managed default checkout.
   --cli-path CLI_PATH
-  --json
   --verbose
   --check               Refresh the cached latest-release check now instead of
                         only showing recorded state.
@@ -185,7 +181,7 @@ usage: charness uninstall [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                           [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                           [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
                           [--cli-path CLI_PATH] [--delete-checkout]
-                          [--delete-cli] [--json]
+                          [--delete-cli]
 
 options:
   -h, --help            show this help message and exit
@@ -199,7 +195,6 @@ options:
   --cli-path CLI_PATH
   --delete-checkout
   --delete-cli
-  --json
 ```
 
 ## `charness reset`
@@ -209,7 +204,7 @@ usage: charness reset [-h] [--home-root HOME_ROOT] [--repo-root REPO_ROOT]
                       [--plugin-root PLUGIN_ROOT]
                       [--codex-marketplace-path CODEX_MARKETPLACE_PATH]
                       [--claude-wrapper-path CLAUDE_WRAPPER_PATH]
-                      [--cli-path CLI_PATH] [--json]
+                      [--cli-path CLI_PATH]
 
 options:
   -h, --help            show this help message and exit
@@ -221,13 +216,12 @@ options:
   --codex-marketplace-path CODEX_MARKETPLACE_PATH
   --claude-wrapper-path CLAUDE_WRAPPER_PATH
   --cli-path CLI_PATH
-  --json
 ```
 
 ## `charness task`
 
 ```text
-usage: charness task [-h] [--repo-root REPO_ROOT] [--json]
+usage: charness task [-h] [--repo-root REPO_ROOT]
                      {claim,submit,abort,status} ...
 
 positional arguments:
@@ -245,7 +239,6 @@ options:
   --repo-root REPO_ROOT
                         Repo where .charness/tasks/*.json task state is
                         stored. Defaults to the current working directory.
-  --json
 ```
 
 ## `charness task claim`
@@ -303,6 +296,65 @@ options:
   -h, --help  show this help message and exit
 ```
 
+## `charness catalog`
+
+```text
+usage: charness catalog [-h] {list,refresh,resolve-skill-path} ...
+
+positional arguments:
+  {list,refresh,resolve-skill-path}
+    list                Read installed public/support/synced/integration
+                        inventory without writing artifacts.
+    refresh             Write the canonical capability catalog current-pointer
+                        artifacts.
+    resolve-skill-path  Resolve a stale host-reported skill path after plugin
+                        cache rotation.
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `charness catalog list`
+
+```text
+usage: charness catalog list [-h] --repo-root REPO_ROOT
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+```
+
+## `charness catalog refresh`
+
+```text
+usage: charness catalog refresh [-h] --repo-root REPO_ROOT
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+```
+
+## `charness catalog resolve-skill-path`
+
+```text
+usage: charness catalog resolve-skill-path [-h] --repo-root REPO_ROOT
+                                           --skill-id SKILL_ID --reported-path
+                                           REPORTED_PATH [--home HOME]
+                                           [--codex-home CODEX_HOME]
+                                           [--marketplace MARKETPLACE]
+                                           [--plugin PLUGIN]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+  --skill-id SKILL_ID
+  --reported-path REPORTED_PATH
+  --home HOME
+  --codex-home CODEX_HOME
+  --marketplace MARKETPLACE
+  --plugin PLUGIN
+```
+
 ## `charness capability`
 
 ```text
@@ -332,7 +384,7 @@ options:
 
 ```text
 usage: charness capability init [-h] [--target-repo-root TARGET_REPO_ROOT]
-                                [--force] [--json]
+                                [--force]
 
 options:
   -h, --help            show this help message and exit
@@ -340,7 +392,6 @@ options:
                         Scaffold capability config under this target repo.
                         Defaults to the current working directory.
   --force
-  --json
 ```
 
 ## `charness capability resolve`
@@ -349,7 +400,6 @@ options:
 usage: charness capability resolve [-h] [--repo-root REPO_ROOT]
                                    [--repo-url REPO_URL]
                                    [--target-repo-root TARGET_REPO_ROOT]
-                                   [--json]
                                    logical_id
 
 positional arguments:
@@ -364,7 +414,6 @@ options:
   --target-repo-root TARGET_REPO_ROOT
                         Resolve repo-local capability config for this target
                         repo. Defaults to the current working directory.
-  --json
 ```
 
 ## `charness capability doctor`
@@ -373,7 +422,6 @@ options:
 usage: charness capability doctor [-h] [--repo-root REPO_ROOT]
                                   [--repo-url REPO_URL]
                                   [--target-repo-root TARGET_REPO_ROOT]
-                                  [--json]
                                   logical_id
 
 positional arguments:
@@ -388,7 +436,6 @@ options:
   --target-repo-root TARGET_REPO_ROOT
                         Resolve repo-local capability config for this target
                         repo. Defaults to the current working directory.
-  --json
 ```
 
 ## `charness capability env`
@@ -396,7 +443,7 @@ options:
 ```text
 usage: charness capability env [-h] [--repo-root REPO_ROOT]
                                [--repo-url REPO_URL]
-                               [--target-repo-root TARGET_REPO_ROOT] [--json]
+                               [--target-repo-root TARGET_REPO_ROOT]
                                logical_id
 
 positional arguments:
@@ -411,7 +458,6 @@ options:
   --target-repo-root TARGET_REPO_ROOT
                         Resolve repo-local capability config for this target
                         repo. Defaults to the current working directory.
-  --json
 ```
 
 ## `charness capability explain`
@@ -420,7 +466,6 @@ options:
 usage: charness capability explain [-h] [--repo-root REPO_ROOT]
                                    [--repo-url REPO_URL]
                                    [--target-repo-root TARGET_REPO_ROOT]
-                                   [--json]
                                    skill_id
 
 positional arguments:
@@ -435,7 +480,6 @@ options:
   --target-repo-root TARGET_REPO_ROOT
                         Inspect repo-local adapter context for this target
                         repo. Defaults to the current working directory.
-  --json
 ```
 
 ## `charness goal`
@@ -457,7 +501,7 @@ options:
 ```text
 usage: charness goal check [-h] [--repo-root REPO_ROOT]
                            [--goal-path GOAL_PATH] [--slug SLUG] [--date DATE]
-                           [--pursue-ready] [--json] [--home-root HOME_ROOT]
+                           [--pursue-ready] [--home-root HOME_ROOT]
                            [--repo-url REPO_URL]
                            [--charness-checkout CHARNESS_CHECKOUT]
 
@@ -470,7 +514,6 @@ options:
   --slug SLUG
   --date DATE
   --pursue-ready
-  --json
   --home-root HOME_ROOT
   --repo-url REPO_URL
   --charness-checkout CHARNESS_CHECKOUT
@@ -508,8 +551,7 @@ options:
 ```text
 usage: charness tool doctor [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--plugin-root PLUGIN_ROOT] [--json]
-                            [--no-write-locks]
+                            [--plugin-root PLUGIN_ROOT] [--no-write-locks]
                             [tool_ids ...]
 
 positional arguments:
@@ -525,7 +567,6 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
-  --json
   --no-write-locks      Skip updating integrations/locks/*.json when you only
                         want a read-only probe.
 ```
@@ -535,7 +576,7 @@ options:
 ```text
 usage: charness tool repair [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--plugin-root PLUGIN_ROOT] [--json] [--execute]
+                            [--plugin-root PLUGIN_ROOT] [--execute]
                             [tool_ids ...]
 
 Run repo-owned post-hoc repair actions for external tool runtime drift, then
@@ -555,7 +596,6 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
-  --json
   --execute             Execute the repair. Defaults to a dry-run preview.
 ```
 
@@ -565,7 +605,7 @@ options:
 usage: charness tool sync-support [-h] [--home-root HOME_ROOT]
                                   [--repo-root REPO_ROOT]
                                   [--repo-url REPO_URL]
-                                  [--plugin-root PLUGIN_ROOT] [--json]
+                                  [--plugin-root PLUGIN_ROOT]
                                   [--upstream-checkout UPSTREAM_CHECKOUT]
                                   [--dry-run]
                                   [tool_ids ...]
@@ -583,7 +623,6 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
-  --json
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
 ```
@@ -593,7 +632,7 @@ options:
 ```text
 usage: charness tool install [-h] [--home-root HOME_ROOT]
                              [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                             [--plugin-root PLUGIN_ROOT] [--json]
+                             [--plugin-root PLUGIN_ROOT]
                              [--upstream-checkout UPSTREAM_CHECKOUT]
                              [--dry-run] [--skip-sync-support]
                              [--recommend-for-skill RECOMMEND_FOR_SKILL]
@@ -614,7 +653,6 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
-  --json
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
   --skip-sync-support   Skip support skill rematerialization after install
@@ -641,7 +679,7 @@ charness tool install --recommendation-role validation --next-skill-id quality
 ```text
 usage: charness tool update [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--plugin-root PLUGIN_ROOT] [--json]
+                            [--plugin-root PLUGIN_ROOT]
                             [--upstream-checkout UPSTREAM_CHECKOUT]
                             [--dry-run] [--skip-sync-support]
                             [tool_ids ...]
@@ -659,10 +697,89 @@ options:
   --plugin-root PLUGIN_ROOT
                         Installed plugin root where upstream support skills
                         are materialized.
-  --json
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
   --skip-sync-support   Skip support skill rematerialization after update.
+```
+
+## `charness session-capture`
+
+```text
+usage: charness session-capture [-h] {status,install,uninstall} ...
+
+positional arguments:
+  {status,install,uninstall}
+    status              Report adapter intent vs actual host settings; exits 0
+                        in sync, 1 on drift.
+    install             Install the SessionStart hook entry for the requested
+                        host(s) without running a full charness update.
+    uninstall           Remove the charness-installed SessionStart hook entry
+                        from the requested host(s).
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `charness session-capture status`
+
+```text
+usage: charness session-capture status [-h] [--home-root HOME_ROOT]
+                                       [--repo-root REPO_ROOT]
+                                       [--repo-url REPO_URL]
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+                        Home root used to resolve host settings paths
+                        (default: $HOME).
+  --repo-root REPO_ROOT
+                        Use an explicit charness source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+```
+
+## `charness session-capture install`
+
+```text
+usage: charness session-capture install [-h] [--home-root HOME_ROOT]
+                                        [--repo-root REPO_ROOT]
+                                        [--repo-url REPO_URL]
+                                        [--host {claude,codex}]
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+                        Home root used to resolve host settings paths
+                        (default: $HOME).
+  --repo-root REPO_ROOT
+                        Use an explicit charness source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --host {claude,codex}
+                        Restrict the install to a single host; default
+                        installs both.
+```
+
+## `charness session-capture uninstall`
+
+```text
+usage: charness session-capture uninstall [-h] [--home-root HOME_ROOT]
+                                          [--repo-root REPO_ROOT]
+                                          [--repo-url REPO_URL]
+                                          [--host {claude,codex}]
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+                        Home root used to resolve host settings paths
+                        (default: $HOME).
+  --repo-root REPO_ROOT
+                        Use an explicit charness source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --host {claude,codex}
+                        Restrict the uninstall to a single host; default
+                        removes from both.
 ```
 
 ## `charness worktree`
@@ -694,7 +811,7 @@ options:
 ```text
 usage: charness worktree create [-h] [--repo-root REPO_ROOT] --path PATH
                                 [--branch BRANCH] [--base BASE] [--detach]
-                                [--prepare] [--dry-run] [--force] [--json]
+                                [--prepare] [--dry-run] [--force]
                                 [--home-root HOME_ROOT]
                                 [--charness-checkout CHARNESS_CHECKOUT]
 
@@ -711,7 +828,6 @@ options:
   --dry-run             Print the planned git command without creating the
                         worktree.
   --force               Pass --force to `git worktree add`.
-  --json
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.
@@ -726,7 +842,7 @@ options:
 ```text
 usage: charness worktree add [-h] [--repo-root REPO_ROOT] --path PATH
                              [--branch BRANCH] [--base BASE] [--detach]
-                             [--prepare] [--dry-run] [--force] [--json]
+                             [--prepare] [--dry-run] [--force]
                              [--home-root HOME_ROOT]
                              [--charness-checkout CHARNESS_CHECKOUT]
 
@@ -743,7 +859,6 @@ options:
   --dry-run             Print the planned git command without creating the
                         worktree.
   --force               Pass --force to `git worktree add`.
-  --json
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.
@@ -756,7 +871,7 @@ options:
 ## `charness worktree doctor`
 
 ```text
-usage: charness worktree doctor [-h] [--repo-root REPO_ROOT] [--json]
+usage: charness worktree doctor [-h] [--repo-root REPO_ROOT]
                                 [--home-root HOME_ROOT]
                                 [--charness-checkout CHARNESS_CHECKOUT]
 
@@ -765,7 +880,6 @@ options:
   --repo-root REPO_ROOT
                         Worktree to inspect. Defaults to the current working
                         directory.
-  --json
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.
@@ -779,7 +893,7 @@ options:
 
 ```text
 usage: charness worktree prepare [-h] [--repo-root REPO_ROOT] [--force]
-                                 [--json] [--home-root HOME_ROOT]
+                                 [--home-root HOME_ROOT]
                                  [--charness-checkout CHARNESS_CHECKOUT]
 
 options:
@@ -788,7 +902,6 @@ options:
                         Worktree to prepare. Defaults to the current working
                         directory.
   --force               Run prepare even if doctor already reports pass.
-  --json
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.
@@ -803,7 +916,7 @@ options:
 ```text
 usage: charness worktree audit [-h] [--repo-root REPO_ROOT]
                                [--stale-days STALE_DAYS] [--prune] [--doctor]
-                               [--json] [--home-root HOME_ROOT]
+                               [--home-root HOME_ROOT]
                                [--charness-checkout CHARNESS_CHECKOUT]
 
 options:
@@ -818,7 +931,6 @@ options:
                         for prunable worktrees.
   --doctor              Run readiness doctor for existing worktrees and
                         include per-worktree readiness summaries.
-  --json
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.
@@ -834,7 +946,7 @@ options:
 usage: charness worktree cleanup [-h] [--repo-root REPO_ROOT] --path PATH
                                  [--delete-merged-branch]
                                  [--branch-base BRANCH_BASE] [--yes] [--force]
-                                 [--json] [--home-root HOME_ROOT]
+                                 [--home-root HOME_ROOT]
                                  [--charness-checkout CHARNESS_CHECKOUT]
 
 options:
@@ -851,7 +963,6 @@ options:
                         branch deletion; defaults to HEAD.
   --yes                 Execute the planned cleanup. Defaults to dry-run.
   --force               Pass --force to git worktree remove for dirty targets.
-  --json
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.

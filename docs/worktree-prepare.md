@@ -46,14 +46,14 @@ charness worktree prepare --force # run prepare even when doctor already passes
 charness worktree audit                          # classify primary/active/prunable/stale
 charness worktree audit --doctor                 # also surface readiness failures
 charness worktree audit --prune                  # also run `git worktree prune`
-charness worktree audit --stale-days 30 --json   # custom stale threshold, JSON output
+charness worktree audit --stale-days 30          # custom stale threshold, YAML output
 
 # After a feature worktree has been merged locally:
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
 ```
 
-All commands accept `--json` for machine-readable output. `doctor` and `prepare` exit 0 only when status is `pass`. `create` exits 0 on `pass`, 1 on `warn` (created but readiness still needs preparation), and 2 on `fail`. `audit` exits 0 on `pass`, 1 on `warn` (prunable, stale, or readiness failures present), 2 on `fail`.
+All commands emit a single machine-readable YAML document on stdout. `doctor` and `prepare` exit 0 only when status is `pass`. `create` exits 0 on `pass`, 1 on `warn` (created but readiness still needs preparation), and 2 on `fail`. `audit` exits 0 on `pass`, 1 on `warn` (prunable, stale, or readiness failures present), 2 on `fail`.
 
 ## When to run `create`
 
@@ -128,7 +128,7 @@ Checks return `pass`, `fail`, or `skipped` (precondition not met — e.g., no `c
 
 ## Wiring with mutate-phase skills
 
-`spec`, `impl`, and `hitl` bootstrap probe `charness worktree doctor --json` non-fatally before mutating repo content. On non-pass status, the recommended next action is surfaced; the operator decides whether to run `charness worktree prepare`. charness never auto-runs prepare from inside a public skill.
+`spec`, `impl`, and `hitl` bootstrap probe `charness worktree doctor` non-fatally before mutating repo content. On non-pass status, the recommended next action is surfaced; the operator decides whether to run `charness worktree prepare`. charness never auto-runs prepare from inside a public skill.
 
 ## Limitations
 

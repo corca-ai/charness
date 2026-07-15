@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_cli
 
 
@@ -25,7 +27,17 @@ def test_source_checkout_version_uses_embedded_packaging_manifest() -> None:
     expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == expected
+    assert yaml.safe_load(result.stdout) == {"version": expected}
+
+
+def test_legacy_json_is_accepted_but_hidden_and_ignored() -> None:
+    default = run_cli("version")
+    legacy = run_cli("version", "--json")
+    help_result = run_cli("version", "--help")
+
+    assert default.returncode == legacy.returncode == 0
+    assert legacy.stdout == default.stdout
+    assert "--json" not in help_result.stdout
 
 
 def test_plain_version_does_not_write_version_state(tmp_path: Path) -> None:

@@ -1,76 +1,90 @@
 # Quality Review
 Date: 2026-07-15
-Title: Session Routing and Catalog CLI Repair
+Title: CLI YAML stdout contract
 
 ## Scope
 
-Target boundary: the copied global CLI catalog backend and the session/setup
-routing contract that directs agents to the matching workflow or exact inventory.
+Target boundary: root `charness` operational command stdout, its legacy
+`--json` compatibility behavior, and the public command guidance that teaches it.
 
-Ambient repo findings: the first locked broad run surfaced two adjacent contract
-gaps: a Charness-management detector that hid missing policy findings, and a
-missing handoff link to the current retro digest. Both are repaired in this slice.
+Ambient repo findings: the final read-only gate reported existing Python
+length-band warnings only; none are caused by this output-contract slice.
 
 ## Current Gates
 
-- Focused routing, setup inspection/rendering, retro memory, and copied-CLI tests: 71 passed.
-- The maintained `setup-compact-skill-routing-discoverability` scenario passed
-  after asserting the direct workflow, exact catalog, and nonzero-result actions.
-- The first locked broad run found the two contract gaps above after its other
-  deterministic gates passed; the final locked closeout is the release-quality
-  proof for this repaired working tree.
+- Focused root CLI, integration, usage-hook, command-doc, and executable-spec
+  checks: 111 passed.
+- `./scripts/run-quality.sh --read-only`: passed all configured validation,
+  packaging, documentation, compile, and ruff gates.
+- `python3 scripts/validate_critique_artifacts.py --repo-root . --paths
+  charness-artifacts/critique/2026-07-15-cli-yaml-stdout-contract.md`: passed.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
-- runtime hot spots: `run-quality-full-release` 80.2s latest / 76.1s median; `run-quality-read-only` 56.5s latest / 56.7s median.
-- coverage gate: focused tests and the maintained setup scenario pass; locked closeout runs changed-line mutation proof.
-- evaluator depth: deterministic gates plus maintained scenario review; Cautilus execution is ask-before-run and no explicit evaluation request was made.
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json`, rendered by `scripts/render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
+- runtime hot spots: final read-only `check-markdown` and `check-secrets` each took 5.4s; these are repository-wide gates rather than a YAML-output regression.
+- coverage gate: focused behavior tests passed and the final read-only quality gate passed.
+- evaluator depth: deterministic Cautilus registry/proof/diagnostic validators passed; live Cautilus execution remains ask-before-run and was not requested.
 
 ## Healthy
 
-- The copied-CLI subprocess executes `catalog list` through the managed checkout.
-- Hook, AGENTS, renderer, default surface, semantic inspector, and plugin mirror
-  carry the same direct-action contract.
-- The evaluator scenario now proves the compact-routing contract without adding
-  another scenario identifier.
-- Charness-management detection now stays distinct from the complete routing
-  contract, so missing Dynamic Workflows and Codex profile policies remain visible.
+- Root handlers now publish JSON-shaped payloads through one YAML emitter, while
+  progress remains on stderr and structured failures remain YAML on stdout.
+- The parser removes exact legacy `--json` tokens before dispatch; help and
+  public root-command guidance no longer advertise the flag.
+- Generated CLI reference, Cautilus routing fixture, source docs, tests, and
+  checked-in plugin mirrors carry the same root-output contract.
 
 ## Weak
 
-- Runtime metrics are historical machine samples and do not measure this small
-  routing change directly.
+- Root `--help` and argparse usage remain human-oriented stdout, outside the
+  operational payload boundary; the generated reference states that distinction.
 
 ## Missing
 
-- No released-install or already-open-host-session readback is in this source-slice proof boundary.
+- No already-installed executable or open-host-session readback is included in
+  this source-checkout proof boundary.
 
 ## Deferred
 
-- A live Cautilus evaluation awaits an explicit log-backed behavior proof request.
+- Private helper scripts keep their explicit JSON protocols because they are
+  subprocess boundaries, not root `charness` responses.
 
 ## Advisory
 
-- structural review result: command: `python3 scripts/check_skill_surface_preflight.py --path skills/public/setup/references/default-surfaces.md --run-checks`; all targeted portable-package checks passed.
-- prose review result: fresh-eye reviewers found the final parser order resolution sound; artifact: `charness-artifacts/critique/2026-07-15-critique-review.md`.
-- scenario review: artifact: `evals/cautilus/scenarios.json`; the maintained compact-routing scenario already owns this consumer contract, so its assertions changed and its registry IDs remained stable.
+- `command: ./scripts/run-quality.sh --read-only` reports ten pre-existing
+  Python length-band warnings; no touched file is named by that advisory.
+- `artifact: charness-artifacts/critique/2026-07-15-cli-yaml-stdout-contract.md`
+  records the fresh-eye distinction between root YAML output and private JSON.
+- `artifact: evals/cautilus/scenarios.json` was reviewed against the changed
+  critique/hitl/impl/quality/setup/spec guidance: root-command flag removal
+  changes neither skill routing nor acceptance evidence, so registry IDs and
+  maintained scenarios remain unchanged; no live evaluator run is claimed.
 
 ## Delegated Review
 
-- Delegated Review: executed — independent reviewers covered installed-CLI portability, routing wording, counterweight, and final parser resolution; boundary fingerprints reported no drift.
-- Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof): not re-delegated because this slice changes neither gate topology nor runtime recommendations.
+- Delegated Review: executed — separate documentation/export and counterweight
+  reviewers found no remaining ship blocker; parent fingerprint checks reported
+  no worktree or index drift. Slow-gate lenses (fixture-economics,
+  parallel-critical-path, duplicated-proof): not re-delegated because this
+  slice changes neither gate topology nor runtime recommendations.
 
 ## Commands Run
 
-- `pytest -q tests/test_session_start_routing.py tests/quality_gates/test_setup_render_skill_routing.py tests/quality_gates/test_setup_inspect_policy.py tests/charness_cli/test_codex_cache_refresh.py`.
-- `python3 scripts/run_evals.py --scenario setup-compact-skill-routing-discoverability`.
-- `python3 scripts/validate_public_skill_dogfood.py --repo-root .` and setup skill-surface preflight.
-- `pytest -q tests/quality_gates/test_retro_memory.py tests/quality_gates/test_setup_inspect_critique_adapter.py tests/quality_gates/test_setup_inspect_policy.py tests/quality_gates/test_setup_render_skill_routing.py tests/test_session_start_routing.py tests/charness_cli/test_codex_cache_refresh.py`.
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
+- `specdown run -quiet -no-report -jobs 4` and
+  `python3 scripts/check_command_docs.py --repo-root .`.
+- Focused pytest command over root CLI, usage-hook, integration, and command-doc
+  tests (111 passed), plus `ruff check` for touched Python surfaces.
+- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`.
+- `./scripts/run-quality.sh --read-only`.
+- `python3 scripts/run_slice_closeout.py --repo-root . --allow-unmatched
+  --verification-lock --produce-mutation-coverage
+  --ack-cautilus-skill-review`.
 
 ## Recommended Next Quality Moves
 
-- passive released-install readback because source-slice proof cannot update an already installed executable or open host session — capability_needed=operator update confidence; next_center=release workflow; transformation=verify after authorized publication; proof_boundary=installed binary and new session; enforcement_posture=release-gate.
+- passive released-install readback — capability_needed=operator update confidence; next_center=release workflow; transformation=verify an installed binary after an authorized update; proof_boundary=installed CLI and new host session; enforcement_posture=release-gate because this source slice does not update an installed executable.
 
 ## History
 

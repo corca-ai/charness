@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.control_plane_lifecycle_lib import (
     print_tool_statuses,
@@ -241,7 +242,7 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path,
 
     result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "--json", "cautilus", env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     cautilus = payload["results"]["cautilus"]
     assert cautilus["install"]["status"] == "manual"
     assert cautilus["install"]["docs_url"] == "https://github.com/corca-ai/cautilus"
@@ -291,7 +292,7 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["tool_selection"] == {
         "recommend_for_skill": None,
         "recommendation_role": "validation",
@@ -342,7 +343,7 @@ def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path
 
     result = run_cli("tool", "install", "--home-root", str(home_root), "--json", "cautilus", env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     cautilus = payload["results"]["cautilus"]
     managed_repo = home_root / ".agents" / "src" / "charness"
 
@@ -381,7 +382,7 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
 
     doctor_result = run_cli("tool", "doctor", "--home-root", str(home_root), "--json", "cautilus", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     cautilus = payload["results"]["cautilus"]["doctor"]
 
     assert cautilus["doctor_status"] == "ok"
@@ -420,7 +421,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
 
     sync_result = run_cli("tool", "sync-support", "--home-root", str(home_root), "--json", "cautilus", env=env)
     assert sync_result.returncode == 0, sync_result.stderr
-    payload = json.loads(sync_result.stdout)
+    payload = yaml.safe_load(sync_result.stdout)
     cautilus = payload["results"]["cautilus"]
 
     assert cautilus["support"]["status"] == "synced"
@@ -480,7 +481,7 @@ def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_p
 
     result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     browser = payload["results"]["agent-browser"]
     assert browser["update"]["status"] == "updated"
     assert browser["update"]["mode"] == "script"
@@ -518,7 +519,7 @@ def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, see
 
     result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     browser = payload["results"]["agent-browser"]
     assert browser["update"]["status"] == "updated"
     assert browser["update"]["mode"] == "script"
@@ -547,7 +548,7 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
 
     result = run_cli_in_repo(repo_root, "tool", "doctor", "--repo-root", str(repo_root), "--json", "specdown", env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     specdown = payload["results"]["specdown"]
     doctor = specdown["doctor"]
 
@@ -576,7 +577,7 @@ def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path,
 
     preview = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
     assert preview.returncode == 0, preview.stderr
-    preview_payload = json.loads(preview.stdout)
+    preview_payload = yaml.safe_load(preview.stdout)
     preview_browser = preview_payload["results"]["agent-browser"]
     assert preview_browser["repair"]["status"] == "preview"
     assert preview_browser["repair"]["execute"] is False
@@ -597,7 +598,7 @@ def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path,
         env=env,
     )
     assert executed.returncode == 0, executed.stderr
-    executed_payload = json.loads(executed.stdout)
+    executed_payload = yaml.safe_load(executed.stdout)
     executed_browser = executed_payload["results"]["agent-browser"]
     assert executed_browser["repair"]["status"] == "executed"
     assert executed_browser["repair"]["execute"] is True
@@ -619,7 +620,7 @@ def test_tool_repair_reports_unsupported_tools(tmp_path: Path, seeded_charness_r
     result = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "--json", "specdown", env=env)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     specdown = payload["results"]["specdown"]
     assert specdown["repair"]["status"] == "unsupported"
     assert "No repo-owned repair action is declared" in specdown["next_step"]
@@ -662,7 +663,7 @@ def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path
 
     result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "--json", "glow", env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     glow = payload["results"]["glow"]
 
     assert glow["install"]["status"] == "installed"
@@ -700,7 +701,7 @@ def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path, seeded_ch
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     specdown = payload["results"]["specdown"]
     assert specdown["update"]["status"] == "updated"
     assert specdown["update"]["mode"] == "script"

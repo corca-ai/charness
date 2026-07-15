@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from scripts import worktree_create_lib as lib
 
@@ -174,7 +175,7 @@ def test_cli_worktree_create_json_executes_and_reports_doctor(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == lib.PASS
     assert payload["created"] is True
     assert payload["doctor"]["status"] == "pass"

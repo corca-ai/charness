@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import REPO_COPY_IGNORE
 
@@ -32,7 +33,7 @@ def test_charness_update_reports_codex_version_drift(
 
     update_result = run_cli("update", "--home-root", str(home_root), "--skip-codex-cache-refresh", "--json", env=env)
     assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
+    payload = yaml.safe_load(update_result.stdout)
     assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] == "0.0.0-old"
     assert payload["codex_source_cache_drift"] is True
@@ -59,7 +60,7 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
 
     update_result = run_cli("update", "--home-root", str(home_root), "--json", env=env)
     assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
+    payload = yaml.safe_load(update_result.stdout)
 
     refreshed_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION / ".codex-plugin" / "plugin.json"
     assert payload["codex_cache_refresh"]["status"] == "refreshed"
@@ -195,32 +196,31 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
     finally:
         module.sys.path[:] = original_path
 
-    args = argparse.Namespace(repo_root=tmp_path, json=True)
+    args = argparse.Namespace(repo_root=tmp_path)
     assert module.cmd_catalog_list(args) == 0
     capsys.readouterr()
     assert module.cmd_catalog_refresh(args) == 0
     capsys.readouterr()
 
     missing = tmp_path / "missing-refresh-root"
-    invalid_args = argparse.Namespace(repo_root=missing, json=False)
+    invalid_args = argparse.Namespace(repo_root=missing)
     assert module.cmd_catalog_refresh(invalid_args) == 2
     error = capsys.readouterr()
-    assert "does not exist" in error.err
-    assert "Traceback" not in error.err
+    assert "does not exist" in error.out
+    assert "Traceback" not in error.out
     assert not missing.exists()
 
-    invalid_args.json = True
     assert module.cmd_catalog_refresh(invalid_args) == 2
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert "does not exist" in payload["error"]
 
     file_root = tmp_path / "refresh-file-root"
     file_root.write_text("not a directory\n", encoding="utf-8")
-    invalid_args = argparse.Namespace(repo_root=file_root, json=False)
+    invalid_args = argparse.Namespace(repo_root=file_root)
     assert module.cmd_catalog_refresh(invalid_args) == 2
     error = capsys.readouterr()
-    assert "not a directory" in error.err
-    assert "Traceback" not in error.err
+    assert "not a directory" in error.out
+    assert "Traceback" not in error.out
 
     resolve_args = argparse.Namespace(
         repo_root=tmp_path,
@@ -230,7 +230,6 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
         codex_home=tmp_path / "codex",
         marketplace="local",
         plugin="charness",
-        json=True,
     )
     assert module.cmd_catalog_resolve_skill_path(resolve_args) == 1
     capsys.readouterr()
@@ -271,7 +270,7 @@ def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifacts"]["mode"] == "read-only"
     assert not (consumer_repo / "charness-artifacts").exists()
 
@@ -287,7 +286,7 @@ def test_charness_catalog_refresh_invalid_roots_subprocess_contract(tmp_path: Pa
     )
     assert missing_result.returncode == 2
     assert missing_result.stderr == ""
-    missing_payload = json.loads(missing_result.stdout)
+    missing_payload = yaml.safe_load(missing_result.stdout)
     assert missing_payload["repo_root"] == str(missing.resolve())
     assert "does not exist" in missing_payload["error"]
     assert "Traceback" not in missing_result.stdout
@@ -302,6 +301,6 @@ def test_charness_catalog_refresh_invalid_roots_subprocess_contract(tmp_path: Pa
         str(file_root),
     )
     assert file_result.returncode == 2
-    assert file_result.stdout == ""
-    assert "not a directory" in file_result.stderr
-    assert "Traceback" not in file_result.stderr
+    file_payload = yaml.safe_load(file_result.stdout)
+    assert "not a directory" in file_payload["error"]
+    assert "Traceback" not in file_result.stdout

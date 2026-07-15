@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import CLI, clone_seeded_managed_home, make_release_fixture
 
@@ -34,7 +35,7 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
-    payload = json.loads(version_result.stdout)
+    payload = yaml.safe_load(version_result.stdout)
     assert payload["current_version"] == CURRENT_VERSION
     assert payload["version_provenance"]["invocation_kind"] == "installed-cli"
     assert payload["version_provenance"]["install_method"] == "managed-local-cli"
@@ -71,7 +72,7 @@ def test_charness_version_skips_notice_when_latest_release_matches_current(
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
-    payload = json.loads(version_result.stdout)
+    payload = yaml.safe_load(version_result.stdout)
     assert payload["latest_release_check"]["latest_tag"] == CURRENT_RELEASE_TAG
     assert payload["latest_release_check"]["update_available"] is False
     assert payload["update_notice"] is None
@@ -95,7 +96,7 @@ def test_charness_version_skips_notice_when_latest_release_is_older(
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
-    payload = json.loads(version_result.stdout)
+    payload = yaml.safe_load(version_result.stdout)
     assert payload["latest_release_check"]["latest_tag"] == OLDER_RELEASE_TAG
     assert payload["latest_release_check"]["update_available"] is False
     assert payload["update_notice"] is None
@@ -141,7 +142,7 @@ def test_charness_version_preserves_prerelease_tag_in_update_notice(
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
-    payload = json.loads(version_result.stdout)
+    payload = yaml.safe_load(version_result.stdout)
     assert payload["latest_release_check"]["latest_tag"] == NEWER_PRERELEASE_TAG
     assert payload["latest_release_check"]["latest_version"] == "9.9.9-rc.1"
     assert payload["latest_release_check"]["update_available"] is True
@@ -165,7 +166,7 @@ def test_charness_version_without_writable_state_cache_degrades_to_payload(tmp_p
         text=True,
     )
     assert version_result.returncode == 0, version_result.stderr
-    payload = json.loads(version_result.stdout)
+    payload = yaml.safe_load(version_result.stdout)
     assert payload["current_version"] == CURRENT_VERSION
     assert payload["version_state_path"] == str(home_root / ".local" / "state" / "charness" / "version-state.json")
     assert (home_root / ".local").is_file()

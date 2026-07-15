@@ -43,7 +43,7 @@ implementation handoff, not as a default bootstrap read.
 
 ## Worktree Readiness
 
-Before mutating spec/design docs in a worktree, run `command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true`. If JSON status is not `pass`, surface `charness worktree prepare` as next action and have the operator confirm before continuing.
+Before mutating spec/design docs in a worktree, run `command -v charness >/dev/null 2>&1 && charness worktree doctor || true`. If YAML status is not `pass`, surface `charness worktree prepare` as next action and have the operator confirm before continuing.
 
 ## Contract Shaping
 

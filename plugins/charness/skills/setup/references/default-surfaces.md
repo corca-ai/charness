@@ -86,7 +86,7 @@ The repo root `<repo-root>/AGENTS.md` should answer:
 - a short `Skill Routing` fallback paragraph: pickup follows the handoff,
   ordinary routing starts the matching workflow directly from installed skill
   metadata and model judgment, and hidden support/integration availability runs
-  `charness catalog list --repo-root <repo> --json`; a nonzero result reports a
+  `charness catalog list --repo-root <repo>`; a nonzero result reports a
   command failure; a SessionStart hook may inject
   the same context
 - when the repo keeps repo-owned skills, keep one short policy that semantic

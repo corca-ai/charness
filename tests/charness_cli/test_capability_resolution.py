@@ -5,6 +5,8 @@ import os
 import subprocess
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_cli
 
 
@@ -56,7 +58,7 @@ def test_capability_resolve_reads_repo_local_config(tmp_path: Path) -> None:
         "github.default",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["profile_id"] == "github.acme-dev"
     assert payload["provider_id"] == "github-gh"
     assert payload["env_bindings"] == {"GH_TOKEN": "GH_TOKEN_ACME_DEV"}
@@ -89,7 +91,8 @@ def test_capability_env_emits_alias_exports_without_printing_secret_values(tmp_p
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == 'export GH_TOKEN="${GH_TOKEN_ACME_DEV}"'
+    payload = yaml.safe_load(result.stdout)
+    assert payload["shell_exports"] == ['export GH_TOKEN="${GH_TOKEN_ACME_DEV}"']
     assert "super-secret-token" not in result.stdout
 
 
@@ -117,7 +120,7 @@ def test_capability_doctor_reuses_provider_metadata_for_resolved_profile(tmp_pat
         "web-fetch.default",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["provider_id"] == "web-fetch"
     assert payload["provider_doctor"]["tool_id"] == "web-fetch"
     assert payload["provider_doctor"]["doctor_status"] == "ok"
@@ -133,7 +136,7 @@ def test_capability_init_scaffolds_repo_local_config_and_updates_gitignore(tmp_p
         "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     local_path = target_repo / ".charness" / "local" / "capability.json"
     example_path = target_repo / ".charness" / "capability.example.json"
     gitignore_path = target_repo / ".gitignore"
@@ -173,7 +176,7 @@ def test_capability_init_does_not_duplicate_gitignore_line_when_already_present(
         "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["gitignore_status"] == "already-present"
     gitignore_text = gitignore_path.read_text(encoding="utf-8")
     assert gitignore_text.count("/.charness/local/") == 1
@@ -246,7 +249,7 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
         "gather",
     )
     assert gather_result.returncode == 0, gather_result.stderr
-    gather_payload = json.loads(gather_result.stdout)
+    gather_payload = yaml.safe_load(gather_result.stdout)
     assert {need["logical_id"] for need in gather_payload["capability_needs"]} == {
         "github.default",
         "google-workspace.default",
@@ -264,7 +267,7 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
         "announcement",
     )
     assert announcement_result.returncode == 0, announcement_result.stderr
-    announcement_payload = json.loads(announcement_result.stdout)
+    announcement_payload = yaml.safe_load(announcement_result.stdout)
     logical_ids = {need["logical_id"] for need in announcement_payload["capability_needs"]}
     assert "slack.default" in logical_ids
     assert announcement_payload["announcement_delivery"]["delivery_kind"] == "human-backend"
@@ -311,7 +314,7 @@ def test_capability_explain_keeps_unwired_thread_reply_draft_only(tmp_path: Path
         "announcement",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["announcement_delivery"]["status"] == "draft-only"
     assert payload["announcement_delivery"]["blocking_issues"]
     assert "slack.default" not in {need["logical_id"] for need in payload["capability_needs"]}
@@ -357,7 +360,7 @@ def test_capability_explain_keeps_thread_reply_before_parent_draft_only(tmp_path
         "announcement",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["announcement_delivery"]["status"] == "draft-only"
     assert any("before any preceding `parent`" in issue for issue in payload["announcement_delivery"]["blocking_issues"])
     assert "slack.default" not in {need["logical_id"] for need in payload["capability_needs"]}

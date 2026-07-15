@@ -26,7 +26,7 @@ charness task abort slice-1 --reason "blocked by missing fixture"
 charness task status slice-1
 ```
 
-All commands support `--json` and `--repo-root`.
+All commands emit a single YAML document on stdout and support `--repo-root`.
 
 ## Semantics
 
@@ -38,7 +38,7 @@ All commands support `--json` and `--repo-root`.
 - `status` reads task state without mutation; without a task id it lists all
   repo-local task records.
 
-Failure paths in JSON mode emit a structured rejection payload instead of
+Failure paths emit a structured YAML rejection payload instead of
 requiring callers to parse prose from stderr.
 
 ## Boundary

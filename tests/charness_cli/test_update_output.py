@@ -7,6 +7,7 @@ from argparse import Namespace
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -21,7 +22,7 @@ from .test_managed_install import init_managed_home_from_repo, load_charness_mod
 from .tool_fakes import make_fake_cautilus, make_fake_nose
 
 
-def test_session_capture_human_status_prints_canonical_session_routing_hosts(monkeypatch, capsys) -> None:
+def test_session_capture_status_emits_canonical_session_routing_hosts(monkeypatch, capsys) -> None:
     module = load_charness_module("charness_session_routing_status_output_under_test")
     payload = {
         "in_sync": True,
@@ -42,10 +43,10 @@ def test_session_capture_human_status_prints_canonical_session_routing_hosts(mon
     }
     monkeypatch.setattr(module, "_session_capture_invoke", lambda _args, *, mode: (Path.cwd(), payload))
 
-    assert module.cmd_session_capture_status(Namespace(json=False)) == 0
+    assert module.cmd_session_capture_status(Namespace()) == 0
 
-    output = capsys.readouterr().out
-    assert "CLAUDE SESSION-ROUTING: intent=enabled present=yes settings=/tmp/claude-settings.json" in output
+    output = yaml.safe_load(capsys.readouterr().out)
+    assert output["session_routing"]["hosts"]["claude"]["actual"]["settings_path"] == "/tmp/claude-settings.json"
 
 
 @pytest.mark.release_only
@@ -88,18 +89,16 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
         env=env,
     )
     assert update_result.returncode == 0, update_result.stderr
-    assert "STEP: updating tracked external tools" in update_result.stdout
-    assert "STEP: syncing support surfaces" in update_result.stdout
-    assert "STEP: refreshing tool doctor state" in update_result.stdout
-    assert "DONE: update complete" in update_result.stdout
-    assert "PACKAGE: charness" in update_result.stdout
-    assert "VERSION: None" not in update_result.stdout
-    assert "-> None" not in update_result.stdout
-    assert "SCOPE: all" in update_result.stdout
-    assert "TOOLS:" in update_result.stdout
-    assert "  - agent-browser: updated 0.25.3 (script)" in update_result.stdout
-    assert "  - cautilus: manual" in update_result.stdout
-    assert "  - nose: updated 0.17.0 (script) healthcheck=not-configured" in update_result.stdout
+    payload = yaml.safe_load(update_result.stdout)
+    assert payload["package_id"] == "charness"
+    assert payload["scope"] == "all"
+    assert payload["tool_update"]["results"]["agent-browser"]["update"]["status"] == "updated"
+    assert payload["tool_update"]["results"]["cautilus"]["update"]["status"] == "manual"
+    assert payload["tool_update"]["results"]["nose"]["update"]["status"] == "updated"
+    assert "STEP: updating tracked external tools" in update_result.stderr
+    assert "STEP: syncing support surfaces" in update_result.stderr
+    assert "STEP: refreshing tool doctor state" in update_result.stderr
+    assert "DONE: update complete" in update_result.stderr
 
 
 def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) -> None:

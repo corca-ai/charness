@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import (
     CLI,
@@ -27,7 +27,7 @@ def test_charness_doctor_selects_primary_next_action(
     )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["next_action"]["kind"] == "restart"
     assert payload["next_action"]["host"] == "claude"
     assert payload["next_action"]["message"] == payload["claude_host_guidance"]["message"]
@@ -42,18 +42,9 @@ def test_charness_doctor_prints_primary_next_action(
     )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    assert "NEXT_ACTION:" in doctor_result.stdout
-    assert (
-        "  - claude: Claude host install markers are present. Restart Claude Code to load or refresh charness."
-        in doctor_result.stdout
-    )
-    assert doctor_result.stdout.count(
-        "Claude host install markers are present. Restart Claude Code to load or refresh charness."
-    ) == 1
-    assert doctor_result.stdout.count("NEXT_ACTION:") == 1
-    assert "CODEX_NEXT_STEP" not in doctor_result.stdout
-    assert "CLAUDE_NEXT_STEP" not in doctor_result.stdout
-    assert "REPO_NEXT_STEP" not in doctor_result.stdout
+    payload = yaml.safe_load(doctor_result.stdout)
+    assert payload["next_action"]["host"] == "claude"
+    assert payload["next_action"]["message"] == "Claude host install markers are present. Restart Claude Code to load or refresh charness."
 
 
 @pytest.mark.release_only
@@ -65,10 +56,9 @@ def test_charness_doctor_next_action_flag_prints_only_message(
     )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--next-action", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    assert (
-        doctor_result.stdout.strip()
-        == "Claude host install markers are present. Restart Claude Code to load or refresh charness."
-    )
+    assert yaml.safe_load(doctor_result.stdout) == {
+        "next_action": "Claude host install markers are present. Restart Claude Code to load or refresh charness."
+    }
 
 
 def test_charness_doctor_next_action_without_source_uses_manual_guidance(tmp_path: Path) -> None:
@@ -91,7 +81,7 @@ def test_charness_doctor_next_action_without_source_uses_manual_guidance(tmp_pat
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["next_action"]["kind"] == "manual"
     assert payload["next_action"]["host"] == "claude"
     assert payload["next_action"]["message"] == payload["claude_host_guidance"]["message"]
@@ -127,7 +117,7 @@ def test_charness_doctor_can_surface_repo_onboarding_as_primary_next_action(
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["repo_onboarding"]["status"] == "required"
     assert payload["next_action"]["kind"] == "repo-init"
     assert payload["next_action"]["source"] == "repo_onboarding"

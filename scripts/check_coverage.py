@@ -293,7 +293,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
             ignoredirs=python_runtime_ignoredirs(repo_root),
         )
         entries = (
-            (repo_root / "charness", ["tool", "doctor", "--repo-root", str(repo_copy), "--json", "agent-browser"]),
+            (repo_root / "charness", ["tool", "doctor", "--repo-root", str(repo_copy), "agent-browser"]),
             (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--json", "--write-locks", "--tool-id", "agent-browser"]),
             (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--json", "--write-locks", "--tool-id", "cautilus"]),
             (

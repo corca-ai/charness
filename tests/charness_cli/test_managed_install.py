@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -145,7 +146,7 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     env["PATH"] = build_test_path(fake_claude.parent)
     result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["plugin_root"] == str(home_root / ".codex" / "plugins" / "charness")
     assert payload["cli_path"] == str(home_root / ".local" / "bin" / "charness")
     assert payload["claude_wrapper_path"] == str(home_root / ".local" / "bin" / "claude-charness")
@@ -222,7 +223,7 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["checkout"]["managed"] is True
     assert payload["checkout"]["cloned"] is True
     assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
@@ -289,7 +290,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["checkout"]["cloned"] is True
     assert payload["checkout"]["managed"] is True
@@ -304,7 +305,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["package_id"] == "charness"
     assert payload["install_state_path"] == str(home_root / ".local" / "state" / "charness" / "install-state.json")
     assert payload["host_state_path"] == str(home_root / ".local" / "state" / "charness" / "host-state.json")
@@ -360,7 +361,7 @@ def test_charness_doctor_binds_claude_to_custom_home(tmp_path: Path, seeded_mana
     result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["claude_host_guidance"]["status"] == "installed"
     assert payload["claude_enabled_status"]["present"] is True
     assert payload["claude_installed_entry"]["version"] == "local"
@@ -400,13 +401,13 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
 
     installed_text = installed_cli.read_text(encoding="utf-8")
     managed_checkout_text = (home_root / ".agents" / "src" / "charness" / "charness").read_text(encoding="utf-8")
-    assert "STEP: refreshing source checkout" in update_result.stdout
-    assert "STEP: refreshing install surface" in update_result.stdout
-    assert "STEP: skipping Codex host cache refresh" in update_result.stdout
-    assert "DONE: update complete" in update_result.stdout
-    assert "PACKAGE: charness" in update_result.stdout
-    assert "VERSION:" in update_result.stdout
-    assert "NEXT_ACTION:" in update_result.stdout
+    payload = yaml.safe_load(update_result.stdout)
+    assert payload["package_id"] == "charness"
+    assert payload["next_action"]
+    assert "STEP: refreshing source checkout" in update_result.stderr
+    assert "STEP: refreshing install surface" in update_result.stderr
+    assert "STEP: skipping Codex host cache refresh" in update_result.stderr
+    assert "DONE: update complete" in update_result.stderr
     assert marker.strip() in installed_text
     assert installed_text == managed_checkout_text
 
@@ -459,7 +460,7 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
         env=env,
     )
     assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
+    payload = yaml.safe_load(update_result.stdout)
     assert "STEP: refreshing source checkout" in update_result.stderr
     assert "STEP: skipping Codex host cache refresh" in update_result.stderr
     assert payload["checkout"]["pulled"] is True
@@ -497,7 +498,7 @@ def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path, se
     )
 
     assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
+    payload = yaml.safe_load(update_result.stdout)
     assert payload["target_repo_root"] == str(cwd_repo)
     assert payload["repo_onboarding"]["status"] == "skipped"
 
@@ -593,7 +594,7 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["checkout_present"] is True
     assert payload["managed_checkout"] is True
@@ -607,7 +608,7 @@ def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_hom
     )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", "--write-state", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
     assert host_state["last_doctor"]["doctor"]["repo_root"] == payload["repo_root"]
     assert host_state["last_doctor"]["doctor"]["codex_source_version"] == payload["codex_source_version"]

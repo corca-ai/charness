@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 import shutil
 from pathlib import Path
+
+import yaml
 
 from .support import (
     ROOT,
@@ -56,7 +57,7 @@ def test_goal_check_uses_stable_cli_surface_for_achieve_helper() -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["pursue_ready"] is True
     assert payload["path"].endswith(GOAL_PATH)
 
@@ -81,7 +82,7 @@ def test_goal_check_resolves_relative_goal_path_under_target_repo(tmp_path: Path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["pursue_ready"] is True
     assert payload["path"] == str(target_goal.resolve())
 
@@ -104,7 +105,7 @@ def test_goal_check_blocks_unresolved_activation_discussion(tmp_path: Path) -> N
     )
 
     assert result.returncode == 1, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["pursue_ready"] is False
     assert payload["activation_ready"] is False
     assert payload["shape_ready"] is True
@@ -126,9 +127,9 @@ def test_goal_check_blocks_unresolved_activation_discussion(tmp_path: Path) -> N
     )
 
     assert concise.returncode == 1, concise.stderr
-    assert "PURSUE_READY: no" in concise.stdout
-    assert "REASON:" in concise.stdout
-    assert "not marked resolved" in concise.stdout
+    concise_payload = yaml.safe_load(concise.stdout)
+    assert concise_payload["pursue_ready"] is False
+    assert "not marked resolved" in concise_payload["reason"]
 
 
 def test_goal_check_concise_output_surfaces_draft_frame_warning(tmp_path: Path) -> None:
@@ -149,7 +150,7 @@ def test_goal_check_concise_output_surfaces_draft_frame_warning(tmp_path: Path) 
     )
 
     assert json_result.returncode == 0, json_result.stderr
-    payload = json.loads(json_result.stdout)
+    payload = yaml.safe_load(json_result.stdout)
     assert payload["path"] == str(target_goal.resolve())
     assert payload["draft_frame_disposition_present"] is False
     assert "lacks lifecycle disposition" in payload["draft_frame_warning"]
@@ -167,8 +168,9 @@ def test_goal_check_concise_output_surfaces_draft_frame_warning(tmp_path: Path) 
     )
 
     assert concise.returncode == 0, concise.stderr
-    assert "PURSUE_READY: yes" in concise.stdout
-    assert "ADVISORY: draft Active Operating Frame lacks lifecycle disposition" in concise.stdout
+    concise_payload = yaml.safe_load(concise.stdout)
+    assert concise_payload["pursue_ready"] is True
+    assert "lacks lifecycle disposition" in concise_payload["draft_frame_warning"]
 
 
 def test_goal_check_help_names_stable_helper_surface() -> None:

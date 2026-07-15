@@ -70,7 +70,7 @@ def support_discovery_state(
     if isinstance(local_support_path, str) and local_support_path and (repo_root / local_support_path).is_file():
         guidance = (
             f"Support skill is available at `{local_support_path}`. "
-            "Use `charness catalog list --json` to inspect available support surfaces or inspect that path directly."
+            "Use `charness catalog list` to inspect available support surfaces or inspect that path directly."
         )
         return {
             "status": "native",
@@ -131,7 +131,7 @@ def support_discovery_state(
             f"Repo-local discovery stub is available at `{rendered_stub_path}` for host-repo grep and cold-start pickup."
         )
     guidance_parts.append(
-        "Use `charness catalog list --json` to inspect available support surfaces or inspect that path directly."
+        "Use `charness catalog list` to inspect available support surfaces or inspect that path directly."
     )
     if discovery.get("discovery_stub_path"):
         guidance_parts.append("You can also grep the discovery stub from the host repo.")

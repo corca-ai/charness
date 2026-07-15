@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -122,7 +123,7 @@ Use this only to confirm that a newly added public skill became visible after
         env=env,
     )
     assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
+    payload = yaml.safe_load(update_result.stdout)
 
     manifest = json.loads(
         (home_root / ".codex" / "plugins" / "charness" / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8")

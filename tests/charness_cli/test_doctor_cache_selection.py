@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
 from .test_managed_install import CURRENT_VERSION, load_charness_module
@@ -38,7 +39,7 @@ enabled = true
 
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
+    payload = yaml.safe_load(doctor_result.stdout)
     assert payload["codex_enabled_plugin_ids"] == ["charness@charness", "charness@local"]
     assert payload["codex_enabled_plugin_id"] == "charness@local"
     assert payload["codex_cache_manifest_version"] == CURRENT_VERSION

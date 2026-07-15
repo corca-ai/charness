@@ -331,7 +331,7 @@ def render_discovery_stub(*, manifest: dict[str, Any], support_skill_path: str) 
         lines.append(f"- docs: {docs_url}")
     lines.extend(
         [
-            "- discovery command: `charness catalog list --repo-root . --json` (read-only)",
+            "- discovery command: `charness catalog list --repo-root .` (read-only)",
             "",
         ]
     )

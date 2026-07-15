@@ -21,7 +21,7 @@ as upstream-consumed until sync materializes the installed plugin support
 surface.
 
 ```run:shell
-python3 ./charness tool doctor --repo-root . --json specdown | python3 -c "import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True"
+python3 ./charness tool doctor --repo-root . specdown | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True"
 ```
 
 The repo-local task envelope should provide the sah-inspired claim, submit, and
@@ -29,7 +29,7 @@ abort loop as structured state under `.charness/tasks/` without introducing a
 queue or scheduler.
 
 ```run:shell
-python3 ./charness task --repo-root . --json status missing-slice | python3 -c "import json,sys; payload=json.load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'"
+python3 ./charness task --repo-root . status missing-slice | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'"
 ```
 
 The root `doctor` command should emit a single primary `next_action` while
@@ -37,5 +37,5 @@ retaining host-specific `next_steps`, so operator automation can act on the
 first meaningful host move without losing Codex/Claude detail.
 
 ```run:shell
-python3 ./charness doctor --repo-root . --json | python3 -c "import json,sys; payload=json.load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']"
+python3 ./charness doctor --repo-root . | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']"
 ```

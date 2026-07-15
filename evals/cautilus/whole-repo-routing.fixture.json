@@ -15,14 +15,14 @@
       "caseId": "compact-startup-bootstrap-before-impl",
       "displayName": "Compact surface uses catalog only for hidden availability before impl",
       "prompt": "Route only: identify the durable Charness work skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
-      "instructionSurface": {"surfaceLabel": "compact_with_metadata_routing", "files": [{"path": "AGENTS.md", "content": "# demo\n\n## Start Here\n\n- Use installed skill metadata and model judgment; run `charness catalog list --repo-root . --json` only when hidden support/integration availability is unclear.\n- Load matching skills before improvising.\n"}]},
+      "instructionSurface": {"surfaceLabel": "compact_with_metadata_routing", "files": [{"path": "AGENTS.md", "content": "# demo\n\n## Start Here\n\n- Use installed skill metadata and model judgment; run `charness catalog list --repo-root .` only when hidden support/integration availability is unclear.\n- Load matching skills before improvising.\n"}]},
       "expectedRouting": {"bootstrapHelper": "none", "workSkill": "impl"}
     },
     {
       "caseId": "compact-startup-bootstrap-before-spec",
       "displayName": "Compact surface uses installed metadata before spec",
       "prompt": "Route only: identify the durable Charness work skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
-      "instructionSurface": {"surfaceLabel": "compact_with_metadata_routing", "files": [{"path": "AGENTS.md", "content": "# demo\n\n## Start Here\n\n- Use installed skill metadata and model judgment; run `charness catalog list --repo-root . --json` only when hidden support/integration availability is unclear.\n- Load matching skills before improvising.\n"}]},
+      "instructionSurface": {"surfaceLabel": "compact_with_metadata_routing", "files": [{"path": "AGENTS.md", "content": "# demo\n\n## Start Here\n\n- Use installed skill metadata and model judgment; run `charness catalog list --repo-root .` only when hidden support/integration availability is unclear.\n- Load matching skills before improvising.\n"}]},
       "expectedRouting": {"bootstrapHelper": "none", "workSkill": "spec"}
     },
     {

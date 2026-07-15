@@ -34,6 +34,20 @@ class CharnessError(Exception):
     pass
 
 
+def render_yaml(payload: object) -> str:
+    """Render one portable YAML document for the public CLI boundary."""
+    try:
+        import yaml
+    except ImportError as exc:
+        raise CharnessError("PyYAML is required for structured `charness` output.") from exc
+    normalized = json.loads(json.dumps(payload, ensure_ascii=False, allow_nan=False))
+    return yaml.safe_dump(normalized, allow_unicode=True, sort_keys=False)
+
+
+def emit_yaml(payload: object) -> None:
+    print(render_yaml(payload), end="")
+
+
 def default_home_root() -> Path:
     return Path.home().resolve()
 
@@ -2423,8 +2437,13 @@ def print_human_summary(payload: dict[str, object]) -> None:
 
 
 def emit_progress(message: str, *, json_mode: bool) -> None:
-    stream = sys.stderr if json_mode else sys.stdout
-    print(message, file=stream, flush=True)
+    """Keep progress out of the public structured stdout stream.
+
+    ``json_mode`` remains an internal call-site compatibility parameter while the
+    root CLI has one YAML stdout contract.
+    """
+    del json_mode
+    print(message, file=sys.stderr, flush=True)
 
 
 def _version_transition_suffix(update: dict[str, object] | None, status: str) -> str:
@@ -2715,10 +2734,7 @@ def task_failure(
     }
     if task is not None:
         payload["task"] = task
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(f"TASK_REJECTED: {task_id} {status}: {reason}", file=sys.stderr)
+    emit_yaml(payload)
     return 1
 
 
@@ -2745,10 +2761,7 @@ def cmd_task_claim(args: argparse.Namespace) -> int:
         if existing_status == "claimed" and existing_agent == agent_id:
             payload = task_payload(repo_root, existing, "claim-existing")
             payload["next_step"] = f"Continue task `{task_id}`, then submit or abort it."
-            if args.json:
-                print(json.dumps(payload, ensure_ascii=False, indent=2))
-            else:
-                print_task_summary(payload)
+            emit_yaml(payload)
             return 0
         return task_failure(
             args,
@@ -2770,10 +2783,7 @@ def cmd_task_claim(args: argparse.Namespace) -> int:
     path = write_task(repo_root, task)
     payload = task_payload(repo_root, task, "claimed", task_file=path)
     payload["next_step"] = f"Work in the repo, then run `charness task submit {task_id} --summary ...` or `charness task abort {task_id} --reason ...`."
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_task_summary(payload)
+    emit_yaml(payload)
     return 0
 
 
@@ -2796,10 +2806,7 @@ def cmd_task_submit(args: argparse.Namespace) -> int:
     path = write_task(repo_root, task)
     payload = task_payload(repo_root, task, "submitted", task_file=path)
     payload["next_step"] = f"Task `{task_id}` is submitted; the next agent can read `{payload['task_path']}`."
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_task_summary(payload)
+    emit_yaml(payload)
     return 0
 
 
@@ -2816,10 +2823,7 @@ def cmd_task_abort(args: argparse.Namespace) -> int:
     path = write_task(repo_root, task)
     payload = task_payload(repo_root, task, "aborted", task_file=path)
     payload["next_step"] = f"Task `{task_id}` is aborted with a structured reason in `{payload['task_path']}`."
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_task_summary(payload)
+    emit_yaml(payload)
     return 0
 
 
@@ -2838,14 +2842,7 @@ def cmd_task_status(args: argparse.Namespace) -> int:
             if isinstance(item, dict):
                 tasks.append(item)
         payload = {"schema_version": 1, "event": "status-list", "repo_root": str(repo_root), "tasks": tasks}
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        if "task" in payload:
-            print_task_summary(payload)
-        else:
-            for task in payload["tasks"]:
-                print(f"{task.get('task_id')}: {task.get('status')} ({task.get('agent_id')})")
+    emit_yaml(payload)
     return 0
 
 
@@ -3562,7 +3559,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     )
     write_host_state(home_root, key="last_init", payload=doctor_payload)
     payload["checkout"] = checkout
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 
@@ -3580,7 +3577,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     )
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
     pre_update_cache_entries = codex_all_plugin_cache_entries(default_codex_cache_root(home_root))
-    emit_progress("STEP: refreshing source checkout", json_mode=args.json)
+    emit_progress("STEP: refreshing source checkout", json_mode=True)
     checkout = ensure_checkout(
         repo_root,
         managed=managed_checkout,
@@ -3588,7 +3585,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         allow_clone=False,
         allow_pull=managed_checkout and not args.no_pull,
     )
-    emit_progress("STEP: refreshing install surface", json_mode=args.json)
+    emit_progress("STEP: refreshing install surface", json_mode=True)
     selected_wrapper_path = None if args.skip_claude_wrapper else claude_wrapper_path
     payload = install_surface(
         Path(checkout["repo_root"]),
@@ -3619,7 +3616,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     )
     emit_progress(
         "STEP: skipping Codex host cache refresh" if args.skip_codex_cache_refresh else "STEP: refreshing Codex host cache",
-        json_mode=args.json,
+        json_mode=True,
     )
     codex_cache_refresh = maybe_install_codex_host(
         home_root=home_root,
@@ -3712,17 +3709,14 @@ def cmd_update(args: argparse.Namespace) -> int:
             dry_run=False,
             skip_sync_support=False,
             upstream_checkouts=[],
-            json_mode=args.json,
+            json_mode=True,
             precomputed_support_results=payload.get("support_sync"),
         )
         payload["tool_update"] = tool_update_payload
         if tool_update_payload["results"]:
             payload.setdefault("completed_actions", []).append("external_tools_updated")
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        emit_progress("DONE: update complete", json_mode=False)
-        print_update_human_summary(payload)
+    emit_progress("DONE: update complete", json_mode=True)
+    emit_yaml(payload)
     return 1 if tool_update_failed else 0
 
 
@@ -3746,11 +3740,9 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     if args.next_action:
         next_action = payload.get("next_action")
         message = next_action.get("message") if isinstance(next_action, dict) else None
-        print(message if isinstance(message, str) and message else "No manual host action is currently required.")
-    elif args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        emit_yaml({"next_action": message if isinstance(message, str) and message else "No manual host action is currently required."})
     else:
-        print_human_summary(payload)
+        emit_yaml(payload)
     return 0
 
 
@@ -3761,8 +3753,8 @@ def cmd_version(args: argparse.Namespace) -> int:
     else:
         repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
     cli_path = args.cli_path.resolve() if args.cli_path else default_cli_path(home_root)
-    if not args.json and not args.verbose and not args.check:
-        print(packaging_version(repo_root) or "unknown")
+    if not args.verbose and not args.check:
+        emit_yaml({"version": packaging_version(repo_root) or "unknown"})
         return 0
     payload = build_version_payload(
         home_root=home_root,
@@ -3771,12 +3763,7 @@ def cmd_version(args: argparse.Namespace) -> int:
         cli_path=cli_path,
         check=args.check,
     )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    elif args.verbose or args.check:
-        print_version_summary(payload)
-    else:
-        print(payload.get("current_version") or "unknown")
+    emit_yaml(payload)
     return 0
 
 
@@ -3845,7 +3832,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "removed_checkout": removed_checkout,
         "removed_host_state": removed_host_state,
     }
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 
@@ -3965,10 +3952,7 @@ def cmd_capability_init(args: argparse.Namespace) -> int:
             "Run `charness capability explain gather` or `charness capability explain announcement` to see skill-facing logical capability expectations.",
         ],
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 
@@ -3992,10 +3976,7 @@ def cmd_capability_resolve(args: argparse.Namespace) -> int:
         target_repo_root=resolve_target_repo_root(args.target_repo_root),
         logical_id=args.logical_id,
     )
-    if args.json:
-        print(json.dumps(resolved, ensure_ascii=False, indent=2))
-    else:
-        print_capability_summary(resolved)
+    emit_yaml(resolved)
     return 0
 
 
@@ -4007,10 +3988,7 @@ def cmd_capability_doctor(args: argparse.Namespace) -> int:
         logical_id=args.logical_id,
     )
     payload = capability_doctor_payload(charness_repo_root=charness_repo_root, resolved=resolved)
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_capability_summary(payload)
+    emit_yaml(payload)
     doctor = payload["provider_doctor"]
     if doctor.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS:
         return 1
@@ -4044,19 +4022,7 @@ def cmd_capability_env(args: argparse.Namespace) -> int:
         f'export {target_env}="${{{source_env}}}"'
         for target_env, source_env in env_bindings.items()
     ]
-    if args.json:
-        print(
-            json.dumps(
-                {
-                    **resolved,
-                    "shell_exports": shell_lines,
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-        )
-    else:
-        print("\n".join(shell_lines))
+    emit_yaml({**resolved, "shell_exports": shell_lines})
     return 0
 
 
@@ -4067,10 +4033,7 @@ def cmd_capability_explain(args: argparse.Namespace) -> int:
         target_repo_root=resolve_target_repo_root(args.target_repo_root),
         skill_id=args.skill_id,
     )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_capability_explain_summary(payload)
+    emit_yaml(payload)
     return 0
 
 
@@ -4092,10 +4055,7 @@ def cmd_tool_doctor(args: argparse.Namespace) -> int:
             for tool_id, result in tool_result_map(doctor_results).items()
         },
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_tool_human_summary(payload)
+    emit_yaml(payload)
     doctor_map = tool_result_map(doctor_results)
     if any(result.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS for result in doctor_map.values()):
         return 1
@@ -4212,10 +4172,7 @@ def cmd_tool_repair(args: argparse.Namespace) -> int:
         "execute": args.execute,
         "results": results,
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_tool_human_summary(payload)
+    emit_yaml(payload)
     return 1 if failed else 0
 
 
@@ -4251,10 +4208,7 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
             for tool_id in sorted(set([*support_map.keys(), *doctor_map.keys()]))
         },
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_tool_human_summary(payload)
+    emit_yaml(payload)
     if any(
         isinstance(result, dict)
         and isinstance(result.get("doctor"), dict)
@@ -4309,10 +4263,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
             for tool_id in sorted(set([*install_map.keys(), *support_map.keys(), *doctor_map.keys()]))
         },
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_tool_human_summary(payload)
+    emit_yaml(payload)
     if any(
         isinstance(result, dict)
         and isinstance(result.get("install"), dict)
@@ -4334,12 +4285,9 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
         skip_sync_support=args.skip_sync_support,
         upstream_checkouts=args.upstream_checkout,
-        json_mode=args.json,
+        json_mode=True,
     )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_tool_human_summary(payload)
+    emit_yaml(payload)
     return 1 if failed else 0
 
 
@@ -4442,38 +4390,7 @@ def cmd_session_capture_status(args: argparse.Namespace) -> int:
     _, payload = _session_capture_invoke(args, mode="status")
     if not isinstance(payload, dict):
         raise CharnessError("session-capture status returned no JSON payload")
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        in_sync = payload.get("in_sync") is True
-        print(f"IN_SYNC: {'yes' if in_sync else 'no'}")
-        hosts = payload.get("hosts")
-        if isinstance(hosts, dict):
-            for host, entry in hosts.items():
-                if not isinstance(entry, dict):
-                    continue
-                actual = entry.get("actual", {})
-                intent = entry.get("intent", "?")
-                present = actual.get("present") if isinstance(actual, dict) else None
-                settings_path = actual.get("settings_path") if isinstance(actual, dict) else None
-                print(f"{host.upper()}: intent={intent} present={'yes' if present else 'no'} settings={settings_path}")
-        session_routing = payload.get("session_routing")
-        if isinstance(session_routing, dict):
-            routing_hosts = session_routing.get("hosts")
-            if isinstance(routing_hosts, dict):
-                for host, entry in routing_hosts.items():
-                    if not isinstance(entry, dict):
-                        continue
-                    actual = entry.get("actual", {})
-                    intent = entry.get("intent", "?")
-                    present = actual.get("present") if isinstance(actual, dict) else None
-                    settings_path = actual.get("settings_path") if isinstance(actual, dict) else None
-                    print(f"{host.upper()} SESSION-ROUTING: intent={intent} present={'yes' if present else 'no'} settings={settings_path}")
-        drift = payload.get("drift")
-        if isinstance(drift, list) and drift:
-            print("DRIFT:")
-            for item in drift:
-                print(f"  - {item}")
+    emit_yaml(payload)
     return 0 if payload.get("in_sync") is True else 1
 
 
@@ -4484,7 +4401,7 @@ def cmd_session_capture_install(args: argparse.Namespace) -> int:
     _, payload = _session_capture_invoke(args, mode="install", extra=extra)
     if not isinstance(payload, dict):
         raise CharnessError("session-capture install returned no JSON payload")
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(payload)
     return 0
 
 
@@ -4495,21 +4412,21 @@ def cmd_session_capture_uninstall(args: argparse.Namespace) -> int:
     _, payload = _session_capture_invoke(args, mode="uninstall", extra=extra)
     if not isinstance(payload, dict):
         raise CharnessError("session-capture uninstall returned no JSON payload")
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(payload)
     return 0
 
 
 def cmd_worktree_doctor(args: argparse.Namespace) -> int:
     lib = _load_worktree_lib(args)
     payload = lib.run_doctor(_resolve_worktree_target(args))
-    lib.emit_payload(payload, json_mode=args.json, renderer=lib.render_doctor_text)
+    emit_yaml(payload)
     return 0 if payload.get("status") == lib.PASS else 1
 
 
 def cmd_worktree_prepare(args: argparse.Namespace) -> int:
     lib = _load_worktree_lib(args)
     payload = lib.run_prepare(_resolve_worktree_target(args), force=args.force)
-    lib.emit_payload(payload, json_mode=args.json, renderer=lib.render_prepare_text)
+    emit_yaml(payload)
     return 0 if payload.get("status") == lib.PASS else 1
 
 
@@ -4517,7 +4434,7 @@ def cmd_worktree_audit(args: argparse.Namespace) -> int:
     lib = _load_worktree_audit_lib(args)
     target = _resolve_worktree_target(args)
     audit_payload = lib.run_audit(target, stale_days=args.stale_days, include_doctor=args.doctor)
-    lib.emit_payload(audit_payload, json_mode=args.json, renderer=lib.render_audit_text)
+    output: dict[str, object] = {"audit": audit_payload}
 
     if audit_payload.get("status") == lib.PASS:
         exit_code = 0
@@ -4528,13 +4445,14 @@ def cmd_worktree_audit(args: argparse.Namespace) -> int:
 
     if args.prune and audit_payload.get("status") != lib.FAIL:
         prune_payload = lib.run_prune(target)
-        lib.emit_payload(prune_payload, json_mode=args.json, renderer=lib.render_prune_text)
+        output["prune"] = prune_payload
         if prune_payload["status"] != lib.PASS:
             exit_code = max(exit_code, 2)
         else:
             remaining = prune_payload.get("remaining_after_prune") or {}
             if remaining.get("prunable", 0) == 0 and remaining.get("stale", 0) == 0:
                 exit_code = 0
+    emit_yaml(output)
     return exit_code
 
 
@@ -4548,7 +4466,7 @@ def cmd_worktree_cleanup(args: argparse.Namespace) -> int:
         yes=args.yes,
         force=args.force,
     )
-    lib.emit_payload(payload, json_mode=args.json)
+    emit_yaml(payload)
     return 0 if payload.get("status") == lib.PASS else 1
 
 
@@ -4564,7 +4482,7 @@ def cmd_worktree_create(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
         force=args.force,
     )
-    lib.emit_payload(payload, json_mode=args.json)
+    emit_yaml(payload)
     if payload.get("status") == lib.PASS:
         return 0
     if payload.get("status") == lib.WARN:
@@ -4661,16 +4579,12 @@ def cmd_goal_check(args: argparse.Namespace) -> int:
             payload = json.loads(stdout)
         except json.JSONDecodeError:
             payload = None
-    if args.json:
-        if stdout:
-            print(stdout)
-    else:
-        if payload is not None:
-            _print_goal_check_summary(payload)
-        elif stdout:
-            print(stdout)
-        if result.stderr:
-            print(result.stderr, end="" if result.stderr.endswith("\n") else "\n", file=sys.stderr)
+    if payload is not None:
+        emit_yaml(payload)
+    elif stdout:
+        emit_yaml({"helper_stdout": stdout})
+    if result.stderr:
+        print(result.stderr, end="" if result.stderr.endswith("\n") else "\n", file=sys.stderr)
     return result.returncode
 
 
@@ -4688,7 +4602,7 @@ def _load_catalog_lib():
 
 def cmd_catalog_list(args: argparse.Namespace) -> int:
     payload = _load_catalog_lib().list_catalog(args.repo_root.resolve())
-    print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 
@@ -4698,12 +4612,9 @@ def cmd_catalog_refresh(args: argparse.Namespace) -> int:
         payload = catalog.refresh_catalog(args.repo_root.resolve())
     except catalog.CatalogRepoRootError as exc:
         error = {"error": str(exc), "repo_root": str(exc.repo_root)}
-        if args.json:
-            print(json.dumps(error, ensure_ascii=False, indent=2))
-        else:
-            print(str(exc), file=sys.stderr)
+        emit_yaml(error)
         return 2
-    print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 
@@ -4718,7 +4629,7 @@ def cmd_catalog_resolve_skill_path(args: argparse.Namespace) -> int:
         marketplace=args.marketplace,
         plugin=args.plugin,
     )
-    print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0 if payload.get("resolved_path") else 1
 
 
@@ -4752,7 +4663,6 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--cli-path", type=Path)
         command.add_argument("--skip-cli-install", action="store_true")
         command.add_argument("--skip-claude-wrapper", action="store_true")
-        command.add_argument("--json", action="store_true")
 
     init_parser = subparsers.add_parser(
         "init",
@@ -4802,9 +4712,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
     )
     doctor_parser.add_argument("--cli-path", type=Path)
-    doctor_output_group = doctor_parser.add_mutually_exclusive_group()
-    doctor_output_group.add_argument("--json", action="store_true")
-    doctor_output_group.add_argument(
+    doctor_parser.add_argument(
         "--next-action",
         action="store_true",
         help="Print only the current primary next action message.",
@@ -4820,7 +4728,6 @@ def build_parser() -> argparse.ArgumentParser:
     version_parser.add_argument("--home-root", type=Path, default=default_home_root())
     version_parser.add_argument("--repo-root", type=Path, help="Inspect an explicit source checkout instead of the managed default checkout.")
     version_parser.add_argument("--cli-path", type=Path)
-    version_parser.add_argument("--json", action="store_true")
     version_parser.add_argument("--verbose", action="store_true")
     version_parser.add_argument(
         "--check",
@@ -4844,7 +4751,6 @@ def build_parser() -> argparse.ArgumentParser:
     uninstall_parser.add_argument("--cli-path", type=Path)
     uninstall_parser.add_argument("--delete-checkout", action="store_true")
     uninstall_parser.add_argument("--delete-cli", action="store_true")
-    uninstall_parser.add_argument("--json", action="store_true")
     uninstall_parser.set_defaults(func=cmd_uninstall)
 
     reset_parser = subparsers.add_parser(
@@ -4863,7 +4769,6 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
     )
     reset_parser.add_argument("--cli-path", type=Path)
-    reset_parser.add_argument("--json", action="store_true")
     reset_parser.set_defaults(func=cmd_reset)
 
     task_parser = subparsers.add_parser(
@@ -4876,7 +4781,6 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path.cwd(),
         help="Repo where .charness/tasks/*.json task state is stored. Defaults to the current working directory.",
     )
-    task_parser.add_argument("--json", action="store_true")
     task_subparsers = task_parser.add_subparsers(dest="task_command", required=True)
 
     def add_task_identity_args(command: argparse.ArgumentParser) -> None:
@@ -4928,14 +4832,12 @@ def build_parser() -> argparse.ArgumentParser:
         "list", help="Read installed public/support/synced/integration inventory without writing artifacts."
     )
     catalog_list_parser.add_argument("--repo-root", type=Path, required=True)
-    catalog_list_parser.add_argument("--json", action="store_true")
     catalog_list_parser.set_defaults(func=cmd_catalog_list)
 
     catalog_refresh_parser = catalog_subparsers.add_parser(
         "refresh", help="Write the canonical capability catalog current-pointer artifacts."
     )
     catalog_refresh_parser.add_argument("--repo-root", type=Path, required=True)
-    catalog_refresh_parser.add_argument("--json", action="store_true")
     catalog_refresh_parser.set_defaults(func=cmd_catalog_refresh)
 
     catalog_resolve_parser = catalog_subparsers.add_parser(
@@ -4948,7 +4850,6 @@ def build_parser() -> argparse.ArgumentParser:
     catalog_resolve_parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")))
     catalog_resolve_parser.add_argument("--marketplace", default="local")
     catalog_resolve_parser.add_argument("--plugin", default="charness")
-    catalog_resolve_parser.add_argument("--json", action="store_true")
     catalog_resolve_parser.set_defaults(func=cmd_catalog_resolve_skill_path)
 
     capability_parser = subparsers.add_parser(
@@ -4965,7 +4866,6 @@ def build_parser() -> argparse.ArgumentParser:
             type=Path,
             help="Resolve repo-local capability config for this target repo. Defaults to the current working directory.",
         )
-        command.add_argument("--json", action="store_true")
         command.add_argument("logical_id")
 
     capability_init_parser = capability_subparsers.add_parser(
@@ -4978,7 +4878,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Scaffold capability config under this target repo. Defaults to the current working directory.",
     )
     capability_init_parser.add_argument("--force", action="store_true")
-    capability_init_parser.add_argument("--json", action="store_true")
     capability_init_parser.set_defaults(func=cmd_capability_init)
 
     capability_resolve_parser = capability_subparsers.add_parser(
@@ -5013,7 +4912,6 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Inspect repo-local adapter context for this target repo. Defaults to the current working directory.",
     )
-    capability_explain_parser.add_argument("--json", action="store_true")
     capability_explain_parser.add_argument("skill_id")
     capability_explain_parser.set_defaults(func=cmd_capability_explain)
 
@@ -5036,7 +4934,6 @@ def build_parser() -> argparse.ArgumentParser:
     goal_check_parser.add_argument("--slug")
     goal_check_parser.add_argument("--date")
     goal_check_parser.add_argument("--pursue-ready", action="store_true")
-    goal_check_parser.add_argument("--json", action="store_true")
     goal_check_parser.add_argument("--home-root", type=Path, default=default_home_root())
     goal_check_parser.add_argument("--repo-url", default=REPO_URL)
     goal_check_parser.add_argument(
@@ -5057,7 +4954,6 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--repo-root", type=Path, help="Use an explicit existing source checkout instead of the managed default checkout.")
         command.add_argument("--repo-url", default=REPO_URL)
         command.add_argument("--plugin-root", type=Path, help="Installed plugin root where upstream support skills are materialized.")
-        command.add_argument("--json", action="store_true")
         command.add_argument("tool_ids", nargs="*")
 
     def add_support_sync_args(command: argparse.ArgumentParser) -> None:
@@ -5153,7 +5049,6 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--home-root", type=Path, default=default_home_root(), help="Home root used to resolve host settings paths (default: $HOME).")
         command.add_argument("--repo-root", type=Path, help="Use an explicit charness source checkout instead of the managed default checkout.")
         command.add_argument("--repo-url", default=REPO_URL)
-        command.add_argument("--json", action="store_true")
 
     session_capture_status_parser = session_capture_subparsers.add_parser(
         "status",
@@ -5211,7 +5106,6 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--prepare", action="store_true", help="Run readiness prepare after creation.")
         command.add_argument("--dry-run", action="store_true", help="Print the planned git command without creating the worktree.")
         command.add_argument("--force", action="store_true", help="Pass --force to `git worktree add`.")
-        command.add_argument("--json", action="store_true")
         add_worktree_lib_args(command)
         command.set_defaults(func=cmd_worktree_create)
 
@@ -5233,7 +5127,6 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Worktree to inspect. Defaults to the current working directory.",
     )
-    worktree_doctor_parser.add_argument("--json", action="store_true")
     add_worktree_lib_args(worktree_doctor_parser)
     worktree_doctor_parser.set_defaults(func=cmd_worktree_doctor)
 
@@ -5251,7 +5144,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Run prepare even if doctor already reports pass.",
     )
-    worktree_prepare_parser.add_argument("--json", action="store_true")
     add_worktree_lib_args(worktree_prepare_parser)
     worktree_prepare_parser.set_defaults(func=cmd_worktree_prepare)
 
@@ -5280,7 +5172,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Run readiness doctor for existing worktrees and include per-worktree readiness summaries.",
     )
-    worktree_audit_parser.add_argument("--json", action="store_true")
     add_worktree_lib_args(worktree_audit_parser)
     worktree_audit_parser.set_defaults(func=cmd_worktree_audit)
 
@@ -5314,7 +5205,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Pass --force to git worktree remove for dirty targets.",
     )
-    worktree_cleanup_parser.add_argument("--json", action="store_true")
     add_worktree_lib_args(worktree_cleanup_parser)
     worktree_cleanup_parser.set_defaults(func=cmd_worktree_cleanup)
 
@@ -5323,13 +5213,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
+    raw_argv = [argument for argument in raw_argv if argument != "--json"]
     if raw_argv == ["--version"]:
         raw_argv = ["version"]
     parser = build_parser()
     args = parser.parse_args(raw_argv)
     if not (
         getattr(args, "command", None) == "version"
-        and not getattr(args, "json", False)
         and not getattr(args, "verbose", False)
         and not getattr(args, "check", False)
     ):

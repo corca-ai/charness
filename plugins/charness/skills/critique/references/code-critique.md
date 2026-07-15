@@ -81,7 +81,7 @@ When a counterweight bin surfaces a missing capability — for example, a
 gate that should exist but does not, an integration manifest that the diff
 implies but does not declare, an adapter the diff hardcodes around — inspect
 installed skill metadata/model judgment first. If hidden support or integration
-availability is unclear, run `charness catalog list --repo-root . --json`; do
+availability is unclear, run `charness catalog list --repo-root .`; do
 not treat catalog facts as a semantic classifier.
 
 ## Output Shape

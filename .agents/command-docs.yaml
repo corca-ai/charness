@@ -33,7 +33,6 @@ commands:
       - submit
       - abort
       - status
-      - --json
       - --repo-root
     required_doc_contains:
       - charness task claim slice-1
@@ -48,7 +47,6 @@ commands:
     required_help_contains:
       - --skip-cli-install
       - --skip-claude-wrapper
-      - --json
     required_doc_contains:
       - Make sure your machine has Python 3.
       - /tmp/charness-init.sh
@@ -63,11 +61,9 @@ commands:
     required_help_contains:
       - --write-state
       - --next-action
-      - --json
     required_doc_contains:
       - charness doctor
       - --next-action
-      - --json
   update:
     help_command: ./charness update --help
     doc_paths:
@@ -76,7 +72,6 @@ commands:
     required_help_contains:
       - --no-pull
       - --skip-codex-cache-refresh
-      - --json
     required_doc_contains:
       - charness update
       - charness update all
@@ -85,8 +80,6 @@ commands:
     help_command: ./charness reset --help
     doc_paths:
       - docs/generated/cli-reference.md
-    required_help_contains:
-      - --json
     required_doc_contains:
       - charness reset
       - Remove host plugin state for Codex and Claude while preserving the managed checkout and CLI.
@@ -97,7 +90,6 @@ commands:
     required_help_contains:
       - --delete-checkout
       - --delete-cli
-      - --json
     required_doc_contains:
       - charness uninstall
       - Remove the managed local install surface.
@@ -224,7 +216,6 @@ commands:
       - docs/capability-resolution.md
     required_help_contains:
       - logical_id
-      - --json
     required_doc_contains:
       - charness capability doctor slack.default
   capability-env:
@@ -234,7 +225,6 @@ commands:
       - docs/capability-resolution.md
     required_help_contains:
       - logical_id
-      - --json
     required_doc_contains:
       - charness capability env slack.default
   capability-explain:
@@ -244,7 +234,6 @@ commands:
       - docs/capability-resolution.md
     required_help_contains:
       - skill_id
-      - --json
     required_doc_contains:
       - charness capability explain gather
   tool-doctor:
@@ -315,7 +304,6 @@ commands:
       - --path
       - --branch
       - --prepare
-      - --json
     required_doc_contains:
       - charness worktree create --path
   worktree-add:
@@ -327,7 +315,6 @@ commands:
       - --path
       - --branch
       - --prepare
-      - --json
     required_doc_contains:
       - charness worktree add --path
   worktree-doctor:
@@ -337,7 +324,6 @@ commands:
       - docs/worktree-prepare.md
     required_help_contains:
       - --repo-root
-      - --json
     required_doc_contains:
       - charness worktree doctor
   worktree-prepare:
@@ -348,7 +334,6 @@ commands:
     required_help_contains:
       - --repo-root
       - --force
-      - --json
     required_doc_contains:
       - charness worktree prepare
   worktree-audit:
@@ -359,7 +344,6 @@ commands:
     required_help_contains:
       - --repo-root
       - --doctor
-      - --json
     required_doc_contains:
       - charness worktree audit --doctor
   worktree-cleanup:
@@ -371,6 +355,5 @@ commands:
       - --path
       - --delete-merged-branch
       - --yes
-      - --json
     required_doc_contains:
       - charness worktree cleanup --path
