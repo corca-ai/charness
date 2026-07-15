@@ -4676,7 +4676,10 @@ def cmd_goal_check(args: argparse.Namespace) -> int:
 
 def _load_catalog_lib():
     """Load the stable catalog backend from the selected Charness checkout."""
-    repo_root = EMBEDDED_REPO_ROOT or Path(__file__).resolve().parent
+    if EMBEDDED_REPO_ROOT is not None:
+        repo_root = EMBEDDED_REPO_ROOT
+    else:
+        repo_root, _managed_checkout = resolve_repo_root(default_home_root(), None)
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
     from scripts import capability_catalog

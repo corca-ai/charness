@@ -103,6 +103,7 @@ def test_setup_inspect_reports_missing_charness_dynamic_and_codex_profile_polici
 
     payload = _run_inspect(repo)
 
+    assert payload["agent_docs"]["normalization"]["charness_subagent_policy"]["charness_managed"] is True
     findings = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
     recommendations = {
         item["id"]: item for item in payload["agent_docs"]["normalization"]["recommendations"]

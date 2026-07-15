@@ -2,10 +2,10 @@
 """SessionStart hook payload script for contextual session routing hints.
 
 The hook carries context only: pickup follows the handoff, ordinary requests
-use installed skill metadata and model judgment, and deterministic inventory is
-available through `charness catalog list --json` when hidden support or
-integration availability is unclear. It is not a classifier and never invokes
-a public routing skill.
+start their matching workflow from installed skill metadata and model judgment,
+and hidden support or integration availability uses the exact read-only
+`charness catalog list --repo-root <repo> --json` inventory. A nonzero result
+is reported as a command failure. The hook supplies context for the session.
 
 Wiring (installed at USER level so it fires in every session, pointing at the
 released plugin copy of this script — not committed into any one repo):
@@ -43,10 +43,10 @@ DIRECTIVE = (
     "doesn't exist) and invoke the workflow it names; for the default charness "
     "handoff that is `charness:handoff`. "
     "(2) Ordinary requests — use installed skill metadata and your own judgment "
-    "to start the matching workflow. (3) Hidden support/integration inventory "
+    "to start the matching workflow directly. (3) Hidden support/integration inventory "
     "or an unclear availability question — run the read-only `charness catalog "
-    "list --repo-root <repo> --json` command; do not treat its facts as a "
-    "semantic recommendation."
+    "list --repo-root <repo> --json` command. Treat its facts only as inventory; "
+    "if the command returns nonzero, report the command failure."
 )
 
 

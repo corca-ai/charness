@@ -14,6 +14,7 @@ from scripts.setup_markdown_section_lib import extract_section
 from scripts.setup_skill_routing_lib import (
     COMPACT_SKILL_ROUTING_CALL_RE,
     COMPACT_SKILL_ROUTING_NEGATED_CALL_RE,
+    skill_routing_declares_charness_management,
     skill_routing_semantically_complete,
 )
 
@@ -205,7 +206,7 @@ def _detect_charness_subagent_policy(agents_text: str) -> tuple[dict[str, object
     """Report missing Charness-specific standing policies without rewriting AGENTS.md."""
 
     lowered = " ".join(agents_text.lower().translate(str.maketrans("", "", "`*~")).split())
-    charness_managed = skill_routing_semantically_complete(
+    charness_managed = skill_routing_declares_charness_management(
         extract_section(agents_text, "## Skill Routing")
     )
     dynamic_section = " ".join(

@@ -227,6 +227,8 @@ def run_setup_compact_skill_routing_discoverability(
             "At session start, a pickup follows docs/handoff.md",
             "charness catalog list --repo-root <repo> --json",
             "installed skill metadata and model judgment",
+            "choose the durable workflow directly",
+            "if the command returns nonzero, report the command failure",
         )
         for snippet in expected_snippets:
             if snippet not in markdown:

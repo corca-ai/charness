@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- An agent in a consumer repository attempted the removed `charness find-skills` command, then treated its rejection as an inability to inspect skills. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
 - Release publish triggered a configured automatic session retro for `v1.0.6`. (source: `charness-artifacts/retro/2026-07-14-v1-0-6-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v1.0.7`. (source: `charness-artifacts/retro/2026-07-14-v1-0-7-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-14-v1-0-8-release-auto-retro.md`; sources: 91)
-- applied in this follow-up — a known deferred portability seam is not complete until a clean consumer test covers the named installed command, its host asset, and the truthful host mapping. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
-- applied in this slice — objective lifecycle follow-through has a separate report count and rate instead of inflating satisfaction. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
-- applied in this slice — producer wiring, attention-state visibility, public-skill dogfood evidence, and durable artifact status are one mutation checklist before pre-lock proof. (source: `charness-artifacts/retro/2026-07-14-session-retro.md`)
+- applied: persist this retro and the matching debug record with the focused installed-CLI regression proof. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
+- applied: session and generated-AGENTS routing state the matching-workflow action and command-failure reporting action without a prohibition list. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
+- applied: state direct ordinary-task routing and the exact conditional inventory action in the same replacement contract. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
 
 ## Selection Policy
 
@@ -117,7 +117,7 @@
 - `charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-5-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-14-session-retro.md`
 - `charness-artifacts/retro/2026-07-14-v1-0-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-14-v1-0-7-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-14-v1-0-8-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`

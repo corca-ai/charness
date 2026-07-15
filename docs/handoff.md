@@ -38,6 +38,7 @@
   · [v1.0.8 notes](../charness-artifacts/release/2026-07-14-v1.0.8-notes.md)
   · [release critique](../charness-artifacts/critique/2026-07-14-v1-0-8-codex-v2-defaults-release-critique.md)
   · [auto retro](../charness-artifacts/retro/2026-07-14-v1-0-8-release-auto-retro.md)
+  · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
 - Refresh kept: [release state](../charness-artifacts/release/latest.md),
   conditional restart, and the requested-versus-applied boundary because each

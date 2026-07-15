@@ -84,9 +84,11 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   to `fork_turns: "all"`, which rejects those overrides. This is a Codex host
   mapping, not portable policy for other hosts.
 - a short `Skill Routing` fallback paragraph: pickup follows the handoff,
-  ordinary routing uses installed skill metadata and model judgment, and
-  `charness catalog list --json` provides hidden support/integration inventory
-  when needed; a SessionStart hook may inject the same context
+  ordinary routing starts the matching workflow directly from installed skill
+  metadata and model judgment, and hidden support/integration availability runs
+  `charness catalog list --repo-root <repo> --json`; a nonzero result reports a
+  command failure; a SessionStart hook may inject
+  the same context
 - when the repo keeps repo-owned skills, keep one short policy that semantic
   skill changes should freeze the current intent before broad edits by deciding
   whether reviewed dogfood, maintained evaluator scenarios, or checked-in

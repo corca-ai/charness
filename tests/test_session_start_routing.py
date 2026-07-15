@@ -40,7 +40,9 @@ def test_directive_front_loads_pickup_inventory_and_otherwise_routes() -> None:
     # (2) Hidden inventory route: deterministic catalog facts only.
     assert "charness catalog list" in directive
     assert "hidden support/integration" in lowered
-    assert "semantic recommendation" in lowered
+    assert "treat its facts only as inventory" in lowered
+    assert "start the matching workflow directly" in directive
+    assert "if the command returns nonzero" in directive
 
 
 def test_render_output_claude_emits_session_start_additional_context() -> None:

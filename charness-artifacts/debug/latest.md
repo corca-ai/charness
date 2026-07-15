@@ -1,1 +1,1 @@
-2026-07-14-skill-directory-shell-expansion-debug.md
+2026-07-15-session-routing-catalog-cli-debug.md

@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+
+from tests.repo_copy import REPO_COPY_IGNORE
 
 from .support import CLI, build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
 from .test_managed_install import load_charness_module
@@ -228,6 +234,46 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
     )
     assert module.cmd_catalog_resolve_skill_path(resolve_args) == 1
     capsys.readouterr()
+
+
+def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path: Path) -> None:
+    """A copied CLI must use its managed checkout, not its bin directory."""
+    home_root = tmp_path / "home"
+    managed_checkout = home_root / ".agents" / "src" / "charness"
+    shutil.copytree(
+        CLI.parent,
+        managed_checkout,
+        ignore=REPO_COPY_IGNORE,
+    )
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    installed_cli.parent.mkdir(parents=True)
+    shutil.copy2(CLI, installed_cli)
+
+    consumer_repo = tmp_path / "consumer"
+    consumer_repo.mkdir()
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(installed_cli),
+            "catalog",
+            "list",
+            "--repo-root",
+            str(consumer_repo),
+            "--json",
+        ],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["artifacts"]["mode"] == "read-only"
+    assert not (consumer_repo / "charness-artifacts").exists()
 
 
 def test_charness_catalog_refresh_invalid_roots_subprocess_contract(tmp_path: Path) -> None:

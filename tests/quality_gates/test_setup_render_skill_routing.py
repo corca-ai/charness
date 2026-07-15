@@ -38,6 +38,8 @@ def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path, mon
     assert "At session start, a pickup follows docs/handoff.md" in payload["markdown"]
     assert "charness catalog list --repo-root <repo> --json" in payload["markdown"]
     assert "installed skill metadata and model judgment" in payload["markdown"]
+    assert "choose the durable workflow directly" in payload["markdown"]
+    assert "if the command returns nonzero" in payload["markdown"]
     assert "SessionStart hook" in payload["markdown"]
     assert "release-note style summary or chat-ready human update" not in payload["markdown"]
 
@@ -87,8 +89,9 @@ def test_setup_render_skill_routing_leaves_semantically_complete_block(tmp_path:
                 "",
                 "## Skill Routing",
                 "",
-                "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment.",
+                "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly.",
                 "Use the read-only `charness catalog list --repo-root . --json` inventory when hidden availability is unclear.",
+                "If the command returns nonzero, report the command failure rather than concluding skills are unavailable.",
                 "External URLs and source links route through `gather` before deciding.",
                 "Validation closeout and operator reading tests route through `quality`.",
                 "The SessionStart hook may inject this context; it remains context-only.",
@@ -104,3 +107,59 @@ def test_setup_render_skill_routing_leaves_semantically_complete_block(tmp_path:
     assert payload["skill_routing_semantically_complete"] is True
     assert payload["recommended_action"] == "leave_as_is"
     assert payload["missing_expected_snippets"] == []
+
+
+def test_setup_render_skill_routing_reviews_block_without_direct_or_failure_actions(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text(
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Skill Routing",
+                "",
+                "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment.",
+                "Use the read-only `charness catalog list --repo-root . --json` inventory when hidden availability is unclear.",
+                "External URLs and source links route through `gather` before deciding.",
+                "Validation closeout and operator reading tests route through `quality`.",
+                "The SessionStart hook may inject this context; it remains context-only.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    payload = _render_skill_routing.build_payload(repo)
+
+    assert payload["skill_routing_semantically_complete"] is False
+    assert payload["recommended_action"] == "review_existing_skill_routing"
+
+
+def test_setup_render_skill_routing_accepts_equivalent_action_order(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text(
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Skill Routing",
+                "",
+                "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment.",
+                "Directly invoke the appropriate workflow for ordinary requests.",
+                "Use the read-only `charness catalog list --repo-root . --json` inventory when hidden availability is unclear.",
+                "Report the command failure whenever it returns a nonzero status.",
+                "External URLs and source links route through `gather` before deciding.",
+                "Validation closeout and operator reading tests route through `quality`.",
+                "The SessionStart hook may inject this context; it remains context-only.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    payload = _render_skill_routing.build_payload(repo)
+
+    assert payload["skill_routing_semantically_complete"] is True
+    assert payload["recommended_action"] == "leave_as_is"
