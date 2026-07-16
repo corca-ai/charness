@@ -142,3 +142,23 @@ def test_achieve_root_uses_reference_index_with_core_headroom() -> None:
         "references/adapter-contract.md",
     ):
         assert reference in index_text
+
+
+def test_over_cap_skill_body_error_states_the_split_or_delete_rule(tmp_path: Path) -> None:
+    """North-star P2: the gate message at the moment of cap pressure must brief
+    the split-or-delete rule, never instruct displacing overflow into
+    references/ (displaced overflow goes unread)."""
+    repo = tmp_path / "repo"
+    skill_dir = _write_indexed_skill(repo, skill_extra_lines=["filler"] * 250)
+
+    try:
+        validate_skills.validate_support_files(repo.resolve(), skill_dir, "public")
+    except validate_skills.ValidationError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("over-cap SKILL.md passed the length gate")
+
+    assert "separate a concept" in message
+    assert "delete" in message
+    assert "P2" in message
+    assert "move detail into references" not in message

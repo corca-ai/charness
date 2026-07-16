@@ -127,8 +127,9 @@ canonical adapter when the repo should own topology terms.
 
 - Maximize reuse first. Port an existing skill body or reference when it
   already captures the right behavior.
-- Do not let a public skill smuggle multiple concepts just because the old repo
-  had several narrow expert surfaces.
+- Do not let a public skill smuggle multiple concepts; a body at the length cap
+  is that smell — separate a concept into its own skill or delete it, never
+  shave lines or displace overflow into `references/` (north-star P2).
 - Use a named person anchor in the public core only when it reliably retrieves a
   real reasoning frame (the decoration/strip guidance and the multi-skill
   propagation rule live in `references/portable-authoring.md` "Named Anchor Rule").

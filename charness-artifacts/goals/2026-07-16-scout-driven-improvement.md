@@ -274,6 +274,20 @@ applies.
 - Lessons carried forward:
 - Metrics:
 
+### Slice 4: S4: length-gate message aligned to north-star P2 + D36 orphan note corrected
+
+- Objective: The over-cap SKILL.md ValidationError instructed the exact P2-forbidden move ('move detail into references'); it now states split-a-concept-or-delete citing design-north-star P2, the same rule is stated in create-skill's Rules (the authoring contract an author reads at cap pressure), and the D36 residual note now records that orphan fingerprints 3d4af4/d38941 were pruned by the v1.0.10 nose re-baseline so future readers stop hunting for them.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: validate_skills passes (21 packages); behavioral check confirms the over-cap message states the P2 rule; new pinned regression test test_over_cap_skill_body_error_states_the_split_or_delete_rule (asserts the forbidden instruction is gone); 39 adjacent artifact-validator tests pass (their 'should stay concise' pins are artifact_validator's, untouched); run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review completed. Gate pass/fail behavior unchanged (message-only); fresh-eye coverage deferred to the final closeout review per meaningful-slice-cadence.
+- Test duplication pressure: dup-ratchet clean at prior sample; +1 test this slice
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

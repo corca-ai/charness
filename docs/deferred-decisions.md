@@ -392,7 +392,10 @@ Reopen trigger:
 - Residual reopen trigger: a commit-message close self-classifies `question`/`decision-needed`
   and skips the behavioral/critique floors with no reviewer noticing, or the shared close
   advisory is touched for another reason. Orphan baseline fingerprints (`3d4af4`, `d38941`)
-  left by the additive scoped-accept are the known D30 residual churn, not a D36 regression.
+  left by the additive scoped-accept were the known D30 residual churn, not a D36
+  regression; both were pruned from the gate baseline by the nose 0.18.0→0.19.0
+  re-baseline that rode release v1.0.10 (commit `51dfc479`), so they no longer
+  exist on disk (verified 2026-07-16).
 
 ### D37. Post-capture identity-leak assertion in the scoring path
 

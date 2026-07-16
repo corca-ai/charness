@@ -350,7 +350,10 @@ def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
 
     if len(lines) > MAX_SKILL_MD_LINES:
         raise ValidationError(
-            f"SKILL.md should stay concise; move detail into references before it grows past {MAX_SKILL_MD_LINES} lines"
+            f"SKILL.md exceeds {MAX_SKILL_MD_LINES} lines. A body at the cap means the skill "
+            "carries more than one concept: separate a concept into its own skill or delete it "
+            "— do not shave lines or push overflow into references/ (displaced overflow goes "
+            "unread; docs/design-north-star.md P2)"
         )
 
     if "## References" not in contents:
