@@ -71,7 +71,21 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" brief-path --repo-root . --number <n>
 ```
 
 That emits a canonical `charness-artifacts/issue/YYYY-MM-DD-issue-<n>-brief.md`
-write path. Write the same brief text there before pausing.
+write path. Write the same brief text there before pausing, and append one
+`AI-provenance:` line naming the brief as agent-drafted pause state (the
+resolution is still pending, so do not copy a closeout carrier's human-audited
+marker).
+
+Commit the persisted brief at pause time rather than leaving it dirty: a
+repo whose commit gate verifies issue-closeout carriers must never demand the
+closeout ledger for a pausing brief — no honest critique or behavior ledger
+can exist before the resolution. When such a gate recognizes the staged brief
+as an issue-closeout carrier at all (recognition keys on close-keyword text
+in the brief body, so a brief with only bare `#N` references stays outside
+the gate), the pause state (`Autonomous vs pause:` in a pause value, with no
+close keyword for the brief's issues in the commit message) reduces the
+requirement to the `AI-provenance:` line. The full ledger requirement returns
+whenever the commit message close-keywords any of the brief's issue numbers.
 
 When the brief continues without pause (empty open decisions + `--auto` or
 `feature_brief_pause: never`), transcript emission is sufficient and no

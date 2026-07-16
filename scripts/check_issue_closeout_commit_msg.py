@@ -12,10 +12,16 @@ from pathlib import Path
 from typing import Any
 
 _CLASSIFICATION_RE = re.compile(
-    r"(?im)^\s*(?:[-*]\s*)?classification\s*:\s*"
+    r"(?im)^\s*(?:[-*]\s*)?(?:\*\*)?classification(?:\*\*)?\s*:\s*"
     r"(?P<classification>bug|feature|deferred-work|question|decision-needed)\s*$"
 )
 _COMMENT_LINE_RE = re.compile(r"^\s*#")
+# A pausing resolution brief (references/resolution-brief.md "Persistence")
+# declares itself with the template's `Autonomous vs pause:` field; a value
+# starting with "paus" (paused/pausing) is the pause state, "continuing" is not.
+_PAUSE_BRIEF_RE = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?(?:\*\*)?autonomous vs pause(?:\*\*)?\s*:\s*paus"
+)
 
 
 def _load_issue_verify_closeout():
@@ -95,6 +101,8 @@ def _issue_closeout_artifacts(repo_root: Path, iter_refs: Any, strip_code_fences
                 "path": path,
                 "numbers": numbers,
                 "classification": _infer_classification(body),
+                "pause_brief": _PAUSE_BRIEF_RE.search(body) is not None,
+                "body": body,
             }
         )
     return artifacts
@@ -135,6 +143,42 @@ def _bare_classification(body: str) -> str:
     return "bug"
 
 
+def _pause_brief_reports(pause_briefs: list[dict[str, Any]], verify_module: Any) -> list[dict[str, Any]]:
+    """Light-path reports for pausing resolution briefs (#444).
+
+    A pausing brief is persisted pause state, not a closeout carrier: at pause
+    time no resolution exists, so demanding the critique/behavior ledger forces
+    fabrication (the exact contract conflict #444 records). The one requirement
+    kept is rung-1 provenance — the persisted brief itself must be legible as
+    agent-authored via an ``AI-provenance:`` line. Full ledger teeth return the
+    moment the commit message close-keywords one of the brief's numbers (the
+    caller routes that overlap back to the full floor before calling this).
+    """
+    # floor-addition-restraint: replaces an unsatisfiable full-ledger demand on
+    # pause briefs with a one-line provenance floor the brief contract names.
+    reports: list[dict[str, Any]] = []
+    for artifact in pause_briefs:
+        # The pause floor is unconditional: a question/decision-needed
+        # self-classification must not bypass the one requirement kept.
+        floor_classification = artifact["classification"]
+        if floor_classification in verify_module.FLOOR_EXEMPT_CLASSIFICATIONS:
+            floor_classification = "feature"
+        provenance = verify_module.evaluate_ai_provenance(artifact["body"], floor_classification)
+        reports.append(
+            {
+                "ok": bool(provenance.get("ok")),
+                "status": "pause_brief_verified" if provenance.get("ok") else "failed",
+                "numbers": artifact["numbers"],
+                "classification": artifact["classification"],
+                "carrier": "commit-msg",
+                "source_artifact": artifact["path"],
+                "trigger": "pause-brief",
+                "ai_provenance": provenance,
+            }
+        )
+    return reports
+
+
 def _exemption_advisories(reports: list[dict[str, Any]], advisory_fn: Any) -> list[str]:
     """Non-blocking REVIEW advisories for any report whose self-classification
     exempts it from the behavioral-verdict and resolution-critique floors.
@@ -170,15 +214,29 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
     commit_msg_file = commit_msg_file.resolve()
     raw_body = commit_msg_file.read_text(encoding="utf-8")
     sanitized_body = _strip_commit_comments(raw_body)
+    message_refs = {number for _repo, number in iter_refs(sanitized_body)}
+    # Pause carve-out (#444): a pausing resolution brief is persisted state, not
+    # a closeout carrier — at pause time no honest critique/behavior ledger can
+    # exist. The brief stays exempt only while the commit message close-keywords
+    # none of its issue numbers; a `Close #N` overlap restores the full floor.
+    pause_briefs = [
+        artifact
+        for artifact in artifacts
+        if artifact["pause_brief"] and not (set(artifact["numbers"]) & message_refs)
+    ]
+    artifacts = [artifact for artifact in artifacts if artifact not in pause_briefs]
     covered = {number for artifact in artifacts for number in artifact["numbers"]}
     # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
     bare_numbers = _bare_close_keyword_numbers(sanitized_body, covered, iter_refs)
-    if not artifacts and not bare_numbers:
+    pause_reports = _pause_brief_reports(pause_briefs, issue_verify_closeout)
+    for artifact in artifacts + pause_briefs:
+        artifact.pop("body", None)
+    if not artifacts and not bare_numbers and not pause_reports:
         return {"ok": True, "status": "not_applicable", "artifacts": [], "review_advisory": []}
 
     sanitized_file = commit_msg_file.with_suffix(commit_msg_file.suffix + ".charness-closeout-body")
     sanitized_file.write_text(sanitized_body, encoding="utf-8")
-    reports: list[dict[str, Any]] = []
+    reports: list[dict[str, Any]] = list(pause_reports)
     try:
         for artifact in artifacts:
             report = issue_verify_closeout.verify_closeout(
@@ -218,6 +276,7 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
         "ok": ok,
         "status": "verified" if ok else "failed",
         "artifacts": artifacts,
+        "pause_briefs": pause_briefs,
         "bare_close_numbers": bare_numbers,
         "reports": reports,
         "review_advisory": _exemption_advisories(
@@ -236,6 +295,11 @@ def _format_failure(report: dict[str, Any]) -> str:
         numbers = ", ".join(f"#{number}" for number in item.get("numbers", []))
         if source is None:
             lines.append(f"- commit message close keyword (no staged closeout artifact): {numbers}")
+        elif item.get("trigger") == "pause-brief":
+            lines.append(
+                f"- {source}: {numbers} (pausing resolution brief: exempt from the closeout "
+                "ledger, but the brief itself must carry an `AI-provenance:` line)"
+            )
         else:
             lines.append(f"- {source}: {numbers}")
         if item.get("missing_close_keywords"):

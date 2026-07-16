@@ -59,3 +59,47 @@ def test_exemption_advisories_bare_keyword_names_default_scope() -> None:
     lines = checker._exemption_advisories(reports, _advisory_fn())
     assert len(lines) == 1
     assert "commit-message close keyword" in lines[0]
+
+
+def test_infer_classification_accepts_bold_template_form() -> None:
+    # The resolution-brief template renders `**Classification**: deferred-work`;
+    # the plain-only regex used to miss it and fall through to the strict `bug`
+    # default, demanding the bug ledger for a deferred-work brief (#444).
+    body = "# Resolution Brief\n\n**Classification**: deferred-work\n"
+    assert checker._infer_classification(body) == "deferred-work"
+
+
+def test_pause_brief_marker_matches_pause_states_only() -> None:
+    assert checker._PAUSE_BRIEF_RE.search("**Autonomous vs pause**: pausing for user discussion")
+    assert checker._PAUSE_BRIEF_RE.search("Autonomous vs pause: paused; awaiting operator decisions")
+    assert not checker._PAUSE_BRIEF_RE.search(
+        "**Autonomous vs pause**: continuing because empty open decisions"
+    )
+
+
+def test_bare_classification_honors_bold_explicit_line() -> None:
+    # Deliberate bundle from the #444 critique (C2): the shared regex widening
+    # also lets a BARE commit message assert classification in the template's
+    # bold form. That stays consistent with `_bare_classification`'s contract
+    # (an explicit line is a deliberate assertion, unlike the loose substring
+    # heuristic it refuses), so the behavior is pinned here as intentional.
+    body = "Fixes #9\n\n**Classification**: question\n"
+    assert checker._bare_classification(body) == "question"
+
+
+def test_pause_brief_provenance_floor_is_unconditional_on_classification() -> None:
+    # #444 critique C5: `evaluate_ai_provenance` self-exempts question/
+    # decision-needed carriers, but the pause light path keeps exactly one
+    # requirement — the provenance line — so that exemption must not tunnel
+    # through a loosely-inferred classification.
+    module = checker._load_issue_verify_closeout()
+    artifact = {
+        "path": "charness-artifacts/issue/2026-01-01-issue-7-brief.md",
+        "numbers": [7],
+        "classification": "question",
+        "body": "Autonomous vs pause: pausing for user discussion\n",
+    }
+    reports = checker._pause_brief_reports([artifact], module)
+    assert reports[0]["ok"] is False
+    assert reports[0]["ai_provenance"]["missing"] is True
+    assert reports[0]["classification"] == "question"

@@ -366,3 +366,135 @@ def test_commit_msg_checker_resolves_exported_plugin_skill_layout(tmp_path: Path
 
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["status"] == "verified"
+
+
+def _pause_brief_body(provenance: bool = True) -> str:
+    lines = [
+        "# Resolution Brief — corca-ai/charness#77",
+        "**Classification**: deferred-work",
+        "**Reporter JTBD**: keep the pause durable across session compaction.",
+        "**Open decisions**:\n- split vs delete",
+        "Close scope: close #77 after the follow-up slice lands.",
+        "**Autonomous vs pause**: pausing for user discussion",
+    ]
+    if provenance:
+        lines.append(
+            "AI-provenance: agent-drafted pause brief via charness issue resolve; resolution pending"
+        )
+    return "\n\n".join(lines) + "\n"
+
+
+def test_commit_msg_gate_accepts_pausing_brief_with_provenance_and_no_close_keyword(
+    tmp_path: Path,
+) -> None:
+    """Reproduces the 2026-07-16 refusal (#444): committing a pausing
+    resolution brief alone must not demand the closeout ledger. The pause
+    carve-out requires only the brief's own `AI-provenance:` line while the
+    commit message carries no close keyword for the brief's issue."""
+    _init_repo(tmp_path)
+    _stage_issue_closeout(tmp_path, _pause_brief_body())
+    message = tmp_path / "message.txt"
+    message.write_text("Persist paused resolution brief for #77\n", encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "verified"
+    assert payload["artifacts"] == []
+    assert payload["pause_briefs"][0]["classification"] == "deferred-work"
+    report = payload["reports"][0]
+    assert report["trigger"] == "pause-brief"
+    assert report["ai_provenance"]["ok"] is True
+
+
+def test_commit_msg_gate_rejects_pausing_brief_missing_provenance_line(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    _stage_issue_closeout(tmp_path, _pause_brief_body(provenance=False))
+    message = tmp_path / "message.txt"
+    message.write_text("Persist paused resolution brief for #77\n", encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    report = payload["reports"][0]
+    assert report["trigger"] == "pause-brief"
+    assert report["ai_provenance"]["missing"] is True
+
+    human = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    assert human.returncode == 1
+    assert "AI-provenance" in human.stderr
+    assert "pausing resolution brief" in human.stderr
+
+
+def test_commit_msg_gate_keeps_full_ledger_teeth_when_message_close_keywords_pause_brief(
+    tmp_path: Path,
+) -> None:
+    """The carve-out is pause-scoped only: the moment the commit message
+    close-keywords the brief's issue, the staged brief is a closeout carrier
+    again and the full ledger floor applies."""
+    _init_repo(tmp_path)
+    _stage_issue_closeout(tmp_path, _pause_brief_body())
+    message = tmp_path / "message.txt"
+    message.write_text("Close #77\n\nDone.\n", encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "failed"
+    assert payload["pause_briefs"] == []
+    report = payload["reports"][0]
+    assert report["source_artifact"].endswith("closeout.md")
+    assert report["missing_fields"], report
+
+
+def test_commit_msg_gate_reads_bold_classification_from_staged_artifact(tmp_path: Path) -> None:
+    """The brief template's bold `**Classification**:` form must classify as
+    written instead of falling through to the strictest `bug` inference and
+    demanding the bug ledger for a deferred-work carrier (#444)."""
+    _init_repo(tmp_path)
+    body = "\n\n".join(
+        [
+            "Close #88.",
+            "**Classification**: deferred-work",
+            "JTBD: resolve the deferred slice.",
+            "Resolution brief: inline (no pause).",
+        ]
+    )
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    payload = json.loads(result.stdout)
+    assert payload["artifacts"][0]["classification"] == "deferred-work"
+    report = payload["reports"][0]
+    assert "root_cause" not in report["missing_fields"]
+    assert "debug_artifact" not in report["missing_fields"]
+
+
+def test_commit_msg_gate_stays_out_of_scope_for_template_faithful_brief(tmp_path: Path) -> None:
+    """#444 critique C1: the gate recognizes closeout carriers by close-keyword
+    text in the artifact body. A template-faithful pause brief carries only a
+    bare `#N` reference, so it never enters the gate at all — the provenance
+    floor applies only to briefs the gate can see (close-keyword text in the
+    body), exactly as the resolution-brief Persistence prose states."""
+    _init_repo(tmp_path)
+    body = "\n\n".join(
+        [
+            "# Resolution Brief — corca-ai/charness#77",
+            "**Classification**: deferred-work",
+            "**Autonomous vs pause**: pausing for user discussion",
+        ]
+    ) + "\n"
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text("Persist paused resolution brief for #77\n", encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["status"] == "not_applicable"
