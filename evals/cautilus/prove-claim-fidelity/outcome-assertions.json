@@ -1,0 +1,37 @@
+{
+  "_comment": "OUTCOME assertion set for the prove skill (companion to spec.json). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle. CONTEXT: the spec.json floor is an EMITTED-token floor (requiredSummaryFragments=[Lint Gate]) because the closeout tokens live verbatim in core `## Closeout Vocabulary` — but a token floor alone lets a hollow run ECHO `Lint Gate` vocabulary without executing anything (the deferred substance gap recorded in the #439 resolution critique F4, closed here per #442). This set protects the SUBSTANCE of prove's central claim — 'run the strongest honest verification, sync truth surfaces, bind the required fresh-eye critique, and emit the slice closeout ledger' — directly: did the run actually EXECUTE verification of the named subject, is the emitted ledger backed by that run's own evidence, is the critique binding honest about what actually ran, and is unproven behavior explicitly left unverified. The judge-kind assertions need the live judge (--judge-cmd, ask-before-run) and read the assistant transcript, so a live capture MUST preserve the transcript (_write_transcript) into the bundle or the judge grades blind. Assertions name only the deterministic SUBJECT the prompt gives (the claim_fidelity_lib `_validate_string_list` slice) and prove's own vocabulary contract; they are NOT reverse-engineered to one capture's literal output, so an honest run that reports `blocked`/`unverified` states truthfully can PASS while a confident token-echo run that executed nothing legitimately scores low.",
+  "evalId": "prove-claim-fidelity",
+  "assertions": [
+    {
+      "id": "ran-prove",
+      "kind": "deterministic",
+      "statement": "The captured run actually executed the prove skill (sanity floor before grading the closeout substance).",
+      "check": {"type": "summary_contains", "value": "Execution of /prove"},
+      "weight": 1
+    },
+    {
+      "id": "executed-verification",
+      "kind": "judge",
+      "statement": "The run actually EXECUTED verification for the named subject — it ran the tests or checks covering the `claim_fidelity_lib` `_validate_string_list` slice (e.g. invoked pytest / the module directly) and observed the result before emitting the ledger, rather than only inspecting code, narrating confidence, or asserting success without running anything. This is prove's central 'strongest honest verification' claim, judged on whether real execution happened in the transcript/trace.",
+      "weight": 2
+    },
+    {
+      "id": "honest-categorized-closeout",
+      "kind": "judge",
+      "statement": "The emitted closeout ledger is backed by the run's own evidence: an explicit Lint Gate status (one of ran-pass / ran-fail-fixed / ran-fail-deferred / not-detected / skipped) that matches what the run actually did, a completion-report category (one of durable / external-writes / test-only / verification / unverified-future) that fits the delivered work, and any genuinely-unproven behavior explicitly marked unverified — not a generic 'done' and not vocabulary echoed without the execution it describes.",
+      "weight": 2
+    },
+    {
+      "id": "critique-binding-honesty",
+      "kind": "judge",
+      "statement": "The recorded `Critique:` line is honest about what actually ran: `short`/`full` only when a real bounded review pass happened in the run, `blocked <host-signal>` with the concrete signal when the capture harness could not provide subagents, or `not-applicable <reason>` only for a genuinely non-task-completing request. A run that claims a critique that never ran, or silently omits the stop-gate binding, scores low.",
+      "weight": 1
+    },
+    {
+      "id": "truth-surface-sync-honesty",
+      "kind": "judge",
+      "statement": "The run addressed the truth-surface sync step honestly: it checked the repo's README / impl-adapter `truth_surfaces` for drift against the slice (or stated concretely why no surface could be affected), instead of skipping the step silently or claiming sync without reading any surface.",
+      "weight": 1
+    }
+  ]
+}

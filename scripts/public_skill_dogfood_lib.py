@@ -30,6 +30,7 @@ REPO_SHAPE_HINTS = {
     "setup": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
     "issue": "repo connected to GitHub where issue creation or issue resolution should use `gh` and GitHub state as the source of truth",
     "narrative": "repo with existing source-of-truth docs that drift from the current product or project story",
+    "prove": "mature repo with a just-built implementation or contract slice awaiting closeout proof (impl adapter optional and read-only when present)",
     "critique": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
     "quality": "mature repo with standing local gates, runtime budgets, possible local-vs-CI machine variance, and at least one final stop-before-finish command",
     "release": "repo with checked-in version or packaging surfaces and a maintainer-facing release workflow",

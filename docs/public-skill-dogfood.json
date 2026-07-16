@@ -741,7 +741,7 @@
   {
    "skill_id": "prove",
    "prompt": "Use when a built implementation or contract slice needs its closeout proven before stopping: run the strongest honest verification, sync truth surfaces, bind the required fresh-eye critique, and emit the slice closeout ledger. `impl` loads this at its stop gate; contract-completing work consumes the same ledger.",
-   "repo_shape": "repo shape not yet classified; add a concrete mature or cold-start fixture before relying on this row",
+   "repo_shape": "mature repo with a just-built implementation or contract slice awaiting closeout proof (impl adapter optional and read-only when present)",
    "expected_skill": "prove",
    "expected_artifact": null,
    "validation_tier": "hitl-recommended",
