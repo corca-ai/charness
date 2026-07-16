@@ -261,28 +261,6 @@ def make_fake_npm_agent_browser(tmp_path: Path) -> tuple[Path, Path]:
     return npm_script, browser_link
 
 
-def make_fake_update_all_toolchain(tmp_path: Path) -> Path:
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir(parents=True, exist_ok=True)
-
-    cargo = bin_dir / "cargo"
-    shutil.copy2(FIXTURES / "fake_cargo_update_all.py", cargo)
-    cargo.with_suffix(".json").write_text(
-        json.dumps({"bin_dir": str(bin_dir), "fixtures": str(FIXTURES)}, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    cargo.chmod(0o755)
-
-    uv = bin_dir / "uv"
-    shutil.copy2(FIXTURES / "fake_uv_update_all.py", uv)
-    uv.with_suffix(".json").write_text(
-        json.dumps({"bin_dir": str(bin_dir), "fixtures": str(FIXTURES)}, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    uv.chmod(0o755)
-    return bin_dir
-
-
 def make_fake_go_specdown(tmp_path: Path) -> tuple[Path, Path]:
     gopath = tmp_path / "go"
     bin_dir = tmp_path / "bin"

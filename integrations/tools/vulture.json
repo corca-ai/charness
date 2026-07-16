@@ -26,13 +26,10 @@
       ]
     },
     "update": {
-      "mode": "script",
-      "commands": [
-        "if command -v uv >/dev/null 2>&1; then uv tool upgrade vulture; elif command -v pipx >/dev/null 2>&1; then pipx upgrade vulture; else python3 -m pip install --user --upgrade vulture; fi"
-      ],
+      "mode": "manual",
       "docs_url": "https://pypi.org/project/vulture/",
       "notes": [
-        "Update through the same user-tool mechanism that installed `vulture`; for uv installs, run `uv tool upgrade vulture`."
+        "`vulture` installs via uv/pipx/pip, which are not recognized install-provenance keys, so its update is always manual: update through the same user-tool mechanism that installed it (`uv tool upgrade vulture`, `pipx upgrade vulture`, or `python3 -m pip install --user --upgrade vulture`)."
       ]
     }
   },

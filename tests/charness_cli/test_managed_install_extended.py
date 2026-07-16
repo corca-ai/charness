@@ -18,7 +18,6 @@ from .support import (
     make_fake_claude,
     make_fake_go_specdown,
     make_fake_npm_agent_browser,
-    make_fake_update_all_toolchain,
     make_release_fixture,
     make_support_sync_fixture,
     run_cli,
@@ -50,7 +49,6 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
 
     fake_agent_browser_npm, fake_agent_browser = make_fake_npm_agent_browser(tmp_path)
     fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
-    make_fake_update_all_toolchain(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
     fake_curl, fake_nose = make_fake_nose(tmp_path)
     release_fixture = make_release_fixture(tmp_path)

@@ -24,13 +24,10 @@
       ]
     },
     "update": {
-      "mode": "script",
-      "commands": [
-        "GOPATH=\"$(go env GOPATH)\" && mkdir -p \"$GOPATH/bin\" \"$HOME/.local/bin\" && go install github.com/charmbracelet/glow/v2@latest && ln -sf \"$GOPATH/bin/glow\" \"$HOME/.local/bin/glow\""
-      ],
+      "mode": "manual",
       "docs_url": "https://github.com/charmbracelet/glow/releases",
       "notes": [
-        "Use the same mechanism that originally installed the binary. Go installs can rerun `go install github.com/charmbracelet/glow/v2@latest`."
+        "Charness updates `glow` only when its install provenance is a recognized package-manager path (a go-owned GOPATH install); otherwise update through the same mechanism that installed the binary (e.g. `brew upgrade glow` for a Homebrew install)."
       ]
     }
   },

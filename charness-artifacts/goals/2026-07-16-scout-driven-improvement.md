@@ -9,15 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S1 — handoff refresh + post-publish reconcile evidence line.
-- Current slice intent: refresh `docs/handoff.md` to v1.0.11 ground truth and
-  add an adapter-driven, presence-checked `handoff reconciled` evidence step to
-  the release closeout tail (P5 shape: force the question, no terminal green);
-  one commit expected.
-- Next action: implement S1, run focused release-script tests +
-  `run_slice_closeout.py --skip-broad-pytest`, commit, append slice log; then
-  S2 (provenance manifests) → S3 (compact projection) → S4 (P2 gate message +
-  D36 note) → S5 (disposition sweep + issues).
+- Current slice: S2 — provenance-gated update contract for glow/tokei/vulture.
+- Current slice intent: flip the three `lifecycle.update` blocks to manual
+  (gitleaks precedent; glow/tokei keep go/cargo provenance routing, vulture is
+  manual-always), generalize the contract test to every script-mode manifest,
+  update the charness_cli fixtures the flip invalidates, mirror the plugin
+  copies; one commit expected. S1 done at e1653d73 (SHIP review, gates green).
+- Next action: implement S2, run contract + charness_cli update tests
+  (incl. release_only update-all e2e), slice closeout, commit; then S3 → S4 →
+  S5 (disposition sweep + issues).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -241,6 +241,20 @@ applies.
 - Alternatives rejected:
 - Targeted verification: 7 unit tests (test_release_baton_reconcile.py) + 2 e2e asserts in the release_only publish test; 56 focused + 14 release_only tests pass; run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review completed; doc preflight clean; fresh-eye bounded-reviewer verdict SHIP (2 minor should-fixes applied: handoff wording softened to refresh-not-readback, post_publish_* family added to adapter-contract.md); reviewer fingerprint verify ok (zero drift). Cautilus decision: plan not-required (run_mode ask); deterministic tests are the proof level, no eval run. Floor-Addition Restraint: recorded at BATON_SECTIONS site (non-blocking observation, recurrence recorded).
 - Test duplication pressure: dup-ratchet: clean after boy-scout dedup (shared tests/quality_gates/release_script_loading.py loader replacing per-file importlib boilerplate in 2 test files) + scoped accept of collateral clustering rotation 895d96962b294ed4 (members untouched pre-existing files: check_prescribed_skill_executed.py + markdown_preview_render.py); baseline 639->640
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 2: S2: provenance-gated update contract completed for glow/tokei/vulture
+
+- Objective: Flip glow/tokei/vulture lifecycle.update to manual per the gitleaks precedent so no update guesses an installer from PATH: glow/tokei keep go/cargo provenance routing via package_managers metadata, vulture is manual-always (uv/pipx/pip are not recognized provenance keys). Generalized the contract test: every script-mode update command must not 'command -v'-branch across managers (remaining script updates are the canonical single-command agent-browser/defuddle/nose). Removed the now-dead fake cargo/uv update-all toolchain fixtures; retargeted the hand-built tokei rendering example to the truthful package_manager shape.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: validate_integrations passed (11 manifests); 25 focused control-plane/charness_cli tests pass; 3 release_only update-all e2e tests pass after mirror sync; diff -r integrations/tools plugins/charness/integrations/tools identical; run_slice_closeout --skip-broad-pytest completed
+- Test duplication pressure: dup-ratchet clean; net test change: +3 contract tests, -2 dead fixture files
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:
