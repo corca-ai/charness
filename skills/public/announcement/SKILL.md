@@ -24,18 +24,10 @@ resolve the adapter first.
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
-Default durable artifact:
-
-- `<repo-root>/charness-artifacts/announcement/latest.md`
-
-Default delivery log:
-
-- `.charness/announcement/announcements.jsonl`
-
 What you get after one run:
 
-- `<repo-root>/charness-artifacts/announcement/latest.md` as the visible draft artifact
-- `.charness/announcement/announcements.jsonl` only after explicit draft finalization or delivery
+- `<repo-root>/charness-artifacts/announcement/latest.md` as the visible draft artifact (the default durable artifact)
+- `.charness/announcement/announcements.jsonl` (the default delivery log) only after explicit draft finalization or delivery
 
 What this does not do:
 
@@ -130,21 +122,17 @@ repo had already declared them.
    - when `outputs` is non-empty, paste each output body separately and label
      it with its `id` and `delivery_role`.
 7. If the user wants delivery, resolve the backend seam only then.
-   - `none`: draft only
-   - `release-notes`: update a checked-in markdown file
-   - `human-backend`: deliver through an adapter-defined human-facing backend
+   - `none`: draft only; `release-notes`: update a checked-in markdown file;
+     `human-backend`: deliver through an adapter-defined human-facing backend
    - if the backend depends on reusable private access, prefer one logical
      capability in `delivery_capability` over adapter-local secret plumbing
-   - if the delivery seam targets a chat backend, run the format conversion
-     described in `references/delivery-seams.md` (Slack mrkdwn baseline, or
-     the path declared by `format_rules_path`) before posting raw CommonMark
-   - if `message_size_limit` is positive and any output exceeds it, split on
-     paragraph boundaries into numbered parts before posting; the split
-     applies to every output role, including `thread_reply`
-   - when `outputs` chains a `parent` and one or more `thread_reply` posts,
-     follow the JSON-line `delivery_handle` contract in
-     `references/delivery-seams.md` (Chaining Outputs); the parent template
-     emits the handle, follow-up templates expand `{parent_delivery_handle}`
+   - `references/delivery-seams.md` owns the pre-post mechanics; apply them
+     before posting: chat-backend format conversion (Slack mrkdwn baseline,
+     or the path declared by `format_rules_path`) before posting raw
+     CommonMark, `message_size_limit` paragraph-boundary splitting into
+     numbered parts for every output role including `thread_reply`, and the
+     JSON-line `delivery_handle` chaining contract when `outputs` chains a
+     `parent` with `thread_reply` posts
    - before posting, run
      `python3 "$SKILL_DIR/scripts/preflight_sources.py" --repo-root .`; if any
      declared `in_progress_sources` entry is reported as `unverified`, surface
