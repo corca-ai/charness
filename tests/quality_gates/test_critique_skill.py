@@ -42,11 +42,16 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "Deliberately Not Doing" in skill_text
     assert "Task-completing repo work always records critique before closeout." in skill_text
     assert "Scale the\npass, not the obligation" in skill_text
-    assert "use subagents as the canonical path" in skill_text
+    # #442 dedup: the subagent-canonical execution mode is pinned via the
+    # step-3 spawn line plus the concept block; spawn enforcement (blocked
+    # protocol, no local substitute) is single-homed in the shared fresh-eye
+    # reference asserted below as capability_text.
+    assert "use bounded fresh-eye subagents with one angle each" in skill_text
     assert "at least two angle subagents plus one separate counterweight subagent" in skill_text
-    assert "default to three angle subagents" in skill_text
-    assert "if the host cannot provide subagents, stop" in skill_text
-    assert "do not collapse into a same-agent local pass or degraded variant" in skill_text
+    assert "default to three angles" in skill_text
+    assert "rail-1 snapshot/verify around each reviewer spawn" in skill_text
+    assert "stop-instead-of-local-substitute rule when the host cannot" in skill_text
+    assert "no same-agent or local standalone `critique` variant" in skill_text
     assert "customer-of-this-capability" in angle_text
     assert "first real use" in angle_text
     assert "stale adapters" in angle_text
