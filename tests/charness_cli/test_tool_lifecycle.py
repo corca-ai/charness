@@ -461,10 +461,31 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
 
 
+def _pin_prior_observed_version(repo_root: Path, tool_id: str, version: str) -> None:
+    """Pin the update flow's 'from' version in the cloned repo's lock file.
+
+    The seed copies this machine's ``integrations/locks/*.json`` verbatim, so a
+    local doctor run between releases would otherwise leak mutable machine
+    state into the version-transition assertion (observed on 2026-07-16 when a
+    live doctor probe moved the local lock from 0.9.2 to 0.31.2)."""
+    lock_path = repo_root / "integrations" / "locks" / f"{tool_id}.json"
+    lock: dict[str, object] = {"schema_version": "1", "tool_id": tool_id}
+    if lock_path.is_file():
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    doctor = lock.setdefault("doctor", {})
+    assert isinstance(doctor, dict)
+    doctor.setdefault("version", {})
+    assert isinstance(doctor["version"], dict)
+    doctor["version"]["observed_version"] = version
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+
+
 @pytest.mark.release_only
 def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_path: Path, seeded_charness_repo: Path) -> None:
     cleanup_agent_browser_orphans()
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    _pin_prior_observed_version(repo_root, "agent-browser", "0.9.2")
     home_root = tmp_path / "home"
     fake_agent_browser = make_fake_agent_browser(tmp_path)
     fake_npm, _browser_link = make_fake_npm_agent_browser(tmp_path)
