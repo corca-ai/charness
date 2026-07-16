@@ -260,6 +260,20 @@ applies.
 - Lessons carried forward:
 - Metrics:
 
+### Slice 3: S3: compact doctor observed_version + event-aware mutating next_action
+
+- Objective: Compact tool-doctor projection now reads the nested version.observed_version doctor_lib actually produces (the top-level key it selected was never emitted), so default doctor output shows the detected version; aggregate attention next_action is event-aware: mutating events (update/install/repair/sync-support) point at integrations/locks/<tool_id>.json + non-mutating doctor --detail and warn a --detail re-run may execute again, while read-only doctor and execute=False previews keep the plain message.
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 221 charness_cli+control_plane tests pass; live ./charness tool doctor agent-browser shows observed_version 0.31.2; run_slice_closeout --skip-broad-pytest completed; joint S2+S3 fresh-eye bounded review verdict SHIP, fingerprint verify zero drift; should-fix folded (dry-run/preview honesty via payload execute flag + 'may execute' wording); reviewer confirmed charness-installed glow still routes go provenance (symlink resolves into GOPATH), so no manual-forever regression
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct

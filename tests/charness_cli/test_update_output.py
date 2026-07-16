@@ -293,10 +293,69 @@ def test_aggregate_tool_response_hides_per_tool_records_but_names_attention() ->
         "manual_tool_ids": ["manual-tool"],
         "not_ready_tool_ids": ["not-ready-tool"],
     }
-    assert projected["next_action"] == "Use --detail to inspect the listed tool records."
+    # tool-update mutates: the next action must point at persisted evidence,
+    # never at re-running the mutating command for inspection.
+    assert "integrations/locks/" in projected["next_action"]
+    assert "tool doctor" in projected["next_action"]
     assert "results" not in projected
     assert "commands" not in str(projected)
     assert "Verbose failure evidence." not in str(projected)
+
+
+def test_mutating_aggregate_next_action_points_at_locks_and_readonly_doctor_stays_detail() -> None:
+    module = load_charness_module("charness_next_action_event_split_under_test")
+    payload = {
+        "results": {
+            "manual-tool": {"update": {"status": "manual", "mode": "manual"}},
+            "failed-tool": {"update": {"status": "failed", "mode": "script"}},
+        }
+    }
+    for event in ("tool-update", "tool-install", "tool-repair", "tool-sync-support"):
+        projected = module.project_tool_response(payload, event=event)
+        assert "integrations/locks/" in projected["next_action"], event
+        assert "execute the operation again" in projected["next_action"], event
+
+    # an explicit dry-run / preview (execute=False) keeps the plain message —
+    # nothing was executed, so a --detail re-run is safe inspection
+    preview = module.project_tool_response(dict(payload, execute=False), event="tool-repair")
+    assert preview["next_action"] == "Use --detail to inspect the listed tool records."
+
+    doctor_payload = {
+        "results": {
+            "missing-tool": {"doctor": {"doctor_status": "missing", "doctor_disposition": "blocking-install-needed"}},
+            "ok-tool": {"doctor": {"doctor_status": "missing", "doctor_disposition": "blocking-install-needed"}},
+        }
+    }
+    projected = module.project_tool_response(doctor_payload, event="tool-doctor")
+    assert projected["next_action"] == "Use --detail to inspect the listed tool records."
+
+
+def test_compact_doctor_projection_carries_the_detected_version() -> None:
+    module = load_charness_module("charness_compact_doctor_version_under_test")
+    payload = {
+        "results": {
+            "demo": {
+                "doctor": {
+                    "doctor_status": "ok",
+                    "doctor_disposition": "ready",
+                    "version": {"observed_version": "0.31.2", "policy": "advisory"},
+                }
+            }
+        }
+    }
+
+    projected = module.project_tool_response(payload, event="tool-doctor")
+
+    assert projected["results"]["demo"]["doctor"]["observed_version"] == "0.31.2"
+    # the rest of the version block stays detail-only
+    assert "policy" not in str(projected["results"]["demo"]["doctor"])
+
+    # a doctor result without a version block projects without the key
+    bare = module.project_tool_response(
+        {"results": {"demo": {"doctor": {"doctor_status": "ok", "doctor_disposition": "ready"}}}},
+        event="tool-doctor",
+    )
+    assert "observed_version" not in bare["results"]["demo"]["doctor"]
 
 
 def test_tool_response_projection_tolerates_malformed_result_entries() -> None:

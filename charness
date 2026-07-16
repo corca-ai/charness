@@ -3435,6 +3435,12 @@ def _compact_tool_action(action: str, payload: object) -> dict[str, object] | No
         return None
     if action == "doctor":
         compact = _compact_mapping(payload, ("doctor_status", "doctor_disposition", "observed_version"))
+        version = payload.get("version")
+        if isinstance(version, dict):
+            observed = version.get("observed_version")
+            if isinstance(observed, str) and observed:
+                compact = dict(compact or {})
+                compact.setdefault("observed_version", observed)
     elif action == "repair":
         compact = _compact_mapping(payload, ("status", "execute"))
     else:
@@ -3548,8 +3554,25 @@ def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str
                 attention.setdefault(f"{group}_tool_ids", []).append(tool_id)
     if attention:
         response["attention"] = {key: sorted(tool_ids) for key, tool_ids in sorted(attention.items())}
-        response["next_action"] = "Use --detail to inspect the listed tool records."
+        response["next_action"] = _tool_attention_next_action(event, payload)
     return response
+
+
+# Re-running a mutating aggregate just to see its records can execute the
+# operation again (network installs, symlink rewrites); point the operator at
+# the persisted evidence instead. A payload that explicitly says execute=False
+# (dry-run / preview) keeps the plain inspection message.
+_MUTATING_TOOL_EVENTS = frozenset({"tool-update", "tool-install", "tool-repair", "tool-sync-support"})
+
+
+def _tool_attention_next_action(event: str, payload: dict[str, object]) -> str:
+    if event in _MUTATING_TOOL_EVENTS and payload.get("execute") is not False:
+        return (
+            "Inspect integrations/locks/<tool_id>.json for the executed records, or run "
+            "`charness tool doctor <tool_id> --detail` for current state; re-running this "
+            "command with --detail may execute the operation again."
+        )
+    return "Use --detail to inspect the listed tool records."
 
 
 def _compact_guidance(payload: object) -> dict[str, object] | None:
