@@ -32,6 +32,9 @@ Search order:
 - `checked_in_plugin_root`
 - `sync_command`
 - `quality_command`
+- `post_publish_install_refresh`
+- `post_publish_distinct_channel_probe`
+- `post_publish_baton_path`
 - `update_instructions`
 - `real_host_required_surfaces`
 - `real_host_required_path_globs`

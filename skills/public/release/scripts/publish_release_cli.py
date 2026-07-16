@@ -209,6 +209,7 @@ def write_current_artifact(
         distinct_channel_verification=payload.get("distinct_channel_verification"),
         lifecycle_capture=payload.get("lifecycle_capture"),
         release_runtime=payload.get("release_runtime"),
+        baton_reconcile=payload.get("baton_reconcile"),
     )
 
 

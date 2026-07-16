@@ -257,6 +257,35 @@ def release_runtime_lines(runtime_entries: list[dict[str, Any]] | None) -> list[
     return lines
 
 
+def baton_reconcile_lines(record: dict[str, Any] | None) -> list[str]:
+    lines = ["", "## Baton Reconcile", ""]
+    if not isinstance(record, dict) or not str(record.get("status", "")).strip():
+        return lines + ["- Baton reconcile observation: not recorded by this helper invocation."]
+    status = record.get("status")
+    if status == "not_configured":
+        return lines + [
+            "- No adapter-declared session baton (`post_publish_baton_path`); nothing to reconcile."
+        ]
+    lines.append(f"- Baton reconcile observation: `{status}` for `{record.get('path')}`.")
+    lines.append(f"- Just-published version: `{record.get('target_version')}`.")
+    versions = record.get("observed_versions") or []
+    if versions:
+        lines.append(
+            "- Versions claimed by the baton's routing sections: "
+            + ", ".join(f"`{version}`" for version in versions)
+            + "."
+        )
+    else:
+        lines.append("- The baton's routing sections claim no release version.")
+    if required_action := record.get("required_action"):
+        lines.append(f"- RECONCILE REQUIRED: {required_action}")
+    lines.append(
+        "- This is an observation, not completion: the populated record forces the reconcile "
+        "question; the release critique/retro reviewers judge the disposition."
+    )
+    return lines
+
+
 def user_update_lines(update_instructions: list[str]) -> list[str]:
     steps = update_instructions or ["Document the operator-facing refresh path before calling the release fully closed."]
     return ["", "## User Update Steps", "", *(f"- {item}" for item in steps), ""]

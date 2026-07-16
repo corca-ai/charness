@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Any
 
 _runtime = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_runtime.py")))
+_evaluate_baton_reconcile = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_baton.py"))
+)["evaluate_baton_reconcile"]
 
 
 def _capture_lifecycle(repo_root: Path, *, tag_name: str) -> dict[str, Any]:
@@ -167,6 +170,9 @@ def run_release_closeout_tail(
 ) -> None:
     run_distinct_channel_floor(repo_root, args=args, adapter_data=adapter_data, state=state, payload=payload, cli=cli)
     payload["lifecycle_capture"] = _capture_lifecycle(repo_root, tag_name=state["tag_name"])
+    payload["baton_reconcile"] = _evaluate_baton_reconcile(
+        repo_root, adapter_data, target_version=str(payload.get("target_version", ""))
+    )
     close_issues_install_refresh_and_commit(
         repo_root,
         args=args,

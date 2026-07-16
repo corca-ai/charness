@@ -440,6 +440,12 @@
       "evidence_terms": ["No repo-declared fresh checkout probes were configured"],
       "rationale": "Release helper writes not-configured fresh-checkout status into the release artifact."
     },
+    "skills/public/release/scripts/publish_release_baton.py": {
+      "states": ["not_configured"],
+      "visibility": ["terminal_payload", "artifact_visible"],
+      "evidence_terms": ["stale", "missing_file", "no_version_claim", "required_action"],
+      "rationale": "evaluate_baton_reconcile returns not_configured only when the adapter declares no post_publish_baton_path; the typed record lands in payload.baton_reconcile and the release artifact's `## Baton Reconcile` section, so an unconfigured baton is a legible recorded state, never a silent clean pass. All observed states (stale / missing_file / no_version_claim) carry a required_action that forces the reconcile question (north-star P5: observation, not completion)."
+    },
     "skills/public/release/scripts/publish_release_post_create.py": {
       "states": ["not_configured", "skipped"],
       "visibility": ["terminal_payload", "artifact_visible", "local_noop_not_closeout"],

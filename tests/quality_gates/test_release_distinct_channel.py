@@ -7,26 +7,16 @@ the observer never uses `gh release view` as the distinct channel.
 """
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-_SCRIPTS = Path(__file__).resolve().parents[2] / "skills" / "public" / "release" / "scripts"
+from .release_script_loading import load_release_script
 
-
-def _load(name: str):
-    spec = importlib.util.spec_from_file_location(f"{name}_test", _SCRIPTS / f"{name}.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-_POST_CREATE = _load("publish_release_post_create")
-_EXECUTE = _load("publish_release_execute")
-_HELPERS = _load("publish_release_helpers")
+_POST_CREATE = load_release_script("publish_release_post_create")
+_EXECUTE = load_release_script("publish_release_execute")
+_HELPERS = load_release_script("publish_release_helpers")
 
 
 def _shell_result(returncode: int, stdout: str = "", stderr: str = ""):

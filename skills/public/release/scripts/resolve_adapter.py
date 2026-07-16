@@ -27,7 +27,7 @@ STRING_FIELDS = (
     "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from",
     "package_id", "packaging_manifest_path", "checked_in_plugin_root", "sync_command",
     "quality_command", "post_publish_install_refresh", "post_publish_distinct_channel_probe",
-    "requested_review_policy",
+    "post_publish_baton_path", "requested_review_policy",
 )
 LIST_FIELDS = (
     "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
@@ -57,6 +57,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "quality_command": "./scripts/run-quality.sh",
         "post_publish_install_refresh": "",
         "post_publish_distinct_channel_probe": "",
+        "post_publish_baton_path": "",
         "update_instructions": [],
         "real_host_required_surfaces": [],
         "real_host_required_path_globs": [],
