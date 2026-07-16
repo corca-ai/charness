@@ -268,6 +268,15 @@ def baton_reconcile_lines(record: dict[str, Any] | None) -> list[str]:
         ]
     lines.append(f"- Baton reconcile observation: `{status}` for `{record.get('path')}`.")
     lines.append(f"- Just-published version: `{record.get('target_version')}`.")
+    if errors := record.get("errors"):
+        lines.extend(
+            f"- Observation error: `{error}`; read and reconcile the baton manually." for error in errors
+        )
+        lines.append(
+            "- This is an observation, not completion: the populated record forces the reconcile "
+            "question; the release critique/retro reviewers judge the disposition."
+        )
+        return lines
     versions = record.get("observed_versions") or []
     if versions:
         lines.append(

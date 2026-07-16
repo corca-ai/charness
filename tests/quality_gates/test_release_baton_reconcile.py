@@ -118,3 +118,25 @@ def test_adapter_accepts_and_defaults_the_baton_path_field() -> None:
     )
     assert not errors
     assert validated["post_publish_baton_path"] == "docs/handoff.md"
+
+
+def test_baton_observation_failure_never_undoes_a_completed_publication(tmp_path: Path) -> None:
+    """The closeout-tail wrapper mirrors _capture_lifecycle's containment: a
+    baton that cannot be read yields a typed capture_error record instead of an
+    exception that would skip the final artifact commit after a public release."""
+    common = load_release_script("publish_release_common", suffix="baton_test")
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "handoff.md").write_bytes(b"\xff\xfe broken not utf-8 \xff")
+    adapter = {"post_publish_baton_path": "docs/handoff.md"}
+
+    record = common._baton_reconcile_record(tmp_path, adapter, target_version="1.1.0")
+
+    assert record["status"] == "capture_error"
+    assert record["path"] == "docs/handoff.md"
+    assert record["errors"] and "UnicodeDecodeError" in record["errors"][0]
+
+    sections = load_release_script("publish_release_artifact_sections", suffix="baton_err_test")
+    rendered = "\n".join(sections.baton_reconcile_lines(record))
+    assert "capture_error" in rendered
+    assert "reconcile the baton manually" in rendered
+    assert "observation, not completion" in rendered

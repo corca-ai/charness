@@ -34,6 +34,20 @@ def timed(payload: dict[str, Any], key: str, func):
     return _runtime["timed"](payload, key, func)
 
 
+def _baton_reconcile_record(repo_root: Path, adapter_data: dict[str, Any], *, target_version: str) -> dict[str, Any]:
+    """Best-effort baton observation after the distinct-channel publication proof."""
+
+    try:
+        return _evaluate_baton_reconcile(repo_root, adapter_data, target_version=target_version)
+    except Exception as exc:  # the observation must never undo a completed publication
+        return {
+            "status": "capture_error",
+            "path": str(adapter_data.get("post_publish_baton_path", "") or "").strip(),
+            "target_version": target_version,
+            "errors": [f"{exc.__class__.__name__}: {exc}"],
+        }
+
+
 def preflight_close_issue_carrier(repo_root: Path, *, args: Any, issue_repo: str, payload: dict[str, Any], cli: Any) -> None:
     cli.preflight_release_issues(
         repo_root,
@@ -170,7 +184,7 @@ def run_release_closeout_tail(
 ) -> None:
     run_distinct_channel_floor(repo_root, args=args, adapter_data=adapter_data, state=state, payload=payload, cli=cli)
     payload["lifecycle_capture"] = _capture_lifecycle(repo_root, tag_name=state["tag_name"])
-    payload["baton_reconcile"] = _evaluate_baton_reconcile(
+    payload["baton_reconcile"] = _baton_reconcile_record(
         repo_root, adapter_data, target_version=str(payload.get("target_version", ""))
     )
     close_issues_install_refresh_and_commit(
