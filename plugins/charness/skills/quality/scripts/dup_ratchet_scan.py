@@ -103,15 +103,35 @@ def scan_families(repo_root: Path, scope_paths: list[str]) -> tuple[list[dict] |
     return families, None, live_version
 
 
-def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], str | None, str]:
-    """Real (non-injected) code-family scan, returning ``{fingerprint: member_hashes}``.
-    Schema v3 stores the per-family member hashes in the gate baseline; the CLI's
-    reduction pre-pass diffs them as multisets. Shares the FD8 whole-gate-degrade
-    discipline: any family missing either stamped field degrades the WHOLE map to a
-    reason, never a silently dropped family."""
+def family_member_spans(family: dict) -> list[dict]:
+    """Well-formed ``{file, start, end}`` member spans from one raw family's
+    ``locations`` list (nose stamps repo-relative ``file`` and 1-based inclusive
+    ``start``/``end``). Malformed entries are dropped rather than degrading: spans
+    are hard-block *evidence* for the human/JSON report, never gate identity, so a
+    partial list still beats an opaque fingerprint."""
+    spans: list[dict] = []
+    for location in family.get("locations") or []:
+        if not isinstance(location, dict):
+            continue
+        file, start, end = location.get("file"), location.get("start"), location.get("end")
+        if isinstance(file, str) and file and isinstance(start, int) and isinstance(end, int) \
+                and not isinstance(start, bool) and not isinstance(end, bool):
+            spans.append({"file": file, "start": start, "end": end})
+    return spans
+
+
+def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], dict[str, list[dict]], str | None, str]:
+    """Real (non-injected) code-family scan, returning ``({fingerprint: member_hashes},
+    {fingerprint: member_spans}, reason, live_version)``. Schema v3 stores the
+    per-family member hashes in the gate baseline; the CLI's reduction pre-pass diffs
+    them as multisets, and the member spans feed the hard-block evidence report so a
+    blocked new family names its file/line members instead of only an opaque
+    fingerprint. Shares the FD8 whole-gate-degrade discipline: any family missing
+    either stamped identity field degrades the WHOLE map to a reason, never a
+    silently dropped family."""
     families, reason, live_version = scan_families(repo_root, scope_paths)
     if reason:
-        return {}, reason, live_version
+        return {}, {}, reason, live_version
     missing = [
         fam for fam in families
         if not fam.get("family_fingerprint") or not isinstance(fam.get("family_member_hashes"), list)
@@ -119,18 +139,20 @@ def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str
     if missing:
         return (
             {},
+            {},
             f"{len(missing)} clone family(ies) had an unreadable member span; "
             "content fingerprint degraded (whole gate advisory)",
             live_version,
         )
-    return (
-        {
-            str(fam["family_fingerprint"]): [str(h) for h in fam["family_member_hashes"]]
-            for fam in families if fam.get("family_fingerprint")
-        },
-        None,
-        live_version,
-    )
+    members = {
+        str(fam["family_fingerprint"]): [str(h) for h in fam["family_member_hashes"]]
+        for fam in families if fam.get("family_fingerprint")
+    }
+    spans = {
+        str(fam["family_fingerprint"]): family_member_spans(fam)
+        for fam in families if fam.get("family_fingerprint")
+    }
+    return members, spans, None, live_version
 
 
 def payload_tool_version(text: str | None) -> str:
@@ -145,21 +167,22 @@ def payload_tool_version(text: str | None) -> str:
     return version if isinstance(version, str) else ""
 
 
-def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], str | None, str]:
+def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], dict[str, list[dict]], str | None, str]:
     """The injected-inventory test seam (``--code-inventory``) mirrors the CLI:
     an injected family carries `family_member_hashes` directly, else it is computed
     from injected raw `locations`. A family missing both stays unrepresented — the
     CLI's own missing-fingerprint checks already degrade the whole gate on that
-    shape. Without an injected inventory, delegates to a real ``scan_code_members``
-    (the fingerprints-only path this docstring once mirrored was deleted: schema
-    v3's per-family member hashes made it production-dead — every caller derives
-    `set(members)` when it only needs the identity set)."""
+    shape. Without an injected inventory, delegates to a real ``scan_code_members``.
+    Returns the same 4-tuple shape: member spans (second element) come from each
+    family's raw ``locations`` and may be empty for a synthetic injected family —
+    evidence-only, never identity."""
     if args.code_inventory is not None:
         text = safe_read(args.code_inventory)
         families = families_from_text(text)
         if families is None:
-            return {}, f"injected code inventory unreadable ({args.code_inventory})", ""
+            return {}, {}, f"injected code inventory unreadable ({args.code_inventory})", ""
         members: dict[str, list[str]] = {}
+        spans: dict[str, list[dict]] = {}
         for fam in families:
             if not isinstance(fam, dict):
                 continue
@@ -171,7 +194,8 @@ def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[
                 hashes = _fingerprint.family_member_hashes(fam, repo_root)
             if fingerprint and isinstance(hashes, list):
                 members[str(fingerprint)] = [str(h) for h in hashes]
-        return members, None, payload_tool_version(text)
+                spans[str(fingerprint)] = family_member_spans(fam)
+        return members, spans, None, payload_tool_version(text)
     return scan_code_members(repo_root, scope_paths)
 
 

@@ -97,7 +97,7 @@ def _write_gate_baseline(out: Path, members: dict, live_version: str) -> None:
 def _write_baseline(repo_root: Path, config: dict, args) -> dict:
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
-    members, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
+    members, _spans, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "write-baseline-failed",
                 "messages": [f"cannot write gate baseline: {reason}"]}
@@ -161,7 +161,7 @@ def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
                 "messages": [f"no readable gate baseline at {baseline_rel}; run --write-baseline "
                              "once to seed one before using scoped accepts."]}
     existing_ids = set(existing_members)
-    live_members, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
+    live_members, _spans, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
     if reason:
         return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
                 "messages": [f"cannot compute live fingerprints: {reason}"]}
@@ -236,7 +236,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         # but wired to nothing; fold it in here so a silent integrity drift surfaces
         # as advisory through the existing dup-ratchet phase. Advisory only (FD8).
         degraded.append(f"gate baseline integrity ({baseline_rel}): " + "; ".join(integrity))
-    live_members, code_reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
+    live_members, live_spans, code_reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
     code_ids = set(live_members)
     if code_reason:
         degraded.append(code_reason)
@@ -295,7 +295,41 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     verdict["algo_skew"] = algo_skew
     if algo_skew:
         verdict["messages"].append(f"WARNING (fingerprint-algo skew): {algo_skew}")
+    _attach_new_family_member_evidence(repo_root, verdict, live_spans)
     return verdict
+
+
+def _attach_new_family_member_evidence(repo_root: Path, verdict: dict, live_spans: dict) -> None:
+    """A hard block used to name only the opaque gate fingerprint, so every consumer
+    had to rebuild the gate's own scan to find the members behind it. Attach the
+    member evidence the scan already had — file, span, and whether each member file
+    is in the current worktree diff — to both the JSON payload and the human
+    messages, so a collateral clustering rotation among untouched files is
+    recognizable at a glance and an --accept-family call is auditable from the gate
+    output alone. Evidence-only: never changes the verdict."""
+    new_code = verdict.get("new_code_families") or []
+    if not verdict.get("hard_block") or not new_code:
+        return
+    changed = _ratchet_git.changed_worktree_paths(repo_root)
+    evidence: dict[str, list[dict]] = {}
+    for fingerprint in new_code:
+        evidence[fingerprint] = [
+            {**span, "in_current_diff": (span["file"] in changed) if changed is not None else None}
+            for span in live_spans.get(fingerprint, [])
+        ]
+    verdict["new_code_family_members"] = evidence
+    for fingerprint in new_code:
+        members = evidence[fingerprint]
+        if not members:
+            verdict["messages"].append(
+                f"new family {fingerprint}: member spans unavailable from this scan"
+            )
+            continue
+        diff_note = {True: " (in current diff)", False: " (untouched)", None: " (diff status unknown)"}
+        rendered = ", ".join(
+            f"{m['file']}:{m['start']}-{m['end']}{diff_note[m['in_current_diff']]}" for m in members
+        )
+        verdict["messages"].append(f"new family {fingerprint}: members {rendered}")
 
 
 def run(repo_root: Path, args) -> dict:

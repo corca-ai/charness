@@ -56,3 +56,16 @@ def stagnation_commits(repo_root: Path, anchor: str | None, head: str = "HEAD") 
         return int(out.strip())
     except ValueError:
         return None
+
+
+def changed_worktree_paths(repo_root: Path) -> set[str] | None:
+    """Repo-relative paths changed in the current worktree vs HEAD (staged plus
+    unstaged tracked changes, plus untracked files), or ``None`` when git cannot
+    answer. The hard-block member evidence uses this to say whether each
+    blocked family member is part of the current change or a collateral clustering
+    rotation among untouched files; ``None`` renders as unknown, never a guess."""
+    rc_diff, diff_out = _git_output(repo_root, ["diff", "--name-only", "HEAD"])
+    rc_untracked, untracked_out = _git_output(repo_root, ["ls-files", "--others", "--exclude-standard"])
+    if rc_diff != 0 or rc_untracked != 0:
+        return None
+    return {line.strip() for line in [*diff_out.splitlines(), *untracked_out.splitlines()] if line.strip()}
