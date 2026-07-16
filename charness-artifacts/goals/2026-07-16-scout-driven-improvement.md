@@ -173,6 +173,10 @@ S5 disposition outcomes (every route above resolved):
     all slices are safe as local commits
   - Unblock action: operator approves push (and names whether a release rides)
   - Revisit trigger: next operator session or an explicit push request
+  - RESOLVED 2026-07-16: operator said "push release"; shipped as v1.1.0
+    (tag `55529413`, post-publish artifact commit `bb72d553`, distinct-channel
+    https-fetch 200; release critique
+    `charness-artifacts/critique/2026-07-16-v1-1-0-baton-provenance-release-critique.md`).
 - Decision: D18 disposition — land the workspace-write carrier + routing-eval
   `--read-only` wiring now, or explicitly re-defer with a new trigger
   - Owner: operator (the D18 status line names it "pending operator decision")
