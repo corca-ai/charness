@@ -37,9 +37,13 @@ All commands emit a single YAML document on stdout and support `--repo-root`.
 - `abort` requires a claimed task and records a non-empty reason.
 - `status` reads task state without mutation; without a task id it lists all
   repo-local task records.
+- every mutating command persists a `next_step` affordance on the task state
+  itself, so `.charness/tasks/<task-id>.json` tells the next actor how to
+  continue without needing the original stdout.
 
-Failure paths emit a structured YAML rejection payload instead of
-requiring callers to parse prose from stderr.
+Failure paths emit a structured YAML rejection payload that carries the same
+`next_step` affordance naming the recovering command, instead of requiring
+callers to parse prose from stderr.
 
 ## Boundary
 

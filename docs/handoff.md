@@ -8,6 +8,10 @@
 
 ## Current State
 
+- 2026-07-17 landed the CLI affordance slice
+  ([spec](../charness-artifacts/spec/cli-output-affordance-contract.md)):
+  task rejections and persisted task state carry a recovering `next_step`;
+  the CLI reference header documents the affordance convention.
 - 2026-07-17 closed #444 (commit `d7747a09`, pushed) and #442 (four slices
   `d312aa6b`/`9faef3b9`/`cc71dbb1`/`c07a575c` plus the closeout commit): the
   commit-msg hook now carves out pausing resolution briefs (provenance-only
@@ -22,8 +26,8 @@
   the concrete host signal `Unknown skill: charness:prove`. Promotion needs
   `charness update` plus a session restart, then a real consumer-prompt run;
   only after `reviewed` may `prove` join `review_required_skills`.
-- v1.1.0 remains public at tag `55529413`; active host sessions may retain
-  stale injected skill paths until restart.
+- v1.1.0 remains public at tag `55529413`; host sessions may hold stale
+  injected skill paths until restart.
 - Charness still requests `gpt-5.6-terra` with `medium` effort and
   `fork_turns: "none"` for its subagents. This host exposed no such override
   (typed `bounded-reviewer` spawns, host-defaulted); request contract, not
@@ -42,6 +46,8 @@
 3. Deferred from #444's critique (fails closed, separable): pause-case
    header/footer polish in `_format_failure`, and a template-vs-regex
    pause-vocabulary drift test.
+4. Deferred affordance convergence per the affordance spec's Deferred
+   Decisions (`next_action` rename, `next_steps` split, prefix unification).
 
 ## Discuss
 
@@ -57,10 +63,8 @@
   · [release state](../charness-artifacts/release/latest.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: the [prove-promotion blocker](./public-skill-dogfood.json)
-  (it changes the first action after restart), the deferred #444 polish
-  items, and the requested-versus-applied reviewer boundary.
+- Refresh kept: the [prove-promotion blocker](./public-skill-dogfood.json),
+  deferred #444 polish, and the requested-vs-applied reviewer boundary.
 - Refresh non-claims: the [prove dogfood row](./public-skill-dogfood.json)
-  stays `planned` (no run claim); no provider-applied model/effort claim;
-  the #442 cap numbers are line counts at commit time, not a guarantee
-  against re-growth.
+  stays `planned`; no provider-applied model/effort claim; #442 caps are
+  commit-time counts.
