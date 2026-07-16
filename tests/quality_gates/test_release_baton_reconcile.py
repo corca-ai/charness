@@ -94,6 +94,17 @@ def test_renderer_carries_the_forced_question_and_never_a_terminal_green() -> No
     assert "RECONCILE REQUIRED" not in rendered_current
     assert "observation, not completion" in rendered_current
 
+    no_claim = {
+        "status": "no_version_claim",
+        "path": "docs/handoff.md",
+        "target_version": "1.0.11",
+        "observed_versions": [],
+        "required_action": "Reconcile `docs/handoff.md` to `1.0.11`.",
+    }
+    rendered_no_claim = "\n".join(_SECTIONS.baton_reconcile_lines(no_claim))
+    assert "claim no release version" in rendered_no_claim
+    assert "RECONCILE REQUIRED" in rendered_no_claim
+
     assert "not recorded by this helper invocation" in "\n".join(_SECTIONS.baton_reconcile_lines(None))
     assert "nothing to reconcile" in "\n".join(_SECTIONS.baton_reconcile_lines({"status": "not_configured"}))
 

@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Closeout retro for the autonomous improvement goal `charness-artifacts/goals/2026-07-16-scout-driven-improvement.md`: a five-lens read-only scout workflow (5 subagents) produced a 12-row finding inventory, which became five slices (stale-handoff refresh + release baton-reconcile observation, provenance-gated update contract completion, compact doctor projection fixes, P2 gate-message alignment, disposition sweep) landed as four local commits (`e1653d73`, `8f20ad0a`, `1283e1d1`, `0b7d868e`) plus closeout. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 - An agent in a consumer repository attempted the removed `charness find-skills` command, then treated its rejection as an inability to inspect skills. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
-- Release publish triggered a configured automatic session retro for `v1.0.10`. (source: `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`; sources: 94)
-- Broad standing-test timing probes added little after the existing structured runtime and bounded scouts had already shown no safe speed candidate. The useful result was the explicit no-change decision, not more duration sampling. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`)
-- Exploration phase, moderate: the transient `uv.lock` hypothesis consumed a diagnostic branch, but repeated exact repro and syscall tracing disconfirmed attribution. This was necessary uncertainty reduction, not failed work; the no-fix outcome prevented a speculative regression. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
-- Gate-baseline runtime: final release quality remained about 72-75s and broad pytest about 37s. Those are measured safety costs within current budgets; only the two causally isolated duplicate-cost families were changed. (source: `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`)
+- Dup-ratchet attribution archaeology: a hard block on fingerprint `895d96962b294ed4` cost several rounds of reproducing the gate's own scan because the gate output names no member paths; the family turned out to be a collateral clustering rotation among two untouched files. Routed to #441. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
+- One gate cycle lost persisting the host-log probe as `.md` into the validated retro directory (the retro-artifact validator correctly rejected it); the repo convention for probe artifacts is `.json`, which prior goal artifacts already demonstrate. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
+- Reviewer-wait idle time: bounded-reviewer completion notifications never arrived from the host, and `run_in_background: false` Agent spawns still ran asynchronously, so the parent polled subagent transcripts with fixed sleeps (~10 idle minutes across four reviews). Host-runtime behavior, not repo fixable; lesson persisted here. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`; sources: 94)
-- applied: persist this retro and the matching debug record with the focused installed-CLI regression proof. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
-- applied: session and generated-AGENTS routing state the matching-workflow action and command-failure reporting action without a prohibition list. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
-- applied: state direct ordinary-task routing and the exact conditional inventory action in the same replacement contract. (source: `charness-artifacts/retro/2026-07-15-session-routing-catalog-cli-regression.md`)
+- bounded-reviewer spawns on this host run asynchronously regardless of `run_in_background: false` and emit no completion notification; poll the subagent transcript JSONL (mtime + last assistant text) instead of waiting for a notification. Persisted in this artifact. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
+- dup-ratchet new-family blocks should carry member paths/spans in gate output — routed to issue #441. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
+- persist host-log probe artifacts as `.json` (the retro-artifact validator owns `.md` shapes in that directory). Persisted in this artifact. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 
 ## Selection Policy
 
@@ -109,8 +109,6 @@
 - `charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-13-north-star-autonomous-round-5-retro.md`
-- `charness-artifacts/retro/2026-07-13-north-star-autonomous-two-hour-release-round-4-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-13-v1-0-2-release-auto-retro.md`
@@ -124,3 +122,4 @@
 - `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-15-v1-0-11-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`

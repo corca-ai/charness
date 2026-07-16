@@ -1,6 +1,6 @@
 # Achieve Goal: Scout-driven north-star autonomous improvement
 
-Status: active
+Status: complete
 Created: 2026-07-16
 Activation: `/goal @charness-artifacts/goals/2026-07-16-scout-driven-improvement.md`
 
@@ -9,15 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: S2 — provenance-gated update contract for glow/tokei/vulture.
-- Current slice intent: flip the three `lifecycle.update` blocks to manual
-  (gitleaks precedent; glow/tokei keep go/cargo provenance routing, vulture is
-  manual-always), generalize the contract test to every script-mode manifest,
-  update the charness_cli fixtures the flip invalidates, mirror the plugin
-  copies; one commit expected. S1 done at e1653d73 (SHIP review, gates green).
-- Next action: implement S2, run contract + charness_cli update tests
-  (incl. release_only update-all e2e), slice closeout, commit; then S3 → S4 →
-  S5 (disposition sweep + issues).
+- Current slice: closeout — all five slices done (S1 `e1653d73`, S2
+  `8f20ad0a`, S3 `1283e1d1`, S4 `0b7d868e`, S5 issues #439/#440 + recorded
+  decisions in-artifact); final bundle verification-lock passed and the
+  disposition review approved after the closeout-field fixes.
+- Current slice intent: populate Final Verification / Auto-Retro / queue
+  floors, flip `Status: complete`, and land the closeout commit; push and
+  release remain operator decisions in the queue.
+- Next action (operator): review the `## Operator Decision Queue` — push
+  approval for the local commits, the D18 disposition, and the live Codex
+  probe question.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -114,11 +115,11 @@ Close the escape-shaped findings from the five-lens improvement scout: stale ses
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| S1 | Refresh `docs/handoff.md` to v1.0.11 and add a post-publish handoff-reconcile step to the release flow shaped as a presence-checked evidence line (P5: force the question, never auto-pass a content grep; any content check is fenced to `## Current State`/`## Next Session` with failure mode "ask") | Session-opening baton is 3 releases stale; round-5 retro improvement unapplied through 3 publishes (recurrence proven) | Refreshed handoff; release closeout carries a required `handoff reconciled` evidence line (or explicit n/a) + test | planned |
-| S2 | Complete the provenance-gated update contract: flip glow/tokei/vulture `lifecycle.update` (update only — install stays script) to manual; glow/tokei keep go/cargo provenance routing, vulture is manual-always (no recognized provenance key); mirror plugin manifests; generalize the contract test to all script-mode manifests; audit/update the charness_cli update-all + doctor-output tests and fixtures that seed fake cargo/uv toolchains or pin tokei/vulture script-mode expectations | `docs/control-plane.md` promise shipped in v1.0.11 but 3/6 manifests still guess installers from PATH (live brew-owned glow evidence) | Manifest diffs; extended `test_update_manifest_contract.py` iterating every script-mode manifest; updated `tests/charness_cli` fixtures; mirrors byte-identical | planned |
-| S3 | Fix compact tool-doctor projection to carry `observed_version`; point mutating aggregate `next_action` at a non-mutating inspection path | Default doctor output never shows the detected version (dead key); current next_action tells operators to re-run mutating updates | Regression tests in `tests/charness_cli/test_update_output.py`; live doctor output shows version | planned |
-| S4 | Align the skill length-gate failure message with north-star P2 and state the cap semantics in `create-skill`; correct the D36 orphan-fingerprint residual note | Gate message instructs the P2-forbidden move at the exact moment of cap pressure; doc points readers at pruned fingerprints | Updated `validate_skills.py` text + test; create-skill line; D36 note marked pruned | planned |
-| S5 | Disposition sweep against the enumerated scout-finding inventory (below): file tracked issues / record decisions for impl SKILL.md split, round-5 retro capability+memory items, D18, handoff Discuss item; before filing, dedup against existing open/recently-closed issues; after filing, confirm each created issue URL resolves | Zero open issues + silent debt means nothing routes these; presence-only disposition floor; the inventory makes a silently dropped finding visible | Issue numbers or recorded decisions in this artifact + Operator Decision Queue entries; every inventory row dispositioned | planned |
+| S1 | Refresh `docs/handoff.md` to v1.0.11 and add a post-publish handoff-reconcile step to the release flow shaped as a presence-checked evidence line (P5: force the question, never auto-pass a content grep; any content check is fenced to `## Current State`/`## Next Session` with failure mode "ask") | Session-opening baton is 3 releases stale; round-5 retro improvement unapplied through 3 publishes (recurrence proven) | Refreshed handoff; release closeout carries a required `handoff reconciled` evidence line (or explicit n/a) + test | done |
+| S2 | Complete the provenance-gated update contract: flip glow/tokei/vulture `lifecycle.update` (update only — install stays script) to manual; glow/tokei keep go/cargo provenance routing, vulture is manual-always (no recognized provenance key); mirror plugin manifests; generalize the contract test to all script-mode manifests; audit/update the charness_cli update-all + doctor-output tests and fixtures that seed fake cargo/uv toolchains or pin tokei/vulture script-mode expectations | `docs/control-plane.md` promise shipped in v1.0.11 but 3/6 manifests still guess installers from PATH (live brew-owned glow evidence) | Manifest diffs; extended `test_update_manifest_contract.py` iterating every script-mode manifest; updated `tests/charness_cli` fixtures; mirrors byte-identical | done |
+| S3 | Fix compact tool-doctor projection to carry `observed_version`; point mutating aggregate `next_action` at a non-mutating inspection path | Default doctor output never shows the detected version (dead key); current next_action tells operators to re-run mutating updates | Regression tests in `tests/charness_cli/test_update_output.py`; live doctor output shows version | done |
+| S4 | Align the skill length-gate failure message with north-star P2 and state the cap semantics in `create-skill`; correct the D36 orphan-fingerprint residual note | Gate message instructs the P2-forbidden move at the exact moment of cap pressure; doc points readers at pruned fingerprints | Updated `validate_skills.py` text + test; create-skill line; D36 note marked pruned | done |
+| S5 | Disposition sweep against the enumerated scout-finding inventory (below): file tracked issues / record decisions for impl SKILL.md split, round-5 retro capability+memory items, D18, handoff Discuss item; before filing, dedup against existing open/recently-closed issues; after filing, confirm each created issue URL resolves | Zero open issues + silent debt means nothing routes these; presence-only disposition floor; the inventory makes a silently dropped finding visible | Issue numbers or recorded decisions in this artifact + Operator Decision Queue entries; every inventory row dispositioned | done |
 
 Per-slice proof cost: S1 medium (release-lane test), S2 medium (contract test
 fan-out), S3 small, S4 small, S5 small. Test-duplication pressure: S2/S3 add
@@ -145,21 +146,25 @@ disposition route so a dropped finding is visible (plan-critique F4):
 | 11 | correctness | Compact tool-doctor projection selects dead `observed_version` key; detected version never shown | medium | S3 |
 | 12 | correctness | Mutating aggregate `next_action` tells the operator to re-run a mutating command (`--detail` re-executes updates) | low | S3 |
 
+S5 disposition outcomes (every route above resolved):
+
+- #1/#6 → applied in S1 (commit `e1653d73`).
+- #2 → tracked issue [#439](https://github.com/corca-ai/charness/issues/439).
+- #3 → applied in S4 (commit `0b7d868e`).
+- #4 → recorded no-change decision: `check_skill_surface_preflight.py` at
+  479/480 stays as-is per the D33 convention (split at the next
+  module-growing change, not proactively); the hard length gate itself forces
+  the split when that change arrives, so no silent escape exists.
+- #5 → applied in S4 (commit `0b7d868e`).
+- #7 → Operator Decision Queue (D18 disposition, operator-owned per the
+  deferral text).
+- #8 → workflow item applied in S1; capability + memory items → tracked issue
+  [#440](https://github.com/corca-ai/charness/issues/440).
+- #9 → Operator Decision Queue (live Codex probe question).
+- #10 → applied in S2 (commit `8f20ad0a`).
+- #11/#12 → applied in S3 (commit `1283e1d1`).
+
 ## Operator Decision Queue
-
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Queue:
 
 - Decision: push this run's local commits to origin/main (and optionally cut a
   release carrying the S2 manifest behavior change)
@@ -217,7 +222,10 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- Routing: achieve — goal lifecycle operator for this autonomous run; impl — slice execution discipline (S1–S4); issue — S5 tracked-issue filing; critique — plan/slice/final fresh-eye review via bounded-reviewer; retro — closeout after-action review; handoff — S1 baton refresh shape.
+- Routing: achieve — selected from installed metadata as the goal lifecycle operator for this autonomous run; impl routed slice execution (S1–S4), quality routed the gate cadence and dup-ratchet dispositions, issue routed S5 tracked-issue filing (#439/#440), critique routed the plan/slice/final fresh-eye reviews via bounded-reviewer, retro routed the closeout after-action review, handoff routed the S1 baton refresh shape.
+- Gather: n/a — no external URL/Slack/Notion/doc source became working context this run; all context sources are repo-local artifacts and the in-session scout workflow.
+- Release: n/a — no version bump and no packaging/install-manifest edit; the release-skill script and tool-manifest changes are repo-local and ship with the next operator-approved release, which is queued as an operator decision.
+- Issue closeout: n/a — this goal closes no tracked issue; #439 and #440 were created (not resolved) and their URLs verified open via backend readback plus a distinct https channel.
 
 ## Discuss Before Activation
 
@@ -235,58 +243,72 @@ applies.
 ### Slice 1: S1: handoff refresh + post-publish baton reconcile observation
 
 - Objective: Refresh docs/handoff.md from stale v1.0.8 claims to v1.0.11 ground truth and close the recurrence: the release closeout tail now records an adapter-driven baton_reconcile observation (payload + '## Baton Reconcile' artifact section) that forces the reconcile question when the session baton still claims a prior release; opt-in via post_publish_baton_path (this repo: docs/handoff.md).
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: P5 shape from plan-critique F3 — an observation that forces the question at the publish boundary, never a terminal green or auto-passing grep.
+- Commits: e1653d73
+- What changed: docs/handoff.md rewritten to v1.0.11; new skills/public/release/scripts/publish_release_baton.py wired into publish_release_common/cli/artifact(+sections); post_publish_baton_path adapter field (resolve_adapter + .agents/release-adapter.yaml + adapter-contract.md + publication-boundary.md); attention-state declaration; tests + plugin mirrors.
+- Alternatives rejected: blocking post-publish gate (fails a completed publish, terminal-green inversion); repo-wide standing version-claim scanner (false-fires pre-publish and on historical mentions).
 - Targeted verification: 7 unit tests (test_release_baton_reconcile.py) + 2 e2e asserts in the release_only publish test; 56 focused + 14 release_only tests pass; run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review completed; doc preflight clean; fresh-eye bounded-reviewer verdict SHIP (2 minor should-fixes applied: handoff wording softened to refresh-not-readback, post_publish_* family added to adapter-contract.md); reviewer fingerprint verify ok (zero drift). Cautilus decision: plan not-required (run_mode ask); deterministic tests are the proof level, no eval run. Floor-Addition Restraint: recorded at BATON_SECTIONS site (non-blocking observation, recurrence recorded).
 - Test duplication pressure: dup-ratchet: clean after boy-scout dedup (shared tests/quality_gates/release_script_loading.py loader replacing per-file importlib boilerplate in 2 test files) + scoped accept of collateral clustering rotation 895d96962b294ed4 (members untouched pre-existing files: check_prescribed_skill_executed.py + markdown_preview_render.py); baseline 639->640
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+- Critique: fresh-eye bounded review SHIP; two minor should-fixes folded (refresh-not-readback handoff wording, post_publish_* family in adapter-contract.md).
+- Off-goal findings: none this slice.
+- Lessons carried forward: fence content checks to routing sections; record floor-addition restraint at the site.
+- Metrics: when available (see host-log probe artifact at closeout).
 
 ### Slice 2: S2: provenance-gated update contract completed for glow/tokei/vulture
 
 - Objective: Flip glow/tokei/vulture lifecycle.update to manual per the gitleaks precedent so no update guesses an installer from PATH: glow/tokei keep go/cargo provenance routing via package_managers metadata, vulture is manual-always (uv/pipx/pip are not recognized provenance keys). Generalized the contract test: every script-mode update command must not 'command -v'-branch across managers (remaining script updates are the canonical single-command agent-browser/defuddle/nose). Removed the now-dead fake cargo/uv update-all toolchain fixtures; retargeted the hand-built tokei rendering example to the truthful package_manager shape.
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: gitleaks/ruff/specdown precedent already implements the shipped control-plane contract; completing it is contract-alignment, not new policy.
+- Commits: 8f20ad0a
+- What changed: glow/tokei/vulture lifecycle.update flipped to manual (provenance routing retained where recognized); contract test generalized to every script-mode manifest; dead fake cargo/uv fixtures removed; tokei rendering example retargeted; mirrors synced.
+- Alternatives rejected: extending PACKAGE_MANAGER_KEYS to uv/pipx/pip for vulture (scope growth needing its own design; recorded in acceptance as manual-always).
 - Targeted verification: validate_integrations passed (11 manifests); 25 focused control-plane/charness_cli tests pass; 3 release_only update-all e2e tests pass after mirror sync; diff -r integrations/tools plugins/charness/integrations/tools identical; run_slice_closeout --skip-broad-pytest completed
 - Test duplication pressure: dup-ratchet clean; net test change: +3 contract tests, -2 dead fixture files
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+- Critique: joint S2+S3 fresh-eye bounded review SHIP; charness-installed glow confirmed to keep go provenance (symlink resolves into GOPATH).
+- Off-goal findings: none this slice.
+- Lessons carried forward: sync mirrors before seeded-repo e2e tests (validate_packaging runs in the seeded clone).
+- Metrics: when available (see host-log probe artifact at closeout).
 
 ### Slice 3: S3: compact doctor observed_version + event-aware mutating next_action
 
 - Objective: Compact tool-doctor projection now reads the nested version.observed_version doctor_lib actually produces (the top-level key it selected was never emitted), so default doctor output shows the detected version; aggregate attention next_action is event-aware: mutating events (update/install/repair/sync-support) point at integrations/locks/<tool_id>.json + non-mutating doctor --detail and warn a --detail re-run may execute again, while read-only doctor and execute=False previews keep the plain message.
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: fix the dead key where the data actually lives; over-warn direction only where a re-run could mutate.
+- Commits: 1283e1d1
+- What changed: charness _compact_tool_action doctor branch reads nested version.observed_version; _MUTATING_TOOL_EVENTS drives event-aware next_action (locks path + non-mutating doctor --detail; execute=False previews keep the plain message); regression tests.
+- Alternatives rejected: flattening observed_version into the doctor payload at the producer (wider blast radius across lock files for a projection-only fix).
 - Targeted verification: 221 charness_cli+control_plane tests pass; live ./charness tool doctor agent-browser shows observed_version 0.31.2; run_slice_closeout --skip-broad-pytest completed; joint S2+S3 fresh-eye bounded review verdict SHIP, fingerprint verify zero drift; should-fix folded (dry-run/preview honesty via payload execute flag + 'may execute' wording); reviewer confirmed charness-installed glow still routes go provenance (symlink resolves into GOPATH), so no manual-forever regression
 - Test duplication pressure:
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+- Critique: joint S2+S3 fresh-eye bounded review SHIP; dry-run honesty should-fix folded via the payload execute flag + 'may execute' wording.
+- Off-goal findings: none this slice.
+- Lessons carried forward: live-proof via the repo CLI (./charness), not the installed one, when testing uncommitted behavior.
+- Metrics: when available (see host-log probe artifact at closeout).
 
 ### Slice 4: S4: length-gate message aligned to north-star P2 + D36 orphan note corrected
 
 - Objective: The over-cap SKILL.md ValidationError instructed the exact P2-forbidden move ('move detail into references'); it now states split-a-concept-or-delete citing design-north-star P2, the same rule is stated in create-skill's Rules (the authoring contract an author reads at cap pressure), and the D36 residual note now records that orphan fingerprints 3d4af4/d38941 were pruned by the v1.0.10 nose re-baseline so future readers stop hunting for them.
-- Why this approach:
-- Commits:
-- What changed:
-- Alternatives rejected:
+- Why this approach: the gate message is the briefing at the exact moment of cap pressure; message-only change keeps pass/fail behavior identical.
+- Commits: 0b7d868e
+- What changed: validate_skills.py over-cap message states split-or-delete citing north-star P2; create-skill anti-smuggling rule folds the cap-signal (net +1 core line after the headroom gate rejected a 4-line addition twice); D36 orphan note marked pruned; pinned regression test.
+- Alternatives rejected: standalone 4-line create-skill core addition (tripped the core-headroom gate — the P2 lesson applied to its own fix).
 - Targeted verification: validate_skills passes (21 packages); behavioral check confirms the over-cap message states the P2 rule; new pinned regression test test_over_cap_skill_body_error_states_the_split_or_delete_rule (asserts the forbidden instruction is gone); 39 adjacent artifact-validator tests pass (their 'should stay concise' pins are artifact_validator's, untouched); run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review completed. Gate pass/fail behavior unchanged (message-only); fresh-eye coverage deferred to the final closeout review per meaningful-slice-cadence.
 - Test duplication pressure: dup-ratchet clean at prior sample; +1 test this slice
-- Critique:
-- Off-goal findings:
-- Lessons carried forward:
-- Metrics:
+- Critique: covered by the final closeout disposition review per meaningful-slice-cadence (message-only, test-pinned).
+- Off-goal findings: none this slice.
+- Lessons carried forward: the headroom gate treats appends and merges alike — budget core lines before drafting.
+- Metrics: when available (see host-log probe artifact at closeout).
+
+### Slice 5: S5: disposition sweep over the scout inventory
+
+- Objective: Every scout-inventory row now carries a resolved disposition: filed tracked issues #439 (skill-cap P2 split backlog, impl first) and #440 (round-5 retro capability+memory pair) through the issue skill with problem-first bodies, dedup search beforehand, backend readback plus distinct https-channel 200 verification afterward; recorded the D33-based no-change decision for the 479/480 preflight file; D18 and the live-Codex-probe question stay in the Operator Decision Queue as operator-owned.
+- Why this approach: presence-only disposition floor — every scout finding needs a visible routed owner.
+- Commits: closeout commit (this bundle); external writes were gh issue create only.
+- What changed: issues #439/#440 filed and verified; D33 no-change decision recorded; inventory outcomes ledger added to this artifact; operator queue entries confirmed.
+- Alternatives rejected: one omnibus issue for all findings (risks half-closing distinct concepts).
+- Targeted verification: gh issue list readback shows #439/#440 open with expected titles; curl distinct-channel HTTP 200 for both; issue bodies body_verified=true via the create helper's readback; inventory outcomes recorded in the artifact under the Scout Finding Inventory
+- Test duplication pressure:
+- Critique: final disposition review judged the 12-row ledger honest (APPROVE after closeout-field fixes).
+- Off-goal findings: #441 (dup-ratchet member visibility) surfaced by the closeout retro and filed same-session.
+- Lessons carried forward: dedup search + readback + distinct-channel fetch is the right creation-grade verification bar.
+- Metrics: when available (see host-log probe artifact at closeout).
 
 ## Context Sources
 
@@ -370,22 +392,68 @@ folds only; no slice restructuring). All folds applied before activation:
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
+- Issue #439 (https://github.com/corca-ai/charness/issues/439): public skill
+  bodies pinned at the 200-line cap re-grow after trims; P2 split-or-delete
+  backlog starting with impl. Reason filed: Non-Goal this run (medium-cost,
+  review-heavy surface change); verified open via backend readback + distinct
+  https channel (HTTP 200).
+- Issue #440 (https://github.com/corca-ai/charness/issues/440): round-5 retro
+  capability + memory improvements (release-adapter host-proof surface,
+  durable independent-observer probe artifact) still undispositioned. Reason
+  filed: presence-only disposition floor — silent debt needed a routed owner;
+  verified open via backend readback + distinct https channel (HTTP 200).
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Host metric window: started_at=2026-07-16T14:07:00+09:00 completed_at=2026-07-16T15:31:00+09:00 claude_session_file=/home/hwidong/.claude/projects/-home-hwidong-codes-charness/118a2919-4243-4d51-8bce-fcb6ad415b00.jsonl
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md
+Host log probe: charness-artifacts/retro/2026-07-16-scout-driven-improvement-host-log-probe.json
+Disposition review: charness-artifacts/critique/2026-07-16-scout-driven-improvement-disposition-review.md
+
+Final bundle proof (this HEAD, clean-tree state at commit time):
+
+- `run_slice_closeout.py --base --verification-lock --produce-mutation-coverage
+  --allow-unmatched` completed; broad standing pytest passed (102.9s,
+  fingerprint `522cfa62b5fb…`); `check_changed_line_mutation_coverage.py
+  --base-sha origin/main --reuse-coverage` reports zero blocking files.
+- Fresh-eye reviews: plan critique (RESHAPE-FIRST, all folds applied before
+  activation), S1 SHIP, S2+S3 joint SHIP, final disposition review APPROVE
+  after the closeout-field fixes it demanded (F1/F2 fixed in these edits).
+  Every review ran as a read-only bounded-reviewer with zero-drift
+  worktree+index fingerprint verification.
+- Live spot proofs: `./charness tool doctor agent-browser` shows
+  `observed_version: 0.31.2`; issues #439/#440/#441 verified open via backend
+  readback plus distinct https fetch (HTTP 200 each).
+
+Non-claims (explicitly not proven by this run):
+
+- Live `charness update all` against real network installers was deliberately
+  not run; the manifest contract tests plus the fake-toolchain release_only
+  e2e are the proof level for the S2 behavior change.
+- The baton-reconcile observation's effect on a real publish is unproven until
+  the next actual release runs the closeout tail.
+- Provider-side application of the requested subagent model/effort is
+  unproven (host does not expose those fields).
+- Nothing was pushed; origin/main does not yet contain these commits.
 
 ## User Verification Instructions
 
+- `git log --oneline origin/main..HEAD` — the run's commits, all local.
+- `docs/handoff.md` — reads v1.0.11 state and points at the operator queue.
+- `python3 -m pytest -q tests/quality_gates/test_release_baton_reconcile.py
+  tests/control_plane/test_update_manifest_contract.py` — the two new
+  contracts in one focused run.
+- `./charness tool doctor agent-browser` — compact output includes
+  `observed_version`.
+- `python3 scripts/validate_skills.py --repo-root .` passes; force any
+  SKILL.md over 200 lines to see the P2 split-or-delete message.
+- Operator decisions: `## Operator Decision Queue` above (push approval, D18,
+  live Codex probe).
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #441 — capability: dup-ratchet new-family blocks should carry member paths/spans in gate output (recurs: the D36 close records the same fingerprint archaeology).
+Retro dispositions: none — memory item on host async bounded-reviewer spawns: host-runtime behavior outside repo control; the poll-the-transcript lesson is persisted in the retro artifact and the recent-lessons digest.
+Retro dispositions: none — memory item on probe-artifact format: the retro validator already enforces the `.md` shape deterministically, so the `.json` convention needs no new change; lesson persisted in the retro artifact.
+Structural follow-up: issue #441 (recurs: the same fingerprint-attribution archaeology is recorded in the D36 close of 2026-07-04, so this is a recurring gate-ergonomics gap, not a novel one-off)
