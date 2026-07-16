@@ -19,17 +19,11 @@ Before drafting a contract or asking follow-up questions, inspect the current im
 # 1. current concept and adjacent context
 git status --short
 rg --files . | sed -n '1,200p'
-sed -n '1,220p' README.md 2>/dev/null || true
-sed -n '1,220p' AGENTS.md 2>/dev/null || true
-sed -n '1,220p' docs/handoff.md 2>/dev/null || true
-sed -n '1,220p' "$SKILL_DIR/../ideation/references/spec-boundary.md" 2>/dev/null || true
+for f in README.md AGENTS.md docs/handoff.md "$SKILL_DIR/../ideation/references/spec-boundary.md"; do sed -n '1,220p' "$f" 2>/dev/null; done
 
-# 2. existing concept/spec/design docs
-rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint" .
+# 2. existing concept/spec/design docs + implementation-side acceptance reality
+rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint|test|fixture|scenario|operator|takeover|smoke|integration" .
 python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true
-
-# 3. implementation-side neighbors and current acceptance reality
-rg -n "test|spec|fixture|scenario|acceptance|success criteria|operator|takeover|smoke|integration" .
 ```
 
 If an ideation document already exists, refine it instead of restating the full
@@ -40,10 +34,10 @@ Use `references/public-executable-contracts.md` and `references/design-lenses.md
 for the detailed shaping rules. Read `create-skill` or `impl`'s SKILL.md
 directly only when this spec's target is a new skill package or an active
 implementation handoff, not as a default bootstrap read.
-
-## Worktree Readiness
-
-Before mutating spec/design docs in a worktree, run `command -v charness >/dev/null 2>&1 && charness worktree doctor || true`. If YAML status is not `pass`, surface `charness worktree prepare` as next action and have the operator confirm before continuing.
+Before mutating spec/design docs in a worktree, run
+`command -v charness >/dev/null 2>&1 && charness worktree doctor || true`; if
+YAML status is not `pass`, surface `charness worktree prepare` as next action
+and have the operator confirm before continuing.
 
 ## Contract Shaping
 
@@ -117,14 +111,12 @@ as a lens, not as a required form.
      executable contract artifacts
    - if implementation discovers a fact that changes scope or acceptance, update
      the spec instead of leaving chat-only drift
-7. Run bounded critique before finalizing.
-   - call `critique` for task-completing contracts and non-trivial contract
-     decisions
-   - use `../../shared/references/fresh-eye-subagent-review.md` before reporting blocked
+7. Close the contract slice through `prove`.
+   - a task-completing contract slice ends at the sibling `prove` stop gate,
+     which owns the critique binding, the closeout vocabulary, and the emitted
+     slice ledger; do not improvise a local closeout
    - keep future re-litigation low by writing the important rejected paths into
      the spec itself instead of leaving them in chat-only memory
-   - tighten only the lines that change the likely next action; do not reopen
-     broad ideation
 8. End with the next execution state.
    - whether the current contract is ready for `impl`
    - what the first or next implementation slice should be
@@ -158,7 +150,7 @@ as `Entities` or `Stages` instead of recreating them under new names.
 Emittable-verbatim acceptance-check tokens (a reader/validator substring-matches these); the teaching prose stays in `references/acceptance-checks.md`.
 
 - Verification type is one of `manual` / `unit` / `integration` / `e2e` / `eval` / `specdown`.
-- `Boundary Ownership` verdict is one of `single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec` — emit-only / eval-judged (`spec` keeps no durable validator; the typed floor lives in the bounded `critique` this skill runs before finalizing).
+- `Boundary Ownership` verdict tokens and the slice closeout ledger live in the sibling `prove` skill's `## Closeout Vocabulary` (single token home); emit them at the `prove` stop gate this contract closes through.
 
 ## Guardrails
 
@@ -167,8 +159,6 @@ Emittable-verbatim acceptance-check tokens (a reader/validator substring-matches
 - Do not clear a forced debug interrupt with generic spec churn; if the planner
   surfaced one, the spec must explicitly consume that interrupt in
   `Critique`.
-- Do not skip the bounded critique before finalizing a task-completing
-  contract just because the document reads clearly to the current author.
 - Do not leave important rejected alternatives only in chat when the same
   branch is likely to be reopened by the next maintainer.
 - Do not silently assume implementation details or ignore current code, tests,
@@ -188,6 +178,7 @@ Emittable-verbatim acceptance-check tokens (a reader/validator substring-matches
 - `references/executable-spec-cost.md`
 - `references/design-lenses.md`
 - `references/taxonomy-axis-checkpoint.md`
+- `../prove/SKILL.md`
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/success-criteria-review.md`
 - `../../shared/references/source-bound-records.md`

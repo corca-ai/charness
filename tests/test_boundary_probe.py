@@ -155,12 +155,16 @@ def _sections(rel: str) -> dict[str, str]:
     return out
 
 
-def test_impl_and_spec_skills_carry_boundary_ownership_token() -> None:
-    # prove (the impl-archetype closeout ledger, split out of impl per #439) +
-    # spec (DBD-2 #414/#416): impl-archetype emit-only token.
+def test_prove_carries_boundary_ownership_token_and_spec_defers_to_it() -> None:
+    # prove (the impl-archetype closeout ledger, split out of impl per #439) is
+    # the single token home for the emit-only Boundary Ownership verdict enum.
+    # spec (DBD-2 #414/#416, deduped per #442) keeps the Output Shape field but
+    # its vocabulary section defers to prove instead of duplicating the enum.
     # issue's emit-only `Boundary #N:` close-comment line is prose (not validator-
     # enforced), covered by the brief-reachability surface above; no separate test.
-    for rel in ("skills/public/prove/SKILL.md", "skills/public/spec/SKILL.md"):
-        s = _sections(rel)
-        assert "Boundary Ownership" in s["Output Shape"] and "Boundary Ownership" in s["Closeout Vocabulary"], rel
-        assert all(v in s["Closeout Vocabulary"] for v in _VERDICTS), rel
+    s = _sections("skills/public/prove/SKILL.md")
+    assert "Boundary Ownership" in s["Output Shape"] and "Boundary Ownership" in s["Closeout Vocabulary"]
+    assert all(v in s["Closeout Vocabulary"] for v in _VERDICTS)
+    spec = _sections("skills/public/spec/SKILL.md")
+    assert "Boundary Ownership" in spec["Output Shape"]
+    assert "`prove`" in spec["Closeout Vocabulary"]
