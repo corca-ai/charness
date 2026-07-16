@@ -37,6 +37,14 @@ update_instructions:
 real_host_required_surfaces:
 - external-tool-control-plane
 real_host_required_path_globs:
+# Root-CLI host-mutation seam: the single-file root CLI carries the Claude
+# subprocess/custom-home logic (the v1.0.4 counterexample) and delegates the
+# actual managed install / Codex marketplace / legacy-root cleanup to
+# install_machine_local.py. No narrower glob exists for either file; the
+# checklist they request is the update/doctor/dry-run set, not destructive
+# host work (round-5 retro item).
+- charness
+- scripts/install_machine_local.py
 - README.md
 - docs/host-packaging.md
 - integrations/tools/**

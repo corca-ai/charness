@@ -31,6 +31,13 @@ channels include:
 If no repo-owned public verifier exists, record an explicit non-verified
 disposition instead of calling the release complete.
 
+When an independent observer produces substantive verification evidence at this
+boundary (unauthenticated REST readbacks, installed doctor/cache checks),
+persist it as a JSON probe artifact (e.g.
+`charness-artifacts/probe/<date>-<version>-release-observer.json`) rather than
+leaving it chat-only: evidence that evaporates with the session cannot be
+audited by a later disposition review.
+
 ## Issue Close Boundary
 
 Before release-linked GitHub issue closeout, the helper records a rung-2
