@@ -1,13 +1,13 @@
 ---
 name: impl
-description: "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, verify it aggressively, and keep the contract synchronized when reality changes it."
+description: "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, then load `prove` to verify it and emit the slice closeout ledger before stopping."
 ---
 # Impl
 
 Use this when the work should move from contract into code, config, tests, or operator-facing artifacts.
 
 `impl` is downstream of `spec`, but direct implementation prompts still get a small honest contract instead of pretending the task is already well-defined.
-Keep sequence discipline, strong verification, and honest critique use in the loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`, `references/design-lenses.md`, and `references/review-gate.md`.
+`impl` owns building the slice; proving and closing it is the sibling `prove` skill, loaded at the stop gate below. Keep sequence discipline in the loop: see `references/sequence-discipline.md` and `references/design-lenses.md`.
 
 ## Continuation Default
 
@@ -104,92 +104,37 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor || true
      external lookup contracts
    - when an active `achieve` goal artifact exists, treat it as the slice memory
      surface and append slice evidence per `../../shared/references/active-goal-coordination.md`
-4. Verify with the strongest honest path. `references/verification-ladder.md`
-   owns the per-surface rules — browser output, the lint gate, external /
-   third-party APIs, and the completion-report categories. Prefer executed proof
-   over code inspection, use installed skill metadata/model judgment for runtime
-   support (and `charness catalog list --repo-root .` only for hidden
-   availability), and when
-   runtime proof is unavailable say explicitly that it did not run.
-   - for validation-shaped review, closeout, or operator reading work, run
-     deterministic gates first; the repo's cautilus adapter and
-     `../quality/references/cautilus-on-demand.md` own when evaluator proof
-     is warranted — generic review or closeout wording must not silently launch Cautilus
-   - skill self-tests and delegated workflows follow
-     `../../shared/references/prescribed-path-self-test.md`; label a worker →
-     host → provider seam at its highest executed proof level per
-     `../../shared/references/external-capability-proof-ladder.md`
-   - when that policy calls for a run, use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>`
-     or `cautilus evaluate observation --input <observed.json>`; treat
-     source/wiring/guidance checks as mechanism-only, not runtime proof
-5. Sync truth surfaces and re-read the contract before closeout.
-   - if the slice changed user-visible capability, operating philosophy,
-     supported integrations, install/usage surface, or honest stage claims,
-     check `<repo-root>/README.md` and the adapter's `truth_surfaces` and update
-     them before stopping
-   - re-read `Fixed Decisions` and named acceptance checks; confirm each is
-     reflected in the delivered slice or explicitly deferred or reclassified in
-     the contract
-6. Run the stop gate.
-   - every task-completing repo slice records critique before closeout; scale the pass instead of asking whether it is needed
-   - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-subagent-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
-   - `critique` always means a fresh bounded subagent review, never a same-agent pass; use `Critique: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
-   - if the required critique is blocked because the host cannot provide
-     subagents after the capability check, stop and record `Critique: blocked <host-signal>`
-   - run a fresh-eye review for runtime behavior, boundary honesty, and
-     docs/spec synchronization; the
-     [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)
-     owns the producer/consumer questions and the disposition this closeout records
-   - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --json`; if
-     it reports `triggered: true`, the changed paths matched the repo's cross-surface
-     probe — escalate this slice to a standalone `critique`, and validate that durable
-     artifact with the critique validator's `--changed-ref <base>` so the cross-surface
-     `single-surface` rejection actually fires (the objective probe overrides a
-     self-assessed small slice; presence-only validation would let it through)
-7. End with execution status.
-   - what changed, what was verified, what truth surfaces moved, what the
-     critique found, what contract updates were made, and what remains for the
-     next slice
-   - if `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` reports `triggered: true`
-     for the current repo, run a short `session` retro before the final stop
-   - if the user explicitly asked to keep going, treat this as a terse progress
-     checkpoint and continue into the next locally decidable slice
+4. Prove and close the slice.
+   - when the build work is done, load the sibling `prove` skill and complete
+     its closeout ledger before stopping: the strongest honest verification,
+     truth-surface sync, the bound fresh-eye critique, and the emitted
+     closeout vocabulary all live there
+   - "code written" is not a stop state; a slice without its `prove` ledger is
+     unfinished work, not a smaller slice
 
 ## Output Shape
 
-The closeout should usually include:
-
-`Implemented`, `Capability Delivered`, `Contract Source`, `Verification` naming
-code/fixture and runtime/evaluator proof, `Lint Gate` per
-`## Closeout Vocabulary`, `Truth Surface Sync`, `Boundary Ownership`, `Critique`,
-`Contract Updates`, `Residual Risks`, `Next Slice`.
-
-## Closeout Vocabulary
-
-Emittable-verbatim closeout tokens (validator substring-matches these); WHY-prose stays in `references/verification-ladder.md`.
-
-- `Lint Gate` status is one of `ran-pass <command>` / `ran-fail-fixed <command>` / `ran-fail-deferred <command> <issue|anchor>` / `not-detected` / `skipped <reason>`.
-- Completion-report categories are `durable` / `external-writes` / `test-only` / `verification` (proof + level `worker_queued`/`provider_roundtrip`/`agent_choice`) / `unverified-future`.
-- `Boundary Ownership` verdict is one of `single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec` — emit-only / eval-judged (impl keeps no durable validator; the typed floor lives in the escalated standalone `critique`).
+The slice closeout ledger — `Implemented`, `Verification`, `Lint Gate`,
+`Truth Surface Sync`, `Boundary Ownership`, `Critique`, and the rest — is owned
+by `prove`; emit it from there rather than improvising a local summary shape.
 
 ## Guardrails
 
-- Do not call a same-agent review a critique. If the required critique is
-  blocked, stop instead of downgrading to a local substitute and still calling
-  the slice reviewed.
+- Do not stop at "code written": a slice ends when its `prove` ledger is
+  complete, blocked-with-signal, or the slice is honestly handed back to
+  `spec`/`debug`.
+- Do not run the `prove` stop gate as a same-agent formality; `prove` owns the
+  critique-binding rules and they mean a fresh bounded reviewer context.
 
 ## References
 
 - `references/adapter-contract.md`
 - `references/contract-consumption.md`
-- `references/verification-ladder.md`
 - `references/external-api-contract.md`
 - `references/design-lenses.md`
 - `references/sequence-discipline.md`
-- `references/review-gate.md`
 - `references/spec-loop.md`
-- `../quality/references/cautilus-on-demand.md`
+- `../prove/SKILL.md`
 - `../../shared/references/source-bound-records.md`
 - `../../shared/references/prescribed-path-self-test.md`
-- `../../shared/references/external-capability-proof-ladder.md`
 - `../../shared/references/active-goal-coordination.md`

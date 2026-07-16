@@ -28,16 +28,14 @@
 ## Next Session
 
 1. With no explicit task, run the handoff chunker over this baton and the open
-   issues. #440 (round-5 retro pair) and #441 (dup-ratchet member visibility)
-   were resolved and closed on 2026-07-16; #439 (skill-cap split backlog,
-   `impl` first) is open, paused on the operator's split-vs-delete decision —
-   resume from the dated 2026-07-16 issue-439 resolution brief in the issue
-   artifacts directory (kept uncommitted until the resolution commit; the
-   commit-msg hook demands a full closeout ledger for any staged issue
-   artifact). Close scope is already decided: close after the `impl` slice
-   with a follow-up issue for `spec`/`critique`/`announcement`.
-2. Restart Codex or Claude Code before testing installed-plugin behavior; no
-   restart is needed for repo-local triage.
+   issues. 2026-07-16 closed #439/#440/#441: the `impl` cap pin was resolved
+   by splitting the slice-closeout concept into the new public skill `prove`
+   (impl 140, prove 130 of the 200 cap). The remaining cap backlog
+   (`spec`/`critique`/`announcement`) plus prove hardening (dogfood
+   `planned`→`reviewed` promotion, claim-fidelity substance floor) is #442 —
+   spec-first, one skill per slice.
+2. Installed hosts do not see the new `prove` skill until `charness update`
+   plus a session restart; restart before judging installed-plugin routing.
 3. Remaining operator decisions from the 2026-07-16
    [goal artifact](../charness-artifacts/goals/2026-07-16-scout-driven-improvement.md)
    `## Operator Decision Queue`: the D18 disposition and the live Codex probe

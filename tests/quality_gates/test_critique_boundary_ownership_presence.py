@@ -188,7 +188,7 @@ def test_boundary_scaffold_default_stub_fails_validation_post_cutoff(tmp_path: P
 
 
 def _load_hook():
-    hook_dir = ROOT / "skills" / "public" / "impl" / "scripts"
+    hook_dir = ROOT / "skills" / "public" / "prove" / "scripts"
     if str(hook_dir) not in sys.path:
         sys.path.insert(0, str(hook_dir))
     import check_boundary_escalation
@@ -211,7 +211,7 @@ def test_hook_help_describes_repo_root() -> None:
     import subprocess
 
     result = subprocess.run(
-        [sys.executable, str(ROOT / "skills" / "public" / "impl" / "scripts" / "check_boundary_escalation.py"), "--help"],
+        [sys.executable, str(ROOT / "skills" / "public" / "prove" / "scripts" / "check_boundary_escalation.py"), "--help"],
         cwd=ROOT,
         check=True,
         capture_output=True,
@@ -341,7 +341,7 @@ def test_hook_module_main_guard_executes(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py", "--changed-path", "docs/x.md"])
     with pytest.raises(SystemExit) as exc:
         runpy.run_path(
-            str(ROOT / "skills" / "public" / "impl" / "scripts" / "check_boundary_escalation.py"),
+            str(ROOT / "skills" / "public" / "prove" / "scripts" / "check_boundary_escalation.py"),
             run_name="__main__",
         )
     assert exc.value.code == 0

@@ -39,15 +39,15 @@ carries: tests pass locally, the commit lands, and the push-time hook rejects
 on lint. Run the repo's standing lint gate against the new CLI source before
 declaring the slice complete instead of waiting for the hook.
 
-Do not invent a parallel rule here. The detection and closeout shape are owned
-by `impl`:
+Do not invent a parallel rule here. Detection is owned by `impl` and the
+closeout shape by `prove`:
 
 - survey the gate with `../../impl/scripts/survey_verification.py`
   (`lint_gate.detected` / `lint_gate.command`)
 - record the result in the `Lint Gate` closeout field whose states
   (`ran-pass`, `ran-fail-fixed`, `ran-fail-deferred`, `not-detected`,
-  `skipped <reason>`) live in `impl` SKILL.md `## Closeout Vocabulary`, to which
-  `../../impl/references/verification-ladder.md` "Lint Gate Closeout Shape"
+  `skipped <reason>`) live in `prove` SKILL.md `## Closeout Vocabulary`, to which
+  `../../prove/references/verification-ladder.md` "Lint Gate Closeout Shape"
   now forwards
 
 The discipline is disclosure-before-commit, not a new hard gate; the repo's

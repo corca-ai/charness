@@ -29,3 +29,4 @@ achieve:artifact:release:read-only proof -- the release coordination floor detec
 handoff:artifact:goals:auto-draft seed -- handoff chunked-routing drafts a goal artifact into charness-artifacts/goals/<date>-<slug>.md for /achieve to consume; achieve still owns the lifecycle after activation
 issue:artifact:critique:read-only proof -- issue closeout-discipline requires a critique artifact path or blocked-host signal as resolution-critique evidence; ownership stays critique
 release:artifact:probe:read-write convention -- publication-boundary.md directs independent-observer release evidence into a durable JSON probe artifact; ownership stays probe
+prove:adapter:impl:read-only consumption -- prove reads verification preferences and truth_surfaces from the impl adapter through impl's resolver; impl keeps ownership of the adapter file

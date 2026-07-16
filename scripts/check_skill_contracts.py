@@ -96,10 +96,14 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "impl adapter resolution and verification survey",
         "risk interrupt planner reports a forced interrupt",
         "best self-verification path before you code and again before you stop",
+        "plain implementation until the named spec handoff says this slice may",
+        '"code written" is not a stop state',
+    ),
+    "skills/public/prove/SKILL.md": (
         "re-read `Fixed Decisions` and named acceptance checks",
         "reflected in the delivered slice or explicitly",
         "Do not call a same-agent review a critique.",
-        "plain implementation until the named spec handoff says this slice may",
+        "never runs the review itself",
     ),
     "skills/public/debug/SKILL.md": (
         "classify seam risk explicitly",
@@ -198,6 +202,8 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/impl/SKILL.md": (
         'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
+    ),
+    "skills/public/prove/SKILL.md": (
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
         "`Critique: short <scope>`",
         "`Critique: full <artifact-or-subagent-status>`",

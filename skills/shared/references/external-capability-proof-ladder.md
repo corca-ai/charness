@@ -5,7 +5,7 @@ host-mediated CLI, a third-party API, a runtime grant, or a host-bridge
 operation that must cross the worker → host → provider seam.
 
 This ladder is about **what was actually proven**, not about which tool to
-prefer. For tool selection, see `impl/references/verification-ladder.md`.
+prefer. For tool selection, see `prove/references/verification-ladder.md`.
 
 ## The Five Levels
 
@@ -107,7 +107,7 @@ A slice that only proves through `host_decision` is not closable as
 
 ## Source Bindings
 
-- `impl/references/verification-ladder.md` — strongest-honest tool selection
+- `prove/references/verification-ladder.md` — strongest-honest tool selection
 - `impl/references/external-api-contract.md` — recurring traps mocked tests
   miss
 - `create-cli/references/external-capability-clis.md` — worker → host

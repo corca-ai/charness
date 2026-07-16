@@ -1,145 +1,150 @@
 {
-  "schema_version": 1,
-  "description": "Cautilus claim-fidelity specs: does a real /charness:<skill> run honor its own reference-routing claims. A skill may register multiple scenario fixtures (default scenario at spec.json; named branches like setup greenfield/normalization at <scenario>.spec.json with a scenario_id). See charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md.",
-  "specs": [
-    {
-      "skill_id": "achieve",
-      "spec_path": "evals/cautilus/achieve-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "announcement",
-      "spec_path": "evals/cautilus/announcement-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "create-cli",
-      "spec_path": "evals/cautilus/create-cli-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "create-skill",
-      "spec_path": "evals/cautilus/create-skill-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "critique",
-      "spec_path": "evals/cautilus/critique-claim-fidelity/spec.json",
-      "fan_out_fit": "yes — critique has two representative runs: the bare/autonomous self-activation path (this default fixture; deterministic RCF proves the path was followed, inference quality is the Cautilus-recommendation signal) and a pinned-target path (decision.spec.json)."
-    },
-    {
-      "skill_id": "critique",
-      "scenario_id": "decision",
-      "spec_path": "evals/cautilus/critique-claim-fidelity/decision.spec.json",
-      "fan_out_fit": "yes — pinned decision premortem makes premortem-decision.md unconditional, so the deterministic tooth (premortem-decision) carries the weight here, complementing the autonomous fixture. (counterweight-triage.md retired from RCF in the Slice-7 reconciliation: census INLINE, and here it passed only via a subagent-prompt name-mention, #415.)"
-    },
-    {
-      "skill_id": "debug",
-      "spec_path": "evals/cautilus/debug-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "gather",
-      "spec_path": "evals/cautilus/gather-claim-fidelity/spec.json",
-      "fan_out_fit": "yes — gather fans out by SOURCE CONDITION (gather-fixture-redesign.md): this public-URL default opens no skill-local doc a run must read (source-priority/capability-contract are INLINE/planner-required; the provider docs are script-resolved), so its honest floor is the produced artifact; the private-saas sibling forces browser-mediated-private-sources.md."
-    },
-    {
-      "skill_id": "gather",
-      "scenario_id": "private-saas",
-      "spec_path": "evals/cautilus/gather-claim-fidelity/private-saas.spec.json",
-      "fan_out_fit": "yes — a private SaaS source with no export/host path forces the browser-mediated decision ladder + auth/bootstrap-mode vocabulary (browser-mediated-private-sources.md), which no other gather scenario opens."
-    },
-    {
-      "skill_id": "handoff",
-      "spec_path": "evals/cautilus/handoff-claim-fidelity/spec.json",
-      "fan_out_fit": "yes — handoff branches by intent (plan_handoff_run.py _required_reads are intent-keyed and mutually exclusive); this default scenario is the chunked_routing (bare) intent whose single required read is chunked-routing.md."
-    },
-    {
-      "skill_id": "handoff",
-      "scenario_id": "pickup",
-      "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup.spec.json",
-      "fan_out_fit": "yes — the pickup intent's floor is the substance judge (outcome-assertions.json: start the artifact-named workflow) plus the conditional continuation-sequence.md read on the ambiguous arm; a chunked_routing or refresh run exercises neither, so pickup needs its own scenario. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
-    },
-    {
-      "skill_id": "handoff",
-      "scenario_id": "pickup-ambiguous",
-      "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json",
-      "fan_out_fit": "yes — the AMBIGUOUS arm of the conditionalized pickup planner: a generic pickup with no clearly-pinned task against >=2 plausible pickups forces continuation-sequence.md, while the clear-pickup scenario and a chunked_routing/refresh run do not — so it needs its own scenario. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
-    },
-    {
-      "skill_id": "handoff",
-      "scenario_id": "refresh",
-      "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
-      "fan_out_fit": "yes — the refresh intent reads state-selection.md + spill-targets.md, mutually exclusive with the pickup and chunked_routing reads, so its own scenario."
-    },
-    {
-      "skill_id": "hitl",
-      "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "hotl",
-      "spec_path": "evals/cautilus/hotl-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "ideation",
-      "spec_path": "evals/cautilus/ideation-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "impl",
-      "spec_path": "evals/cautilus/impl-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "issue",
-      "scenario_id": "new",
-      "spec_path": "evals/cautilus/issue-claim-fidelity/new.spec.json",
-      "fan_out_fit": "yes — issue branches by intent (issue_tool.py plan emits intent-keyed required_reads); the new intent's unconditional reads are [issue-shaping, issue-backend, closeout-discipline], mutually exclusive with the resolve intent's resolve-flow read."
-    },
-    {
-      "skill_id": "issue",
-      "scenario_id": "resolve",
-      "spec_path": "evals/cautilus/issue-claim-fidelity/resolve.spec.json",
-      "fan_out_fit": "yes — the resolve intent's unconditional reads are [resolve-flow, issue-backend, closeout-discipline]; a new-intent run opens none of resolve-flow, so requiring it needs its own scenario."
-    },
-    {
-      "skill_id": "narrative",
-      "spec_path": "evals/cautilus/narrative-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "quality",
-      "spec_path": "evals/cautilus/quality-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "release",
-      "spec_path": "evals/cautilus/release-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "retro",
-      "spec_path": "evals/cautilus/retro-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    },
-    {
-      "skill_id": "setup",
-      "scenario_id": "greenfield",
-      "spec_path": "evals/cautilus/setup-claim-fidelity/greenfield.spec.json",
-      "fan_out_fit": "yes — setup branches greenfield vs normalization on detected repo mode (mutually exclusive flows), so each branch is its own claim-fidelity scenario rather than one over-broad fixture."
-    },
-    {
-      "skill_id": "setup",
-      "scenario_id": "normalization",
-      "spec_path": "evals/cautilus/setup-claim-fidelity/normalization.spec.json",
-      "fan_out_fit": "yes — normalization is the in-repo-capturable branch (a mature repo like charness detects PARTIAL/NORMALIZE, never greenfield); the greenfield branch needs a fresh-repo sandbox to capture."
-    },
-    {
-      "skill_id": "spec",
-      "spec_path": "evals/cautilus/spec-claim-fidelity/spec.json",
-      "fan_out_fit": "no"
-    }
-  ]
+ "schema_version": 1,
+ "description": "Cautilus claim-fidelity specs: does a real /charness:<skill> run honor its own reference-routing claims. A skill may register multiple scenario fixtures (default scenario at spec.json; named branches like setup greenfield/normalization at <scenario>.spec.json with a scenario_id). See charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md.",
+ "specs": [
+  {
+   "skill_id": "achieve",
+   "spec_path": "evals/cautilus/achieve-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "announcement",
+   "spec_path": "evals/cautilus/announcement-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "create-cli",
+   "spec_path": "evals/cautilus/create-cli-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "create-skill",
+   "spec_path": "evals/cautilus/create-skill-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "critique",
+   "spec_path": "evals/cautilus/critique-claim-fidelity/spec.json",
+   "fan_out_fit": "yes — critique has two representative runs: the bare/autonomous self-activation path (this default fixture; deterministic RCF proves the path was followed, inference quality is the Cautilus-recommendation signal) and a pinned-target path (decision.spec.json)."
+  },
+  {
+   "skill_id": "critique",
+   "scenario_id": "decision",
+   "spec_path": "evals/cautilus/critique-claim-fidelity/decision.spec.json",
+   "fan_out_fit": "yes — pinned decision premortem makes premortem-decision.md unconditional, so the deterministic tooth (premortem-decision) carries the weight here, complementing the autonomous fixture. (counterweight-triage.md retired from RCF in the Slice-7 reconciliation: census INLINE, and here it passed only via a subagent-prompt name-mention, #415.)"
+  },
+  {
+   "skill_id": "debug",
+   "spec_path": "evals/cautilus/debug-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "gather",
+   "spec_path": "evals/cautilus/gather-claim-fidelity/spec.json",
+   "fan_out_fit": "yes — gather fans out by SOURCE CONDITION (gather-fixture-redesign.md): this public-URL default opens no skill-local doc a run must read (source-priority/capability-contract are INLINE/planner-required; the provider docs are script-resolved), so its honest floor is the produced artifact; the private-saas sibling forces browser-mediated-private-sources.md."
+  },
+  {
+   "skill_id": "gather",
+   "scenario_id": "private-saas",
+   "spec_path": "evals/cautilus/gather-claim-fidelity/private-saas.spec.json",
+   "fan_out_fit": "yes — a private SaaS source with no export/host path forces the browser-mediated decision ladder + auth/bootstrap-mode vocabulary (browser-mediated-private-sources.md), which no other gather scenario opens."
+  },
+  {
+   "skill_id": "handoff",
+   "spec_path": "evals/cautilus/handoff-claim-fidelity/spec.json",
+   "fan_out_fit": "yes — handoff branches by intent (plan_handoff_run.py _required_reads are intent-keyed and mutually exclusive); this default scenario is the chunked_routing (bare) intent whose single required read is chunked-routing.md."
+  },
+  {
+   "skill_id": "handoff",
+   "scenario_id": "pickup",
+   "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup.spec.json",
+   "fan_out_fit": "yes — the pickup intent's floor is the substance judge (outcome-assertions.json: start the artifact-named workflow) plus the conditional continuation-sequence.md read on the ambiguous arm; a chunked_routing or refresh run exercises neither, so pickup needs its own scenario. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
+  },
+  {
+   "skill_id": "handoff",
+   "scenario_id": "pickup-ambiguous",
+   "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json",
+   "fan_out_fit": "yes — the AMBIGUOUS arm of the conditionalized pickup planner: a generic pickup with no clearly-pinned task against >=2 plausible pickups forces continuation-sequence.md, while the clear-pickup scenario and a chunked_routing/refresh run do not — so it needs its own scenario. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
+  },
+  {
+   "skill_id": "handoff",
+   "scenario_id": "refresh",
+   "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
+   "fan_out_fit": "yes — the refresh intent reads state-selection.md + spill-targets.md, mutually exclusive with the pickup and chunked_routing reads, so its own scenario."
+  },
+  {
+   "skill_id": "hitl",
+   "spec_path": "evals/cautilus/hitl-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "hotl",
+   "spec_path": "evals/cautilus/hotl-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "ideation",
+   "spec_path": "evals/cautilus/ideation-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "impl",
+   "spec_path": "evals/cautilus/impl-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "issue",
+   "scenario_id": "new",
+   "spec_path": "evals/cautilus/issue-claim-fidelity/new.spec.json",
+   "fan_out_fit": "yes — issue branches by intent (issue_tool.py plan emits intent-keyed required_reads); the new intent's unconditional reads are [issue-shaping, issue-backend, closeout-discipline], mutually exclusive with the resolve intent's resolve-flow read."
+  },
+  {
+   "skill_id": "issue",
+   "scenario_id": "resolve",
+   "spec_path": "evals/cautilus/issue-claim-fidelity/resolve.spec.json",
+   "fan_out_fit": "yes — the resolve intent's unconditional reads are [resolve-flow, issue-backend, closeout-discipline]; a new-intent run opens none of resolve-flow, so requiring it needs its own scenario."
+  },
+  {
+   "skill_id": "narrative",
+   "spec_path": "evals/cautilus/narrative-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "prove",
+   "spec_path": "evals/cautilus/prove-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "quality",
+   "spec_path": "evals/cautilus/quality-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "release",
+   "spec_path": "evals/cautilus/release-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "retro",
+   "spec_path": "evals/cautilus/retro-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  },
+  {
+   "skill_id": "setup",
+   "scenario_id": "greenfield",
+   "spec_path": "evals/cautilus/setup-claim-fidelity/greenfield.spec.json",
+   "fan_out_fit": "yes — setup branches greenfield vs normalization on detected repo mode (mutually exclusive flows), so each branch is its own claim-fidelity scenario rather than one over-broad fixture."
+  },
+  {
+   "skill_id": "setup",
+   "scenario_id": "normalization",
+   "spec_path": "evals/cautilus/setup-claim-fidelity/normalization.spec.json",
+   "fan_out_fit": "yes — normalization is the in-repo-capturable branch (a mature repo like charness detects PARTIAL/NORMALIZE, never greenfield); the greenfield branch needs a fresh-repo sandbox to capture."
+  },
+  {
+   "skill_id": "spec",
+   "spec_path": "evals/cautilus/spec-claim-fidelity/spec.json",
+   "fan_out_fit": "no"
+  }
+ ]
 }

@@ -126,7 +126,7 @@ def test_resolve_changed_paths_falls_back_to_working_tree_diff(tmp_path: Path, m
 # First three surfaces are the First Slice (critique + impl); the last four are
 # DBD-2's extension into issue / spec / achieve / quality (#414/#416).
 _BRIEF_SURFACES = (
-    "skills/public/impl/references/review-gate.md",
+    "skills/public/prove/references/review-gate.md",
     "skills/public/critique/references/code-critique.md",
     "skills/public/critique/references/spec-critique.md",
     "skills/public/issue/references/causal-review.md",
@@ -156,10 +156,11 @@ def _sections(rel: str) -> dict[str, str]:
 
 
 def test_impl_and_spec_skills_carry_boundary_ownership_token() -> None:
-    # impl (First Slice) + spec (DBD-2 #414/#416): impl-archetype emit-only token.
+    # prove (the impl-archetype closeout ledger, split out of impl per #439) +
+    # spec (DBD-2 #414/#416): impl-archetype emit-only token.
     # issue's emit-only `Boundary #N:` close-comment line is prose (not validator-
     # enforced), covered by the brief-reachability surface above; no separate test.
-    for rel in ("skills/public/impl/SKILL.md", "skills/public/spec/SKILL.md"):
+    for rel in ("skills/public/prove/SKILL.md", "skills/public/spec/SKILL.md"):
         s = _sections(rel)
         assert "Boundary Ownership" in s["Output Shape"] and "Boundary Ownership" in s["Closeout Vocabulary"], rel
         assert all(v in s["Closeout Vocabulary"] for v in _VERDICTS), rel

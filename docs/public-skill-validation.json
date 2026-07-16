@@ -1,81 +1,84 @@
 {
-  "schema_version": 1,
-  "tiers": {
-    "smoke-only": [],
-    "hitl-recommended": [
-      "achieve",
-      "announcement",
-      "create-cli",
-      "critique",
-      "hitl",
-      "hotl",
-      "ideation",
-      "narrative",
-      "quality",
-      "release",
-      "retro"
-    ],
-    "evaluator-required": [
-      "create-skill",
-      "debug",
-      "gather",
-      "handoff",
-      "impl",
-      "setup",
-      "issue",
-      "spec"
-    ]
-  },
-  "adapter_requirements": {
-    "required": [
-      "achieve",
-      "announcement",
-      "create-skill",
-      "critique",
-      "debug",
-      "gather",
-      "handoff",
-      "hitl",
-      "hotl",
-      "impl",
-      "issue",
-      "narrative",
-      "quality",
-      "release",
-      "retro",
-      "setup"
-    ],
-    "adapter-free": [
-      "create-cli",
-      "ideation",
-      "spec"
-    ]
-  },
-  "fallback_policy": {
-    "allow": [
-      "achieve",
-      "create-cli",
-      "debug",
-      "gather",
-      "ideation",
-      "impl",
-      "issue",
-      "critique",
-      "retro"
-    ],
-    "visible": [
-      "announcement",
-      "create-skill",
-      "handoff",
-      "hotl",
-      "quality",
-      "setup",
-      "spec"
-    ],
-    "block": [
-      "hitl",
-      "narrative",
-      "release"
-    ]
-  }
+ "schema_version": 1,
+ "tiers": {
+  "smoke-only": [],
+  "hitl-recommended": [
+   "achieve",
+   "announcement",
+   "create-cli",
+   "critique",
+   "hitl",
+   "hotl",
+   "ideation",
+   "narrative",
+   "prove",
+   "quality",
+   "release",
+   "retro"
+  ],
+  "evaluator-required": [
+   "create-skill",
+   "debug",
+   "gather",
+   "handoff",
+   "impl",
+   "setup",
+   "issue",
+   "spec"
+  ]
+ },
+ "adapter_requirements": {
+  "required": [
+   "achieve",
+   "announcement",
+   "create-skill",
+   "critique",
+   "debug",
+   "gather",
+   "handoff",
+   "hitl",
+   "hotl",
+   "impl",
+   "issue",
+   "narrative",
+   "quality",
+   "release",
+   "retro",
+   "setup"
+  ],
+  "adapter-free": [
+   "create-cli",
+   "ideation",
+   "prove",
+   "spec"
+  ]
+ },
+ "fallback_policy": {
+  "allow": [
+   "achieve",
+   "create-cli",
+   "critique",
+   "debug",
+   "gather",
+   "ideation",
+   "impl",
+   "issue",
+   "prove",
+   "retro"
+  ],
+  "visible": [
+   "announcement",
+   "create-skill",
+   "handoff",
+   "hotl",
+   "quality",
+   "setup",
+   "spec"
+  ],
+  "block": [
+   "hitl",
+   "narrative",
+   "release"
+  ]
+ }
 }

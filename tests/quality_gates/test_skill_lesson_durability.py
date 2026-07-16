@@ -66,7 +66,7 @@ LESSON_GUARDS = [
     ),
     (
         "impl-verification-ladder-completion-report-categories",
-        "public/impl/references/verification-ladder.md",
+        "public/prove/references/verification-ladder.md",
         (
             "Completion Report Categories",
             "Durable changes",

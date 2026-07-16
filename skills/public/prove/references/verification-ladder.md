@@ -79,7 +79,7 @@ trap shapes that mocked tests routinely miss.
 
 ## Lint Gate Closeout Shape
 
-The `Lint Gate` status enum lives in impl SKILL.md `## Closeout Vocabulary`;
+The `Lint Gate` status enum lives in prove SKILL.md `## Closeout Vocabulary`;
 record one of those tokens per the bootstrap survey signal (the `<issue|anchor>`
 and `<reason>` placeholders carry the deferred/skipped audit requirement).
 
@@ -107,7 +107,7 @@ Completion reports separate these categories instead of mixing them as one
 "done" claim. The reader needs to distinguish what now lives in the repo from
 what was only test scaffolding or external side effect.
 
-The emittable category labels live in impl SKILL.md `## Closeout Vocabulary`;
+The emittable category labels live in prove SKILL.md `## Closeout Vocabulary`;
 the bolded entries below are the why-these-categories rationale, not the
 emittable tokens.
 

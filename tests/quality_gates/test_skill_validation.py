@@ -337,14 +337,14 @@ def test_validate_skills_allows_authoring_marker_and_operator_surfaces(tmp_path:
     skill_dir = repo / "skills" / "public" / "demo"
     references_dir = skill_dir / "references"
     references_dir.mkdir(parents=True)
-    sibling_ref = repo / "skills" / "public" / "impl" / "references"
+    sibling_ref = repo / "skills" / "public" / "prove" / "references"
     sibling_ref.mkdir(parents=True)
     (sibling_ref / "verification-ladder.md").write_text("# Ladder\n", encoding="utf-8")
-    (repo / "skills" / "public" / "impl" / "SKILL.md").write_text(
+    (repo / "skills" / "public" / "prove" / "SKILL.md").write_text(
         "\n".join(
             [
                 "---",
-                "name: impl",
+                "name: prove",
                 'description: "Impl skill."',
                 "---",
                 "",
@@ -367,7 +367,7 @@ def test_validate_skills_allows_authoring_marker_and_operator_surfaces(tmp_path:
                 "`charness-artifacts/quality/latest.md` is repo-owned state.",
                 "`docs/release-adapter.yaml` is adapter configuration.",
                 "`.agents/release-adapter.yaml` is adapter configuration.",
-                "`../../impl/references/verification-ladder.md` ships in the same plugin.",
+                "`../../prove/references/verification-ladder.md` ships in the same plugin.",
                 "The next cite is authoring-repo-internal, not vendored.",
                 "`tests/test_demo.py` documents the source repo regression.",
             ]

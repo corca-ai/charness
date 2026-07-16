@@ -93,7 +93,7 @@ validator owns the mechanics and the failure messages.
   proof-backed no-action reason, an intentional boundary, or a `follow-up:` owner.
 
 For cross-skill schema alignment, the critique `action: file-issue` field and the
-impl verification-ladder `ran-fail-deferred` identifier take the same
+prove verification-ladder `ran-fail-deferred` identifier take the same
 `<issue|anchor>` shape.
 
 ## Trivial-bug short-circuit
