@@ -57,9 +57,7 @@ the substrate (angles + counterweight + four bins) is shared.
 | `spec critique`, pre-impl spec lock-in          | `references/spec-critique.md`      |
 
 If the call is ambiguous, ask which target reference applies before spawning
-angles. Do not silently pick a target that changes the angle distribution
-(for example, treating a release critique as a generic decision premortem
-loses the surface-lock inventory).
+angles. Do not silently pick a target that changes the angle distribution.
 
 ## Bootstrap
 
@@ -92,29 +90,25 @@ history.
    - what would count as success
    - what is explicitly out of scope for this pass
 2. Pick a bounded set of contrasting angles.
-   - use subagents as the canonical path
-   - use at least two angle subagents plus one separate counterweight subagent
-   - default to three angle subagents for a normal non-trivial change
-   - expand to four angle subagents only when the change is clearly broad:
-     cross-surface, breaking, migration-heavy, or release plus doc cascade
+   - at least two angle subagents plus one separate counterweight subagent;
+     default to three angles, expanding to four only for a clearly broad
+     change (cross-surface, breaking, migration-heavy, or release plus doc
+     cascade)
    - choose angles that can disagree meaningfully, not five near-duplicates
    - use the target reference's `Anchor Angle Distribution`; see also `references/angle-selection.md`
 3. Run the angle pass.
-   - use bounded fresh-eye subagents with one angle each
-   - apply adapter `reviewer_tiers.high-leverage` spawn fields when the host exposes them
+   - use bounded fresh-eye subagents with one angle each, applying adapter
+     `reviewer_tiers.high-leverage` spawn fields when the host exposes them
    - when the repo's adapter declares ≥1 `packet_sections`, pass the
      prepare-packet markdown render to each subagent and record the
      consumed packet path in the closeout (`references/prepare-packet.md`)
    - do not collapse the counterweight into one of the angle subagents; keep
      it as a separate skeptical pass
-   - before reporting the canonical path as blocked, use
-     `../../shared/references/fresh-eye-subagent-review.md`
-   - wrap reviewer spawns in the rail-1 snapshot/verify from that shared
-     reference's Enforcement section (snapshot before, verify after each)
-   - if the host cannot provide subagents, stop and report that the canonical
-     critique path is unavailable; fixing the host-side subagent contract is
-     the next move instead of inventing a local substitute
-   - do not collapse into a same-agent local pass or degraded variant
+   - `../../shared/references/fresh-eye-subagent-review.md` owns spawn
+     enforcement: the rail-1 snapshot/verify around each reviewer spawn, the
+     capability check required before reporting the canonical path blocked,
+     and the stop-instead-of-local-substitute rule when the host cannot
+     provide subagents
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
