@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`; sources: 96)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`; sources: 97)
 - Dup-ratchet attribution archaeology: a hard block on fingerprint `895d96962b294ed4` cost several rounds of reproducing the gate's own scan because the gate output names no member paths; the family turned out to be a collateral clustering rotation among two untouched files. Routed to #441. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 - One gate cycle lost persisting the host-log probe as `.md` into the validated retro directory (the retro-artifact validator correctly rejected it); the repo convention for probe artifacts is `.json`, which prior goal artifacts already demonstrate. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 - Reviewer-wait idle time: bounded-reviewer completion notifications never arrived from the host, and `run_in_background: false` Agent spawns still ran asynchronously, so the parent polled subagent transcripts with fixed sleeps (~10 idle minutes across four reviews). Host-runtime behavior, not repo fixable; lesson persisted here. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`; sources: 96)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`; sources: 97)
 - bounded-reviewer synchronous spawns returned results inline this session (no polling needed), unlike the 2026-07-16 session; treat the polling lesson as host-version-dependent rather than permanent. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
 - consider a scaffold-time warning when a dogfood row's prompt equals the skill description (fallback in use), so the next new skill does not inherit an unrealistic consumer prompt silently. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
 - keep critique strictly before the locked closeout even when the parallel gamble looks cheap; the loss mode (invalidated broad proof) costs more than the wait. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
@@ -125,3 +125,4 @@
 - `charness-artifacts/retro/2026-07-16-v1-1-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`
