@@ -53,6 +53,7 @@ PROMPT_HINTS = {
     "setup": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
     "issue": "File or resolve this GitHub issue through `gh`, keeping issue identity and freshness grounded in GitHub state.",
     "narrative": "Tighten the repo's durable story first, then derive one concise brief from that source of truth.",
+    "prove": "This slice is built and locally green; prove the closeout before we stop instead of taking the passing tests' word for it.",
     "critique": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
     "quality": "Review why the standing test gate feels slow, including local vs CI runtime differences, and install the next deterministic gate if the move is obvious.",
     "release": "Verify and advance the checked-in release surface without hand-editing generated packaging artifacts.",

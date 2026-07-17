@@ -15,6 +15,7 @@
   "impl",
   "issue",
   "narrative",
+  "prove",
   "quality",
   "release",
   "retro",
@@ -740,7 +741,7 @@
   },
   {
    "skill_id": "prove",
-   "prompt": "Use when a built implementation or contract slice needs its closeout proven before stopping: run the strongest honest verification, sync truth surfaces, bind the required fresh-eye critique, and emit the slice closeout ledger. `impl` loads this at its stop gate; contract-completing work consumes the same ledger.",
+   "prompt": "This slice is built and locally green; prove the closeout before we stop instead of taking the passing tests' word for it.",
    "repo_shape": "mature repo with a just-built implementation or contract slice awaiting closeout proof (impl adapter optional and read-only when present)",
    "expected_skill": "prove",
    "expected_artifact": null,
@@ -751,7 +752,14 @@
     "does not invent host-specific adapter state when repo inspection alone should be enough",
     "produces an output that a maintainer could review directly without re-deriving the whole request"
    ],
-   "review_status": "planned"
+   "review_status": "reviewed",
+   "reviewed_on": "2026-07-17",
+   "observed_evidence": [
+    "Live consumer run (2026-07-17, this host, installed plugin v1.2.0 after the restart the #439 split required; the prior session's probe returned `Unknown skill: charness:prove`): the consumer-shaped prompt now checked in as this row's prompt routed via installed skill metadata to `prove` over adjacent skills (`impl` owns building the slice, `quality` owns the standing bar, `critique` owns the reviewer substrate), and the skill body loaded and executed end-to-end on a real slice (the #444 F5/F6 commit-msg pause failure-text polish, commit 963e147c).",
+    "Executed workflow observations from that run: bootstrap resolved the impl adapter read-only (portable-defaults preset, explicit-empty truth_surfaces) without inventing adapter state; `check_boundary_escalation.py` returned `triggered: false`; verification preferred executed proof (33 focused tests, the pre-lock gate aggregate, a live CLI demonstration of the pause-only and close-keyword-overlap failure paths, then a locked `run_slice_closeout.py --verification-lock` broad run with a focused mutation-coverage producer); the stop gate bound a fresh bounded-reviewer slice critique wrapped in boundary-fingerprint snapshot/verify (`drift: []`), and the review's one worth-fixing finding was folded before the locked proof.",
+    "The registry prompt was promoted from the frontmatter-description scaffold fallback to a checked-in `PROMPT_HINTS[\"prove\"]` consumer prompt in the same change, so the row records the exact prompt the live run observed; `validate_public_skill_dogfood.py` re-locks the row to that scaffold.",
+    "Non-claims: single-host observation (one Claude Code session); no Cautilus run or scenario-registry mutation claimed; the `hitl-recommended`/`adapter-free` tier is unchanged; routing was observed once, not measured across rephrasings."
+   ]
   }
  ]
 }

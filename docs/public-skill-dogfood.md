@@ -15,22 +15,27 @@ stays as the short human-readable contract for the same reviewed cases.
 
 ## Current Required Reviewed Skills
 
+Mirrors `review_required_skills` in the canonical json (alphabetical):
+
+- `achieve`
 - `announcement`
 - `create-cli`
 - `create-skill`
+- `critique`
 - `debug`
 - `gather`
 - `handoff`
 - `hitl`
+- `hotl`
 - `ideation`
 - `impl`
-- `setup`
 - `issue`
 - `narrative`
-- `critique`
+- `prove`
 - `quality`
 - `release`
 - `retro`
+- `setup`
 - `spec`
 
 ## Review Posture

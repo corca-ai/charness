@@ -49,3 +49,14 @@ def test_public_skill_dogfood_wrappers_match_root_script() -> None:
 
     assert payloads[1] == payloads[0]
     assert payloads[2] == payloads[0]
+
+
+def test_dogfood_markdown_required_list_mirrors_json() -> None:
+    # The md "Current Required Reviewed Skills" list has drifted from the json
+    # once already (achieve/hotl silently missing, repaired 2026-07-17); pin
+    # the two surfaces together so the next omission fails loudly.
+    registry = json.loads((ROOT / "docs" / "public-skill-dogfood.json").read_text(encoding="utf-8"))
+    markdown = (ROOT / "docs" / "public-skill-dogfood.md").read_text(encoding="utf-8")
+    section = markdown.split("## Current Required Reviewed Skills", 1)[1].split("##", 1)[0]
+    md_skills = [line.strip()[3:].strip("`") for line in section.splitlines() if line.strip().startswith("- `")]
+    assert md_skills == sorted(registry["review_required_skills"])
