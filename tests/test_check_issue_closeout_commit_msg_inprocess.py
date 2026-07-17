@@ -10,7 +10,12 @@ delta rotation.
 """
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 import scripts.check_issue_closeout_commit_msg as checker
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_bare_classification_honors_explicit_classification_line() -> None:
@@ -85,6 +90,79 @@ def test_bare_classification_honors_bold_explicit_line() -> None:
     # heuristic it refuses), so the behavior is pinned here as intentional.
     body = "Fixes #9\n\n**Classification**: question\n"
     assert checker._bare_classification(body) == "question"
+
+
+def test_format_failure_pause_only_names_the_provenance_remedy() -> None:
+    # #444 F5: when every FAILING report is pause-triggered, the header and
+    # footer name the one-line `AI-provenance:` remedy instead of directing
+    # the author toward close keywords and the closeout ledger.
+    report = {
+        "reports": [
+            {
+                "ok": False,
+                "trigger": "pause-brief",
+                "source_artifact": "charness-artifacts/issue/2026-01-01-issue-7-brief.md",
+                "numbers": [7],
+                "ai_provenance": {"applies": True, "ok": False},
+            }
+        ]
+    }
+    rendered = checker._format_failure(report)
+    assert "pausing resolution brief is missing its `AI-provenance:` line" in rendered
+    assert "Append one `AI-provenance:` line to the staged brief" in rendered
+    assert "Put the close keywords and closeout ledger" not in rendered
+    assert "without a valid closeout carrier" not in rendered
+
+
+def test_format_failure_keeps_generic_text_when_mixed_with_non_pause_failure() -> None:
+    # A passing non-pause report beside a failing pause report keeps the pause
+    # remedy (only FAILING reports key the swap); a failing non-pause report
+    # restores the generic header/footer.
+    passing_artifact = {
+        "ok": True,
+        "source_artifact": "charness-artifacts/issue/2026-01-01-issue-9.md",
+        "numbers": [9],
+    }
+    failing_pause = {
+        "ok": False,
+        "trigger": "pause-brief",
+        "source_artifact": "charness-artifacts/issue/2026-01-01-issue-7-brief.md",
+        "numbers": [7],
+    }
+    failing_bare = {"ok": False, "source_artifact": None, "numbers": [10]}
+    pause_beside_passing = checker._format_failure(
+        {"reports": [passing_artifact, failing_pause]}
+    )
+    assert "pausing resolution brief is missing its `AI-provenance:` line" in pause_beside_passing
+    mixed_failures = checker._format_failure({"reports": [failing_pause, failing_bare]})
+    assert "without a valid closeout carrier" in mixed_failures
+    assert "Put the close keywords and closeout ledger" in mixed_failures
+
+
+def test_pause_vocabulary_tracks_resolution_brief_template() -> None:
+    # #444 F6 drift guard: `_PAUSE_BRIEF_RE` duplicates the resolution-brief
+    # template's pause vocabulary. Read the checked-in template (producer
+    # surface) and assert the regex (consumer surface) still recognizes the
+    # template's own pause alternative and still rejects the continuing one.
+    # Every extraction step asserts loudly: a template reword must fail here,
+    # not silently stop matching.
+    template = (
+        _REPO_ROOT / "skills" / "public" / "issue" / "references" / "resolution-brief.md"
+    ).read_text(encoding="utf-8")
+    fenced = re.search(r"```markdown\n(.*?)```", template, re.DOTALL)
+    assert fenced is not None, "resolution-brief fenced template block not found"
+    placeholder = re.search(
+        r"\*\*Autonomous vs pause\*\*: <(.*?)>", fenced.group(1), re.DOTALL
+    )
+    assert placeholder is not None, "Autonomous vs pause placeholder not found in template"
+    alternatives = [
+        " ".join(alt.split()) for alt in placeholder.group(1).split("|")
+    ]
+    assert len(alternatives) == 2, alternatives
+    continuing, pausing = alternatives
+    assert continuing.startswith("continuing"), alternatives
+    assert checker._PAUSE_BRIEF_RE.search(f"**Autonomous vs pause**: {pausing}")
+    assert not checker._PAUSE_BRIEF_RE.search(f"**Autonomous vs pause**: {continuing}")
 
 
 def test_pause_brief_provenance_floor_is_unconditional_on_classification() -> None:

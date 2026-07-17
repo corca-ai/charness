@@ -286,10 +286,25 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
 
 
 def _format_failure(report: dict[str, Any]) -> str:
-    lines = [
-        "charness commit-msg: this commit closes an issue (staged closeout artifact and/or a "
-        "GitHub close keyword in the message) without a valid closeout carrier.",
-    ]
+    # #444 F5: a pause-only failure has exactly one remedy (the brief's
+    # `AI-provenance:` line); the generic header/footer would misdirect the
+    # author toward close keywords and the closeout ledger. Keyed on the
+    # *failing* reports only — a passing non-pause report staged beside a
+    # failing pause brief must not suppress the pause remedy text.
+    failing = [item for item in report.get("reports", []) if not item.get("ok")]
+    pause_only = bool(failing) and all(
+        item.get("trigger") == "pause-brief" for item in failing
+    )
+    if pause_only:
+        lines = [
+            "charness commit-msg: a staged pausing resolution brief is missing its "
+            "`AI-provenance:` line (the one requirement kept for pause-state briefs).",
+        ]
+    else:
+        lines = [
+            "charness commit-msg: this commit closes an issue (staged closeout artifact and/or a "
+            "GitHub close keyword in the message) without a valid closeout carrier.",
+        ]
     for item in report.get("reports", []):
         source = item.get("source_artifact")
         numbers = ", ".join(f"#{number}" for number in item.get("numbers", []))
@@ -320,12 +335,20 @@ def _format_failure(report: dict[str, Any]) -> str:
         provenance = item.get("ai_provenance", {})
         if provenance.get("applies") and not provenance.get("ok", True):
             lines.append("  missing `AI-provenance:` marker on the agent-authored carrier")
-    lines.append(
-        "Put the close keywords and closeout ledger in the commit body, or unstage the issue "
-        "closeout artifact. If a close keyword above has no staged artifact and you do not want "
-        "to carry the full closeout ledger in this commit, rewrite the keyword to a bare `#N` "
-        "reference (e.g. `close #123` -> `#123`) so GitHub does not auto-close the issue on push."
-    )
+    if pause_only:
+        lines.append(
+            "Append one `AI-provenance:` line to the staged brief naming it as agent-drafted "
+            "pause state (see the resolution-brief Persistence contract), then retry. Close "
+            "keywords and the closeout ledger are not required while the brief is pausing "
+            "and the commit message close-keywords none of its issue numbers."
+        )
+    else:
+        lines.append(
+            "Put the close keywords and closeout ledger in the commit body, or unstage the issue "
+            "closeout artifact. If a close keyword above has no staged artifact and you do not want "
+            "to carry the full closeout ledger in this commit, rewrite the keyword to a bare `#N` "
+            "reference (e.g. `close #123` -> `#123`) so GitHub does not auto-close the issue on push."
+        )
     return "\n".join(lines)
 
 
