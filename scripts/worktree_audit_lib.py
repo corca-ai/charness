@@ -123,7 +123,7 @@ def _doctor_summary(path: Path) -> dict[str, Any]:
         {
             "id": check.get("id"),
             "detail": check.get("detail"),
-            "next_action": check.get("next_action"),
+            "next_step": check.get("next_step"),
             "source": check.get("source"),
         }
         for check in payload.get("checks", [])
@@ -135,7 +135,7 @@ def _doctor_summary(path: Path) -> dict[str, Any]:
         "manifest": payload.get("manifest"),
         "check_count": len(payload.get("checks", [])),
         "failed_checks": failed_checks,
-        "next_action": payload.get("next_action"),
+        "next_step": payload.get("next_step"),
     }
 
 
@@ -240,20 +240,20 @@ def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS, include_
     else:
         status = PASS
 
-    next_actions: list[str] = []
+    next_step_parts: list[str] = []
     if summary["prunable"] > 0:
-        next_actions.append(
+        next_step_parts.append(
             "Run `charness worktree audit --prune` to drop prunable git metadata."
         )
     elif summary["stale"] > 0:
-        next_actions.append(
+        next_step_parts.append(
             "Inspect stale worktrees and remove them with `git worktree remove --force <path>` if no longer needed."
         )
     if doctor_failures > 0:
-        next_actions.append(
+        next_step_parts.append(
             "Inspect entries with `doctor.status=fail`; run `charness worktree prepare --repo-root <path>` where preparation is appropriate."
         )
-    next_action = " ".join(next_actions) if next_actions else None
+    next_step = " ".join(next_step_parts) if next_step_parts else None
 
     return {
         "status": status,
@@ -264,7 +264,7 @@ def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS, include_
         "entries": classified,
         "summary": summary,
         "doctor_summary": doctor_summary,
-        "next_action": next_action,
+        "next_step": next_step,
     }
 
 
@@ -324,13 +324,13 @@ def render_audit_text(payload: dict[str, Any]) -> str:
         if doctor:
             doctor_status = doctor.get("status")
             doctor_part = f" readiness={doctor_status}"
-            if doctor_status == FAIL and doctor.get("next_action"):
-                doctor_part += f" next={doctor['next_action']}"
+            if doctor_status == FAIL and doctor.get("next_step"):
+                doctor_part += f" next_step={doctor['next_step']}"
             reasons = "; ".join(part for part in (reasons, doctor_part.strip()) if part)
         suffix = f" — {reasons}" if reasons else ""
         lines.append(f"  [{cls}] {entry['path']}{age_part}{suffix}")
-    if payload.get("next_action"):
-        lines.append(f"next: {payload['next_action']}")
+    if payload.get("next_step"):
+        lines.append(f"NEXT: {payload['next_step']}")
     return "\n".join(lines)
 
 

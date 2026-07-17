@@ -55,7 +55,7 @@ def test_audit_reports_only_primary_for_clean_repo(tmp_path: Path) -> None:
     assert payload["status"] == lib.PASS
     assert payload["summary"]["primary"] == 1
     assert payload["summary"]["total"] == 1
-    assert payload["next_action"] is None
+    assert payload["next_step"] is None
 
 
 def test_audit_classifies_active_and_prunable(tmp_path: Path) -> None:
@@ -76,8 +76,8 @@ def test_audit_classifies_active_and_prunable(tmp_path: Path) -> None:
     assert payload["summary"]["primary"] == 1
     assert payload["summary"]["active"] == 1
     assert payload["summary"]["prunable"] == 1
-    assert payload["next_action"] is not None
-    assert "audit --prune" in payload["next_action"]
+    assert payload["next_step"] is not None
+    assert "audit --prune" in payload["next_step"]
 
     classifications = {Path(e["path"]).name: e["classification"] for e in payload["entries"]}
     assert classifications["primary"] == lib.CLASSIFICATION_PRIMARY
@@ -113,7 +113,7 @@ def test_audit_doctor_surfaces_active_unprepared_worktree(tmp_path: Path, monkey
     assert active["classification"] == lib.CLASSIFICATION_ACTIVE
     assert active["doctor"]["status"] == lib.FAIL
     assert active["doctor"]["failed_checks"][0]["id"] == "lefthook_shim"
-    assert "worktree prepare --repo-root <path>" in payload["next_action"]
+    assert "worktree prepare --repo-root <path>" in payload["next_step"]
 
 
 def test_audit_text_shows_primary_readiness_failure(tmp_path: Path, monkeypatch) -> None:
@@ -134,6 +134,8 @@ def test_audit_text_shows_primary_readiness_failure(tmp_path: Path, monkeypatch)
     assert payload["doctor_summary"]["fail"] == 1
     assert f"[{lib.CLASSIFICATION_PRIMARY}] {repo.resolve()}" in rendered
     assert "readiness=fail" in rendered
+    assert f"NEXT: {payload['next_step']}" in rendered
+    assert "next: " not in rendered
 
 
 def test_audit_classifies_stale_detached_head(tmp_path: Path) -> None:

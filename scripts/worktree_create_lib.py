@@ -61,7 +61,7 @@ def _fail(
         "created": False,
         "actions": actions or [],
         "error": message,
-        "next_action": message,
+        "next_step": message,
     }
 
 
@@ -95,7 +95,7 @@ def run_create(
             "dry_run": True,
             "created": False,
             "actions": actions,
-            "next_action": "Re-run without `--dry-run` to create the worktree and run readiness doctor.",
+            "next_step": "Re-run without `--dry-run` to create the worktree and run readiness doctor.",
         }
 
     result = _run_git(repo_root, command)
@@ -126,7 +126,7 @@ def run_create(
         "created": True,
         "actions": actions,
         "doctor": doctor,
-        "next_action": None,
+        "next_step": None,
     }
     if prepare:
         prepare_payload = _doctor_lib.run_prepare(target_path)
@@ -134,14 +134,14 @@ def run_create(
         payload["doctor"] = prepare_payload.get("doctor", doctor)
         if prepare_payload.get("status") == PASS:
             payload["status"] = PASS
-            payload["next_action"] = None
+            payload["next_step"] = None
         else:
             payload["status"] = FAIL
-            payload["next_action"] = prepare_payload.get("next_action") or "Fix prepare failures, then re-run `charness worktree prepare`."
+            payload["next_step"] = prepare_payload.get("next_step") or "Fix prepare failures, then re-run `charness worktree prepare`."
         return payload
 
     if doctor.get("status") != PASS:
-        payload["next_action"] = doctor.get("next_action") or f"Run `charness worktree prepare --repo-root {target_path}`."
+        payload["next_step"] = doctor.get("next_step") or f"Run `charness worktree prepare --repo-root {target_path}`."
     return payload
 
 
@@ -170,8 +170,8 @@ def render_create_text(payload: dict[str, Any]) -> str:
         lines.append(f"prepare: {prepare.get('status')}")
     if payload.get("error"):
         lines.append(f"error: {payload['error']}")
-    if payload.get("next_action"):
-        lines.append(f"next: {payload['next_action']}")
+    if payload.get("next_step"):
+        lines.append(f"NEXT: {payload['next_step']}")
     return "\n".join(lines)
 
 

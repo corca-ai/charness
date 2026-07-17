@@ -295,8 +295,8 @@ def test_aggregate_tool_response_hides_per_tool_records_but_names_attention() ->
     }
     # tool-update mutates: the next action must point at persisted evidence,
     # never at re-running the mutating command for inspection.
-    assert "integrations/locks/" in projected["next_action"]
-    assert "tool doctor" in projected["next_action"]
+    assert "integrations/locks/" in projected["next_step"]
+    assert "tool doctor" in projected["next_step"]
     assert "results" not in projected
     assert "commands" not in str(projected)
     assert "Verbose failure evidence." not in str(projected)
@@ -312,13 +312,13 @@ def test_mutating_aggregate_next_action_points_at_locks_and_readonly_doctor_stay
     }
     for event in ("tool-update", "tool-install", "tool-repair", "tool-sync-support"):
         projected = module.project_tool_response(payload, event=event)
-        assert "integrations/locks/" in projected["next_action"], event
-        assert "execute the operation again" in projected["next_action"], event
+        assert "integrations/locks/" in projected["next_step"], event
+        assert "execute the operation again" in projected["next_step"], event
 
     # an explicit dry-run / preview (execute=False) keeps the plain message —
     # nothing was executed, so a --detail re-run is safe inspection
     preview = module.project_tool_response(dict(payload, execute=False), event="tool-repair")
-    assert preview["next_action"] == "Use --detail to inspect the listed tool records."
+    assert preview["next_step"] == "Use --detail to inspect the listed tool records."
 
     doctor_payload = {
         "results": {
@@ -327,7 +327,7 @@ def test_mutating_aggregate_next_action_points_at_locks_and_readonly_doctor_stay
         }
     }
     projected = module.project_tool_response(doctor_payload, event="tool-doctor")
-    assert projected["next_action"] == "Use --detail to inspect the listed tool records."
+    assert projected["next_step"] == "Use --detail to inspect the listed tool records."
 
 
 def test_compact_doctor_projection_carries_the_detected_version() -> None:
@@ -429,7 +429,7 @@ def test_print_next_actions_labels_repo_onboarding_primary_and_merges(capsys) ->
     )
 
     output = capsys.readouterr().out
-    assert output.count("NEXT_ACTION:") == 1
+    assert output.count("NEXT:") == 1
     assert output.count("  - repo: Run charness setup in this repo.") == 1
     assert "  - claude: Restart Claude Code." in output
     assert "  - codex: Restart Codex." in output

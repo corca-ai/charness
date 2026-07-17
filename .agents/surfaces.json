@@ -684,13 +684,16 @@
         "specdown.json",
         "specs/**"
       ],
-      "derived_paths": [],
+      "derived_paths": [
+        ".charness/specdown/**"
+      ],
       "sync_commands": [],
       "verify_commands": [
         "specdown run -quiet -no-report"
       ],
       "notes": [
-        "Keep executable specs focused on stable operator-facing behavior; avoid adding adapters until setup or JSON extraction repeats."
+        "Keep executable specs focused on stable operator-facing behavior; avoid adding adapters until setup or JSON extraction repeats.",
+        "The checked-in .charness/specdown/ report is derived state; refresh it manually with `specdown run` when specs change (not a sync command: each run rewrites timing metadata, so it can never no-op)."
       ]
     },
     {

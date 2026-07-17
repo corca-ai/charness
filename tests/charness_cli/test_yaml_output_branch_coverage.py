@@ -16,7 +16,7 @@ def _doctor_payload() -> dict[str, object]:
         "codex_host_guidance": {},
         "claude_host_guidance": {},
         "repo_onboarding": {},
-        "next_steps": {},
+        "host_next_steps": {},
         "next_action": {},
         "checkout_version": "1.0.9",
         "codex_source_version": "1.0.9",
@@ -48,7 +48,7 @@ def _patch_runtime_dependencies(module, monkeypatch, repo_root: Path, home_root:
     monkeypatch.setattr(module, "enforce_managed_cli_contract", lambda **_kwargs: None)
     monkeypatch.setattr(module, "resolve_runtime_paths", lambda _args: runtime_paths)
     monkeypatch.setattr(module, "ensure_checkout", lambda *_args, **_kwargs: {"repo_root": str(repo_root)})
-    monkeypatch.setattr(module, "install_surface", lambda *_args, **_kwargs: {"next_steps": {}, "raw_install_trace": "verbose installer evidence"})
+    monkeypatch.setattr(module, "install_surface", lambda *_args, **_kwargs: {"host_next_steps": {}, "raw_install_trace": "verbose installer evidence"})
     monkeypatch.setattr(module, "reconcile_usage_episodes_host_hooks", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(module, "build_doctor_payload", lambda **_kwargs: _doctor_payload())
     monkeypatch.setattr(module, "maybe_install_codex_host", lambda **_kwargs: {"status": "skipped"})

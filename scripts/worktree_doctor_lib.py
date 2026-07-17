@@ -167,7 +167,7 @@ def run_doctor(repo_root: Path) -> dict[str, Any]:
             "manifest": manifest_state.to_dict(),
             "checks": [],
             "status": FAIL,
-            "next_action": f"Fix manifest at {MANIFEST_RELATIVE_PATH}: {'; '.join(manifest_state.errors)}",
+            "next_step": f"Fix manifest at {MANIFEST_RELATIVE_PATH}: {'; '.join(manifest_state.errors)}",
         }
     disabled_raw = (
         manifest_state.data.get("doctor", {}).get("disable_canonical_checks", []) if manifest_state.data else []
@@ -181,20 +181,20 @@ def run_doctor(repo_root: Path) -> dict[str, Any]:
     )
     all_checks = canonical + manifest_checks
     status = aggregate_status(all_checks)
-    next_action = _first_next_action(all_checks) if status == FAIL else None
+    next_step = _first_next_step(all_checks) if status == FAIL else None
     return {
         "checked_at": now_iso(),
         "manifest": manifest_state.to_dict(),
         "checks": [result.to_dict() for result in all_checks],
         "status": status,
-        "next_action": next_action,
+        "next_step": next_step,
     }
 
 
-def _first_next_action(results: list[CheckResult]) -> str:
+def _first_next_step(results: list[CheckResult]) -> str:
     for result in results:
-        if result.status == FAIL and result.next_action:
-            return result.next_action
+        if result.status == FAIL and result.next_step:
+            return result.next_step
     return "Run `charness worktree prepare` to install dependencies and hooks for this worktree."
 
 
@@ -208,10 +208,10 @@ def _missing_manifest_payload(manifest_state: ManifestState) -> dict[str, Any]:
             "manifest": manifest_state.to_dict(),
             "checks": [],
             "status": FAIL,
-            "next_action": f"Fix manifest at {MANIFEST_RELATIVE_PATH}.",
+            "next_step": f"Fix manifest at {MANIFEST_RELATIVE_PATH}.",
         },
         "status": FAIL,
-        "next_action": (
+        "next_step": (
             f"Add a worktree adapter at {MANIFEST_RELATIVE_PATH}; see {EXAMPLE_RELATIVE_PATH} for a starter template."
             if not manifest_state.found
             else f"Fix manifest at {MANIFEST_RELATIVE_PATH}: {'; '.join(manifest_state.errors)}"
@@ -291,7 +291,7 @@ def run_prepare(repo_root: Path, *, force: bool = False) -> dict[str, Any]:
             "executed": [],
             "doctor": pre_doctor,
             "status": PASS,
-            "next_action": None,
+            "next_step": None,
             "skipped": "doctor already reports pass; pass --force to run prepare anyway.",
         }
 
@@ -308,13 +308,13 @@ def run_prepare(repo_root: Path, *, force: bool = False) -> dict[str, Any]:
     post_doctor = run_doctor(repo_root)
     if failure_seen:
         status = FAIL
-        next_action = "A prepare command failed; fix it and re-run `charness worktree prepare`."
+        next_step = "A prepare command failed; fix it and re-run `charness worktree prepare`."
     elif post_doctor["status"] == FAIL:
         status = FAIL
-        next_action = post_doctor.get("next_action") or "Doctor still reports failures after prepare; inspect output."
+        next_step = post_doctor.get("next_step") or "Doctor still reports failures after prepare; inspect output."
     else:
         status = PASS
-        next_action = None
+        next_step = None
 
     return {
         "checked_at": now_iso(),
@@ -322,7 +322,7 @@ def run_prepare(repo_root: Path, *, force: bool = False) -> dict[str, Any]:
         "executed": [item.to_dict() for item in executed],
         "doctor": post_doctor,
         "status": status,
-        "next_action": next_action,
+        "next_step": next_step,
     }
 
 
@@ -339,9 +339,9 @@ def render_doctor_text(payload: dict[str, Any]) -> str:
             line += f" — {check['detail']}"
         lines.append(line)
     lines.append(f"status: {payload.get('status')}")
-    next_action = payload.get("next_action")
-    if next_action:
-        lines.append(f"next: {next_action}")
+    next_step = payload.get("next_step")
+    if next_step:
+        lines.append(f"NEXT: {next_step}")
     return "\n".join(lines)
 
 
@@ -363,9 +363,9 @@ def render_prepare_text(payload: dict[str, Any]) -> str:
     doctor = payload.get("doctor") or {}
     lines.append(f"post-doctor: {doctor.get('status')}")
     lines.append(f"status: {payload.get('status')}")
-    next_action = payload.get("next_action")
-    if next_action:
-        lines.append(f"next: {next_action}")
+    next_step = payload.get("next_step")
+    if next_step:
+        lines.append(f"NEXT: {next_step}")
     return "\n".join(lines)
 
 

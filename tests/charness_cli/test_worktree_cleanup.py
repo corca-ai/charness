@@ -44,7 +44,7 @@ def test_cleanup_dry_run_plans_safe_branch_deletion(tmp_path: Path) -> None:
     actions = {action["id"]: action for action in payload["actions"]}
     assert actions["remove-worktree"]["status"] == "planned"
     assert actions["delete-branch"]["command"] == ["git", "branch", "-D", "feature"]
-    assert "Re-run with `--yes`" in payload["next_action"]
+    assert "Re-run with `--yes`" in payload["next_step"]
     assert feature_path.exists()
 
 

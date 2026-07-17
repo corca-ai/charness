@@ -87,9 +87,9 @@ surface.</p>
 abort loop as structured state under <code>.charness/tasks/</code> without introducing a
 queue or scheduler.</p>
 <section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-2"><div class="exec-source"><code>python3 ./charness task --repo-root . status missing-slice | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload[&#39;event&#39;]==&#39;rejected&#39;; assert payload[&#39;status&#39;]==&#39;missing&#39;; assert payload[&#39;task_path&#39;]==&#39;.charness/tasks/missing-slice.json&#39;&#34;</code></div><p class="exec-block-footer">run:shell</p></section><p>The root <code>doctor</code> command should emit a single primary <code>next_action</code> while
-retaining host-specific <code>next_steps</code>, so operator automation can act on the
-first meaningful host move without losing Codex/Claude detail.</p>
-<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-3"><div class="exec-source"><code>python3 ./charness doctor --repo-root . | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload[&#39;next_action&#39;]; assert isinstance(action, dict) and action[&#39;kind&#39;]; assert action[&#39;message&#39;]; assert isinstance(payload[&#39;next_steps&#39;], dict) and payload[&#39;next_steps&#39;]&#34;</code></div><p class="exec-block-footer">run:shell</p></section></section></section></section>
+retaining host-specific <code>host_next_steps</code>, so operator automation can act on
+the first meaningful host move without losing Codex/Claude detail.</p>
+<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-3"><div class="exec-source"><code>python3 ./charness doctor --repo-root . | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload[&#39;next_action&#39;]; assert isinstance(action, dict) and action[&#39;kind&#39;]; assert action[&#39;message&#39;]; assert isinstance(payload[&#39;host_next_steps&#39;], dict) and payload[&#39;host_next_steps&#39;]&#34;</code></div><p class="exec-block-footer">run:shell</p></section></section></section></section>
           </article>
         </div>
       </div>

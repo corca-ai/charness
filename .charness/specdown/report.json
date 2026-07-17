@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "title": "Charness Executable Specs",
-  "generatedAt": "2026-07-15T17:05:05.917598346+09:00",
+  "generatedAt": "2026-07-17T14:12:08.850880474+09:00",
   "results": [
     {
       "document": {
@@ -66,7 +66,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ Charness Executable Specs",
-          "durationMs": 124,
+          "durationMs": 118,
           "events": [
             {
               "type": "caseStarted",
@@ -105,7 +105,7 @@
       "document": {
         "relativeTo": "specs/tool-doctor.spec.md",
         "title": "CLI Operator Contracts",
-        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# CLI Operator Contracts\n\n`charness` operator-facing commands must leave structured continuation state\nwithout confusing health, readiness, ownership, or the next operator action.\n\nThis spec keeps proof at the operator-facing command boundary. Fixture-heavy\nbranch coverage still belongs in pytest, but the current shipped CLI contract\nshould remain readable and executable here.\n\n## `specdown` Binary Contract, Task Envelope, And Doctor Next Action\n\nThe `specdown` integration consumes an upstream support skill and remains an\nexternal binary managed through the tool control plane. Doctor checks the\ninstalled command and release metadata, and it should report the support source\nas upstream-consumed until sync materializes the installed plugin support\nsurface.\n\n```run:shell\npython3 ./charness tool doctor --detail --repo-root . specdown | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True\"\n```\n\nThe repo-local task envelope should provide the sah-inspired claim, submit, and\nabort loop as structured state under `.charness/tasks/` without introducing a\nqueue or scheduler.\n\n```run:shell\npython3 ./charness task --repo-root . status missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"\n```\n\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `next_steps`, so operator automation can act on the\nfirst meaningful host move without losing Codex/Claude detail.\n\n```run:shell\npython3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"\n```\n",
+        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# CLI Operator Contracts\n\n`charness` operator-facing commands must leave structured continuation state\nwithout confusing health, readiness, ownership, or the next operator action.\n\nThis spec keeps proof at the operator-facing command boundary. Fixture-heavy\nbranch coverage still belongs in pytest, but the current shipped CLI contract\nshould remain readable and executable here.\n\n## `specdown` Binary Contract, Task Envelope, And Doctor Next Action\n\nThe `specdown` integration consumes an upstream support skill and remains an\nexternal binary managed through the tool control plane. Doctor checks the\ninstalled command and release metadata, and it should report the support source\nas upstream-consumed until sync materializes the installed plugin support\nsurface.\n\n```run:shell\npython3 ./charness tool doctor --detail --repo-root . specdown | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True\"\n```\n\nThe repo-local task envelope should provide the sah-inspired claim, submit, and\nabort loop as structured state under `.charness/tasks/` without introducing a\nqueue or scheduler.\n\n```run:shell\npython3 ./charness task --repo-root . status missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"\n```\n\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `host_next_steps`, so operator automation can act on\nthe first meaningful host move without losing Codex/Claude detail.\n\n```run:shell\npython3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']\"\n```\n",
         "nodes": [
           {
             "level": 1,
@@ -181,7 +181,7 @@
             }
           },
           {
-            "raw": "\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `next_steps`, so operator automation can act on the\nfirst meaningful host move without losing Codex/Claude detail.\n\n",
+            "raw": "\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `host_next_steps`, so operator automation can act on\nthe first meaningful host move without losing Codex/Claude detail.\n\n",
             "headingPath": [
               "CLI Operator Contracts",
               "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
@@ -193,8 +193,8 @@
               "kind": "run",
               "target": "shell"
             },
-            "source": "python3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"",
-            "raw": "```run:shell\npython3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"\n```\n",
+            "source": "python3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']\"",
+            "raw": "```run:shell\npython3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']\"\n```\n",
             "id": {
               "file": "specs/tool-doctor.spec.md",
               "headingPath": [
@@ -226,7 +226,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
-          "durationMs": 1106,
+          "durationMs": 1063,
           "events": [
             {
               "type": "caseStarted",
@@ -274,7 +274,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
-          "durationMs": 127,
+          "durationMs": 139,
           "events": [
             {
               "type": "caseStarted",
@@ -322,7 +322,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
-          "durationMs": 1064,
+          "durationMs": 1071,
           "events": [
             {
               "type": "caseStarted",
@@ -353,8 +353,8 @@
           ],
           "code": {
             "block": "run:shell",
-            "template": "python3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"",
-            "renderedSource": "python3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\""
+            "template": "python3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']\"",
+            "renderedSource": "python3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']\""
           }
         }
       ]
@@ -363,7 +363,7 @@
       "document": {
         "relativeTo": "specs/on-demand-validation.spec.md",
         "title": "On-Demand Validation Viewer",
-        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# On-Demand Validation Viewer\n\nThis page is a reader-facing viewer for the latest checked on-demand validation\nartifacts. The checked artifact remains the source of truth for the run; this\nspecdown page makes that proof visible in the same report a product reader uses\nto understand the current contract.\n\n## Latest `cautilus` Behavioral Proof\n\nThe current prompt-behavior proof is checked in at\n[`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md).\nThis page should stay a viewer over that artifact, not a second evaluator\nimplementation.\n\n```run:shell\npython3 -c \"from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text\"\n```\n\n## `critique` Stays On-Demand\n\n`critique` is a judgment-heavy, canonical-subagent workflow. The standing repo\nbar should keep seam checks for the contract itself, while the real behavioral\nquestion stays on-demand through `cautilus` or explicit reviewed HITL proof.\nPer #161, `critique` now ships an opt-in `.agents/critique-adapter.yaml`\ncontract for the prepare-packet runner, so it lives in the `required`\nadapter bucket alongside other adapter-shipping public skills; the gate\nstill fires only when the adapter declares `packet_sections`.\n\n```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"\n```\n",
+        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# On-Demand Validation Viewer\n\nThis page is a reader-facing viewer for the latest checked on-demand validation\nartifacts. The checked artifact remains the source of truth for the run; this\nspecdown page makes that proof visible in the same report a product reader uses\nto understand the current contract.\n\n## Latest `cautilus` Behavioral Proof\n\nThe current prompt-behavior proof is checked in at\n[`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md).\nThis page should stay a viewer over that artifact, not a second evaluator\nimplementation.\n\n```run:shell\npython3 -c \"from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text\"\n```\n\n## `critique` Stays On-Demand\n\n`critique` is a judgment-heavy, canonical-subagent workflow. The standing repo\nbar should keep seam checks for the contract itself, while the real behavioral\nquestion stays on-demand through `cautilus` or explicit reviewed HITL proof.\nPer #161, `critique` now ships an opt-in `.agents/critique-adapter.yaml`\ncontract for the prepare-packet runner, so it lives in the `required`\nadapter bucket alongside other adapter-shipping public skills; the gate\nstill fires only when the adapter declares `packet_sections`.\n\n```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"\n```\n",
         "nodes": [
           {
             "level": 1,
@@ -435,8 +435,8 @@
               "kind": "run",
               "target": "shell"
             },
-            "source": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"",
-            "raw": "```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"\n```\n",
+            "source": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"",
+            "raw": "```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"\n```\n",
             "id": {
               "file": "specs/on-demand-validation.spec.md",
               "headingPath": [
@@ -468,7 +468,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ Latest `cautilus` Behavioral Proof",
-          "durationMs": 23,
+          "durationMs": 42,
           "events": [
             {
               "type": "caseStarted",
@@ -516,7 +516,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ `critique` Stays On-Demand",
-          "durationMs": 25,
+          "durationMs": 40,
           "events": [
             {
               "type": "caseStarted",
@@ -547,8 +547,8 @@
           ],
           "code": {
             "block": "run:shell",
-            "template": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"",
-            "renderedSource": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\""
+            "template": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"",
+            "renderedSource": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\""
           }
         }
       ]
@@ -690,7 +690,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ Proof Owners",
-          "durationMs": 40,
+          "durationMs": 23,
           "events": [
             {
               "type": "caseStarted",

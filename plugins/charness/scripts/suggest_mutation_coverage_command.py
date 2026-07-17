@@ -149,15 +149,15 @@ def _format_text_diagnostics(payload: dict[str, object]) -> list[str]:
         lines.extend(f"  - {path}" for path in unmapped)
     if status == "partial":
         lines.append(
-            "next: pass the printed command only if the mapped subset is enough; "
+            "NEXT: pass the printed command only if the mapped subset is enough; "
             "otherwise use the broad coverage fallback."
         )
     elif status == "missing":
-        lines.append("next: use the broad coverage fallback; no focused producer was found.")
+        lines.append("NEXT: use the broad coverage fallback; no focused producer was found.")
     elif status == "noop":
-        lines.append("next: no mutation coverage producer is needed for this diff.")
+        lines.append("NEXT: no mutation coverage producer is needed for this diff.")
     elif status == "blocked":
-        lines.append("next: pass --base-sha or ensure origin/main is available.")
+        lines.append("NEXT: pass --base-sha or ensure origin/main is available.")
     return lines
 
 

@@ -120,7 +120,7 @@ def _check_git_common_dir(common_dir: Path | None) -> CheckResult:
             id="git_common_dir",
             status=FAIL,
             detail="`git rev-parse --git-common-dir` did not return a usable directory; this path is not a git checkout.",
-            next_action="Run charness worktree doctor inside a git worktree.",
+            next_step="Run charness worktree doctor inside a git worktree.",
         )
     return CheckResult(
         id="git_common_dir",
@@ -141,7 +141,7 @@ def _check_hooks_path(configured: str | None, hooks_dir: Path | None, source: st
             id="hooks_path",
             status=FAIL,
             detail=f"core.hooksPath={configured!r} but the resolved directory does not exist in this worktree.",
-            next_action="Run `charness worktree prepare` so the hook manager re-installs the hooksPath target for this worktree.",
+            next_step="Run `charness worktree prepare` so the hook manager re-installs the hooksPath target for this worktree.",
         )
     return CheckResult(
         id="hooks_path",
@@ -184,7 +184,7 @@ def _check_lefthook_shim(repo_root: Path, hooks_dir: Path | None) -> CheckResult
             "pre-commit shim references lefthook but no node_modules/lefthook-*/bin/lefthook is present "
             "and `lefthook` is not on PATH for this worktree. The shim will silently exit 0 and skip hooks."
         ),
-        next_action="Run `charness worktree prepare` to install dependencies and re-run `lefthook install` for this worktree.",
+        next_step="Run `charness worktree prepare` to install dependencies and re-run `lefthook install` for this worktree.",
     )
 
 
@@ -207,7 +207,7 @@ def _check_husky_dir(repo_root: Path, configured: str | None) -> CheckResult:
         id="husky_dir",
         status=FAIL,
         detail=f"core.hooksPath references {marker} but {target} does not exist in this worktree.",
-        next_action="Run `charness worktree prepare` so the husky install step regenerates the hooks directory for this worktree.",
+        next_step="Run `charness worktree prepare` so the husky install step regenerates the hooks directory for this worktree.",
     )
 
 
@@ -252,7 +252,7 @@ def _run_manifest_doctor_command(
             id=check_id,
             status=FAIL,
             detail=f"command not found: {exc.filename or argv[0]}",
-            next_action=next_hint,
+            next_step=next_hint,
             source="manifest",
         )
     except subprocess.TimeoutExpired:
@@ -260,7 +260,7 @@ def _run_manifest_doctor_command(
             id=check_id,
             status=FAIL,
             detail=f"command timed out after {timeout}s: {argv}",
-            next_action=next_hint,
+            next_step=next_hint,
             source="manifest",
         )
     if result.returncode == expect_exit:
@@ -275,7 +275,7 @@ def _run_manifest_doctor_command(
         id=check_id,
         status=FAIL,
         detail=f"exit_code={result.returncode} (expected {expect_exit}); tail: {last}",
-        next_action=next_hint,
+        next_step=next_hint,
         source="manifest",
     )
 

@@ -33,9 +33,9 @@ python3 ./charness task --repo-root . status missing-slice | python3 -c "import 
 ```
 
 The root `doctor` command should emit a single primary `next_action` while
-retaining host-specific `next_steps`, so operator automation can act on the
-first meaningful host move without losing Codex/Claude detail.
+retaining host-specific `host_next_steps`, so operator automation can act on
+the first meaningful host move without losing Codex/Claude detail.
 
 ```run:shell
-python3 ./charness doctor --repo-root . | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']"
+python3 ./charness doctor --repo-root . | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']"
 ```

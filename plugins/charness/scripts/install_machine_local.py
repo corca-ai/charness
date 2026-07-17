@@ -172,7 +172,7 @@ def main() -> int:
                 "codex_source_path": source_path,
                 "claude_plugin_dir": str(plugin_root),
                 "detected_hosts": detected_hosts,
-                "next_steps": {
+                "host_next_steps": {
                     "codex": (
                         "Codex local source and personal marketplace were prepared. `charness init` or `charness update` should finish the official local plugin install when the Codex CLI is available."
                         if marketplace_path

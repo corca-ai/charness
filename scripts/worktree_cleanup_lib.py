@@ -70,7 +70,7 @@ def _fail(repo_root: Path, target_path: Path, message: str, *, actions: list[dic
         "dry_run": True,
         "actions": actions or [],
         "error": message,
-        "next_action": message,
+        "next_step": message,
     }
 
 
@@ -223,7 +223,7 @@ def run_cleanup(
                 "dry_run": False,
                 "actions": actions,
                 "error": f"{failed_action['id']} failed",
-                "next_action": f"Inspect action {failed_action['id']} and retry cleanup when safe.",
+                "next_step": f"Inspect action {failed_action['id']} and retry cleanup when safe.",
             }
 
     return {
@@ -237,7 +237,7 @@ def run_cleanup(
         "dirty_detail": dirty_detail if dirty else "",
         "dry_run": not yes,
         "actions": actions,
-        "next_action": None if yes else "Re-run with `--yes` to execute the planned cleanup actions.",
+        "next_step": None if yes else "Re-run with `--yes` to execute the planned cleanup actions.",
     }
 
 
@@ -257,8 +257,8 @@ def render_cleanup_text(payload: dict[str, Any]) -> str:
         command = " ".join(action.get("command") or [])
         reason = f" — {action['reason']}" if action.get("reason") else ""
         lines.append(f"{action['id']}: {action['status']} {command}{reason}".rstrip())
-    if payload.get("next_action"):
-        lines.append(f"next: {payload['next_action']}")
+    if payload.get("next_step"):
+        lines.append(f"NEXT: {payload['next_step']}")
     return "\n".join(lines)
 
 

@@ -20,7 +20,7 @@ class CheckResult:
     id: str
     status: str
     detail: str
-    next_action: str | None = None
+    next_step: str | None = None
     source: str = "canonical"
 
     def to_dict(self) -> dict[str, Any]:

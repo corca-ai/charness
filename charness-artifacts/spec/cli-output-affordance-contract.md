@@ -1,6 +1,7 @@
 # Spec — CLI Output Affordance Contract
 
-Date: 2026-07-17
+Date: 2026-07-17 (slice 2 — convergence — added same day after operator
+approval; slice 1 shipped in `24e4919e` and stays recorded below)
 
 ## Problem
 
@@ -35,32 +36,55 @@ payload or state file itself, without out-of-band knowledge. Acceptance
 boundary: the `charness task` YAML payloads, the persisted task state files,
 and the generated CLI reference header.
 
-## Current Slice
+## Current Slice (2 — Convergence, Operator-Approved, Breaking Allowed)
 
-1. `task_failure` gains a per-status `next_step` affordance string naming the
-   recovering command (`claim` for `missing`, `status` inspection for
-   `already-owned`, reading `task_path` for `closed`, re-running `submit` with
-   `--summary`/`--artifact` for `missing-result`).
-2. Task success paths write `next_step` onto the task dict **before**
-   `write_task()`, so `.charness/tasks/<id>.json` persists the affordance and
-   `task status` (single and list) surfaces it for free.
-3. The generated CLI reference header documents the affordance convention:
-   which field names exist today, their shapes, and that rejection payloads
-   carry the same affordance. `docs/agent-task-envelope.md` documents the
-   persisted field and the rejection shape.
-4. Tests cover: rejection payloads carry `next_step`; the state file on disk
-   carries `next_step`; `task status` list output surfaces it.
+1. **String `next_action` → `next_step`.** The worktree libs (doctor, prepare,
+   create, cleanup, audit payloads and the `CheckResult` field) and the
+   `charness tool` aggregate attention response rename their plain-string
+   `next_action` to `next_step`. No compatibility alias.
+2. **`next_steps` split.** The runtime doctor/update/init host-keyed map
+   (`{codex: msg, claude: msg, repo: msg}`) renames to `host_next_steps`;
+   plural `next_steps` now always means a **list of human-readable follow-up
+   strings** (tool doctor, `capability init`, gather advise keep the name and
+   are now convention-conformant).
+3. **Prefix unification.** The human affordance line prefix on `charness` CLI
+   summaries is `NEXT:`: worktree text renderers change `next:` → `NEXT:`, the
+   runtime doctor human block header changes `NEXT_ACTION:` → `NEXT:`, the
+   version summary `NEXT:` is already conformant, and the repo closeout helper
+   `suggest_mutation_coverage_command.py` (which shipped `next:` lines) joins.
+   Quality-plane advisory scripts that print their own `Next action:` prose
+   are outside the CLI output boundary and unchanged.
+4. Documentation converges with the code: the generated CLI reference header
+   convention text, `specs/tool-doctor.spec.md` (executable), and
+   `skills/public/create-cli/references/command-surface.md` name the new
+   vocabulary; the `plugins/` mirror re-syncs.
+5. Tests: all assertions on the old names/prefixes move to the new ones; the
+   executable tool-doctor spec asserts `host_next_steps`.
+
+## Shipped Slice 1 (2026-07-17, `24e4919e`)
+
+1. `task_failure` gained a per-status `next_step` affordance string naming the
+   recovering command; success paths persist `next_step` into
+   `.charness/tasks/<id>.json` before `write_task()`; the CLI reference header
+   and `docs/agent-task-envelope.md` document the convention; tests cover the
+   rejection, persistence, and status surfaces.
 
 ## Fixed Decisions
 
-- Canonical two-tier convention (documented now, converged incrementally):
-  `next_step` is a single human-readable affordance **string** on command
-  payloads (task/tool surfaces, success and failure alike); `next_action` is a
-  **structured object** for machine routing (doctor, skill plan envelopes).
+- Canonical vocabulary after convergence (CLI output boundary):
+  - `next_step`: single human-readable affordance **string** on command
+    payloads (task, tool, worktree surfaces; success and failure alike).
+  - `next_steps`: **list** of human-readable follow-up strings.
+  - `host_next_steps`: host-id → message map on runtime doctor/update/init.
+  - `next_action`: **structured object** for machine routing (runtime doctor
+    `{kind, message, ...}`, skill plan envelopes `{kind, ...}`).
+  - Human print prefix for affordance lines: `NEXT:`.
+- Breaking is approved (operator, 2026-07-17 chat): consumers of the old
+  names/prefixes may break; no alias. Published payload shapes change, so the
+  release ships under a major bump.
 - Task state schema stays `schema_version: 1`; `next_step` is additive and
   optional on read.
-- Rejection payloads keep exit code 1 and the existing `event: rejected` shape;
-  the affordance is a new field, not a shape change.
+- Rejection payloads keep exit code 1 and the existing `event: rejected` shape.
 
 ## Probe Questions
 
@@ -70,18 +94,26 @@ and the generated CLI reference header.
 
 ## Deferred Decisions
 
-- **Field-name/shape convergence beyond documentation.** Renaming the worktree
-  libs' string `next_action` to `next_step`, splitting the two `next_steps`
-  shapes, and unifying the human print prefixes (`NEXT:` / `next:` /
-  `NEXT_ACTION:`) spans ~10 modules and 30+ test assertions and risks breaking
-  lock-state consumers; it is deliberately not bundled into this slice. The
-  documented convention above is the target shape for that convergence.
-  - APPROVED 2026-07-17 (operator, chat): scheduled for the next session with
-    **breaking changes allowed** — consumers of the old field names/prefixes
-    may break; no compatibility alias is required. Ship under a major-bump
-    review question if any published payload shape changes.
+- ~~Field-name/shape convergence beyond documentation~~ — APPROVED 2026-07-17
+  (operator, chat) with breaking changes allowed; now the Current Slice above.
 - Structured affordances on `CharnessError` and catalog/session-capture error
   paths; revisit when a real consumer hits those dead ends.
+- Internal quality-plane planner payloads (`plan_cautilus_proof.py`
+  `next_action: "none"`, risk-interrupt and usage-episode warning
+  `next_action` strings) keep their names: they are script plan surfaces
+  consumed by repo scripts, not the CLI output boundary this contract owns.
+  Revisit only if they graduate into `charness` CLI payloads.
+- The `charness doctor --next-action` flag keeps emitting
+  `{"next_action": <message string>}`: it is an explicit "give me only the
+  message" projection named after the flag, not a payload-shape violation; the
+  default doctor payload carries the structured object. Revisit only if a
+  machine consumer trips on it.
+- The worktree manifest **input** key `next_action_hint` keeps its name: it is
+  operator-authored config, not a payload affordance, and renaming it flips
+  every existing external `worktree-adapter.yaml` to invalid (the schema is
+  `additionalProperties: false`), dropping their custom doctor checks — a
+  worse failure class than the naming drift. Revisit on the next manifest
+  schema version bump.
 
 ## Non-Goals
 
@@ -117,10 +149,17 @@ and the generated CLI reference header.
 
 - unit: `tests/charness_cli/test_task_envelope.py` asserts rejection payloads
   carry a `next_step` naming the recovering command for `missing`,
-  `already-owned`, and `missing-result` statuses.
-- unit: same file asserts `.charness/tasks/<id>.json` on disk contains
-  `next_step` after claim and after submit, and that `task status` output
-  surfaces it.
+  `already-owned`, and `missing-result` statuses (slice 1, standing).
+- unit: worktree doctor/create/cleanup/audit tests assert the payload key is
+  `next_step` and the human affordance line prefix is `NEXT:`; managed-install
+  and doctor tests assert `host_next_steps` on runtime doctor/update payloads.
+- unit: no source or test under `scripts/worktree_*.py`, `charness`, or
+  `tests/charness_cli/` references the removed string-`next_action` key or the
+  `NEXT_ACTION:` / `next:` affordance prefixes (grep-clean check inside tests
+  or review; the deliberately-kept manifest input key `next_action_hint` and
+  the structured `next_action` object are expected matches, not violations).
+- e2e/specdown: `specs/tool-doctor.spec.md` asserts root doctor emits a
+  structured `next_action` dict **and** a non-empty `host_next_steps` dict.
 - integration: `python3 scripts/run_slice_closeout.py --repo-root .` passes
   with the regenerated CLI reference and plugin mirror staged.
 
@@ -132,6 +171,14 @@ and the generated CLI reference header.
 
 ## Critique
 
+- Public-skill validation review (slice 2, 2026-07-17): the only public-skill
+  surface change is one bullet in
+  `skills/public/create-cli/references/command-surface.md` renaming the doctor
+  guidance example `next_steps` → `host_next_steps`. Routing, prompt, tier
+  (`hitl-recommended`), and acceptance evidence in
+  `docs/public-skill-dogfood.json` are unaffected; the existing dogfood row
+  stays frozen as-is. Closeout reruns with `--ack-cautilus-skill-review` on
+  this recorded decision.
 - Risk interrupt planner: `status: not-applicable` (no forced debug interrupt).
 - Bounded fresh-eye critique runs at slice closeout with this spec plus the
   implementation diff in the reviewer packet, per
@@ -147,6 +194,11 @@ and the generated CLI reference header.
 
 ## First Implementation Slice
 
-- The task-envelope affordance changes in `charness` (failure `next_step`,
-  persisted `next_step`) plus tests, then the documentation surfaces, then
+- Slice 1 (shipped `24e4919e`): the task-envelope affordance changes in
+  `charness` plus tests, then the documentation surfaces, then
   sync/verify/critique/commit, then release.
+- Slice 2 (current): worktree-lib rename first (libs + tests as one unit),
+  then the `charness` CLI renames (`host_next_steps`, tool-attention
+  `next_step`, `NEXT:` header) + tests, then docs/specdown/reference
+  regeneration, then mirror sync, verify, critique, commit, push, and a
+  major-bump release.

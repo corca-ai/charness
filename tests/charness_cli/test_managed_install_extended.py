@@ -158,7 +158,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     assert payload["plugin_preamble"] is None
     assert payload["claude_host_guidance"]["status"] == "missing-source"
     assert "Run `charness init` to recreate" in payload["claude_host_guidance"]["message"]
-    assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
+    assert payload["host_next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
 
 
 @pytest.mark.release_only

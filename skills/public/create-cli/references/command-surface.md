@@ -32,8 +32,8 @@ Design rules:
   envelope such as `task claim`, `task submit`, `task abort`, and `task status`
   before inventing a queue or scheduler
 - when `doctor` reports multiple host or adapter states, emit one primary
-  `next_action` plus host-specific detail such as `next_steps` so automation
-  can continue without guessing which advisory message wins
+  `next_action` plus host-specific detail such as `host_next_steps` so
+  automation can continue without guessing which advisory message wins
 - do not collapse these probe layers into one overloaded command:
   - help / command existence
   - machine-readable command discovery

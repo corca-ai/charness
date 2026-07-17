@@ -152,10 +152,10 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     assert payload["claude_wrapper_path"] == str(home_root / ".local" / "bin" / "claude-charness")
     assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["checkout"]["managed"] is True
-    assert payload["next_steps"]["codex"] == payload["codex_host_guidance"]["message"]
+    assert payload["host_next_steps"]["codex"] == payload["codex_host_guidance"]["message"]
     assert payload["codex_host_install"]["status"] == "skipped"
     assert payload["codex_host_install"]["reason"] == "codex-cli-missing"
-    assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
+    assert payload["host_next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
     assert payload["removed_legacy_skills_symlink"] is True
     assert "legacy_skills_symlink_removed" in payload["completed_actions"]
     marketplace = json.loads((home_root / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
@@ -323,7 +323,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["codex_host_guidance"]["status"] == "host-unavailable"
     assert payload["codex_host_guidance"]["manual_action_required"] is False
     assert (
-        payload["next_steps"]["codex"]
+        payload["host_next_steps"]["codex"]
         == "Codex CLI not detected; charness prepared the local plugin source and personal marketplace only."
     )
     assert payload["claude_marketplace_name"] == "corca-charness"
@@ -337,7 +337,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["claude_installed_entry"]["version"] == "local"
     assert payload["claude_host_guidance"]["status"] == "installed"
     assert payload["claude_host_guidance"]["manual_action_required"] is False
-    assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
+    assert payload["host_next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
     assert payload["plugin_preamble"]["update_hints"]["claude"] == "Run `charness update`, then restart Claude Code."
     assert payload["version_provenance"]["invocation_kind"] == "custom-cli"
     assert payload["latest_release_check"] is None

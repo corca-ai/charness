@@ -65,7 +65,7 @@ def test_doctor_lefthook_shim_missing_node_modules_fails(tmp_path: Path, monkeyp
     assert payload["status"] == "fail"
     lefthook = next(check for check in payload["checks"] if check["id"] == "lefthook_shim")
     assert lefthook["status"] == "fail"
-    assert "charness worktree prepare" in (lefthook["next_action"] or "")
+    assert "charness worktree prepare" in (lefthook["next_step"] or "")
 
 
 def test_doctor_lefthook_shim_resolves_via_node_modules(tmp_path: Path) -> None:
@@ -93,7 +93,7 @@ def test_doctor_husky_marker_missing_fails(tmp_path: Path) -> None:
     assert payload["status"] == "fail"
     husky = next(check for check in payload["checks"] if check["id"] == "husky_dir")
     assert husky["status"] == "fail"
-    assert "charness worktree prepare" in (husky["next_action"] or "")
+    assert "charness worktree prepare" in (husky["next_step"] or "")
 
 
 def test_doctor_husky_marker_present_passes(tmp_path: Path) -> None:
@@ -173,7 +173,7 @@ def test_manifest_doctor_check_runs_extra_command(tmp_path: Path) -> None:
     assert env_probe["source"] == "manifest"
 
 
-def test_manifest_doctor_check_failure_surfaces_next_action(tmp_path: Path) -> None:
+def test_manifest_doctor_check_failure_surfaces_next_step(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     _write_manifest(
         repo,
@@ -196,7 +196,10 @@ def test_manifest_doctor_check_failure_surfaces_next_action(tmp_path: Path) -> N
     assert payload["status"] == "fail"
     failing = next(check for check in payload["checks"] if check["id"] == "failing_probe")
     assert failing["status"] == "fail"
-    assert payload["next_action"] == "do the thing"
+    assert payload["next_step"] == "do the thing"
+    rendered = lib.render_doctor_text(payload)
+    assert "NEXT: do the thing" in rendered
+    assert "next: " not in rendered
 
 
 def test_prepare_runs_commands_when_doctor_was_passing_with_force(tmp_path: Path) -> None:
@@ -256,14 +259,14 @@ def test_prepare_command_failure_surfaces_fail(tmp_path: Path) -> None:
     payload = lib.run_prepare(repo, force=True)
     assert payload["status"] == "fail"
     assert payload["executed"][0]["exit_code"] == 1
-    assert "prepare command failed" in (payload["next_action"] or "")
+    assert "prepare command failed" in (payload["next_step"] or "")
 
 
 def test_prepare_no_manifest_emits_actionable_next_step(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     payload = lib.run_prepare(repo)
     assert payload["status"] == "fail"
-    assert ".agents/worktree-adapter.yaml" in (payload["next_action"] or "")
+    assert ".agents/worktree-adapter.yaml" in (payload["next_step"] or "")
 
 
 def test_cli_doctor_subcommand_returns_yaml(tmp_path: Path) -> None:

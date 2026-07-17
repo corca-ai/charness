@@ -1950,21 +1950,21 @@ def build_claude_host_guidance(
     }
 
 
-def build_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
-    next_steps: dict[str, str] = {}
+def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
+    host_next_steps: dict[str, str] = {}
     for host in ("codex", "claude"):
         guidance = doctor_payload.get(f"{host}_host_guidance")
         if not isinstance(guidance, dict):
             continue
         message = guidance.get("message")
         if isinstance(message, str) and message:
-            next_steps[host] = message
+            host_next_steps[host] = message
     repo_onboarding = doctor_payload.get("repo_onboarding")
     if isinstance(repo_onboarding, dict):
         message = repo_onboarding.get("message")
         if isinstance(message, str) and message:
-            next_steps["repo"] = message
-    return next_steps
+            host_next_steps["repo"] = message
+    return host_next_steps
 
 
 def build_doctor_next_action(doctor_payload: dict[str, object]) -> dict[str, object]:
@@ -2034,8 +2034,8 @@ def build_doctor_next_action(doctor_payload: dict[str, object]) -> dict[str, obj
         "host": None,
         "status": "no-action",
         "manual_action_required": False,
-        "message": "No manual host action is currently required. See `next_steps` for host-specific status.",
-        "source": "next_steps",
+        "message": "No manual host action is currently required. See `host_next_steps` for host-specific status.",
+        "source": "host_next_steps",
     }
 
 
@@ -2152,7 +2152,7 @@ def install_surface(
     completed_actions.extend(claude_marketplace_actions)
     completed_actions.extend(claude_plugin_actions)
     payload["completed_actions"] = completed_actions
-    payload["next_steps"]["claude"] = claude_plugin_message
+    payload["host_next_steps"]["claude"] = claude_plugin_message
     payload["claude_marketplace_message"] = claude_marketplace_message
     payload["removed_legacy_skills_symlink"] = removed_legacy_skills_symlink
     return payload
@@ -2293,7 +2293,7 @@ def build_doctor_payload(
             "source": "repo_onboarding",
             "reason": "skipped during update unless --target-repo-root is provided",
         }
-    payload["next_steps"] = build_next_steps(payload)
+    payload["host_next_steps"] = build_host_next_steps(payload)
     payload["next_action"] = build_doctor_next_action(payload)
     return payload
 
@@ -2403,7 +2403,7 @@ def _print_next_actions(payload: dict[str, object]) -> None:
         lines.append(f"  - {prefix}{message}")
     if not lines:
         return
-    print("NEXT_ACTION:")
+    print("NEXT:")
     for line in lines:
         print(line)
 
@@ -3600,7 +3600,7 @@ def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str
                 attention.setdefault(f"{group}_tool_ids", []).append(tool_id)
     if attention:
         response["attention"] = {key: sorted(tool_ids) for key, tool_ids in sorted(attention.items())}
-        response["next_action"] = _tool_attention_next_action(event, payload)
+        response["next_step"] = _tool_attention_next_step(event, payload)
     return response
 
 
@@ -3611,7 +3611,7 @@ def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str
 _MUTATING_TOOL_EVENTS = frozenset({"tool-update", "tool-install", "tool-repair", "tool-sync-support"})
 
 
-def _tool_attention_next_action(event: str, payload: dict[str, object]) -> str:
+def _tool_attention_next_step(event: str, payload: dict[str, object]) -> str:
     if event in _MUTATING_TOOL_EVENTS and payload.get("execute") is not False:
         return (
             "Inspect integrations/locks/<tool_id>.json for the executed records, or run "
@@ -3688,9 +3688,9 @@ def project_runtime_response(payload: dict[str, object], *, event: str) -> dict[
         guidance = _compact_guidance(payload.get(f"{host}_host_guidance"))
         if guidance is not None:
             response[f"{host}_host_guidance"] = guidance
-    next_steps = payload.get("next_steps")
-    if isinstance(next_steps, dict):
-        response["next_steps"] = next_steps
+    host_next_steps = payload.get("host_next_steps")
+    if isinstance(host_next_steps, dict):
+        response["host_next_steps"] = host_next_steps
     repo_onboarding = _compact_guidance(payload.get("repo_onboarding"))
     if repo_onboarding is not None:
         response["repo_onboarding"] = repo_onboarding
@@ -3840,7 +3840,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
-    payload["next_steps"] = {**payload.get("next_steps", {}), **doctor_payload["next_steps"]}
+    payload["host_next_steps"] = {**payload.get("host_next_steps", {}), **doctor_payload["host_next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
     payload["checkout_version"] = doctor_payload["checkout_version"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
@@ -3977,7 +3977,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
-    payload["next_steps"] = {**payload.get("next_steps", {}), **doctor_payload["next_steps"]}
+    payload["host_next_steps"] = {**payload.get("host_next_steps", {}), **doctor_payload["host_next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
     payload["checkout_version"] = doctor_payload["checkout_version"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
