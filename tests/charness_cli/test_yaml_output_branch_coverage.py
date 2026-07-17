@@ -291,3 +291,36 @@ def test_worktree_and_goal_helper_fallback_keep_stdout_yaml(tmp_path: Path, monk
     goal_output = capsys.readouterr()
     assert yaml.safe_load(goal_output.out) == {"helper_stdout": "not json"}
     assert goal_output.err == "helper warning\n"
+
+
+def test_build_host_next_steps_includes_repo_onboarding_message() -> None:
+    module = load_charness_module("charness_host_next_steps_repo_under_test")
+    steps = module.build_host_next_steps(
+        {
+            "codex_host_guidance": {"message": "restart codex"},
+            "claude_host_guidance": {},
+            "repo_onboarding": {"message": "run `charness setup` in this repo"},
+        }
+    )
+    assert steps == {"codex": "restart codex", "repo": "run `charness setup` in this repo"}
+
+
+def test_install_surface_records_claude_plugin_message_in_host_next_steps(monkeypatch, tmp_path: Path) -> None:
+    module = load_charness_module("charness_install_surface_claude_under_test")
+    monkeypatch.setattr(module, "invoke_repo_script", lambda *args, **kwargs: '{"host_next_steps": {}}')
+    monkeypatch.setattr(module, "invoke_repo_json_script", lambda *args, **kwargs: [])
+    monkeypatch.setattr(module, "ensure_claude_marketplace", lambda *args, **kwargs: ([], "marketplace ready"))
+    monkeypatch.setattr(
+        module, "ensure_claude_plugin", lambda *args, **kwargs: (["claude_plugin_installed"], "Restart Claude Code to load charness.")
+    )
+    payload = module.install_surface(
+        tmp_path / "repo",
+        home_root=tmp_path / "home",
+        plugin_root=tmp_path / "home" / "plugins" / "charness",
+        codex_marketplace_path=tmp_path / "home" / ".codex" / "marketplace.json",
+        claude_wrapper_path=None,
+        cli_path=None,
+        update=False,
+    )
+    assert payload["host_next_steps"]["claude"] == "Restart Claude Code to load charness."
+    assert "claude_plugin_installed" in payload["completed_actions"]

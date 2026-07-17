@@ -113,3 +113,17 @@ def test_cleanup_refuses_primary_worktree(tmp_path: Path) -> None:
 
     assert payload["status"] == lib.FAIL
     assert "primary worktree" in payload["error"]
+
+
+def test_cleanup_text_renders_next_step_affordance() -> None:
+    rendered = lib.render_cleanup_text(
+        {
+            "target_path": "/tmp/wt",
+            "status": "warn",
+            "dry_run": True,
+            "actions": [],
+            "next_step": "Re-run with `--yes` to execute the planned cleanup actions.",
+        }
+    )
+    assert "NEXT: Re-run with `--yes` to execute the planned cleanup actions." in rendered
+    assert "next: " not in rendered

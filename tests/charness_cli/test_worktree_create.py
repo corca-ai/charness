@@ -116,6 +116,34 @@ def test_create_prepare_runs_adapter_and_returns_pass(tmp_path: Path, monkeypatc
     assert payload["doctor"]["status"] == "pass"
 
 
+def test_create_with_failing_prepare_carries_recovering_next_step(tmp_path: Path, monkeypatch) -> None:
+    repo = _make_primary(tmp_path)
+    target = tmp_path / "prep-fail"
+    monkeypatch.setattr(
+        lib._doctor_lib,
+        "run_prepare",
+        lambda path: {"status": "fail", "next_step": None, "doctor": {"status": "fail"}},
+    )
+
+    payload = lib.run_create(repo, target_path=target, branch="prep-fail", base="main", prepare=True)
+
+    assert payload["status"] == lib.FAIL
+    assert payload["next_step"] == "Fix prepare failures, then re-run `charness worktree prepare`."
+
+
+def test_create_text_renders_next_step_affordance() -> None:
+    rendered = lib.render_create_text(
+        {
+            "target_path": "/tmp/wt",
+            "status": "fail",
+            "actions": [],
+            "next_step": "Run `charness worktree prepare --repo-root /tmp/wt`.",
+        }
+    )
+    assert "NEXT: Run `charness worktree prepare --repo-root /tmp/wt`." in rendered
+    assert "next: " not in rendered
+
+
 def test_cli_worktree_create_and_add_are_discoverable(tmp_path: Path) -> None:
     result = subprocess.run(
         [sys.executable, str(ROOT / "charness"), "worktree", "--help"],

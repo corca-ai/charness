@@ -202,6 +202,33 @@ def test_manifest_doctor_check_failure_surfaces_next_step(tmp_path: Path) -> Non
     assert "next: " not in rendered
 
 
+def test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step(tmp_path: Path) -> None:
+    repo = _make_git_worktree(tmp_path)
+    _write_manifest(
+        repo,
+        (
+            "version: 1\n"
+            "prepare:\n"
+            "  commands:\n"
+            "    - id: noop\n"
+            "      argv:\n"
+            "        - '/bin/true'\n"
+            "doctor:\n"
+            "  checks:\n"
+            "    - id: still_failing\n"
+            "      argv:\n"
+            "        - '/bin/false'\n"
+        ),
+    )
+    payload = lib.run_prepare(repo)
+    assert payload["status"] == "fail"
+    assert payload["next_step"] == payload["doctor"]["next_step"]
+    assert payload["next_step"]
+    rendered = lib.render_prepare_text(payload)
+    assert f"NEXT: {payload['next_step']}" in rendered
+    assert "next: " not in rendered
+
+
 def test_prepare_runs_commands_when_doctor_was_passing_with_force(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     marker = repo / "marker.txt"
