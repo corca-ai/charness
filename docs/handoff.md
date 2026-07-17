@@ -41,9 +41,12 @@
 
 ## Discuss
 
-- Optional polish: a one-time self-healing rerun (or clearer message) for the
-  old-binary→new-checkout `charness update` crash class, if a future breaking
-  release would otherwise repeat the v2.0.0 migration hiccup.
+- DONE 2026-07-17 (same session): the update/init self-heal shipped
+  (`maybe_reexec_refreshed_cli`, pid-scoped guard, `cli_reexec` signal); see
+  the [slice critique](../charness-artifacts/critique/2026-07-17-cli-reexec-self-heal-slice.md).
+  Unreleased at refresh time — fold into the next release. Deferred there:
+  the older end-of-init `cli_path` re-exec (F6) and the latent
+  stale-standalone-CLI variant in non-refreshing consumers (F7).
 - Optional under the 2026-07-17 per-host split: a live Codex-host session can
   still add provider-applied evidence that the Codex-scoped
   `gpt-5.6-terra`/`medium` request is honored; evidence polish, not a blocker.

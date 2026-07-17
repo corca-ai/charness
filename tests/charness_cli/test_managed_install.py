@@ -292,7 +292,13 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
-    assert payload["checkout"]["cloned"] is True
+    # The embedded (stale) CLI clones the checkout, then self-heals by
+    # re-executing the cloned checkout's CLI; the final payload comes from
+    # that re-exec run, which finds the checkout already present.
+    assert payload["cli_reexec"]["status"] == "reexecuted"
+    assert "re-executing the checkout's CLI" in result.stderr
+    assert payload["checkout"]["cloned"] is False
+    assert (home_root / ".agents" / "src" / "charness" / "charness").is_file()
     assert payload["checkout"]["managed"] is True
     assert payload["codex_source_version"] == "0.0.1-upstream-test"
     install_state = json.loads((home_root / ".local" / "state" / "charness" / "install-state.json").read_text(encoding="utf-8"))

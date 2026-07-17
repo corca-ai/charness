@@ -2082,6 +2082,71 @@ def remove_claude_marketplace(repo_root: Path, *, home_root: Path) -> bool:
     return result.returncode == 0 or removed_file_entry
 
 
+# Self-heal the running-CLI -> checkout code skew: after a checkout refresh,
+# the still-running old CLI would execute install_surface against the
+# refreshed checkout's scripts and crash on any payload-shape change (observed
+# as the v1.3.0 -> v2.0.0 `KeyError: 'next_steps'` mid-update). Re-executing
+# the checkout's own CLI finishes the run with code that matches the checkout
+# scripts it invokes. The guard value is the re-executing process's pid —
+# execve keeps the pid, so only the exec'd continuation matches it; a stale or
+# foreign value inherited from an unrelated environment cannot suppress a
+# legitimate self-heal, and a pathological checkout flip still cannot loop.
+_CLI_REEXEC_GUARD_ENV = "CHARNESS_CLI_REEXECUTED"
+
+
+def maybe_reexec_refreshed_cli(
+    checkout_repo_root: Path,
+    *,
+    running_cli: Path | None = None,
+    execve: Callable[..., object] | None = None,
+) -> dict[str, object] | None:
+    checkout_cli = checkout_repo_root / "charness"
+    current_cli = (running_cli or Path(__file__)).resolve()
+    reexec_child = os.environ.get(_CLI_REEXEC_GUARD_ENV) == str(os.getpid())
+    try:
+        if (
+            not checkout_cli.is_file()
+            or checkout_cli.resolve() == current_cli
+            or checkout_cli.read_bytes() == current_cli.read_bytes()
+        ):
+            if reexec_child:
+                return {"status": "reexecuted", "checkout_cli": str(checkout_cli)}
+            return None
+    except OSError:
+        return None
+    if reexec_child:
+        emit_progress(
+            "WARNING: running CLI still differs from the refreshed checkout after one re-exec; "
+            "continuing without another re-exec — if this run fails, re-run the command.",
+            json_mode=True,
+        )
+        return {
+            "status": "skipped",
+            "reason": "already re-executed once; loop guard active",
+            "checkout_cli": str(checkout_cli),
+        }
+    emit_progress(
+        "STEP: source checkout code differs from the running CLI; re-executing the checkout's CLI so the run matches its scripts",
+        json_mode=True,
+    )
+    env = dict(os.environ)
+    env[_CLI_REEXEC_GUARD_ENV] = str(os.getpid())
+    try:
+        (execve or os.execve)(sys.executable, [sys.executable, str(checkout_cli), *sys.argv[1:]], env)
+    except OSError as exc:
+        emit_progress(
+            f"WARNING: re-exec of the refreshed CLI failed ({exc}); continuing with the running CLI — "
+            "if this run fails, re-run the command.",
+            json_mode=True,
+        )
+        return {
+            "status": "failed",
+            "reason": f"re-exec failed: {exc}",
+            "checkout_cli": str(checkout_cli),
+        }
+    return None
+
+
 def install_surface(
     repo_root: Path,
     *,
@@ -3668,6 +3733,7 @@ def project_runtime_response(payload: dict[str, object], *, event: str) -> dict[
         "codex_enabled_plugin_id",
         "codex_enabled_plugin_ids",
         "completed_actions",
+        "cli_reexec",
     ):
         if key in payload:
             response[key] = payload[key]
@@ -3766,6 +3832,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         allow_clone=True,
         allow_pull=False,
     )
+    cli_reexec_state = maybe_reexec_refreshed_cli(Path(checkout["repo_root"]))
     selected_wrapper_path = None if args.skip_claude_wrapper else claude_wrapper_path
     payload = install_surface(
         Path(checkout["repo_root"]),
@@ -3776,6 +3843,8 @@ def cmd_init(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=False,
     )
+    if cli_reexec_state is not None:
+        payload["cli_reexec"] = cli_reexec_state
     host_hooks_reconcile = reconcile_usage_episodes_host_hooks(
         Path(checkout["repo_root"]),
         home_root=home_root,
@@ -3891,6 +3960,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         allow_clone=False,
         allow_pull=managed_checkout and not args.no_pull,
     )
+    cli_reexec_state = maybe_reexec_refreshed_cli(Path(checkout["repo_root"]))
     emit_progress("STEP: refreshing install surface", json_mode=True)
     selected_wrapper_path = None if args.skip_claude_wrapper else claude_wrapper_path
     payload = install_surface(
@@ -3902,6 +3972,8 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=True,
     )
+    if cli_reexec_state is not None:
+        payload["cli_reexec"] = cli_reexec_state
     host_hooks_reconcile = reconcile_usage_episodes_host_hooks(
         Path(checkout["repo_root"]),
         home_root=home_root,

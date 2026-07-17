@@ -113,3 +113,89 @@ def test_update_all_flow_treats_refreshed_not_ready_as_failure(monkeypatch, tmp_
 
     assert failed is True
     assert payload["results"]["demo"]["update"]["status"] == "refreshed-not-ready"
+
+
+def _seed_checkout(tmp_path: Path, body: str) -> Path:
+    checkout = tmp_path / "checkout"
+    checkout.mkdir()
+    (checkout / "charness").write_text(body, encoding="utf-8")
+    return checkout
+
+
+def test_reexec_noops_when_running_cli_matches_checkout(monkeypatch, tmp_path: Path) -> None:
+    module = load_charness_module("charness_reexec_match_under_test")
+    monkeypatch.delenv(module._CLI_REEXEC_GUARD_ENV, raising=False)
+    checkout = _seed_checkout(tmp_path, "#!/usr/bin/env python3\nprint('cli')\n")
+    same_bytes_copy = tmp_path / "installed-charness"
+    same_bytes_copy.write_text("#!/usr/bin/env python3\nprint('cli')\n", encoding="utf-8")
+
+    assert module.maybe_reexec_refreshed_cli(checkout, running_cli=checkout / "charness") is None
+    assert module.maybe_reexec_refreshed_cli(checkout, running_cli=same_bytes_copy) is None
+    assert module.maybe_reexec_refreshed_cli(tmp_path / "no-checkout", running_cli=same_bytes_copy) is None
+    # An unreadable comparison (here: the running CLI resolves to a directory)
+    # must fail safe into the no-reexec path instead of crashing the command.
+    unreadable = tmp_path / "cli-as-dir"
+    unreadable.mkdir()
+    assert module.maybe_reexec_refreshed_cli(checkout, running_cli=unreadable) is None
+
+
+def test_reexec_replaces_process_when_checkout_is_newer(monkeypatch, tmp_path: Path) -> None:
+    module = load_charness_module("charness_reexec_fire_under_test")
+    monkeypatch.delenv(module._CLI_REEXEC_GUARD_ENV, raising=False)
+    checkout = _seed_checkout(tmp_path, "print('new cli')\n")
+    stale_cli = tmp_path / "installed-charness"
+    stale_cli.write_text("print('old cli')\n", encoding="utf-8")
+    recorded: dict[str, object] = {}
+
+    def fake_execve(executable: str, argv: list[str], env: dict[str, str]) -> None:
+        recorded["executable"] = executable
+        recorded["argv"] = argv
+        recorded["env_guard"] = env.get(module._CLI_REEXEC_GUARD_ENV)
+
+    result = module.maybe_reexec_refreshed_cli(checkout, running_cli=stale_cli, execve=fake_execve)
+
+    assert result is None
+    assert recorded["executable"] == module.sys.executable
+    assert recorded["argv"][:2] == [module.sys.executable, str(checkout / "charness")]
+    assert recorded["argv"][2:] == module.sys.argv[1:]
+    assert recorded["env_guard"] == str(module.os.getpid())
+
+
+def test_reexec_guard_reports_child_and_blocks_loops(monkeypatch, tmp_path: Path) -> None:
+    module = load_charness_module("charness_reexec_guard_under_test")
+    monkeypatch.setenv(module._CLI_REEXEC_GUARD_ENV, str(module.os.getpid()))
+    checkout = _seed_checkout(tmp_path, "print('new cli')\n")
+
+    child_view = module.maybe_reexec_refreshed_cli(checkout, running_cli=checkout / "charness")
+    assert child_view == {"status": "reexecuted", "checkout_cli": str(checkout / "charness")}
+
+    still_stale = tmp_path / "installed-charness"
+    still_stale.write_text("print('old cli')\n", encoding="utf-8")
+    skipped = module.maybe_reexec_refreshed_cli(
+        checkout, running_cli=still_stale, execve=lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not re-exec"))
+    )
+    assert skipped is not None and skipped["status"] == "skipped"
+
+
+def test_reexec_ignores_foreign_guard_value_and_survives_execve_failure(monkeypatch, tmp_path: Path) -> None:
+    module = load_charness_module("charness_reexec_foreign_guard_under_test")
+    # A stale/foreign guard (a "1" or another process's pid inherited from an
+    # unrelated environment) must not suppress the self-heal.
+    monkeypatch.setenv(module._CLI_REEXEC_GUARD_ENV, "1")
+    checkout = _seed_checkout(tmp_path, "print('new cli')\n")
+    stale_cli = tmp_path / "installed-charness"
+    stale_cli.write_text("print('old cli')\n", encoding="utf-8")
+    fired: dict[str, object] = {}
+
+    def fake_execve(executable: str, argv: list[str], env: dict[str, str]) -> None:
+        fired["env_guard"] = env.get(module._CLI_REEXEC_GUARD_ENV)
+
+    assert module.maybe_reexec_refreshed_cli(checkout, running_cli=stale_cli, execve=fake_execve) is None
+    assert fired["env_guard"] == str(module.os.getpid())
+
+    def broken_execve(*_args: object) -> None:
+        raise OSError("exec format error")
+
+    fallback = module.maybe_reexec_refreshed_cli(checkout, running_cli=stale_cli, execve=broken_execve)
+    assert fallback is not None and fallback["status"] == "failed"
+    assert "re-exec failed" in fallback["reason"]

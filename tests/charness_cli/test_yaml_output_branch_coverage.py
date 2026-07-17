@@ -48,6 +48,9 @@ def _patch_runtime_dependencies(module, monkeypatch, repo_root: Path, home_root:
     monkeypatch.setattr(module, "enforce_managed_cli_contract", lambda **_kwargs: None)
     monkeypatch.setattr(module, "resolve_runtime_paths", lambda _args: runtime_paths)
     monkeypatch.setattr(module, "ensure_checkout", lambda *_args, **_kwargs: {"repo_root": str(repo_root)})
+    monkeypatch.setattr(
+        module, "maybe_reexec_refreshed_cli", lambda *_args, **_kwargs: {"status": "reexecuted", "checkout_cli": "checkout/charness"}
+    )
     monkeypatch.setattr(module, "install_surface", lambda *_args, **_kwargs: {"host_next_steps": {}, "raw_install_trace": "verbose installer evidence"})
     monkeypatch.setattr(module, "reconcile_usage_episodes_host_hooks", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(module, "build_doctor_payload", lambda **_kwargs: _doctor_payload())
@@ -74,6 +77,7 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     init_output = yaml.safe_load(capsys.readouterr().out)
     assert init_output["response_level"] == "summary"
     assert init_output["checkout"]["repo_root"] == str(repo_root)
+    assert init_output["cli_reexec"]["status"] == "reexecuted"
     assert "raw_install_trace" not in init_output
 
     args.detail = True
@@ -87,6 +91,7 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     update_output = capsys.readouterr()
     assert yaml.safe_load(update_output.out)["response_level"] == "summary"
     assert yaml.safe_load(update_output.out)["scope"] == "self"
+    assert yaml.safe_load(update_output.out)["cli_reexec"]["status"] == "reexecuted"
     assert "STEP: refreshing source checkout" in update_output.err
     assert "DONE: update complete" in update_output.err
 
