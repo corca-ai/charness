@@ -122,10 +122,20 @@ Advanced `charness` toward release `2.0.0` (tag `v2.0.0`) through the repo-owned
 
 ## Install Refresh
 
-- Post-publish install refresh status: `failed`.
+- Post-publish install refresh status: `failed` on first run, **completed on
+  manual re-run** (see resolution below).
 - Command: `charness update`
 - Return code: `1`
 - Elapsed seconds: `5.492`
+- Resolution (2026-07-17, same session): the failure is the one-time
+  v1.3.0→v2.0.0 migration crash — the old installed binary refreshed the
+  managed checkout and the installed binary to 2.0.0, then its old in-memory
+  `install_surface` read the new installer's `host_next_steps` output and
+  raised `KeyError: 'next_steps'`. The immediate re-run of `charness update`
+  on the refreshed binary completed cleanly; `charness version` reports
+  `2.0.0` and the runtime doctor `next_action` is structured. The GitHub
+  release notes carry an "Upgrading from v1.3.0" section naming the
+  re-run requirement.
 - Stderr tail: `STEP: refreshing source checkout
 STEP: refreshing install surface
 Traceback (most recent call last):
