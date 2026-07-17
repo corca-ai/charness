@@ -26,8 +26,8 @@
   the concrete host signal `Unknown skill: charness:prove`. Promotion needs
   `charness update` plus a session restart, then a real consumer-prompt run;
   only after `reviewed` may `prove` join `review_required_skills`.
-- v1.1.0 remains public at tag `55529413`; host sessions may hold stale
-  injected skill paths until restart.
+- v1.2.0 (CLI affordance slice + #442/#444 closes) is public; release commit
+  `e65018e1`, install refreshed to 1.2.0; restart hosts to load it.
 - Charness still requests `gpt-5.6-terra` with `medium` effort and
   `fork_turns: "none"` for its subagents. This host exposed no such override
   (typed `bounded-reviewer` spawns, host-defaulted); request contract, not
