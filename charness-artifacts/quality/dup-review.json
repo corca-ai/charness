@@ -2,6 +2,13 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "004895e66d5b4132",
+      "note": "same-file near-duplicate inside skills/public/setup/references/agent-docs-policy.md (120-121 vs 143-144): two deliberately parallel host-mapping example blocks that document the same Codex subagent mapping in the live-AGENTS.md and generated-template sections; surfaced as 'new' by scan rotation, both members untouched this session (#441 rotation class)",
+      "reviewed_at": "2026-07-17",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
       "id": "02b7ada2b79e5f0a",
       "note": "repo-root sys.path bootstrap shim introduced by focused mutation coverage suggester; top-level scripts keep local import bootstraps for direct execution",
       "reviewed_at": "2026-06-27",
@@ -19,6 +26,13 @@
       "id": "07bcaa87c24008ba",
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "08fb1dd459a76b42",
+      "note": "paired advisory inventory reporting contract with materially different parser and status semantics; callback-heavy extraction would couple independently executable quality tools",
+      "reviewed_at": "2026-07-11",
       "surface": "code"
     },
     {
@@ -44,6 +58,41 @@
     },
     {
       "class": "intentional",
+      "id": "100af5ff16d3bfa0",
+      "note": "standalone prompt-mutation CLI entrypoint shape overlaps with existing report-render CLIs (arg parse, try/except, JSON/markdown output); each command owns different error types and output contracts, so extracting a shared CLI runner would add coupling for little behavior gain",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1064f7970518a588",
+      "note": "two-line repo-root-relative path resolver family shared across standalone mutation and prompt-mutation CLIs; keeping the resolver local preserves direct script execution and avoids coupling unrelated command surfaces for a trivial idiom",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "13741926e48b3ac1",
+      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "13d608e6f6664a09",
+      "note": "one-line json.loads(path.read_text(...)) readers across nine unrelated repo and portable skill modules; extracting this stdlib idiom would couple independent command surfaces without centralizing a domain invariant",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1bac2c258fcda5ae",
+      "note": "five-line state-recording tail shared by two independent hook owners; a shared helper would couple hook lifecycles without owning their distinct payloads",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "222aaec8531c8f44",
       "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) — extraction would obscure the distinction — intentional",
       "reviewed_at": "2026-07-02",
@@ -58,8 +107,29 @@
     },
     {
       "class": "intentional",
+      "id": "22afbb476b430f1a",
+      "note": "portable sibling-module loaders in independently executable release and markdown-preview scripts; extracting them would add the import bootstrap dependency that these local loaders exist to avoid",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "22d1204ff09453f5",
       "note": "six shared JSONL parse/validate lines between usage_episode_records.read_schema_valid_records and the unrelated RCA ledger validator; their error payloads, schemas, timestamp fields, missing-file behavior, and ownership differ, so extracting a cross-domain helper would add coupling for a standard library loop rather than centralize one contract",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2826323f1e95a766",
+      "note": "one-line status delegate wrappers for two hook kinds; extracting the call would obscure the public names without reducing behavior duplication",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2ad052297e4a5ae5",
+      "note": "module-local UTC timestamp formatters across eleven unrelated ledgers, hooks, and feedback commands; nose reports zero shared lines, and the local helpers preserve each record format owner",
       "reviewed_at": "2026-07-10",
       "surface": "code"
     },
@@ -72,9 +142,86 @@
     },
     {
       "class": "intentional",
+      "id": "2e29be3c2ab30763",
+      "note": "five-line stdlib import-header overlap between the standalone feedback writer and portable achieve timebox script; a shared bootstrap would create cross-package coupling for imports only",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "322d067a80402fbc",
+      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+      "reviewed_at": "2026-06-30",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "34408a7c1ad1e68c",
+      "note": "small idiom-sized argparse/bootstrap span shared by top-level checker scripts (check_markdown_inline_code, validate_handoff_artifact, validate_quality_artifact); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, a shared helper would add coupling for 5 lines",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "355892af703b8e23",
+      "note": "portable planner envelope and direct-execution bootstrap shared across skill-owned planners whose packet and parser semantics remain distinct",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "39fe3da80754d73c",
+      "note": "five-line repo-relative portable-path fallback used by eleven independently executable CLI and artifact modules; each keeps its local fallback contract, and extraction would add bootstrap coupling for a trivial pathlib idiom",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3a2a1a48f75e2333",
+      "note": "rotation of reviewed family 6962d4713943ed31 after the usage reporter added objective-lifecycle output; validator and reporter terminal renderers still share only JSON dispatch and a short error loop, while their successful plain-output contracts remain deliberately different",
+      "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "3b537fee705455a7",
       "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom — intentional",
       "reviewed_at": "2026-06-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3c301f25c9dd81c5",
+      "note": "two-line missing-file early return shared by host-hook discovery and feedback JSONL reading; the call sites have unrelated return contracts and no stable helper concept",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3f18bd389422968e",
+      "note": "cross-skill package-root discovery for source and installed layouts; this is bootstrap-before-import code and cannot live in a shared imported helper without circularly assuming the path it resolves",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "40a4e156b1efd17f",
+      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "43d64c0037d4c0a6",
+      "note": "standard five-line future/json/path typing import header in unrelated artifact and runtime-budget modules; not a shared behavior contract",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "44bf068730cf4daf",
+      "note": "small SHA256 helper family across mutation sampling and prompt-mutant unit hashing; the call sites name different domain concepts (stable sample hash versus unit content hash), and a shared hash helper would not reduce meaningful maintenance risk",
+      "reviewed_at": "2026-07-09",
       "surface": "code"
     },
     {
@@ -100,6 +247,20 @@
     },
     {
       "class": "intentional",
+      "id": "4caa2f2ef23871ab",
+      "note": "scanner reports zero shared lines across unrelated narrative and catalog-source control flow; there is no body to extract",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4d3ffbd0991be52a",
+      "note": "three-line direct-execution CLI import/bootstrap idiom across unrelated mutation and catalog tools; extraction would add bootstrap coupling",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "4e87147b48902263",
       "note": "low-value git subprocess error-handling family rotated after setup worktree template extraction; extracting it would add cross-surface coupling for no behavior gain",
       "reviewed_at": "2026-06-27",
@@ -121,6 +282,27 @@
     },
     {
       "class": "intentional",
+      "id": "52327b5f48f32b03",
+      "note": "prompt-mutation coverage and survival CLIs both accumulate fatal problem strings before returning nonzero, but the problem domains and report contracts differ; a shared formatter would obscure the owning command semantics",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "529239b7d4dfabb7",
+      "note": "feedback semantic validation and feedback reconciliation both traverse explicit feedback records, but one emits validity errors while the other joins valid signals for reporting; only three lines are shared across distinct domain aggregations, so merging would blur validation versus evidence ownership",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "549a054b4552e20d",
+      "note": "six-line standard json/datetime/path import header shared by unrelated artifact and usage-record modules; not executable duplication",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "569bab80d07bc5d7",
       "note": "portable path-provenance helper family rotated after HITL scratchpad template extraction; small local helpers preserve directly executable skill scripts",
       "reviewed_at": "2026-06-27",
@@ -135,9 +317,30 @@
     },
     {
       "class": "intentional",
+      "id": "5736586bc87d320a",
+      "note": "one-line append idiom shared by unrelated host-hook and debug-scaffold owners; a shared helper would add coupling without centralizing a contract",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "57a52ad013e764b8",
+      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
+      "reviewed_at": "2026-07-02",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
       "id": "58d074440dbf9aa2",
       "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5bdec49283c0883e",
+      "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
+      "reviewed_at": "2026-07-13",
       "surface": "code"
     },
     {
@@ -170,9 +373,65 @@
     },
     {
       "class": "intentional",
+      "id": "678d8f09da69b267",
+      "note": "generic scan loop across a portable skill text scanner and repo-owned doc coupling gate; extraction would cross plugin/bootstrap ownership for four generic lines",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6c87ad0efd0b6633",
+      "note": "two-line guarded rate calculation retained under feedback reconciliation and product-evidence ownership; extracting the one-line arithmetic would not reduce meaningful maintenance risk",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6edaccbfec18eca5",
+      "note": "install and uninstall branches intentionally mirror state-file and result handling inside one standalone session-routing hook; symmetry is the lifecycle contract",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "70725ebd1c848880",
+      "note": "small importlib loader guard idiom across independently executable repo and portable skill scripts; each loader retains local failure ownership and direct-execution portability",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "76dbe167ecaf4a81",
+      "note": "distinct-channel and lifecycle release-artifact sections share four generic Markdown list-building lines, but their gating, evidence fields, and truth/non-claim semantics differ; a generic renderer would couple proof meanings without centralizing stable behavior",
+      "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7722148e1daeefdc",
+      "note": "small frontmatter parsers remain local to dogfood and catalog-source owners because their validation and consumers differ; four shared parsing lines do not justify coupling",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7829f2db48725111",
+      "note": "two-line sibling-loader bootstrap in independently executable issue scripts; extraction would require importing before the loader can resolve local modules",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7bae0ed263525d88",
       "note": "standalone mutation CLI path resolver helpers; extracting this two-line helper adds import/bootstrap coupling for little value",
       "reviewed_at": "2026-06-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7f11e1cbf8266c06",
+      "note": "low-value local string/assignment idiom family spanning unrelated Python and JavaScript helper code; the duplicated spans are not a stable shared concept and extraction would add cross-surface coupling",
+      "reviewed_at": "2026-07-09",
       "surface": "code"
     },
     {
@@ -184,8 +443,64 @@
     },
     {
       "class": "intentional",
+      "id": "80c5b9827dc39f57",
+      "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
+      "reviewed_at": "2026-07-14",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
       "id": "8209826f4d9b7376",
       "note": "after extracting the shared delivery target/index ownership, semantic_feedback_errors and reconcile_feedback still each iterate feedback rows and bind feedback_id; the residual family is two shared lines with different error-versus-summary consumers, so another iterator helper would obscure control flow for no behavior or maintenance gain",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "82b2e7b16bc79773",
+      "note": "issue and release keep thin skill-local post-boundary lifecycle loaders so source and installed-plugin layouts retain standalone failure containment; lifecycle IDs, schemas, append behavior, and conflicts are already owned by the shared lifecycle capture implementation",
+      "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "89d83f450e19e19b",
+      "note": "#432 identity guard: the release preflight deliberately duplicates the repo-root check_git_identity resolve+check logic because the plugin ships standalone and cannot import repo-root scripts; the two copies are bound by the test_release_preflight_parity matrix so semantic drift fails a test instead of diverging silently",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8f449e4de8a531be",
+      "note": "root scripts/suggest_public_skill_dogfood.py and the quality-skill wrapper are a deliberate portable per-skill CLI copy pair (same precedent as the other auto-seeded portable per-skill copies); the 2026-07-17 prompt_fallback advisory loop was added identically to both by design, growing the pre-existing clone span",
+      "reviewed_at": "2026-07-17",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "90cebad1d0bdb633",
+      "note": "nine-line top-level import and usage-stream constant overlap between the standalone validator and reporter after both consume the shared records module; it is script bootstrap shape, not duplicated behavior",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "925b2e98584abeab",
+      "note": "four-line direct-execution path bootstrap shared across independent repo, issue, release, and support entrypoints; extraction would defeat the bootstrap boundary",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "98b8f8037638d203",
+      "note": "four-line environment-gated debug entrypoint idiom in two standalone SessionStart programs; local ownership prevents an every-session import dependency",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9aa84744a72dd6ab",
+      "note": "five-line main-flow tail shared when validator and reporter print a terminal payload and return around missing or invalid records; each command owns a distinct payload builder, so a shared control-flow wrapper would obscure command semantics",
       "reviewed_at": "2026-07-10",
       "surface": "code"
     },
@@ -198,10 +513,38 @@
     },
     {
       "class": "intentional",
+      "id": "aaf0db28d5594b20",
+      "note": "small idiom-sized span shared by pre-existing checker scripts (check_markdown_inline_code, check_skill_bootstrap_vars); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, not new duplication from this slice",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "abe665c6ff27d285",
+      "note": "critique parsing and closeout-body validation build similar result rows but own different grammars, error channels, and consumers; a callback abstraction would erase those contracts",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "aca9e00fc6c5c3ae",
+      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+      "reviewed_at": "2026-06-30",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
       "id": "b01eea3857c9c9a6",
       "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b56c1479ef7c3d0e",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -215,6 +558,20 @@
       "id": "b89f4eca9f566307",
       "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
       "reviewed_at": "2026-06-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c4b45fc90f69c007",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "c53dd99b2f613e7b",
+      "note": "four-line hook result metadata tail is intentionally repeated between installer orchestration and the standalone session hook; payload ownership remains separate",
+      "reviewed_at": "2026-07-13",
       "surface": "code"
     },
     {
@@ -233,9 +590,65 @@
     },
     {
       "class": "intentional",
+      "id": "c86d5365eb700947",
+      "note": "debug and retro planners intentionally expose the same portable gate-packet envelope while retaining skill-specific packet semantics and install-local ownership; cross-skill extraction would couple public skill packages",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ceed7d71b2d8985f",
+      "note": "zero-shared-line fingerprint spanning eleven local UTC timestamp helpers; these tiny helpers preserve direct execution and domain-local naming",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d1cc108c53cf4b55",
+      "note": "paired one-line list comprehensions select delivery versus feedback event types; separate named functions make the discriminated-union vocabulary explicit, and nose reports zero shared lines",
+      "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d24f9bbb352ab75b",
+      "note": "three-branch label mapping shape appears in unrelated status and sentinel-channel classifiers; labels and domains differ, so a shared helper would conflate separate taxonomies",
+      "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d2a9d918b9d972a1",
       "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain — intentional",
       "reviewed_at": "2026-07-02",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d57cca2dff594954",
+      "note": "scanner reports zero shared lines between two distinct fresh-eye policy detectors in the same file; no common implementation body exists",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d7911c5fb9325bc2",
+      "note": "seven-line hook reconciliation branch is mirrored across installer and standalone runtime to preserve idempotent lifecycle behavior in both execution boundaries",
+      "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d7d30b23074c4bc9",
+      "note": "shared 2-line phase-file header across the lifecycle-before/during/after.md split (2026-07-04 north-star P2 split of achieve lifecycle.md); each phase file states its own scope+owner line by design so a phase-scoped read is self-describing",
+      "reviewed_at": "2026-07-04",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "d97d4f0533f395a8",
+      "note": "eight-line import/bootstrap overlap between standalone feedback writer and usage reporter after both consume usage-episode helper modules; this is local command wiring rather than an extractable behavior seam",
+      "reviewed_at": "2026-07-10",
       "surface": "code"
     },
     {
@@ -254,9 +667,30 @@
     },
     {
       "class": "intentional",
+      "id": "e12e9ccf6cffd081",
+      "note": "standalone quality CLI entrypoint scaffolding with distinct parse, run, output, and error contracts; shared helper would add coupling without owning behavior",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e32bc7ae8aa9104c",
+      "note": "scanner-reported zero-shared-line control-flow resemblance between release and achieve helpers; there is no shared body or contract to extract",
+      "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "e52885503466a1bc",
       "note": "issue package module-local import/bootstrap boilerplate; keep modules portable and directly executable",
       "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e6735d40e5bb7be1",
+      "note": "temporary scanner false-grouping suppression: two same-file functions have distinct contracts and consumers, while nose reports shared_lines=0 and removable=0 for semantic subdag overlap only",
+      "reviewed_at": "2026-07-11",
       "surface": "code"
     },
     {
@@ -268,9 +702,23 @@
     },
     {
       "class": "intentional",
+      "id": "e89e772efc0ba634",
+      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
+      "reviewed_at": "2026-06-24",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
       "id": "eb44bdf54c5b4998",
       "note": "issue_tool adapter/backend command wrappers share error-report shape intentionally while preserving separate call contracts",
       "reviewed_at": "2026-06-24",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ed8a6184309255b4",
+      "note": "tiny f-string path/timestamp helper family across unrelated modules; existing local helper policy keeps such low-value direct-execution idioms local instead of introducing shared imports",
+      "reviewed_at": "2026-07-09",
       "surface": "code"
     },
     {
@@ -306,440 +754,6 @@
       "id": "ff84c95bf1ddf43e",
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "100af5ff16d3bfa0",
-      "note": "standalone prompt-mutation CLI entrypoint shape overlaps with existing report-render CLIs (arg parse, try/except, JSON/markdown output); each command owns different error types and output contracts, so extracting a shared CLI runner would add coupling for little behavior gain",
-      "reviewed_at": "2026-07-09",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1064f7970518a588",
-      "note": "two-line repo-root-relative path resolver family shared across standalone mutation and prompt-mutation CLIs; keeping the resolver local preserves direct script execution and avoids coupling unrelated command surfaces for a trivial idiom",
-      "reviewed_at": "2026-07-09",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "44bf068730cf4daf",
-      "note": "small SHA256 helper family across mutation sampling and prompt-mutant unit hashing; the call sites name different domain concepts (stable sample hash versus unit content hash), and a shared hash helper would not reduce meaningful maintenance risk",
-      "reviewed_at": "2026-07-09",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "52327b5f48f32b03",
-      "note": "prompt-mutation coverage and survival CLIs both accumulate fatal problem strings before returning nonzero, but the problem domains and report contracts differ; a shared formatter would obscure the owning command semantics",
-      "reviewed_at": "2026-07-09",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7f11e1cbf8266c06",
-      "note": "low-value local string/assignment idiom family spanning unrelated Python and JavaScript helper code; the duplicated spans are not a stable shared concept and extraction would add cross-surface coupling",
-      "reviewed_at": "2026-07-09",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d24f9bbb352ab75b",
-      "note": "three-branch label mapping shape appears in unrelated status and sentinel-channel classifiers; labels and domains differ, so a shared helper would conflate separate taxonomies",
-      "reviewed_at": "2026-07-09",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ed8a6184309255b4",
-      "note": "tiny f-string path/timestamp helper family across unrelated modules; existing local helper policy keeps such low-value direct-execution idioms local instead of introducing shared imports",
-      "reviewed_at": "2026-07-09",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "13d608e6f6664a09",
-      "note": "one-line json.loads(path.read_text(...)) readers across nine unrelated repo and portable skill modules; extracting this stdlib idiom would couple independent command surfaces without centralizing a domain invariant",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2ad052297e4a5ae5",
-      "note": "module-local UTC timestamp formatters across eleven unrelated ledgers, hooks, and feedback commands; nose reports zero shared lines, and the local helpers preserve each record format owner",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2e29be3c2ab30763",
-      "note": "five-line stdlib import-header overlap between the standalone feedback writer and portable achieve timebox script; a shared bootstrap would create cross-package coupling for imports only",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "39fe3da80754d73c",
-      "note": "five-line repo-relative portable-path fallback used by eleven independently executable CLI and artifact modules; each keeps its local fallback contract, and extraction would add bootstrap coupling for a trivial pathlib idiom",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3c301f25c9dd81c5",
-      "note": "two-line missing-file early return shared by host-hook discovery and feedback JSONL reading; the call sites have unrelated return contracts and no stable helper concept",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "529239b7d4dfabb7",
-      "note": "feedback semantic validation and feedback reconciliation both traverse explicit feedback records, but one emits validity errors while the other joins valid signals for reporting; only three lines are shared across distinct domain aggregations, so merging would blur validation versus evidence ownership",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3a2a1a48f75e2333",
-      "note": "rotation of reviewed family 6962d4713943ed31 after the usage reporter added objective-lifecycle output; validator and reporter terminal renderers still share only JSON dispatch and a short error loop, while their successful plain-output contracts remain deliberately different",
-      "reviewed_at": "2026-07-14",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "76dbe167ecaf4a81",
-      "note": "distinct-channel and lifecycle release-artifact sections share four generic Markdown list-building lines, but their gating, evidence fields, and truth/non-claim semantics differ; a generic renderer would couple proof meanings without centralizing stable behavior",
-      "reviewed_at": "2026-07-14",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "82b2e7b16bc79773",
-      "note": "issue and release keep thin skill-local post-boundary lifecycle loaders so source and installed-plugin layouts retain standalone failure containment; lifecycle IDs, schemas, append behavior, and conflicts are already owned by the shared lifecycle capture implementation",
-      "reviewed_at": "2026-07-14",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "6c87ad0efd0b6633",
-      "note": "two-line guarded rate calculation retained under feedback reconciliation and product-evidence ownership; extracting the one-line arithmetic would not reduce meaningful maintenance risk",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "90cebad1d0bdb633",
-      "note": "nine-line top-level import and usage-stream constant overlap between the standalone validator and reporter after both consume the shared records module; it is script bootstrap shape, not duplicated behavior",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "9aa84744a72dd6ab",
-      "note": "five-line main-flow tail shared when validator and reporter print a terminal payload and return around missing or invalid records; each command owns a distinct payload builder, so a shared control-flow wrapper would obscure command semantics",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d1cc108c53cf4b55",
-      "note": "paired one-line list comprehensions select delivery versus feedback event types; separate named functions make the discriminated-union vocabulary explicit, and nose reports zero shared lines",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d97d4f0533f395a8",
-      "note": "eight-line import/bootstrap overlap between standalone feedback writer and usage reporter after both consume usage-episode helper modules; this is local command wiring rather than an extractable behavior seam",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "13741926e48b3ac1",
-      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "322d067a80402fbc",
-      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
-      "reviewed_at": "2026-06-30",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "40a4e156b1efd17f",
-      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "57a52ad013e764b8",
-      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
-      "reviewed_at": "2026-07-02",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "aca9e00fc6c5c3ae",
-      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
-      "reviewed_at": "2026-06-30",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "b56c1479ef7c3d0e",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "c4b45fc90f69c007",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "d7d30b23074c4bc9",
-      "note": "shared 2-line phase-file header across the lifecycle-before/during/after.md split (2026-07-04 north-star P2 split of achieve lifecycle.md); each phase file states its own scope+owner line by design so a phase-scoped read is self-describing",
-      "reviewed_at": "2026-07-04",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "80c5b9827dc39f57",
-      "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
-      "reviewed_at": "2026-07-14",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "e89e772efc0ba634",
-      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
-      "reviewed_at": "2026-06-24",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
-      "id": "89d83f450e19e19b",
-      "note": "#432 identity guard: the release preflight deliberately duplicates the repo-root check_git_identity resolve+check logic because the plugin ships standalone and cannot import repo-root scripts; the two copies are bound by the test_release_preflight_parity matrix so semantic drift fails a test instead of diverging silently",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "34408a7c1ad1e68c",
-      "note": "small idiom-sized argparse/bootstrap span shared by top-level checker scripts (check_markdown_inline_code, validate_handoff_artifact, validate_quality_artifact); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, a shared helper would add coupling for 5 lines",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "aaf0db28d5594b20",
-      "note": "small idiom-sized span shared by pre-existing checker scripts (check_markdown_inline_code, check_skill_bootstrap_vars); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, not new duplication from this slice",
-      "reviewed_at": "2026-07-10",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "22afbb476b430f1a",
-      "note": "portable sibling-module loaders in independently executable release and markdown-preview scripts; extracting them would add the import bootstrap dependency that these local loaders exist to avoid",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3f18bd389422968e",
-      "note": "cross-skill package-root discovery for source and installed layouts; this is bootstrap-before-import code and cannot live in a shared imported helper without circularly assuming the path it resolves",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5736586bc87d320a",
-      "note": "one-line append idiom shared by unrelated host-hook and debug-scaffold owners; a shared helper would add coupling without centralizing a contract",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "70725ebd1c848880",
-      "note": "small importlib loader guard idiom across independently executable repo and portable skill scripts; each loader retains local failure ownership and direct-execution portability",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "925b2e98584abeab",
-      "note": "four-line direct-execution path bootstrap shared across independent repo, issue, release, and support entrypoints; extraction would defeat the bootstrap boundary",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c86d5365eb700947",
-      "note": "debug and retro planners intentionally expose the same portable gate-packet envelope while retaining skill-specific packet semantics and install-local ownership; cross-skill extraction would couple public skill packages",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e32bc7ae8aa9104c",
-      "note": "scanner-reported zero-shared-line control-flow resemblance between release and achieve helpers; there is no shared body or contract to extract",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "08fb1dd459a76b42",
-      "note": "paired advisory inventory reporting contract with materially different parser and status semantics; callback-heavy extraction would couple independently executable quality tools",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "355892af703b8e23",
-      "note": "portable planner envelope and direct-execution bootstrap shared across skill-owned planners whose packet and parser semantics remain distinct",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "678d8f09da69b267",
-      "note": "generic scan loop across a portable skill text scanner and repo-owned doc coupling gate; extraction would cross plugin/bootstrap ownership for four generic lines",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e12e9ccf6cffd081",
-      "note": "standalone quality CLI entrypoint scaffolding with distinct parse, run, output, and error contracts; shared helper would add coupling without owning behavior",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e6735d40e5bb7be1",
-      "note": "temporary scanner false-grouping suppression: two same-file functions have distinct contracts and consumers, while nose reports shared_lines=0 and removable=0 for semantic subdag overlap only",
-      "reviewed_at": "2026-07-11",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1bac2c258fcda5ae",
-      "note": "five-line state-recording tail shared by two independent hook owners; a shared helper would couple hook lifecycles without owning their distinct payloads",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2826323f1e95a766",
-      "note": "one-line status delegate wrappers for two hook kinds; extracting the call would obscure the public names without reducing behavior duplication",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "43d64c0037d4c0a6",
-      "note": "standard five-line future/json/path typing import header in unrelated artifact and runtime-budget modules; not a shared behavior contract",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "4caa2f2ef23871ab",
-      "note": "scanner reports zero shared lines across unrelated narrative and catalog-source control flow; there is no body to extract",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "4d3ffbd0991be52a",
-      "note": "three-line direct-execution CLI import/bootstrap idiom across unrelated mutation and catalog tools; extraction would add bootstrap coupling",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "549a054b4552e20d",
-      "note": "six-line standard json/datetime/path import header shared by unrelated artifact and usage-record modules; not executable duplication",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5bdec49283c0883e",
-      "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "6edaccbfec18eca5",
-      "note": "install and uninstall branches intentionally mirror state-file and result handling inside one standalone session-routing hook; symmetry is the lifecycle contract",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7722148e1daeefdc",
-      "note": "small frontmatter parsers remain local to dogfood and catalog-source owners because their validation and consumers differ; four shared parsing lines do not justify coupling",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7829f2db48725111",
-      "note": "two-line sibling-loader bootstrap in independently executable issue scripts; extraction would require importing before the loader can resolve local modules",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "98b8f8037638d203",
-      "note": "four-line environment-gated debug entrypoint idiom in two standalone SessionStart programs; local ownership prevents an every-session import dependency",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "abe665c6ff27d285",
-      "note": "critique parsing and closeout-body validation build similar result rows but own different grammars, error channels, and consumers; a callback abstraction would erase those contracts",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c53dd99b2f613e7b",
-      "note": "four-line hook result metadata tail is intentionally repeated between installer orchestration and the standalone session hook; payload ownership remains separate",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ceed7d71b2d8985f",
-      "note": "zero-shared-line fingerprint spanning eleven local UTC timestamp helpers; these tiny helpers preserve direct execution and domain-local naming",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d57cca2dff594954",
-      "note": "scanner reports zero shared lines between two distinct fresh-eye policy detectors in the same file; no common implementation body exists",
-      "reviewed_at": "2026-07-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d7911c5fb9325bc2",
-      "note": "seven-line hook reconciliation branch is mirrored across installer and standalone runtime to preserve idempotent lifecycle behavior in both execution boundaries",
-      "reviewed_at": "2026-07-13",
       "surface": "code"
     }
   ],

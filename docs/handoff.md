@@ -54,10 +54,10 @@
   · [release state](../charness-artifacts/release/latest.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: the unpushed-local-commits state (it changes the first
-  operator action), the two carried operator decision queues, and the
-  requested-vs-applied reviewer boundary.
-- Refresh non-claims: prove's `reviewed` status is one live consumer run on
-  one host (non-claims in the registry row); no push/release/provider write
-  occurred this session; the #444/#442 history detail spilled to the goal
-  artifact and resolution critiques.
+- Refresh kept: the unpushed-local-commits state in `docs/handoff.md` (it
+  changes the first operator action), the two carried operator decision
+  queues, and the per-host reviewer contract in `AGENTS.md`.
+- Refresh non-claims: the [dogfood registry](./public-skill-dogfood.json)'s
+  prove `reviewed` status is one live consumer run on one host; no
+  push/release/provider write occurred at refresh time; the #444/#442 history
+  detail spilled to the goal artifact and resolution critiques.

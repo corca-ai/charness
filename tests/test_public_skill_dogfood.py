@@ -200,3 +200,42 @@ def test_prompt_hinted_row_carries_no_fallback_flag_or_warning() -> None:
     from scripts.public_skill_dogfood_lib import prompt_fallback_warnings
 
     assert prompt_fallback_warnings(report) == []
+
+
+def test_format_human_renders_fallback_warning_line(tmp_path: Path) -> None:
+    # Covers the format_human WARNING branch the changed-line mutation gate
+    # flagged as uncovered (release quality run, 2026-07-17).
+    repo = seed_repo(tmp_path)
+    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    from scripts.public_skill_dogfood_lib import format_human
+
+    report = build_matrix(repo, ["demo"])
+    rendered = format_human(report)
+    assert "WARNING: prompt is the frontmatter-description fallback" in rendered
+    assert "add a realistic consumer prompt" in rendered
+
+
+def test_quality_skill_cli_copy_emits_fallback_stderr_warning(tmp_path: Path) -> None:
+    # The quality-skill wrapper is a portable copy of the root CLI; its stderr
+    # advisory line must fire the same way (uncovered-line gate, 2026-07-17).
+    import subprocess
+
+    repo = seed_repo(tmp_path)
+    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "skills" / "public" / "quality" / "scripts" / "suggest_public_skill_dogfood.py"),
+            "--repo-root",
+            str(repo),
+            "--skill-id",
+            "demo",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["matrix"][0]["prompt_fallback"] is True
+    assert "frontmatter-description fallback" in result.stderr
