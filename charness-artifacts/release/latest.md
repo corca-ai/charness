@@ -17,22 +17,35 @@ Advanced `charness` toward release `2.0.0` (tag `v2.0.0`) through the repo-owned
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
+- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v2.0.0`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v2.0.0`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified by the release backend.
+
+## Distinct-Channel Verification
+
+- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
+- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v2.0.0`
+- HTTP status: `200`
+- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
 
 ## Lifecycle Usage Capture
 
-- Lifecycle capture status: not recorded by this helper invocation.
+- Lifecycle capture status: `appended`.
+- Local telemetry pair appended: `True`.
+- Delivery episode ID: `episode-d26dac6678c9ef90089970d2f28669ef10109bcc1c4a0053bfe4b3b965b4598e`.
+- Linked feedback ID: `feedback-faf7a09164097fc96b3b73451624d91a894e3d56a257eb7176e35dea3b2dd6a5`.
+- Capture error count: `0`.
+- Non-claim: objective lifecycle capture is not human approval or general satisfaction evidence.
 
 ## Release Adapter Preflight
 
@@ -103,9 +116,28 @@ Advanced `charness` toward release `2.0.0` (tag `v2.0.0`) through the repo-owned
 - Policy: `advisory-only`.
 - Configured command count: `0`.
 
+## Post-Publish Proof
+
+- Public release check: `gh release view v2.0.0`.
+
 ## Install Refresh
 
-- Post-publish install refresh: pending final publish verification.
+- Post-publish install refresh status: `failed`.
+- Command: `charness update`
+- Return code: `1`
+- Elapsed seconds: `5.492`
+- Stderr tail: `STEP: refreshing source checkout
+STEP: refreshing install surface
+Traceback (most recent call last):
+  File "/home/hwidong/.local/bin/charness", line 5589, in <module>
+    raise SystemExit(main())
+  File "/home/hwidong/.local/bin/charness", line 5584, in main
+    return args.func(args)
+  File "/home/hwidong/.local/bin/charness", line 3896, in cmd_update
+    payload = install_surface(
+  File "/home/hwidong/.local/bin/charness", line 2155, in install_surface
+    payload["host_next_steps"]["claude"] = claude_plugin_message
+KeyError: 'next_steps'`
 
 ## Release Runtime
 
@@ -113,10 +145,19 @@ Advanced `charness` toward release `2.0.0` (tag `v2.0.0`) through the repo-owned
 - `cli_skill_surface_gate`: 1.852s
 - `quality_command`: 81.131s
 - `fresh_checkout_probes_initial`: 3.093s
+- `fresh_checkout_probes_after_amend`: 3.006s
+- `push_create_verify_release`: 60.032s
+- `distinct_channel_verification`: 0.531s
+- `issue_closeout`: 0.000s
+- `post_publish_install_refresh`: 5.492s
 
 ## Baton Reconcile
 
-- Baton reconcile observation: not recorded by this helper invocation.
+- Baton reconcile observation: `stale` for `docs/handoff.md`.
+- Just-published version: `2.0.0`.
+- Versions claimed by the baton's routing sections: `1.3.0`.
+- RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `2.0.0`, or record an explicit n/a disposition in the release record, before ending the session.
+- This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
 
 ## Fresh Checkout Probes
 
@@ -127,7 +168,7 @@ Advanced `charness` toward release `2.0.0` (tag `v2.0.0`) through the repo-owned
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `not_requested`.
 
 ## User Update Steps
 
