@@ -144,6 +144,9 @@ handoff-directed interpretation; no operator input required before activation.
   - Unblock action: `git push origin main` (the changed-line mutation-coverage
     marker is fresh, so the pre-push gate runs active).
   - Revisit trigger: next operator session, or the next release cut.
+  - RESOLVED 2026-07-17: operator said "푸시 릴리즈"; the commits shipped in
+    v1.3.0 (release commit `39a860ee`, tag pushed, distinct-channel https 200,
+    install refreshed; see `charness-artifacts/release/latest.md`).
 - Decision: file-or-apply the dogfood scaffold fallback-prompt warning (a
   scaffold-time signal when a row's prompt equals the skill description
   because `PROMPT_HINTS` lacks an entry — the gap that left `prove` with an

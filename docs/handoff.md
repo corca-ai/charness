@@ -16,10 +16,12 @@
   promoted to `reviewed` on live consumer-run evidence with `prove` added to
   `review_required_skills` (`b1b74e0c`); the md required list now mirrors the
   json under a new drift pin.
-- These commits are LOCAL ONLY (autonomous session, no push approval): the
-  first operator action is deciding the push (queued with unblock action in
-  the goal's `## Operator Decision Queue`).
-- v1.2.0 remains the published/install surface; no release change this session.
+- v1.3.0 is public (operator said "푸시 릴리즈"): release commit `39a860ee`,
+  tag `v1.3.0`, distinct-channel https confirmation 200, fresh-checkout
+  probes passed, install refreshed via `charness update`; verification record
+  in [release state](../charness-artifacts/release/latest.md). The first
+  publish attempt was refused by the release quality battery; the three gate
+  failures were repaired at root in `b0f4ae74` before the rerun.
 - 2026-07-17 operator decisions (chat): the subagent model/effort request is
   now a PER-HOST contract (AGENTS.md `Subagent Delegation`: Codex hosts request
   `gpt-5.6-terra`/`medium`/`fork_turns: "none"`; Claude Code hosts use typed
@@ -30,8 +32,8 @@
 
 ## Next Session
 
-1. Operator: push the local commits (`git push origin main`; changed-line
-   mutation-coverage marker is fresh) or fold them into the next release cut.
+1. Restart hosts to load the installed v1.3.0 surface before testing
+   installed-plugin behavior.
 2. D18 disposition (passed over 2026-07-17, still pending with the same
    reopen trigger) — see the 2026-07-16
    [goal artifact](../charness-artifacts/goals/2026-07-16-scout-driven-improvement.md)
@@ -54,9 +56,9 @@
   · [release state](../charness-artifacts/release/latest.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: the unpushed-local-commits state in `docs/handoff.md` (it
-  changes the first operator action), the two carried operator decision
-  queues, and the per-host reviewer contract in `AGENTS.md`.
+- Refresh kept: the per-host reviewer contract in `AGENTS.md`, the
+  published-v1.3.0 restart-to-load state (first action), and the carried D18
+  decision.
 - Refresh non-claims: the [dogfood registry](./public-skill-dogfood.json)'s
   prove `reviewed` status is one live consumer run on one host; no
   push/release/provider write occurred at refresh time; the #444/#442 history
