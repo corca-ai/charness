@@ -28,6 +28,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _scripts_public_skill_dogfood_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.public_skill_dogfood_lib")
 build_matrix = _scripts_public_skill_dogfood_lib_module.build_matrix
 format_human = _scripts_public_skill_dogfood_lib_module.format_human
+prompt_fallback_warnings = _scripts_public_skill_dogfood_lib_module.prompt_fallback_warnings
 _scripts_public_skill_validation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.public_skill_validation_lib")
 public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 
@@ -56,6 +57,10 @@ def main() -> int:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
         print(format_human(report))
+    # Advisory only, never blocks: the scaffold stays usable while flagging
+    # rows whose prompt silently reuses producer metadata as consumer input.
+    for warning in prompt_fallback_warnings(report):
+        print(f"suggest_public_skill_dogfood: {warning}", file=sys.stderr)
     return 0
 
 

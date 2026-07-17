@@ -185,6 +185,9 @@ S5 disposition outcomes (every route above resolved):
   - Unblock action: operator picks land-now vs re-defer; if land-now, choose
     docs/public-skill-dogfood.json entry vs new evals/cautilus fixture
   - Revisit trigger: any session that re-touches the Cautilus eval surface
+  - UPDATED 2026-07-17: operator passed over the item in chat ("skip
+    Cautilus for now"); no formal re-defer trigger was named, so D18 stays
+    pending with the same revisit trigger.
 - Decision: run (or decline) the bounded live Codex probe for provider-applied
   reviewer model/effort evidence (handoff `## Discuss` item)
   - Owner: operator
@@ -192,6 +195,11 @@ S5 disposition outcomes (every route above resolved):
     and the item is explicitly a separate live-host experiment per the handoff
   - Unblock action: operator schedules the probe or records not-worth-proving
   - Revisit trigger: next Codex-hosted charness session
+  - UPDATED 2026-07-17: operator split the subagent contract per host
+    (AGENTS.md `Subagent Delegation`: the `gpt-5.6-terra`/`medium` request is
+    now Codex-scoped; Claude Code hosts use their own controls and record no
+    not-exposed limitation). The probe becomes optional evidence polish for
+    the Codex-scoped request, no longer a cross-host contract question.
 
 ## Coordination Cues
 

@@ -215,6 +215,11 @@ def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
                 "skill_id": skill_id,
                 "description": frontmatter.get("description", ""),
                 "prompt": PROMPT_HINTS.get(skill_id, frontmatter.get("description", "")),
+                # Advisory only: a fallback prompt is the skill's own trigger
+                # description, not a consumer utterance, so a row reviewed on
+                # it records routing evidence against unrealistic input (the
+                # `prove` row shipped that way until 2026-07-17).
+                "prompt_fallback": skill_id not in PROMPT_HINTS,
                 "repo_shape": REPO_SHAPE_HINTS.get(
                     skill_id,
                     "repo shape not yet classified; add a concrete mature or cold-start fixture before relying on this row",
@@ -250,4 +255,21 @@ def format_human(report: dict[str, object]) -> str:
             f"  expected_skill=`{row['expected_skill']}` artifact=`{artifact}` "
             f"tier=`{row['validation_tier']}` adapter=`{row['adapter_requirement']}`"
         )
+        if row.get("prompt_fallback"):
+            lines.append(
+                "  WARNING: prompt is the frontmatter-description fallback "
+                f"(PROMPT_HINTS has no `{row['skill_id']}` entry); add a realistic "
+                "consumer prompt before reviewing this row"
+            )
     return "\n".join(lines)
+
+
+def prompt_fallback_warnings(report: dict[str, object]) -> list[str]:
+    """Advisory lines for rows whose prompt is the description fallback."""
+    return [
+        f"`{row['skill_id']}`: prompt is the frontmatter-description fallback "
+        f"(PROMPT_HINTS has no entry); add a realistic consumer prompt before "
+        f"reviewing this row"
+        for row in report["matrix"]
+        if isinstance(row, dict) and row.get("prompt_fallback")
+    ]

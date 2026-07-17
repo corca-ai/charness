@@ -2,6 +2,14 @@ version: 1
 repo: charness
 language: en
 output_dir: charness-artifacts/critique
+# Per-host contract (AGENTS.md `Subagent Delegation`, split 2026-07-17): the
+# model/effort/fork_turns fields below are the CODEX-host request. Claude Code
+# hosts use their own controls (typed `bounded-reviewer`, session-model
+# inheritance) and do not apply or report these Codex fields. Claude-host
+# reviewer-tier evidence records: requested spawn fields "typed
+# `bounded-reviewer`, session-model inheritance (per-host contract)" with host
+# exposure state `host-defaulted` — packets rendering the Codex fields on a
+# Claude host describe the Codex-scoped request, not this host's ask.
 reviewer_tiers:
   high-leverage:
     model: gpt-5.6-terra

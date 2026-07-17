@@ -20,30 +20,31 @@
   first operator action is deciding the push (queued with unblock action in
   the goal's `## Operator Decision Queue`).
 - v1.2.0 remains the published/install surface; no release change this session.
-- Charness still requests `gpt-5.6-terra`/`medium`/`fork_turns: "none"` for
-  subagents; this host exposed no such override (typed `bounded-reviewer`
-  spawns, host-defaulted) — request contract, not applied proof.
+- 2026-07-17 operator decisions (chat): the subagent model/effort request is
+  now a PER-HOST contract (AGENTS.md `Subagent Delegation`: Codex hosts request
+  `gpt-5.6-terra`/`medium`/`fork_turns: "none"`; Claude Code hosts use typed
+  agents + session-model inheritance and no longer record a not-exposed
+  limitation); D18 was passed over (stays pending, same reopen trigger); the
+  dogfood scaffold fallback-prompt warning was applied immediately
+  (`prompt_fallback` flag + advisory stderr warning + tests).
 
 ## Next Session
 
 1. Operator: push the local commits (`git push origin main`; changed-line
    mutation-coverage marker is fresh) or fold them into the next release cut.
-2. Remaining operator decisions from the 2026-07-16
+2. D18 disposition (passed over 2026-07-17, still pending with the same
+   reopen trigger) — see the 2026-07-16
    [goal artifact](../charness-artifacts/goals/2026-07-16-scout-driven-improvement.md)
-   `## Operator Decision Queue`: the D18 disposition and the live Codex probe
-   question.
-3. File-or-apply the dogfood scaffold fallback-prompt warning (a row whose
-   prompt equals the skill description means `PROMPT_HINTS` lacks an entry;
-   details in the 2026-07-17 goal's Operator Decision Queue).
-4. Deferred affordance convergence per the affordance spec's Deferred
+   `## Operator Decision Queue`.
+3. Deferred affordance convergence per the affordance spec's Deferred
    Decisions (`next_action` rename, `next_steps` split, prefix unification).
 
 ## Discuss
 
-- Whether a live Codex experiment can add provider-applied reviewer-profile
-  evidence without confusing it with the requested configuration contract
-  (queued with an owner and revisit trigger in the 2026-07-16 goal's Operator
-  Decision Queue).
+- Optional under the 2026-07-17 per-host split: a live Codex-host session can
+  still add provider-applied evidence that the Codex-scoped
+  `gpt-5.6-terra`/`medium` request is honored; the split already removed the
+  Claude-side not-exposed noise, so this is evidence polish, not a blocker.
 
 ## References
 

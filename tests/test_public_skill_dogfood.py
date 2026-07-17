@@ -174,3 +174,29 @@ def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path,
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["matrix"][0]["skill_id"] == "demo"
+
+
+def test_suggest_cli_warns_on_description_fallback_prompt(tmp_path: Path, monkeypatch, capsys) -> None:
+    # The seeded `demo` skill has no PROMPT_HINTS entry, so its scaffold prompt
+    # is the frontmatter description; the row must say so and the CLI must warn
+    # (advisory only -- exit stays 0). This is the gap that left `prove` with
+    # an unrealistic prompt until 2026-07-17.
+    repo = seed_repo(tmp_path)
+    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+
+    result = run_suggest_public_skill_dogfood(
+        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--json"
+    )
+    assert result.returncode == 0, result.stderr
+    row = json.loads(result.stdout)["matrix"][0]
+    assert row["prompt_fallback"] is True
+    assert "frontmatter-description fallback" in result.stderr
+
+
+def test_prompt_hinted_row_carries_no_fallback_flag_or_warning() -> None:
+    report = build_matrix(ROOT, ["prove"])
+    row = report["matrix"][0]
+    assert row["prompt_fallback"] is False
+    from scripts.public_skill_dogfood_lib import prompt_fallback_warnings
+
+    assert prompt_fallback_warnings(report) == []

@@ -156,6 +156,10 @@ handoff-directed interpretation; no operator input required before activation.
     in `public_skill_dogfood_lib.py` with a matching test.
   - Revisit trigger: the next new public skill's dogfood row, or the next
     quality pass over the dogfood registry.
+  - RESOLVED 2026-07-17: operator said apply immediately; landed as the
+    `prompt_fallback` row flag + advisory stderr warning in
+    `public_skill_dogfood_lib.py`/`suggest_public_skill_dogfood.py` with two
+    tests (post-goal follow-up commit, same session).
 
 ## Slice Log
 
