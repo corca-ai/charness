@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Autonomous pickup ("리포 자율 개선") ran the handoff chunker over the live backlog, merged handoff entries 1+3 into one goal (`charness-artifacts/goals/2026-07-17-prove-dogfood-via-444-polish.md`), and executed it end-to-end: the #444 deferred F5/F6 polish landed as commit `963e147c`, and the prove dogfood row was promoted to `reviewed` on live consumer-run evidence as commit `b1b74e0c`. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
 - Release publish triggered a configured automatic session retro for `v1.2.0`. (source: `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`)
-- Closeout retro for the autonomous improvement goal `charness-artifacts/goals/2026-07-16-scout-driven-improvement.md`: a five-lens read-only scout workflow (5 subagents) produced a 12-row finding inventory, which became five slices (stale-handoff refresh + release baton-reconcile observation, provenance-gated update contract completion, compact doctor projection fixes, P2 gate-message alignment, disposition sweep) landed as four local commits (`e1653d73`, `8f20ad0a`, `1283e1d1`, `0b7d868e`) plus closeout. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`; sources: 96)
-- bounded-reviewer spawns on this host run asynchronously regardless of `run_in_background: false` and emit no completion notification; poll the subagent transcript JSONL (mtime + last assistant text) instead of waiting for a notification. Persisted in this artifact. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
-- dup-ratchet new-family blocks should carry member paths/spans in gate output — routed to issue #441. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
-- persist host-log probe artifacts as `.json` (the retro-artifact validator owns `.md` shapes in that directory). Persisted in this artifact. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
+- bounded-reviewer synchronous spawns returned results inline this session (no polling needed), unlike the 2026-07-16 session; treat the polling lesson as host-version-dependent rather than permanent. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
+- consider a scaffold-time warning when a dogfood row's prompt equals the skill description (fallback in use), so the next new skill does not inherit an unrealistic consumer prompt silently. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
+- keep critique strictly before the locked closeout even when the parallel gamble looks cheap; the loss mode (invalidated broad proof) costs more than the wait. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
 
 ## Selection Policy
 
@@ -123,4 +123,5 @@
 - `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`
 - `charness-artifacts/retro/2026-07-16-v1-1-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`

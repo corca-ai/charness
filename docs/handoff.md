@@ -8,44 +8,33 @@
 
 ## Current State
 
-- 2026-07-17 landed the CLI affordance slice
-  ([spec](../charness-artifacts/spec/cli-output-affordance-contract.md)):
-  task rejections and persisted task state carry a recovering `next_step`;
-  the CLI reference header documents the affordance convention.
-- 2026-07-17 closed #444 (commit `d7747a09`, pushed) and #442 (four slices
-  `d312aa6b`/`9faef3b9`/`cc71dbb1`/`c07a575c` plus the closeout commit): the
-  commit-msg hook now carves out pausing resolution briefs (provenance-only
-  floor, full ledger on close-keyword overlap) and reads bold
-  `**Classification**:` lines; spec/critique/announcement dedup to
-  185/188/182 of the 200 cap with single-ownership pointers (verdict enum and
-  slice ledger → `prove`, spawn enforcement → the shared fresh-eye reference,
-  delivery mechanics → `delivery-seams.md`); prove gained the
-  claim-fidelity substance floor (`outcome-assertions.json`).
-- prove dogfood promotion stays `planned` (blocked): the installed plugin
-  surface predates the #439 split — this session's live routing probe returned
-  the concrete host signal `Unknown skill: charness:prove`. Promotion needs
-  `charness update` plus a session restart, then a real consumer-prompt run;
-  only after `reviewed` may `prove` join `review_required_skills`.
-- v1.2.0 (CLI affordance slice + #442/#444 closes) is public; release commit
-  `e65018e1`, install refreshed to 1.2.0; restart hosts to load it.
-- Charness still requests `gpt-5.6-terra` with `medium` effort and
-  `fork_turns: "none"` for its subagents. This host exposed no such override
-  (typed `bounded-reviewer` spawns, host-defaulted); request contract, not
-  applied proof.
+- 2026-07-17 closed the prove-dogfood goal
+  ([artifact](../charness-artifacts/goals/2026-07-17-prove-dogfood-via-444-polish.md),
+  Status: complete): the #444 deferred F5/F6 polish landed (`963e147c` —
+  pause-only hook failures now name the `AI-provenance:` remedy, plus the
+  template↔regex pause-vocabulary drift test), and the `prove` dogfood row was
+  promoted to `reviewed` on live consumer-run evidence with `prove` added to
+  `review_required_skills` (`b1b74e0c`); the md required list now mirrors the
+  json under a new drift pin.
+- These commits are LOCAL ONLY (autonomous session, no push approval): the
+  first operator action is deciding the push (queued with unblock action in
+  the goal's `## Operator Decision Queue`).
+- v1.2.0 remains the published/install surface; no release change this session.
+- Charness still requests `gpt-5.6-terra`/`medium`/`fork_turns: "none"` for
+  subagents; this host exposed no such override (typed `bounded-reviewer`
+  spawns, host-defaulted) — request contract, not applied proof.
 
 ## Next Session
 
-1. After `charness update` + restart: run the prove dogfood consumer prompt on
-   a real slice, promote `review_status` to `reviewed` with observed evidence,
-   and add `prove` to `review_required_skills` (#442 recorded this as the one
-   deferred sub-item; the substance floor is already in place).
+1. Operator: push the local commits (`git push origin main`; changed-line
+   mutation-coverage marker is fresh) or fold them into the next release cut.
 2. Remaining operator decisions from the 2026-07-16
    [goal artifact](../charness-artifacts/goals/2026-07-16-scout-driven-improvement.md)
    `## Operator Decision Queue`: the D18 disposition and the live Codex probe
    question.
-3. Deferred from #444's critique (fails closed, separable): pause-case
-   header/footer polish in `_format_failure`, and a template-vs-regex
-   pause-vocabulary drift test.
+3. File-or-apply the dogfood scaffold fallback-prompt warning (a row whose
+   prompt equals the skill description means `PROMPT_HINTS` lacks an entry;
+   details in the 2026-07-17 goal's Operator Decision Queue).
 4. Deferred affordance convergence per the affordance spec's Deferred
    Decisions (`next_action` rename, `next_steps` split, prefix unification).
 
@@ -58,13 +47,16 @@
 
 ## References
 
-- [#444 resolution critique](../charness-artifacts/critique/2026-07-17-issue-444-resolution-critique.md)
-  · [#442 resolution critique](../charness-artifacts/critique/2026-07-17-issue-442-resolution-critique.md)
+- [prove-dogfood goal closeout](../charness-artifacts/goals/2026-07-17-prove-dogfood-via-444-polish.md)
+  · [disposition review](../charness-artifacts/critique/2026-07-17-prove-dogfood-via-444-polish-disposition-review.md)
+  · [session retro](../charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md)
   · [release state](../charness-artifacts/release/latest.md)
   · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept: the [prove-promotion blocker](./public-skill-dogfood.json),
-  deferred #444 polish, and the requested-vs-applied reviewer boundary.
-- Refresh non-claims: the [prove dogfood row](./public-skill-dogfood.json)
-  stays `planned`; no provider-applied model/effort claim; #442 caps are
-  commit-time counts.
+- Refresh kept: the unpushed-local-commits state (it changes the first
+  operator action), the two carried operator decision queues, and the
+  requested-vs-applied reviewer boundary.
+- Refresh non-claims: prove's `reviewed` status is one live consumer run on
+  one host (non-claims in the registry row); no push/release/provider write
+  occurred this session; the #444/#442 history detail spilled to the goal
+  artifact and resolution critiques.
