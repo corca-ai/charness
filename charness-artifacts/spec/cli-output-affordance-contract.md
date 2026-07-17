@@ -76,6 +76,10 @@ and the generated CLI reference header.
   `NEXT_ACTION:`) spans ~10 modules and 30+ test assertions and risks breaking
   lock-state consumers; it is deliberately not bundled into this slice. The
   documented convention above is the target shape for that convergence.
+  - APPROVED 2026-07-17 (operator, chat): scheduled for the next session with
+    **breaking changes allowed** — consumers of the old field names/prefixes
+    may break; no compatibility alias is required. Ship under a major-bump
+    review question if any published payload shape changes.
 - Structured affordances on `CharnessError` and catalog/session-capture error
   paths; revisit when a real consumer hits those dead ends.
 

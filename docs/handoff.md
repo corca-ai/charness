@@ -2,9 +2,11 @@
 
 ## Workflow Trigger
 
-- With no explicit task, invoke `charness:handoff` and run chunked routing over
-  this baton and live issues. Restart first only when testing installed-plugin
-  behavior; an explicit user task keeps its own authority.
+- With no explicit task, skip chunked routing and continue with `spec` → `impl`
+  on the operator-directed affordance convergence (Next Session item 1, breaking
+  changes allowed); the chunker resumes after that item closes. Restart first
+  only when testing installed-plugin behavior; an explicit user task keeps its
+  own authority.
 
 ## Current State
 
@@ -32,14 +34,17 @@
 
 ## Next Session
 
-1. Restart hosts to load the installed v1.3.0 surface before testing
+1. OPERATOR-DIRECTED (2026-07-17 chat): run the affordance convergence per the
+   [affordance spec](../charness-artifacts/spec/cli-output-affordance-contract.md)
+   Deferred Decisions — `next_action` rename, `next_steps` split, prefix
+   unification — with **breaking changes allowed** (no compatibility alias;
+   see the APPROVED note in the spec). Start here even on a bare pickup.
+2. Restart hosts to load the installed v1.3.0 surface before testing
    installed-plugin behavior.
-2. D18 disposition (passed over 2026-07-17, still pending with the same
+3. D18 disposition (passed over 2026-07-17, still pending with the same
    reopen trigger) — see the 2026-07-16
    [goal artifact](../charness-artifacts/goals/2026-07-16-scout-driven-improvement.md)
    `## Operator Decision Queue`.
-3. Deferred affordance convergence per the affordance spec's Deferred
-   Decisions (`next_action` rename, `next_steps` split, prefix unification).
 
 ## Discuss
 
