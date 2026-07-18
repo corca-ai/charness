@@ -12,6 +12,14 @@ counterweight then consumed the final JSON packet and found no code-level hold.
 Reviewer-boundary fingerprint verification reported zero drift after each
 shared-worktree review phase.
 
+The first publish attempt stopped before mutation when the release-only quality
+bundle found four duplicate families. Two same-owner artifact/Git commit clones
+were extracted into a cohesive release-local module; two portable CLI/bootstrap
+families were reviewed as intentionally independent rather than force-shared.
+The duplicate ratchet was then moved into ordinary skill and repo-Python slice
+closeout surfaces. A final packet-bound reviewer confirmed the extraction,
+classification, source/plugin parity, and earlier gate placement.
+
 ## Decision Under Review
 
 Publish v2.1.6 with a post-publication evidence carrier for linked-issue close
@@ -57,6 +65,9 @@ actionable, identity-preserving recovery path.
 - Valid but Defer: consider binding critique identity into a future carrier
   record or narrowing help wording to the exact enforced guarantee. Current
   recovery still cannot accept a mismatched issue carrier or remote identity.
+- Over-Worry: do not unify independently executable root/public-skill CLI
+  presentation or bootstrap seams merely to reduce lexical duplication; that
+  would replace local repetition with cross-package runtime coupling.
 
 ## Structured Findings
 
@@ -65,6 +76,9 @@ actionable, identity-preserving recovery path.
 - F3 | bin: act-before-ship | evidence: strong | ref: tests/quality_gates/test_release_publish_resilience.py | action: fix | note: a real CLI fixture constructs publication plus carrier-push interruption and proves the minimal resume fails with complete guidance
 - F4 | bin: over-worry | evidence: strong | ref: skills/public/release/scripts/publish_release_resume.py | action: defer | note: additional recovery machinery is not justified beyond exact topology, evidence-tree, message, tag, and remote-SHA validation
 - F5 | bin: valid-but-defer | evidence: moderate | ref: skills/public/release/scripts/publish_release_cli.py | action: defer | note: future work may bind critique identity into carrier state or narrow help wording, but no unsafe carrier or reconcile path results today
+- F6 | bin: act-before-ship | evidence: strong | ref: skills/public/release/scripts/release_issue_closeout_artifact.py | action: fix | note: artifact writing and Git commit/push behavior now have one cohesive release-local owner instead of two duplicated policy-module tails
+- F7 | bin: act-before-ship | evidence: strong | ref: .agents/surfaces.json | action: fix | note: duplicate coupling now fails at ordinary skill or repo-Python slice closeout instead of first appearing in the release-only bundle
+- F8 | bin: over-worry | evidence: strong | ref: charness-artifacts/quality/dup-review.json | action: document | note: portable CLI and bootstrap families remain intentionally independent because extraction would couple unrelated payload, exit, timeout, and installation boundaries
 
 ## Surface-Lock Inventory
 
@@ -114,8 +128,8 @@ parent-delegated
 ## Reviewed Input Identity
 
 - Packet path: charness-artifacts/critique/v2-1-6-release-candidate-packet.json
-- Packet SHA256: 426461eb962ef0211ce99dfcef6287baac8df7f0581d80ce7e3078412631677a
-- Identity SHA256: 2bbd55d7701b4a2bb686c5177cae71936a1c6947bb2ac6e82bcdf8610877d7d5
+- Packet SHA256: e2b568173c38b3c0aff5a2e57c6c2757973f7ea030f9583bda4df79d3d8f74fd
+- Identity SHA256: 2cbf148b01a7960d5d4f8d24baed0d8fcad485841b4b95ce18a0870b5fabe2b6
 
 ## Boundary Ownership
 
@@ -137,7 +151,7 @@ parent-delegated
 
 ## Next Move
 
-Commit the packet and critique, refresh the locked closeout on the clean final
-candidate, then use the release helper with the reviewed notes file. Treat the
-public observer, remote ref readback, and installed-machine readback as the
-irreversible-boundary evidence.
+Commit the refreshed packet and critique, run the duplicate ratchet and locked
+closeout on the clean final candidate, then retry the release helper with the
+reviewed notes file. Treat the public observer, remote ref readback, and
+installed-machine readback as the irreversible-boundary evidence.
