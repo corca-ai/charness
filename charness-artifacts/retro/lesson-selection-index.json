@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-19",
-  "source_artifact_count": 369,
-  "candidate_count": 1530,
+  "source_artifact_count": 371,
+  "candidate_count": 1534,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1135,6 +1135,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ae30d9d28d05",
+      "kind": "current_focus",
+      "lesson": "The focused-coverage speedup suggested a transferable boundary: selection wrappers should declare what to run, while the canonical runner owns how to execute it.",
+      "normalized_key": "the focused coverage speedup suggested a transferable boundary selection wrappers should declare what to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:5514c75035b6",
       "kind": "current_focus",
       "lesson": "The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture.",
@@ -1259,26 +1279,6 @@
       "kind": "next_improvement",
       "lesson": "before optimizing or compacting a cross-process boundary, write the canonical identity/serialization/state envelope into the implementation contract.",
       "normalized_key": "before optimizing or compacting a cross process boundary write the canonical identity serialization state",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-          "date": "2026-07-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a4af6b7f688a",
-      "kind": "next_improvement",
-      "lesson": "keep shared boundary owners small and feed all producer/consumer paths through them; add exotic-format fixtures (alternate object format, legal delimiter characters, assertion failure) at introduction time.",
-      "normalized_key": "keep shared boundary owners small and feed all producer consumer paths through them add",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
       "latest_source_date": "2026-07-19",
@@ -2417,6 +2417,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ae30d9d28d05",
+      "kind": "current_focus",
+      "lesson": "The focused-coverage speedup suggested a transferable boundary: selection wrappers should declare what to run, while the canonical runner owns how to execute it.",
+      "normalized_key": "the focused coverage speedup suggested a transferable boundary selection wrappers should declare what to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:5514c75035b6",
       "kind": "current_focus",
       "lesson": "The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture.",
@@ -2577,6 +2597,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4bcfa9fde1be",
+      "kind": "next_improvement",
+      "lesson": "keep target replacement and execution controls separate so callers cannot accidentally broaden the suite while reusing the runner.",
+      "normalized_key": "keep target replacement and execution controls separate so callers cannot accidentally broaden the suite",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:223077415a37",
       "kind": "next_improvement",
       "lesson": "make the quality artifact authoring/preflight packet run inventory consumption validation before broad pytest, reusing the existing validator rather than adding a new floor.",
@@ -2677,6 +2717,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f57c66ea9db0",
+      "kind": "next_improvement",
+      "lesson": "retain “selection owns what; the canonical executor owns how; migration requires break-even evidence” as the reusable performance rule.",
+      "normalized_key": "retain selection owns what the canonical executor owns how migration requires break even evidence",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c4cc427116c0",
       "kind": "next_improvement",
       "lesson": "retain “smaller selected set is not faster unless it preserves the canonical runner environment” in recent lessons and handoff.",
@@ -2691,6 +2751,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:df7cb721d9ec",
+      "kind": "next_improvement",
+      "lesson": "scan for execution-policy bypasses, then benchmark identical work before moving a caller.",
+      "normalized_key": "scan for execution policy bypasses then benchmark identical work before moving a caller",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }

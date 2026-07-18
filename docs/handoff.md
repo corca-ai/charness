@@ -32,9 +32,9 @@
   their callers. The live sweep reports two registered entrypoints and zero review
   candidates; wrong-path, wrong-loader, wrong-receiver, and disconnected-loop
   fixtures remain fail-closed; see the [quality review](../charness-artifacts/quality/latest.md).
-- Focused mutation coverage now reuses standing xdist through replacement targets:
-  the five-file producer took 7.6s versus 213s serial, while 4,944 broad tests
-  passed in 73.9s. Combined surfaces also execute duplicate-ratchet teeth once.
+- Focused mutation coverage now reuses standing xdist: five-file proof fell from
+  213s to 7.6s, and install/update's same 34 cases from 91.56s to 29.29s. Wrappers
+  select targets; the runner owns execution. Broad passed 4,944 tests in 73.9s.
 
 ## Next Session
 

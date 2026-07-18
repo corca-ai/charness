@@ -21,6 +21,7 @@ freshness verdict. Surface aggregation deduplicates exact command strings.
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
 - runtime hot spots: broad pytest 73.6s latest / 54.1s median against a 140s budget; read-only quality 93.9s latest / 59.5s median against a 90s budget.
 - coverage gate: the prior focused producer took 213s; the same 228-test set now passed under coverage in 34.8s, with roughly 20s more for JSON export.
+- install/update self-validation: the same 34 cases took 91.56s through raw serial pytest and 29.29s through the canonical xdist runner.
 - evaluator depth: deterministic gates only; no prompt or behavior-evaluator surface changed.
 
 ## Healthy
@@ -29,12 +30,16 @@ freshness verdict. Surface aggregation deduplicates exact command strings.
   changed-line consumer owners remain separate and reusable.
 - Root and generated plugin scripts are synchronized; final delegated review
   found no proof-loss or operability blocker.
+- The install/update wrapper now owns only its three-target selection; runner
+  parallelism, release-marker inclusion, temp isolation, and fallback stay centralized.
 
 ## Weak
 
 - Before this slice the focused suggester emitted raw serial pytest, bypassing
   the repo's canonical parallel runner. This made a smaller test set materially
   slower than the broad standing suite.
+- The install/update self-validation wrapper had the same bypass and paid
+  91.56s for 34 cases that the canonical runner completed in 29.29s.
 - The quality-baseline surface rendered the same duplicate-ratchet verdict as
   JSON while Python and skill surfaces rendered summary, defeating literal
   command deduplication.
@@ -77,12 +82,14 @@ export regression.
 - `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --detail`
 - `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root . --detail`
 - focused coverage experiment over the prior 13-file packet with 16 xdist workers: 228 passed in 34.8s; coverage JSON contained 940 files.
+- `/usr/bin/time ./scripts/self-validate-install-update.sh`: 34 passed in 91.56s before runner reuse and 29.29s with identical targets after reuse.
 - command: python3 -m pytest -q tests/quality_gates/test_standing_pytest_runner.py tests/quality_gates/test_suggest_mutation_coverage_command.py tests/quality_gates/test_mutation_coverage_producer.py tests/quality_gates/test_surface_obligations.py
 - `python3 scripts/check_changed_surfaces.py --repo-root . --paths ... --json` confirmed one duplicate-ratchet command for the combined surfaces. <!-- reproduction-source -->
 
 ## Recommended Next Quality Moves
 
 - active completed — capability_needed=same focused changed-line proof faster; current_centers=standing runner and mutation producer; next_center=standing runner target selection; transformation=gate reuse through target replacement plus exact duplicate-command normalization; proof_boundary=real child-process coverage export and final changed-line consumer; enforcement_posture=existing-gate-reuse.
+- active completed — capability_needed=faster install/update self-validation; current_centers=three-target wrapper and standing runner; next_center=standing runner execution; transformation=replace raw serial pytest with canonical target replacement; proof_boundary=identical 34-case collection plus real parallel execution; enforcement_posture=existing-gate-reuse.
 - passive interpreter compatibility until a non-`python3` caller is supported — capability_needed=broader caller compatibility; current_centers=standing-runner recognizer; next_center=instrumentation normalization; transformation=defer outside speed-only scope; proof_boundary=real alternate-interpreter command; enforcement_posture=no-gate because generated commands are fixed to `python3`.
 
 ## History

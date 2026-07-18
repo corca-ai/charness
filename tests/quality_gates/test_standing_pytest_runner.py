@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import runpy
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -325,3 +326,45 @@ def test_standing_pytest_script_entrypoint_print_targets(monkeypatch, capsys) ->
         raise AssertionError("expected SystemExit from script entrypoint")
 
     assert "tests/quality_gates" in capsys.readouterr().out
+
+
+def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts = repo / "scripts"
+    scripts.mkdir(parents=True)
+    source = Path(__file__).resolve().parents[2] / "scripts" / "self-validate-install-update.sh"
+    script = scripts / source.name
+    shutil.copy2(source, script)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    capture = tmp_path / "args.txt"
+    fake_python = bin_dir / "python3"
+    fake_python.write_text(
+        "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"$CAPTURE_ARGS\"\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+
+    env = {
+        "PATH": f"{bin_dir}:{Path('/usr/bin')}:{Path('/bin')}",
+        "CAPTURE_ARGS": str(capture),
+    }
+    result = subprocess.run(
+        ["bash", str(script)], cwd=repo, env=env, check=False, capture_output=True, text=True
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert capture.read_text(encoding="utf-8").splitlines() == [
+        "scripts/run_standing_pytest.py",
+        "--repo-root",
+        str(repo),
+        "--mode",
+        "read-only",
+        "--include-release-only",
+        "--pytest-target",
+        "tests/charness_cli/test_managed_install.py",
+        "--pytest-target",
+        "tests/charness_cli/test_codex_cache_refresh.py",
+        "--pytest-target",
+        "tests/charness_cli/test_update_propagation.py",
+    ]
