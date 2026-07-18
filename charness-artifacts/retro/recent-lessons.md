@@ -2,19 +2,19 @@
 
 ## Current Focus
 
+- Release publish triggered a configured automatic session retro for `v2.1.0`. (source: `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`)
 - The autonomous quality slice converted nine agent-facing inventory first reads from JSON to compact YAML, centralized output selection, synchronized the plugin mirror, and added live source/plugin contract proof. (source: `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`)
-- The root `charness` CLI had already migrated its public structured output to YAML, but public skill commands and the governing Cautilus preflight still taught `--json`. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`; sources: 98)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`; sources: 99)
 - Dup-ratchet attribution archaeology: a hard block on fingerprint `895d96962b294ed4` cost several rounds of reproducing the gate's own scan because the gate output names no member paths; the family turned out to be a collateral clustering rotation among two untouched files. Routed to #441. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 - One gate cycle lost persisting the host-log probe as `.md` into the validated retro directory (the retro-artifact validator correctly rejected it); the repo convention for probe artifacts is `.json`, which prior goal artifacts already demonstrate. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 - Reviewer-wait idle time: bounded-reviewer completion notifications never arrived from the host, and `run_in_background: false` Agent spawns still ran asynchronously, so the parent polled subagent transcripts with fixed sleeps (~10 idle minutes across four reviews). Host-runtime behavior, not repo fixable; lesson persisted here. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`; sources: 98)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`; sources: 99)
 - before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - before an irreversible cumulative operation, compute and prove the exact cumulative range that the boundary will consume; do not assume individually closed slices compose automatically. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - begin output-format migrations with a live consumer-language scan spanning governing instructions, skills, references, help, and exports. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
@@ -128,4 +128,5 @@
 - `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-session-retro.md`
+- `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`
