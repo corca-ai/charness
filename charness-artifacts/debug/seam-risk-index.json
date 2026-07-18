@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 94,
-  "indexed_artifact_count": 82,
+  "source_artifact_count": 95,
+  "indexed_artifact_count": 83,
   "risk_class_counts": {
     "contract-freeze-risk": 27,
     "external-seam": 4,
     "host-disproves-local": 2,
-    "none": 26,
+    "none": 27,
     "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 71,
+    "monitor": 72,
     "none": 8
   },
   "entries": [
@@ -1135,6 +1135,20 @@
       "seam": "packet identity producer -> bounded reviewer -> artifact verdict",
       "generalization_pressure": "monitor",
       "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-07-19-critique-scaffold-binding-opt-in.md",
+      "is_current_pointer": false,
+      "interrupt_id": "critique-scaffold-binding-opt-in",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "optional scaffold state -> reviewed-input identity parser",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false

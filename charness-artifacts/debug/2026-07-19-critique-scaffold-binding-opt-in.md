@@ -61,6 +61,24 @@ evidence” at the final consumer.
   semantics | existing artifact-surface roundtrip now covers the repaired
   producer/consumer seam and failed before the fix
 
+## Seam Risk
+
+- Interrupt ID: critique-scaffold-binding-opt-in
+- Risk Class: none
+- Seam: optional scaffold state -> reviewed-input identity parser
+- Disproving Observation: a freshly generated unbound scaffold exposes any
+  reserved reviewed-input field to the parser
+- What Local Reasoning Cannot Prove: every future optional evidence section
+  will avoid machine-owned placeholder fields
+- Generalization Pressure: monitor
+
+## Interrupt Decision
+
+- Resolution: resolved
+- Critique Required: yes
+- Next Step: impl
+- Handoff Artifact: none
+
 ## Prevention
 
 Keep optional structured fields structurally absent until populated. Put author
