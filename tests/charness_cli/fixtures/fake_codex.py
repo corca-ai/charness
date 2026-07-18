@@ -95,14 +95,42 @@ if args[:3] == ["app-server", "--listen", "stdio://"]:
                 json.dumps(
                     {
                         "id": req_id,
-                        "result": {
-                            "serverInfo": {"name": "fake-codex-app-server", "version": "0.0.0"},
-                            "capabilities": {},
-                        },
+                        "result": (
+                            {
+                                "userAgent": "fake-codex/0.144.5",
+                                "codexHome": str(codex_home),
+                                "platformFamily": "unix",
+                                "platformOs": "linux",
+                            }
+                            if APP_SERVER_MODE == "real-init-notifications"
+                            else {
+                                "serverInfo": {"name": "fake-codex-app-server", "version": "0.0.0"},
+                                "capabilities": {},
+                            }
+                        ),
                     }
                 ),
                 flush=True,
             )
+            if APP_SERVER_MODE == "real-init-notifications":
+                print(
+                    json.dumps(
+                        {
+                            "method": "configWarning",
+                            "params": {"summary": "sandbox fallback active"},
+                        }
+                    ),
+                    flush=True,
+                )
+                print(
+                    json.dumps(
+                        {
+                            "method": "remoteControl/status/changed",
+                            "params": {"status": "disabled", "installationId": "fake-installation"},
+                        }
+                    ),
+                    flush=True,
+                )
             continue
         if method == "notifications/initialized":
             continue

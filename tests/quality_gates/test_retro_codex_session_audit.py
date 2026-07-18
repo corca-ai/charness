@@ -4,6 +4,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+from scripts import codex_session_audit_lib as audit_lib
+
 from .support import run_script
 
 AUDIT_SCRIPT = "skills/public/retro/scripts/audit_codex_session.py"
@@ -96,6 +98,25 @@ def test_codex_audit_sqlite_filters_threads_and_reports_snapshots(tmp_path: Path
     assert "session_total" not in result.stdout
     assert "SECRET_TOKEN" not in result.stdout
     assert payload["largest_requested_max_output_tokens"][0]["requested_max_output_tokens"] == 20000
+
+
+def test_sqlite_thread_inventory_aggregates_in_sql_without_materializing_bodies(
+    tmp_path: Path, monkeypatch
+) -> None:
+    home = tmp_path / "home"
+    path = write_sqlite(home)
+    monkeypatch.setattr(
+        audit_lib,
+        "sqlite_rows",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("body materializer called")),
+    )
+
+    stats = audit_lib.sqlite_thread_stats(path, tmp_path, None)
+
+    assert set(stats) == {"thread-a", "thread-b"}
+    assert stats["thread-a"].line_count == 3
+    assert stats["thread-a"].tool_call_count == 1
+    assert stats["thread-b"].line_count == 1
 
 
 def test_codex_audit_lists_threads_and_marks_missing_thread_ids(tmp_path: Path) -> None:

@@ -1,6 +1,6 @@
 # Spec: Evidence-Bound Gajae-Code Pattern Adoption
 
-Status: planned; implementation has not started.
+Status: active; Slices 1–4 are implemented and governed probes are dispositioned.
 
 ## Problem
 
@@ -141,8 +141,89 @@ prototype and retain no index.
 
 ## Probe Outcomes
 
-None yet. Record command, corpus/source identity, result, and promotion decision
-here before moving any probe into `Current Slice And Dependency Order`.
+### Quality planning and critical path (Questions 1–3)
+
+- Commands: `./scripts/run-quality.sh --help`,
+  `python3 scripts/run_slice_closeout.py --plan-only --paths
+  unknown-cross-cutting.file --json`, and
+  `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root .
+  --detail`.
+- Corpus/source: `.agents/surfaces.json` at the current Slice-4 `HEAD` and
+  `.charness/quality/runtime-signals.json`, <!-- reproduction-source --> profile
+  `local-linux-x86_64-36cpu`, observed 2026-07-19. The retained windows contain
+  20 `run-quality-full-release`, 20 `run-quality-read-only`, and 20 `pytest`
+  samples; lifetime passing counts are 28, 48, and 1,320 respectively.
+- Result: `run-quality.sh` exposes no deterministic plan/explain command.
+  `run_slice_closeout.py --plan-only` is deterministic, but it describes slice
+  ownership rather than the selected CI execution graph. An unknown path is
+  `blocked` with no matched surface or verification command; it does not
+  conservatively fall back to a full owner suite. In passing retained samples,
+  median `pytest` is 43.5 seconds and median full-release quality is 82.4
+  seconds. The next largest stable local gate medians are approximately 5.7
+  seconds for secret scanning, 5.5 seconds for Markdown, and 4.3 seconds for
+  inventory-consumption declaration validation. Test/gate execution, not plan
+  construction, is the demonstrated critical path.
+- Limitations: retained samples are local runtime signals, not an identified CI
+  runner corpus; failed samples are preserved but excluded from the passing
+  medians. The full non-release window currently contains only failed samples.
+- Decision: **retain current CI scope**. Do not add affected-CI narrowing or
+  claim a canonical CI explainer until the runner has one execution-graph owner,
+  unknown/cross-cutting paths have a conservative fallback, and a named CI
+  corpus meets the same ten-sample threshold.
+
+### Long-goal state (Question 4)
+
+- Command/corpus: repository search over `charness-artifacts/goals/*.md` plus
+  the linked session retros. The concrete 2026-07-13 stale-claim incident was
+  quality-memory reconciliation after publication; the 2026-07-12
+  duplicate-writer incident belonged to usage-feedback persistence, not the
+  goal status owner.
+- Result: long goals carry substantial reconstruction prose, but the corpus does
+  not show a repeated conflicting goal-status writer, lost goal transition, or
+  measured reconstruction cost. The one stale-claim incident was caused by
+  cross-artifact sync order and already has a narrower release-closeout remedy.
+- Decision: **retain the single goal artifact owner**. Do not add JSONL goal
+  receipts, leases, or dependency fields for a failure owned by release sync.
+  Reopen on a goal-state-specific stale transition, concurrent status writer,
+  or measured repeated cold-start reconstruction cost.
+
+### Real Codex app-server lifecycle (Question 5)
+
+- Command/source: `/home/hwidong/.n/bin/codex app-server --listen stdio://`
+  from `codex-cli 0.144.5`, with isolated
+  `CODEX_HOME=/tmp/charness-appserver-probe-20260719`; only `initialize` was
+  sent, so the probe did not install a plugin or mutate the operator cache.
+- Result: the real initialize result uses `userAgent`, `codexHome`,
+  `platformFamily`, and `platformOs`, then emits `configWarning` and
+  `remoteControl/status/changed` notifications. The fake success result had
+  only `serverInfo` and `capabilities`. The production waiter does not inspect
+  initialize result fields and already ignores well-formed notifications under
+  the same absolute request deadline, so no runtime contract defect was found.
+- Decision: **promote fixture fidelity only**. The fake server now has a real
+  initialize-shape/lifecycle mode, and an integration test proves those queued
+  notifications cannot prevent the matching `plugin/install` response. Do not
+  make a real-host probe a release requirement.
+
+### Local session-audit cost
+
+- Commands/source: three runs of
+  `skills/public/retro/scripts/audit_codex_session.py --source sqlite --top 3`
+  against the maintainer's 1.7 GiB `~/.codex/logs_2.sqlite` containing 322,383
+  non-null log rows. Before the change, one full audit took 4.84 seconds with
+  661,492 KiB maximum RSS; component timing showed only 0.33 seconds in selected
+  line fetch/report construction and 1.96 seconds in Python-side full-row
+  inventory construction.
+- Result: the source database already has thread/time indexes. Moving bounded
+  thread inventory aggregation into SQLite removes the 322k-row Python
+  materialization without creating another state owner. Three post-change runs
+  took 1.90–1.96 seconds with 25,908–26,008 KiB maximum RSS, while focused
+  audit/app-server tests remained green.
+- Decision: **promote SQL aggregation; reject a sidecar index**. The measured
+  improvement is about 60% wall time and 96% peak RSS. A sidecar would add
+  source identity, truncation, parser-version, and raw-retention invalidation
+  responsibilities even though the existing database can answer the inventory
+  directly. Reopen indexing only if the remaining selected-line parse becomes a
+  measured repeated bottleneck.
 
 ## Fixed Decisions
 

@@ -1,0 +1,96 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-18T17:20:19Z",
+  "prepared_for": "Gajae Slice 5 governed probe dispositions final state",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md\n- charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md\n- plugins/charness/scripts/codex_session_audit_lib.py\n- scripts/codex_session_audit_lib.py\n- tests/charness_cli/fixtures/fake_codex.py\n- tests/charness_cli/test_codex_cache_refresh.py\n- tests/quality_gates/test_retro_codex_session_audit.py\n- charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md\n- charness-artifacts/critique/gajae-slice5-governed-probes-packet.json\n- charness-artifacts/critique/gajae-slice5-governed-probes-packet.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/codex_session_audit_lib.py\n  derived matches: plugins/charness/scripts/codex_session_audit_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md, charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md, charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md, charness-artifacts/critique/gajae-slice5-governed-probes-packet.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md, charness-artifacts/critique/gajae-slice5-governed-probes-packet.json, charness-artifacts/critique/gajae-slice5-governed-probes-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/codex_session_audit_lib.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/codex_session_audit_lib.py, tests/charness_cli/fixtures/fake_codex.py, tests/charness_cli/test_codex_cache_refresh.py, tests/quality_gates/test_retro_codex_session_audit.py\n  derived matches: plugins/charness/scripts/codex_session_audit_lib.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/codex_session_audit_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "4d77bd71de69278510a088a0c3bc1cbccfeebb7e",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md",
+      "charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md",
+      "plugins/charness/scripts/codex_session_audit_lib.py",
+      "scripts/codex_session_audit_lib.py",
+      "tests/charness_cli/fixtures/fake_codex.py",
+      "tests/charness_cli/test_codex_cache_refresh.py",
+      "tests/quality_gates/test_retro_codex_session_audit.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md",
+        "content_sha256": "d0eff963d655a3a34c3ca1b647d2c8b8076379c4df77f8241928bfceb896cbad"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md",
+        "content_sha256": "852515e263928c6bdeeeeb49a574f19de20f2f5225d948a3e9577f8f8b566cbe"
+      },
+      {
+        "path": "plugins/charness/scripts/codex_session_audit_lib.py",
+        "content_sha256": "6a6b9b0b6333deb04a8670b2a8f691dd760c4fd1096d2a966be7cae18fc91b4e"
+      },
+      {
+        "path": "scripts/codex_session_audit_lib.py",
+        "content_sha256": "6a6b9b0b6333deb04a8670b2a8f691dd760c4fd1096d2a966be7cae18fc91b4e"
+      },
+      {
+        "path": "tests/charness_cli/fixtures/fake_codex.py",
+        "content_sha256": "f86d625c9b99bd6102e4b840f025891cc838d11f12d2372bf307ea30762ec68a"
+      },
+      {
+        "path": "tests/charness_cli/test_codex_cache_refresh.py",
+        "content_sha256": "dfa8ec6462e63ecc28233a864e42e8c325f8eb94a57104c055c85aabafb72ec1"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_codex_session_audit.py",
+        "content_sha256": "95c2a7c305886a092ea9aebc974e806f27e645429e2288f88a7c4f0a828cea65"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "ea927e6433f9a72322bc161dfcb056cb8859f548eea0dd6273e8f64f00757d2b",
+    "declared_untracked": [],
+    "identity_sha256": "16d3ca510814317ceebc06bb2fa833837da61f09afd24da759bcf772d78a286d"
+  }
+}

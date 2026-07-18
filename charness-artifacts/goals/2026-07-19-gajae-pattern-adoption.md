@@ -11,12 +11,12 @@ resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — disposition governed probes.
-- Current slice intent: answer each probe with bounded existing evidence and an
-  explicit promote/retain decision without silently expanding runtime or CI.
-- Next action: run deterministic explain/critical-path/goal-state/app-server
-  availability checks, record corpus and limitations in the canonical spec, and
-  keep unearned production changes deferred.
+- Current slice: Slice 6 — final bundle proof and publication.
+- Current slice intent: lock the cumulative diff, run mutation-aware broad
+  verification, then publish through the release helper with distinct-channel
+  and installed-state evidence.
+- Next action: commit the proven probe slice, record the final verification lock,
+  complete goal/retro/handoff closeout, and enter the authorized release phase.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -231,6 +231,21 @@ applies.
   the original test module reached its hard length limit. 104 focused tests and
   pre-lock closeout passed. Critique:
   `charness-artifacts/critique/2026-07-19-gajae-slice4-efficiency-comparability.md`.
+- Slice 5 completed — quality runtime history kept
+  affected-CI unchanged because no canonical CI explainer or unknown-path full
+  fallback exists and test execution dominates the retained sample windows.
+  Goal receipts/leases remain deferred because the discovered stale claim was a
+  release-sync failure, not a conflicting goal-state owner. A real Codex 0.144.5
+  initialize probe found different result fields plus post-response warning and
+  remote-control notifications; the fake-server integration now represents that
+  lifecycle without adding a live release dependency. The optional session
+  index probe found a 1.7 GiB/322k-row audit cost, but the source SQLite already
+  owns the needed indexes: SQL-side aggregation reduced measured wall time from
+  4.84 seconds to 1.90–1.96 seconds and peak RSS from 661,492 KiB to about 26,000
+  KiB, so no sidecar state or invalidation contract was added. Twenty-eight
+  focused tests, ruff, the pre-lock structural closeout, and a clean-fingerprint
+  bounded fresh-eye SHIP review passed. Critique:
+  `charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md`.
 
 ## Context Sources
 

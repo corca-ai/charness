@@ -110,20 +110,50 @@ def build_stats(source_kind: str, source_path: Path, repo_root: Path, since: dat
 def sqlite_thread_stats(path: Path, repo_root: Path, since: datetime | None) -> dict[str, ThreadStats]:
     if not path.exists():
         return {}
-    rows = sqlite_rows(path, since=since, thread_filter=None, bodies=False)
     repo_text = repo_root.resolve().as_posix()
     stats: dict[str, ThreadStats] = {}
-    for row in rows:
-        thread_id = row["thread_id"]
-        if not thread_id:
-            continue
-        item = stats.setdefault(thread_id, ThreadStats(thread_id=thread_id))
-        item.line_count += 1
-        item.tool_call_count += 1 if "ToolCall:" in row["body"] else 0
-        item.repo_hits += 1 if repo_text in row["body"] else 0
-        item.first_ts = item.first_ts or row["ts"]
-        item.last_ts = row["ts"] or item.last_ts
+    connection = sqlite3.connect(path)
+    try:
+        where = (
+            "feedback_log_body is not null and typeof(feedback_log_body) = 'text' "
+            "and thread_id is not null and thread_id != '' "
+            "and typeof(ts) in ('integer', 'real') and typeof(ts_nanos) in ('integer', 'real')"
+        )
+        params: list[Any] = [repo_text]
+        if since is not None:
+            where += " and (ts + ts_nanos / 1000000000.0) >= ?"
+            params.append(since.timestamp())
+        rows = list(
+            connection.execute(
+                "select thread_id, count(*), "
+                "sum(instr(substr(feedback_log_body, 1, 1000), 'ToolCall:') > 0), "
+                "sum(instr(substr(feedback_log_body, 1, 1000), ?) > 0), "
+                "min(ts + ts_nanos / 1000000000.0), max(ts + ts_nanos / 1000000000.0) "
+                f"from logs where {where} group by thread_id",
+                tuple(params),
+            )
+        )
+    except sqlite3.Error:
+        return {}
+    finally:
+        connection.close()
+    for thread_id, line_count, tool_calls, repo_hits, first_ts, last_ts in rows:
+        stats[str(thread_id)] = ThreadStats(
+            thread_id=str(thread_id),
+            first_ts=sqlite_epoch_timestamp(first_ts),
+            last_ts=sqlite_epoch_timestamp(last_ts),
+            line_count=int(line_count),
+            tool_call_count=int(tool_calls or 0),
+            repo_hits=int(repo_hits or 0),
+        )
     return stats
+
+
+def sqlite_epoch_timestamp(value: Any) -> str | None:
+    try:
+        return datetime.fromtimestamp(float(value), tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    except (TypeError, ValueError, OverflowError):
+        return None
 
 
 def line_thread_stats(lines: list[LogLine], repo_root: Path) -> dict[str, ThreadStats]:
