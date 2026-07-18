@@ -2,69 +2,54 @@
 
 ## Workflow Trigger
 
-- With no explicit task, run `charness:handoff` chunked routing over the
-  backlog below (the operator-directed affordance convergence closed on
-  2026-07-17). Restart hosts first only when testing installed-plugin
-  behavior; an explicit user task keeps its own authority.
+- With no explicit task, run `charness:handoff` chunked routing over the live
+  backlog. An explicit user task keeps its own authority. Restart the host first
+  only when the next task must observe the newly installed v2.1.0 plugin.
 
 ## Current State
 
-- v2.0.0 is public: affordance convergence `7b20b0ce`, release `586c19e9`,
-  tag/https verified. The release battery refused the first publish and the
-  root fixes landed in `630bcfce`; see the
+- The next operator can start new work without reopening the v2.1.0 release or
+  reconstructing the YAML migration. Use the owning artifacts below for proof
+  details and route the next task through its matching skill.
+- v2.1.0 is public, independently read back over HTTPS, and installed on this
+  maintainer machine. The release helper passed release quality, fresh-checkout,
+  real-host, public-readback, and post-publish update steps; see the
   [release state](../charness-artifacts/release/latest.md).
-- v1.3.0→v2.0.0 migration note: the first `charness update` from an old
-  binary crashes once (`KeyError: 'next_steps'`) after refreshing the
-  checkout+binary; the re-run completes and reports `2.0.0`. This is recorded
-  in the GitHub release notes and release state.
-- The vocabulary and kept exceptions live in the
-  [affordance spec](../charness-artifacts/spec/cli-output-affordance-contract.md).
-- A local verified correction aligns agent-facing structured-output calls
-  with the YAML vocabulary: planners use YAML default/`--detail`, and nine
-  dispatch-marked quality inventories add compact `--summary`/full `--detail`.
-  One helper owns the modes and live source/plugin tests own parity; unmarked
-  inventories remain legacy. This work is not released or installed.
-- The stale historical v0.56.7 round-5 goal is now `Status: complete` on
-  immutable evidence, without current remote/install/v2 claims.
+- Every quality `inventory_*.py` producer and canonical inventory-dispatch
+  command now offers compact `--summary` YAML and full `--detail` YAML. Hidden
+  JSON remains only for programmatic compatibility; see the
+  [quality review](../charness-artifacts/quality/latest.md).
+- The first publish attempt safely stopped before commit/tag/push on cumulative
+  changed-line coverage debt. Behavior-focused in-process tests repaired it,
+  and the exact v2.0.0-to-release range passed before publication.
+- The ordered-list evidence-continuation bug found during that repair is fixed
+  in root and packaged code with positive and negative regression tests.
 
 ## Next Session
 
-1. Decide the next-release scope for the local post-v2.0.0 changes, including
-   the update/init self-heal and YAML planner/inventory-contract corrections;
-   do not infer publish authority from this handoff.
-2. Restart now only to test the already-installed v2.0.0 surface. Testing the
-   local correction requires a later authorized release/update first and is not
-   proven by that restart.
-3. D18 disposition (passed over 2026-07-17, still pending with the same
-   reopen trigger) — see the 2026-07-16
-   [goal artifact](../charness-artifacts/goals/2026-07-16-scout-driven-improvement.md)
-   `## Operator Decision Queue`.
-4. For later migrations, lock the declared consumer set and use the smallest
-   truthful fixture; here that cut 18-surface proof from 57.29s to 10.06s.
+1. If no explicit task is present, run the workflow trigger above and choose the
+   smallest coherent backlog slice.
+2. For future cumulative or irreversible operations, prove the exact range the
+   boundary consumes; do not assume individually green slices compose. The
+   durable checklist is in [recent lessons](../charness-artifacts/retro/recent-lessons.md).
+3. Keep D18 ignored unless the operator explicitly reopens it.
 
 ## Discuss
 
-- DONE 2026-07-17 (same session): the update/init self-heal shipped
-  (`maybe_reexec_refreshed_cli`, pid-scoped guard, `cli_reexec` signal); see
-  the [slice critique](../charness-artifacts/critique/2026-07-17-cli-reexec-self-heal-slice.md).
-  Unreleased at refresh time — fold into the next release. Deferred there:
-  the older end-of-init `cli_path` re-exec (F6) and the latent
-  stale-standalone-CLI variant in non-refreshing consumers (F7).
-- Optional under the 2026-07-17 per-host split: a live Codex-host session can
-  add provider-applied `gpt-5.6-terra`/`medium` evidence; not a blocker.
+- Optional: a future live Codex-host session may record provider-applied
+  `gpt-5.6-terra`/`medium` evidence. This is not a release or quality blocker.
 
 ## References
 
-- [affordance spec](../charness-artifacts/spec/cli-output-affordance-contract.md)
-  · [slice critique](../charness-artifacts/critique/2026-07-17-affordance-convergence-slice.md)
-  · [release state](../charness-artifacts/release/latest.md) ·
-  [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [release state](../charness-artifacts/release/latest.md)
+- [quality review](../charness-artifacts/quality/latest.md)
+- [release critique](../charness-artifacts/critique/2026-07-18-complete-inventory-yaml-contract-and-v2-1-0-release.md)
+- [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
-- Refresh kept (`AGENTS.md`): the published-v2.0.0 restart-to-load state
-  (after update), D18 decision, per-host reviewer contract, and local YAML work.
-- Refresh non-claims ([release state](../charness-artifacts/release/latest.md)):
-  the migration-crash observation is one maintainer machine; no consumer-repo
-  upgrade was exercised at refresh time; the convergence's payload renames
-  are proven by the test suite and one live doctor/update run, not by
-  external-consumer evidence; this session did not push, publish, update an
-  installed plugin, or run Cautilus evaluation.
+- Refresh kept ([release state](../charness-artifacts/release/latest.md)):
+  public+installed v2.1.0, complete YAML-first inventory contract, the
+  cumulative-range proof rule, host-restart condition, and D18 disposition.
+- Refresh non-claims ([quality review](../charness-artifacts/quality/latest.md)):
+  detailed test/runtime history remains in the owning quality/release artifacts;
+  no external consumer-repo upgrade was exercised, and no Cautilus evaluation
+  was run.
