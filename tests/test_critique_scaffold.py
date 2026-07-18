@@ -47,7 +47,8 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     assert "Host exposure state: pending-parent-spawn" in template
     assert "## Fresh-Eye Satisfaction" in template
     assert "## Reviewed Input Identity" in template
-    assert "Packet SHA256: TODO" in template
+    assert "exact Packet SHA256" in template
+    assert "- Packet path:" not in template
     # The fresh-eye status must not carry the literal "blocked" token, which
     # would otherwise demand a host/tool signal citation.
     assert "blocked" not in template.lower()

@@ -148,10 +148,9 @@ def render_template(*, title: str, date_text: str) -> str:
         [
             "## Reviewed Input Identity",
             "",
-            "<!-- Copy these values from prepare_packet.py output after the reviewed packet is final. -->",
-            "- Packet path: TODO repo-relative packet JSON path.",
-            "- Packet SHA256: TODO exact packet byte digest.",
-            "- Identity SHA256: TODO reviewed input identity digest.",
+            "<!-- Packet-bound critiques replace this comment with three bullets copied from "
+            "prepare_packet.py after the reviewed packet is final: Packet path, exact Packet "
+            "SHA256, and Identity SHA256. Leave this section comment-only when no packet was consumed. -->",
             "",
         ]
     )
