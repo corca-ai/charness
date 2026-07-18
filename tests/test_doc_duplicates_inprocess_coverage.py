@@ -51,7 +51,7 @@ def test_nose_version_timeout(monkeypatch) -> None:
     def boom(*_a, **_k):
         raise subprocess.TimeoutExpired("nose", 30)
 
-    monkeypatch.setattr(dd.subprocess, "run", boom)
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", boom)
     assert dd.nose_version("nose") is None
 
 
@@ -59,12 +59,12 @@ def test_nose_version_oserror(monkeypatch) -> None:
     def boom(*_a, **_k):
         raise OSError("not executable")
 
-    monkeypatch.setattr(dd.subprocess, "run", boom)
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", boom)
     assert dd.nose_version("nose") is None
 
 
 def test_nose_version_ok(monkeypatch) -> None:
-    monkeypatch.setattr(dd.subprocess, "run", lambda *_a, **_k: _completed(stdout="nose 0.13.0"))
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="nose 0.13.0"))
     assert dd.nose_version("nose") == (0, 13, 0)
 
 
@@ -75,21 +75,44 @@ def test_run_query_timeout(monkeypatch, tmp_path: Path) -> None:
     def boom(*_a, **_k):
         raise subprocess.TimeoutExpired("nose", dd.NOSE_TIMEOUT_SECONDS)
 
-    monkeypatch.setattr(dd.subprocess, "run", boom)
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", boom)
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "error"
     assert "timed out" in result["stderr"]
 
 
+def test_run_query_oserror_degrades_not_crashes(monkeypatch, tmp_path: Path) -> None:
+    def boom(*_a, **_k):
+        raise OSError("not executable")
+
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", boom)
+    result = dd.run_query(tmp_path, ["nose"])
+    assert result["status"] == "error"
+    assert "could not be executed" in result["stderr"]
+
+
 def test_run_query_nonzero_exit(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(dd.subprocess, "run", lambda *_a, **_k: _completed(returncode=2, stderr="boom"))
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(returncode=2, stderr="boom"))
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "error"
     assert result["stderr"] == "boom"
 
 
+def test_shared_transport_keeps_nonzero_json_payload(monkeypatch, tmp_path: Path) -> None:
+    payload = {"markdown": []}
+    monkeypatch.setattr(
+        dd.nose_tool.subprocess, "run",
+        lambda *_a, **_k: _completed(stdout=json.dumps(payload), returncode=2, stderr="boom"),
+    )
+    result = dd.nose_tool.run_json_query(tmp_path, ["nose"])
+    assert result == {
+        "status": "error", "exit_code": 2, "stdout": json.dumps(payload),
+        "stderr": "boom", "payload": payload, "error_kind": "nonzero",
+    }
+
+
 def test_run_query_invalid_json(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(dd.subprocess, "run", lambda *_a, **_k: _completed(stdout="not json"))
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="not json"))
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "error"
     assert "invalid JSON" in result["stderr"]
@@ -97,7 +120,7 @@ def test_run_query_invalid_json(monkeypatch, tmp_path: Path) -> None:
 
 def test_run_query_ok(monkeypatch, tmp_path: Path) -> None:
     payload = json.dumps({"schema_version": 1, "markdown": [{"members": [{"path": "a.md", "heading": "H"}]}]})
-    monkeypatch.setattr(dd.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload))
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload))
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "ok"
     assert len(result["families"]) == 1

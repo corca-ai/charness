@@ -513,6 +513,13 @@
   },
   {
    "class": "intentional",
+   "id": "96e51c5bfcefa69d",
+   "note": "stdlib-only sibling-module loader shared across independent standalone skill scripts; each caller must remain directly executable without the skill runtime bootstrap, so a cross-skill helper would defeat the portability boundary",
+   "reviewed_at": "2026-07-18",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
    "id": "98b8f8037638d203",
    "note": "four-line environment-gated debug entrypoint idiom in two standalone SessionStart programs; local ownership prevents an every-session import dependency",
    "reviewed_at": "2026-07-13",
@@ -754,6 +761,13 @@
    "id": "eb44bdf54c5b4998",
    "note": "issue_tool adapter/backend command wrappers share error-report shape intentionally while preserving separate call contracts",
    "reviewed_at": "2026-06-24",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "ed09029cd9749d2f",
+   "note": "five-line direct-execution import bootstrap shared by independent quality inventory modules; the local sys.path seam keeps each shipped command runnable from source and plugin layouts",
+   "reviewed_at": "2026-07-18",
    "surface": "code"
   },
   {

@@ -119,6 +119,20 @@ def _print_usage_episode(payload: dict[str, object]) -> None:
         print(f"- error: {usage_episode['error']}")
 
 
+def _print_mutation_coverage_proof(payload: dict[str, object]) -> None:
+    proof = payload.get("mutation_coverage_changed_line_proof")
+    if not isinstance(proof, dict) or proof.get("status") != "not_checked":
+        return
+    print("Mutation changed-line proof: NOT CHECKED")
+    if proof.get("reason"):
+        print(f"- reason: {proof['reason']}")
+    files = proof.get("uncommitted_eligible_files")
+    if isinstance(files, list):
+        print(f"- excluded eligible files: {', '.join(str(path) for path in files)}")
+    if proof.get("command"):
+        print(f"- consumer command: {proof['command']}")
+
+
 def print_text(payload: dict[str, object]) -> None:
     print(f"Closeout status: {payload['status']}")
     _print_list("Changed paths", payload["changed_paths"])
@@ -139,5 +153,6 @@ def print_text(payload: dict[str, object]) -> None:
 
     _print_headroom(payload)
     print_broad_pytest_policy(payload)
+    _print_mutation_coverage_proof(payload)
     _print_executed_commands(payload)
     _print_usage_episode(payload)

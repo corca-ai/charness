@@ -33,35 +33,25 @@ nose 0.13.3 removed the deprecated `nose scan` subcommand, so the code path runs
 
 from __future__ import annotations
 
-import json
-import re
-import subprocess
 from pathlib import Path
 from typing import Any
 
-# nose 0.14.0 `--root` analyzes the whole scope in ONE process under this budget
-# (vs the pre-0.14.0 per-root loop's N×budget). Cross-root dedup is cheap next to
-# the per-file AST scan, so 180s is ample for realistic scopes; a very large
-# consumer repo that times out degrades to advisory (fail-closed, same as before).
-NOSE_TIMEOUT_SECONDS = 180
-_VERSION_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 
-
-def _load_fingerprint_lib() -> Any:
-    """Load the pure sibling ``nose_fingerprint_lib`` by path (stdlib-only, no bootstrap
-    dependency) so ``collect_families`` can stamp an offset/path-independent content
-    fingerprint without coupling this resolver to the skill runtime loader."""
+def _load_sibling(module_name: str) -> Any:
+    """Load a sibling without coupling this standalone library to skill bootstrap."""
     import importlib.util
 
-    path = Path(__file__).resolve().with_name("nose_fingerprint_lib.py")
-    spec = importlib.util.spec_from_file_location("nose_fingerprint_lib", path)
+    path = Path(__file__).resolve().with_name(f"{module_name}.py")
+    spec = importlib.util.spec_from_file_location(module_name, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-_fingerprint = _load_fingerprint_lib()
+_fingerprint = _load_sibling("nose_fingerprint_lib")
+_tool = _load_sibling("nose_tool_lib")
+NOSE_TIMEOUT_SECONDS = _tool.NOSE_TIMEOUT_SECONDS
 
 
 def tool_version_skew(baseline_version: str | None, live_version: str | None) -> str | None:
@@ -93,14 +83,7 @@ def resolve_tool_version(nose_bin: str) -> str:
     """Best-effort `nose --version` string ("" on failure). The `query` JSON omits
     the version that the removed `scan` report carried, so the advisory stamps it
     from here when a report does not supply one."""
-    try:
-        completed = subprocess.run(
-            [nose_bin, "--version"], check=False, capture_output=True, text=True, timeout=30
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return ""
-    match = _VERSION_RE.search(completed.stdout or "")
-    return match.group(0) if match else ""
+    return _tool.version_text(_tool.probe_nose_version(nose_bin).get("version"))
 
 
 def build_query_command(
@@ -279,25 +262,18 @@ def family_summary(family: dict[str, Any]) -> dict[str, Any]:
 
 
 def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=NOSE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
+    result = _tool.run_json_query(repo_root, command)
+    error_kind = result.get("error_kind")
+    if error_kind == "timeout":
         return {
             "status": "error",
             "exit_code": 124,
-            "stdout": str(exc.stdout or ""),
+            "stdout": result["stdout"],
             "stderr": f"nose timed out after {NOSE_TIMEOUT_SECONDS}s",
             "families": [],
             "tool_version": "",
         }
-    except OSError as exc:
+    if error_kind == "oserror":
         # An explicitly-set-but-invalid NOSE_BIN (resolve_nose_bin returns the
         # override unchecked) must degrade to advisory, not crash — FD8: a broken
         # tool never false-blocks. Symmetric with resolve_tool_version's guard.
@@ -305,30 +281,28 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
             "status": "error",
             "exit_code": 1,
             "stdout": "",
-            "stderr": f"nose could not be executed: {exc}",
+            "stderr": f"nose could not be executed: {result.get('error', '')}",
             "families": [],
             "tool_version": "",
         }
-    try:
-        parsed = json.loads(completed.stdout) if completed.stdout.strip() else []
-    except json.JSONDecodeError as exc:
+    if error_kind == "invalid-json":
         return {
             "status": "error",
-            "exit_code": completed.returncode,
-            "stdout": completed.stdout,
-            "stderr": f"nose emitted invalid JSON: {exc}; stderr: {completed.stderr.strip()}",
+            "exit_code": result["exit_code"],
+            "stdout": result["stdout"],
+            "stderr": f"nose emitted invalid JSON: {result.get('error', '')}; stderr: {result['stderr']}",
             "families": [],
             "tool_version": "",
         }
-    families, tool_version, scope, ranking = extract_report(parsed)
+    families, tool_version, scope, ranking = extract_report(result["payload"])
     status = "findings" if families else "clean"
-    if completed.returncode != 0:
+    if result["status"] == "error":
         status = "error"
     return {
         "status": status,
-        "exit_code": completed.returncode,
+        "exit_code": result["exit_code"],
         "stdout": "",
-        "stderr": completed.stderr.strip(),
+        "stderr": result["stderr"],
         "families": families,
         "tool_version": tool_version,
         "scope": scope,

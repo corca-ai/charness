@@ -4,10 +4,8 @@
 from __future__ import annotations
 
 import argparse
-import os
 import runpy
 import shlex
-import shutil
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -28,6 +26,7 @@ _SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 nose_baseline = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_baseline_lib")
 nose_report = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
 nose_fingerprint = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
+nose_tool = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_tool_lib")
 DEFAULT_BASELINE_REL = nose_baseline.DEFAULT_BASELINE_REL
 
 DEFAULT_PATHS = ("scripts", "skills/public", "skills/support")
@@ -50,10 +49,7 @@ def _portable_path(repo_root: Path, path: Path) -> str:
 
 
 def resolve_nose_bin() -> str | None:
-    override = os.environ.get("NOSE_BIN")
-    if override:
-        return override
-    return shutil.which("nose")
+    return nose_tool.resolve_nose_bin()
 
 
 # Advisory interpretation contract (see skills/shared/references/

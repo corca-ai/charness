@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Four related autonomous-improvement rounds exposed the same structural lesson. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - Release publish triggered a configured automatic session retro for `v2.1.0`. (source: `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`)
-- The autonomous quality slice converted nine agent-facing inventory first reads from JSON to compact YAML, centralized output selection, synchronized the plugin mirror, and added live source/plugin contract proof. (source: `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`)
 
 ## Repeat Traps
 
@@ -126,7 +126,6 @@
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`

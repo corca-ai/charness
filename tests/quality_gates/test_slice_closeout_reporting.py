@@ -119,3 +119,29 @@ def test_print_text_omits_optional_blocks_when_absent(monkeypatch, capsys) -> No
     assert "WARN: changed files near the length limit" not in out
     assert "Usage episode:" not in out
     assert "Executed commands:" not in out
+
+
+def test_print_text_conspicuously_reports_precommit_mutation_nonclaim(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(reporting, "print_broad_pytest_policy", lambda payload: None)
+    payload = {
+        "status": "completed",
+        "changed_paths": ["scripts/foo.py"],
+        "matched_surfaces": [],
+        "unmatched_paths": [],
+        "executed_commands": [],
+        "mutation_coverage_changed_line_proof": {
+            "status": "not_checked",
+            "reason": "eligible worktree changes are excluded from base..HEAD",
+            "uncommitted_eligible_files": ["scripts/foo.py", "scripts/new.py"],
+            "command": "python3 scripts/check_changed_line_mutation_coverage.py --head-sha HEAD",
+        },
+    }
+
+    reporting.print_text(payload)
+    out = capsys.readouterr().out
+
+    assert "Closeout status: completed" in out
+    assert "Mutation changed-line proof: NOT CHECKED" in out
+    assert "eligible worktree changes are excluded from base..HEAD" in out
+    assert "scripts/foo.py, scripts/new.py" in out
+    assert "consumer command: python3 scripts/check_changed_line_mutation_coverage.py" in out

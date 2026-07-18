@@ -377,6 +377,17 @@ def test_false_green_warning_silent_when_worktree_clean(tmp_path: Path) -> None:
     assert teeth.false_green_warning(repo, "HEAD", {"scripts/foo.py"}) is None
 
 
+def test_uncommitted_pool_changes_includes_untracked_nonignored_file(tmp_path: Path) -> None:
+    repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    untracked = repo / "scripts" / "new_pool.py"
+    untracked.write_text("def new():\n    return 1\n", encoding="utf-8")
+
+    teeth = _load_teeth()
+    assert teeth.uncommitted_pool_changes(repo, {"scripts/new_pool.py"}) == [
+        "scripts/new_pool.py"
+    ]
+
+
 def test_false_green_warning_silent_when_change_outside_pool(tmp_path: Path) -> None:
     repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)
     _dirty_pool_file(repo)

@@ -14,6 +14,7 @@ lives in skills/public/quality/references/mutation-testing.md.
 """
 from __future__ import annotations
 
+import json
 import shlex
 import subprocess
 from pathlib import Path
@@ -23,6 +24,7 @@ from runtime_bootstrap import import_repo_module
 
 _sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
 _changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_lib")
+_consumer = import_repo_module(__file__, "scripts.check_changed_line_mutation_coverage")
 
 DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 _COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
@@ -262,6 +264,139 @@ def run_focused_closeout_coverage(
     if result["returncode"] != 0:
         payload["status"] = "failed"
         return True
+    return False
+
+
+def _consumer_report(result: dict[str, object]) -> dict[str, object] | None:
+    """Read the consumer's structured verdict without inventing a second policy."""
+    try:
+        report = json.loads(str(result.get("stdout", "")))
+    except (TypeError, ValueError):
+        return None
+    return report if isinstance(report, dict) else None
+
+
+def _consumer_range(command: str) -> tuple[str, str] | None:
+    """Read the base/head range from the generated authoritative command."""
+    try:
+        tokens = shlex.split(command)
+        return (
+            tokens[tokens.index("--base-sha") + 1],
+            tokens[tokens.index("--head-sha") + 1],
+        )
+    except (ValueError, IndexError):
+        return None
+
+
+def _consumer_pass_validation_error(
+    report: dict[str, object],
+    *,
+    command: str,
+    producer_base_sha: str,
+) -> str | None:
+    """Validate the consumer's own minimal clean-verdict contract."""
+    consumer_range = _consumer_range(command)
+    if consumer_range is None or consumer_range[0] != producer_base_sha:
+        return "consumer command range does not match producer metadata"
+    if report.get("ok") is not True:
+        return "consumer verdict did not report ok=true"
+    if not isinstance(report.get("blocking"), list) or report["blocking"]:
+        return "consumer verdict did not report an empty blocking list"
+    if report.get("base_sha") != consumer_range[0] or report.get("head_sha") != consumer_range[1]:
+        return "consumer verdict range does not match its generated command"
+    return None
+
+
+def run_produced_coverage_consumer(
+    repo_root: Path,
+    payload: dict[str, object],
+    run_command: Callable[[Path, str, str], dict[str, object]],
+) -> bool:
+    """Run the authoritative changed-line consumer for successful producers.
+
+    Coverage production alone is not changed-line proof.  The consumer owns the
+    classification, so this only executes its already-recorded command and
+    carries its structured verdict into the closeout payload.  Before commit,
+    though, ``base..HEAD`` excludes dirty eligible files; record that limitation
+    as a non-claim instead of manufacturing a green consumer run for the parent
+    commit.
+    """
+    for producer_result in payload.get("executed_commands", []):
+        if not isinstance(producer_result, dict) or not producer_result.get("produced_mutation_coverage"):
+            continue
+        if "mutation_coverage_consumer" in producer_result:
+            continue
+        command = producer_result.get("mutation_coverage_consumer_command")
+        base_sha = producer_result.get("mutation_coverage_base_sha")
+        if not isinstance(command, str) or not isinstance(base_sha, str) or not base_sha:
+            producer_result["mutation_coverage_consumer"] = {
+                "status": "failed",
+                "reason": "producer did not provide a usable changed-line consumer range",
+            }
+            payload["mutation_coverage_changed_line_proof"] = {
+                "status": "failed",
+                "reason": "producer metadata was incomplete; changed-line coverage was not verified",
+            }
+            payload["status"] = "failed"
+            payload["error"] = "mutation-coverage producer omitted the authoritative consumer range"
+            return True
+
+        eligible = set(_consumer.list_eligible(repo_root))
+        uncommitted = _consumer.uncommitted_pool_changes(repo_root, eligible)
+        if uncommitted:
+            consumer_record = {
+                "status": "not_checked",
+                "command": command,
+                "reason": (
+                    "eligible mutation-pool worktree changes are excluded from "
+                    "base..HEAD; no changed-line claim was made"
+                ),
+                "uncommitted_eligible_files": uncommitted,
+            }
+            producer_result["mutation_coverage_consumer"] = consumer_record
+            payload["mutation_coverage_changed_line_proof"] = consumer_record
+            continue
+
+        result = dict(run_command(repo_root, command, "verify"))
+        result["mutation_coverage_consumer"] = True
+        report = _consumer_report(result)
+        status = "blocked" if result.get("returncode") != 0 else "passed"
+        if report and report.get("coverage_not_verified"):
+            status = "not_checked"
+        validation_error = None
+        if status == "passed":
+            validation_error = (
+                "consumer emitted no readable object verdict"
+                if report is None
+                else _consumer_pass_validation_error(
+                    report, command=command, producer_base_sha=base_sha
+                )
+            )
+            if validation_error is not None:
+                status = "failed"
+        consumer_record: dict[str, object] = {"status": status, "command": command}
+        if report is not None:
+            consumer_record["report"] = report
+        if validation_error is not None:
+            consumer_record["reason"] = validation_error
+        producer_result["mutation_coverage_consumer"] = consumer_record
+        payload["mutation_coverage_changed_line_proof"] = consumer_record
+        payload["executed_commands"].append(result)
+
+        if status == "blocked":
+            payload["status"] = "failed"
+            payload["error"] = "changed-line mutation-coverage consumer blocked the produced coverage"
+            return True
+        if status == "failed":
+            payload["status"] = "failed"
+            payload["error"] = (
+                "changed-line mutation-coverage consumer emitted an invalid or mismatched verdict"
+            )
+            return True
+        if status == "not_checked":
+            payload["status"] = "failed"
+            payload["error"] = "changed-line mutation coverage was not verified; no changed-line claim can be made"
+            return True
     return False
 
 

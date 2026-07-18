@@ -624,6 +624,162 @@ def test_run_focused_closeout_coverage_marks_failed_payload(tmp_path: Path, monk
     assert payload["executed_commands"][-1]["returncode"] == 1
 
 
+def test_produced_coverage_runs_authoritative_consumer_and_records_pass(tmp_path: Path) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    command = prod.consumer_command_for_produced_coverage(
+        repo, base_sha=base, coverage_json=repo / "reports/mutation/test-coverage.json"
+    )
+    payload = {"executed_commands": [{
+        "produced_mutation_coverage": True,
+        "mutation_coverage_base_sha": base,
+        "mutation_coverage_consumer_command": command,
+    }]}
+    seen: list[str] = []
+
+    def fake_run(repo_root, received, phase):
+        seen.append(received)
+        return {
+            "phase": phase,
+            "command": received,
+            "returncode": 0,
+            "stdout": json.dumps({"ok": True, "blocking": [], "base_sha": base, "head_sha": "HEAD"}),
+            "stderr": "",
+        }
+
+    assert prod.run_produced_coverage_consumer(repo, payload, fake_run) is False
+    assert seen == [command]
+    assert payload["executed_commands"][0]["mutation_coverage_consumer"]["status"] == "passed"
+    assert payload["executed_commands"][-1]["mutation_coverage_consumer"] is True
+    assert payload["mutation_coverage_changed_line_proof"]["status"] == "passed"
+
+
+def test_produced_coverage_consumer_block_stops_closeout(tmp_path: Path) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    command = prod.consumer_command_for_produced_coverage(
+        repo, base_sha=base, coverage_json=repo / "reports/mutation/test-coverage.json"
+    )
+    payload = {"executed_commands": [{
+        "produced_mutation_coverage": True,
+        "mutation_coverage_base_sha": base,
+        "mutation_coverage_consumer_command": command,
+    }]}
+
+    def fake_run(repo_root, received, phase):
+        return {"phase": phase, "command": received, "returncode": 1, "stdout": json.dumps({"blocking": ["scripts/foo.py"]}), "stderr": "blocked"}
+
+    assert prod.run_produced_coverage_consumer(repo, payload, fake_run) is True
+    assert payload["status"] == "failed"
+    assert payload["executed_commands"][0]["mutation_coverage_consumer"]["status"] == "blocked"
+
+
+@pytest.mark.parametrize("stdout", ["not json", "[]"])
+def test_produced_coverage_consumer_unreadable_verdict_fails_closeout(
+    tmp_path: Path, stdout: str
+) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    command = prod.consumer_command_for_produced_coverage(
+        repo, base_sha=base, coverage_json=repo / "reports/mutation/test-coverage.json"
+    )
+    payload = {"executed_commands": [{
+        "produced_mutation_coverage": True,
+        "mutation_coverage_base_sha": base,
+        "mutation_coverage_consumer_command": command,
+    }]}
+
+    def fake_run(repo_root, received, phase):
+        return {"phase": phase, "command": received, "returncode": 0, "stdout": stdout, "stderr": ""}
+
+    assert prod.run_produced_coverage_consumer(repo, payload, fake_run) is True
+    assert payload["status"] == "failed"
+    assert payload["executed_commands"][0]["mutation_coverage_consumer"]["status"] == "failed"
+
+
+@pytest.mark.parametrize(
+    "report",
+    [
+        {},
+        {"ok": False, "blocking": [], "base_sha": "BASE", "head_sha": "HEAD"},
+        {"ok": True, "blocking": {}, "base_sha": "BASE", "head_sha": "HEAD"},
+        {"ok": True, "blocking": ["scripts/foo.py"], "base_sha": "BASE", "head_sha": "HEAD"},
+        {"ok": True, "blocking": [], "base_sha": "wrong", "head_sha": "HEAD"},
+        {"ok": True, "blocking": [], "base_sha": "BASE", "head_sha": "wrong"},
+    ],
+)
+def test_produced_coverage_consumer_rejects_invalid_clean_shape(
+    tmp_path: Path, report: dict[str, object]
+) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    command = prod.consumer_command_for_produced_coverage(
+        repo, base_sha=base, coverage_json=repo / "reports/mutation/test-coverage.json"
+    )
+    report = {
+        key: (base if value == "BASE" else value)
+        for key, value in report.items()
+    }
+    payload = {"executed_commands": [{
+        "produced_mutation_coverage": True,
+        "mutation_coverage_base_sha": base,
+        "mutation_coverage_consumer_command": command,
+    }]}
+
+    def fake_run(repo_root, received, phase):
+        return {
+            "phase": phase,
+            "command": received,
+            "returncode": 0,
+            "stdout": json.dumps(report),
+            "stderr": "",
+        }
+
+    assert prod.run_produced_coverage_consumer(repo, payload, fake_run) is True
+    record = payload["executed_commands"][0]["mutation_coverage_consumer"]
+    assert record["status"] == "failed"
+    assert record["reason"]
+
+
+def test_produced_coverage_missing_consumer_metadata_fails_closeout(tmp_path: Path) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, _base = _seed_repo(tmp_path)
+    payload = {"executed_commands": [{"produced_mutation_coverage": True}]}
+
+    assert prod.run_produced_coverage_consumer(repo, payload, lambda *args: None) is True
+    assert payload["status"] == "failed"
+    assert payload["mutation_coverage_changed_line_proof"]["status"] == "failed"
+
+
+def test_produced_coverage_marks_precommit_range_not_checked(tmp_path: Path) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    (repo / "scripts" / "foo.py").write_text("def a():\n    return 9\n", encoding="utf-8")
+    command = prod.consumer_command_for_produced_coverage(
+        repo, base_sha=base, coverage_json=repo / "reports/mutation/test-coverage.json"
+    )
+    payload = {"executed_commands": [{
+        "produced_mutation_coverage": True,
+        "mutation_coverage_base_sha": base,
+        "mutation_coverage_consumer_command": command,
+    }]}
+
+    def must_not_run(*args, **kwargs):
+        raise AssertionError("precommit base..HEAD consumer must not run")
+
+    assert prod.run_produced_coverage_consumer(repo, payload, must_not_run) is False
+    record = payload["executed_commands"][0]["mutation_coverage_consumer"]
+    assert record["status"] == "not_checked"
+    assert record["uncommitted_eligible_files"] == ["scripts/foo.py"]
+    assert payload["mutation_coverage_changed_line_proof"]["status"] == "not_checked"
+
+
 def test_explicit_campaign_base_marker_mismatch_is_detectable(tmp_path: Path, monkeypatch) -> None:
     from scripts import check_changed_line_mutation_coverage as consumer
     from scripts import mutation_coverage_producer as prod

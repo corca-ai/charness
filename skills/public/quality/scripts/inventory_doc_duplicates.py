@@ -19,15 +19,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import shlex
-import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import nose_tool_lib as nose_tool  # noqa: E402
 from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 DEFAULT_SCAN_PATH = "."
@@ -37,7 +35,7 @@ DEFAULT_SCAN_PATH = "."
 DEFAULT_EXCLUDES = ("plugins/**", "charness-artifacts/**", "mutants/**")
 DEFAULT_BASELINE_REL = "charness-artifacts/quality/doc-nose-baseline.json"
 MIN_NOSE_VERSION = (0, 13, 0)
-NOSE_TIMEOUT_SECONDS = 180
+NOSE_TIMEOUT_SECONDS = nose_tool.NOSE_TIMEOUT_SECONDS
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): this inference-layer proxy self-declares
@@ -59,28 +57,15 @@ INTERPRETATION = {
 
 
 def resolve_nose_bin() -> str | None:
-    override = os.environ.get("NOSE_BIN")
-    if override:
-        return override
-    return shutil.which("nose")
+    return nose_tool.resolve_nose_bin()
 
 
 def parse_nose_version(text: str) -> tuple[int, int, int] | None:
-    for token in text.split():
-        parts = token.split(".")
-        if len(parts) == 3 and all(part.isdigit() for part in parts):
-            return (int(parts[0]), int(parts[1]), int(parts[2]))
-    return None
+    return nose_tool.parse_nose_version(text)
 
 
 def nose_version(nose_bin: str) -> tuple[int, int, int] | None:
-    try:
-        completed = subprocess.run(
-            [nose_bin, "--version"], check=False, capture_output=True, text=True, timeout=30
-        )
-    except (subprocess.TimeoutExpired, OSError):
-        return None
-    return parse_nose_version(completed.stdout)
+    return nose_tool.probe_nose_version(nose_bin).get("version")
 
 
 def family_signature(family: dict[str, Any]) -> str:
@@ -108,29 +93,23 @@ def build_command(nose_bin: str, scan_path: str, excludes: list[str]) -> list[st
 
 
 def run_query(repo_root: Path, command: list[str]) -> dict[str, Any]:
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=NOSE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired:
+    result = nose_tool.run_json_query(repo_root, command)
+    if result.get("error_kind") == "timeout":
         return {"status": "error", "families": [], "stderr": f"nose timed out after {NOSE_TIMEOUT_SECONDS}s"}
-    if completed.returncode != 0:
-        return {"status": "error", "families": [], "stderr": completed.stderr.strip()}
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        return {"status": "error", "families": [], "stderr": f"nose returned invalid JSON: {exc}"}
+    if result.get("error_kind") == "oserror":
+        return {"status": "error", "families": [], "stderr": f"nose could not be executed: {result.get('error', '')}"}
+    if result.get("error_kind") == "invalid-json" or (result["status"] == "ok" and not result["stdout"].strip()):
+        detail = result.get("error", "empty stdout")
+        return {"status": "error", "families": [], "stderr": f"nose returned invalid JSON: {detail}"}
+    if result["status"] == "error":
+        return {"status": "error", "families": [], "stderr": result["stderr"]}
+    payload = result["payload"]
     families = payload.get("markdown")
     return {
         "status": "ok",
         "families": families if isinstance(families, list) else [],
         "schema_version": payload.get("schema_version"),
-        "stderr": completed.stderr.strip(),
+        "stderr": result["stderr"],
     }
 
 

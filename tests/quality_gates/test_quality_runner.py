@@ -163,6 +163,23 @@ def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, s
     assert "Quality summary: 4 passed, 0 failed" in result.stdout
 
 
+def test_quality_runner_clones_do_not_contaminate_each_other_or_the_module_seed(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    first_clone, _ = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    runner_path = Path("scripts/run-quality.sh")
+    first_clone_runner = first_clone / runner_path
+    original_runner = first_clone_runner.read_text(encoding="utf-8")
+    first_clone_runner.write_text("mutated first clone\n", encoding="utf-8")
+
+    second_root = tmp_path / "second-clone"
+    second_root.mkdir()
+    second_clone, _ = clone_quality_runner_repo(second_root, seeded_quality_runner_repo)
+
+    assert (second_clone / runner_path).read_text(encoding="utf-8") == original_runner
+    assert (seeded_quality_runner_repo / runner_path).read_text(encoding="utf-8") == original_runner
+
+
 def test_dead_code_advisory_gate_is_default_off(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     # Default-off: a normal run (no opt-in env var, label set that does not name it)
     # must NOT queue the vulture-backed dead-code advisory.

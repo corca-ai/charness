@@ -60,6 +60,7 @@ should_block_broad_pytest_policy = _slice_closeout_broad_gate.should_block_broad
 closeout_producer_or_error = _mutation_coverage_producer.closeout_producer_or_error
 closeout_producer_validation_error = _mutation_coverage_producer.closeout_producer_validation_error
 run_focused_closeout_coverage = _mutation_coverage_producer.run_focused_closeout_coverage
+run_produced_coverage_consumer = _mutation_coverage_producer.run_produced_coverage_consumer
 print_text = _slice_closeout_reporting.print_text
 run_command = _slice_closeout_run_command.run_command
 
@@ -168,6 +169,17 @@ def _resolve_broad_producer(args, repo_root: Path, run_command, *, base_sha: str
     if error is not None:
         raise SurfaceError(error)
     return producer
+
+
+def _run_produced_coverage_consumer_if_ready(
+    should_stop: bool,
+    repo_root: Path,
+    payload: dict[str, object],
+) -> bool:
+    """Keep consumer verification out of ``main``'s already-tight branch budget."""
+    if should_stop:
+        return True
+    return run_produced_coverage_consumer(repo_root, payload, run_command)
 
 
 def _advise_staged_reversion(repo_root: Path) -> None:
@@ -441,6 +453,7 @@ def main() -> int:
         should_stop = run_focused_closeout_coverage(
             args, repo_root, payload, run_command, base_sha=campaign_base_sha
         )
+    should_stop = _run_produced_coverage_consumer_if_ready(should_stop, repo_root, payload)
 
     # Gate-baseline runtime advisory (spec achieve-efficiency-improvements C):
     # a gate that PASSES but is slow by design is code-quality debt. Runs

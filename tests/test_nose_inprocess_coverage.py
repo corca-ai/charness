@@ -64,7 +64,7 @@ def test_run_nose_timeout(monkeypatch) -> None:
     def boom(*_a, **_k):
         raise subprocess.TimeoutExpired(cmd="nose", timeout=nr.NOSE_TIMEOUT_SECONDS, output="partial")
 
-    monkeypatch.setattr(nr.subprocess, "run", boom)
+    monkeypatch.setattr(nr._tool.subprocess, "run", boom)
     result = nr.run_nose(REPO_ROOT, ["nose", "scan"])
     assert result["status"] == "error"
     assert result["exit_code"] == 124
@@ -79,7 +79,7 @@ def test_run_nose_oserror_degrades_not_crashes(monkeypatch) -> None:
     def boom(*_a, **_k):
         raise FileNotFoundError(2, "No such file or directory", "nope-nose")
 
-    monkeypatch.setattr(nr.subprocess, "run", boom)
+    monkeypatch.setattr(nr._tool.subprocess, "run", boom)
     result = nr.run_nose(REPO_ROOT, ["nope-nose", "query"])
     assert result["status"] == "error"
     assert result["families"] == []
@@ -87,7 +87,7 @@ def test_run_nose_oserror_degrades_not_crashes(monkeypatch) -> None:
 
 
 def test_run_nose_invalid_json(monkeypatch) -> None:
-    monkeypatch.setattr(nr.subprocess, "run", lambda *_a, **_k: _completed(stdout="not json", stderr="warn"))
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="not json", stderr="warn"))
     result = nr.run_nose(REPO_ROOT, ["nose"])
     assert result["status"] == "error"
     assert "invalid JSON" in result["stderr"]
@@ -95,7 +95,7 @@ def test_run_nose_invalid_json(monkeypatch) -> None:
 
 
 def test_run_nose_empty_stdout_is_clean(monkeypatch) -> None:
-    monkeypatch.setattr(nr.subprocess, "run", lambda *_a, **_k: _completed(stdout="   "))
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="   "))
     result = nr.run_nose(REPO_ROOT, ["nose"])
     assert result["status"] == "clean"
     assert result["families"] == []
@@ -103,7 +103,7 @@ def test_run_nose_empty_stdout_is_clean(monkeypatch) -> None:
 
 def test_run_nose_nonzero_returncode_is_error(monkeypatch) -> None:
     payload = json.dumps({"tool_version": "0.13.0", "families": [{"family_id": "abc", "dup_lines": 3, "locations": []}]})
-    monkeypatch.setattr(nr.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload, returncode=2, stderr="boom"))
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload, returncode=2, stderr="boom"))
     result = nr.run_nose(REPO_ROOT, ["nose"])
     assert result["status"] == "error"  # non-zero exit overrides "findings"
     assert result["exit_code"] == 2
@@ -119,7 +119,7 @@ def test_run_nose_success_findings(monkeypatch) -> None:
             "families": [{"family_id": "abc", "dup_lines": 3, "locations": []}],
         }
     )
-    monkeypatch.setattr(nr.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload))
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload))
     result = nr.run_nose(REPO_ROOT, ["nose"])
     assert result["status"] == "findings"
     assert result["scope"] == {"files": 1}
@@ -474,7 +474,7 @@ def test_resolve_nose_bin_env_override(monkeypatch) -> None:
 
 def test_resolve_nose_bin_path_lookup(monkeypatch) -> None:
     monkeypatch.delenv("NOSE_BIN", raising=False)
-    monkeypatch.setattr(inv.shutil, "which", lambda _name: "/usr/bin/nose")
+    monkeypatch.setattr(inv.nose_tool.shutil, "which", lambda _name: "/usr/bin/nose")
     assert inv.resolve_nose_bin() == "/usr/bin/nose"
 
 

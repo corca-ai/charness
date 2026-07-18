@@ -188,6 +188,7 @@ def _head_resolves_to_head(repo_root: Path, head_sha: str) -> bool:
 def uncommitted_pool_changes(repo_root: Path, eligible: set[str]) -> list[str]:
     """Eligible mutation-pool files with uncommitted worktree changes vs HEAD."""
     changed = set(_git_lines(repo_root, ["diff", "--name-only", "HEAD"]))
+    changed.update(_git_lines(repo_root, ["ls-files", "--others", "--exclude-standard"]))
     return sorted(path for path in changed if path in eligible)
 
 

@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-18",
   "source_artifact_count": 355,
-  "candidate_count": 1490,
+  "candidate_count": 1492,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1035,6 +1035,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:df098994add7",
+      "kind": "current_focus",
+      "lesson": "Four related autonomous-improvement rounds exposed the same structural lesson.",
+      "normalized_key": "four related autonomous improvement rounds exposed the same structural lesson",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d2744f843950",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v2.1.0`.",
@@ -1129,26 +1149,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:803a58596432",
-      "kind": "current_focus",
-      "lesson": "Three related autonomous-improvement rounds exposed the same structural lesson.",
-      "normalized_key": "three related autonomous improvement rounds exposed the same structural lesson",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Context"
         }
@@ -2257,6 +2257,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:df098994add7",
+      "kind": "current_focus",
+      "lesson": "Four related autonomous-improvement rounds exposed the same structural lesson.",
+      "normalized_key": "four related autonomous improvement rounds exposed the same structural lesson",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d2744f843950",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v2.1.0`.",
@@ -2351,26 +2371,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:803a58596432",
-      "kind": "current_focus",
-      "lesson": "Three related autonomous-improvement rounds exposed the same structural lesson.",
-      "normalized_key": "three related autonomous improvement rounds exposed the same structural lesson",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Context"
         }
@@ -2691,6 +2691,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:06b59fc3ef94",
+      "kind": "next_improvement",
+      "lesson": "when one phase emits a verifier command for the next, bind the closeout to the final consumer's verdict or an operator-visible non-claim; never let the intermediate producer's green become terminal.",
+      "normalized_key": "when one phase emits a verifier command for the next bind the closeout to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a1e41e2a9f50",
+      "kind": "next_improvement",
+      "lesson": "when optimizing fixture setup, pair immutable shared seeds with private clones and isolation proof, and separate structural work reduction from noisy wall-clock claims.",
+      "normalized_key": "when optimizing fixture setup pair immutable shared seeds with private clones and isolation proof",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
