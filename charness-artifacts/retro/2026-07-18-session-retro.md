@@ -55,6 +55,8 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   enter only an explicitly checked resume transition.
 - Recovery evidence describes completed operations, not intended operations;
   partial progress must survive the next restore or quarantine error.
+- Validate recovery state before a general planner can fetch or normalize the
+  evidence being judged; carry that frozen state forward instead of re-probing.
 
 ## Expert Counterfactuals
 

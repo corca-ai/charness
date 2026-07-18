@@ -669,6 +669,50 @@ def test_resume_recreates_missing_local_tag_after_revalidation(tmp_path: Path) -
     assert ["tag", "v0.0.0", release_head] in git_log
 
 
+def test_resume_dry_run_describes_revalidation_without_mutating(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _simulate_partial_publish(repo)
+    head_before = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+    result = _run_publish(
+        repo,
+        _release_env(tmp_path, bin_dir),
+        "--resume",
+        "--publish-current",
+        "--critique-blocked",
+        CRITIQUE_BLOCKED,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["resume"].startswith("dry-run: would re-validate gates")
+    assert subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip() == head_before
+
+
+def test_resume_refuses_missing_local_tag_when_remote_tag_exists(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _simulate_partial_publish(repo, create_tag=False)
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_GIT_TARGET_TAG_EXISTS"] = "1"
+
+    result = _run_publish(
+        repo,
+        env,
+        "--resume",
+        "--publish-current",
+        "--execute",
+        "--critique-blocked",
+        CRITIQUE_BLOCKED,
+    )
+
+    assert result.returncode != 0
+    assert "refusing to reconstruct an ambiguous tag" in result.stderr
+
+
 def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_path: Path) -> None:
     # #312-B1: resume must commit the refreshed charness-artifacts/release/latest.md
     # BEFORE the push (so .githooks/pre-push's `git diff --quiet -- charness-artifacts`

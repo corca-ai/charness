@@ -105,13 +105,44 @@ def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
         )
 
 
-def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_data: dict[str, Any], cli: Any) -> None:
+def preflight_resume_state(
+    repo_root: Path,
+    *,
+    args: Any,
+    adapter_data: dict[str, Any],
+    cli: Any,
+) -> dict[str, Any]:
+    current_version = cli.build_release_payload(repo_root)["surface_versions"]["packaging_manifest"]
+    if not isinstance(current_version, str):
+        raise SystemExit("current_release did not report a packaging manifest version")
+    tag_name = f"v{current_version}"
+    state = resumable_state(
+        repo_root,
+        tag_name=tag_name,
+        commit_message=f"Release {adapter_data['package_id']} {current_version}",
+        remote=args.remote,
+        backend=adapter_data["release_backend"],
+        cli=cli,
+    )
+    assert_resumable(state, tag_name=tag_name)
+    return state
+
+
+def resume_publish(
+    repo_root: Path,
+    *,
+    args: Any,
+    plan: dict[str, Any],
+    adapter_data: dict[str, Any],
+    cli: Any,
+    state: dict[str, Any] | None = None,
+) -> None:
     payload = plan["payload"]
     tag_name = plan["tag_name"]
     branch = plan["branch"]
     backend = plan["backend"]
     issue_repo = plan["issue_repo"]
-    state = resumable_state(
+    state = state or resumable_state(
         repo_root, tag_name=tag_name, commit_message=payload["commit_message"],
         remote=args.remote, backend=backend, cli=cli,
     )

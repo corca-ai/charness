@@ -37,7 +37,7 @@ Ambient repo findings: D18 remains ignored. No version bump, tag, push, release,
 
 ## Missing
 
-- The missing-local-tag resume branch lacks a direct integration test that simulates an ambiguous remote tag lookup and proves refusal, although the code checks for that state.
+- No fault test yet establishes the exact dirty worktree left by a failed post-commit artifact amend; the current resume proof covers clean missing-tag and ambiguous-remote states.
 
 ## Deferred
 
@@ -54,18 +54,18 @@ Ambient repo findings: D18 remains ignored. No version bump, tag, push, release,
 ## Delegated Review
 
 - Delegated Review: executed — Git correctness and release state-machine angles plus a separate counterweight ran read-only.
-- Reviewers found rename restoration, too-narrow exception ownership, false partial-recovery evidence, and missing-tag stranding; all blocking findings were repaired.
+- Reviewers found rename restoration, too-narrow exception ownership, false partial-recovery evidence, missing-tag stranding, and plan-before-resume evidence drift; all blocking findings were repaired.
 - Final correctness review returned `SHIP-READY`; parent fingerprint verification found no worktree/index/HEAD drift.
 
 ## Commands Run
 
 - Baseline `./scripts/run-quality.sh --read-only`: 81 passed, 0 failed.
 - Focused rollback/resume tests, focused ruff, source/plugin byte comparison, Markdown checks, and critique boundary fingerprints.
-- Final focused release tests passed 53/53; packaging and locked broad read-only proof passed. Focused coverage production passed, with the exact changed-line consumer deliberately deferred until the code exists in `base..HEAD`.
+- Final focused release tests passed 57/57; packaging and locked broad read-only proof passed. Focused coverage production is rerun after the follow-up commit so the exact changed-line consumer sees the final `base..HEAD` range.
 
 ## Recommended Next Quality Moves
 
-- passive add the focused ambiguous-remote missing-tag regression when the remote-probe seam is next changed because the current code already rejects the state and no observed failure depends on it.
+- passive keep resume identity derivation aligned with plan identity because the preflight intentionally duplicates only the minimum version/tag/commit inputs and focused tests currently prove parity.
 - passive fault-inject the post-commit artifact-amend boundary before claiming all post-commit local failures are resumable because this slice has no reproducible dirty post-commit failure.
 - active preserve the design rule: a clean-start workflow that mutates locally must make every owned failure either restore the start state or emit a typed resumable state.
 

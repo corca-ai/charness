@@ -71,11 +71,13 @@ build_publish_plan = _release_plan.build_publish_plan
 release_plan_target_version = _release_plan.target_version
 release_previous_version = _helpers.release_previous_version
 resume_publish = _resume.resume_publish
+preflight_resume_state = _resume.preflight_resume_state
 
 
 def _execution_context() -> SimpleNamespace:
     names = (
         "run_notes_file_preflight",
+        "build_release_payload",
         "_helpers",
         "run",
         "backend_command",
@@ -354,13 +356,25 @@ def main() -> None:
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
 
+    resume_state = (
+        preflight_resume_state(repo_root, args=args, adapter_data=adapter_data, cli=_execution_context())
+        if args.resume
+        else None
+    )
     plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run, resume=args.resume)
-    if not args.execute:
-        print(json.dumps(plan["payload"], ensure_ascii=False, indent=2))
-        return
     try:
         if args.resume:
-            resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=_execution_context())
+            resume_publish(
+                repo_root,
+                args=args,
+                plan=plan,
+                adapter_data=adapter_data,
+                cli=_execution_context(),
+                state=resume_state,
+            )
+            return
+        if not args.execute:
+            print(json.dumps(plan["payload"], ensure_ascii=False, indent=2))
             return
         execute_publish_plan(args, repo_root, plan, adapter_data)
     except BaseException as exc:

@@ -34,7 +34,7 @@ An operator must be able to retry a reversible release failure without manually 
 
 - Act before ship: use `--no-renames` for HEAD-backed restoration; include preparation and artifact commit in the rollback boundary; report only completed restore/quarantine work; expose recovery on every caught failure; resume an exact untagged release commit after remote/public absence checks. All were fixed and re-reviewed.
 - Bundle anyway: add an explicit assertion that pre-commit failure never reaches release creation; done.
-- Valid but defer: add a direct integration test for an ambiguous remote-tag state on the missing-local-tag branch. Existing code rejects it, but the branch deserves a focused regression test when that remote seam is next edited.
+- Act before ship: add a direct integration test for an ambiguous remote-tag state on the missing-local-tag branch. It exposed that general plan construction ran before resume validation and could change tag evidence; resume now freezes that state first.
 - Over-worry: sweeping ignored files or building a repo-wide transaction framework would widen ownership without observed evidence. The helper deliberately owns only tracked and non-ignored paths created by its release attempt.
 
 ## Structured Findings
@@ -43,7 +43,7 @@ An operator must be able to retry a reversible release failure without manually 
 - F2 | bin: act-before-ship | evidence: strong | ref: publish_release_execute.py | action: fix | note: rollback originally covered preparation but not later local artifact/commit failure; one owner now encloses the complete pre-commit mutation phase.
 - F3 | bin: act-before-ship | evidence: strong | ref: test_release_publish_rollback.py | action: fix | note: restore and quarantine reports now contain completed operations only; injected later failures prove partial evidence remains truthful.
 - F4 | bin: act-before-ship | evidence: strong | ref: publish_release_resume.py | action: fix | note: a release commit created before local tag failure was stranded; resume now revalidates and tags the exact saved commit only when remote tag and public release are absent.
-- F5 | bin: valid-but-defer | evidence: moderate | ref: test_release_publish_resilience.py | action: defer | note: the ambiguous-remote rejection is encoded in the branch but lacks a direct missing-local-tag integration fixture.
+- F5 | bin: act-before-ship | evidence: strong | ref: test_release_publish_resilience.py | action: fix | note: resume preflight now rejects a missing local tag plus remote publication evidence before plan construction can fetch or reinterpret that tag; dry-run and execute carry the same frozen state.
 - F6 | bin: over-worry | evidence: moderate | ref: publication-boundary.md | action: defer | note: ignored-file sweeping and a generic transaction abstraction exceed the release helper's known mutation set and would weaken the boundary.
 
 ## Deliberately Not Doing

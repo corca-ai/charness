@@ -154,3 +154,51 @@ def test_quarantine_reports_completed_moves_before_a_later_failure(
     assert errors and errors[0].startswith("second.txt: OSError:")
     assert (Path(root) / "first.txt").is_file()
     assert (repo / "second.txt").is_file()
+
+
+def test_snapshot_refuses_dirty_input_and_rejects_escaping_paths(tmp_path: Path) -> None:
+    rollback = _load_rollback()
+    responses = iter([
+        subprocess.CompletedProcess([], 0, stdout="abc123\n"),
+        subprocess.CompletedProcess([], 0, stdout=" M dirty.txt\n"),
+    ])
+
+    def run_command(_args, *, cwd):
+        assert cwd == tmp_path
+        return next(responses)
+
+    try:
+        rollback.snapshot_clean_head(tmp_path, run_command=run_command)
+    except SystemExit as exc:
+        assert "clean worktree" in str(exc)
+    else:
+        raise AssertionError("dirty rollback snapshot must be refused")
+
+    try:
+        rollback._safe_repo_path(tmp_path, "../outside.txt")
+    except ValueError as exc:
+        assert "unsafe rollback path" in str(exc)
+    else:
+        raise AssertionError("escaping rollback path must be refused")
+
+
+def test_rollback_failure_reports_when_status_is_also_unavailable(tmp_path: Path) -> None:
+    rollback = _load_rollback()
+
+    def run_command(args, *, cwd, check=True):
+        assert cwd == tmp_path
+        if args == ["git", "rev-parse", "HEAD"]:
+            raise RuntimeError("injected rollback failure")
+        if args == ["git", "status", "--short"] and check is False:
+            raise RuntimeError("injected status failure")
+        raise AssertionError(args)
+
+    result = rollback.rollback_precommit_changes(
+        tmp_path,
+        {"head_sha": "abc123"},
+        tag_name="v1.2.3",
+        run_command=run_command,
+    )
+
+    assert result["status"] == "failed"
+    assert result["remaining_status"] == ["status unavailable after rollback failure"]

@@ -35,6 +35,14 @@ if os.environ.get("FAKE_GIT_LS_REMOTE_TAG_HISTORY_FAIL") == "1" and args == [
 ]:
     print("forced remote tag history failure", file=sys.stderr)
     raise SystemExit(46)
+if os.environ.get("FAKE_GIT_TARGET_TAG_EXISTS") == "1" and args == [
+    "ls-remote",
+    "--tags",
+    "origin",
+    "refs/tags/v0.0.0",
+]:
+    print("deadbeef\trefs/tags/v0.0.0")
+    raise SystemExit(0)
 if os.environ.get("FAKE_GIT_FETCH_TAG_FAIL") == "1" and args == [
     "fetch",
     "--quiet",
