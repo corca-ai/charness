@@ -14,6 +14,7 @@ import pytest
 import yaml
 
 from scripts import yaml_output
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
@@ -180,18 +181,39 @@ def test_every_quality_inventory_exposes_yaml_output_contract(
 
     assert plugin_names == source_names
     assert source_names
+    modules_before = set(sys.modules)
+    monkeypatch.syspath_prepend(str(source_dir))
     for script_name in sorted(source_names):
-        command = str(source_dir / script_name)
+        module = load_script_module(
+            f"quality_inventory_yaml_contract_{Path(script_name).stem}",
+            source_dir / script_name,
+        )
         args = ("--repo-root", str(tmp_path), "--summary")
-        summary = _run(command, *args)
-        compatibility = _run(command, *args, "--json")
-        help_result = _run(command, "--help")
+        summary = run_loaded_script_main(script_name, module, *args)
+        compatibility = run_loaded_script_main(script_name, module, *args, "--json")
+        help_result = run_loaded_script_main(script_name, module, "--help")
 
         assert summary.returncode == compatibility.returncode, script_name
         assert yaml.safe_load(summary.stdout) == json.loads(compatibility.stdout), script_name
         assert "--summary" in help_result.stdout, script_name
         assert "--detail" in help_result.stdout, script_name
         assert "--json" not in help_result.stdout, script_name
+    for module_name in set(sys.modules) - modules_before:
+        module_path = getattr(sys.modules[module_name], "__file__", None)
+        if module_path and Path(module_path).resolve().is_relative_to(source_dir):
+            sys.modules.pop(module_name, None)
+
+
+def test_quality_inventory_keeps_one_real_subprocess_entrypoint_smoke(tmp_path: Path) -> None:
+    result = _run(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(tmp_path),
+        "--summary",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(result.stdout)["status"] == "unconfigured"
 
 
 def test_quality_dispatch_plugin_commands_match_canonical_source() -> None:
