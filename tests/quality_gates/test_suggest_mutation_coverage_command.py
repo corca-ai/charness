@@ -139,6 +139,37 @@ def test_skips_unreadable_candidate_test(tmp_path: Path, monkeypatch: pytest.Mon
     assert "tests/quality_gates/test_foo.py" in matches["scripts/foo.py"]
 
 
+def test_loader_ancestry_stops_when_changed_directory_is_missing(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+
+    assert sugg._local_loader_ancestor_levels(repo, "missing/worker.py") == []
+
+
+def test_loader_ancestry_skips_unreadable_sibling(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    worker = repo / "scripts" / "worker.py"
+    entry = repo / "scripts" / "entry.py"
+    worker.write_text("VALUE = 1\n", encoding="utf-8")
+    entry.write_text('MODULE = _load_sibling("worker")\n', encoding="utf-8")
+    original_read_text = Path.read_text
+
+    def unreadable_entry(path: Path, *args, **kwargs):
+        if path == entry:
+            raise OSError("boom")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", unreadable_entry)
+
+    assert sugg._local_loader_ancestor_levels(repo, "scripts/worker.py") == []
+
+
 def test_matches_split_path_expression_and_ignores_non_test_helpers(tmp_path: Path) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 

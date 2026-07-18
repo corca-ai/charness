@@ -32,6 +32,9 @@ tests. Packet Consumed: `2026-07-18-125952-packet.md`.
   is a different boundary.
 - Mapping provenance would improve diagnostics, but the current payload plus
   explicit broad fallback is sufficient for this slice.
+- The first locked changed-line consumer rejected five uncovered branches. Four
+  focused state tests now exercise them without widening the selector or
+  weakening production code; a final read-only follow-up accepted the tests.
 
 ## Structured Findings
 
@@ -40,6 +43,7 @@ tests. Packet Consumed: `2026-07-18-125952-packet.md`.
 - F3 | bin: bundle-anyway | evidence: moderate | ref: scripts/suggest_mutation_coverage_command.py:178 | action: fix | note: describe the subset as coverage evidence while retaining broad proof
 - F4 | bin: valid-but-defer | evidence: moderate | ref: scripts/suggest_mutation_coverage_command.py:188 | action: defer | note: add mapping provenance only when operator evidence shows diagnosis cost
 - F5 | bin: over-worry | evidence: weak | ref: scripts/suggest_mutation_coverage_command.py:66 | action: document | note: AST inference and a dependency registry add maintenance without an observed miss
+- F6 | bin: act-before-ship | evidence: strong | ref: changed-line consumer over 3c2516b9..abcd0cb6 | action: fix | note: cover five missing selector and rollback state lines before final lock
 
 ## Reviewer Tier Evidence
 

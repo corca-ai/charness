@@ -39,8 +39,8 @@ Cautilus evaluation belongs to this deterministic selector slice.
   four-file subset passed 66 tests in 25.79s without coverage, versus about 51s
   for the earlier manually widened normal subset.
 - coverage gate: the prior manual instrumented producer cost about 152.2s; this
-  review does not claim an instrumented speedup until locked closeout measures
-  the new command.
+  slice's first locked consumer rejected five uncovered state branches, which
+  are now covered by focused tests. No speedup is claimed before the final lock.
 - evaluator depth: deterministic-gates-only because paths, loader literals,
   selected tests, measured lines, and consumer verdicts are directly observable.
 
@@ -56,6 +56,9 @@ Cautilus evaluation belongs to this deterministic selector slice.
   `test_*.py` targets.
 - The live unreleased range maps every eligible changed file to four test files
   and retains the broad proof path.
+- The first authoritative consumer caught five uncovered lines after broad
+  pytest passed, demonstrating that the final consumer still has independent
+  teeth rather than inheriting the selector's green.
 
 ## Weak
 
@@ -91,6 +94,8 @@ Cautilus evaluation belongs to this deterministic selector slice.
   plus a separate counterweight ran read-only.
 - Review found a whitespace regression and a real two-argument loader miss; both
   were fixed, retested, and accepted in a follow-up review.
+- A final follow-up accepted four tests added for the five exact changed-line
+  gaps; no production code was weakened to satisfy coverage.
 - Parent boundary fingerprints reported no reviewer worktree/index/HEAD drift.
 - Slow-gate lenses: fixture-economics favors the derived four-file subset;
   parallel-critical-path finds no safe split inside the final consumer;
@@ -98,7 +103,8 @@ Cautilus evaluation belongs to this deterministic selector slice.
 
 ## Commands Run
 
-- Focused selector pytest: 18 passed; focused ruff and `git diff --check` passed.
+- Focused selector plus rollback pytest: 28 passed; focused ruff and
+  `git diff --check` passed.
 - Live suggester: `recommended`, six eligible files mapped, zero unmapped.
 - Full post-sync read-only quality passed; source/plugin sync and reviewer
   boundary checks also passed.

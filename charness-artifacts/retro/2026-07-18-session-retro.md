@@ -33,6 +33,9 @@ Five related autonomous-improvement rounds exposed the same structural lesson. F
   release files even though tests exercised them through local loaders. Nearest
   loader ancestry now maps the real range to four test files; fresh-eye review
   caught and closed a whitespace regression before verification lock.
+- The first locked consumer then rejected five uncovered state branches despite
+  broad pytest passing. Four focused tests closed the exact gaps without a
+  broader selector or a coverage exemption.
 
 ## Waste
 

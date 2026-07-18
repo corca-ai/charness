@@ -156,6 +156,45 @@ def test_quarantine_reports_completed_moves_before_a_later_failure(
     assert (repo / "second.txt").is_file()
 
 
+def test_quarantine_noops_when_no_candidate_exists(tmp_path: Path) -> None:
+    rollback = _load_rollback()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    result = rollback._quarantine_new_paths(
+        repo,
+        ["missing.txt"],
+        quarantine_base=tmp_path / "git-data",
+        tag_name="v1.2.3",
+    )
+
+    assert result == (None, [], [])
+
+
+def test_rollback_refuses_after_head_moves(tmp_path: Path) -> None:
+    rollback = _load_rollback()
+
+    def run_command(args, *, cwd, check=True):
+        assert cwd == tmp_path
+        assert check is True
+        assert args == ["git", "rev-parse", "HEAD"]
+        return subprocess.CompletedProcess(args, 0, stdout="moved-head\n")
+
+    result = rollback.rollback_precommit_changes(
+        tmp_path,
+        {"head_sha": "starting-head"},
+        tag_name="v1.2.3",
+        run_command=run_command,
+    )
+
+    assert result == {
+        "status": "refused_head_changed",
+        "expected_head": "starting-head",
+        "current_head": "moved-head",
+        "reason": "HEAD moved; preserve the partial state for the resume contract",
+    }
+
+
 def test_snapshot_refuses_dirty_input_and_rejects_escaping_paths(tmp_path: Path) -> None:
     rollback = _load_rollback()
     responses = iter([
