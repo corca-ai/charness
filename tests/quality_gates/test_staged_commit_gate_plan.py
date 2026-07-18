@@ -664,6 +664,14 @@ def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
     ), skill_packages["verify_commands"]
 
 
+def test_skill_and_repo_python_surfaces_run_duplicate_ratchet_before_release() -> None:
+    surfaces = json.loads(SURFACES_JSON)["surfaces"]
+    command = "python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary"
+    for surface_id in ("skill-packages", "repo-python"):
+        surface = next(item for item in surfaces if item["surface_id"] == surface_id)
+        assert command in surface["verify_commands"], surface["verify_commands"]
+
+
 def test_repo_python_surface_runs_fast_boundary_bypass_ratchet_before_broad_pytest() -> None:
     # #314 acceptance (1): the fast boundary-bypass ratchet must run in the
     # repo-python surface and precede the broad pytest so a redundant boundary-
