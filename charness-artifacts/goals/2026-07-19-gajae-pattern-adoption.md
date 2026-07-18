@@ -11,12 +11,13 @@ resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — bind critique verdicts to declared reviewed inputs.
-- Current slice intent: let the critique packet produce one deterministic input
-  identity and let the durable critique validator reject a stale declaration;
-  keep reviewer worktree isolation as a separate mechanism.
-- Next action: inspect the critique packet/artifact producer-consumer seam, add
-  tamper fixtures, implement the smallest binding, sync exports, and prove it.
+- Current slice: Slice 3 — derive one release observer record.
+- Current slice intent: generate one durable observer from the release helper's
+  existing distinct-channel evidence and post-install readback; do not create a
+  parallel success verdict.
+- Next action: inspect release payload/render/schema ownership, add malformed and
+  unavailable fixtures, integrate the observer after post-publish refresh, and
+  prove release behavior without publishing yet.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -108,8 +109,8 @@ Implement and prove Slices 1-4 from the canonical Gajae-Code adoption plan, disp
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Bound Codex app-server response waiting | Only demonstrated correctness escape in the comparison | Negative fake-server matrix, compatible YAML, focused critique | completed |
-| 2 | Bind critique verdicts to declared reviewed inputs | Durable review claim must identify what was judged | Identity/tamper fixtures, validator and artifact sync | active |
-| 3 | Generate one release observer from existing distinct-channel evidence | Avoid parallel success records at the irreversible boundary | Schema/renderer fixtures and release integration proof | planned |
+| 2 | Bind critique verdicts to declared reviewed inputs | Durable review claim must identify what was judged | Identity/tamper fixtures, validator and artifact sync | completed |
+| 3 | Generate one release observer from existing distinct-channel evidence | Avoid parallel success records at the irreversible boundary | Schema/renderer fixtures and release integration proof | active |
 | 4 | Add A/B comparability and retain outcome adjacency | Improve token efficiency without persuasive incomparable deltas | Comparable/incomparable report fixtures and focused tests | planned |
 | 5 | Disposition governed probes | Prevent analogy from silently becoming runtime/CI scope | Recorded probe outcome and promotion/defer rationale | planned |
 | 6 | Final bundle proof, push, and release | User requested publication only after all work is complete | Locked closeout, distinct review/channel, public+installed readback | planned |
@@ -196,6 +197,19 @@ applies.
   moved from HOLD to SHIP after integration failure coverage was added; parent
   boundary fingerprints verified no reviewer mutation. Durable debug record:
   `charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md`.
+- Slice 2 completed — critique packets now capture a canonical declared-path
+  identity across content, staged/unstaged patches, untracked inputs, and
+  changed-ref targets; durable records bind exact packet bytes separately.
+  Validator fixtures prove declared changes/tamper stale the verdict while
+  unrelated edits/commits do not. Traversal, symlinked-directory, final symlink,
+  changed-ref/worktree, explicit-output collision, same-slug rerun, unavailable,
+  and retro non-inheritance seams are covered. Seventy-five focused tests plus
+  dogfood/skill/packaging/Markdown/static closeout gates passed. Public dogfood
+  records the expanded critique output while retro's maintained contract stays
+  unchanged. The first review approval was quarantined when the parent mutated
+  during its fingerprint window; a clean final snapshot/verify and repaired
+  re-review reached SHIP. Critique:
+  `charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md`.
 
 ## Context Sources
 

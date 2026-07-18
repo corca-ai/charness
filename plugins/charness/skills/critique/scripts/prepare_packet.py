@@ -40,6 +40,7 @@ _critique_packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
 load_adapter = _critique_adapter_lib.load_adapter
 build_packet = _critique_packet_lib.build_packet
 write_packet = _critique_packet_lib.write_packet
+packet_file_sha256 = _critique_packet_lib.packet_file_sha256
 
 
 def _default_slug() -> str:
@@ -59,6 +60,12 @@ def main() -> int:
                         help="Convenience alias for --changed-ref when reviewing an endpoint diff range")
     parser.add_argument("--slug", default=None,
                         help="Slug for the output artifacts (default: ISO datetime)")
+    parser.add_argument(
+        "--reviewed-path",
+        action="append",
+        default=None,
+        help="Repo-relative path declared as reviewed (repeatable; defaults to changed paths).",
+    )
     parser.add_argument("--json", action="store_true",
                         help="Emit the packet JSON to stdout instead of writing artifacts")
     args = parser.parse_args()
@@ -79,12 +86,24 @@ def main() -> int:
         )
         sys.stdout.write("\n")
         return 1
-
+    output_dir = repo_root / adapter["data"].get("output_dir", "charness-artifacts/critique")
+    slug = args.slug or _default_slug()
+    excluded_paths = []
+    if not args.json:
+        excluded_paths = [
+            (output_dir / f"{slug}-packet.json").relative_to(repo_root).as_posix(),
+            (output_dir / f"{slug}-packet.md").relative_to(repo_root).as_posix(),
+        ]
+        collisions = sorted(set(args.reviewed_path or []) & set(excluded_paths))
+        if collisions:
+            parser.error(f"--reviewed-path collides with packet output: {', '.join(collisions)}")
     packet = build_packet(
         adapter=adapter,
         repo_root=repo_root,
         prepared_for=prepared_for,
         changed_ref=changed_ref,
+        reviewed_paths=args.reviewed_path,
+        excluded_reviewed_paths=excluded_paths,
     )
 
     if args.json:
@@ -92,9 +111,12 @@ def main() -> int:
         sys.stdout.write("\n")
         return 0 if packet["ok"] else 1
 
-    output_dir = repo_root / adapter["data"].get("output_dir", "charness-artifacts/critique")
-    slug = args.slug or _default_slug()
     json_path, md_path = write_packet(packet, output_dir=output_dir, slug=slug)
+    binding = {
+        "packet_path": str(json_path.relative_to(repo_root)),
+        "packet_sha256": packet_file_sha256(json_path),
+        "identity_sha256": packet["reviewed_input_identity"]["identity_sha256"],
+    }
     json.dump(
         {
             "ok": packet["ok"],
@@ -103,6 +125,7 @@ def main() -> int:
             "md_path": str(md_path.relative_to(repo_root)),
             "changed_ref": packet["changed_ref"],
             "adapter_path": packet["adapter_path"],
+            "reviewed_input_binding": binding,
         },
         sys.stdout, indent=2, ensure_ascii=False, sort_keys=True,
     )

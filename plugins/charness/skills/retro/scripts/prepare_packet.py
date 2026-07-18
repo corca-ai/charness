@@ -106,6 +106,7 @@ def main() -> int:
             changed_ref=changed_ref,
             packet_kind=RETRO_PACKET_KIND,
             include_reviewer_tier=False,
+            include_reviewed_input_identity=False,
             changed_ref_env_var="CHARNESS_RETRO_CHANGED_REF",
         )
         if args.json:

@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import shutil
 import subprocess
+from datetime import date
 from pathlib import Path
+
+import pytest
 
 from scripts.critique_adapter_lib import (
     adapter_has_sections,
@@ -14,15 +19,18 @@ from scripts.critique_packet_lib import (
     PACKET_KIND,
     PACKET_VERSION,
     build_packet,
+    build_reviewed_input_identity,
     execute_section,
     render_markdown,
     write_packet,
 )
 from scripts.prepare_packet_markdown_kind import prepare_packet_markdown_kind
+from scripts.reviewed_input_identity import verify_reviewed_input_identity
 from scripts.surfaces_lib import collect_changed_paths_for_ref
 from scripts.validate_critique_artifacts import (
     CRITIQUE_PREPARE_PACKET_TITLE_RE,
     validate_critique_artifact,
+    validate_reviewed_input_binding,
 )
 from scripts.validate_critique_artifacts import (
     ValidationError as CritiqueValidationError,
@@ -243,6 +251,38 @@ def test_collect_changed_paths_for_ref_reads_committed_diff(tmp_path: Path) -> N
     assert collect_changed_paths_for_ref(tmp_path, "HEAD^..HEAD") == ["README.md"]
     assert collect_changed_paths_for_ref(tmp_path, "HEAD") == ["README.md"]
 
+    identity = build_reviewed_input_identity(repo_root=tmp_path, changed_ref="HEAD")
+    assert identity["reviewed_paths"] == ["README.md"]
+    (tmp_path / "README.md").write_text("uncommitted third state\n", encoding="utf-8")
+    rebuilt = build_reviewed_input_identity(repo_root=tmp_path, changed_ref="HEAD")
+    assert rebuilt == identity
+
+
+def test_changed_ref_identity_does_not_follow_live_parent_symlink(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    nested = tmp_path / "src"
+    nested.mkdir()
+    (nested / "a.py").write_text("VALUE = 1\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "src/a.py")
+    _run_git(tmp_path, "commit", "-m", "nested source")
+    before = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        changed_ref="HEAD",
+        reviewed_paths=["src/a.py"],
+    )
+
+    shutil.rmtree(nested)
+    outside = tmp_path.parent / f"{tmp_path.name}-changed-ref-outside"
+    outside.mkdir()
+    nested.symlink_to(outside, target_is_directory=True)
+    after = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        changed_ref="HEAD",
+        reviewed_paths=["src/a.py"],
+    )
+
+    assert after == before
+
 
 def test_build_packet_one_failed_section_marks_envelope_not_ok(tmp_path: Path) -> None:
     _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
@@ -337,6 +377,175 @@ packet_sections:
     assert "Only" in md_path.read_text(encoding="utf-8")
 
 
+def _init_identity_repo(repo: Path) -> None:
+    _run_git(repo, "init")
+    _run_git(repo, "config", "user.email", "test@example.com")
+    _run_git(repo, "config", "user.name", "Test User")
+    (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
+    (repo / "unrelated.txt").write_text("base\n", encoding="utf-8")
+    _run_git(repo, "add", ".")
+    _run_git(repo, "commit", "-m", "initial")
+
+
+def test_reviewed_input_identity_is_ordered_and_tracks_staged_unstaged_untracked(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    (tmp_path / "reviewed.txt").write_text("unstaged\n", encoding="utf-8")
+    first = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        reviewed_paths=["reviewed.txt", "new.txt"],
+    )
+    reversed_order = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        reviewed_paths=["new.txt", "reviewed.txt"],
+    )
+    assert first == reversed_order
+
+    _run_git(tmp_path, "add", "reviewed.txt")
+    staged = build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=["reviewed.txt", "new.txt"])
+    assert staged["identity_sha256"] != first["identity_sha256"]
+
+    (tmp_path / "new.txt").write_text("untracked\n", encoding="utf-8")
+    untracked = build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=["reviewed.txt", "new.txt"])
+    assert untracked["identity_sha256"] != staged["identity_sha256"]
+    assert untracked["declared_untracked"] == [
+        {"path": "new.txt", "content_sha256": untracked["reviewed_content"][0]["content_sha256"]}
+    ]
+
+
+def test_working_tree_identity_ignores_unrelated_commit_but_tracks_symlink_target(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    symlink = tmp_path / "link.txt"
+    symlink.symlink_to("reviewed.txt")
+    before = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        reviewed_paths=["reviewed.txt", "link.txt"],
+    )
+
+    (tmp_path / "unrelated.txt").write_text("unrelated commit\n", encoding="utf-8")
+    _run_git(tmp_path, "commit", "-am", "unrelated")
+    after_unrelated_commit = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        reviewed_paths=["reviewed.txt", "link.txt"],
+    )
+    assert after_unrelated_commit["base_head"] != before["base_head"]
+    assert after_unrelated_commit["identity_sha256"] == before["identity_sha256"]
+
+    symlink.unlink()
+    symlink.symlink_to("unrelated.txt")
+    after_retarget = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        reviewed_paths=["reviewed.txt", "link.txt"],
+    )
+    assert after_retarget["identity_sha256"] != before["identity_sha256"]
+
+
+def test_reviewed_input_identity_rejects_traversal_and_symlinked_directory(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    outside = tmp_path.parent / f"{tmp_path.name}-outside"
+    outside.mkdir()
+    (outside / "secret.txt").write_text("outside\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="outside repo root"):
+        build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=["../outside.txt"])
+
+    (tmp_path / "outside-dir").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ValueError, match="outside repo root"):
+        build_reviewed_input_identity(
+            repo_root=tmp_path,
+            reviewed_paths=["outside-dir/secret.txt"],
+        )
+
+
+def test_explicit_reviewed_path_is_never_silently_excluded(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    identity = build_reviewed_input_identity(
+        repo_root=tmp_path,
+        reviewed_paths=["reviewed.txt"],
+        excluded_paths=["reviewed.txt"],
+    )
+    assert identity["reviewed_paths"] == ["reviewed.txt"]
+
+
+def _write_bound_critique(repo: Path, packet_path: Path, identity_sha256: str) -> Path:
+    artifact = repo / "charness-artifacts/critique/2026-07-20-bound-review.md"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    packet_sha = hashlib.sha256(packet_path.read_bytes()).hexdigest()
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Bound Review",
+                "Date: 2026-07-20",
+                "",
+                "## Reviewed Input Identity",
+                "",
+                f"- Packet path: {packet_path.relative_to(repo).as_posix()}",
+                f"- Packet SHA256: {packet_sha}",
+                f"- Identity SHA256: {identity_sha256}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return artifact
+
+
+def test_reviewed_input_binding_stales_only_for_declared_input(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    adapter = load_adapter(tmp_path)
+    packet = build_packet(
+        adapter=adapter,
+        repo_root=tmp_path,
+        prepared_for="working tree",
+        reviewed_paths=["reviewed.txt"],
+    )
+    packet_path, _ = write_packet(packet, output_dir=tmp_path / "charness-artifacts/critique", slug="bound")
+    artifact = _write_bound_critique(
+        tmp_path,
+        packet_path,
+        packet["reviewed_input_identity"]["identity_sha256"],
+    )
+    text = artifact.read_text(encoding="utf-8")
+
+    validate_reviewed_input_binding(artifact, text, date(2026, 7, 20))
+    (tmp_path / "unrelated.txt").write_text("changed but not reviewed\n", encoding="utf-8")
+    validate_reviewed_input_binding(artifact, text, date(2026, 7, 20))
+
+    (tmp_path / "reviewed.txt").write_text("changed reviewed input\n", encoding="utf-8")
+    with pytest.raises(CritiqueValidationError, match="declared reviewed inputs are stale"):
+        validate_reviewed_input_binding(artifact, text, date(2026, 7, 20))
+
+
+def test_reviewed_input_binding_rejects_packet_byte_tamper(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    adapter = load_adapter(tmp_path)
+    packet = build_packet(
+        adapter=adapter,
+        repo_root=tmp_path,
+        prepared_for="working tree",
+        reviewed_paths=["reviewed.txt"],
+    )
+    packet_path, _ = write_packet(packet, output_dir=tmp_path / "charness-artifacts/critique", slug="bound")
+    artifact = _write_bound_critique(tmp_path, packet_path, packet["reviewed_input_identity"]["identity_sha256"])
+    packet_path.write_text(packet_path.read_text(encoding="utf-8") + " ", encoding="utf-8")
+
+    with pytest.raises(CritiqueValidationError, match="packet bytes are stale or tampered"):
+        validate_reviewed_input_binding(
+            artifact,
+            artifact.read_text(encoding="utf-8"),
+            date(2026, 7, 20),
+        )
+
+
+def test_packet_consumed_requires_reviewed_input_binding_after_rule_date(tmp_path: Path) -> None:
+    artifact = tmp_path / "charness-artifacts/critique/2026-07-20-missing-binding.md"
+    artifact.parent.mkdir(parents=True)
+    text = "# Review\nDate: 2026-07-20\n\nPacket Consumed: packet.md\n"
+    artifact.write_text(text, encoding="utf-8")
+
+    with pytest.raises(CritiqueValidationError, match="packet-bound critique"):
+        validate_reviewed_input_binding(artifact, text, date(2026, 7, 20))
+
+
 def test_runner_cli_dogfood_smoke(tmp_path: Path) -> None:
     _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
 version: 1
@@ -359,8 +568,54 @@ packet_sections:
     assert payload["section_count"] == 1
     assert payload["changed_ref"] is None
     assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
+    binding = payload["reviewed_input_binding"]
+    assert binding["packet_path"].endswith("smoke-packet.json")
+    assert len(binding["packet_sha256"]) == 64
+    assert len(binding["identity_sha256"]) == 64
     artifact = tmp_path / "charness-artifacts/critique/smoke-packet.json"
     assert artifact.is_file()
+
+
+def test_runner_rerun_excludes_its_own_packet_outputs_from_identity(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", "version: 1\nrepo: rt\n")
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+    command = ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "repeat"]
+
+    assert subprocess.run(command, capture_output=True, text=True, check=False).returncode == 0
+    rerun = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert rerun.returncode == 0, rerun.stderr
+    packet = json.loads(
+        (tmp_path / "charness-artifacts/critique/repeat-packet.json").read_text(encoding="utf-8")
+    )
+    identity = packet["reviewed_input_identity"]
+
+    assert not any(path.endswith("repeat-packet.json") for path in identity["reviewed_paths"])
+    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
+
+
+def test_runner_rejects_explicit_path_that_collides_with_packet_output(tmp_path: Path) -> None:
+    _init_identity_repo(tmp_path)
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", "version: 1\nrepo: rt\n")
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+    result = subprocess.run(
+        [
+            "python3",
+            str(runner),
+            "--repo-root",
+            str(tmp_path),
+            "--slug",
+            "collision",
+            "--reviewed-path",
+            "charness-artifacts/critique/collision-packet.json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "collides with packet output" in result.stderr
 
 
 def test_prepare_packet_markdown_passes_live_critique_artifact_validator(tmp_path: Path) -> None:

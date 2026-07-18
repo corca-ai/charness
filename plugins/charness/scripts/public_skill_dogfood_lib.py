@@ -94,6 +94,7 @@ EVIDENCE_OVERRIDES = {
     ],
     "critique": [
         "includes a customer-of-this-capability angle when first-use failure is the main risk",
+        "binds a consumed prepare packet to exact packet bytes and path-scoped reviewed inputs so stale verdicts are visible",
     ],
     "quality": [
         "runs or names the existing repo-owned quality gates before proposing new ones",

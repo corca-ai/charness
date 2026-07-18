@@ -57,6 +57,17 @@ python3 skills/public/critique/scripts/prepare_packet.py --repo-root . --commit 
 python3 skills/public/critique/scripts/prepare_packet.py --repo-root . --range main..HEAD
 ```
 
+Use repeatable `--reviewed-path <repo-relative-path>` arguments when the review
+scope is narrower or more explicit than the changed-path default. The producer
+sorts this declaration canonically and scopes staged, unstaged, untracked, and
+content fingerprints to those paths, so an unrelated working-tree change does
+not invalidate the review. Artifact-writing mode also excludes its own target
+packet JSON/Markdown paths, so rerunning the same slug does not make the packet
+part of the evidence it is trying to identify.
+An explicit `--reviewed-path` is never silently removed; if it names the
+packet's own output path, the runner rejects the collision. Lexical traversal
+and paths through an out-of-repo symlinked directory are also rejected.
+
 The runner passes that value to script sections as
 `CHARNESS_CRITIQUE_CHANGED_REF`. Producers that inspect changed files should
 prefer the explicit ref/range over the clean working tree.
@@ -76,6 +87,22 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
   "prepared_for": "<short label: commit range, branch, or free text>",
   "changed_ref": "<git commit or endpoint-diff range, or null>",
   "adapter_path": "<repo-relative path or null>",
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree | changed-ref",
+    "changed_ref": "<commit/range or null>",
+    "resolved_changed_ref": ["<resolved endpoint(s)>"] ,
+    "base_head": "<commit sha>",
+    "base_head_role": "provenance-only | target",
+    "reviewed_paths": ["<ordered repo-relative path>"],
+    "reviewed_content": [{"path": "<path>", "content_sha256": "<sha256 or null>"}],
+    "reviewed_patch_sha256": "<changed-ref patch sha256 or empty-payload sha256>",
+    "staged_patch_sha256": "<scope-limited sha256>",
+    "unstaged_patch_sha256": "<scope-limited sha256>",
+    "declared_untracked": [{"path": "<path>", "content_sha256": "<sha256>"}],
+    "identity_sha256": "<canonical component digest>"
+  },
   "reviewer_tier_evidence": {
     "requested_tier": "high-leverage",
     "requested_spawn_fields": {"model": "..."},
@@ -119,6 +146,30 @@ Rules:
   application; the parent review artifact records `requested_fields_sent`,
   `metadata-hidden`, `host-defaulted`, `unsupported`, or `applied` only when
   host-confirmed.
+- `reviewed_input_identity` records what the reviewer was given. Its patch and
+  untracked components are limited to the declared paths; the existing
+  reviewer-boundary fingerprint remains a separate whole-worktree proof that
+  the reviewer did not mutate shared state.
+- A working-tree identity records `base_head` as provenance but excludes its
+  value from `identity_sha256`; an unrelated commit therefore does not stale a
+  path-scoped verdict. A changed-ref identity treats its resolved target as an
+  input. Symlinks are hashed by their link payload without following them.
+- The exact packet byte digest cannot be embedded in the packet without a
+  circular hash. After writing the JSON, the runner returns
+  `reviewed_input_binding` with `packet_path`, `packet_sha256`, and
+  `identity_sha256`. Copy those three fields into the durable critique record:
+
+  ```markdown
+  ## Reviewed Input Identity
+
+  - Packet path: charness-artifacts/critique/<slug>-packet.json
+  - Packet SHA256: <exact packet byte digest>
+  - Identity SHA256: <reviewed input identity digest>
+  ```
+
+  The critique validator checks the packet bytes and recomputes only the
+  declared inputs. A declared-input change makes the verdict stale; an
+  unrelated-path change does not.
 
 ## Section Types
 
@@ -168,7 +219,7 @@ When `critique` runs and the repo's adapter declares ≥1 packet section:
    reviewer subagents receive the markdown render before broad repo sampling.
 2. The critique closeout records `Packet Consumed: <path>` plus reviewer-tier
    evidence: requested tier, requested spawn fields, host exposure state, and
-   applied-evidence boundary. The
+   applied-evidence boundary, plus reviewed-input binding evidence. The
    conditional hard-block is workflow-prescriptive: the rule applies
    only when the adapter declares packet sections, and enforcement
    lives in the *caller skill's* closeout validator (e.g., a future

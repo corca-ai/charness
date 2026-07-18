@@ -1,0 +1,166 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-18T16:27:42Z",
+  "prepared_for": "Slice 2 reviewed input binding",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-07-19-gajae-slice2-packet.json\n- charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md\n- charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md\n- charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md\n- docs/public-skill-dogfood.json\n- plugins/charness/scripts/critique_packet_lib.py\n- plugins/charness/scripts/public_skill_dogfood_lib.py\n- plugins/charness/scripts/reviewed_input_identity.py\n- plugins/charness/scripts/validate_critique_artifacts.py\n- plugins/charness/skills/critique/SKILL.md\n- plugins/charness/skills/critique/references/prepare-packet.md\n- plugins/charness/skills/critique/scripts/prepare_packet.py\n- plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py\n- plugins/charness/skills/retro/scripts/prepare_packet.py\n- scripts/critique_packet_lib.py\n- scripts/public_skill_dogfood_lib.py\n- scripts/reviewed_input_identity.py\n- scripts/validate_critique_artifacts.py\n- skills/public/critique/SKILL.md\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/prepare_packet.py\n- skills/public/critique/scripts/scaffold_critique_artifact.py\n- skills/public/retro/scripts/prepare_packet.py\n- tests/test_critique_prepare_packet.py\n- tests/test_critique_scaffold.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/critique_packet_lib.py, scripts/public_skill_dogfood_lib.py, scripts/reviewed_input_identity.py, scripts/validate_critique_artifacts.py, skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/retro/scripts/prepare_packet.py\n  derived matches: plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/validate_critique_artifacts.py, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py, plugins/charness/skills/retro/scripts/prepare_packet.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md, charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md, charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md, skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md\n  derived matches: plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/references/prepare-packet.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/retro/scripts/prepare_packet.py\n  derived matches: plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py, plugins/charness/skills/retro/scripts/prepare_packet.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/retro/scripts/prepare_packet.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, scripts/public_skill_dogfood_lib.py, skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/retro/scripts/prepare_packet.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-19-gajae-slice2-packet.json, charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md, charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/critique_packet_lib.py, scripts/public_skill_dogfood_lib.py, scripts/reviewed_input_identity.py, scripts/validate_critique_artifacts.py, tests/test_critique_prepare_packet.py, tests/test_critique_scaffold.py\n  derived matches: plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/critique_packet_lib.py, scripts/public_skill_dogfood_lib.py, scripts/reviewed_input_identity.py, scripts/validate_critique_artifacts.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/retro/scripts/prepare_packet.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "a939be519381617860f7822b6cb513bcde55f6da",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "docs/public-skill-dogfood.json",
+      "plugins/charness/scripts/critique_packet_lib.py",
+      "plugins/charness/scripts/public_skill_dogfood_lib.py",
+      "plugins/charness/scripts/reviewed_input_identity.py",
+      "plugins/charness/scripts/validate_critique_artifacts.py",
+      "plugins/charness/skills/critique/SKILL.md",
+      "plugins/charness/skills/critique/references/prepare-packet.md",
+      "plugins/charness/skills/critique/scripts/prepare_packet.py",
+      "plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py",
+      "plugins/charness/skills/retro/scripts/prepare_packet.py",
+      "scripts/critique_packet_lib.py",
+      "scripts/public_skill_dogfood_lib.py",
+      "scripts/reviewed_input_identity.py",
+      "scripts/validate_critique_artifacts.py",
+      "skills/public/critique/SKILL.md",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/critique/scripts/prepare_packet.py",
+      "skills/public/critique/scripts/scaffold_critique_artifact.py",
+      "skills/public/retro/scripts/prepare_packet.py",
+      "tests/test_critique_prepare_packet.py",
+      "tests/test_critique_scaffold.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "71a24b5c9b5ea6e34ba278ee7e07ec01805be82b9bd516f4d97370018b50771f"
+      },
+      {
+        "path": "plugins/charness/scripts/critique_packet_lib.py",
+        "content_sha256": "b8082b49de544e4ae361cea2a8afd5e38d35d144bf66ab5030f530ead0fc221a"
+      },
+      {
+        "path": "plugins/charness/scripts/public_skill_dogfood_lib.py",
+        "content_sha256": "0b018f4bcfaecddab3067238fffe6e9b33bde36a1d7d146b69a6d8ccd422f3d6"
+      },
+      {
+        "path": "plugins/charness/scripts/reviewed_input_identity.py",
+        "content_sha256": "42babff3e4086b83eb02808ace14e2f167fdee72537e302041610af5c2f8c2ec"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_critique_artifacts.py",
+        "content_sha256": "db101a07ccbc5fd2f1940b62eb69c2c0902fa24d5a985d1bdce2adab38e0e0c5"
+      },
+      {
+        "path": "plugins/charness/skills/critique/SKILL.md",
+        "content_sha256": "bb141a6dec7203027e309a3975ecd34e5409e5d1894de941beaffae9245d7193"
+      },
+      {
+        "path": "plugins/charness/skills/critique/references/prepare-packet.md",
+        "content_sha256": "daa2db8a1c82d8a3f4fca9b908cbd3bf00d7da870e692286d86cc7f006495143"
+      },
+      {
+        "path": "plugins/charness/skills/critique/scripts/prepare_packet.py",
+        "content_sha256": "f42198a29efccbad4361fd5812b2ee457a17971e499adbc123f3b3510cbb4a3c"
+      },
+      {
+        "path": "plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py",
+        "content_sha256": "150a52475d5ff67e32eec307b15294b21193b2699534d1f15682b6eaf507021a"
+      },
+      {
+        "path": "plugins/charness/skills/retro/scripts/prepare_packet.py",
+        "content_sha256": "486a9f9e9fc2a1a136554c9b50d13c8fc41fe5a2568c7ac7810e64c94efd8ca9"
+      },
+      {
+        "path": "scripts/critique_packet_lib.py",
+        "content_sha256": "b8082b49de544e4ae361cea2a8afd5e38d35d144bf66ab5030f530ead0fc221a"
+      },
+      {
+        "path": "scripts/public_skill_dogfood_lib.py",
+        "content_sha256": "0b018f4bcfaecddab3067238fffe6e9b33bde36a1d7d146b69a6d8ccd422f3d6"
+      },
+      {
+        "path": "scripts/reviewed_input_identity.py",
+        "content_sha256": "42babff3e4086b83eb02808ace14e2f167fdee72537e302041610af5c2f8c2ec"
+      },
+      {
+        "path": "scripts/validate_critique_artifacts.py",
+        "content_sha256": "db101a07ccbc5fd2f1940b62eb69c2c0902fa24d5a985d1bdce2adab38e0e0c5"
+      },
+      {
+        "path": "skills/public/critique/SKILL.md",
+        "content_sha256": "bb141a6dec7203027e309a3975ecd34e5409e5d1894de941beaffae9245d7193"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "daa2db8a1c82d8a3f4fca9b908cbd3bf00d7da870e692286d86cc7f006495143"
+      },
+      {
+        "path": "skills/public/critique/scripts/prepare_packet.py",
+        "content_sha256": "f42198a29efccbad4361fd5812b2ee457a17971e499adbc123f3b3510cbb4a3c"
+      },
+      {
+        "path": "skills/public/critique/scripts/scaffold_critique_artifact.py",
+        "content_sha256": "150a52475d5ff67e32eec307b15294b21193b2699534d1f15682b6eaf507021a"
+      },
+      {
+        "path": "skills/public/retro/scripts/prepare_packet.py",
+        "content_sha256": "486a9f9e9fc2a1a136554c9b50d13c8fc41fe5a2568c7ac7810e64c94efd8ca9"
+      },
+      {
+        "path": "tests/test_critique_prepare_packet.py",
+        "content_sha256": "18e622297c5f113fddff5dba55194d2534132a20a478abd79748c2e67a0a1683"
+      },
+      {
+        "path": "tests/test_critique_scaffold.py",
+        "content_sha256": "11fcfd0dec92ab8f23b3d809b853b5a0286173a084c06ec20ff41b4bb9ad3ff7"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "36424612980bb5fd9d3463e286579a14d79fe57fd8797b1986821e993d7a7d4c",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "af3d5b8dd7d25cb7badae3aac73c8536fe891f2582147446f4f7804e0c2cd021"
+  }
+}

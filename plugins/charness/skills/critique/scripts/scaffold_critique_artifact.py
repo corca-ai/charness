@@ -144,6 +144,17 @@ def render_template(*, title: str, date_text: str) -> str:
             "",
         ]
     )
+    lines.extend(
+        [
+            "## Reviewed Input Identity",
+            "",
+            "<!-- Copy these values from prepare_packet.py output after the reviewed packet is final. -->",
+            "- Packet path: TODO repo-relative packet JSON path.",
+            "- Packet SHA256: TODO exact packet byte digest.",
+            "- Identity SHA256: TODO reviewed input identity digest.",
+            "",
+        ]
+    )
     verdict_legend = " | ".join(ALLOWED_BOUNDARY_VERDICTS)
     lines.extend(
         [

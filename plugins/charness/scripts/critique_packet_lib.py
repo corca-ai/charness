@@ -17,10 +17,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from runtime_bootstrap import import_repo_module
+
 PACKET_KIND = "charness.critique_prepare_packet"
 PACKET_VERSION = 1
 PRODUCER_TIMEOUT_SECONDS = 60
 DEFAULT_REVIEWER_TIER = "high-leverage"
+_reviewed_input_identity = import_repo_module(__file__, "scripts.reviewed_input_identity")
+build_reviewed_input_identity = _reviewed_input_identity.build_reviewed_input_identity
+packet_file_sha256 = _reviewed_input_identity.packet_file_sha256
 
 
 def _now_iso() -> str:
@@ -122,7 +127,10 @@ def build_packet(
     changed_ref: str | None = None,
     packet_kind: str = PACKET_KIND,
     include_reviewer_tier: bool = True,
+    include_reviewed_input_identity: bool = True,
     changed_ref_env_var: str = "CHARNESS_CRITIQUE_CHANGED_REF",
+    reviewed_paths: list[str] | None = None,
+    excluded_reviewed_paths: list[str] | None = None,
 ) -> dict[str, Any]:
     data = adapter.get("data", {}) or {}
     sections_decl = data.get("packet_sections", []) or []
@@ -150,6 +158,13 @@ def build_packet(
     }
     if include_reviewer_tier:
         packet["reviewer_tier_evidence"] = reviewer_tier_evidence(data)
+    if include_reviewed_input_identity:
+        packet["reviewed_input_identity"] = build_reviewed_input_identity(
+            repo_root=repo_root,
+            reviewed_paths=reviewed_paths,
+            changed_ref=changed_ref,
+            excluded_paths=excluded_reviewed_paths,
+        )
     return packet
 
 
@@ -193,6 +208,10 @@ def render_markdown(packet: dict[str, Any]) -> str:
         lines.append(f"- **Changed ref**: `{packet['changed_ref']}`")
     if packet.get("adapter_path"):
         lines.append(f"- **Adapter**: `{packet['adapter_path']}`")
+    if "reviewed_input_identity" in packet:
+        identity = packet["reviewed_input_identity"]
+        lines.append(f"- **Reviewed input identity**: `{identity.get('identity_sha256', '')}`")
+        lines.append(f"- **Reviewed paths**: {len(identity.get('reviewed_paths', []))}")
     lines.append(f"- **Sections**: {packet['section_count']}")
     lines.append(f"- **Overall ok**: {packet['ok']}")
     lines.append("")

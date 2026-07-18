@@ -101,7 +101,8 @@ history.
      `reviewer_tiers.high-leverage` spawn fields when the host exposes them
    - when the repo's adapter declares ≥1 `packet_sections`, pass the
      prepare-packet markdown render to each subagent and record the
-     consumed packet path in the closeout (`references/prepare-packet.md`)
+     consumed packet path plus the runner's exact reviewed-input binding in the
+     closeout (`references/prepare-packet.md`)
    - do not collapse the counterweight into one of the angle subagents; keep
      it as a separate skeptical pass
    - `../../shared/references/fresh-eye-subagent-review.md` owns spawn
@@ -139,6 +140,8 @@ The result should usually include:
 - `Fresh-Eye Satisfaction`
 - `Packet Consumed` — `<path>`, `n/a (no adapter sections)`, or
   `blocked <reason>` per `references/prepare-packet.md`
+- `Reviewed Input Identity` — packet path, exact packet SHA-256, and input
+  identity SHA-256 when a packet was consumed
 - `Target` — which reference shaped this run
 - `Change`
 - `Capability at Stake`
