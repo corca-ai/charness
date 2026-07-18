@@ -249,6 +249,27 @@ def test_check_test_repo_copy_invariants_flags_aliased_root_path_open(
     assert "Path.open(mode='w')" in result.stderr
 
 
+def test_check_test_repo_copy_invariants_flags_annotated_root_builtin_open(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_builtin_open.py").write_text(
+        "from pathlib import Path\n"
+        "from .support import ROOT\n"
+        "def test_write():\n"
+        "    target: Path = ROOT / 'temporary.txt'\n"
+        "    with open(target, 'w') as stream:\n"
+        "        stream.write('transient')\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "open(mode='w')" in result.stderr
+
+
 def test_check_test_repo_copy_invariants_flags_class_style_root_write(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
