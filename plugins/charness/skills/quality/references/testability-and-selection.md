@@ -73,6 +73,20 @@ package target owns its tests, a component target declares its local tests, or a
 domain module exposes a testable service/function below the CLI or UI shell.
 The convention should be cheap to infer and cheap to violate visibly.
 
+### Source Checkout Is Read-Only Test Input
+
+Standing tests should treat the source checkout as read-only. A test that needs
+to create an artifact, exercise a mutating CLI, or observe intermediate
+filesystem state should build the smallest honest repo under the runner's
+temporary directory and point the real implementation at that repo. Reading a
+contract or executable from the source checkout is fine; writing a temporary
+artifact there and deleting it afterward is not isolation, because parallel
+workers and snapshot-based tests can observe the transient state.
+
+Prefer a minimal temporary repo over a full checkout copy. Reserve a shared,
+lock-protected seed cache for genuinely copy-heavy boundary tests, and keep
+those tests outside the standing fast path when their cost remains material.
+
 ## Markers And Tags
 
 Tags and markers are useful when they describe cost, boundary, or environment:

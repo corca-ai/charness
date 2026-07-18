@@ -1,1 +1,1 @@
-2026-07-18-autonomous-quality-efficiency.md
+2026-07-18-test-isolation-quality.md

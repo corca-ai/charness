@@ -16,6 +16,27 @@ from .support import ROOT
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
+
+def _minimal_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text(
+        (ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    return repo
+
+
+def _redirect_repo_scripts_to_root(monkeypatch: pytest.MonkeyPatch) -> None:
+    real_run = preflight._run
+
+    def run_repo_script(repo_root: Path, argv: list[str]):
+        if len(argv) > 1 and argv[1].startswith("scripts/"):
+            argv = [argv[0], str(ROOT / argv[1]), *argv[2:]]
+        return real_run(repo_root, argv)
+
+    monkeypatch.setattr(preflight, "_run", run_repo_script)
+
 # --- registry / surface resolution (pure) -------------------------------------
 
 
@@ -187,12 +208,7 @@ def test_changed_artifacts_passes_scaffold_roundtrip(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "AGENTS.md").write_text(
-        (ROOT / "AGENTS.md").read_text(encoding="utf-8"),
-        encoding="utf-8",
-    )
+    repo = _minimal_repo(tmp_path)
     # the critique scaffold's own render must pass its validator at the commit
     # boundary (round-trip), proving the shape-by-construction arm is real.
     stub_text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("critique"))
@@ -218,14 +234,7 @@ def test_changed_artifacts_passes_scaffold_roundtrip(
     target.write_text(filled_in_stub, encoding="utf-8")
     rel = target.relative_to(repo).as_posix()
 
-    real_run = preflight._run
-
-    def run_repo_validator(repo_root: Path, argv: list[str]):
-        if len(argv) > 1 and argv[1].startswith("scripts/"):
-            argv = [argv[0], str(ROOT / argv[1]), *argv[2:]]
-        return real_run(repo_root, argv)
-
-    monkeypatch.setattr(preflight, "_run", run_repo_validator)
+    _redirect_repo_scripts_to_root(monkeypatch)
     report = preflight.changed_artifacts(repo, [rel])
     assert report["status"] == "ok", report
 
@@ -268,7 +277,10 @@ def test_emit_stub_scaffold_failure_returns_code_one() -> None:
     assert text  # surfaces the scaffold's stderr/stdout, not silence
 
 
-def test_describe_prefix_surface_includes_paths_and_failure_detail(monkeypatch) -> None:
+def test_describe_prefix_surface_includes_paths_and_failure_detail(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # critique is paths_arg=True: describe must pass --paths AND, when the file
     # fails its owning validator, echo the failure detail. Force the FAIL arm via
     # a stubbed _run (independent of the critique validator's enforce-when-present
@@ -279,16 +291,15 @@ def test_describe_prefix_surface_includes_paths_and_failure_detail(monkeypatch) 
         return subprocess.CompletedProcess(argv, 1, stdout="", stderr="missing reviewer-tier section")
 
     monkeypatch.setattr(preflight, "_run", failing_run)
-    target = ROOT / "charness-artifacts" / "critique" / "_preflight_describe_selftest.md"
-    try:
-        target.write_text("# not a real critique\n", encoding="utf-8")
-        rel = target.relative_to(ROOT).as_posix()
-        out = preflight.describe(ROOT, preflight.surface_for_type("critique"), target_rel=rel)
-        assert f"--paths {rel}" in out
-        assert "current verdict on" in out and "FAIL" in out
-        assert "missing reviewer-tier section" in out
-    finally:
-        target.unlink(missing_ok=True)
+    repo = _minimal_repo(tmp_path)
+    target = repo / "charness-artifacts" / "critique" / "_preflight_describe_selftest.md"
+    target.parent.mkdir(parents=True)
+    target.write_text("# not a real critique\n", encoding="utf-8")
+    rel = target.relative_to(repo).as_posix()
+    out = preflight.describe(repo, preflight.surface_for_type("critique"), target_rel=rel)
+    assert f"--paths {rel}" in out
+    assert "current verdict on" in out and "FAIL" in out
+    assert "missing reviewer-tier section" in out
 
 
 def test_format_changed_renders_ok_and_blocked_reports() -> None:

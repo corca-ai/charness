@@ -189,6 +189,121 @@ def test_check_test_repo_copy_invariants_accepts_release_only_copy_heavy_test(
     assert result.returncode == 0, result.stderr
 
 
+def test_check_test_repo_copy_invariants_flags_real_repo_root_write(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_shared_write.py").write_text(
+        "from pathlib import Path\n"
+        "ROOT = Path(__file__).resolve().parents[1]\n"
+        "def test_write():\n"
+        "    target = ROOT / 'charness-artifacts' / 'temporary.md'\n"
+        "    target.write_text('transient')\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "tests/test_shared_write.py:5" in result.stderr
+    assert "mutates a path derived from the real repository root" in result.stderr
+    assert "tmp_path or an isolated repo" in result.stderr
+
+
+def test_check_test_repo_copy_invariants_flags_import_time_root_write(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_import_write.py").write_text(
+        "from .support import ROOT\n"
+        "(ROOT / 'temporary.txt').touch()\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "module import mutates" in result.stderr
+
+
+def test_check_test_repo_copy_invariants_flags_aliased_root_path_open(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_alias_write.py").write_text(
+        "from pathlib import Path\n"
+        "from .support import ROOT as checkout\n"
+        "def test_write():\n"
+        "    target = Path(checkout).joinpath('temporary.txt')\n"
+        "    with target.open(mode='w') as stream:\n"
+        "        stream.write('transient')\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "Path.open(mode='w')" in result.stderr
+
+
+def test_check_test_repo_copy_invariants_flags_class_style_root_write(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_class_write.py").write_text(
+        "from .support import ROOT\n"
+        "class TestSharedState:\n"
+        "    def test_write(self):\n"
+        "        (ROOT / 'temporary.txt').write_text('transient')\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "`test_write` mutates" in result.stderr
+
+
+def test_check_test_repo_copy_invariants_accepts_non_checkout_root_name(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_local_root.py").write_text(
+        "from pathlib import Path\n"
+        "ROOT = Path('/tmp/test-output')\n"
+        "def test_write():\n"
+        "    (ROOT / 'result.txt').write_text('isolated')\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_test_repo_copy_invariants_accepts_tmp_write_and_root_read(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_isolated.py").write_text(
+        "from .support import ROOT\n"
+        "def test_isolated(tmp_path):\n"
+        "    source = (ROOT / 'AGENTS.md').read_text()\n"
+        "    (tmp_path / 'AGENTS.md').write_text(source)\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_test_repo_copy_invariants_skips_ast_for_irrelevant_files(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:

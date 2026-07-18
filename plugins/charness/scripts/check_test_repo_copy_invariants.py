@@ -51,6 +51,24 @@ COPY_HEAVY_TOKEN_RE = re.compile(
     )
     + r")\b"
 )
+REPO_ROOT_NAMES = frozenset({"ROOT", "REPO_ROOT", "_ROOT", "_REPO_ROOT", "PLUGIN_ROOT"})
+PATH_WRITE_METHODS = frozenset(
+    {
+        "chmod",
+        "mkdir",
+        "rename",
+        "replace",
+        "rmdir",
+        "symlink_to",
+        "touch",
+        "unlink",
+        "write_bytes",
+        "write_text",
+    }
+)
+# floor-addition-restraint: merge a reproduced xdist shared-worktree escape
+# into the existing test-isolation gate; this is a finite direct-Path ratchet,
+# not a claim to sandbox arbitrary Python, libraries, or subprocesses.
 
 
 def _name_parts(node: ast.AST) -> list[str]:
@@ -129,6 +147,163 @@ def _copy_heavy_marker_violations(source: str, rel_path: Path) -> list[str]:
     return violations
 
 
+def _expr_uses_repo_path(node: ast.AST, tainted_names: set[str]) -> bool:
+    if isinstance(node, ast.Name):
+        return node.id in tainted_names
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+        return _expr_uses_repo_path(node.left, tainted_names)
+    if isinstance(node, ast.Attribute):
+        return _expr_uses_repo_path(node.value, tainted_names)
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+        if node.func.attr in {"absolute", "joinpath", "resolve"}:
+            return _expr_uses_repo_path(node.func.value, tainted_names)
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "Path"
+        and node.args
+    ):
+        return _expr_uses_repo_path(node.args[0], tainted_names)
+    return False
+
+
+def _references_dunder_file(node: ast.AST) -> bool:
+    return any(isinstance(child, ast.Name) and child.id == "__file__" for child in ast.walk(node))
+
+
+def _module_repo_path_names(tree: ast.Module) -> set[str]:
+    tainted: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, (ast.Assign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            tainted.update(
+                target.id
+                for target in targets
+                if (
+                    isinstance(target, ast.Name)
+                    and target.id in REPO_ROOT_NAMES
+                    and node.value is not None
+                    and _references_dunder_file(node.value)
+                )
+            )
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            tainted.update(
+                alias.asname or alias.name
+                for alias in node.names
+                if alias.name in REPO_ROOT_NAMES
+            )
+    changed = True
+    while changed:
+        changed = False
+        for node in tree.body:
+            if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+                continue
+            value = node.value
+            if value is None or not _expr_uses_repo_path(value, tainted):
+                continue
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                if isinstance(target, ast.Name) and target.id not in tainted:
+                    tainted.add(target.id)
+                    changed = True
+    return tainted
+
+
+class _RepoWriteVisitor(ast.NodeVisitor):
+    def __init__(self, module_tainted_names: set[str]) -> None:
+        self.tainted_names = set(module_tainted_names)
+        self.violations: list[tuple[int, str]] = []
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        if _expr_uses_repo_path(node.value, self.tainted_names):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    self.tainted_names.add(target.id)
+        self.generic_visit(node)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        if (
+            node.value is not None
+            and isinstance(node.target, ast.Name)
+            and _expr_uses_repo_path(node.value, self.tainted_names)
+        ):
+            self.tainted_names.add(node.target.id)
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        if isinstance(node.func, ast.Attribute):
+            method = node.func.attr
+            if method in PATH_WRITE_METHODS and _expr_uses_repo_path(
+                node.func.value, self.tainted_names
+            ):
+                self.violations.append((node.lineno, method))
+            elif method == "open" and _expr_uses_repo_path(
+                node.func.value, self.tainted_names
+            ):
+                mode = self._open_mode(node)
+                if any(flag in mode for flag in "wax+"):
+                    self.violations.append((node.lineno, f"Path.open(mode={mode!r})"))
+        elif isinstance(node.func, ast.Name) and node.func.id == "open" and node.args:
+            mode = self._open_mode(node)
+            if any(flag in mode for flag in "wax+") and _expr_uses_repo_path(
+                node.args[0], self.tainted_names
+            ):
+                self.violations.append((node.lineno, f"open(mode={mode!r})"))
+        self.generic_visit(node)
+
+    @staticmethod
+    def _open_mode(node: ast.Call) -> str:
+        mode = "r"
+        if len(node.args) > 1 and isinstance(node.args[1], ast.Constant):
+            mode = str(node.args[1].value)
+        for keyword in node.keywords:
+            if keyword.arg == "mode" and isinstance(keyword.value, ast.Constant):
+                mode = str(keyword.value.value)
+        return mode
+
+
+def _function_scopes(body: list[ast.stmt]) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
+    scopes: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
+    for node in body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            scopes.append(node)
+        elif isinstance(node, ast.ClassDef):
+            scopes.extend(_function_scopes(node.body))
+    return scopes
+
+
+def _shared_repo_write_violations(source: str, rel_path: Path) -> list[str]:
+    try:
+        tree = ast.parse(source, filename=rel_path.as_posix())
+    except SyntaxError:
+        return []
+    module_tainted_names = _module_repo_path_names(tree)
+    violations: list[str] = []
+    module_visitor = _RepoWriteVisitor(module_tainted_names)
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            for child in node.body:
+                if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    module_visitor.visit(child)
+        elif not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            module_visitor.visit(node)
+    for line, operation in module_visitor.violations:
+        violations.append(
+            f"{rel_path.as_posix()}:{line}: module import mutates a path derived from the "
+            f"real repository root via `{operation}`. Use tmp_path or an isolated repo."
+        )
+    for node in _function_scopes(tree.body):
+        visitor = _RepoWriteVisitor(module_tainted_names)
+        visitor.visit(node)
+        for line, operation in visitor.violations:
+            violations.append(
+                f"{rel_path.as_posix()}:{line}: `{node.name}` mutates a path derived from the "
+                f"real repository root via `{operation}`. Use tmp_path or an isolated repo so "
+                "xdist workers and snapshot-based tests cannot observe transient worktree state."
+            )
+    return violations
+
+
 def _iter_python_files(tests_root: Path) -> list[Path]:
     files: list[Path] = []
     for path in tests_root.rglob("*.py"):
@@ -161,15 +336,16 @@ def find_violations(repo_root: Path) -> list[str]:
             )
         if COPY_HEAVY_TOKEN_RE.search(text):
             violations.extend(_copy_heavy_marker_violations(text, rel_path))
+        violations.extend(_shared_repo_write_violations(text, rel_path))
     return violations
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Enforce that the charness repo copy ignore set and ROOT-cloning fixtures live in a single "
-            "module (tests/repo_copy.py). Drift between local copies caused a 132M test fixture in "
-            "early 2026."
+            "Enforce isolated test repositories: keep repo-copy policy centralized, keep copy-heavy "
+            "tests out of standing pytest, and reject direct pathlib writes derived from the real "
+            "checkout root."
         )
     )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -181,7 +357,7 @@ def main() -> int:
         return 0
 
     print(
-        "Test fixture drift: repo-copy helpers must stay centralized, and copy-heavy tests must be release-only.",
+        "Test isolation drift: repo-copy policy must stay centralized and tests must not mutate the real checkout.",
         file=sys.stderr,
     )
     for violation in violations:

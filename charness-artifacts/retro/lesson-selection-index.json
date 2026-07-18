@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-18",
-  "source_artifact_count": 350,
-  "candidate_count": 1480,
+  "source_artifact_count": 352,
+  "candidate_count": 1484,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1085,6 +1085,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:051e9af09261",
+      "kind": "current_focus",
+      "lesson": "This slice followed a broad-suite shared-checkout race and the user's question about deeper coupling.",
+      "normalized_key": "this slice followed a broad suite shared checkout race and the user s question",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d500a9ae949a",
       "kind": "next_improvement",
       "lesson": "after a broad-gate-only failure, name the violated seam and run the four-axis sibling scan before applying the smallest artifact edit.",
@@ -1145,6 +1165,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a91aa00d4c38",
+      "kind": "next_improvement",
+      "lesson": "keep finite static ratchets paired with dynamic tests at process, filesystem, or concurrency boundaries; do not market either as a sandbox.",
+      "normalized_key": "keep finite static ratchets paired with dynamic tests at process filesystem or concurrency boundaries",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:db82ad0841a2",
       "kind": "next_improvement",
       "lesson": "keep the detection gap, sibling findings, and concrete tests in the debug and critique artifacts committed with this slice.",
@@ -1179,46 +1219,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md",
-          "date": "2026-07-18",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e9f182abc306",
-      "kind": "next_improvement",
-      "lesson": "persist this operator correction and its intentional historical/native exclusions so later scans do not confuse evidence preservation with drift.",
-      "normalized_key": "persist this operator correction and its intentional historical native exclusions so later scans do",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md",
-          "date": "2026-07-18",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:d8c46c1681c9",
-      "kind": "next_improvement",
-      "lesson": "retain explicit set-equality and ambiguity tests wherever two independently owned contracts are joined.",
-      "normalized_key": "retain explicit set equality and ambiguity tests wherever two independently owned contracts are joined",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
@@ -2297,6 +2297,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:051e9af09261",
+      "kind": "current_focus",
+      "lesson": "This slice followed a broad-suite shared-checkout race and the user's question about deeper coupling.",
+      "normalized_key": "this slice followed a broad suite shared checkout race and the user s question",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d500a9ae949a",
       "kind": "next_improvement",
       "lesson": "after a broad-gate-only failure, name the violated seam and run the four-axis sibling scan before applying the smallest artifact edit.",
@@ -2351,6 +2371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a91aa00d4c38",
+      "kind": "next_improvement",
+      "lesson": "keep finite static ratchets paired with dynamic tests at process, filesystem, or concurrency boundaries; do not market either as a sandbox.",
+      "normalized_key": "keep finite static ratchets paired with dynamic tests at process filesystem or concurrency boundaries",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
@@ -2451,6 +2491,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:962eb96c2a8f",
+      "kind": "next_improvement",
+      "lesson": "retain the portable read-only-checkout rule, executable fixtures, quality record, critique, and this sibling scan in the same commit.",
+      "normalized_key": "retain the portable read only checkout rule executable fixtures quality record critique and this",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2384a2630f91",
+      "kind": "next_improvement",
+      "lesson": "run the existing isolation checker while authoring or reviewing any test that executes a mutating CLI or materializes repo artifacts.",
+      "normalized_key": "run the existing isolation checker while authoring or reviewing any test that executes a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
