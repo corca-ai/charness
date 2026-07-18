@@ -44,6 +44,20 @@
   },
   {
    "class": "intentional",
+   "id": "97ebca5fdc836ccf",
+   "note": "YAML-first/hidden-JSON CLI presentation overlaps across independently executable root and portable skill commands with different payloads, exit rules, timeout ownership, and exception contracts; a shared CLI runner would couple unrelated owners rather than centralize domain behavior",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "c487bf09fa74c604",
+   "note": "release and retro commands retain the canonical local runtime-bootstrap seam so each public skill stays directly executable and portable; cross-skill extraction would introduce the dependency this bootstrap exists to resolve",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
    "id": "9fba34eb678c4ff9",
    "note": "critique and retro expose parallel packet-scope CLI arguments but remain independently executable portable skill commands with different reviewed-input, timeout, and output contracts; a partial shared parser experiment increased live clone families from 12 to 14 and was reverted",
    "reviewed_at": "2026-07-19",
