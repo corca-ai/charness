@@ -701,6 +701,92 @@ def test_produced_coverage_consumer_unreadable_verdict_fails_closeout(
 
 
 @pytest.mark.parametrize(
+    "command",
+    [
+        "python3 scripts/check_changed_line_mutation_coverage.py --base-sha 'unterminated",
+        "python3 scripts/check_changed_line_mutation_coverage.py --base-sha base",
+    ],
+)
+def test_consumer_range_rejects_malformed_or_incomplete_command(command: str) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    assert prod._consumer_range(command) is None
+
+
+def test_consumer_clean_verdict_rejects_command_base_mismatch() -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    command = (
+        "python3 scripts/check_changed_line_mutation_coverage.py "
+        "--base-sha command-base --head-sha HEAD"
+    )
+    report = {
+        "ok": True,
+        "blocking": [],
+        "base_sha": "command-base",
+        "head_sha": "HEAD",
+    }
+
+    assert prod._consumer_pass_validation_error(
+        report,
+        command=command,
+        producer_base_sha="producer-base",
+    ) == "consumer command range does not match producer metadata"
+
+
+def test_produced_coverage_skips_already_consumed_result(tmp_path: Path) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    existing = {"status": "passed", "command": "already ran"}
+    payload = {"executed_commands": [{
+        "produced_mutation_coverage": True,
+        "mutation_coverage_consumer": existing,
+    }]}
+
+    def must_not_run(*args, **kwargs):
+        raise AssertionError("already-consumed producer must remain idempotent")
+
+    assert prod.run_produced_coverage_consumer(tmp_path, payload, must_not_run) is False
+    assert payload["executed_commands"][0]["mutation_coverage_consumer"] is existing
+
+
+def test_committed_consumer_nonverification_fails_closeout(tmp_path: Path) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    command = prod.consumer_command_for_produced_coverage(
+        repo, base_sha=base, coverage_json=repo / "reports/mutation/test-coverage.json"
+    )
+    payload = {"executed_commands": [{
+        "produced_mutation_coverage": True,
+        "mutation_coverage_base_sha": base,
+        "mutation_coverage_consumer_command": command,
+    }]}
+
+    def fake_run(repo_root, received, phase):
+        return {
+            "phase": phase,
+            "command": received,
+            "returncode": 0,
+            "stdout": json.dumps({
+                "ok": True,
+                "blocking": [],
+                "base_sha": base,
+                "head_sha": "HEAD",
+                "coverage_not_verified": True,
+            }),
+            "stderr": "coverage unavailable",
+        }
+
+    assert prod.run_produced_coverage_consumer(repo, payload, fake_run) is True
+    assert payload["status"] == "failed"
+    assert "not verified" in payload["error"]
+    record = payload["executed_commands"][0]["mutation_coverage_consumer"]
+    assert record["status"] == "not_checked"
+    assert payload["mutation_coverage_changed_line_proof"] is record
+
+
+@pytest.mark.parametrize(
     "report",
     [
         {},

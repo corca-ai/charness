@@ -32,6 +32,7 @@ Ambient repo findings: D18 remains ignored per operator direction. The duplicate
 
 - The prior closeout treated producer exit zero as terminal success and deferred authoritative consumption until the release helper; cumulative proof could therefore fail only at the irreversible boundary.
 - The first repair still missed untracked eligible files, accepted any JSON object, and hid the structured non-claim in text mode. Fresh-eye review found all three before closeout.
+- The first committed-range consumer then blocked three files on 10 uncovered changed lines. Focused branch tests for malformed commands, range mismatch, idempotent consumption, non-verification, and version normalization closed those exact gaps before release.
 - Structural fixture work removes repeated seed construction, but end-to-end pytest timing did not improve beyond noise: the final 36.1s equals the recent median and is slower than the session-opening 34.6s sample. No runtime-win claim is made.
 
 ## Missing
@@ -65,6 +66,7 @@ Ambient repo findings: D18 remains ignored per operator direction. The duplicate
 - focused worker proofs: 44 fixture tests, 46 mutation producer/closeout tests, and 86 Nose consumer tests; integrated focused proof: 207 passed.
 - `ruff check`, source/plugin sync, packaging validation, duplicate ratchet, artifact preflights, and critique validators.
 - `./scripts/run-quality.sh --read-only` — first integrated attempt 80/81 exposed duplicate pressure; final 81/81 in 56.5s with pytest 36.1s.
+- first postcommit producer→consumer run — focused and broad pytest passed, then the authoritative consumer blocked three files; branch-focused tests were added and the exact committed range was regenerated rather than waived.
 
 ## Recommended Next Quality Moves
 

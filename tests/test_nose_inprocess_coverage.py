@@ -58,6 +58,18 @@ def _completed(stdout: str = "", returncode: int = 0, stderr: str = "") -> subpr
 
 
 # --------------------------------------------------------------------------- #
+# shared version transport — wrapper and both normalization outcomes.
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize(
+    ("version", "expected"),
+    [((0, 14, 0), "0.14.0"), (None, "")],
+)
+def test_resolve_tool_version_normalizes_probe_result(monkeypatch, version, expected) -> None:
+    monkeypatch.setattr(nr._tool, "probe_nose_version", lambda _bin: {"version": version})
+    assert nr.resolve_tool_version("nose") == expected
+
+
+# --------------------------------------------------------------------------- #
 # nose_report_lib.run_nose — the error/edge branches the happy path skips.
 # --------------------------------------------------------------------------- #
 def test_run_nose_timeout(monkeypatch) -> None:
