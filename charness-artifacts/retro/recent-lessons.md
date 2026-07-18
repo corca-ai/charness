@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md`; sources: 104)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`; sources: 105)
 - Dup-ratchet attribution archaeology: a hard block on fingerprint `895d96962b294ed4` cost several rounds of reproducing the gate's own scan because the gate output names no member paths; the family turned out to be a collateral clustering rotation among two untouched files. Routed to #441. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 - One gate cycle lost persisting the host-log probe as `.md` into the validated retro directory (the retro-artifact validator correctly rejected it); the repo convention for probe artifacts is `.json`, which prior goal artifacts already demonstrate. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 - Reviewer-wait idle time: bounded-reviewer completion notifications never arrived from the host, and `run_in_background: false` Agent spawns still ran asynchronously, so the parent polled subagent transcripts with fixed sleeps (~10 idle minutes across four reviews). Host-runtime behavior, not repo fixable; lesson persisted here. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md`; sources: 104)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`; sources: 105)
 - accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 - applied: cumulative and live gate path populations have separate parameters and regression tests. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 - applied: exact missing branches received direct behavioral tests; redundant observer branches were simplified instead of exempted from coverage. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
@@ -132,5 +132,6 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`
 - `charness-artifacts/retro/2026-07-19-session-retro.md`
