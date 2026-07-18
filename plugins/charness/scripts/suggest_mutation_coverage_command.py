@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -175,7 +176,17 @@ def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dic
             "changed_pool_files": changed,
             "unmapped_changed_pool_files": missing,
         }
-    command = "python3 -m pytest -q -m 'not release_only' " + " ".join(targets)
+    command = shlex.join(
+        [
+            "python3",
+            "scripts/run_standing_pytest.py",
+            "--repo-root",
+            ".",
+            "--mode",
+            "read-only",
+            *(token for target in targets for token in ("--pytest-target", target)),
+        ]
+    )
     status = "recommended" if not missing else "partial"
     reason = (
         "nearest direct or local-loader references found in standing pytest targets; "

@@ -125,8 +125,14 @@ def expand_targets(repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_T
     return expanded
 
 
-def combined_targets(repo_root: Path, extra_pytest_targets: list[str] | None = None) -> list[str]:
-    return [*expand_targets(repo_root), *(extra_pytest_targets or [])]
+def combined_targets(
+    repo_root: Path,
+    extra_pytest_targets: list[str] | None = None,
+    pytest_targets: list[str] | None = None,
+) -> list[str]:
+    """Resolve the standing target set, optionally replacing it with a focused set."""
+    base_targets = list(pytest_targets) if pytest_targets else expand_targets(repo_root)
+    return [*base_targets, *(extra_pytest_targets or [])]
 
 
 def build_pytest_command(
@@ -135,6 +141,7 @@ def build_pytest_command(
     basetemp: Path,
     include_release_only: bool,
     extra_pytest_targets: list[str] | None = None,
+    pytest_targets: list[str] | None = None,
     env: dict[str, str] | None = None,
 ) -> list[str]:
     env = os.environ if env is None else env
@@ -150,7 +157,7 @@ def build_pytest_command(
             "and may exceed runtime budgets. Install or enable with: pip install pytest-xdist",
             file=sys.stderr,
         )
-    command.extend(combined_targets(repo_root, extra_pytest_targets))
+    command.extend(combined_targets(repo_root, extra_pytest_targets, pytest_targets))
     return command
 
 
@@ -167,6 +174,7 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
         basetemp=basetemp,
         include_release_only=args.include_release_only,
         extra_pytest_targets=getattr(args, "extra_pytest_target", []),
+        pytest_targets=getattr(args, "pytest_target", []),
         env=env,
     )
     if args.print_command:
@@ -186,6 +194,15 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--include-release-only", action="store_true")
     parser.add_argument("--keep-basetemp", action="store_true")
     parser.add_argument(
+        "--pytest-target",
+        action="append",
+        default=[],
+        help=(
+            "Focused pytest path or nodeid replacing the standing target set; repeat for "
+            "multiple targets while retaining xdist and temp isolation."
+        ),
+    )
+    parser.add_argument(
         "--extra-pytest-target",
         action="append",
         default=[],
@@ -204,7 +221,13 @@ def main(argv: list[str] | None = None) -> int:
         print("\n".join(STANDING_PYTEST_TARGETS))
         return 0
     if args.print_expanded_targets:
-        print("\n".join(combined_targets(args.repo_root.resolve(), args.extra_pytest_target)))
+        print(
+            "\n".join(
+                combined_targets(
+                    args.repo_root.resolve(), args.extra_pytest_target, args.pytest_target
+                )
+            )
+        )
         return 0
     if args.print_temp_root:
         temp_root = default_temp_root(args.repo_root.resolve())

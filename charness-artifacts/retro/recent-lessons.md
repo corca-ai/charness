@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- A speed-only slice reused the standing xdist runner for focused mutation coverage and removed repeated duplicate-ratchet execution without weakening the changed-line consumer. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
 - An aggressive autonomous improvement pass repaired the release issue-close state machine, compressed release-plan evidence, and accelerated a repeated inventory contract test. (source: `charness-artifacts/retro/2026-07-19-session-retro.md`)
-- The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`; sources: 105)
-- Dup-ratchet attribution archaeology: a hard block on fingerprint `895d96962b294ed4` cost several rounds of reproducing the gate's own scan because the gate output names no member paths; the family turned out to be a collateral clustering rotation among two untouched files. Routed to #441. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
-- One gate cycle lost persisting the host-log probe as `.md` into the validated retro directory (the retro-artifact validator correctly rejected it); the repo convention for probe artifacts is `.json`, which prior goal artifacts already demonstrate. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
-- Reviewer-wait idle time: bounded-reviewer completion notifications never arrived from the host, and `run_in_background: false` Agent spawns still ran asynchronously, so the parent polled subagent transcripts with fixed sleeps (~10 idle minutes across four reviews). Host-runtime behavior, not repo fixable; lesson persisted here. (source: `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`)
+- Artifact-validation waste: the quality artifact used two inventory values but omitted their exact field names. The broad suite caught this after 4,943 passes, forcing a 73.9s rerun even though the semantic inventory-consumption validator was cheap. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
+- Broad final proof itself was correctly timed after scope lock and is not classified as waste. The eliminated serial focused producer was gate-baseline runtime debt because it exceeded the broad parallel path while proving less. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
+- Verification sequencing waste: the parent edited two files while reviewers were active, invalidating their otherwise useful approvals and requiring a complete fresh packet and review rerun. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`; sources: 105)
 - accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
+- after a reviewer snapshot, prohibit all parent mutations until each reviewer verify completes; gather additional ideas read-only or wait. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
 - applied: cumulative and live gate path populations have separate parameters and regression tests. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
-- applied: exact missing branches received direct behavioral tests; redundant observer branches were simplified instead of exempted from coverage. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 
 ## Selection Policy
 
@@ -121,7 +121,6 @@
 - `charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-15-v1-0-11-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`
 - `charness-artifacts/retro/2026-07-16-v1-1-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`
@@ -135,3 +134,4 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`
 - `charness-artifacts/retro/2026-07-19-session-retro.md`
+- `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`

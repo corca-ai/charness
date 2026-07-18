@@ -38,6 +38,13 @@ def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) ->
     assert "coverage run" in out3
     assert out3.endswith("scripts/run_standing_pytest.py --repo-root . --mode read-only")
 
+    focused_runner = runner + " --pytest-target tests/focused.py::test_one"
+    focused_out = instrument_broad_command(focused_runner, data_file)
+    assert focused_out.endswith(
+        "scripts/run_standing_pytest.py --repo-root . --mode read-only "
+        "--pytest-target tests/focused.py::test_one"
+    )
+
     out4 = instrument_broad_command(
         runner,
         data_file,
@@ -67,6 +74,42 @@ def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
     with pytest.raises(ValueError):
         instrument_broad_command(helper, tmp_path / ".data")
     assert is_standing_pytest_runner_command("python3 scripts/run_standing_pytest.py 'unterminated")
+
+
+def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> None:
+    """The focused runner adds a subprocess boundary; prove coverage crosses it."""
+    from scripts import mutation_coverage_producer as prod
+
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / "scripts" / "demo.py").write_text(
+        "def answer():\n    return 42\n", encoding="utf-8"
+    )
+    (repo / "tests" / "test_demo.py").write_text(
+        "from scripts.demo import answer\n\n"
+        "def test_answer():\n    assert answer() == 42\n",
+        encoding="utf-8",
+    )
+    coverage_json = repo / "coverage.json"
+    data_file, rcfile, env = prod._sampling.prepare_plain_coverage(repo, coverage_json)
+    runner = Path(__file__).resolve().parents[2] / "scripts" / "run_standing_pytest.py"
+    command = prod.instrument_broad_command(
+        f"python3 {runner} --repo-root {repo} --mode read-only "
+        "--pytest-target tests/test_demo.py",
+        data_file,
+    )
+
+    result = subprocess.run(
+        shlex.split(command), cwd=repo, env=env, check=False, capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    prod._sampling.combine_and_export_coverage(
+        repo, rcfile, data_file, coverage_json, env, show_contexts=False
+    )
+
+    covered = prod._sampling.load_covered_lines(repo, coverage_json)
+    assert covered["scripts/demo.py"] >= {1, 2}
 
 
 def test_produce_broad_coverage_emits_json_and_marker(tmp_path: Path, monkeypatch) -> None:

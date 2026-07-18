@@ -53,7 +53,8 @@ def test_recommends_focused_command_for_changed_pool_file(tmp_path: Path) -> Non
         "scripts/foo.py": ["tests/quality_gates/test_foo.py", "tests/test_top.py"]
     }
     assert payload["command"] == (
-        "python3 -m pytest -q -m 'not release_only' tests/quality_gates/test_foo.py tests/test_top.py"
+        "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only "
+        "--pytest-target tests/quality_gates/test_foo.py --pytest-target tests/test_top.py"
     )
 
 
@@ -301,7 +302,7 @@ def test_main_prints_command_and_json(tmp_path: Path, capsys: pytest.CaptureFixt
     repo, base = _seed_repo(tmp_path)
 
     assert sugg.main(["--repo-root", str(repo), "--base-sha", base]) == 0
-    assert "python3 -m pytest" in capsys.readouterr().out
+    assert "python3 scripts/run_standing_pytest.py" in capsys.readouterr().out
 
     assert sugg.main(["--repo-root", str(repo), "--base-sha", base, "--json"]) == 0
     payload = capsys.readouterr().out
@@ -316,7 +317,7 @@ def test_main_warns_for_partial_focused_command(tmp_path: Path, capsys: pytest.C
 
     assert sugg.main(["--repo-root", str(repo), "--base-sha", base]) == 0
     output = capsys.readouterr()
-    assert "python3 -m pytest" in output.out
+    assert "python3 scripts/run_standing_pytest.py" in output.out
     assert "status: partial" in output.err
     assert "scripts/bar.py" in output.err
     assert "broad coverage fallback" in output.err

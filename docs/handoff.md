@@ -32,6 +32,9 @@
   their callers. The live sweep reports two registered entrypoints and zero review
   candidates; wrong-path, wrong-loader, wrong-receiver, and disconnected-loop
   fixtures remain fail-closed; see the [quality review](../charness-artifacts/quality/latest.md).
+- Focused mutation coverage now reuses standing xdist through replacement targets:
+  the five-file producer took 7.6s versus 213s serial, while 4,944 broad tests
+  passed in 73.9s. Combined surfaces also execute duplicate-ratchet teeth once.
 
 ## Next Session
 
@@ -44,7 +47,7 @@
 3. Keep D18 ignored unless the operator explicitly reopens it.
 4. For mutation-pool changes, ask the selector before widening a producer by
    hand: direct reference, nearest recognized loader ancestor, then broad
-   fallback.
+   fallback; keep its canonical parallel-runner command.
 5. When adding a new dynamic-call syntax, add wrong-path, wrong-loader,
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
    Finish critique packets before taking reviewer boundary fingerprints, and run
@@ -54,11 +57,9 @@
 
 ## Discuss
 
-- Optional: a future live Codex-host session may record provider-applied
-  `gpt-5.6-terra`/`medium` evidence. This is not a release or quality blocker.
-- Gate-baseline follow-up: preserve confidence while fixing mutation selector
-  and parallelism economics. Broad instrumentation took 141.9-208.3s and the
-  serial focused packet 333.8s versus a 120s budget, catching 4 bugs/29 gaps.
+- Quality authoring follow-up: reuse the existing inventory-consumption validator
+  in the cheap artifact preflight so missing field-name engagement fails before
+  broad pytest. The speed-slice retro records the 73.9s avoidable rerun.
 
 ## References
 

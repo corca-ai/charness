@@ -36,8 +36,10 @@ the root instruction file but still apply to Charness maintenance work.
   (`check-changed-line-mutation-coverage`) reuses. When the changed pool has an
   honest focused pytest proof, prefer a focused producer command alongside
   `--produce-mutation-coverage`; for example,
-  `--mutation-coverage-command "python3 -m pytest -q tests/quality_gates/test_x.py"`.
-  Use `python3 scripts/suggest_mutation_coverage_command.py --repo-root . --json`
+  `--mutation-coverage-command "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/quality_gates/test_x.py"`.
+  This focused form retains the standing runner's bounded xdist parallelism and
+  external temp isolation while replacing its broad target set. Use
+  `python3 scripts/suggest_mutation_coverage_command.py --repo-root .`
   to find a focused producer command from changed mutation-pool files and their
   standing-test references before falling back to the broad producer.
   The broad pytest proof stays on the normal closeout/cache path, and only the
@@ -47,8 +49,9 @@ the root instruction file but still apply to Charness maintenance work.
   when the standing runner is nearly enough but missed one focused node, append
   it with `--mutation-coverage-extra-pytest-target tests/path.py::test_name`
   instead of shell-chaining commands inside `--mutation-coverage-command`.
-  [run_standing_pytest.py](../../scripts/run_standing_pytest.py) accepts the same `--extra-pytest-target`
-  option for direct runs and `--print-expanded-targets` diagnostics.
+  [run_standing_pytest.py](../../scripts/run_standing_pytest.py) accepts
+  `--pytest-target` to replace the standing set and `--extra-pytest-target` to
+  append to it; both feed `--print-expanded-targets` diagnostics.
   To check your own uncommitted slice early, run the producer (it stamps the
   marker over base->worktree) then the
   consumer, or run the consumer over a head that includes the worktree — a manual

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-19",
-  "source_artifact_count": 367,
-  "candidate_count": 1523,
+  "source_artifact_count": 369,
+  "candidate_count": 1530,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1095,6 +1095,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:dcd1ee7fed01",
+      "kind": "current_focus",
+      "lesson": "A speed-only slice reused the standing xdist runner for focused mutation coverage and removed repeated duplicate-ratchet execution without weakening the changed-line consumer.",
+      "normalized_key": "a speed only slice reused the standing xdist runner for focused mutation coverage and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:85d1814aff65",
       "kind": "current_focus",
       "lesson": "An aggressive autonomous improvement pass repaired the release issue-close state machine, compressed release-plan evidence, and accelerated a repeated inventory contract test.",
@@ -1149,6 +1169,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:84639813576d",
+      "kind": "next_improvement",
+      "lesson": "after a reviewer snapshot, prohibit all parent mutations until each reviewer verify completes; gather additional ideas read-only or wait.",
+      "normalized_key": "after a reviewer snapshot prohibit all parent mutations until each reviewer verify completes gather",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -1249,46 +1289,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-          "date": "2026-07-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:df11d0266a67",
-      "kind": "next_improvement",
-      "lesson": "never infer that fewer test files means cheaper proof; measure selector output under the same coverage/parallelism environment before choosing focused versus broad production.",
-      "normalized_key": "never infer that fewer test files means cheaper proof measure selector output under the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-          "date": "2026-07-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:01904664c573",
-      "kind": "next_improvement",
-      "lesson": "out-of-scope: making packet content digests self-describing requires a backward-compatible schema migration; the repeated interpretation error is recorded in the RCA ledger and canonical verification remains authoritative.",
-      "normalized_key": "out of scope making packet content digests self describing requires a backward compatible schema",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -2377,6 +2377,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:dcd1ee7fed01",
+      "kind": "current_focus",
+      "lesson": "A speed-only slice reused the standing xdist runner for focused mutation coverage and removed repeated duplicate-ratchet execution without weakening the changed-line consumer.",
+      "normalized_key": "a speed only slice reused the standing xdist runner for focused mutation coverage and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:85d1814aff65",
       "kind": "current_focus",
       "lesson": "An aggressive autonomous improvement pass repaired the release issue-close state machine, compressed release-plan evidence, and accelerated a repeated inventory contract test.",
@@ -2431,6 +2451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:84639813576d",
+      "kind": "next_improvement",
+      "lesson": "after a reviewer snapshot, prohibit all parent mutations until each reviewer verify completes; gather additional ideas read-only or wait.",
+      "normalized_key": "after a reviewer snapshot prohibit all parent mutations until each reviewer verify completes gather",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -2537,6 +2577,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:223077415a37",
+      "kind": "next_improvement",
+      "lesson": "make the quality artifact authoring/preflight packet run inventory consumption validation before broad pytest, reusing the existing validator rather than adding a new floor.",
+      "normalized_key": "make the quality artifact authoring preflight packet run inventory consumption validation before broad pytest",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:df11d0266a67",
       "kind": "next_improvement",
       "lesson": "never infer that fewer test files means cheaper proof; measure selector output under the same coverage/parallelism environment before choosing focused versus broad production.",
@@ -2617,6 +2677,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c4cc427116c0",
+      "kind": "next_improvement",
+      "lesson": "retain “smaller selected set is not faster unless it preserves the canonical runner environment” in recent lessons and handoff.",
+      "normalized_key": "retain smaller selected set is not faster unless it preserves the canonical runner environment",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:19c6bb6cba61",
       "kind": "next_improvement",
       "lesson": "specify the restart-input envelope alongside every resumable irreversible state; validate it before downstream recovery logic and make omissions actionable rather than inferring intent from durable side effects.",
@@ -2633,6 +2713,66 @@
           "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e182faa0ecf4",
+      "kind": "repeat_trap",
+      "lesson": "Artifact-validation waste: the quality artifact used two inventory values but omitted their exact field names. The broad suite caught this after 4,943 passes, forcing a 73.9s rerun even though the semantic inventory-consumption validator was cheap.",
+      "normalized_key": "artifact validation waste the quality artifact used two inventory values but omitted their exact",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fb3e31cb5193",
+      "kind": "repeat_trap",
+      "lesson": "Broad final proof itself was correctly timed after scope lock and is not classified as waste. The eliminated serial focused producer was gate-baseline runtime debt because it exceeded the broad parallel path while proving less.",
+      "normalized_key": "broad final proof itself was correctly timed after scope lock and is not classified",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6f7ce15b432a",
+      "kind": "repeat_trap",
+      "lesson": "Verification sequencing waste: the parent edited two files while reviewers were active, invalidating their otherwise useful approvals and requiring a complete fresh packet and review rerun.",
+      "normalized_key": "verification sequencing waste the parent edited two files while reviewers were active invalidating their",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "date": "2026-07-19",
+          "section": "Waste"
         }
       ]
     },
