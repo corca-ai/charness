@@ -400,6 +400,121 @@ def test_dead_code_advisory_recognizes_direct_import_aliases(tmp_path: Path) -> 
     ]
 
 
+def test_dead_code_advisory_recognizes_runpy_registered_entrypoint(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    scripts = repo / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "loader.py").write_text("def load_sibling():\n    pass\n", encoding="utf-8")
+    (scripts / "consumer.py").write_text(
+        'import runpy\nfrom pathlib import Path\nrunpy.run_path(str(Path(__file__).with_name("loader.py")))["load_sibling"]()\n',
+        encoding="utf-8",
+    )
+
+    finding = module.parse_findings(
+        "scripts/loader.py:1: unused function 'load_sibling' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+        scan_paths=["scripts/loader.py", "scripts/consumer.py"],
+    )[0]
+
+    assert finding["classification"] == "registered_dynamic_entrypoint"
+    (scripts / "consumer.py").write_text(
+        'import runpy\nrunpy.run_path("/other/loader.py")["load_sibling"]()\n',
+        encoding="utf-8",
+    )
+    finding = module.parse_findings(
+        "scripts/loader.py:1: unused function 'load_sibling' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+        scan_paths=["scripts/loader.py", "scripts/consumer.py"],
+    )[0]
+    assert finding["classification"] == "review_candidate"
+    (scripts / "consumer.py").write_text(
+        'import runpy\nfrom pathlib import Path\nrunpy.run_path(str(Path(__file__).with_name("loader.py") / "not_target"))["load_sibling"]()\n',
+        encoding="utf-8",
+    )
+    finding = module.parse_findings(
+        "scripts/loader.py:1: unused function 'load_sibling' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+        scan_paths=["scripts/loader.py", "scripts/consumer.py"],
+    )[0]
+    assert finding["classification"] == "review_candidate"
+    (scripts / "consumer.py").write_text(
+        'import runpy\nfrom pathlib import Path\nrunpy.run_path(str(Path(__file__).parent / "other" / "loader.py"))["load_sibling"]()\n',
+        encoding="utf-8",
+    )
+    finding = module.parse_findings(
+        "scripts/loader.py:1: unused function 'load_sibling' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+        scan_paths=["scripts/loader.py", "scripts/consumer.py"],
+    )[0]
+    assert finding["classification"] == "review_candidate"
+
+
+def test_dead_code_advisory_requires_registry_dispatch_for_entrypoint(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    scripts = repo / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "hook.py").write_text("def reconcile_hook():\n    pass\n", encoding="utf-8")
+    registry = scripts / "registry.py"
+    declaration = (
+        'HOOK_INTENTS = (SiblingHookIntent(module="hook", reconcile_function="reconcile_hook"),)\n'
+    )
+    dispatch = (
+        "def reconcile(intents=HOOK_INTENTS):\n"
+        "    for intent in intents:\n"
+        "        module = import_module(intent.module)\n"
+        "        getattr(module, intent.reconcile_function)()\n"
+    )
+    registry.write_text(declaration + dispatch, encoding="utf-8")
+
+    def classify() -> str:
+        return module.parse_findings(
+            "scripts/hook.py:1: unused function 'reconcile_hook' (60% confidence, 2 lines)\n",
+            repo_root=repo,
+            scan_paths=["scripts/hook.py", "scripts/registry.py"],
+        )[0]["classification"]
+
+    assert classify() == "registered_dynamic_entrypoint"
+    registry.write_text(
+        declaration
+        + "def reconcile(intents=HOOK_INTENTS):\n"
+        + "    for intent in intents:\n"
+        + "        module = unrelated_loader(intent.module)\n"
+        + "        getattr(module, intent.reconcile_function)()\n",
+        encoding="utf-8",
+    )
+    assert classify() == "review_candidate"
+    registry.write_text(
+        declaration
+        + "def reconcile(intents=HOOK_INTENTS):\n"
+        + "    for intent in intents:\n"
+        + "        module = import_module(intent.module)\n"
+        + "        getattr(unrelated_module, intent.reconcile_function)()\n",
+        encoding="utf-8",
+    )
+    assert classify() == "review_candidate"
+    registry.write_text(
+        declaration
+        + "def reconcile():\n"
+        + "    for intent in ():\n"
+        + "        module = import_module(intent.module)\n"
+        + "        getattr(module, intent.reconcile_function)()\n",
+        encoding="utf-8",
+    )
+    assert classify() == "review_candidate"
+
+
 def test_dead_code_advisory_marks_source_scanned_attention_contracts() -> None:
     from importlib.util import module_from_spec, spec_from_file_location
 

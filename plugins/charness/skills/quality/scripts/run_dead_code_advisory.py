@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
 import re
 import runpy
 import shutil
@@ -14,6 +13,12 @@ from types import SimpleNamespace
 
 _summary_output = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
+)
+_dynamic_entrypoints = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("dynamic_entrypoint_evidence.py")))
+)
+_source_roles = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("source_role_evidence.py")))
 )
 
 DEFAULT_PATHS = ("runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "skills", "tests")
@@ -59,90 +64,8 @@ def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...]) -> list[st
     return sorted(selected)
 
 
-def _is_dataclass_decorator(decorator: ast.expr) -> bool:
-    target = decorator.func if isinstance(decorator, ast.Call) else decorator
-    return getattr(target, "id", None) == "dataclass" or getattr(target, "attr", None) == "dataclass"
-
-
-def _import_bindings(tree: ast.AST, module: str, name: str | None = None) -> set[str]:
-    bindings: set[str] = set()
-    for node in ast.walk(tree):
-        if name is None and isinstance(node, ast.Import):
-            bindings.update(alias.asname or alias.name for alias in node.names if alias.name == module)
-        elif name is not None and isinstance(node, ast.ImportFrom) and node.module == module:
-            bindings.update(alias.asname or alias.name for alias in node.names if alias.name == name)
-    return bindings
-
-
-def _is_bound_attribute(expression: ast.expr, bindings: set[str], attribute: str) -> bool:
-    target = expression.func if isinstance(expression, ast.Call) else expression
-    return (
-        isinstance(target, ast.Attribute)
-        and isinstance(target.value, ast.Name)
-        and target.value.id in bindings
-        and target.attr == attribute
-    )
-
-
-def _is_bound_name(expression: ast.expr, bindings: set[str]) -> bool:
-    target = expression.func if isinstance(expression, ast.Call) else expression
-    return isinstance(target, ast.Name) and target.id in bindings
-
-
-def _source_role_locations(path: Path) -> dict[str, set[tuple[int, str]]]:
-    try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    except (OSError, SyntaxError, UnicodeDecodeError):
-        return {"dataclass_fields": set(), "pytest_fixtures": set(), "visitor_methods": set()}
-    pytest_modules = _import_bindings(tree, "pytest")
-    fixture_names = _import_bindings(tree, "pytest", "fixture")
-    ast_modules = _import_bindings(tree, "ast")
-    node_visitor_names = _import_bindings(tree, "ast", "NodeVisitor")
-    dataclass_fields = {
-        (statement.lineno, statement.target.id)
-        for class_node in ast.walk(tree)
-        if isinstance(class_node, ast.ClassDef)
-        and any(_is_dataclass_decorator(decorator) for decorator in class_node.decorator_list)
-        for statement in class_node.body
-        if isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name)
-    }
-    fixture_nodes = [
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and any(
-            _is_bound_attribute(decorator, pytest_modules, "fixture")
-            or _is_bound_name(decorator, fixture_names)
-            for decorator in node.decorator_list
-        )
-    ]
-    pytest_fixtures = {
-        (line, node.name)
-        for node in fixture_nodes
-        for line in {node.lineno, *(decorator.lineno for decorator in node.decorator_list)}
-    }
-    visitor_methods = {
-        (method.lineno, method.name)
-        for class_node in ast.walk(tree)
-        if isinstance(class_node, ast.ClassDef)
-        and any(
-            _is_bound_attribute(base, ast_modules, "NodeVisitor")
-            or _is_bound_name(base, node_visitor_names)
-            for base in class_node.bases
-        )
-        for method in class_node.body
-        if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and method.name.startswith("visit_")
-    }
-    return {
-        "dataclass_fields": dataclass_fields,
-        "pytest_fixtures": pytest_fixtures,
-        "visitor_methods": visitor_methods,
-    }
-
-
 def _dataclass_field_locations(path: Path) -> set[tuple[int, str]]:
-    return _source_role_locations(path)["dataclass_fields"]
+    return _source_roles.dataclass_field_locations(path)
 
 
 def classify_finding(
@@ -192,7 +115,12 @@ def classify_finding(
     return "review_candidate"
 
 
-def parse_findings(stdout: str, *, repo_root: Path | None = None) -> list[dict[str, object]]:
+def parse_findings(
+    stdout: str,
+    *,
+    repo_root: Path | None = None,
+    scan_paths: list[str] | None = None,
+) -> list[dict[str, object]]:
     findings: list[dict[str, object]] = []
     role_cache: dict[str, dict[str, set[tuple[int, str]]]] = {}
     for line in stdout.splitlines():
@@ -203,7 +131,7 @@ def parse_findings(stdout: str, *, repo_root: Path | None = None) -> list[dict[s
         message = match.group("message")
         finding_line = int(match.group("line"))
         if repo_root is not None and path not in role_cache:
-            role_cache[path] = _source_role_locations(repo_root / path)
+            role_cache[path] = _source_roles.source_role_locations(repo_root / path)
         roles = role_cache.get(path)
         fields = roles.get("dataclass_fields") if roles is not None else None
         findings.append(
@@ -222,6 +150,25 @@ def parse_findings(stdout: str, *, repo_root: Path | None = None) -> list[dict[s
                 ),
             }
         )
+    if repo_root is None or scan_paths is None:
+        return findings
+    candidates = {
+        (str(finding["path"]), match.group("name"))
+        for finding in findings
+        if finding["classification"] == "review_candidate"
+        and (match := UNUSED_NAME_RE.search(str(finding["message"]))) is not None
+        and match.group("kind") in {"function", "method"}
+    }
+    registered = _dynamic_entrypoints.find_registered_dynamic_entrypoints(
+        repo_root,
+        candidates,
+        scan_paths,
+    )
+    for finding in findings:
+        match = UNUSED_NAME_RE.search(str(finding["message"]))
+        key = (str(finding["path"]), match.group("name")) if match is not None else None
+        if key in registered:
+            finding["classification"] = "registered_dynamic_entrypoint"
     return findings
 
 
@@ -284,7 +231,7 @@ def run_vulture(repo_root: Path, paths: list[str], *, confidence: int) -> dict[s
             str(exc.stdout or ""),
             f"timed out after {VULTURE_TIMEOUT_SECONDS}s",
         )
-    findings = parse_findings(completed.stdout, repo_root=repo_root)
+    findings = parse_findings(completed.stdout, repo_root=repo_root, scan_paths=paths)
     return {
         "confidence": confidence,
         "status": "findings" if completed.returncode == 3 else "clean" if completed.returncode == 0 else "error",

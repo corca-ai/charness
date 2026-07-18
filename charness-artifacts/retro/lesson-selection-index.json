@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-18",
-  "source_artifact_count": 360,
-  "candidate_count": 1504,
+  "source_artifact_count": 361,
+  "candidate_count": 1507,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -2597,10 +2597,50 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:819b342f67a5",
+      "kind": "next_improvement",
+      "lesson": "encode new dynamic-entrypoint support as a bounded evidence grammar with wrong-path, wrong-loader, wrong-receiver, and disconnected-registry fixtures before accepting the positive consumer.",
+      "normalized_key": "encode new dynamic entrypoint support as a bounded evidence grammar with wrong path wrong",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:77172d695496",
       "kind": "next_improvement",
       "lesson": "fault-inject the second operation in multi-step recovery, because first-operation tests cannot prove partial evidence remains truthful.",
       "normalized_key": "fault inject the second operation in multi step recovery because first operation tests cannot",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7b866ec4b6da",
+      "kind": "next_improvement",
+      "lesson": "finish all deterministic packet writes before reviewer fingerprint snapshot; never parallelize the producer and the state boundary it defines.",
+      "normalized_key": "finish all deterministic packet writes before reviewer fingerprint snapshot never parallelize the producer and",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",
@@ -2931,6 +2971,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ca83335428c7",
+      "kind": "next_improvement",
+      "lesson": "run the focused duplicate ratchet before the first broad quality pass when a new AST helper is large enough to create clone families.",
+      "normalized_key": "run the focused duplicate ratchet before the first broad quality pass when a new",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }

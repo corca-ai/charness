@@ -45,10 +45,18 @@ Five related autonomous-improvement rounds exposed the same structural lesson. F
 - The locked changed-line consumer then found the untested direct-import alias
   branch. A focused alias fixture killed a manual mutant at the exact line,
   closing the review's earlier non-blocking gap before release.
+- Packet Consumed: `charness-artifacts/retro/dynamic-entrypoint-evidence-retro-packet.md`
+  for the dynamic-entrypoint continuation.
+- The live dead-code sweep now reports 2 evidence-backed dynamic entrypoints and
+  0 review candidates. Negative fixtures reject wrong paths, unrelated loaders
+  and receivers, and loops disconnected from the registered intent tuple.
+- The first broad run passed 80/81 gates in 63.7s; its only failure was two new
+  lexical duplicate families. Refactoring removed both without a baseline
+  acceptance, and final fresh-eye reviews returned SHIP with zero fingerprint drift.
 
 ## Waste
 
-The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range. The first rollback draft repeated that pattern at a smaller boundary: it named happy-path Git commands but not the complete failure-state population, mixed HEAD-backed and newly created paths, trusted rename-shaped diff output, and reported planned recovery work as completed work. Fault injection converted those assumptions into explicit states. The final focused coverage producer took 146.4 seconds because it drives many seeded Git subprocesses under coverage. That is gate-baseline runtime debt in the proof implementation, not a necessary-safety claim or a blocker for the correctness slice. The next selector pass first ran an already-known broad manual subset instead of deriving the nearest evidence boundary. That was verification sequencing waste: exploration was appropriate, but triage should have locked `direct -> nearest loader -> broad fallback` before paying instrumented cost. The read-only baseline also ran before generated plugin sync, producing an expected packaging failure and one avoidable gate pass. The latest classifier repeated the ownership error in miniature: it turned one observed source-scanned variable into a global identifier exemption and framework-shaped spellings into provenance. Exploration was appropriate; the waste was locking the abstraction before asking which consumer owned the exception. The read-only changed-line PASS also excluded the worktree, so it remains an explicit false green until the post-commit locked consumer runs.
+The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range. The first rollback draft repeated that pattern at a smaller boundary: it named happy-path Git commands but not the complete failure-state population, mixed HEAD-backed and newly created paths, trusted rename-shaped diff output, and reported planned recovery work as completed work. Fault injection converted those assumptions into explicit states. The final focused coverage producer took 146.4 seconds because it drives many seeded Git subprocesses under coverage. That is gate-baseline runtime debt in the proof implementation, not a necessary-safety claim or a blocker for the correctness slice. The next selector pass first ran an already-known broad manual subset instead of deriving the nearest evidence boundary. That was verification sequencing waste: exploration was appropriate, but triage should have locked `direct -> nearest loader -> broad fallback` before paying instrumented cost. The read-only baseline also ran before generated plugin sync, producing an expected packaging failure and one avoidable gate pass. The latest classifier repeated the ownership error in miniature: it turned one observed source-scanned variable into a global identifier exemption and framework-shaped spellings into provenance. Exploration was appropriate; the waste was locking the abstraction before asking which consumer owned the exception. The read-only changed-line PASS also excluded the worktree, so it remains an explicit false green until the post-commit locked consumer runs. This continuation first treated matching filenames and registry fields as consumer proof; fresh-eye counterexamples showed unrelated paths and dispatch objects could still suppress dead code. The parent also raced packet creation with its first fingerprint snapshot, quarantining the reviews and forcing a rerun. Finally, leaving the duplicate scan inside the broad suite delayed a cheap lexical fix until after 63.7 seconds of proof.
 
 ## Critical Decisions
 
@@ -82,6 +90,11 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   memorable names; path or import provenance must justify leaving review.
 - Keep ambiguous dynamic exports visible. Better precision is not permission
   to manufacture zero candidates.
+- Treat a dynamic exemption as a reachability evidence chain, not co-occurring
+  syntax: producer path and symbol, declared registry, consuming loop, module
+  load, and dispatch receiver must agree within the supported local grammar.
+- Snapshot reviewer boundaries only after every intended packet artifact exists;
+  packet production and fingerprint capture are a hard sequential seam.
 
 ## Expert Counterfactuals
 
@@ -106,6 +119,10 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   the method briefs a judge, the language names runtime-external roles, and the
   tool proves provenance plus negative lookalikes. A name-only allowlist aligned
   none of the three.
+- Engelbart's lens sharpens the dynamic case: the method is “preserve judgment
+  without noise,” the language is an explicit producer-to-consumer witness, and
+  the tool recognizes only that witness. A zero-candidate target without this
+  shared language would optimize the scoreboard instead of the harness.
 
 ## Sibling Search
 
@@ -132,6 +149,10 @@ The first YAML slice optimized the visible dispatch list instead of first naming
 - abstraction up: other static advisory exemptions | decision: diagnostic-only | proof: bounded inventory review found no second concrete name-only exemption
 - specialization down: dynamic exports reported by vulture | decision: intentional boundary | proof: two runtime-routed exports remain review candidates rather than entering an unproven allowlist
 - mental-model siblings: changed-line pre-commit PASS with excluded worktree | decision: same waste, fix now | proof: closeout records the false green and reruns the authoritative range after commit
+- specialization down: dynamic runpy and registry exemptions | decision: same waste, fix now | proof: exact sibling paths and registry-to-import-to-dispatch flow plus negative lookalikes
+- abstraction up: generic Python points-to analysis | decision: intentional defer | proof: no third consumer syntax or runtime regression justifies the maintenance cost
+- same layer: packet-producing bounded reviews | decision: same sequencing waste, fix now | proof: final reviewers were snapshotted only after packet creation and each verify returned zero drift
+- mental-model siblings: cheap duplicate scans delayed behind broad pytest | decision: use the existing pre-lock focused gate | proof: focused dup ratchet caught zero new families after the lexical refactor
 
 ## Next Improvements
 
@@ -164,6 +185,13 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   provenance rather than growing a global name list.
 - memory: preserve “exceptions need consumer provenance; ambiguous findings
   stay visible” in the recent-lessons digest.
+- workflow: finish all deterministic packet writes before reviewer fingerprint
+  snapshot; never parallelize the producer and the state boundary it defines.
+- workflow: run the focused duplicate ratchet before the first broad quality
+  pass when a new AST helper is large enough to create clone families.
+- capability: encode new dynamic-entrypoint support as a bounded evidence grammar
+  with wrong-path, wrong-loader, wrong-receiver, and disconnected-registry
+  fixtures before accepting the positive consumer.
 
 ## Persisted
 

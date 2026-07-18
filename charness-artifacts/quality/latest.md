@@ -1,1 +1,1 @@
-2026-07-18-autonomous-release-readiness.md
+2026-07-18-dynamic-entrypoint-structural-quality.md
