@@ -14,7 +14,7 @@ Advanced `charness` toward release `2.1.2` (tag `v2.1.2`) through the repo-owned
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
@@ -53,7 +53,7 @@ Advanced `charness` toward release `2.1.2` (tag `v2.1.2`) through the repo-owned
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
 - Path hits: 0.
-- Evaluated changed paths: 24.
+- Evaluated changed paths: 26.
   - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
   - `charness-artifacts/critique/2026-07-18-110224-packet.json`
@@ -62,19 +62,19 @@ Advanced `charness` toward release `2.1.2` (tag `v2.1.2`) through the repo-owned
   - `charness-artifacts/critique/2026-07-18-v2-1-1-handoff-reconcile.md`
   - `charness-artifacts/quality/2026-07-18-lint-inventory-trust-review.md`
   - `charness-artifacts/quality/latest.md`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
   - `charness-artifacts/release/latest.md`
   - `charness-artifacts/retro/2026-07-18-111102-packet.json`
   - `charness-artifacts/retro/2026-07-18-111102-packet.md`
   - `charness-artifacts/retro/2026-07-18-session-retro.md`
+  - `charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md`
   - `charness-artifacts/retro/lesson-selection-index.json`
   - `charness-artifacts/retro/recent-lessons.md`
   - `docs/handoff.md`
   - `packaging/charness.json`
   - `plugins/charness/.claude-plugin/plugin.json`
   - `plugins/charness/.codex-plugin/plugin.json`
-  - `plugins/charness/scripts/lint_ignore_inventory_lib.py`
-  - `scripts/lint_ignore_inventory_lib.py`
-  - ... 4 more
+  - ... 6 more
 
 ## Real-Host Verification
 
@@ -90,7 +90,10 @@ Advanced `charness` toward release `2.1.2` (tag `v2.1.2`) through the repo-owned
 
 ## Requested Review Gate
 
-- Requested-review gate status: not recorded by this helper invocation.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
 
 ## Install Refresh
 
@@ -98,7 +101,10 @@ Advanced `charness` toward release `2.1.2` (tag `v2.1.2`) through the repo-owned
 
 ## Release Runtime
 
-- Release helper runtime: not recorded by this helper invocation.
+- `requested_review_gate`: 0.005s
+- `cli_skill_surface_gate`: 1.827s
+- `quality_command`: 82.727s
+- `fresh_checkout_probes_resume`: 2.789s
 
 ## Baton Reconcile
 
@@ -106,7 +112,7 @@ Advanced `charness` toward release `2.1.2` (tag `v2.1.2`) through the repo-owned
 
 ## Fresh Checkout Probes
 
-- Fresh-checkout probe status: configured.
+- Fresh-checkout probe status: passed.
 - `./charness --help >/dev/null`
 - `./charness goal check --help >/dev/null`
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
