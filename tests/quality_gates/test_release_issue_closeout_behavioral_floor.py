@@ -387,6 +387,17 @@ def test_no_close_issue_still_works_when_issue_skill_missing(tmp_path: Path) -> 
     assert payload["issue_closeout_preflight"]["status"] == "not_requested"
 
 
+def test_missing_artifact_helper_fails_only_when_artifact_action_runs(tmp_path: Path) -> None:
+    fake_scripts = tmp_path / "skills" / "public" / "release" / "scripts"
+    fake_scripts.mkdir(parents=True)
+    shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
+    shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
+    module = _load_path(fake_scripts / "release_issue_closeout.py")
+
+    with pytest.raises(SystemExit, match="artifact helper is unavailable in this installation"):
+        module.commit_issue_closeout_artifact()
+
+
 def test_close_issue_refuses_with_typed_message_when_issue_skill_missing(tmp_path: Path) -> None:
     fake_scripts = tmp_path / "skills" / "public" / "release" / "scripts"
     fake_scripts.mkdir(parents=True)

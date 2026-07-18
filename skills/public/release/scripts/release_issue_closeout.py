@@ -90,9 +90,29 @@ except ImportError as exc:
     _MESSAGE = None
     _MESSAGE_ERROR = str(exc)
 
-_ARTIFACT = _load_local_release_module("release_issue_closeout_artifact")
-commit_issue_closeout_artifact = _ARTIFACT.commit_issue_closeout_artifact
-commit_issue_closeout_carrier_artifact = _ARTIFACT.commit_issue_closeout_carrier_artifact
+try:
+    _ARTIFACT = _load_local_release_module("release_issue_closeout_artifact")
+    _ARTIFACT_ERROR: str | None = None
+except ImportError as exc:
+    _ARTIFACT = None
+    _ARTIFACT_ERROR = str(exc)
+
+
+def _artifact_action(name: str):
+    if _ARTIFACT is not None:
+        return getattr(_ARTIFACT, name)
+
+    def unavailable(*_args, **_kwargs):
+        raise SystemExit(
+            "release issue closeout artifact helper is unavailable in this installation: "
+            f"{_ARTIFACT_ERROR}"
+        )
+
+    return unavailable
+
+
+commit_issue_closeout_artifact = _artifact_action("commit_issue_closeout_artifact")
+commit_issue_closeout_carrier_artifact = _artifact_action("commit_issue_closeout_carrier_artifact")
 
 # Every release-linked issue close is, by definition, a user-facing behavior
 # claim (a released fix/feature/deferred-work item), so the classification gate
