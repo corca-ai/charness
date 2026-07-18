@@ -30,6 +30,20 @@ CAPTURE_SCRIPT_TEXT = CAPTURE_SCRIPT_PATH.read_text(encoding="utf-8")
 CAPTURE_SCRIPT_LINES = CAPTURE_SCRIPT_TEXT.splitlines()
 
 
+def _comparison_identity(**overrides: str) -> dict[str, str]:
+    identity = {
+        "source_class": "fixture",
+        "command_id": "fixture-capture-v1",
+        "corpus_id": "demo-corpus-v1",
+        "signal_class": "deterministic",
+        "reconstruction_status": "complete",
+        "model_id": "not-applicable",
+        "parser_id": "fixture-parser-v1",
+    }
+    identity.update(overrides)
+    return identity
+
+
 def test_aggregate_metrics_basic() -> None:
     runs = [
         {"outcome": "passed", "total_tokens": 100, "tool_count": 4, "output_lines": 10},
@@ -73,7 +87,12 @@ def test_ranks_worse_gate() -> None:
 
 
 def test_build_report_contents() -> None:
-    config = {"name": "demo", "runs": 2}
+    config = {
+        "name": "demo",
+        "runs": 2,
+        "comparison_identity": _comparison_identity(),
+        "arms": [{"name": "baseline"}, {"name": "treatment"}],
+    }
     agg = {
         "baseline": ab.aggregate_metrics([{"outcome": "passed", "total_tokens": 100, "tool_count": 4}]),
         "treatment": ab.aggregate_metrics([{"outcome": "passed", "total_tokens": 80, "tool_count": 3}]),
@@ -84,6 +103,7 @@ def test_build_report_contents() -> None:
     assert "total_tokens" in report
     assert "Deltas vs `baseline`" in report
     assert "-20%" in report  # 80 vs 100 mean
+    assert "| treatment | comparable | 1.0 | n/a |" in report
     assert "Honest caveats" in report
     assert "No LLM judge yet" in report
 
@@ -858,6 +878,8 @@ def test_run_ab_auto_grades_when_assertion_set_present(tmp_path: Path, monkeypat
     assert "## Outcome grade (advisory)" in out["report"]
     saved = json.loads((tmp_path / "res" / "results.json").read_text(encoding="utf-8"))
     assert saved["outcome"]["a"]["eval_id"] == "demo"  # outcome persisted to results.json
+    assert saved["comparison"]["baseline"] == "a"
+    assert saved["comparison"]["arms"] == {}
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is required to run the real metric extractor")

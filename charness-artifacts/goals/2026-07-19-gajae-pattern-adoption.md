@@ -11,12 +11,12 @@ resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 — normalize advisory efficiency evidence.
-- Current slice intent: make cost deltas comparable only across matching corpus,
-  signal, reconstruction, model, and parser identities while keeping outcome
-  evidence adjacent.
-- Next action: inspect the existing A/B aggregator and report owner, add
-  comparable/incomparable fixtures, and preserve advisory non-gating behavior.
+- Current slice: Slice 5 — disposition governed probes.
+- Current slice intent: answer each probe with bounded existing evidence and an
+  explicit promote/retain decision without silently expanding runtime or CI.
+- Next action: run deterministic explain/critical-path/goal-state/app-server
+  availability checks, record corpus and limitations in the canonical spec, and
+  keep unearned production changes deferred.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -110,8 +110,8 @@ Implement and prove Slices 1-4 from the canonical Gajae-Code adoption plan, disp
 | 1 | Bound Codex app-server response waiting | Only demonstrated correctness escape in the comparison | Negative fake-server matrix, compatible YAML, focused critique | completed |
 | 2 | Bind critique verdicts to declared reviewed inputs | Durable review claim must identify what was judged | Identity/tamper fixtures, validator and artifact sync | completed |
 | 3 | Generate one release observer from existing distinct-channel evidence | Avoid parallel success records at the irreversible boundary | Schema/renderer fixtures and release integration proof | completed |
-| 4 | Add A/B comparability and retain outcome adjacency | Improve token efficiency without persuasive incomparable deltas | Comparable/incomparable report fixtures and focused tests | active |
-| 5 | Disposition governed probes | Prevent analogy from silently becoming runtime/CI scope | Recorded probe outcome and promotion/defer rationale | planned |
+| 4 | Add A/B comparability and retain outcome adjacency | Improve token efficiency without persuasive incomparable deltas | Comparable/incomparable report fixtures and focused tests | completed |
+| 5 | Disposition governed probes | Prevent analogy from silently becoming runtime/CI scope | Recorded probe outcome and promotion/defer rationale | active |
 | 6 | Final bundle proof, push, and release | User requested publication only after all work is complete | Locked closeout, distinct review/channel, public+installed readback | planned |
 
 ## Operator Decision Queue
@@ -221,6 +221,16 @@ applies.
   release/critique tests and the full pre-lock structural closeout passed; a
   bounded review moved HOLD to SHIP with clean parent fingerprints. Critique:
   `charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md`.
+- Slice 4 completed — the existing A/B result/report owner now requires matching
+  source, command, corpus, signal, reconstruction, model, and parser identities
+  before emitting a cost delta. Incomparable arms retain raw observations but
+  expose no persuasive delta; comparable JSON entries and Markdown rows keep
+  capture and outcome-grade pass rates adjacent. Fresh-eye review found and
+  repaired aggregate-order baseline inversion and duplicate-declaration
+  self-comparison. Comparability tests were split into a cohesive file before
+  the original test module reached its hard length limit. 104 focused tests and
+  pre-lock closeout passed. Critique:
+  `charness-artifacts/critique/2026-07-19-gajae-slice4-efficiency-comparability.md`.
 
 ## Context Sources
 

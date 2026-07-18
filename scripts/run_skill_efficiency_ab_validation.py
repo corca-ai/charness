@@ -4,6 +4,26 @@ import re
 
 ARM_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 CONFIG_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+COMPARISON_IDENTITY_FIELDS = (
+    "source_class",
+    "command_id",
+    "corpus_id",
+    "signal_class",
+    "reconstruction_status",
+    "model_id",
+    "parser_id",
+)
+
+
+def _validate_comparison_identity(value: object, field: str) -> None:
+    if value is None:
+        return
+    if not isinstance(value, dict):
+        raise ValueError(f"{field} must be an object")
+    for key in COMPARISON_IDENTITY_FIELDS:
+        item = value.get(key)
+        if item is not None and (not isinstance(item, str) or not item.strip()):
+            raise ValueError(f"{field}.{key} must be a non-empty string")
 
 
 def _coerce_positive_int(value: object, field: str) -> int:
@@ -52,6 +72,7 @@ def validate_run_config(config: object, *, require_results_name: bool = False) -
     if not isinstance(arms, list) or not arms:
         raise ValueError("`arms` must be a non-empty list")
     default_spec = config.get("spec_path")
+    _validate_comparison_identity(config.get("comparison_identity"), "`comparison_identity`")
     seen: set[str] = set()
     validated_arms: list[dict] = []
     for arm in arms:
@@ -72,5 +93,8 @@ def validate_run_config(config: object, *, require_results_name: bool = False) -
         invocation = arm.get("invocation")
         if invocation is not None and not isinstance(invocation, str):
             raise ValueError(f"arm {name!r} `invocation` must be a string")
+        _validate_comparison_identity(
+            arm.get("comparison_identity"), f"arm {name!r} `comparison_identity`"
+        )
         validated_arms.append(arm)
     return runs, validated_arms, default_spec

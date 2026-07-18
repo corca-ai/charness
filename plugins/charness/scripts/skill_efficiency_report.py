@@ -22,6 +22,15 @@ METRIC_KEYS = (
     "waste_smell_count",
     "output_lines",
 )
+COMPARISON_IDENTITY_KEYS = (
+    "source_class",
+    "command_id",
+    "corpus_id",
+    "signal_class",
+    "reconstruction_status",
+    "model_id",
+    "parser_id",
+)
 
 
 def aggregate_metrics(runs: list[dict]) -> dict:
@@ -61,6 +70,63 @@ def relative_deltas(baseline_agg: dict, arm_agg: dict) -> dict:
     return out
 
 
+def _arm_identity(config: dict, arm_name: str) -> dict:
+    shared = config.get("comparison_identity")
+    identity = dict(shared) if isinstance(shared, dict) else {}
+    arm = next(
+        (item for item in config.get("arms", []) if isinstance(item, dict) and item.get("name") == arm_name),
+        {},
+    )
+    override = arm.get("comparison_identity")
+    if isinstance(override, dict):
+        identity.update(override)
+    return {key: identity.get(key) for key in COMPARISON_IDENTITY_KEYS}
+
+
+def _ordered_arms(config: dict, agg_by_arm: dict) -> list[str]:
+    declared: list[str] = []
+    for arm in config.get("arms", []):
+        name = arm.get("name") if isinstance(arm, dict) else None
+        if name in agg_by_arm and name not in declared:
+            declared.append(name)
+    return [*declared, *(name for name in agg_by_arm if name not in declared)]
+
+
+def build_comparison_summary(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = None) -> dict:
+    """Classify each delta against the baseline and keep outcome evidence adjacent."""
+
+    arms = _ordered_arms(config, agg_by_arm)
+    if not arms:
+        return {"baseline": None, "arms": {}}
+    baseline = arms[0]
+    baseline_identity = _arm_identity(config, baseline)
+    comparisons: dict[str, dict] = {}
+    for arm in arms[1:]:
+        identity = _arm_identity(config, arm)
+        missing = [key for key in COMPARISON_IDENTITY_KEYS if not baseline_identity.get(key) or not identity.get(key)]
+        mismatched = [
+            key
+            for key in COMPARISON_IDENTITY_KEYS
+            if baseline_identity.get(key)
+            and identity.get(key)
+            and baseline_identity.get(key) != identity.get(key)
+        ]
+        reasons = [*(f"missing:{key}" for key in missing), *(f"mismatch:{key}" for key in mismatched)]
+        comparable = not reasons
+        grade = (outcome_by_arm or {}).get(arm, {}).get("pass_rate")
+        comparisons[arm] = {
+            "status": "comparable" if comparable else "incomparable",
+            "reasons": reasons,
+            "identity": identity,
+            "cost_deltas": relative_deltas(agg_by_arm[baseline], agg_by_arm[arm]) if comparable else None,
+            "outcome": {
+                "capture_pass_rate": agg_by_arm[arm].get("pass_rate"),
+                "grade_pass_rate": grade.get("mean") if isinstance(grade, dict) else None,
+            },
+        }
+    return {"baseline": baseline, "baseline_identity": baseline_identity, "arms": comparisons}
+
+
 def ranks_worse(lean_metrics: dict, wasteful_metrics: dict, keys: tuple[str, ...]) -> list[str]:
     """Keys on which `wasteful` is NOT strictly greater than `lean`. Empty list
     means the instruments correctly ranked the wasteful run worse on every key —
@@ -87,7 +153,7 @@ def _fmt_scalar(value: object) -> str:
 def build_report(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = None) -> str:
     """Markdown comparison: per-arm mean [min–max] table + deltas vs the first arm,
     plus the advisory outcome-grade section when an eval has an assertion set."""
-    arms = list(agg_by_arm.keys())
+    arms = _ordered_arms(config, agg_by_arm)
     lines = [
         f"# Efficiency A/B — {config.get('name', 'unnamed')}",
         "",
@@ -105,16 +171,25 @@ def build_report(config: dict, agg_by_arm: dict, outcome_by_arm: dict | None = N
         lines.append(row)
     if len(arms) >= 2:
         baseline = arms[0]
+        comparison = build_comparison_summary(config, agg_by_arm, outcome_by_arm)
         lines += ["", f"## Deltas vs `{baseline}` (mean %, + = spends more)", ""]
         others = arms[1:]
-        lines.append("| metric | " + " | ".join(others) + " |")
-        lines.append("| --- | " + " | ".join(["---"] * len(others)) + " |")
-        for key in METRIC_KEYS:
-            cells = []
-            for arm in others:
-                delta = relative_deltas(agg_by_arm[baseline], agg_by_arm[arm]).get(key)
-                cells.append("n/a" if delta is None else f"{delta:+g}%")
-            lines.append(f"| {key} | " + " | ".join(cells) + " |")
+        lines.append("| arm | comparability | capture pass_rate | outcome grade pass_rate | cost deltas |")
+        lines.append("| --- | --- | --- | --- | --- |")
+        for arm in others:
+            entry = comparison["arms"][arm]
+            if entry["status"] == "comparable":
+                deltas = entry["cost_deltas"] or {}
+                costs = ", ".join(
+                    f"{key}={value:+g}%" for key, value in deltas.items() if value is not None
+                ) or "n/a"
+            else:
+                costs = "not reported (" + ", ".join(entry["reasons"]) + ")"
+            evidence = entry["outcome"]
+            lines.append(
+                f"| {arm} | {entry['status']} | {_fmt_scalar(evidence['capture_pass_rate'])} | "
+                f"{_fmt_scalar(evidence['grade_pass_rate'])} | {costs} |"
+            )
     section = outcome.render_outcome_section(outcome_by_arm) if outcome_by_arm else ""
     if section:
         lines.append(section)

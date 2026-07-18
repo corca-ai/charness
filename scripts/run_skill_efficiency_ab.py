@@ -36,6 +36,10 @@ total_tokens, output_tokens, duration_ms, tool_count, waste_smell_count, output_
 
 Config schema (JSON):
   {"name": "<label>", "spec_path": "evals/cautilus/<skill>-claim-fidelity/spec.json",
+   "comparison_identity": {"source_class": "live", "command_id": "claude-skill-capture-v1",
+     "corpus_id": "<corpus>",
+     "signal_class": "execution-trace", "reconstruction_status": "complete",
+     "model_id": "<model>", "parser_id": "<parser-version>"},
    "runs": 4, "arms": [{"name": "baseline", "ref": "HEAD~1"},
                        {"name": "treatment", "ref": "HEAD", "invocation": "<override>"}]}
 The invocation defaults to the spec's `prompt`; per-arm `invocation`/`spec_path`
@@ -58,7 +62,12 @@ from run_skill_efficiency_ab_validation import validate_results_name, validate_r
 
 # relative_deltas: not called directly here (build_report uses it internally) but re-exported
 # ("as" re-import) because tests exercise it via this module's attribute (ab.relative_deltas).
-from skill_efficiency_report import aggregate_metrics, build_report, ranks_worse
+from skill_efficiency_report import (
+    aggregate_metrics,
+    build_comparison_summary,
+    build_report,
+    ranks_worse,
+)
 from skill_efficiency_report import relative_deltas as relative_deltas
 
 from runtime_bootstrap import repo_root_from_script
@@ -318,13 +327,20 @@ def run_ab(repo_root: Path, config: dict, results_dir: Path, timeout_sec: int, k
         attempted = len(preserved_dirs) if (assertion_set is not None and gate.ok()) else 0
         outcome_by_arm[arm["name"]] = outcome.aggregate_arm(arm_outcomes, assertion_set, attempted)
     report = build_report(config, agg_by_arm, outcome_by_arm)
+    comparison = build_comparison_summary(config, agg_by_arm, outcome_by_arm)
     (results_dir / "results.json").write_text(
         json.dumps({"config": config, "runs": raw_runs, "aggregate": agg_by_arm,
-                    "outcome": outcome_by_arm}, indent=2) + "\n",
+                    "outcome": outcome_by_arm, "comparison": comparison}, indent=2) + "\n",
         encoding="utf-8",
     )
     (results_dir / "report.md").write_text(report + "\n", encoding="utf-8")
-    return {"aggregate": agg_by_arm, "outcome": outcome_by_arm, "report": report, "runs": raw_runs}
+    return {
+        "aggregate": agg_by_arm,
+        "outcome": outcome_by_arm,
+        "comparison": comparison,
+        "report": report,
+        "runs": raw_runs,
+    }
 
 
 # --- self-test: synthetic lean vs wasteful trees, real extractor ----------------
