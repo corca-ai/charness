@@ -1,1 +1,1 @@
-2026-07-18-release-local-failure-recovery-review.md
+2026-07-18-focused-coverage-selection.md

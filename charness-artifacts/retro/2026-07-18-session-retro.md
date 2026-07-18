@@ -29,10 +29,14 @@ Five related autonomous-improvement rounds exposed the same structural lesson. F
   quarantine, commit, and missing-tag transitions. Fresh-eye review exposed
   rename restoration, incomplete exception ownership, false partial-recovery
   evidence, and a stranded post-commit state before local closeout.
+- The focused coverage selector initially returned `missing` for the same
+  release files even though tests exercised them through local loaders. Nearest
+  loader ancestry now maps the real range to four test files; fresh-eye review
+  caught and closed a whitespace regression before verification lock.
 
 ## Waste
 
-The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range. The first rollback draft repeated that pattern at a smaller boundary: it named happy-path Git commands but not the complete failure-state population, mixed HEAD-backed and newly created paths, trusted rename-shaped diff output, and reported planned recovery work as completed work. Fault injection converted those assumptions into explicit states. The final focused coverage producer took 146.4 seconds because it drives many seeded Git subprocesses under coverage. That is gate-baseline runtime debt in the proof implementation, not a necessary-safety claim or a blocker for the correctness slice.
+The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range. The first rollback draft repeated that pattern at a smaller boundary: it named happy-path Git commands but not the complete failure-state population, mixed HEAD-backed and newly created paths, trusted rename-shaped diff output, and reported planned recovery work as completed work. Fault injection converted those assumptions into explicit states. The final focused coverage producer took 146.4 seconds because it drives many seeded Git subprocesses under coverage. That is gate-baseline runtime debt in the proof implementation, not a necessary-safety claim or a blocker for the correctness slice. The next selector pass first ran an already-known broad manual subset instead of deriving the nearest evidence boundary. That was verification sequencing waste: exploration was appropriate, but triage should have locked `direct -> nearest loader -> broad fallback` before paying instrumented cost. The read-only baseline also ran before generated plugin sync, producing an expected packaging failure and one avoidable gate pass.
 
 ## Critical Decisions
 
@@ -57,6 +61,11 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   partial progress must survive the next restore or quarantine error.
 - Validate recovery state before a general planner can fetch or normalize the
   evidence being judged; carry that frozen state forward instead of re-probing.
+- Derive focused proof from direct references and the nearest recognized loader
+  ancestors before widening manually; keep the broad suite and changed-line
+  consumer as independent backstops.
+- Cross a generated-surface sync barrier before any validator that compares the
+  source and packaged mirror.
 
 ## Expert Counterfactuals
 
@@ -72,6 +81,11 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   the language is a typed pre-commit/post-commit state model, and the tool is
   snapshot, restore, quarantine, and fault injection. A rollback function
   without the state language would merely move the terminal green.
+- Engelbart's lens also couples test-selection method, dependency language, and
+  tooling: “use focused evidence” needs a named nearest-ancestor rule and a
+  selector that emits it. Memory-only manual selection recreates token and
+  runtime waste, while the unchanged final consumer prevents a cheap selector
+  from becoming terminal green.
 
 ## Sibling Search
 
@@ -90,6 +104,10 @@ The first YAML slice optimized the visible dispatch list instead of first naming
 - same layer: other clean-start local mutation helpers | decision: no second matching owner found; keep as a design-review question, not a framework | proof: the search and critique stayed scoped to release preparation/resume
 - abstraction up: irreversible publication | decision: intentional boundary | proof: rollback stops when HEAD moves; remote/public absence and distinct readback remain publication owners
 - specialization down: restore and quarantine operations | decision: same waste, fix now | proof: per-operation fault tests preserve only completed work and expose remaining status
+- same layer: changed-line focused producer selection | decision: same waste, fix now | proof: the selector now maps split paths and nearest local-loader ancestors before broad fallback
+- abstraction up: standing test dependency inference | decision: intentional boundary | proof: the changed-line consumer and broad pytest remain independent; no maintained dependency registry was added
+- specialization down: other local-loader spellings | decision: diagnostic-only | proof: repo corpus review added the observed one/two-argument and `with_name` forms; unknown computed forms fall back broadly
+- mental-model siblings: generated source/plugin validation | decision: same waste, fix now | proof: this slice now syncs before packaging validation
 
 ## Next Improvements
 
@@ -112,6 +130,9 @@ The first YAML slice optimized the visible dispatch list instead of first naming
 - capability: profile the release coverage fixture's subprocess setup before
   the next release-helper expansion; preserve real Git transition proof while
   moving repeated fixture construction off the coverage critical path.
+- workflow: run the selector before manually composing a focused producer, and
+  lock direct-reference, nearest-loader, then broad-fallback ordering before
+  instrumented verification.
 - memory: preserve this population-first migration rule and the earlier seam-first failure rule in `recent-lessons.md`, and reflect them in the next-session handoff only when they change the next move.
 
 ## Persisted

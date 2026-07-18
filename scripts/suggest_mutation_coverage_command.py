@@ -46,6 +46,11 @@ def _reference_patterns(path: str) -> list[re.Pattern[str]]:
     patterns = [
         re.compile(rf"['\"]{escaped_path}['\"]"),
         re.compile(rf"\b{escaped_module}\b"),
+        re.compile(
+            r"\s*/\s*".join(
+                rf"['\"]{re.escape(segment)}['\"]" for segment in path.split("/")
+            )
+        ),
     ]
     if parent and name:
         patterns.extend(
@@ -58,29 +63,84 @@ def _reference_patterns(path: str) -> list[re.Pattern[str]]:
     return patterns
 
 
+def _loads_local_sibling(text: str, module_stem: str) -> bool:
+    token = re.escape(module_stem)
+    return bool(
+        re.search(
+            rf"(?:load_local_skill_module\([^)]*?,\s*|_load_sibling\(\s*(?:[^,)]*?,\s*)?)"
+            rf"['\"]{token}['\"]",
+            text,
+        )
+        or re.search(rf"with_name\(\s*['\"]{token}\.py['\"]\s*\)", text)
+    )
+
+
+def _local_loader_ancestor_levels(repo_root: Path, path: str) -> list[list[str]]:
+    """Find same-directory loader parents, nearest first."""
+    related = {path}
+    frontier = {path}
+    levels: list[list[str]] = []
+    while frontier:
+        parents: set[str] = set()
+        for child_path in frontier:
+            child = Path(child_path)
+            directory = repo_root / child.parent
+            if not directory.is_dir():
+                continue
+            for candidate in directory.glob("*.py"):
+                relative = candidate.relative_to(repo_root).as_posix()
+                if relative in related:
+                    continue
+                try:
+                    text = candidate.read_text(encoding="utf-8")
+                except OSError:
+                    continue
+                if _loads_local_sibling(text, child.stem):
+                    parents.add(relative)
+        if not parents:
+            break
+        level = sorted(parents)
+        levels.append(level)
+        related.update(parents)
+        frontier = parents
+    return levels
+
+
 def _candidate_test_paths(repo_root: Path) -> list[str]:
     paths: list[str] = []
     for target in expand_targets(repo_root):
         absolute = repo_root / target
         if absolute.is_dir():
-            paths.extend(path.relative_to(repo_root).as_posix() for path in absolute.rglob("*.py"))
-        elif target.endswith(".py") and absolute.is_file():
+            paths.extend(
+                path.relative_to(repo_root).as_posix()
+                for path in absolute.rglob("test_*.py")
+            )
+        elif absolute.name.startswith("test_") and target.endswith(".py") and absolute.is_file():
             paths.append(target)
     return sorted(dict.fromkeys(paths))
 
 
 def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[str, list[str]]:
     tests = _candidate_test_paths(repo_root)
-    patterns_by_path = {path: _reference_patterns(path) for path in changed_paths}
-    matches: dict[str, list[str]] = {path: [] for path in changed_paths}
+    test_text: dict[str, str] = {}
     for test_path in tests:
         try:
-            text = (repo_root / test_path).read_text(encoding="utf-8")
+            test_text[test_path] = (repo_root / test_path).read_text(encoding="utf-8")
         except OSError:
             continue
-        for changed_path, patterns in patterns_by_path.items():
-            if any(pattern.search(text) for pattern in patterns):
-                matches[changed_path].append(test_path)
+    matches: dict[str, list[str]] = {}
+    for changed_path in changed_paths:
+        path_levels = [[changed_path], *_local_loader_ancestor_levels(repo_root, changed_path)]
+        for level in path_levels:
+            patterns = [pattern for related in level for pattern in _reference_patterns(related)]
+            found = sorted(
+                test_path
+                for test_path, text in test_text.items()
+                if any(pattern.search(text) for pattern in patterns)
+            )
+            if found:
+                matches[changed_path] = found
+                break
     return {path: sorted(paths) for path, paths in matches.items() if paths}
 
 
@@ -106,7 +166,10 @@ def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dic
     if not targets:
         return {
             "status": "missing",
-            "reason": "no standing pytest target textually references the changed pool files",
+            "reason": (
+                "no standing pytest target references the changed pool files or "
+                "their local-loader ancestors"
+            ),
             "base_sha": base,
             "changed_pool_files": changed,
             "unmapped_changed_pool_files": missing,
@@ -114,8 +177,8 @@ def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dic
     command = "python3 -m pytest -q -m 'not release_only' " + " ".join(targets)
     status = "recommended" if not missing else "partial"
     reason = (
-        "textual references found in standing pytest targets; run the command as "
-        "--mutation-coverage-command, then trust the changed-line gate result"
+        "nearest direct or local-loader references found in standing pytest targets; "
+        "use the command as changed-line coverage evidence while retaining broad proof"
     )
     if status == "partial":
         reason = (

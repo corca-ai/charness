@@ -139,6 +139,114 @@ def test_skips_unreadable_candidate_test(tmp_path: Path, monkeypatch: pytest.Mon
     assert "tests/quality_gates/test_foo.py" in matches["scripts/foo.py"]
 
 
+def test_matches_split_path_expression_and_ignores_non_test_helpers(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "tests" / "quality_gates" / "test_split.py").write_text(
+        'TARGET = ROOT / "scripts" / "foo.py"\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "support.py").write_text(
+        'TARGET = "scripts/foo.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/foo.py"])
+
+    assert "tests/quality_gates/test_split.py" in matches["scripts/foo.py"]
+    assert "tests/quality_gates/support.py" not in matches["scripts/foo.py"]
+
+
+def test_maps_changed_local_module_through_loader_parent(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "scripts" / "worker.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "scripts" / "entry.py").write_text(
+        'MODULE = load_local_skill_module(__file__, "worker")\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_entry.py").write_text(
+        'TARGET = ROOT / "scripts" / "entry.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/worker.py"])
+
+    assert matches == {"scripts/worker.py": ["tests/quality_gates/test_entry.py"]}
+
+
+def test_maps_two_argument_local_sibling_loader(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "scripts" / "worker.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "scripts" / "entry.py").write_text(
+        'MODULE = _load_sibling(repo_root, "worker")\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_entry.py").write_text(
+        'TARGET = ROOT / "scripts" / "entry.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/worker.py"])
+
+    assert matches == {"scripts/worker.py": ["tests/quality_gates/test_entry.py"]}
+
+
+def test_maps_whitespace_before_one_argument_local_sibling(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "scripts" / "worker.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "scripts" / "entry.py").write_text(
+        'MODULE = _load_sibling(\n    "worker"\n)\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_entry.py").write_text(
+        'TARGET = ROOT / "scripts" / "entry.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/worker.py"])
+
+    assert matches == {"scripts/worker.py": ["tests/quality_gates/test_entry.py"]}
+
+
+def test_prefers_direct_test_over_more_distant_loader_test(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "scripts" / "worker.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "scripts" / "entry.py").write_text(
+        'MODULE = load_local_skill_module(__file__, "worker")\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_worker.py").write_text(
+        'TARGET = ROOT / "scripts" / "worker.py"\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_entry.py").write_text(
+        'TARGET = ROOT / "scripts" / "entry.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/worker.py"])
+
+    assert matches == {"scripts/worker.py": ["tests/quality_gates/test_worker.py"]}
+
+
+def test_maps_with_name_loader_transitively(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "scripts" / "leaf.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "scripts" / "middle.py").write_text(
+        'MODULE = run_path(Path(__file__).with_name("leaf.py"))\n', encoding="utf-8"
+    )
+    (repo / "scripts" / "entry.py").write_text(
+        'MODULE = _load_sibling("middle")\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_entry.py").write_text(
+        'TARGET = ROOT / "scripts" / "entry.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/leaf.py"])
+
+    assert matches == {"scripts/leaf.py": ["tests/quality_gates/test_entry.py"]}
+
+
 def test_main_prints_command_and_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 

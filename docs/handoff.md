@@ -28,6 +28,11 @@
   Partial recovery stays explicit. If the release commit exists but the local
   tag does not, resume revalidates and tags that exact commit only before any
   remote/public publication. This work remains local and unpushed by request.
+- Focused mutation coverage selection now understands split `Path` references
+  and nearest same-directory local-loader ancestry. The current unreleased range
+  maps to four standing test files instead of requiring manual reconstruction;
+  broad pytest and the changed-line consumer remain authoritative. This work is
+  local and unpushed by request.
 
 ## Next Session
 
@@ -38,6 +43,9 @@
    resumable state. For irreversible operations, prove the exact consumed range.
    The checklist is in [recent lessons](../charness-artifacts/retro/recent-lessons.md).
 3. Keep D18 ignored unless the operator explicitly reopens it.
+4. For mutation-pool changes, ask the selector before widening a producer by
+   hand: direct reference, nearest recognized loader ancestor, then broad
+   fallback.
 
 ## Discuss
 
