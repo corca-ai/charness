@@ -85,7 +85,10 @@ release-artifact/observer tree, compares local and remote branch identities,
 retries only when remote absence is proven, and continues state readback when
 the carrier is already shared. The same recovery path requires a
 `state-verified` artifact before reconciling a final closeout commit whose push
-response was lost. An
+response was lost. Post-publication recovery validates the original issue,
+classification, carrier, behavioral evidence, repository, and critique inputs
+before downstream carrier validation; it never infers or silently drops
+irreversible closeout context from commit text. An
 already-tagged release-content `HEAD` containing close keywords is still
 refused before quality; only the identity-checked post-publication carrier and
 final closeout shapes are resumable.

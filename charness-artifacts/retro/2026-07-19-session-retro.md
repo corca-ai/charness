@@ -50,6 +50,7 @@ The broad exploration was requested and productive, so it was not waste. The avo
 - memory: persist “irreversibility starts at the earliest observer-capable write” and “optimization must name its hermetic state envelope” in the generated recent-lessons digest.
 - capability: profile mutation coverage startup and worker instrumentation before changing test scope; preserve the 4,912-test confidence boundary while removing orchestration cost.
 - workflow: never infer that fewer test files means cheaper proof; measure selector output under the same coverage/parallelism environment before choosing focused versus broad production.
+- workflow: specify the restart-input envelope alongside every resumable irreversible state; validate it before downstream recovery logic and make omissions actionable rather than inferring intent from durable side effects.
 
 ## Persisted
 

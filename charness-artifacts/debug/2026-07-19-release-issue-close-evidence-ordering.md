@@ -146,3 +146,13 @@ than only the explicitly named close function.
   producer, and the authoritative changed-line consumer with an empty blocking
   set. The real-process smoke is an explicit boundary-ratchet exemption because
   startup/`__main__`/exit behavior is the subject; all logic remains in-process.
+- Release fresh-eye critique then exercised the operator restart envelope and
+  found that a minimal post-publication resume omitted the original issue-close
+  inputs, producing a missing draft-validation key instead of recovery guidance.
+  Recovery now checks the complete irreversible-input envelope before carrier
+  preflight and emits a copyable required-flag inventory. A real CLI fixture
+  constructs the published/tagged carrier-failure state and proves the early
+  refusal; direct helper coverage proves every required flag remains visible.
+- Structural prevention: a resumable state machine owns both state identity and
+  restart inputs. At irreversible boundaries, restart inputs are validated
+  explicitly and never reconstructed from side-effect-bearing commit text.
