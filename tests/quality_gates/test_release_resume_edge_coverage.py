@@ -23,6 +23,7 @@ def _load(name: str):
 
 RESUME_CLOSEOUT = _load("publish_release_resume_closeout")
 ISSUE_CLOSEOUT = _load("release_issue_closeout")
+ISSUE_CLOSEOUT_ARTIFACT = _load("release_issue_closeout_artifact")
 MESSAGE = _load("release_issue_closeout_message")
 
 
@@ -171,11 +172,53 @@ def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:
 
 def test_carrier_artifact_refuses_missing_preflight_paragraphs() -> None:
     with pytest.raises(SystemExit, match="carrier paragraphs are missing"):
-        ISSUE_CLOSEOUT.commit_issue_closeout_carrier_artifact(
+        ISSUE_CLOSEOUT_ARTIFACT.commit_issue_closeout_carrier_artifact(
             Path("."), write_artifact=lambda **_kwargs: None, payload={}, fresh_checkout_payload={},
             artifact_relpath="charness-artifacts/release/latest.md", expected_release_url=None,
             remote="origin", branch="main", run=lambda *_args, **_kwargs: None,
         )
+
+
+def test_closeout_artifact_owner_stages_observer_and_commits_both_phases() -> None:
+    commands: list[list[str]] = []
+    writes: list[dict] = []
+
+    def run(command, *, cwd):
+        commands.append(command)
+        return SimpleNamespace(stdout="commit-sha\n")
+
+    common = {
+        "tag_name": "v1.2.3",
+        "issue_closeout": {"status": "state-verified"},
+        "release_observer": {"path": "charness-artifacts/probe/observer.json"},
+    }
+    ISSUE_CLOSEOUT_ARTIFACT.commit_issue_closeout_artifact(
+        Path("."), write_artifact=lambda **kwargs: writes.append(kwargs), payload=common,
+        fresh_checkout_payload={"status": "passed"},
+        artifact_relpath="charness-artifacts/release/latest.md",
+        expected_release_url="https://example.test/v1.2.3", remote="origin", branch="main", run=run,
+    )
+    assert commands[0] == [
+        "git", "add", "charness-artifacts/release/latest.md",
+        "charness-artifacts/probe/observer.json",
+    ]
+    assert common["issue_closeout_commit_sha"] == "commit-sha"
+
+    commands.clear()
+    carrier = {
+        "issue_closeout_draft_validation": {"paragraphs": ["Release v1.2.3", "Close #44."]},
+        "issue_closeout_preflight": {"repo": "example/demo", "issues": [{"number": 44}]},
+    }
+    ISSUE_CLOSEOUT_ARTIFACT.commit_issue_closeout_carrier_artifact(
+        Path("."), write_artifact=lambda **kwargs: writes.append(kwargs), payload=carrier,
+        fresh_checkout_payload={}, artifact_relpath="charness-artifacts/release/latest.md",
+        expected_release_url=None, remote="origin", branch="main", run=run,
+    )
+    assert commands[0] == ["git", "add", "charness-artifacts/release/latest.md"]
+    assert commands[1] == ["git", "commit", "-m", "Release v1.2.3", "-m", "Close #44."]
+    assert carrier["issue_closeout"]["status"] == "carrier-pending-state-verification"
+    assert carrier["issue_closeout_carrier_commit_sha"] == "commit-sha"
+    assert len(writes) == 2
 
 
 def test_release_content_close_refs_refuses_when_issue_verifier_is_unavailable(monkeypatch) -> None:

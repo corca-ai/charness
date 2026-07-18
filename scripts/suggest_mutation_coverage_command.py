@@ -67,7 +67,8 @@ def _loads_local_sibling(text: str, module_stem: str) -> bool:
     token = re.escape(module_stem)
     return bool(
         re.search(
-            rf"(?:load_local_skill_module\([^)]*?,\s*|_load_sibling\(\s*(?:[^,)]*?,\s*)?)"
+            rf"(?:load_local_skill_module\([^)]*?,\s*|_load_local_release_module\(\s*|"
+            rf"_load_sibling\(\s*(?:[^,)]*?,\s*)?)"
             rf"['\"]{token}['\"]",
             text,
         )

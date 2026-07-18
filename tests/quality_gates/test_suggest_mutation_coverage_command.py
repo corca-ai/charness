@@ -204,6 +204,23 @@ def test_maps_changed_local_module_through_loader_parent(tmp_path: Path) -> None
     assert matches == {"scripts/worker.py": ["tests/quality_gates/test_entry.py"]}
 
 
+def test_maps_release_local_module_through_loader_parent(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "scripts" / "artifact.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "scripts" / "entry.py").write_text(
+        'MODULE = _load_local_release_module("artifact")\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_entry.py").write_text(
+        'TARGET = ROOT / "scripts" / "entry.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/artifact.py"])
+
+    assert matches == {"scripts/artifact.py": ["tests/quality_gates/test_entry.py"]}
+
+
 def test_maps_two_argument_local_sibling_loader(tmp_path: Path) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 
