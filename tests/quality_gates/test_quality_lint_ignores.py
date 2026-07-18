@@ -229,3 +229,56 @@ def test_inventory_lint_ignores_skips_files_without_markers(tmp_path: Path) -> N
     payload = _inventory_json(repo)
     assert payload["summary"]["ignore_count"] == 0
     assert payload["findings"] == []
+
+
+def test_inventory_lint_ignores_separates_rule_codes_from_rationales(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "web").mkdir()
+    (repo / "scripts" / "demo.py").write_text(
+        "\n".join(
+            [
+                "# ruff: noqa: E402, I001 -- launcher import order",
+                "try:",
+                "    VALUE = 1",
+                "except Exception:  # noqa: BLE001 -- adapter fallback is visible",
+                "def handler(signum, frame):  # noqa: ANN001 - signal signature",
+                "    return signum, frame",
+                "import sys  # noqa: E402  (path inserted above)",
+                "VALUE = 2  # pylint: disable=invalid-name -- public fixture name",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "web" / "demo.ts").write_text(
+        "// eslint-disable-next-line no-alert -- browser contract\nalert('demo')\n",
+        encoding="utf-8",
+    )
+
+    payload = _inventory_json(repo)
+    codes = {(finding["tool"], tuple(finding["codes"])) for finding in payload["findings"]}
+
+    assert codes == {
+        ("eslint", ("no-alert",)),
+        ("noqa", ("ANN001",)),
+        ("noqa", ("BLE001",)),
+        ("noqa", ("E402",)),
+        ("pylint", ("invalid-name",)),
+        ("ruff", ("E402", "I001")),
+    }
+
+
+def test_inventory_lint_ignores_falls_back_once_for_malformed_python(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "broken.py").write_text(
+        "import sys  # noqa: F401 -- retained before malformed EOF\nVALUE = '''unterminated\n",
+        encoding="utf-8",
+    )
+
+    payload = _inventory_json(repo)
+
+    assert payload["summary"]["ignore_count"] == 1
+    assert payload["findings"][0]["codes"] == ["F401"]
+    assert payload["findings"][0]["snippet"].startswith("import sys")

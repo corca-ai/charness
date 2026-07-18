@@ -13,6 +13,10 @@ import yaml
 
 from .support import ROOT, run_cli
 
+PACKAGING_VERSION = json.loads(
+    (ROOT / "packaging" / "charness.json").read_text(encoding="utf-8")
+)["version"]
+
 
 def load_charness_module(module_name: str):
     loader = importlib.machinery.SourceFileLoader(module_name, str(ROOT / "charness"))
@@ -38,15 +42,12 @@ def test_top_level_version_alias_matches_version_subcommand() -> None:
 
 def test_source_checkout_version_uses_embedded_packaging_manifest() -> None:
     result = run_cli("--version")
-    expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
     assert result.returncode == 0, result.stderr
-    assert yaml.safe_load(result.stdout) == {"version": expected}
+    assert yaml.safe_load(result.stdout) == {"version": PACKAGING_VERSION}
 
 
 def test_standalone_version_falls_back_to_valid_yaml_without_pyyaml() -> None:
-    expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
-
     result = subprocess.run(
         [sys.executable, "-S", str(ROOT / "charness"), "version"],
         cwd=ROOT,
@@ -56,7 +57,7 @@ def test_standalone_version_falls_back_to_valid_yaml_without_pyyaml() -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert yaml.safe_load(result.stdout) == {"version": expected}
+    assert yaml.safe_load(result.stdout) == {"version": PACKAGING_VERSION}
 
 
 def test_renderer_falls_back_to_json_yaml_when_pyyaml_is_unavailable(monkeypatch) -> None:

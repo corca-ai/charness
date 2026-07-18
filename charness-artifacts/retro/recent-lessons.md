@@ -2,7 +2,7 @@
 
 ## Current Focus
 
-- Four related autonomous-improvement rounds exposed the same structural lesson. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
+- Five related autonomous-improvement rounds exposed the same structural lesson. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - Release publish triggered a configured automatic session retro for `v2.1.0`. (source: `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`)
 
 ## Repeat Traps

@@ -74,6 +74,9 @@ DETAIL_COMMANDS = (
 SUMMARY_COMMANDS = (
     ("skills/public/quality/scripts/inventory_skill_ergonomics.py", "--repo-root", "."),
 )
+INVENTORY_DISPATCH = (
+    ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+).read_text(encoding="utf-8")
 
 
 def _run(*args: str) -> subprocess.CompletedProcess[str]:
@@ -133,10 +136,7 @@ def test_inventory_dispatch_commands_are_runnable_yaml_surfaces(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("PYTEST_DEBUG_TEMPROOT", str(tmp_path / "pytest-debug-root"))
-    dispatch = (ROOT / "skills/public/quality/references/inventory-dispatch.md").read_text(
-        encoding="utf-8"
-    )
-    snippets = re.findall(r"`\$SKILL_DIR/scripts/([^`]*)`", dispatch)
+    snippets = re.findall(r"`\$SKILL_DIR/scripts/([^`]*)`", INVENTORY_DISPATCH)
 
     assert snippets
     assert len({snippet.split()[0] for snippet in snippets}) == len(snippets)
@@ -195,12 +195,9 @@ def test_every_quality_inventory_exposes_yaml_output_contract(
 
 
 def test_quality_dispatch_plugin_commands_match_canonical_source() -> None:
-    dispatch = (ROOT / "skills/public/quality/references/inventory-dispatch.md").read_text(
-        encoding="utf-8"
-    )
     names = {
         shlex.split(snippet)[0]
-        for snippet in re.findall(r"`\$SKILL_DIR/scripts/([^`]*)`", dispatch)
+        for snippet in re.findall(r"`\$SKILL_DIR/scripts/([^`]*)`", INVENTORY_DISPATCH)
     }
     names.update(
         path.name for path in (ROOT / "skills/public/quality/scripts").glob("inventory_*.py")

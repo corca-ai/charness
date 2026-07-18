@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-18",
-  "source_artifact_count": 356,
-  "candidate_count": 1493,
+  "source_artifact_count": 357,
+  "candidate_count": 1495,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1045,10 +1045,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:df098994add7",
+      "candidate_id": "current_focus:1be57f7bb511",
       "kind": "current_focus",
-      "lesson": "Four related autonomous-improvement rounds exposed the same structural lesson.",
-      "normalized_key": "four related autonomous improvement rounds exposed the same structural lesson",
+      "lesson": "Five related autonomous-improvement rounds exposed the same structural lesson.",
+      "normalized_key": "five related autonomous improvement rounds exposed the same structural lesson",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",
@@ -2277,10 +2277,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:df098994add7",
+      "candidate_id": "current_focus:1be57f7bb511",
       "kind": "current_focus",
-      "lesson": "Four related autonomous-improvement rounds exposed the same structural lesson.",
-      "normalized_key": "four related autonomous improvement rounds exposed the same structural lesson",
+      "lesson": "Five related autonomous-improvement rounds exposed the same structural lesson.",
+      "normalized_key": "five related autonomous improvement rounds exposed the same structural lesson",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",
@@ -2577,6 +2577,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4d69f75136f5",
+      "kind": "next_improvement",
+      "lesson": "model directive grammars separately and put lazy iteration inside the exception boundary; use one malformed-input test to prove fallback atomicity instead of another prose rule or gate.",
+      "normalized_key": "model directive grammars separately and put lazy iteration inside the exception boundary use one",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:802b01af0333",
       "kind": "next_improvement",
       "lesson": "none — the existing fingerprint rail detected and quarantined the violation exactly as designed.",
@@ -2731,6 +2751,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b3306b4f263d",
+      "kind": "next_improvement",
+      "lesson": "when a broad gate catches a cheap deterministic defect on a changed surface, first repair that surface's existing-validator routing; do not create a duplicate floor or rely on memory.",
+      "normalized_key": "when a broad gate catches a cheap deterministic defect on a changed surface first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }

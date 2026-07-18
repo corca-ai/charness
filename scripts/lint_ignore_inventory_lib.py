@@ -22,6 +22,7 @@ TEXT_SUFFIXES = {".cjs", ".js", ".jsx", ".mjs", ".py", ".pyi", ".ts", ".tsx"}
 PYTHON_NOQA_RE = re.compile(r"# noqa(?::\s*(?P<codes>[A-Za-z0-9_,\s-]+))?", re.IGNORECASE)
 PYTHON_RUFF_FILE_RE = re.compile(r"^\s*#\s*ruff:\s*noqa(?:\s*:\s*(?P<codes>.*))?\s*$", re.IGNORECASE)
 PYTHON_PYLINT_RE = re.compile(r"#\s*pylint:\s*disable=(?P<codes>[^#]+)", re.IGNORECASE)
+PYTHON_RULE_CODE_RE = re.compile(r"[A-Z]+[0-9]+", re.IGNORECASE)
 ESLINT_RE = re.compile(
     r"(?:^|\s)(?://|/\*)\s*eslint-disable(?P<scope>-next-line|-line)?(?:\s+(?P<codes>[^*\n]+?))?\s*(?:\*/)?$",
     re.IGNORECASE,
@@ -66,11 +67,27 @@ def _iter_candidate_files(repo_root: Path, vendored: list[str]) -> list[Path]:
     return sorted(paths)
 
 
-def _parse_codes(raw: str | None) -> list[str]:
+def _without_description(raw: str) -> str:
+    return re.split(r"\s+--\s+", raw, maxsplit=1)[0]
+
+
+def _parse_named_codes(raw: str | None) -> list[str]:
     if not raw:
         return []
-    cleaned = raw.replace("*/", " ").replace("(", " ").replace(")", " ")
+    cleaned = _without_description(raw).replace("*/", " ").replace("(", " ").replace(")", " ")
     return [part.strip() for part in re.split(r"[,\s]+", cleaned) if part.strip()]
+
+
+def _parse_python_rule_codes(raw: str | None) -> list[str]:
+    """Return the leading Ruff/Flake8 rule list, never its human rationale."""
+    if not raw:
+        return []
+    codes: list[str] = []
+    for part in re.split(r"[,\s]+", raw.strip()):
+        if not PYTHON_RULE_CODE_RE.fullmatch(part):
+            break
+        codes.append(part)
+    return codes
 
 
 def _recommendation(*, tool: str, file_level: bool, blanket: bool) -> str:
@@ -110,7 +127,7 @@ def _record_finding(
 
 def _inventory_python_comments(repo_root: Path, path: Path, text: str, findings: list[dict[str, Any]]) -> bool:
     try:
-        tokens = tokenize.generate_tokens(io.StringIO(text).readline)
+        tokens = list(tokenize.generate_tokens(io.StringIO(text).readline))
     except tokenize.TokenError:
         return False
 
@@ -121,21 +138,21 @@ def _inventory_python_comments(repo_root: Path, path: Path, text: str, findings:
         comment = token.string
         raw = token.line
         if match := PYTHON_RUFF_FILE_RE.match(comment):
-            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="ruff", scope="file", codes=_parse_codes(match.group("codes")), raw=raw)
+            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="ruff", scope="file", codes=_parse_python_rule_codes(match.group("codes")), raw=raw)
         for match in PYTHON_PYLINT_RE.finditer(comment):
-            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="pylint", scope="file" if column == 0 else "inline", codes=_parse_codes(match.group("codes")), raw=raw)
+            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="pylint", scope="file" if column == 0 else "inline", codes=_parse_named_codes(match.group("codes")), raw=raw)
         for match in PYTHON_NOQA_RE.finditer(comment):
             if "ruff:" in comment[: match.start()].lower():
                 continue
             scope = "file" if column == 0 and comment.lstrip().lower().startswith("# noqa") else "inline"
-            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="noqa", scope=scope, codes=_parse_codes(match.group("codes")), raw=raw)
+            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="noqa", scope=scope, codes=_parse_python_rule_codes(match.group("codes")), raw=raw)
     return True
 
 
 def _inventory_text_lines(repo_root: Path, path: Path, text: str, findings: list[dict[str, Any]]) -> None:
     for line_no, line in enumerate(text.splitlines(), start=1):
         for match in ESLINT_RE.finditer(line):
-            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="eslint", scope="file" if match.group("scope") is None else "inline", codes=_parse_codes(match.group("codes")), raw=line)
+            _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="eslint", scope="file" if match.group("scope") is None else "inline", codes=_parse_named_codes(match.group("codes")), raw=line)
 
 
 def inventory_lint_ignores(repo_root: Path, vendored_paths: list[str] | None = None) -> dict[str, Any]:
@@ -163,15 +180,15 @@ def inventory_lint_ignores(repo_root: Path, vendored_paths: list[str] | None = N
 
         for line_no, line in enumerate(text.splitlines(), start=1):
             if match := PYTHON_RUFF_FILE_RE.match(line):
-                _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="ruff", scope="file", codes=_parse_codes(match.group("codes")), raw=line)
+                _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="ruff", scope="file", codes=_parse_python_rule_codes(match.group("codes")), raw=line)
             for match in PYTHON_PYLINT_RE.finditer(line):
-                _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="pylint", scope="file" if line.lstrip().startswith("#") else "inline", codes=_parse_codes(match.group("codes")), raw=line)
+                _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="pylint", scope="file" if line.lstrip().startswith("#") else "inline", codes=_parse_named_codes(match.group("codes")), raw=line)
             for match in PYTHON_NOQA_RE.finditer(line):
                 if "ruff:" in line[: match.start()].lower():
                     continue
                 stripped = line.lstrip()
                 scope = "file" if stripped.startswith("#") and stripped.lower().startswith("# noqa") else "inline"
-                _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="noqa", scope=scope, codes=_parse_codes(match.group("codes")), raw=line)
+                _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="noqa", scope=scope, codes=_parse_python_rule_codes(match.group("codes")), raw=line)
 
     return {
         "repo_root": str(repo_root),

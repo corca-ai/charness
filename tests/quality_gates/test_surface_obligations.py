@@ -71,6 +71,10 @@ _GITIGNORE_SCAN = (
 _RETRO_INDEX_CHECK = "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
 _BOUNDARY_RATCHET = "python3 scripts/check_boundary_bypass_ratchet.py --repo-root ."
 _STANDING_PYTEST = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
+_SPEC_EVIDENCE = (
+    "python3 scripts/check_spec_evidence_durability.py --repo-root . "
+    "--require-git-file-listing"
+)
 
 
 def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_top_level_scripts() -> None:
@@ -135,6 +139,13 @@ def test_repo_markdown_surface_matches_top_level_packaging_readme() -> None:
     verify = _verify_commands_for("packaging/README.md")
     assert "./scripts/check-markdown.sh" in verify
     assert "python3 scripts/check_doc_links.py --repo-root ." in verify
+    assert _SPEC_EVIDENCE in verify
+
+
+def test_repo_markdown_routes_durable_evidence_before_broad_pytest() -> None:
+    assert _SPEC_EVIDENCE in _verify_commands_for(
+        "charness-artifacts/quality/2026-07-18-review.md"
+    )
 
 
 def test_repo_python_surface_matches_top_level_scripts() -> None:

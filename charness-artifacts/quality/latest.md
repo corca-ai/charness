@@ -1,1 +1,1 @@
-2026-07-18-quality-infrastructure-review.md
+2026-07-18-lint-inventory-trust-review.md
