@@ -37,7 +37,7 @@ Ambient repo findings: D18 remains ignored. Existing near-limit files and nested
 - Source-scanned attention contracts are restricted to their declared path; same-named variables elsewhere remain review candidates.
 - The sweep fell from 24 to 21 findings and from 9 to 2 review candidates. The two survivors are dynamic exports and remain visible for judgment.
 - Three obsolete helpers and one unused setup constant had no checked-in consumers and were removed from both source and plugin mirrors.
-- Ninety focused tests pass in 1.62s; the advisory itself remains about 8s and did not become a new slow gate.
+- Ninety-one focused tests pass; the advisory itself remains about 8s and did not become a new slow gate.
 
 ## Weak
 
@@ -67,7 +67,8 @@ Ambient repo findings: D18 remains ignored. Existing near-limit files and nested
 
 ## Commands Run
 
-- Focused pytest: 90 passed in 1.62s; focused ruff passed; `git diff --check` passed after removing trailing blank lines.
+- Focused pytest: 91 passed across the selected files; focused ruff passed; `git diff --check` passed after removing trailing blank lines.
+- Exact line proof: a mutant at direct-import alias binding made the new alias fixture fail, then the reverted implementation passed 20/20 advisory tests.
 - Dead-code advisory: primary clean; sweep 21 total, 2 review candidates.
 - Source/plugin sync completed; read-only release quality passed 81/81 in 76.4s. Release-boundary commands are recorded by the final closeout and release artifact.
 

@@ -368,6 +368,38 @@ def test_dead_code_advisory_does_not_treat_unrelated_node_visitor_as_ast(tmp_pat
     assert findings[0]["classification"] == "review_candidate"
 
 
+def test_dead_code_advisory_recognizes_direct_import_aliases(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    source = repo / "tests" / "test_aliases.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "from ast import NodeVisitor as VisitorBase\n"
+        "from pytest import fixture as fixture_alias\n\n"
+        "@fixture_alias\n"
+        "def clear_state():\n    yield\n\n"
+        "class Visitor(VisitorBase):\n"
+        "    def visit_Name(self, node):\n        pass\n",
+        encoding="utf-8",
+    )
+
+    findings = module.parse_findings(
+        "tests/test_aliases.py:4: unused function 'clear_state' (60% confidence, 2 lines)\n"
+        "tests/test_aliases.py:9: unused method 'visit_Name' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+    )
+
+    assert [finding["classification"] for finding in findings] == [
+        "likely_pytest_fixture",
+        "likely_framework_convention",
+    ]
+
+
 def test_dead_code_advisory_marks_source_scanned_attention_contracts() -> None:
     from importlib.util import module_from_spec, spec_from_file_location
 

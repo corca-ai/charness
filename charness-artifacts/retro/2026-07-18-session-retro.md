@@ -42,6 +42,9 @@ Five related autonomous-improvement rounds exposed the same structural lesson. F
   after deleting confirmed residue and classifying runtime-external roles.
   Two fresh-eye angles independently caught an over-broad name-only source-scan
   exemption before lock; the repair is path-scoped with a negative lookalike.
+- The locked changed-line consumer then found the untested direct-import alias
+  branch. A focused alias fixture killed a manual mutant at the exact line,
+  closing the review's earlier non-blocking gap before release.
 
 ## Waste
 

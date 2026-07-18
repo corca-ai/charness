@@ -40,7 +40,7 @@ The diff adds AST role/provenance classification and focused tests, removes thre
 
 - `Bundle Anyway`: retain the narrow path/name contract and import-provenance checks; both are small changes inside the touched classifier and close concrete suppression risks.
 - `Over-Worry`: do not add compatibility shims for undocumented helpers with no repository consumer.
-- `Valid but Defer`: direct-import-alias tests are absent, although the same binding helper implements that path; no observed defect justifies widening this slice.
+- `Bundle Anyway`: the locked changed-line consumer later identified the direct-import-alias binding line as uncovered, so a focused alias fixture and manual mutant proof were added before release.
 
 ## Structured Findings
 
@@ -76,7 +76,7 @@ parent-delegated
 
 ## Pre-Merge Action
 
-Completed: narrow source-scanned membership, prove negative lookalikes, synchronize plugin mirrors, and rerun the focused advisory tests.
+Completed: narrow source-scanned membership, prove negative lookalikes and direct-import aliases, synchronize plugin mirrors, and rerun the focused advisory tests. A manual mutant at the exact alias-binding line failed the new test before being reverted.
 
 ## Next Move
 
