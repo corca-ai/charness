@@ -243,14 +243,30 @@ def test_run_slice_closeout_blocks_extra_targets_without_producer() -> None:
     assert "--mutation-coverage-extra-pytest-target requires" in payload["error"]
 
 
-def test_run_slice_closeout_internal_focused_command_plan_helpers(tmp_path: Path) -> None:
+def test_run_slice_closeout_internal_focused_command_plan_helpers(
+    tmp_path: Path, monkeypatch
+) -> None:
     from scripts import run_slice_closeout as closeout
 
+    swept: list[list[str]] = []
     args = SimpleNamespace(
         produce_mutation_coverage=True,
         mutation_coverage_command="python3 -m pytest -q tests/demo.py",
         mutation_coverage_extra_pytest_target=[],
     )
+    monkeypatch.setattr(
+        closeout,
+        "structural_sweep_planned_commands",
+        lambda repo_root, paths: swept.append(paths) or [],
+    )
+    closeout._planned_commands(
+        tmp_path,
+        ["historical.md", "live.py"],
+        [("verify", "ruff check .")],
+        args,
+        structural_paths=["live.py"],
+    )
+    assert swept == [["live.py"]]
 
     assert closeout._unsafe_blocker_command_plan([("verify", "ruff check .")], args) == [
         ("verify", "ruff check ."),
@@ -303,6 +319,32 @@ def test_run_slice_closeout_preexecution_blocks_invalid_focused_command(
     assert "must start with" in payload["error"]
 
 
+def test_base_range_preexecution_sweeps_only_live_worktree_paths(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import run_slice_closeout as closeout
+
+    payload = {"changed_paths": ["historical.md", "live.py"], "executed_commands": []}
+    seen: dict[str, object] = {}
+
+    def capture(*args, **kwargs):
+        seen["paths"] = kwargs["paths"]
+        return 9
+
+    monkeypatch.setattr(closeout, "block_on_structural_sweep", capture)
+
+    rc = closeout._run_preexecution_blocks(
+        tmp_path,
+        payload,
+        SimpleNamespace(json=True, plan_only=False),
+        structural_paths=["live.py"],
+    )
+
+    assert rc == 9
+    assert seen["paths"] == ["live.py"]
+    assert payload["changed_paths"] == ["historical.md", "live.py"]
+
+
 @pytest.mark.parametrize("base", [None, "auto"])
 def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
     tmp_path: Path, monkeypatch, base: str | None
@@ -326,7 +368,13 @@ def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
     monkeypatch.setattr(closeout, "_resolve_changed_paths", lambda repo_root, args: ["README.md"])
     monkeypatch.setattr(closeout, "match_surfaces", lambda manifest, changed_paths: dict(payload))
     monkeypatch.setattr(closeout, "headroom_for", lambda paths, repo_root: [])
-    monkeypatch.setattr(closeout, "_run_preexecution_blocks", lambda repo_root, payload, args: None)
+    monkeypatch.setattr(closeout, "collect_changed_paths", lambda repo_root: ["live.py"])
+
+    def capture_preexecution(*args, **kwargs):
+        seen["structural_paths"] = kwargs["structural_paths"]
+        return None
+
+    monkeypatch.setattr(closeout, "_run_preexecution_blocks", capture_preexecution)
     monkeypatch.setattr(
         closeout,
         "plan_broad_pytest_policy",
@@ -353,7 +401,12 @@ def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
     monkeypatch.setattr(closeout, "_emit_payload", lambda payload, **kwargs: 0)
 
     assert closeout.main() == 0
-    assert seen == {"broad": None, "focused": None}
+    assert seen["structural_paths"] == (["live.py"] if base is not None else None)
+    assert seen == {
+        "broad": None,
+        "focused": None,
+        "structural_paths": ["live.py"] if base is not None else None,
+    }
 
 
 def test_run_slice_closeout_main_reuses_explicit_campaign_sha_for_both_producers(
@@ -389,7 +442,13 @@ def test_run_slice_closeout_main_reuses_explicit_campaign_sha_for_both_producers
     )
     monkeypatch.setattr(closeout, "match_surfaces", lambda manifest, changed_paths: dict(payload))
     monkeypatch.setattr(closeout, "headroom_for", lambda paths, repo_root: [])
-    monkeypatch.setattr(closeout, "_run_preexecution_blocks", lambda repo_root, payload, args: None)
+    monkeypatch.setattr(closeout, "collect_changed_paths", lambda repo_root: ["staged.py", "unstaged.py"])
+
+    def capture_preexecution(*args, **kwargs):
+        seen["structural_paths"] = kwargs["structural_paths"]
+        return None
+
+    monkeypatch.setattr(closeout, "_run_preexecution_blocks", capture_preexecution)
     monkeypatch.setattr(
         closeout,
         "plan_broad_pytest_policy",
@@ -417,7 +476,11 @@ def test_run_slice_closeout_main_reuses_explicit_campaign_sha_for_both_producers
 
     assert closeout.main() == 0
     assert resolved == ["campaign-ref"]
-    assert seen == {"broad": "campaign-sha", "focused": "campaign-sha"}
+    assert seen == {
+        "broad": "campaign-sha",
+        "focused": "campaign-sha",
+        "structural_paths": ["staged.py", "unstaged.py"],
+    }
 
 
 def test_run_slice_closeout_main_fails_narrow_broad_pytest_proof_scope(
@@ -439,7 +502,7 @@ def test_run_slice_closeout_main_fails_narrow_broad_pytest_proof_scope(
     monkeypatch.setattr(closeout, "_resolve_changed_paths", lambda repo_root, args: ["README.md", "scripts/tool.py"])
     monkeypatch.setattr(closeout, "match_surfaces", lambda manifest, changed_paths: dict(payload))
     monkeypatch.setattr(closeout, "headroom_for", lambda paths, repo_root: [])
-    monkeypatch.setattr(closeout, "_run_preexecution_blocks", lambda repo_root, payload, args: None)
+    monkeypatch.setattr(closeout, "_run_preexecution_blocks", lambda *args, **kwargs: None)
     monkeypatch.setattr(
         closeout,
         "plan_broad_pytest_policy",

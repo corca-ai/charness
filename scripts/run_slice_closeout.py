@@ -278,8 +278,12 @@ def _planned_commands(
     changed_paths: list[str],
     command_plan: list[tuple[str, str]],
     args,
+    *,
+    structural_paths: list[str] | None = None,
 ) -> list[dict[str, object]]:
-    planned = structural_sweep_planned_commands(repo_root, changed_paths)
+    planned = structural_sweep_planned_commands(
+        repo_root, changed_paths if structural_paths is None else structural_paths
+    )
     planned += [{"phase": phase, "command": command} for phase, command in command_plan]
     if args.produce_mutation_coverage and args.mutation_coverage_command:
         planned.append(
@@ -301,7 +305,13 @@ def _planned_commands(
     return planned
 
 
-def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) -> int | None:
+def _run_preexecution_blocks(
+    repo_root: Path,
+    payload: dict[str, object],
+    args,
+    *,
+    structural_paths: list[str] | None = None,
+) -> int | None:
     """Fail-fast pre-execution gate chain; returns an exit code on the first block.
     #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
     risk interrupt / broad pytest), then advisories, unmatched, cautilus, risk.
@@ -313,6 +323,7 @@ def _run_preexecution_blocks(repo_root: Path, payload: dict[str, object], args) 
         plan_only=args.plan_only,
         run_command=run_command,
         emit_payload=_emit_payload,
+        paths=structural_paths,
     )
     if blocked is not None:
         return blocked
@@ -396,7 +407,10 @@ def main() -> int:
         payload["status"] = "noop"
         return _emit_payload(payload, as_json=args.json)
 
-    blocked = _run_preexecution_blocks(repo_root, payload, args)
+    structural_paths = collect_changed_paths(repo_root) if args.base is not None else None
+    blocked = _run_preexecution_blocks(
+        repo_root, payload, args, structural_paths=structural_paths
+    )
     if blocked is not None:
         return blocked
 
@@ -425,7 +439,11 @@ def main() -> int:
     if args.plan_only:
         payload["status"] = "planned"
         payload["planned_commands"] = _planned_commands(
-            repo_root, list(payload["changed_paths"]), command_plan, args
+            repo_root,
+            list(payload["changed_paths"]),
+            command_plan,
+            args,
+            structural_paths=structural_paths,
         )
         return _emit_payload(payload, as_json=args.json)
 

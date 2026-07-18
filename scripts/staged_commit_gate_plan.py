@@ -418,6 +418,7 @@ def block_on_structural_sweep(
     plan_only: bool,
     run_command,
     emit_payload,
+    paths: list[str] | None = None,
 ) -> int | None:
     """#332 fail-fast guard for the full ``run_slice_closeout`` path.
 
@@ -428,7 +429,8 @@ def block_on_structural_sweep(
     """
     if plan_only:
         return None
-    sweep = run_structural_sweep_preflight(repo_root, list(payload["changed_paths"]), run_command=run_command)
+    sweep_paths = list(payload["changed_paths"]) if paths is None else paths
+    sweep = run_structural_sweep_preflight(repo_root, sweep_paths, run_command=run_command)
     payload["structural_sweep"] = sweep
     if sweep["status"] != "failed":
         return None
