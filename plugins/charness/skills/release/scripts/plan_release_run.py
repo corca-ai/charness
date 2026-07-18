@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import runpy
 from pathlib import Path
@@ -35,7 +36,7 @@ build_real_host_payload = _real_host.build_payload
 collect_changed_paths = _real_host.collect_changed_paths
 build_review_gate_payload = _review_gate.build_payload
 release_previous_version = _publish_helpers.release_previous_version
-unreleased_paths = _publish_helpers.unreleased_paths
+unreleased_scope = _publish_helpers.unreleased_scope
 current_branch = _publish_helpers.current_branch
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 safe_real_host_payload = _preflight.safe_real_host_payload
@@ -122,20 +123,34 @@ def _real_host_path_scope(
     previous_version: str | None,
 ) -> dict[str, Any]:
     if target_version and previous_version:
+        delta = unreleased_scope(
+            repo_root,
+            remote=remote,
+            branch=branch,
+            previous_version=previous_version,
+        )
+        changed_paths = delta["changed_paths"]
         return {
             "scope": "release_delta",
-            "changed_paths": unreleased_paths(
-                repo_root,
-                remote=remote,
-                branch=branch,
-                previous_version=previous_version,
-            ),
+            "changed_paths": changed_paths,
             "previous_version": previous_version,
+            "provenance": {
+                "base_ref": delta["base_ref"],
+                "base_sha": delta["base_sha"],
+                "head_sha": delta["head_sha"],
+                "path_count": len(changed_paths),
+                "paths_sha256": hashlib.sha256("\n".join(changed_paths).encode()).hexdigest(),
+            },
         }
+    changed_paths = collect_changed_paths(repo_root)
     return {
         "scope": "worktree",
-        "changed_paths": collect_changed_paths(repo_root),
+        "changed_paths": changed_paths,
         "previous_version": None,
+        "provenance": {
+            "path_count": len(changed_paths),
+            "paths_sha256": hashlib.sha256("\n".join(changed_paths).encode()).hexdigest(),
+        },
     }
 
 
@@ -187,8 +202,10 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
                 real_host_scope["changed_paths"],
                 build_payload=build_real_host_payload,
             )
+            real_host_payload.pop("changed_paths", None)
             real_host_payload["evidence_scope"] = real_host_scope["scope"]
             real_host_payload["evidence_previous_version"] = real_host_scope["previous_version"]
+            real_host_payload["evidence_provenance"] = real_host_scope["provenance"]
         except SystemExit as exc:
             real_host_payload = {"status": "blocked", "error": str(exc)}
     review_payload = None

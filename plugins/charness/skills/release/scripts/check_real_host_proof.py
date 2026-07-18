@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import hashlib
 import json
+import re
 import runpy
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -35,13 +38,47 @@ load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 resolve_trigger_surfaces = _scripts_surfaces_lib_module.resolve_trigger_surfaces
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+
+IMMUTABLE_RANGE_RE = re.compile(r"^(?P<base>[0-9a-f]{40})\.\.(?P<head>[0-9a-f]{40})$")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
-    parser.add_argument("--paths", nargs="*", help="Changed paths to evaluate; defaults to git-derived changed paths")
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument("--paths", nargs="*", help="Changed paths to evaluate; defaults to git-derived changed paths")
+    scope.add_argument(
+        "--changed-range",
+        help="Immutable full-SHA range BASE..HEAD whose changed paths this command resolves",
+    )
+    parser.add_argument("--detail", action="store_true", help="Emit the full proof-trigger payload as YAML")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
+
+
+def collect_range_paths(repo_root: Path, changed_range: str) -> tuple[list[str], dict[str, object]]:
+    match = IMMUTABLE_RANGE_RE.fullmatch(changed_range)
+    if match is None:
+        raise SystemExit("--changed-range requires immutable 40-character lowercase SHA endpoints: BASE..HEAD")
+    result = subprocess.run(
+        ["git", "diff", "--name-only", changed_range],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit(
+            f"real-host proof range resolution failed for `{changed_range}`: {result.stderr.strip()}"
+        )
+    paths = [line for line in result.stdout.splitlines() if line.strip()]
+    return paths, {
+        "base_sha": match.group("base"),
+        "head_sha": match.group("head"),
+        "path_count": len(paths),
+        "paths_sha256": hashlib.sha256("\n".join(paths).encode()).hexdigest(),
+    }
 
 
 def matches_any(path: str, patterns: list[str]) -> bool:
@@ -121,12 +158,25 @@ def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    changed_paths = args.paths if args.paths is not None else collect_changed_paths(repo_root)
+    provenance = None
+    if args.changed_range:
+        changed_paths, provenance = collect_range_paths(repo_root, args.changed_range)
+    else:
+        changed_paths = args.paths if args.paths is not None else collect_changed_paths(repo_root)
     payload = build_payload(repo_root, changed_paths)
+    if provenance is not None:
+        payload.pop("changed_paths", None)
+        payload["evidence_provenance"] = provenance
     if payload.get("configuration_status") == "broken":
-        print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
+        rendered = json.dumps(payload, ensure_ascii=False, indent=2) if args.json else yaml_output.render_yaml(payload)
+        print(rendered, file=sys.stderr, end="" if rendered.endswith("\n") else "\n")
         return 1
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    elif args.detail:
+        yaml_output.emit_yaml(payload)
+    else:
+        print(f"real_host={'required' if payload['required'] else 'not-required'}: {payload['reason']}")
     return 0
 
 
@@ -134,5 +184,5 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except SurfaceError as exc:
-        print(json.dumps(surface_error_payload(str(exc)), ensure_ascii=False, indent=2), file=sys.stderr)
+        print(yaml_output.render_yaml(surface_error_payload(str(exc))), file=sys.stderr, end="")
         raise SystemExit(1)

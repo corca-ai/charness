@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
+from .release_publish_fixtures import _seed_publish_release_repo
 from .support import ROOT
 
 _PLANNER = load_script_module(
@@ -22,7 +25,7 @@ _REAL_HOST = load_script_module(
 
 
 def _run_real_host_proof(*args: str):
-    return run_loaded_script_main("check_real_host_proof.py", _REAL_HOST, *args)
+    return run_loaded_script_main("check_real_host_proof.py", _REAL_HOST, "--detail", *args)
 
 
 def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
@@ -35,7 +38,7 @@ def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
         "plugins/charness/scripts/install_tools.py",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["required"] is True
     assert payload["surface_hits"] == ["external-tool-control-plane"]
     assert any("tool doctor" in item for item in payload["checklist"])
@@ -51,7 +54,7 @@ def test_release_real_host_proof_stays_off_for_unrelated_derived_plugin_scripts(
         "plugins/charness/scripts/run-quality.sh",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["required"] is False
     assert payload["surface_hits"] == []
     assert payload["path_hits"] == []
@@ -65,7 +68,7 @@ def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:
         "docs/retro-self-improvement-spec.md",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["required"] is False
     assert payload["checklist"] == []
 
@@ -77,12 +80,55 @@ def test_release_real_host_proof_clean_changeset_does_not_trigger() -> None:
         "--paths",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["required"] is False
     assert payload["changed_paths"] == []
     assert payload["surface_hits"] == []
     assert payload["path_hits"] == []
     assert payload["checklist"] == []
+
+
+def test_release_real_host_immutable_range_matches_explicit_paths(tmp_path: Path) -> None:
+    repo, _remote, _bin = _seed_publish_release_repo(tmp_path)
+    adapter = repo / ".agents" / "release-adapter.yaml"
+    adapter.write_text(
+        adapter.read_text(encoding="utf-8")
+        + "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "Configure proof"], cwd=repo, check=True)
+    base_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    (repo / "README.md").write_text("# Changed\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "Change readme"], cwd=repo, check=True)
+    head_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+    ranged = _run_real_host_proof(
+        "--repo-root", str(repo), "--changed-range", f"{base_sha}..{head_sha}"
+    )
+    explicit = _run_real_host_proof("--repo-root", str(repo), "--paths", "README.md")
+
+    assert ranged.returncode == explicit.returncode == 0
+    ranged_payload = yaml.safe_load(ranged.stdout)
+    explicit_payload = yaml.safe_load(explicit.stdout)
+    for key in ("required", "surface_hits", "path_hits", "checklist", "reason"):
+        assert ranged_payload[key] == explicit_payload[key]
+    assert "changed_paths" not in ranged_payload
+    assert ranged_payload["evidence_provenance"]["path_count"] == 1
+    assert ranged_payload["evidence_provenance"]["base_sha"] == base_sha
+    assert ranged_payload["evidence_provenance"]["head_sha"] == head_sha
+
+
+def test_release_real_host_range_requires_full_immutable_shas() -> None:
+    result = _run_real_host_proof("--repo-root", str(ROOT), "--changed-range", "HEAD^..HEAD")
+
+    assert result.returncode != 0
+    assert "immutable 40-character" in result.stderr
 
 
 def test_release_real_host_proof_fails_loud_on_unresolved_surface_id(tmp_path: Path) -> None:
@@ -135,7 +181,7 @@ def test_release_real_host_proof_fails_loud_on_unresolved_surface_id(tmp_path: P
 
     assert result.returncode == 1
     assert "Traceback" not in result.stderr
-    payload = json.loads(result.stderr)
+    payload = yaml.safe_load(result.stderr)
     assert payload["required"] is False
     assert payload["configuration_status"] == "broken"
     assert payload["unresolved_trigger_surfaces"] == ["release-packagng"]

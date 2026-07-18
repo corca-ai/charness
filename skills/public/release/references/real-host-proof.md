@@ -19,10 +19,14 @@ The adapter declares real-host proof through:
 Use the helper to decide whether the current release slice hit those seams:
 
 ```bash
-python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root .
+python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root . --detail
 ```
 
 The helper is a trigger detector. It does not replace the host proof itself.
+For a release delta, use the planner-emitted full-SHA
+`--changed-range BASE..HEAD` command. The helper owns path resolution and emits only compact
+range provenance plus actual trigger hits; do not expand the range into a large
+`--paths` argv or duplicate every changed path in the plan.
 
 ## Broken Trigger Configuration
 

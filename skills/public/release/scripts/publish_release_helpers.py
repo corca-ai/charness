@@ -291,6 +291,21 @@ def unreleased_paths(
     branch: str,
     previous_version: str | None = None,
 ) -> list[str]:
+    return unreleased_scope(
+        repo_root,
+        remote=remote,
+        branch=branch,
+        previous_version=previous_version,
+    )["changed_paths"]
+
+
+def unreleased_scope(
+    repo_root: Path,
+    *,
+    remote: str,
+    branch: str,
+    previous_version: str | None = None,
+) -> dict[str, Any]:
     base_ref = _release_base_ref(
         repo_root,
         previous_version=previous_version,
@@ -311,7 +326,13 @@ def unreleased_paths(
             f"STDOUT:\n{result.stdout}\n"
             f"STDERR:\n{result.stderr}"
         )
-    return [line for line in result.stdout.splitlines() if line.strip()]
+    changed = [line for line in result.stdout.splitlines() if line.strip()]
+    return {
+        "base_ref": base_ref,
+        "base_sha": run(["git", "rev-parse", base_ref], cwd=repo_root).stdout.strip(),
+        "head_sha": run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip(),
+        "changed_paths": changed,
+    }
 
 
 def amend_fresh_checkout_artifact(

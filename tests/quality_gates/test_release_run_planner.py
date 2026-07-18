@@ -95,6 +95,13 @@ def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: P
     real_host_gate = next(packet for packet in payload["gate_packets"] if packet["id"] == "real-host-proof")
     assert "--paths" not in real_host_gate["command"]
     assert payload["gate_packets"]
+    structured_gate_commands = {
+        packet["id"]: packet["command"]
+        for packet in payload["gate_packets"]
+        if packet["id"] in {"fresh-checkout-probes", "real-host-proof", "requested-review-gate"}
+    }
+    assert all("--detail" in command for command in structured_gate_commands.values())
+    assert all("--json" not in command for command in structured_gate_commands.values())
     assert {item["path"] for item in payload["required_reads"]} >= {
         "references/index.md",
         "references/version-policy.md",
@@ -123,14 +130,20 @@ def test_release_run_planner_uses_release_delta_for_real_host_evidence(tmp_path:
     assert real_host["evidence_scope"] == "release_delta"
     assert real_host["evidence_previous_version"] == "0.0.0"
     assert real_host["required"] is True
-    assert "README.md" in real_host["changed_paths"]
+    assert "changed_paths" not in real_host
     assert "README.md" in real_host["path_hits"]
-    assert "WIP.txt" not in real_host["changed_paths"]
     assert real_host["checklist"] == ["Verify on a clean host."]
+    provenance = real_host["evidence_provenance"]
+    assert provenance["path_count"] == 2
+    assert len(provenance["paths_sha256"]) == 64
+    assert len(provenance["base_sha"]) == 40
+    assert len(provenance["head_sha"]) == 40
     real_host_gate = next(packet for packet in payload["gate_packets"] if packet["id"] == "real-host-proof")
-    assert "--paths" in real_host_gate["command"]
-    assert "README.md" in real_host_gate["command"]
+    assert "--changed-range" in real_host_gate["command"]
+    assert "--paths" not in real_host_gate["command"]
+    assert "README.md" not in real_host_gate["command"]
     assert "WIP.txt" not in real_host_gate["command"]
+    assert len(real_host_gate["command"]) < 240
 
     set_version_result = _run_plan(repo, env, "--set-version", "0.0.1")
 
@@ -363,6 +376,39 @@ def test_release_run_planner_help_describes_all_options(
         option_block = re.sub(r"\s+", " ", output[match.start() : end])
         assert description in option_block, f"missing help for {option}: {description}"
     assert "--json" not in output
+
+
+@pytest.mark.parametrize(
+    ("script", "extra"),
+    [
+        ("check_fresh_checkout_probes.py", []),
+        ("check_requested_review_gate.py", ["--skip-commands"]),
+    ],
+)
+def test_release_gate_helpers_are_yaml_first_with_hidden_json_compatibility(
+    tmp_path: Path, script: str, extra: list[str]
+) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    command = REPO_ROOT / "skills" / "public" / "release" / "scripts" / script
+
+    detail = subprocess.run(
+        ["python3", str(command), "--repo-root", str(repo), *extra, "--detail"],
+        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
+    )
+    compat = subprocess.run(
+        ["python3", str(command), "--repo-root", str(repo), *extra, "--json"],
+        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
+    )
+    help_result = subprocess.run(
+        ["python3", str(command), "--help"],
+        cwd=REPO_ROOT, env=env, check=True, capture_output=True, text=True,
+    )
+
+    assert detail.returncode == compat.returncode == 0
+    assert yaml.safe_load(detail.stdout) == json.loads(compat.stdout)
+    assert "--detail" in help_result.stdout
+    assert "--json" not in help_result.stdout
 
 
 def test_release_run_planner_bootstrap_missing_raises(monkeypatch: pytest.MonkeyPatch) -> None:

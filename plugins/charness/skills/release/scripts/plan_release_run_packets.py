@@ -87,9 +87,12 @@ def command_text(parts: list[str]) -> str:
 
 
 def _real_host_command(real_host_scope: dict[str, Any] | None) -> str:
-    command = ['python3 "$SKILL_DIR/scripts/check_real_host_proof.py"', "--repo-root", "."]
+    command = ['python3 "$SKILL_DIR/scripts/check_real_host_proof.py"', "--repo-root", ".", "--detail"]
     if real_host_scope and real_host_scope.get("scope") == "release_delta":
-        command.extend(["--paths", *real_host_scope.get("changed_paths", [])])
+        provenance = real_host_scope.get("provenance", {})
+        command.extend(
+            ["--changed-range", f"{provenance.get('base_sha')}..{provenance.get('head_sha')}"]
+        )
     return command_text(command)
 
 
@@ -104,7 +107,7 @@ def gate_packets(real_host_scope: dict[str, Any] | None = None) -> list[dict[str
         ),
         gate_packet(
             "fresh-checkout-probes",
-            'python3 "$SKILL_DIR/scripts/check_fresh_checkout_probes.py" --repo-root . --json',
+            'python3 "$SKILL_DIR/scripts/check_fresh_checkout_probes.py" --repo-root . --detail',
             "detect whether fresh-checkout probes are declared",
             "configuration packet; publish helper runs probes before tag push",
             "always; add --run-probes only for explicit pre-publish proof",
@@ -118,7 +121,7 @@ def gate_packets(real_host_scope: dict[str, Any] | None = None) -> list[dict[str
         ),
         gate_packet(
             "requested-review-gate",
-            'python3 "$SKILL_DIR/scripts/check_requested_review_gate.py" --repo-root . --skip-commands --json',
+            'python3 "$SKILL_DIR/scripts/check_requested_review_gate.py" --repo-root . --skip-commands --detail',
             "surface configured requested-review enforcement posture",
             "advisory when no requested_review_commands are configured",
             "before publish; execute commands in the publish helper",

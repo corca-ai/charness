@@ -18,6 +18,7 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 REQUESTED_REVIEW_TIMEOUT_SECONDS = 300
@@ -113,7 +114,8 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     parser.add_argument("--artifact", type=Path, help="Release artifact file to scan for review waiver/unavailability phrases")
     parser.add_argument("--skip-commands", action="store_true", help="Skip executing the configured requested_review_commands")
-    parser.add_argument("--json", action="store_true", help="Emit the full review-gate payload as JSON")
+    parser.add_argument("--detail", action="store_true", help="Emit the full review-gate payload as YAML")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -121,6 +123,8 @@ def main() -> int:
     payload = build_payload(repo_root, artifact_path=artifact_path, run_commands=not args.skip_commands)
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    elif args.detail:
+        yaml_output.emit_yaml(payload)
     elif payload["status"] == "blocked":
         for blocker in payload["blockers"]:
             print(f"BLOCKED: {blocker}")
