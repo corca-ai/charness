@@ -23,6 +23,20 @@ digest, and reviewed-input identity emitted after packet preparation.
   scaffold, so the producer mismatch escaped focused scaffold assertions but
   was caught by the real final-consumer path.
 
+## Reproduction
+
+Render a default critique scaffold, then pass that unchanged artifact through
+`check_artifact_surface_preflight.py --changed-artifacts <path>`. Before the
+repair, reviewed-input validation attempts to resolve a packet path named
+`TODO`; after the repair, the comment-only section is correctly unbound.
+
+## Candidate Causes
+
+- The validator incorrectly required packet evidence for every critique.
+- The preflight roundtrip injected packet fields that the scaffold did not own.
+- The scaffold emitted validator-reserved field names before real evidence
+  existed.
+
 ## Hypothesis
 
 The producer encoded optional state as syntactically active invalid state.

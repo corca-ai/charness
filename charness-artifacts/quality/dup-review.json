@@ -2,6 +2,104 @@
  "entries": [
   {
    "class": "intentional",
+   "id": "017938717d9e4e73",
+   "note": "two-line optional-section early return shared across unrelated validation owners; extraction would couple policy, profile, efficiency, and worktree schemas without centralizing behavior",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "309a387c4c61cfd6",
+   "note": "critique and retro final packet reports deliberately differ: critique emits immutable reviewed-input binding while retro must not inherit it; a generic status renderer would hide that evidence boundary",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "6076d280587bc0e1",
+   "note": "adjacent release artifact sections have distinct missing-state, evidence, and non-claim semantics; generic rendering would couple independently evolving irreversible-boundary verdicts",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "7fe0804ab17f93c9",
+   "note": "standard import preamble overlap across independently runnable catalog, usage, and release-observer modules; an import aggregator would add runtime coupling with no domain owner",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "877915bb773ce4a3",
+   "note": "stdlib/type import overlap between closeout broad-gate and critique packet modules; the modules own unrelated behavior and share no extractable contract",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "96e51c5bfcefa69d",
+   "note": "direct-execution import guards across nose reporting, release entrypoints, and markdown preview bootstrap each resolve a different optional/local dependency before normal imports; a shared guard would itself require the import path it is meant to establish",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "9fba34eb678c4ff9",
+   "note": "critique and retro expose parallel packet-scope CLI arguments but remain independently executable portable skill commands with different reviewed-input, timeout, and output contracts; a partial shared parser experiment increased live clone families from 12 to 14 and was reverted",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "a60c7e0a171aac7c",
+   "note": "small internal-schema stdout branch remains local because critique and retro build different packet contracts and return evidence; extraction would add abstraction without policy ownership",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "a915bc1ab3025599",
+   "note": "both modules correctly use the canonical runtime loader but bind different local dependencies; module-local binding is not duplicate loader behavior",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "b05a7a2d516d5496",
+   "note": "independently executable root and support-skill sibling loaders differ in sys.modules registration and export portability; unifying them would weaken the support package boundary",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "d72f39d16963ed25",
+   "note": "the small changed-ref alias/default-label decision is deliberately visible in both portable runners; partial extraction added helper/call-shape duplication without owning their distinct packet semantics",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "e030ed32659f4bb3",
+   "note": "identical empty-prefix early return appears in unrelated reviewed-artifact policy and vendored-path filtering; there is no shared domain invariant to extract",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "ed09029cd9749d2f",
+   "note": "quality modules keep a small sibling-module loader guard for directly executable source and plugin layouts; cli side-effect probing and document duplicate inventory bind unrelated owners, so extraction would add cross-tool bootstrap coupling",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "fc9d43f98b928157",
+   "note": "required and optional Git byte readers intentionally diverge on failure: one raises a diagnostic and the other returns None; keeping both explicit protects fail-closed reviewed-input semantics",
+   "reviewed_at": "2026-07-19",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
    "id": "004895e66d5b4132",
    "note": "same-file near-duplicate inside skills/public/setup/references/agent-docs-policy.md (120-121 vs 143-144): two deliberately parallel host-mapping example blocks that document the same Codex subagent mapping in the live-AGENTS.md and generated-template sections; surfaced as 'new' by scan rotation, both members untouched this session (#441 rotation class)",
    "reviewed_at": "2026-07-17",
