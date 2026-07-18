@@ -166,6 +166,8 @@ session_staleness:
 STEP: refreshing install surface
 STEP: refreshing Codex host cache
 DONE: update complete`
+- Independent installed-version readback: `charness version` reported `2.1.3`.
+- Independent doctor/cache readback: checkout, Codex source, and Codex cache manifest all reported `2.1.3`; `codex_source_cache_drift: false`.
 
 ## Release Runtime
 
@@ -181,11 +183,11 @@ DONE: update complete`
 
 ## Baton Reconcile
 
-- Baton reconcile observation: `stale` for `docs/handoff.md`.
+- Baton reconcile observation: `reconciled-after-readback` for `docs/handoff.md`.
 - Just-published version: `2.1.3`.
-- Versions claimed by the baton's routing sections: `2.1.2`.
-- RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `2.1.3`, or record an explicit n/a disposition in the release record, before ending the session.
-- This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
+- Versions claimed by the baton's routing sections after reconciliation: `2.1.3`.
+- The baton now records public HTTPS verification, installed version, doctor/cache readback, restart guidance, and no-real-host-trigger status.
+- This records the reconciliation action; the bounded release closeout reviewer still judges the disposition.
 
 ## Fresh Checkout Probes
 
