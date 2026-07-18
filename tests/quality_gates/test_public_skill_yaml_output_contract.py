@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import builtins
+import importlib.util
 import json
 import re
 import shlex
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -51,6 +53,11 @@ DETAIL_COMMANDS = (
     ("scripts/plan_cautilus_proof.py", "--repo-root", "."),
     ("skills/public/quality/scripts/plan_quality_run.py", "--repo-root", "."),
     ("skills/public/quality/scripts/render_runtime_summary.py", "--repo-root", "."),
+    (
+        "skills/public/quality/scripts/inventory_ci_recoverable_gates.py",
+        "--repo-root",
+        ".",
+    ),
     ("skills/public/release/scripts/plan_release_run.py", "--repo-root", "."),
     ("scripts/plan_risk_interrupt.py", "--repo-root", "."),
     ("skills/public/setup/scripts/render_skill_routing.py", "--repo-root", "."),
@@ -213,3 +220,18 @@ def test_yaml_renderer_falls_back_to_json_syntax_valid_yaml(monkeypatch: pytest.
 
     assert rendered.startswith("{")
     assert yaml.safe_load(rendered) == {"message": "안녕하세요", "items": [1, 2]}
+
+
+def test_summary_output_reports_missing_canonical_renderer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    helper_path = ROOT / "skills/public/quality/scripts/summary_output_lib.py"
+    spec = importlib.util.spec_from_file_location("summary_output_missing_renderer", helper_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    missing_path = SimpleNamespace(resolve=lambda: SimpleNamespace(parents=[]))
+    monkeypatch.setattr(module, "Path", lambda _: missing_path)
+
+    with pytest.raises(RuntimeError, match="scripts/yaml_output.py not found"):
+        module._load_yaml_output()
