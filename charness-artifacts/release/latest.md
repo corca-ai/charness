@@ -174,11 +174,12 @@ DONE: update complete`
 
 ## Baton Reconcile
 
-- Baton reconcile observation: `stale` for `docs/handoff.md`.
+- Baton reconcile observation: `reconciled` for `docs/handoff.md`.
 - Just-published version: `2.1.4`.
-- Versions claimed by the baton's routing sections: `2.1.3`.
-- RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `2.1.4`, or record an explicit n/a disposition in the release record, before ending the session.
-- This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
+- Versions claimed by the baton's routing sections: `2.1.4`.
+- The baton now records the published and installed release plus the dynamic-entrypoint
+  evidence contract and its fail-closed extension rule.
+- Independent readback: `charness-artifacts/probe/2026-07-19-v2.1.4-release-observer.json`.
 
 ## Fresh Checkout Probes
 

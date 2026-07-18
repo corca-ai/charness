@@ -1,0 +1,34 @@
+{
+  "schema_version": "charness.release_observer.v1",
+  "observed_at": "2026-07-19",
+  "release": {
+    "version": "2.1.4",
+    "tag": "v2.1.4",
+    "release_url": "https://github.com/corca-ai/charness/releases/tag/v2.1.4",
+    "public_channel": {
+      "kind": "https-fetch",
+      "status": "confirmed",
+      "http_status": 200
+    },
+    "remote_main_sha": "32337ff5a01bb67472d00528680ad8aaf24ed049",
+    "remote_tag_sha": "946c9d7ecc048ec3175189acc8c8b91977639792"
+  },
+  "installed_readback": {
+    "version_command": "charness version",
+    "version": "2.1.4",
+    "doctor_command": "charness doctor",
+    "checkout_version": "2.1.4",
+    "checkout_git_head": "946c9d7e",
+    "codex_source_version": "2.1.4",
+    "codex_cache_manifest_version": "2.1.4",
+    "codex_source_cache_drift": false,
+    "codex_status": "installed",
+    "claude_status": "installed"
+  },
+  "non_claims": [
+    "A new Codex session or restarted Claude Code session is still required to load the refreshed plugin into that session.",
+    "No configured release-time real-host proof trigger matched this release delta.",
+    "No Cautilus evaluation was run.",
+    "No wall-clock speedup is claimed."
+  ]
+}
