@@ -11,21 +11,21 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-18",
-  "source_artifact_count": 359,
-  "candidate_count": 1503,
+  "source_artifact_count": 360,
+  "candidate_count": 1504,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
       "kind": "next_improvement",
       "lesson": "Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance.",
       "normalized_key": "release helper auto persisted this bounded retro trigger closeout no additional follow up is",
-      "source_count": 101,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+      "source_count": 102,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
       "latest_source_date": "2026-07-18",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 36.0,
+      "selection_weight": 36.35,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -529,6 +529,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
@@ -539,13 +544,13 @@
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
-      "source_count": 101,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+      "source_count": 102,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
       "latest_source_date": "2026-07-18",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 36.0,
+      "selection_weight": 36.35,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -1049,6 +1054,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
           "date": "2026-07-18",
           "section": "Waste"
         }
@@ -1129,6 +1139,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:5674ae82d66c",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v2.1.3`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v2 1 3",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
           "date": "2026-07-18",
           "section": "Context"
         }
@@ -1233,26 +1263,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:b2b12e1b2412",
-      "kind": "next_improvement",
-      "lesson": "before an irreversible cumulative operation, compute and prove the exact cumulative range that the boundary will consume; do not assume individually closed slices compose automatically.",
-      "normalized_key": "before an irreversible cumulative operation compute and prove the exact cumulative range that the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -1261,13 +1271,13 @@
       "kind": "next_improvement",
       "lesson": "Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance.",
       "normalized_key": "release helper auto persisted this bounded retro trigger closeout no additional follow up is",
-      "source_count": 101,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+      "source_count": 102,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
       "latest_source_date": "2026-07-18",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 36.0,
+      "selection_weight": 36.35,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -1771,6 +1781,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
@@ -1781,13 +1796,13 @@
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
-      "source_count": 101,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+      "source_count": 102,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
       "latest_source_date": "2026-07-18",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.35,
-      "selection_weight": 36.0,
+      "selection_weight": 36.35,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -2291,6 +2306,11 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste"
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
           "date": "2026-07-18",
           "section": "Waste"
         }
@@ -2371,6 +2391,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:5674ae82d66c",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v2.1.3`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v2 1 3",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
           "date": "2026-07-18",
           "section": "Context"
         }
