@@ -33,6 +33,8 @@ Search order:
 - `sync_command`
 - `quality_command`
 - `post_publish_install_refresh`
+- `post_publish_version_readback`
+- `post_publish_doctor_readback`
 - `post_publish_distinct_channel_probe`
 - `post_publish_baton_path`
 - `update_instructions`

@@ -513,6 +513,12 @@ def test_reviewed_input_binding_stales_only_for_declared_input(tmp_path: Path) -
     (tmp_path / "reviewed.txt").write_text("changed reviewed input\n", encoding="utf-8")
     with pytest.raises(CritiqueValidationError, match="declared reviewed inputs are stale"):
         validate_reviewed_input_binding(artifact, text, date(2026, 7, 20))
+    validate_reviewed_input_binding(
+        artifact,
+        text,
+        date(2026, 7, 20),
+        check_current=False,
+    )
 
 
 def test_reviewed_input_binding_rejects_packet_byte_tamper(tmp_path: Path) -> None:

@@ -349,10 +349,18 @@ def commit_post_publish_artifact(
         release_url=payload.get("release_url") or expected_release_url,
         issue_closeout=payload.get("issue_closeout"),
     )
-    diff_result = run_command(["git", "diff", "--quiet", "--", artifact_relpath], cwd=repo_root, check=False)
+    observer_path = str((payload.get("release_observer") or {}).get("path", "")).strip()
+    tracked_paths = [artifact_relpath, *([observer_path] if observer_path else [])]
+    diff_result = run_command(["git", "diff", "--quiet", "--", *tracked_paths], cwd=repo_root, check=False)
+    if diff_result.returncode == 0 and observer_path:
+        untracked = run_command(
+            ["git", "ls-files", "--error-unmatch", observer_path], cwd=repo_root, check=False
+        )
+        if untracked.returncode != 0:
+            diff_result = untracked
     if diff_result.returncode == 0:
         return
-    run_command(["git", "add", artifact_relpath], cwd=repo_root)
+    run_command(["git", "add", *tracked_paths], cwd=repo_root)
     run_command(["git", "commit", "-m", f"Record release verification for {payload['tag_name']}"], cwd=repo_root)
     run_command(["git", "push", remote, branch], cwd=repo_root)
     payload["post_publish_artifact_commit_sha"] = run_command(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()

@@ -66,6 +66,8 @@ confirm_release_via_distinct_channel = _post_create.confirm_release_via_distinct
 evaluate_release_distinct_channel = _post_create.evaluate_release_distinct_channel
 fail_release_distinct_channel_floor = _post_create.fail_release_distinct_channel_floor
 run_post_publish_install_refresh = _post_create.run_post_publish_install_refresh
+collect_installed_readback = _post_create.collect_installed_readback
+safe_write_release_observer = _post_create.safe_write_release_observer
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
 release_plan_target_version = _release_plan.target_version
@@ -111,6 +113,8 @@ def _execution_context() -> SimpleNamespace:
         "fail_after_post_create_verification",
         "ensure_release_issues_closed",
         "run_post_publish_install_refresh",
+        "collect_installed_readback",
+        "safe_write_release_observer",
     )
     return SimpleNamespace(**{name: globals()[name] for name in names})
 
@@ -212,6 +216,7 @@ def write_current_artifact(
         lifecycle_capture=payload.get("lifecycle_capture"),
         release_runtime=payload.get("release_runtime"),
         baton_reconcile=payload.get("baton_reconcile"),
+        release_observer=payload.get("release_observer"),
     )
 
 

@@ -25,7 +25,7 @@ file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_pre
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
 _boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
-_reviewed_input_identity = import_repo_module(__file__, "scripts.reviewed_input_identity")
+_reviewed_input_binding = import_repo_module(__file__, "scripts.critique_reviewed_input_binding")
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 CRITIQUE_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Critique Prepare Packet(?:\s+—\s+\S.*)?$")
@@ -384,20 +384,7 @@ def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
         )
 
 
-def validate_reviewed_input_binding(path: Path, text: str, observed_date: date | None) -> None:
-    fields = _section_field_map(text, _reviewed_input_identity.ARTIFACT_HEADING)
-    required = _reviewed_input_identity.artifact_binding_required(
-        path.name, observed_date, PACKET_CONSUMED_RE.search(text) is not None
-    )
-    current, reason = _reviewed_input_identity.verify_declared_binding(
-        path,
-        fields,
-        required=required,
-        required_fields=_reviewed_input_identity.ARTIFACT_REQUIRED_FIELDS,
-        expected_kind=CRITIQUE_PREPARE_PACKET_KIND,
-    )
-    if not current:
-        raise ValidationError(f"{path}: {reason}")
+validate_reviewed_input_binding = _reviewed_input_binding.validate_reviewed_input_binding
 
 
 def check_boundary_ownership_typed_presence(
@@ -445,6 +432,7 @@ def validate_critique_artifact(
     require_tier_evidence: bool,
     collect_all: bool = False,
     cross_surface_hit: bool = False,
+    check_current_binding: bool = True,
 ) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
@@ -512,7 +500,12 @@ def validate_critique_artifact(
         _check_blocked_signal_detail,
         lambda: validate_structured_findings(path, text),
         _check_reviewer_tier_evidence,
-        lambda: validate_reviewed_input_binding(path, text, observed_date),
+        lambda: validate_reviewed_input_binding(
+            path,
+            text,
+            observed_date,
+            check_current=check_current_binding,
+        ),
     )
     run_validation_checks(
         checks, collect_all=collect_all, artifact_label="critique artifact", error_cls=ValidationError
@@ -575,6 +568,7 @@ def main() -> int:
             require_tier_evidence=explicit_paths or relpath in require_tier_paths,
             collect_all=args.report_all,
             cross_surface_hit=cross_surface_hit,
+            check_current_binding=not args.all,
         )
     print(f"Validated {len(artifacts)} critique artifact(s).")
     return 0

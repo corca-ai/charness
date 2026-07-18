@@ -22,6 +22,8 @@ the command name; the repo adapter owns it.
 
 ```yaml
 post_publish_install_refresh: <repo-owned update command>
+post_publish_version_readback: <repo-owned version command>
+post_publish_doctor_readback: <repo-owned doctor command>
 ```
 
 After public release verification, `publish_release.py` auto-runs this command

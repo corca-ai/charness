@@ -216,6 +216,7 @@ def verify_packet_binding(
     packet_sha256: str,
     identity_sha256: str,
     expected_kind: str,
+    check_current: bool = True,
 ) -> tuple[bool, str]:
     candidate = (repo_root / packet_path).resolve()
     try:
@@ -238,7 +239,9 @@ def verify_packet_binding(
         return False, "reviewed packet has no reviewed input identity"
     if identity.get("identity_sha256") != identity_sha256:
         return False, "artifact identity does not match the reviewed packet"
-    return verify_reviewed_input_identity(repo_root, identity)
+    if check_current:
+        return verify_reviewed_input_identity(repo_root, identity)
+    return True, "packet-integrity-only"
 
 
 def verify_artifact_binding(
@@ -246,6 +249,7 @@ def verify_artifact_binding(
     fields: dict[str, str],
     *,
     expected_kind: str,
+    check_current: bool = True,
 ) -> tuple[bool, str]:
     repo_root = next(
         (parent for parent in artifact_path.resolve().parents if (parent / ".git").exists()),
@@ -261,6 +265,7 @@ def verify_artifact_binding(
         packet_sha256=fields["packet sha256"],
         identity_sha256=fields["identity sha256"],
         expected_kind=expected_kind,
+        check_current=check_current,
     )
 
 
@@ -271,6 +276,7 @@ def verify_declared_binding(
     required: bool,
     required_fields: tuple[str, ...],
     expected_kind: str,
+    check_current: bool = True,
 ) -> tuple[bool, str]:
     if not fields:
         if required:
@@ -279,4 +285,9 @@ def verify_declared_binding(
     missing = [field for field in required_fields if not fields.get(field)]
     if missing:
         return False, f"reviewed input identity missing fields: {missing}"
-    return verify_artifact_binding(artifact_path, fields, expected_kind=expected_kind)
+    return verify_artifact_binding(
+        artifact_path,
+        fields,
+        expected_kind=expected_kind,
+        check_current=check_current,
+    )

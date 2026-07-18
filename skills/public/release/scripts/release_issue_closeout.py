@@ -366,7 +366,9 @@ def commit_issue_closeout_artifact(
         release_url=payload.get("release_url") or expected_release_url,
         issue_closeout=payload["issue_closeout"],
     )
-    run(["git", "add", artifact_relpath], cwd=repo_root)
+    observer_path = str((payload.get("release_observer") or {}).get("path", "")).strip()
+    paths = [artifact_relpath, *([observer_path] if observer_path else [])]
+    run(["git", "add", *paths], cwd=repo_root)
     run(["git", "commit", "-m", f"Record release issue closeout for {payload['tag_name']}"], cwd=repo_root)
     run(["git", "push", remote, branch], cwd=repo_root)
     payload["issue_closeout_commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()

@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import runpy
 import shlex
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+_observer = runpy.run_path(str(Path(__file__).resolve().with_name("release_observer.py")))
+collect_installed_readback = _observer["collect_installed_readback"]
+write_release_observer = _observer["write_release_observer"]
+safe_write_release_observer = _observer["safe_write_release_observer"]
+validate_release_observer_record = _observer["validate_release_observer_record"]
 
 
 def run_post_publish_install_refresh(

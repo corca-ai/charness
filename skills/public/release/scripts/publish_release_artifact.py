@@ -27,6 +27,7 @@ real_host_lines = _sections.real_host_lines
 fresh_checkout_lines = _sections.fresh_checkout_lines
 release_runtime_lines = _sections.release_runtime_lines
 baton_reconcile_lines = _sections.baton_reconcile_lines
+release_observer_lines = _sections.release_observer_lines
 user_update_lines = _sections.user_update_lines
 
 
@@ -57,6 +58,7 @@ def write_release_artifact(
     lifecycle_capture: dict[str, Any] | None = None,
     release_runtime: list[dict[str, Any]] | None = None,
     baton_reconcile: dict[str, Any] | None = None,
+    release_observer: dict[str, Any] | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -108,6 +110,7 @@ def write_release_artifact(
     lines.extend(install_refresh_lines(install_refresh))
     lines.extend(release_runtime_lines(release_runtime))
     lines.extend(baton_reconcile_lines(baton_reconcile))
+    lines.extend(release_observer_lines(release_observer))
     lines.extend(fresh_checkout_lines(fresh_checkout_payload))
     lines.extend(issue_closeout_lines(issue_closeout))
     lines.extend(user_update_lines(update_instructions))

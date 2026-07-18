@@ -1,0 +1,226 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-18T16:53:43Z",
+  "prepared_for": "Slice 3 final staged implementation inputs",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- .agents/release-adapter.yaml\n- charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md\n- docs/public-skill-dogfood.json\n- plugins/charness/scripts/critique_reviewed_input_binding.py\n- plugins/charness/scripts/reviewed_input_identity.py\n- plugins/charness/scripts/validate_critique_artifacts.py\n- plugins/charness/skills/release/references/adapter-contract.md\n- plugins/charness/skills/release/references/install-refresh.md\n- plugins/charness/skills/release/scripts/publish_release_artifact.py\n- plugins/charness/skills/release/scripts/publish_release_artifact_sections.py\n- plugins/charness/skills/release/scripts/publish_release_cli.py\n- plugins/charness/skills/release/scripts/publish_release_common.py\n- plugins/charness/skills/release/scripts/publish_release_helpers.py\n- plugins/charness/skills/release/scripts/publish_release_post_create.py\n- plugins/charness/skills/release/scripts/release_issue_closeout.py\n- plugins/charness/skills/release/scripts/release_observer.py\n- plugins/charness/skills/release/scripts/resolve_adapter.py\n- scripts/critique_reviewed_input_binding.py\n- scripts/reviewed_input_identity.py\n- scripts/validate_critique_artifacts.py\n- skills/public/release/references/adapter-contract.md\n- skills/public/release/references/install-refresh.md\n- skills/public/release/scripts/publish_release_artifact.py\n- skills/public/release/scripts/publish_release_artifact_sections.py\n- skills/public/release/scripts/publish_release_cli.py\n- skills/public/release/scripts/publish_release_common.py\n- skills/public/release/scripts/publish_release_helpers.py\n- skills/public/release/scripts/publish_release_post_create.py\n- skills/public/release/scripts/release_issue_closeout.py\n- skills/public/release/scripts/release_observer.py\n- skills/public/release/scripts/resolve_adapter.py\n- tests/quality_gates/test_release_distinct_channel.py\n- tests/quality_gates/test_release_observer.py\n- tests/test_critique_prepare_packet.py\n- charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md\n- charness-artifacts/critique/gajae-slice3-release-observer-packet.json\n- charness-artifacts/critique/gajae-slice3-release-observer-packet.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/critique_reviewed_input_binding.py, scripts/reviewed_input_identity.py, scripts/validate_critique_artifacts.py, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py\n  derived matches: plugins/charness/scripts/critique_reviewed_input_binding.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/validate_critique_artifacts.py, plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/references/install-refresh.md, plugins/charness/skills/release/scripts/publish_release_artifact.py, plugins/charness/skills/release/scripts/publish_release_artifact_sections.py, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_helpers.py, plugins/charness/skills/release/scripts/publish_release_post_create.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_observer.py, plugins/charness/skills/release/scripts/resolve_adapter.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md, charness-artifacts/critique/gajae-slice3-release-observer-packet.md\n  derived matches: plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/references/install-refresh.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/release-adapter.yaml, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py\n  derived matches: plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/references/install-refresh.md, plugins/charness/skills/release/scripts/publish_release_artifact.py, plugins/charness/skills/release/scripts/publish_release_artifact_sections.py, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_helpers.py, plugins/charness/skills/release/scripts/publish_release_post_create.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_observer.py, plugins/charness/skills/release/scripts/resolve_adapter.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/release-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md, charness-artifacts/critique/gajae-slice3-release-observer-packet.json, charness-artifacts/critique/gajae-slice3-release-observer-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/critique_reviewed_input_binding.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/critique_reviewed_input_binding.py, scripts/reviewed_input_identity.py, scripts/validate_critique_artifacts.py, tests/quality_gates/test_release_distinct_channel.py, tests/quality_gates/test_release_observer.py, tests/test_critique_prepare_packet.py\n  derived matches: plugins/charness/scripts/critique_reviewed_input_binding.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/critique_reviewed_input_binding.py, scripts/reviewed_input_identity.py, scripts/validate_critique_artifacts.py, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "08d5b57f41dcbe8e659630d94432b798a4c57ef0",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/release-adapter.yaml",
+      "docs/public-skill-dogfood.json",
+      "plugins/charness/scripts/critique_reviewed_input_binding.py",
+      "plugins/charness/scripts/reviewed_input_identity.py",
+      "plugins/charness/scripts/validate_critique_artifacts.py",
+      "plugins/charness/skills/release/references/adapter-contract.md",
+      "plugins/charness/skills/release/references/install-refresh.md",
+      "plugins/charness/skills/release/scripts/publish_release_artifact.py",
+      "plugins/charness/skills/release/scripts/publish_release_artifact_sections.py",
+      "plugins/charness/skills/release/scripts/publish_release_cli.py",
+      "plugins/charness/skills/release/scripts/publish_release_common.py",
+      "plugins/charness/skills/release/scripts/publish_release_helpers.py",
+      "plugins/charness/skills/release/scripts/publish_release_post_create.py",
+      "plugins/charness/skills/release/scripts/release_issue_closeout.py",
+      "plugins/charness/skills/release/scripts/release_observer.py",
+      "plugins/charness/skills/release/scripts/resolve_adapter.py",
+      "scripts/critique_reviewed_input_binding.py",
+      "scripts/reviewed_input_identity.py",
+      "scripts/validate_critique_artifacts.py",
+      "skills/public/release/references/adapter-contract.md",
+      "skills/public/release/references/install-refresh.md",
+      "skills/public/release/scripts/publish_release_artifact.py",
+      "skills/public/release/scripts/publish_release_artifact_sections.py",
+      "skills/public/release/scripts/publish_release_cli.py",
+      "skills/public/release/scripts/publish_release_common.py",
+      "skills/public/release/scripts/publish_release_helpers.py",
+      "skills/public/release/scripts/publish_release_post_create.py",
+      "skills/public/release/scripts/release_issue_closeout.py",
+      "skills/public/release/scripts/release_observer.py",
+      "skills/public/release/scripts/resolve_adapter.py",
+      "tests/quality_gates/test_release_distinct_channel.py",
+      "tests/quality_gates/test_release_observer.py",
+      "tests/test_critique_prepare_packet.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/release-adapter.yaml",
+        "content_sha256": "a5675cc584745144eb79738847c0cc33cb17a6b06aa45ae7b11819dae405ddec"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "13c0e11bbbe590fee56dcfc44d74e4e30fadca26dc7cc695b2a58d185c2c5f7e"
+      },
+      {
+        "path": "plugins/charness/scripts/critique_reviewed_input_binding.py",
+        "content_sha256": "fd9e12e5c24ac7b73360b2e5da1e68b7b31db1304abd51d1b488c5bb02545c20"
+      },
+      {
+        "path": "plugins/charness/scripts/reviewed_input_identity.py",
+        "content_sha256": "9476689c0d71ebeb291650526682cb3bc5c480a0036a4367f8629c65d5df5b8c"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_critique_artifacts.py",
+        "content_sha256": "2c1eedc7623f1c21db4ef650a3909084709b2728851d5a49a6d044141ec34793"
+      },
+      {
+        "path": "plugins/charness/skills/release/references/adapter-contract.md",
+        "content_sha256": "6bae39a67215189d0aa03a3740c2c6ef042f35697db3a513e3c04f6036b22c29"
+      },
+      {
+        "path": "plugins/charness/skills/release/references/install-refresh.md",
+        "content_sha256": "1642632b40510861f83e7417d49f65ed6f59b9fa2a027936c98a331c047eaa5d"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_artifact.py",
+        "content_sha256": "6363bead582f3027bb982b06e74b8439aff1ed3d4edc10643cb327a7de85615e"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_artifact_sections.py",
+        "content_sha256": "71926e383bd418bf4cab50c75adbb2210f7e7ad16bc7d1b650e512796a4ac1f4"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_cli.py",
+        "content_sha256": "b2417e92b19f7998822cf722d09948a76d3d338221208f54a4006088a54046dc"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_common.py",
+        "content_sha256": "31ab93851187a1e227a4ec48861edd0f4d4204abd6b7b47e330e009f0a77a88a"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_helpers.py",
+        "content_sha256": "eaf46dc6bc16588dd79500a91aa619504d82fe6e1c498e6636f0b05ec87911b4"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_post_create.py",
+        "content_sha256": "2d3ab18827f236c9f0774d94c237e82398d1ad34e9f1f3324ad72909dac3062d"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/release_issue_closeout.py",
+        "content_sha256": "0a5de27aeabe99a4bba96d34c061da0bd542003b494231ec2d604e15dab62e4d"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/release_observer.py",
+        "content_sha256": "42917347ea5fcf46c19a020e447e01410b736265b95521eb24dad33d23493464"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/resolve_adapter.py",
+        "content_sha256": "97b60087908a02655b98e09050c88b75b512b7b1189d6f2ca8cdd59705aeb686"
+      },
+      {
+        "path": "scripts/critique_reviewed_input_binding.py",
+        "content_sha256": "fd9e12e5c24ac7b73360b2e5da1e68b7b31db1304abd51d1b488c5bb02545c20"
+      },
+      {
+        "path": "scripts/reviewed_input_identity.py",
+        "content_sha256": "9476689c0d71ebeb291650526682cb3bc5c480a0036a4367f8629c65d5df5b8c"
+      },
+      {
+        "path": "scripts/validate_critique_artifacts.py",
+        "content_sha256": "2c1eedc7623f1c21db4ef650a3909084709b2728851d5a49a6d044141ec34793"
+      },
+      {
+        "path": "skills/public/release/references/adapter-contract.md",
+        "content_sha256": "6bae39a67215189d0aa03a3740c2c6ef042f35697db3a513e3c04f6036b22c29"
+      },
+      {
+        "path": "skills/public/release/references/install-refresh.md",
+        "content_sha256": "1642632b40510861f83e7417d49f65ed6f59b9fa2a027936c98a331c047eaa5d"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_artifact.py",
+        "content_sha256": "6363bead582f3027bb982b06e74b8439aff1ed3d4edc10643cb327a7de85615e"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_artifact_sections.py",
+        "content_sha256": "71926e383bd418bf4cab50c75adbb2210f7e7ad16bc7d1b650e512796a4ac1f4"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_cli.py",
+        "content_sha256": "b2417e92b19f7998822cf722d09948a76d3d338221208f54a4006088a54046dc"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_common.py",
+        "content_sha256": "31ab93851187a1e227a4ec48861edd0f4d4204abd6b7b47e330e009f0a77a88a"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_helpers.py",
+        "content_sha256": "eaf46dc6bc16588dd79500a91aa619504d82fe6e1c498e6636f0b05ec87911b4"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_post_create.py",
+        "content_sha256": "2d3ab18827f236c9f0774d94c237e82398d1ad34e9f1f3324ad72909dac3062d"
+      },
+      {
+        "path": "skills/public/release/scripts/release_issue_closeout.py",
+        "content_sha256": "0a5de27aeabe99a4bba96d34c061da0bd542003b494231ec2d604e15dab62e4d"
+      },
+      {
+        "path": "skills/public/release/scripts/release_observer.py",
+        "content_sha256": "42917347ea5fcf46c19a020e447e01410b736265b95521eb24dad33d23493464"
+      },
+      {
+        "path": "skills/public/release/scripts/resolve_adapter.py",
+        "content_sha256": "97b60087908a02655b98e09050c88b75b512b7b1189d6f2ca8cdd59705aeb686"
+      },
+      {
+        "path": "tests/quality_gates/test_release_distinct_channel.py",
+        "content_sha256": "a1f1545d88b70bf9330a5795ad1acc64591dde85352627117c76f0059810dbf2"
+      },
+      {
+        "path": "tests/quality_gates/test_release_observer.py",
+        "content_sha256": "4ce6cce0a1ee48d31709c42a3cbfc2e881948736d11c32af8a0a23a67c3a28cb"
+      },
+      {
+        "path": "tests/test_critique_prepare_packet.py",
+        "content_sha256": "923a7d537edd49d8ab0eaeee5faa2930b27149bd3210756b18cba09302a36592"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "95a1acadd44e3d95729cfc3efe9a1ce56042e4b5c440b1cd80d365593b7a1982",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "c19dc255f68d6f735f3592be5fbbdd759ad22fa8ffbb31dfe7112aed92632bd5"
+  }
+}

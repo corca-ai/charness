@@ -140,6 +140,35 @@ def close_issues_install_refresh_and_commit(
     payload: dict[str, Any],
     cli: Any,
 ) -> None:
+    payload["install_refresh"] = timed(
+        payload,
+        "post_publish_install_refresh",
+        lambda: cli.run_post_publish_install_refresh(
+            repo_root,
+            command=adapter_data.get("post_publish_install_refresh", ""),
+            run_shell=cli.run_shell,
+        ),
+    )
+    payload["installed_readback"] = timed(
+        payload,
+        "post_publish_installed_readback",
+        lambda: cli.collect_installed_readback(
+            repo_root,
+            install_refresh=payload["install_refresh"],
+            version_command=adapter_data.get("post_publish_version_readback", ""),
+            doctor_command=adapter_data.get("post_publish_doctor_readback", ""),
+            run_shell=cli.run_shell,
+        ),
+    )
+    payload["release_observer"] = timed(
+        payload,
+        "release_observer",
+        lambda: cli.safe_write_release_observer(
+            repo_root,
+            payload=payload,
+            installed_readback=payload["installed_readback"],
+        ),
+    )
     timed(
         payload,
         "issue_closeout",
@@ -150,15 +179,6 @@ def close_issues_install_refresh_and_commit(
             payload=payload,
             run=cli.run,
             behavior_lines=args.close_issue_behavior,
-        ),
-    )
-    payload["install_refresh"] = timed(
-        payload,
-        "post_publish_install_refresh",
-        lambda: cli.run_post_publish_install_refresh(
-            repo_root,
-            command=adapter_data.get("post_publish_install_refresh", ""),
-            run_shell=cli.run_shell,
         ),
     )
     _commit_final_release_artifact(

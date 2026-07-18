@@ -187,6 +187,24 @@ def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[s
     return lines
 
 
+def release_observer_lines(observer: dict[str, Any] | None) -> list[str]:
+    if not isinstance(observer, dict) or not str(observer.get("status", "")).strip():
+        return []
+    lines = ["", "## Release Observer Record", ""]
+    if path := str(observer.get("path", "") or "").strip():
+        lines.append(f"- Durable observer record: `{path}`.")
+    else:
+        lines.append("- Durable observer record: unavailable; see the capture disposition below.")
+    lines.append(f"- Installed readback disposition: `{observer.get('status', 'unknown')}`.")
+    if reason := observer.get("reason"):
+        lines.append(f"- Capture disposition: {reason}")
+    lines.append(
+        "- Verdict ownership: this record embeds `distinct_channel_verification`; "
+        "it does not declare a second release-success verdict."
+    )
+    return lines
+
+
 def lifecycle_capture_lines(record: dict[str, Any] | None) -> list[str]:
     lines = ["", "## Lifecycle Usage Capture", ""]
     if not isinstance(record, dict) or not str(record.get("status", "")).strip():

@@ -292,6 +292,11 @@ def _base_cli(observer, recorder: dict) -> SimpleNamespace:
         commit_final_release_artifact=lambda *a, **k: recorder.__setitem__("committed", k.get("has_issue_closeout")),
         ensure_release_issues_closed=lambda *a, **k: recorder.__setitem__("issues_closed", True),
         run_post_publish_install_refresh=lambda *a, **k: {"status": "not_configured"},
+        collect_installed_readback=lambda *a, **k: {"status": "not_configured"},
+        safe_write_release_observer=lambda *a, **k: {
+            "status": "not_configured",
+            "path": "charness-artifacts/probe/test.json",
+        },
     )
 
 

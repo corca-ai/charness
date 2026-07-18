@@ -11,13 +11,12 @@ resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — derive one release observer record.
-- Current slice intent: generate one durable observer from the release helper's
-  existing distinct-channel evidence and post-install readback; do not create a
-  parallel success verdict.
-- Next action: inspect release payload/render/schema ownership, add malformed and
-  unavailable fixtures, integrate the observer after post-publish refresh, and
-  prove release behavior without publishing yet.
+- Current slice: Slice 4 — normalize advisory efficiency evidence.
+- Current slice intent: make cost deltas comparable only across matching corpus,
+  signal, reconstruction, model, and parser identities while keeping outcome
+  evidence adjacent.
+- Next action: inspect the existing A/B aggregator and report owner, add
+  comparable/incomparable fixtures, and preserve advisory non-gating behavior.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -110,8 +109,8 @@ Implement and prove Slices 1-4 from the canonical Gajae-Code adoption plan, disp
 | --- | --- | --- | --- | --- |
 | 1 | Bound Codex app-server response waiting | Only demonstrated correctness escape in the comparison | Negative fake-server matrix, compatible YAML, focused critique | completed |
 | 2 | Bind critique verdicts to declared reviewed inputs | Durable review claim must identify what was judged | Identity/tamper fixtures, validator and artifact sync | completed |
-| 3 | Generate one release observer from existing distinct-channel evidence | Avoid parallel success records at the irreversible boundary | Schema/renderer fixtures and release integration proof | active |
-| 4 | Add A/B comparability and retain outcome adjacency | Improve token efficiency without persuasive incomparable deltas | Comparable/incomparable report fixtures and focused tests | planned |
+| 3 | Generate one release observer from existing distinct-channel evidence | Avoid parallel success records at the irreversible boundary | Schema/renderer fixtures and release integration proof | completed |
+| 4 | Add A/B comparability and retain outcome adjacency | Improve token efficiency without persuasive incomparable deltas | Comparable/incomparable report fixtures and focused tests | active |
 | 5 | Disposition governed probes | Prevent analogy from silently becoming runtime/CI scope | Recorded probe outcome and promotion/defer rationale | planned |
 | 6 | Final bundle proof, push, and release | User requested publication only after all work is complete | Locked closeout, distinct review/channel, public+installed readback | planned |
 
@@ -210,6 +209,18 @@ applies.
   during its fingerprint window; a clean final snapshot/verify and repaired
   re-review reached SHIP. Critique:
   `charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md`.
+- Slice 3 completed — release closeout now derives one
+  `charness.release_observer.v1` record from the canonical distinct-channel
+  observation after install refresh plus YAML-first version/doctor readbacks,
+  before issue close. Missing commands, runner faults, and persistence failures
+  remain typed non-blocking dispositions after publication; both final commit
+  paths stage the JSON when available. The slice also repaired a discovered
+  structural coupling: historical `--all` critique validation now checks packet
+  integrity without requiring old reviewed inputs to equal today's worktree,
+  while changed critiques still enforce current applicability. 119 focused
+  release/critique tests and the full pre-lock structural closeout passed; a
+  bounded review moved HOLD to SHIP with clean parent fingerprints. Critique:
+  `charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md`.
 
 ## Context Sources
 
