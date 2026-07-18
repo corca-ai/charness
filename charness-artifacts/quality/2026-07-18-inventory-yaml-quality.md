@@ -94,7 +94,7 @@ incorrect. D18 remains deliberately ignored per operator direction.
 - `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --detail`
 - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary`
 - `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root . --summary`
-- focused pytest selection for the YAML contract and migrated inventories — 99 passed.
+- focused pytest selection for the YAML contract and migrated inventories — 101 passed.
 - `ruff check skills/public/quality/scripts plugins/charness/skills/quality/scripts tests/quality_gates/test_public_skill_yaml_output_contract.py`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `python3 scripts/validate_packaging.py --repo-root .`

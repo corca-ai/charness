@@ -64,8 +64,8 @@ index drift after both review rounds.
 
 ## Verification Evidence
 
-- Focused inventory and contract suite: 99 passed.
-- YAML dispatch contract alone: 21 passed in 10.06s after temporary-repo optimization.
+- Focused inventory and contract suite: 101 passed.
+- YAML dispatch contract alone: 23 passed in 10.49s after branch-coverage follow-up.
 - Ruff and packaging validation passed for source and plugin surfaces.
 - Reviewer-boundary fingerprints reported no drift.
 
