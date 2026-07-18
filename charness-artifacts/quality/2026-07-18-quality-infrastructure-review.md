@@ -27,6 +27,7 @@ Ambient repo findings: D18 remains ignored per operator direction. The duplicate
 - Nose binary resolution, version normalization, and raw JSON subprocess facts have one owner; Markdown and code-report policy remain in their domain consumers.
 - `inventory_doc_duplicates.py` moved from 334 to 313 code lines and `nose_report_lib.py` from 331 to 310; the shared transport is 85 lines and synchronized byte-for-byte into the plugin.
 - Quality-runner seeds are built once per test module while every test mutates a private clone; a contamination regression test protects the invariant.
+- Consumer-execution tests were split from the near-limit producer module behind a 23-line mechanical fixture: producer tests now have 252 lines of headroom and the new consumer module 634.
 
 ## Weak
 
