@@ -289,6 +289,50 @@ def test_check_test_repo_copy_invariants_flags_class_style_root_write(
     assert "`test_write` mutates" in result.stderr
 
 
+def test_check_test_repo_copy_invariants_tracks_module_aliases_and_async_writes(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_alias_chain.py").write_text(
+        "from pathlib import Path\n"
+        "REPO_ROOT = Path(__file__).resolve().parents[1]\n"
+        "checkout = REPO_ROOT.absolute()\n"
+        "class TestSharedState:\n"
+        "    async def test_write(self):\n"
+        "        target: Path = Path(checkout).joinpath('scratch').resolve()\n"
+        "        target.mkdir()\n"
+        "        target.write_bytes(b'transient')\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "tests/test_alias_chain.py" in result.stderr
+    assert "`test_write` mutates" in result.stderr
+    assert "`mkdir`" in result.stderr
+    assert "`write_bytes`" in result.stderr
+
+
+def test_check_test_repo_copy_invariants_accepts_module_release_only_marker(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_copy_heavy.py").write_text(
+        "import pytest\n"
+        "pytestmark = (pytest.mark.release_only,)\n"
+        "def test_copy(tmp_path, seeded_charness_repo):\n"
+        "    clone_seeded_charness_repo(tmp_path, seeded_charness_repo)\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_test_repo_copy_invariants_accepts_non_checkout_root_name(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:

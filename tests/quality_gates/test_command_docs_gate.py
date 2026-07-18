@@ -191,6 +191,52 @@ def test_render_cli_reference_rejects_parser_contract_path_mismatch(monkeypatch)
         renderer.commands_from_contract(ROOT)
 
 
+def test_render_cli_reference_orders_commands_from_parser_and_contract(monkeypatch) -> None:
+    renderer = _load_render_cli_reference()
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+    beta = subparsers.add_parser("beta")
+    beta.add_subparsers().add_parser("nested")
+    subparsers.add_parser("alpha")
+    contract = {
+        "root": {"help_command": "./charness --help"},
+        "alpha": {"help_command": "./charness alpha --help"},
+        "beta": {"help_command": "./charness beta --help"},
+        "nested": {"help_command": "./charness beta nested --help"},
+    }
+
+    monkeypatch.setattr(renderer._command_docs, "load_contract", lambda _path: contract)
+    monkeypatch.setattr(renderer.runpy, "run_path", lambda _path: {"build_parser": lambda: parser})
+
+    assert renderer.commands_from_contract(Path("/contract-repo")) == (
+        ("charness", ("./charness", "--help")),
+        ("charness beta", ("./charness", "beta", "--help")),
+        ("charness beta nested", ("./charness", "beta", "nested", "--help")),
+        ("charness alpha", ("./charness", "alpha", "--help")),
+    )
+
+
+def test_render_cli_reference_renders_contract_order_and_examples(monkeypatch) -> None:
+    renderer = _load_render_cli_reference()
+    commands = (
+        ("charness tool install", ("./charness", "tool", "install", "--help")),
+        ("charness alpha", ("./charness", "alpha", "--help")),
+    )
+    monkeypatch.setattr(renderer, "commands_from_contract", lambda _repo_root: commands)
+    monkeypatch.setattr(
+        renderer,
+        "run_help",
+        lambda _repo_root, command: f"help for {' '.join(command[1:-1])}",
+    )
+
+    rendered = renderer.render_cli_reference(Path("/contract-repo"))
+
+    assert rendered.index("## `charness tool install`") < rendered.index("## `charness alpha`")
+    assert "help for tool install" in rendered
+    assert "help for alpha" in rendered
+    assert "charness tool install --recommendation-role validation --next-skill-id quality" in rendered
+
+
 def test_root_cli_legacy_json_flag_appears_only_in_compatibility_tests() -> None:
     cli_test_dir = ROOT / "tests" / "charness_cli"
     files_with_legacy_flag = {

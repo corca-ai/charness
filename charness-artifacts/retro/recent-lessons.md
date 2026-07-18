@@ -16,8 +16,8 @@
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`; sources: 98)
 - before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
+- before an irreversible cumulative operation, compute and prove the exact cumulative range that the boundary will consume; do not assume individually closed slices compose automatically. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - begin output-format migrations with a live consumer-language scan spanning governing instructions, skills, references, help, and exports. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
-- bind this lesson into the goal closeout critique and this persisted retro so the rerun is not silently reported as a first-pass success. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
 
 ## Selection Policy
 
@@ -128,5 +128,4 @@
 - `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-session-retro.md`
-- `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`
 - `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`

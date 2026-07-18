@@ -104,6 +104,24 @@ def test_yaml_stdout_parse_counts_as_behavior_assertion(tmp_path: Path) -> None:
     assert candidate["likely_keep_boundary"] is False
 
 
+def test_yaml_stderr_parse_is_not_behavior_assertion(tmp_path: Path) -> None:
+    test_body = _subprocess_test(returncode=1, behavior=False).replace(
+        'assert "boom" in result.stderr',
+        "import yaml; payload = yaml.safe_load(result.stderr); assert payload",
+    )
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("tests/test_foo.py", test_body)
+        .build(tmp_path)
+    )
+
+    candidate = LIB.find_boundary_bypass_candidates(repo)["candidates"][0]
+
+    assert candidate["behavior_assert"] is False
+    assert candidate["likely_keep_boundary"] is True
+
+
 def test_ignores_in_process_test(tmp_path: Path) -> None:
     repo = (
         Repo()

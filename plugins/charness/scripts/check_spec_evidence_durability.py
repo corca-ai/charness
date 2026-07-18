@@ -30,6 +30,7 @@ FENCE_RE = re.compile(r"^\s*(```|~~~)")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.[A-Za-z0-9._-]+$")
 REPRODUCTION_MARKER_RE = re.compile(r"<!--\s*reproduction-source\s*-->", re.IGNORECASE)
 MARKDOWN_BLOCK_START_RE = re.compile(r"(?:[-*+] |\d+[.)] |>|```|~~~|#)")
+LIST_ITEM_START_RE = re.compile(r"(?:[-*+] |\d+[.)] )")
 REPO_REFERENCE_PREFIXES = (
     ".agents/",
     ".charness/",
@@ -150,7 +151,7 @@ def iter_citation_lines(doc: Path) -> list[tuple[int, str, list[str]]]:
             continuation = lines[lineno] if lineno < len(lines) else ""
             indentation = len(continuation) - len(continuation.lstrip(" "))
             if (
-                line.lstrip().startswith(("- ", "* ", "+ "))
+                LIST_ITEM_START_RE.match(line.lstrip()) is not None
                 and indentation in (2, 3)
                 and not MARKDOWN_BLOCK_START_RE.match(continuation.lstrip())
             ):

@@ -5,6 +5,7 @@ Date: 2026-07-18
 
 - Two independent angle reviewers and a separate counterweight reviewer ran read-only in the shared worktree.
 - Parent fingerprints verified no worktree, index, or HEAD drift after every review and fix-verification pass.
+- After the first release attempt stopped on cumulative coverage, a new bounded reviewer checked the repair. One review was quarantined because the parent changed retro artifacts during it; the repeated final review ran against a frozen tree and its parent fingerprint verified no drift.
 
 ## Fresh-Eye Satisfaction
 
@@ -45,6 +46,7 @@ Agents need bounded first-read evidence without losing full attribution, program
 - Interface semantics: incompatible output flags, changing exit codes, unsafe write/probe defaults, unbounded summaries, or omitted error diagnostics.
 - Structural ownership: dispatch-only coverage that misses undispatched inventories, prose-regex drift, source/plugin divergence, and duplicated subprocess cost.
 - Release operations: a green local helper without public tag/release visibility, fresh-checkout proof, real-host proof, or installed-version readback.
+- Proof composition: green slice-local coverage that does not cover the complete range from the last public tag, or a claimed cumulative result whose retained coverage report belongs to another head.
 
 ## Counterweight Pass
 
@@ -59,10 +61,13 @@ Agents need bounded first-read evidence without losing full attribution, program
 - F2 | bin: act-before-ship | evidence: strong | ref: skills/public/quality/scripts/summary_output_lib.py | action: fix | note: unbounded high-variance arrays now emit count, bounded sample, and truncation signals with oversized fixtures.
 - F3 | bin: act-before-ship | evidence: strong | ref: tests/quality_gates/test_public_skill_yaml_output_contract.py | action: fix | note: all source inventories receive semantic parity probes, plugin commands are byte-matched, and mutable temp-footprint input is isolated.
 - F4 | bin: valid-but-defer | evidence: moderate | ref: skills/public/quality/references/inventory-dispatch.md | action: defer | note: keep the documented canonical command syntax until observed drift earns a structured registry.
+- F5 | bin: act-before-ship | evidence: strong | ref: scripts/check_spec_evidence_durability.py | action: fix | note: CommonMark ordered-list continuation markers were declared by the regex but excluded by a later unordered-only condition; root/plugin code and positive/negative regression tests now agree.
+- F6 | bin: act-before-ship | evidence: strong | ref: reports/mutation/test-coverage.json | action: fix | note: the first release attempt correctly stopped before commit/tag/push on nine cumulative coverage blockers. Behavior-focused in-process tests were added, but the retained report inspected by the final reviewer belonged to an older head. Commit the repair, regenerate coverage for exact `v2.0.0..HEAD`, and require the same consumer to return clean before publishing.
 
 ## Operator Action Required
 
 - Run release prep/dry-run and the release-only gate after the implementation commit.
+- Before release execution, run a verification-locked cumulative coverage producer and consumer for the committed `v2.0.0..HEAD` range; do not cite a prior report or slice-local green as this proof.
 - Publish only through `publish_release.py --part minor --execute --critique-artifact ...`.
 - Treat helper success as provisional until distinct public release/tag readback, fresh checkout/real-host proof, and installed v2.1.0 readback all pass.
 
@@ -93,4 +98,4 @@ Agents need bounded first-read evidence without losing full attribution, program
 
 ## Next Move
 
-Run final deterministic gates and mutation coverage, commit the complete slice and critique, then execute the v2.1.0 release helper and verify it from a distinct public channel.
+Commit the cumulative-coverage repair and this disposition, regenerate and consume exact `v2.0.0..HEAD` coverage on that commit, then execute the v2.1.0 release helper and verify it from a distinct public channel.

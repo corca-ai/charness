@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import subprocess
 import sys
@@ -275,6 +276,22 @@ def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatc
 
     assert _PLANNER.main() == 0
     assert "next_action=inspect_only: choose target" in capsys.readouterr().out
+
+
+def test_release_run_planner_main_emits_yaml_detail_and_hidden_json_in_process(
+    capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = {"next_action": {"kind": "inspect_only", "reason": "test"}}
+    monkeypatch.setattr(_PLANNER, "build_plan", lambda _args: plan)
+    monkeypatch.setattr(_PLANNER.SKILL_RUNTIME, "arm_cli_timeout", lambda label: (lambda: None))
+
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=True, json=False))
+    assert _PLANNER.main() == 0
+    assert yaml.safe_load(capsys.readouterr().out) == plan
+
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=False, json=True))
+    assert _PLANNER.main() == 0
+    assert json.loads(capsys.readouterr().out) == plan
 
 
 def test_release_run_planner_plain_output_names_required_real_host_scope(

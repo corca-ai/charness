@@ -177,6 +177,32 @@ def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path,
     assert payload["matrix"][0]["skill_id"] == "demo"
 
 
+def test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """Keep the CLI output branches in-process for changed-line coverage."""
+    repo = seed_repo(tmp_path)
+    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+
+    json_result = run_suggest_public_skill_dogfood(
+        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--json"
+    )
+    assert json_result.returncode == 0
+    assert json.loads(json_result.stdout)["matrix"][0]["skill_id"] == "demo"
+
+    human_result = run_suggest_public_skill_dogfood(
+        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo"
+    )
+    assert human_result.returncode == 0
+    assert "Public skill consumer dogfood matrix:" in human_result.stdout
+
+    unknown_result = run_suggest_public_skill_dogfood(
+        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "missing"
+    )
+    assert unknown_result.returncode == 1
+    assert "Unknown public skill id(s): `missing`" in unknown_result.stderr
+
+
 def test_suggest_cli_warns_on_description_fallback_prompt(tmp_path: Path, monkeypatch, capsys) -> None:
     # The seeded `demo` skill has no PROMPT_HINTS entry, so its scaffold prompt
     # is the frontmatter description; the row must say so and the CLI must warn

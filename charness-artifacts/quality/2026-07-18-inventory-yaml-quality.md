@@ -17,7 +17,7 @@ Ambient repo findings: D18 remains ignored per operator direction. The broad gat
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; local default profile. <!-- reproduction-source -->
 - runtime hot spots: final read-only quality completed 81 phases in 54.5s; pytest completed in 34.1s, both below their configured budgets.
-- coverage gate: 4,765 standing tests passed; the final verification-locked closeout must refresh changed-line mutation coverage after commit.
+- coverage gate: 4,765 standing tests passed for the YAML slice. The first release attempt then correctly blocked on nine cumulative `v2.0.0..HEAD` files whose changed lines were exercised only through subprocesses or not at all; behavior-focused in-process tests repaired the gap, and the verification-locked cumulative closeout passed with 4,780 standing tests plus 159 focused coverage tests.
 - evaluator depth: deterministic-gates-only because encoding, flag conflicts, bounds, mirror parity, and exit behavior are directly observable; Cautilus is ask-before-run and was not executed.
 
 ## Healthy
@@ -32,6 +32,7 @@ Ambient repo findings: D18 remains ignored per operator direction. The broad gat
 - The initial migration scoped the population from dispatch prose and left two undispatched inventories plus two detail-only commands outside the claimed capability.
 - First-pass “compact” proof checked YAML/JSON equality but not oversized arrays; fresh-eye review found four unbounded diagnostic surfaces.
 - Duplicate-family scanning cannot distinguish standardized per-command integration glue from extractable domain duplication without reviewer judgment.
+- Per-slice coverage was green while the unreleased cumulative release range was not. The release boundary was the first consumer to join those slices, so it exposed a real process gap: unreleased-range proof must be refreshed before invoking the irreversible helper, not discovered inside it.
 
 ## Missing
 
@@ -67,6 +68,8 @@ Ambient repo findings: D18 remains ignored per operator direction. The broad gat
 - `pytest -q tests/quality_gates/test_public_skill_yaml_output_contract.py` — 25 passed in repeated 12.3–12.5s runs.
 - `ruff check` over changed Python surfaces; `python3 scripts/sync_root_plugin_manifests.py --repo-root .`; `python3 scripts/validate_packaging.py --repo-root .`.
 - `./scripts/run-quality.sh --read-only` — initial 78/3 surfaced stale contract expectations and ratchet drift; final 81 passed, 0 failed in 54.5s.
+- first `publish_release.py --execute` attempt — stopped before commit/tag/push because release-only changed-line coverage found nine cumulative blockers.
+- cumulative `run_slice_closeout.py --base v2.0.0 --verification-lock --refresh-broad-pytest-proof --produce-mutation-coverage ...` — completed; 4,780 broad tests and 159 focused in-process coverage tests passed, clearing the same release-range consumer.
 
 ## Recommended Next Quality Moves
 

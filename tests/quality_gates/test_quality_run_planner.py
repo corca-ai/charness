@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import runpy
 import sys
@@ -54,6 +55,25 @@ def test_quality_run_plan_help_describes_repo_root_and_detail(
             "--detail": "Emit the full quality run plan as YAML.",
         },
     )
+
+
+def test_quality_run_plan_main_emits_yaml_detail_and_hidden_json_in_process(
+    capsys, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    plan = {"next_action": {"kind": "inspect", "reason": "test"}}
+    monkeypatch.setattr(PLAN, "build_plan", lambda _repo_root, *, target_skill: plan)
+
+    monkeypatch.setattr(
+        sys, "argv", ["plan_quality_run.py", "--repo-root", str(tmp_path), "--detail"]
+    )
+    assert PLAN.main() == 0
+    assert yaml.safe_load(capsys.readouterr().out) == plan
+
+    monkeypatch.setattr(
+        sys, "argv", ["plan_quality_run.py", "--repo-root", str(tmp_path), "--json"]
+    )
+    assert PLAN.main() == 0
+    assert json.loads(capsys.readouterr().out) == plan
 
 
 def _run_plan(repo: Path, *extra: str) -> dict[str, object]:
