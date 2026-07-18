@@ -44,6 +44,7 @@ Ambient repo findings: D18 remains intentionally ignored. Seventeen near-limit f
 - The worktree-only changed-path collector remains line-oriented; the NUL-safe guarantee is deliberately scoped to immutable release deltas.
 - The process loader cache retains 20 test-private module objects; repeated runs are isolated, but no persistent-memory ceiling is claimed.
 - The first mutation-instrumented locked suite took 164.1s against a 120s advisory budget and caught four optional-ancestry/delta-test failures after 4,912 passes; correctness was repaired, while gate-baseline profiling is deferred explicitly.
+- The second locked broad suite passed 4,916 tests in 141.9s, but changed-line proof still rejected 29 failure/recovery lines. Direct behavior tests now own those branches; no coverage exclusion or baseline was added.
 
 ## Missing
 

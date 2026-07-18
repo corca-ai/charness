@@ -136,3 +136,9 @@ than only the explicitly named close function.
 - Focused proof: the real-host-delta and resilience files pass 53 tests,
   including missing-tag reconstruction, remote-tag ambiguity, no-partial-state
   refusal, and forced NUL-diff failure.
+- The second lock passed all 4,916 broad tests, then the changed-line consumer
+  correctly rejected 29 unobserved failure/recovery lines across six release
+  modules. Direct tests now exercise carrier evidence mismatch, ambiguous push
+  receipt, dry-run recovery, issue-helper absence, YAML/summary compatibility,
+  binary Git diagnostics, noncanonical object IDs, and all published-state
+  ancestry refusals; no exclusion or baseline was added.

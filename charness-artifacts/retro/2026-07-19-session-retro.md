@@ -16,10 +16,11 @@ An aggressive autonomous improvement pass repaired the release issue-close state
 - Fresh-eye reviewers independently reproduced SHA-256 rejection and `sys.modules` residue, then confirmed the repairs with 60 focused tests and repeated-interpreter probes.
 - `./scripts/run-quality.sh --read-only` passed in 56.4s; all cost claims above are measured command/runtime evidence, not host-token estimates.
 - The first mutation-instrumented lock ran 164.1s and caught four failures after 4,912 passes; the gate failed correctly, but its >120s baseline is routed as runtime debt.
+- The second lock passed 4,916 broad tests in 141.9s, then its changed-line consumer found 29 unobserved failure/recovery lines; focused tests were added instead of weakening or baselining the consumer.
 
 ## Waste
 
-The broad exploration was requested and productive, so it was not waste. The avoidable rework was conversion delay: evidence compaction was implemented before defining the immutable-delta serialization owner, subprocess removal before defining a hermetic process-state envelope, and resume ancestry before distinguishing optional classification evidence from mandatory identity. Passing focused tests hid these because their fixtures inherited SHA-1, suite order, or deeper commit history. The 164.1s mutation-instrumented gate is accepted release proof for now but remains gate-baseline runtime debt, not “necessary safety cost.”
+The broad exploration was requested and productive, so it was not waste. The avoidable rework was conversion delay: evidence compaction was implemented before defining the immutable-delta serialization owner, subprocess removal before defining a hermetic process-state envelope, and resume ancestry before distinguishing optional classification evidence from mandatory identity. Passing focused tests hid these because their fixtures inherited SHA-1, suite order, or deeper commit history; passing broad tests still did not prove changed failure lines were observed. The 141.9-164.1s mutation-instrumented gate is accepted release proof for now but remains gate-baseline runtime debt, not “necessary safety cost.”
 
 ## Critical Decisions
 

@@ -145,7 +145,11 @@ def main() -> int:
         changed_paths, provenance = collect_range_paths(repo_root, args.changed_range)
     else:
         changed_paths = args.paths if args.paths is not None else collect_changed_paths(repo_root)
-    payload = build_payload(repo_root, changed_paths)
+    try:
+        payload = build_payload(repo_root, changed_paths)
+    except SurfaceError as exc:
+        print(yaml_output.render_yaml(surface_error_payload(str(exc))), file=sys.stderr, end="")
+        return 1
     if provenance is not None:
         payload.pop("changed_paths", None)
         payload["evidence_provenance"] = provenance
@@ -163,8 +167,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except SurfaceError as exc:
-        print(yaml_output.render_yaml(surface_error_payload(str(exc))), file=sys.stderr, end="")
-        raise SystemExit(1)
+    raise SystemExit(main())

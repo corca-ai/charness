@@ -36,8 +36,7 @@ _common = _load_release_common()
 def _load_resume_closeout():
     module_path = Path(__file__).resolve().with_name("publish_release_resume_closeout.py")
     spec = importlib.util.spec_from_file_location("publish_release_resume_closeout", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

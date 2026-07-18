@@ -25,6 +25,11 @@ _REAL_HOST = load_script_module(
     ROOT / "skills" / "public" / "release" / "scripts" / "check_real_host_proof.py",
 )
 
+_RELEASE_DELTA = load_script_module(
+    "release_delta_for_release_real_host_test",
+    ROOT / "skills" / "public" / "release" / "scripts" / "release_delta.py",
+)
+
 
 def _run_real_host_proof(*args: str):
     return run_loaded_script_main("check_real_host_proof.py", _REAL_HOST, "--detail", *args)
@@ -88,6 +93,88 @@ def test_release_real_host_proof_clean_changeset_does_not_trigger() -> None:
     assert payload["surface_hits"] == []
     assert payload["path_hits"] == []
     assert payload["checklist"] == []
+
+
+def test_release_real_host_proof_supports_hidden_json_and_summary_output() -> None:
+    json_result = run_loaded_script_main(
+        "check_real_host_proof.py",
+        _REAL_HOST,
+        "--repo-root",
+        str(ROOT),
+        "--json",
+        "--paths",
+        "docs/retro-self-improvement-spec.md",
+    )
+    summary_result = run_loaded_script_main(
+        "check_real_host_proof.py",
+        _REAL_HOST,
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "docs/retro-self-improvement-spec.md",
+    )
+
+    assert json_result.returncode == summary_result.returncode == 0
+    assert json.loads(json_result.stdout)["required"] is False
+    assert summary_result.stdout.startswith("real_host=not-required: ")
+    assert summary_result.stderr == ""
+
+
+def test_release_real_host_proof_renders_surface_errors_as_yaml(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def raise_surface_error(_repo_root: Path, _changed_paths: list[str]) -> dict[str, object]:
+        raise _REAL_HOST.SurfaceError("invalid test surfaces manifest")
+
+    monkeypatch.setattr(_REAL_HOST, "build_payload", raise_surface_error)
+
+    result = run_loaded_script_main(
+        "check_real_host_proof.py",
+        _REAL_HOST,
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "README.md",
+    )
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    payload = yaml.safe_load(result.stderr)
+    assert payload["error"] == "invalid test surfaces manifest"
+    assert payload["checklist"] == []
+
+
+@pytest.mark.parametrize(
+    "text, stderr",
+    [(True, "text failure" + chr(10)), (False, bytes([255]) + b"binary failure" + bytes([10]))],
+)
+def test_release_delta_includes_text_and_binary_git_failure_diagnostics(
+    monkeypatch: pytest.MonkeyPatch, text: bool, stderr: str | bytes
+) -> None:
+    monkeypatch.setattr(
+        _RELEASE_DELTA.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=7, stderr=stderr, stdout=""),
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        _RELEASE_DELTA._git(Path("/repo"), "rev-parse", "missing", text=text)
+
+    expected_stderr = stderr if isinstance(stderr, str) else os.fsdecode(stderr)
+    assert str(exc_info.value) == "\n".join(
+        ["git rev-parse missing failed", "exit_code: 7", expected_stderr.strip()]
+    )
+
+
+def test_release_delta_rejects_full_looking_but_noncanonical_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base_sha = "a" * 40
+    head_sha = "b" * 40
+    monkeypatch.setattr(_RELEASE_DELTA, "resolve_full_commit", lambda _repo, _ref: "c" * 40)
+
+    with pytest.raises(ValueError, match="immutable full lowercase object IDs"):
+        _RELEASE_DELTA.collect_immutable_range(Path("/repo"), f"{base_sha}..{head_sha}")
 
 
 def test_release_real_host_immutable_range_matches_explicit_paths(tmp_path: Path) -> None:
