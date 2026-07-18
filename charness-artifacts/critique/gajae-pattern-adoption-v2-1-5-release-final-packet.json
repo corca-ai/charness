@@ -1,0 +1,639 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-18T18:04:57Z",
+  "prepared_for": "gajae pattern adoption v2.1.5 patch release",
+  "changed_ref": "v2.1.4..eae81f48",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `v2.1.4..eae81f48`:\n- .agents/release-adapter.yaml\n- charness\n- charness-artifacts/critique/2026-07-18-152736-packet.json\n- charness-artifacts/critique/2026-07-18-152736-packet.md\n- charness-artifacts/critique/2026-07-19-changed-line-coverage-branch-proof.md\n- charness-artifacts/critique/2026-07-19-critique-scaffold-binding-opt-in.md\n- charness-artifacts/critique/2026-07-19-cumulative-closeout-structural-sweep-decoupling.md\n- charness-artifacts/critique/2026-07-19-gajae-code-adoption-plan.md\n- charness-artifacts/critique/2026-07-19-gajae-slice2-packet.json\n- charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md\n- charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md\n- charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md\n- charness-artifacts/critique/2026-07-19-gajae-slice4-efficiency-comparability.md\n- charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md\n- charness-artifacts/critique/2026-07-19-release-observer-fail-closed.md\n- charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.json\n- charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.md\n- charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.json\n- charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.md\n- charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.json\n- charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.md\n- charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.json\n- charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.md\n- charness-artifacts/critique/gajae-slice3-release-observer-packet.json\n- charness-artifacts/critique/gajae-slice3-release-observer-packet.md\n- charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.json\n- charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.md\n- charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.json\n- charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.md\n- charness-artifacts/critique/gajae-slice5-governed-probes-packet.json\n- charness-artifacts/critique/gajae-slice5-governed-probes-packet.md\n- charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.json\n- charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.md\n- charness-artifacts/critique/release-observer-fail-closed-final-packet.json\n- charness-artifacts/critique/release-observer-fail-closed-final-packet.md\n- charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md\n- charness-artifacts/debug/2026-07-19-critique-content-digest-interpretation-hold.md\n- charness-artifacts/debug/2026-07-19-critique-scaffold-binding-opt-in.md\n- charness-artifacts/debug/2026-07-19-cumulative-closeout-staged-scope-coupling.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/gather/2026-07-19-gajae-code-pattern-review.md\n- charness-artifacts/gather/latest.md\n- charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md\n- charness-artifacts/metrics/rca-ledger.jsonl\n- charness-artifacts/probe/2026-07-19-v2.1.4-release-observer.json\n- charness-artifacts/release/latest.md\n- charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md\n- docs/handoff.md\n- docs/public-skill-dogfood.json\n- plugins/charness/scripts/codex_session_audit_lib.py\n- plugins/charness/scripts/critique_packet_lib.py\n- plugins/charness/scripts/critique_reviewed_input_binding.py\n- plugins/charness/scripts/public_skill_dogfood_lib.py\n- plugins/charness/scripts/reviewed_input_identity.py\n- plugins/charness/scripts/run_skill_efficiency_ab.py\n- plugins/charness/scripts/run_skill_efficiency_ab_validation.py\n- plugins/charness/scripts/run_slice_closeout.py\n- plugins/charness/scripts/skill_efficiency_report.py\n- plugins/charness/scripts/staged_commit_gate_plan.py\n- plugins/charness/scripts/validate_critique_artifacts.py\n- plugins/charness/skills/critique/SKILL.md\n- plugins/charness/skills/critique/references/prepare-packet.md\n- plugins/charness/skills/critique/scripts/prepare_packet.py\n- plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py\n- plugins/charness/skills/release/references/adapter-contract.md\n- plugins/charness/skills/release/references/install-refresh.md\n- plugins/charness/skills/release/scripts/publish_release_artifact.py\n- plugins/charness/skills/release/scripts/publish_release_artifact_sections.py\n- plugins/charness/skills/release/scripts/publish_release_cli.py\n- plugins/charness/skills/release/scripts/publish_release_common.py\n- plugins/charness/skills/release/scripts/publish_release_helpers.py\n- plugins/charness/skills/release/scripts/publish_release_post_create.py\n- plugins/charness/skills/release/scripts/release_issue_closeout.py\n- plugins/charness/skills/release/scripts/release_observer.py\n- plugins/charness/skills/release/scripts/resolve_adapter.py\n- plugins/charness/skills/retro/scripts/prepare_packet.py\n- scripts/codex_session_audit_lib.py\n- scripts/critique_packet_lib.py\n- scripts/critique_reviewed_input_binding.py\n- scripts/public_skill_dogfood_lib.py\n- scripts/reviewed_input_identity.py\n- scripts/run_skill_efficiency_ab.py\n- scripts/run_skill_efficiency_ab_validation.py\n- scripts/run_slice_closeout.py\n- scripts/skill_efficiency_report.py\n- scripts/staged_commit_gate_plan.py\n- scripts/validate_critique_artifacts.py\n- skills/public/critique/SKILL.md\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/prepare_packet.py\n- skills/public/critique/scripts/scaffold_critique_artifact.py\n- skills/public/release/references/adapter-contract.md\n- skills/public/release/references/install-refresh.md\n- skills/public/release/scripts/publish_release_artifact.py\n- skills/public/release/scripts/publish_release_artifact_sections.py\n- skills/public/release/scripts/publish_release_cli.py\n- skills/public/release/scripts/publish_release_common.py\n- skills/public/release/scripts/publish_release_helpers.py\n- skills/public/release/scripts/publish_release_post_create.py\n- skills/public/release/scripts/release_issue_closeout.py\n- skills/public/release/scripts/release_observer.py\n- skills/public/release/scripts/resolve_adapter.py\n- skills/public/retro/scripts/prepare_packet.py\n- tests/charness_cli/fixtures/fake_codex.py\n- tests/charness_cli/test_codex_cache_refresh.py\n- tests/quality_gates/test_release_distinct_channel.py\n- tests/quality_gates/test_release_observer.py\n- tests/quality_gates/test_retro_codex_session_audit.py\n- tests/quality_gates/test_run_slice_closeout_surface_obligations.py\n- tests/test_critique_prepare_packet.py\n- tests/test_critique_scaffold.py\n- tests/test_reviewed_input_identity_failures.py\n- tests/test_skill_efficiency_ab.py\n- tests/test_skill_efficiency_comparability.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/codex_session_audit_lib.py, scripts/critique_packet_lib.py, scripts/critique_reviewed_input_binding.py, scripts/public_skill_dogfood_lib.py, scripts/reviewed_input_identity.py, scripts/run_skill_efficiency_ab.py, scripts/run_skill_efficiency_ab_validation.py, scripts/run_slice_closeout.py, scripts/skill_efficiency_report.py, scripts/staged_commit_gate_plan.py, scripts/validate_critique_artifacts.py, skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/prepare_packet.py\n  derived matches: plugins/charness/scripts/codex_session_audit_lib.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/critique_reviewed_input_binding.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/run_skill_efficiency_ab.py, plugins/charness/scripts/run_skill_efficiency_ab_validation.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/skill_efficiency_report.py, plugins/charness/scripts/staged_commit_gate_plan.py, plugins/charness/scripts/validate_critique_artifacts.py, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py, plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/references/install-refresh.md, plugins/charness/skills/release/scripts/publish_release_artifact.py, plugins/charness/skills/release/scripts/publish_release_artifact_sections.py, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_helpers.py, plugins/charness/skills/release/scripts/publish_release_post_create.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_observer.py, plugins/charness/skills/release/scripts/resolve_adapter.py, plugins/charness/skills/retro/scripts/prepare_packet.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root . --json\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-18-152736-packet.md, charness-artifacts/critique/2026-07-19-changed-line-coverage-branch-proof.md, charness-artifacts/critique/2026-07-19-critique-scaffold-binding-opt-in.md, charness-artifacts/critique/2026-07-19-cumulative-closeout-structural-sweep-decoupling.md, charness-artifacts/critique/2026-07-19-gajae-code-adoption-plan.md, charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md, charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md, charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md, charness-artifacts/critique/2026-07-19-gajae-slice4-efficiency-comparability.md, charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md, charness-artifacts/critique/2026-07-19-release-observer-fail-closed.md, charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.md, charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.md, charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.md, charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.md, charness-artifacts/critique/gajae-slice3-release-observer-packet.md, charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.md, charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.md, charness-artifacts/critique/gajae-slice5-governed-probes-packet.md, charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.md, charness-artifacts/critique/release-observer-fail-closed-final-packet.md, charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md, charness-artifacts/debug/2026-07-19-critique-content-digest-interpretation-hold.md, charness-artifacts/debug/2026-07-19-critique-scaffold-binding-opt-in.md, charness-artifacts/debug/2026-07-19-cumulative-closeout-staged-scope-coupling.md, charness-artifacts/debug/latest.md, charness-artifacts/gather/2026-07-19-gajae-code-pattern-review.md, charness-artifacts/gather/latest.md, charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md, charness-artifacts/release/latest.md, charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md, docs/handoff.md, skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md\n  derived matches: plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/references/install-refresh.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/release-adapter.yaml, skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/prepare_packet.py\n  derived matches: plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py, plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/references/install-refresh.md, plugins/charness/skills/release/scripts/publish_release_artifact.py, plugins/charness/skills/release/scripts/publish_release_artifact_sections.py, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_helpers.py, plugins/charness/skills/release/scripts/publish_release_post_create.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_observer.py, plugins/charness/skills/release/scripts/resolve_adapter.py, plugins/charness/skills/retro/scripts/prepare_packet.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- capability-catalog: Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.\n  source matches: charness\n  verify: python3 -m pytest -q tests/test_capability_catalog.py, python3 scripts/validate_current_pointer_freshness.py --repo-root ., python3 -m json.tool .agents/surfaces.json\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/prepare_packet.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, scripts/public_skill_dogfood_lib.py, skills/public/critique/SKILL.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/release/references/adapter-contract.md, skills/public/release/references/install-refresh.md, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/prepare_packet.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/release-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-18-152736-packet.json, charness-artifacts/critique/2026-07-18-152736-packet.md, charness-artifacts/critique/2026-07-19-changed-line-coverage-branch-proof.md, charness-artifacts/critique/2026-07-19-critique-scaffold-binding-opt-in.md, charness-artifacts/critique/2026-07-19-cumulative-closeout-structural-sweep-decoupling.md, charness-artifacts/critique/2026-07-19-gajae-code-adoption-plan.md, charness-artifacts/critique/2026-07-19-gajae-slice2-packet.json, charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md, charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md, charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md, charness-artifacts/critique/2026-07-19-gajae-slice4-efficiency-comparability.md, charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md, charness-artifacts/critique/2026-07-19-release-observer-fail-closed.md, charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.json, charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.md, charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.json, charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.md, charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.json, charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.md, charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.json, charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.md, charness-artifacts/critique/gajae-slice3-release-observer-packet.json, charness-artifacts/critique/gajae-slice3-release-observer-packet.md, charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.json, charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.md, charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.json, charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.md, charness-artifacts/critique/gajae-slice5-governed-probes-packet.json, charness-artifacts/critique/gajae-slice5-governed-probes-packet.md, charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.json, charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.md, charness-artifacts/critique/release-observer-fail-closed-final-packet.json, charness-artifacts/critique/release-observer-fail-closed-final-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-07-19-v2.1.4-release-observer.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md, charness-artifacts/debug/2026-07-19-critique-content-digest-interpretation-hold.md, charness-artifacts/debug/2026-07-19-critique-scaffold-binding-opt-in.md, charness-artifacts/debug/2026-07-19-cumulative-closeout-staged-scope-coupling.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/codex_session_audit_lib.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/critique_reviewed_input_binding.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/run_skill_efficiency_ab.py, plugins/charness/scripts/run_skill_efficiency_ab_validation.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/skill_efficiency_report.py, plugins/charness/scripts/staged_commit_gate_plan.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: charness, scripts/codex_session_audit_lib.py, scripts/critique_packet_lib.py, scripts/critique_reviewed_input_binding.py, scripts/public_skill_dogfood_lib.py, scripts/reviewed_input_identity.py, scripts/run_skill_efficiency_ab.py, scripts/run_skill_efficiency_ab_validation.py, scripts/run_slice_closeout.py, scripts/skill_efficiency_report.py, scripts/staged_commit_gate_plan.py, scripts/validate_critique_artifacts.py, tests/charness_cli/fixtures/fake_codex.py, tests/charness_cli/test_codex_cache_refresh.py, tests/quality_gates/test_release_distinct_channel.py, tests/quality_gates/test_release_observer.py, tests/quality_gates/test_retro_codex_session_audit.py, tests/quality_gates/test_run_slice_closeout_surface_obligations.py, tests/test_critique_prepare_packet.py, tests/test_critique_scaffold.py, tests/test_reviewed_input_identity_failures.py, tests/test_skill_efficiency_ab.py, tests/test_skill_efficiency_comparability.py\n  derived matches: plugins/charness/scripts/codex_session_audit_lib.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/critique_reviewed_input_binding.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/run_skill_efficiency_ab.py, plugins/charness/scripts/run_skill_efficiency_ab_validation.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/skill_efficiency_report.py, plugins/charness/scripts/staged_commit_gate_plan.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/codex_session_audit_lib.py, scripts/critique_packet_lib.py, scripts/critique_reviewed_input_binding.py, scripts/public_skill_dogfood_lib.py, scripts/reviewed_input_identity.py, scripts/run_skill_efficiency_ab.py, scripts/run_skill_efficiency_ab_validation.py, scripts/run_slice_closeout.py, scripts/skill_efficiency_report.py, scripts/staged_commit_gate_plan.py, scripts/validate_critique_artifacts.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_artifact_sections.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_post_create.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_observer.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/prepare_packet.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "v2.1.4..eae81f48",
+    "resolved_changed_ref": [
+      "eae81f486763d94a1f0b20eea73fcbff6b046c03",
+      "^946c9d7ecc048ec3175189acc8c8b91977639792"
+    ],
+    "base_head": "eae81f486763d94a1f0b20eea73fcbff6b046c03",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/release-adapter.yaml",
+      "charness",
+      "charness-artifacts/critique/2026-07-18-152736-packet.json",
+      "charness-artifacts/critique/2026-07-18-152736-packet.md",
+      "charness-artifacts/critique/2026-07-19-changed-line-coverage-branch-proof.md",
+      "charness-artifacts/critique/2026-07-19-critique-scaffold-binding-opt-in.md",
+      "charness-artifacts/critique/2026-07-19-cumulative-closeout-structural-sweep-decoupling.md",
+      "charness-artifacts/critique/2026-07-19-gajae-code-adoption-plan.md",
+      "charness-artifacts/critique/2026-07-19-gajae-slice2-packet.json",
+      "charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md",
+      "charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md",
+      "charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md",
+      "charness-artifacts/critique/2026-07-19-gajae-slice4-efficiency-comparability.md",
+      "charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md",
+      "charness-artifacts/critique/2026-07-19-release-observer-fail-closed.md",
+      "charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.json",
+      "charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.md",
+      "charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.json",
+      "charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.md",
+      "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.json",
+      "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.md",
+      "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.json",
+      "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.md",
+      "charness-artifacts/critique/gajae-slice3-release-observer-packet.json",
+      "charness-artifacts/critique/gajae-slice3-release-observer-packet.md",
+      "charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.json",
+      "charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.md",
+      "charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.json",
+      "charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.md",
+      "charness-artifacts/critique/gajae-slice5-governed-probes-packet.json",
+      "charness-artifacts/critique/gajae-slice5-governed-probes-packet.md",
+      "charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.json",
+      "charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.md",
+      "charness-artifacts/critique/release-observer-fail-closed-final-packet.json",
+      "charness-artifacts/critique/release-observer-fail-closed-final-packet.md",
+      "charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md",
+      "charness-artifacts/debug/2026-07-19-critique-content-digest-interpretation-hold.md",
+      "charness-artifacts/debug/2026-07-19-critique-scaffold-binding-opt-in.md",
+      "charness-artifacts/debug/2026-07-19-cumulative-closeout-staged-scope-coupling.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/gather/2026-07-19-gajae-code-pattern-review.md",
+      "charness-artifacts/gather/latest.md",
+      "charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md",
+      "charness-artifacts/metrics/rca-ledger.jsonl",
+      "charness-artifacts/probe/2026-07-19-v2.1.4-release-observer.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md",
+      "docs/handoff.md",
+      "docs/public-skill-dogfood.json",
+      "plugins/charness/scripts/codex_session_audit_lib.py",
+      "plugins/charness/scripts/critique_packet_lib.py",
+      "plugins/charness/scripts/critique_reviewed_input_binding.py",
+      "plugins/charness/scripts/public_skill_dogfood_lib.py",
+      "plugins/charness/scripts/reviewed_input_identity.py",
+      "plugins/charness/scripts/run_skill_efficiency_ab.py",
+      "plugins/charness/scripts/run_skill_efficiency_ab_validation.py",
+      "plugins/charness/scripts/run_slice_closeout.py",
+      "plugins/charness/scripts/skill_efficiency_report.py",
+      "plugins/charness/scripts/staged_commit_gate_plan.py",
+      "plugins/charness/scripts/validate_critique_artifacts.py",
+      "plugins/charness/skills/critique/SKILL.md",
+      "plugins/charness/skills/critique/references/prepare-packet.md",
+      "plugins/charness/skills/critique/scripts/prepare_packet.py",
+      "plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py",
+      "plugins/charness/skills/release/references/adapter-contract.md",
+      "plugins/charness/skills/release/references/install-refresh.md",
+      "plugins/charness/skills/release/scripts/publish_release_artifact.py",
+      "plugins/charness/skills/release/scripts/publish_release_artifact_sections.py",
+      "plugins/charness/skills/release/scripts/publish_release_cli.py",
+      "plugins/charness/skills/release/scripts/publish_release_common.py",
+      "plugins/charness/skills/release/scripts/publish_release_helpers.py",
+      "plugins/charness/skills/release/scripts/publish_release_post_create.py",
+      "plugins/charness/skills/release/scripts/release_issue_closeout.py",
+      "plugins/charness/skills/release/scripts/release_observer.py",
+      "plugins/charness/skills/release/scripts/resolve_adapter.py",
+      "plugins/charness/skills/retro/scripts/prepare_packet.py",
+      "scripts/codex_session_audit_lib.py",
+      "scripts/critique_packet_lib.py",
+      "scripts/critique_reviewed_input_binding.py",
+      "scripts/public_skill_dogfood_lib.py",
+      "scripts/reviewed_input_identity.py",
+      "scripts/run_skill_efficiency_ab.py",
+      "scripts/run_skill_efficiency_ab_validation.py",
+      "scripts/run_slice_closeout.py",
+      "scripts/skill_efficiency_report.py",
+      "scripts/staged_commit_gate_plan.py",
+      "scripts/validate_critique_artifacts.py",
+      "skills/public/critique/SKILL.md",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/critique/scripts/prepare_packet.py",
+      "skills/public/critique/scripts/scaffold_critique_artifact.py",
+      "skills/public/release/references/adapter-contract.md",
+      "skills/public/release/references/install-refresh.md",
+      "skills/public/release/scripts/publish_release_artifact.py",
+      "skills/public/release/scripts/publish_release_artifact_sections.py",
+      "skills/public/release/scripts/publish_release_cli.py",
+      "skills/public/release/scripts/publish_release_common.py",
+      "skills/public/release/scripts/publish_release_helpers.py",
+      "skills/public/release/scripts/publish_release_post_create.py",
+      "skills/public/release/scripts/release_issue_closeout.py",
+      "skills/public/release/scripts/release_observer.py",
+      "skills/public/release/scripts/resolve_adapter.py",
+      "skills/public/retro/scripts/prepare_packet.py",
+      "tests/charness_cli/fixtures/fake_codex.py",
+      "tests/charness_cli/test_codex_cache_refresh.py",
+      "tests/quality_gates/test_release_distinct_channel.py",
+      "tests/quality_gates/test_release_observer.py",
+      "tests/quality_gates/test_retro_codex_session_audit.py",
+      "tests/quality_gates/test_run_slice_closeout_surface_obligations.py",
+      "tests/test_critique_prepare_packet.py",
+      "tests/test_critique_scaffold.py",
+      "tests/test_reviewed_input_identity_failures.py",
+      "tests/test_skill_efficiency_ab.py",
+      "tests/test_skill_efficiency_comparability.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/release-adapter.yaml",
+        "content_sha256": "a06e0d5622bde6e635bf83acdb36a995a2c7f9b6aebdae1c6a219691c48a646a"
+      },
+      {
+        "path": "charness",
+        "content_sha256": "d836ef1fe11b4af5cba066822671581b2cb40e168c4a2f09ef71d9d700c7bf85"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-18-152736-packet.json",
+        "content_sha256": "da051ff32f7169abaf6566f206f6c79bd6080c5fc9500fe1ea30b3c5d1ddb48d"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-18-152736-packet.md",
+        "content_sha256": "2d26daf8a2d19df9caf63fda545f76bf573c8a655e5c3d12c5836e244613c9f6"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-changed-line-coverage-branch-proof.md",
+        "content_sha256": "5cd54d1217d06c90688c2ea5d98f1c325dc9a431ec6c8d442b381ec0971f33ab"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-critique-scaffold-binding-opt-in.md",
+        "content_sha256": "0e24d2d8b11b90b696406ad94298bf05b8b9bc34be4553ed77d25878c13f312e"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-cumulative-closeout-structural-sweep-decoupling.md",
+        "content_sha256": "d1aad2b6cc24dd118380c3b4012519ce8772917a52a0530eb2b8bee8b3cd33b2"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-gajae-code-adoption-plan.md",
+        "content_sha256": "638e0c8e8dfb54103e92db7a939f1ccb8092b7cf7c308b5e3b2c00804f8ca59b"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-gajae-slice2-packet.json",
+        "content_sha256": "fe823a60643b60c698cbecee5db188b2ea0abcc855aa31e3041f9b158b7ae6bc"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-gajae-slice2-packet.md",
+        "content_sha256": "9d7fce9d00ebcc0c83a64a6e99964fbb94b6b0107a8f8573ab4882e8a5b03712"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-gajae-slice2-reviewed-input-binding.md",
+        "content_sha256": "0fa7170e23853b2f0d968b53a8aba1f67756731b5b68958838d6cc18b93ee42f"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-gajae-slice3-release-observer.md",
+        "content_sha256": "cefef6af8de956df6977882c0b30e85f3ceb855683c7978e69ad756902b7b0ee"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-gajae-slice4-efficiency-comparability.md",
+        "content_sha256": "4deb4636a23a8e309218ff3dea30b3fcd406bafda611e9d30ff09449cb58504f"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md",
+        "content_sha256": "baf8fe7304f21c914dfa3ff113b9879b54626b866a681e39171b2f343e72fc70"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-19-release-observer-fail-closed.md",
+        "content_sha256": "059ff8a14bd90662e06640c90169f84327ffe28b23b7aa2e76abc7319c66133c"
+      },
+      {
+        "path": "charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.json",
+        "content_sha256": "029b4855f3f89272659f4ff42af21671cfe2cfc363a34f6e6502198a15468e61"
+      },
+      {
+        "path": "charness-artifacts/critique/changed-line-coverage-branch-proof-final-packet.md",
+        "content_sha256": "b487352a984f6cf0447bd2b67b98d3056a9181bf39a8254730f8e57aa0b7ca17"
+      },
+      {
+        "path": "charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.json",
+        "content_sha256": "09fcb5603148e45c0e40cbd07b740edf6eda337880fa5f89754e95b0725bce56"
+      },
+      {
+        "path": "charness-artifacts/critique/critique-scaffold-binding-opt-in-final-packet.md",
+        "content_sha256": "1c981c7ca61aefb3e9a9d44135287ffbbaf2d1352feea5270d41a76c6a602035"
+      },
+      {
+        "path": "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.json",
+        "content_sha256": "d9fbffad2d1cecccdf11a1b36df254294587fc58e17e8276d12871944ccc1ebd"
+      },
+      {
+        "path": "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-final-packet.md",
+        "content_sha256": "b5a2daa54260daf5a802158c04b812fc279abeff5ee99c50ef09b7c3525e4b83"
+      },
+      {
+        "path": "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.json",
+        "content_sha256": "ae4b51efa51475473a651322c297049317a40af77e93dc747cefdff495acc0aa"
+      },
+      {
+        "path": "charness-artifacts/critique/cumulative-closeout-structural-sweep-decoupling-packet.md",
+        "content_sha256": "968075f8e1cf30065341778d227f08cd4a00a7eed602316538981d21dbfd6af8"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice3-release-observer-packet.json",
+        "content_sha256": "09d4611c569fbbe572cf455a2d05bdec55c69c1fb625c015bf744815c119225a"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice3-release-observer-packet.md",
+        "content_sha256": "79c1645d62fa5a40c2396c5152d7fc981d90151ad0944c162fddfdbebbbbbbd6"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.json",
+        "content_sha256": "1dc0c8ba1381a29e18c57cdf7e44640a639efc3d79e5060413df08d276b73960"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice4-efficiency-comparability-packet.md",
+        "content_sha256": "4a5f1756e60492bb2869b1c9b6d57da406cee593c734c97b1161e39cfe967df0"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.json",
+        "content_sha256": "ba71daf5aeeaf58ef934d4fec6115126bf8b445d0ccfaafceca5644b4efc86e0"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice5-governed-probes-final-packet.md",
+        "content_sha256": "12a9d95a7a9bb3319ba489b6e21888fa7d063c2cf44c91fda46d4bbfd3f754b3"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice5-governed-probes-packet.json",
+        "content_sha256": "9f9ee0a5d08a390cdc6a7b4dcb9d8ae4c85b5cb5c0bbd2ef30711f59279a60f1"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice5-governed-probes-packet.md",
+        "content_sha256": "ca1b7a8e89cb5bb27054f74decaa137eb8832ef46b7553599b1190e796bee729"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.json",
+        "content_sha256": "9e1c6a1b46c84099684d40592aa18ba7fd1125a8abbcc842d522b06b3b5ad602"
+      },
+      {
+        "path": "charness-artifacts/critique/gajae-slice5-governed-probes-staged-final-packet.md",
+        "content_sha256": "b947e972c36c44c04abcbb2a3bcbe99e477e6f53a7460c0be315b5d8b30fb110"
+      },
+      {
+        "path": "charness-artifacts/critique/release-observer-fail-closed-final-packet.json",
+        "content_sha256": "ca19ad979aa508476260b607b7eb3bd0464d372e7d6cd8d2f4b6a92aff872050"
+      },
+      {
+        "path": "charness-artifacts/critique/release-observer-fail-closed-final-packet.md",
+        "content_sha256": "a94f655c45fa7f4d0fe8151bc54561236a56cabfcbd0894a930156bb1e6fa011"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md",
+        "content_sha256": "daf27bb005407f3d83189d853a07cc333a0b74474e2ad1d0c6d745c72970815a"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-19-critique-content-digest-interpretation-hold.md",
+        "content_sha256": "715898f04e5181b04343ee737aa7c65d2a4cbd39b8835eb3a9e358f1f271ce27"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-19-critique-scaffold-binding-opt-in.md",
+        "content_sha256": "232e7ab9f3c3435639e1c2bd7626fb78a3eb662a2d345b54b103f0a5e213a1ea"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-19-cumulative-closeout-staged-scope-coupling.md",
+        "content_sha256": "bb9f46fb0dd891ff64e2eab2f72e6168bf3e8c14e6b55adb7e48391f3566b832"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "431831b55616c5d6c4bc0fb643ae9afcf0f99290a94223b0549562e5c942fb88"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "39b20950f49438ec6909a157800aea2fd63d485feb66e5b3f7051c8f63b53fba"
+      },
+      {
+        "path": "charness-artifacts/gather/2026-07-19-gajae-code-pattern-review.md",
+        "content_sha256": "a3e3002bf310c016d4f26eacaecf72497ab779c26defba90e9a2e3cea679f3dd"
+      },
+      {
+        "path": "charness-artifacts/gather/latest.md",
+        "content_sha256": "a3e3002bf310c016d4f26eacaecf72497ab779c26defba90e9a2e3cea679f3dd"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md",
+        "content_sha256": "3409f039ee03ae89b0026a99f36b725a57eb0617abbf304e1365d67ec8d6ff50"
+      },
+      {
+        "path": "charness-artifacts/metrics/rca-ledger.jsonl",
+        "content_sha256": "d6513d7b1caa0c9ceab791378abf9a3be535ed976e48523b2fa06ccddf282ef0"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-07-19-v2.1.4-release-observer.json",
+        "content_sha256": "8f352365730e883c326cf65d0fac2dfcaa61843c927302bb8f9af92c63cdfc04"
+      },
+      {
+        "path": "charness-artifacts/release/latest.md",
+        "content_sha256": "99771cf25a33532ff89ba3e9e79d2da300161f6186832079b4bdbdf40fff5254"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md",
+        "content_sha256": "5760b178d905365c72b2893793491ea7d65b51580f72c9bf3f41f2da352d8aaf"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "d9af0da5099ef89c68f7cc6f7a06687acf785762af55c6f17c5e1e266b771130"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "d14a8c980b0e8c63f2de1421550a5d509e69108731a170f563c339e5db54f014"
+      },
+      {
+        "path": "plugins/charness/scripts/codex_session_audit_lib.py",
+        "content_sha256": "9a860fd405dd9ce439b1332aae91dafb3d504eb97392874ad8e1a9deb64529dd"
+      },
+      {
+        "path": "plugins/charness/scripts/critique_packet_lib.py",
+        "content_sha256": "351211064abffdf746930e8ff8ca47338a6ad6301b699c69991beaacc508952c"
+      },
+      {
+        "path": "plugins/charness/scripts/critique_reviewed_input_binding.py",
+        "content_sha256": "43e7f3949a45c21434969249257b757efafa000e1efa52372e7b16c44aed14f8"
+      },
+      {
+        "path": "plugins/charness/scripts/public_skill_dogfood_lib.py",
+        "content_sha256": "6904dc60628a55da2180beb15759b8ebec4e595894ebf70ef23efcffdd8d31df"
+      },
+      {
+        "path": "plugins/charness/scripts/reviewed_input_identity.py",
+        "content_sha256": "864826ee88745704981e242d6aefdcab92163d6c69365b1d584005132bbb5403"
+      },
+      {
+        "path": "plugins/charness/scripts/run_skill_efficiency_ab.py",
+        "content_sha256": "b8e7fa0688b897cab408cf9e96ec2db5acc8dd81904fe9537b4ad8680eef8a01"
+      },
+      {
+        "path": "plugins/charness/scripts/run_skill_efficiency_ab_validation.py",
+        "content_sha256": "f9e1870892b3968818c2b521991c9b224abeb44a6623ed9d2938ee83189aa1f8"
+      },
+      {
+        "path": "plugins/charness/scripts/run_slice_closeout.py",
+        "content_sha256": "3f47039a59cf7ff07469211698f12602d06df5338a5398bf5c0d7a4cdf8a4a51"
+      },
+      {
+        "path": "plugins/charness/scripts/skill_efficiency_report.py",
+        "content_sha256": "53d15548947b5129adfed3e7ffe8476c363a6b8048338670a14742faf290e07a"
+      },
+      {
+        "path": "plugins/charness/scripts/staged_commit_gate_plan.py",
+        "content_sha256": "9493b93a2397b98f55bf0ed24a8855bee228cbfbf082c4b8543b4891d035d371"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_critique_artifacts.py",
+        "content_sha256": "971b5f4129e1c80e319d80f9a959def5c6675c8f8adf5212fb4ee5f987f2c7cf"
+      },
+      {
+        "path": "plugins/charness/skills/critique/SKILL.md",
+        "content_sha256": "c7965e8c8287af5b72a788928361a9d07575f295042cd272e325514575762352"
+      },
+      {
+        "path": "plugins/charness/skills/critique/references/prepare-packet.md",
+        "content_sha256": "29c617162df5585bcb16db53b4c801877d36dcd8c2384f537632e775233c7d65"
+      },
+      {
+        "path": "plugins/charness/skills/critique/scripts/prepare_packet.py",
+        "content_sha256": "29927dbbd946f3c0185016d31105a2cd99f42a1a7ee310430ca325857b1f69d3"
+      },
+      {
+        "path": "plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py",
+        "content_sha256": "e7661336e2980d23030e177e8aab63c5f8a5905e0f1008f755c387aa52e64e41"
+      },
+      {
+        "path": "plugins/charness/skills/release/references/adapter-contract.md",
+        "content_sha256": "db7e27544505f6488089caddebdb166c70de35029c1a82086a2bc672cd4e8a8f"
+      },
+      {
+        "path": "plugins/charness/skills/release/references/install-refresh.md",
+        "content_sha256": "627fbb61a053cde3776b6aa297ec973439f458c1a2e0cfdb3c851df1aae89a1d"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_artifact.py",
+        "content_sha256": "71c9300390fd17ae31f671ff26d301f7ed216c5be643f5d43716cff25f93d105"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_artifact_sections.py",
+        "content_sha256": "49cbd4e6125120b8e8ef10d39af5d0a95291d01d23ff6a87f14320a9a6c9f4dd"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_cli.py",
+        "content_sha256": "e1ece09d71e2a3ccabd6e6bf5caaf806ce07b0deab6c8abb8f34711355f15b84"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_common.py",
+        "content_sha256": "4340c55ea963b5fbe624c36bb964b0f839c8a95c79a7214c43137d2297091509"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_helpers.py",
+        "content_sha256": "1f55fc65583175394cbbdbdbff22310cabb93fbcec9f12152e8739bca62ca1db"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_post_create.py",
+        "content_sha256": "a9f546bdbc36d3347f9415fa49cbffb872dee2fd624d36aea0bd11275f419781"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/release_issue_closeout.py",
+        "content_sha256": "aa525c35a1eaa95d120f83f5c615f04f269927afb0e3bb2fa1c81a141e7d40af"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/release_observer.py",
+        "content_sha256": "e2776305e75823f912398509e64b66f6994037d2b916c9343019e55e8fb6210c"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/resolve_adapter.py",
+        "content_sha256": "0a47a13cdb85993d617293000496247184141ec3f408c08edc571c0ec4c632c5"
+      },
+      {
+        "path": "plugins/charness/skills/retro/scripts/prepare_packet.py",
+        "content_sha256": "c4831fb587593f931d8ccc20ad1e17591ec1e308a8578e99433bf68c5c08329b"
+      },
+      {
+        "path": "scripts/codex_session_audit_lib.py",
+        "content_sha256": "9a860fd405dd9ce439b1332aae91dafb3d504eb97392874ad8e1a9deb64529dd"
+      },
+      {
+        "path": "scripts/critique_packet_lib.py",
+        "content_sha256": "351211064abffdf746930e8ff8ca47338a6ad6301b699c69991beaacc508952c"
+      },
+      {
+        "path": "scripts/critique_reviewed_input_binding.py",
+        "content_sha256": "43e7f3949a45c21434969249257b757efafa000e1efa52372e7b16c44aed14f8"
+      },
+      {
+        "path": "scripts/public_skill_dogfood_lib.py",
+        "content_sha256": "6904dc60628a55da2180beb15759b8ebec4e595894ebf70ef23efcffdd8d31df"
+      },
+      {
+        "path": "scripts/reviewed_input_identity.py",
+        "content_sha256": "864826ee88745704981e242d6aefdcab92163d6c69365b1d584005132bbb5403"
+      },
+      {
+        "path": "scripts/run_skill_efficiency_ab.py",
+        "content_sha256": "b8e7fa0688b897cab408cf9e96ec2db5acc8dd81904fe9537b4ad8680eef8a01"
+      },
+      {
+        "path": "scripts/run_skill_efficiency_ab_validation.py",
+        "content_sha256": "f9e1870892b3968818c2b521991c9b224abeb44a6623ed9d2938ee83189aa1f8"
+      },
+      {
+        "path": "scripts/run_slice_closeout.py",
+        "content_sha256": "3f47039a59cf7ff07469211698f12602d06df5338a5398bf5c0d7a4cdf8a4a51"
+      },
+      {
+        "path": "scripts/skill_efficiency_report.py",
+        "content_sha256": "53d15548947b5129adfed3e7ffe8476c363a6b8048338670a14742faf290e07a"
+      },
+      {
+        "path": "scripts/staged_commit_gate_plan.py",
+        "content_sha256": "9493b93a2397b98f55bf0ed24a8855bee228cbfbf082c4b8543b4891d035d371"
+      },
+      {
+        "path": "scripts/validate_critique_artifacts.py",
+        "content_sha256": "971b5f4129e1c80e319d80f9a959def5c6675c8f8adf5212fb4ee5f987f2c7cf"
+      },
+      {
+        "path": "skills/public/critique/SKILL.md",
+        "content_sha256": "c7965e8c8287af5b72a788928361a9d07575f295042cd272e325514575762352"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "29c617162df5585bcb16db53b4c801877d36dcd8c2384f537632e775233c7d65"
+      },
+      {
+        "path": "skills/public/critique/scripts/prepare_packet.py",
+        "content_sha256": "29927dbbd946f3c0185016d31105a2cd99f42a1a7ee310430ca325857b1f69d3"
+      },
+      {
+        "path": "skills/public/critique/scripts/scaffold_critique_artifact.py",
+        "content_sha256": "e7661336e2980d23030e177e8aab63c5f8a5905e0f1008f755c387aa52e64e41"
+      },
+      {
+        "path": "skills/public/release/references/adapter-contract.md",
+        "content_sha256": "db7e27544505f6488089caddebdb166c70de35029c1a82086a2bc672cd4e8a8f"
+      },
+      {
+        "path": "skills/public/release/references/install-refresh.md",
+        "content_sha256": "627fbb61a053cde3776b6aa297ec973439f458c1a2e0cfdb3c851df1aae89a1d"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_artifact.py",
+        "content_sha256": "71c9300390fd17ae31f671ff26d301f7ed216c5be643f5d43716cff25f93d105"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_artifact_sections.py",
+        "content_sha256": "49cbd4e6125120b8e8ef10d39af5d0a95291d01d23ff6a87f14320a9a6c9f4dd"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_cli.py",
+        "content_sha256": "e1ece09d71e2a3ccabd6e6bf5caaf806ce07b0deab6c8abb8f34711355f15b84"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_common.py",
+        "content_sha256": "4340c55ea963b5fbe624c36bb964b0f839c8a95c79a7214c43137d2297091509"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_helpers.py",
+        "content_sha256": "1f55fc65583175394cbbdbdbff22310cabb93fbcec9f12152e8739bca62ca1db"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_post_create.py",
+        "content_sha256": "a9f546bdbc36d3347f9415fa49cbffb872dee2fd624d36aea0bd11275f419781"
+      },
+      {
+        "path": "skills/public/release/scripts/release_issue_closeout.py",
+        "content_sha256": "aa525c35a1eaa95d120f83f5c615f04f269927afb0e3bb2fa1c81a141e7d40af"
+      },
+      {
+        "path": "skills/public/release/scripts/release_observer.py",
+        "content_sha256": "e2776305e75823f912398509e64b66f6994037d2b916c9343019e55e8fb6210c"
+      },
+      {
+        "path": "skills/public/release/scripts/resolve_adapter.py",
+        "content_sha256": "0a47a13cdb85993d617293000496247184141ec3f408c08edc571c0ec4c632c5"
+      },
+      {
+        "path": "skills/public/retro/scripts/prepare_packet.py",
+        "content_sha256": "c4831fb587593f931d8ccc20ad1e17591ec1e308a8578e99433bf68c5c08329b"
+      },
+      {
+        "path": "tests/charness_cli/fixtures/fake_codex.py",
+        "content_sha256": "71596c3d7a0bb2915094643a5d69afc196d70d39da3cf97453e60ede7a45c401"
+      },
+      {
+        "path": "tests/charness_cli/test_codex_cache_refresh.py",
+        "content_sha256": "e1e76f06d13282410f0ae42697334e4230faac93948ac8127c6abdc2933b75af"
+      },
+      {
+        "path": "tests/quality_gates/test_release_distinct_channel.py",
+        "content_sha256": "b0e079b2d8f7baf9b047939c6099dc3e0e1e3198524194520b0db53834d6fb30"
+      },
+      {
+        "path": "tests/quality_gates/test_release_observer.py",
+        "content_sha256": "b32b94f2b796ba62496bfe6fe38e8380f82b3539744487b225488f32bf4b3f1d"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_codex_session_audit.py",
+        "content_sha256": "d9f099b824cf52f1b3b339bcb1c46d93aee92c8a14668a0b3bbaa0a699dea033"
+      },
+      {
+        "path": "tests/quality_gates/test_run_slice_closeout_surface_obligations.py",
+        "content_sha256": "abe7070bcd9c9d0a9acbb06aff93eb6fe826bb15e659d63ae350299d42a5eac1"
+      },
+      {
+        "path": "tests/test_critique_prepare_packet.py",
+        "content_sha256": "86d0f3b604270b586454aae0e77758ea7b2bd3b73a5debf08b8a4362ec8de1f5"
+      },
+      {
+        "path": "tests/test_critique_scaffold.py",
+        "content_sha256": "8e7eda6e3946c2c642b6baa993ccf4a6d1c0f7fe5b109b9fb504ddd75b26c7e4"
+      },
+      {
+        "path": "tests/test_reviewed_input_identity_failures.py",
+        "content_sha256": "d49a89e5647a5473ade4c4d8ae40fb4d795885fd373f2ae25f6784f42fb83021"
+      },
+      {
+        "path": "tests/test_skill_efficiency_ab.py",
+        "content_sha256": "9752dc10ff0319b6535501d260d2ede8564ffcfe22e763ba3a455da366535245"
+      },
+      {
+        "path": "tests/test_skill_efficiency_comparability.py",
+        "content_sha256": "ae6241db88f6bb03ee26f0dbcb85436214c18f8225eae4559c137bfe2549ee48"
+      }
+    ],
+    "reviewed_patch_sha256": "f33c11a436089f0981712a818dda83ba404f2339f1c5ad6e8597b682405f2f2b",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "1dfac0f5869bb2c9485d721c9cb99a5b0cac9d2b1659d7ef03b50cfc4a11d860"
+  }
+}

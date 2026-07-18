@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 - Five related autonomous-improvement rounds exposed the same structural lesson. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
-- Release publish triggered a configured automatic session retro for `v2.1.0`. (source: `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md`; sources: 103)
-- before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
-- before an irreversible cumulative operation, compute and prove the exact cumulative range that the boundary will consume; do not assume individually closed slices compose automatically. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
-- before implementing a clean-start mutating command, draw its failure states around the first history-moving operation and make every owned edge restore or resume before writing the happy path. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
+- accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
+- applied: cumulative and live gate path populations have separate parameters and regression tests. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
+- applied: exact missing branches received direct behavioral tests; redundant observer branches were simplified instead of exempted from coverage. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 
 ## Selection Policy
 
@@ -132,3 +132,4 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`

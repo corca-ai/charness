@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "goal_slug": "gajae-pattern-adoption",
+  "observed_at": "2026-07-19T03:00:00+09:00",
+  "host": "codex",
+  "release_target": "2.1.5",
+  "checks": [
+    {
+      "command": "charness tool doctor nose --no-write-locks",
+      "status": "passed",
+      "observation": "nose 0.19.0 ready; doctor_disposition ready"
+    },
+    {
+      "command": "charness tool install nose --dry-run",
+      "status": "passed",
+      "observation": "supported script installation path selected; installed nose already current"
+    },
+    {
+      "command": "nose --version",
+      "status": "passed",
+      "observation": "nose 0.19.0"
+    },
+    {
+      "command": "charness tool sync-support nose",
+      "status": "passed",
+      "observation": "support status skipped as expected for integration-only quality binary"
+    },
+    {
+      "command": "inventory_nose_clones.py --repo-root .",
+      "status": "advisory",
+      "observation": "two drift families reported as refactoring candidates; no standing quality failure"
+    }
+  ],
+  "non_claims": [
+    "This pre-publication host log does not prove that v2.1.5 is public or installed.",
+    "Post-publish update, version, and doctor readbacks remain release-helper obligations."
+  ]
+}

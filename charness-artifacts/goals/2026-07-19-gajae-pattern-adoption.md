@@ -11,12 +11,11 @@ resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 — final bundle proof and publication.
-- Current slice intent: lock the cumulative diff, run mutation-aware broad
-  verification, then publish through the release helper with distinct-channel
-  and installed-state evidence.
-- Next action: commit the proven probe slice, record the final verification lock,
-  complete goal/retro/handoff closeout, and enter the authorized release phase.
+- Current slice: Slice 6 — publication and post-publish reconciliation.
+- Current slice intent: publish the locked v2.1.5 patch through the release
+  helper, then reconcile public, installed, goal, and handoff truth surfaces.
+- Next action: commit the release critique/retro/host proof, run publish dry-run,
+  then execute the authorized release and record its readbacks.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -111,22 +110,10 @@ Implement and prove Slices 1-4 from the canonical Gajae-Code adoption plan, disp
 | 2 | Bind critique verdicts to declared reviewed inputs | Durable review claim must identify what was judged | Identity/tamper fixtures, validator and artifact sync | completed |
 | 3 | Generate one release observer from existing distinct-channel evidence | Avoid parallel success records at the irreversible boundary | Schema/renderer fixtures and release integration proof | completed |
 | 4 | Add A/B comparability and retain outcome adjacency | Improve token efficiency without persuasive incomparable deltas | Comparable/incomparable report fixtures and focused tests | completed |
-| 5 | Disposition governed probes | Prevent analogy from silently becoming runtime/CI scope | Recorded probe outcome and promotion/defer rationale | active |
-| 6 | Final bundle proof, push, and release | User requested publication only after all work is complete | Locked closeout, distinct review/channel, public+installed readback | planned |
+| 5 | Disposition governed probes | Prevent analogy from silently becoming runtime/CI scope | Recorded probe outcome and promotion/defer rationale | completed |
+| 6 | Final bundle proof, push, and release | User requested publication only after all work is complete | Locked closeout, distinct review/channel, public+installed readback | active |
 
 ## Operator Decision Queue
-
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
 
 none — the operator already approved the final push/release boundary; no
 credentials or product decisions are currently missing.
@@ -164,12 +151,10 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- Routing: `achieve` coordinates the long goal; `impl`/`prove` own each build
-  slice, `quality` owns bundle verification, and `release` owns publication.
-- Gather: `charness-artifacts/gather/2026-07-19-gajae-code-pattern-review.md`.
-- Release: authorized for the final verified bundle; proof path will be added at
-  closeout.
-- Issue closeout: n/a — this goal does not claim a tracked GitHub issue.
+Routing: `achieve` coordinates the long goal; `impl`/`prove` own each build slice, `quality` owns bundle verification, and `release` owns publication.
+Gather: `charness-artifacts/gather/2026-07-19-gajae-code-pattern-review.md`.
+Release: `charness-artifacts/critique/2026-07-19-gajae-pattern-adoption-v2-1-5-release.md` authorizes entering the helper-owned v2.1.5 publication boundary.
+Issue closeout: n/a — this goal does not claim a tracked GitHub issue.
 
 ## Discuss Before Activation
 
@@ -309,15 +294,17 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md
+Host log probe: charness-artifacts/probe/2026-07-19-gajae-pattern-adoption-host-log.json
+Disposition review: charness-artifacts/critique/2026-07-19-gajae-pattern-adoption-v2-1-5-release.md
 
 ## User Verification Instructions
 
-Pending execution; final commands and release URL will be recorded at closeout.
+After publication, run `charness update`, then inspect YAML from
+`charness version` and `charness doctor`. The public v2.1.5 URL and final
+readback status will be recorded after the release helper completes.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: optional-state, cumulative/live-scope, exact branch proof, and fail-closed observer changes are recorded in the bound retro; accepted-risk and out-of-scope items retain explicit reasons there.
+Structural follow-up: repo-local guard: scripts/reviewed_input_identity.py plus the artifact-surface roundtrip and cumulative-scope regression tests own the transferable seams.

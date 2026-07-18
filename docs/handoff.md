@@ -4,18 +4,18 @@
 
 - With no explicit task, run `charness:handoff` chunked routing over the live
   backlog. An explicit user task keeps its own authority. Restart the host first
-  only when the next task must observe the newly installed v2.1.4 plugin.
+  only when the next task must observe the newly installed v2.1.5 plugin.
 
 ## Current State
 
-- The next operator can start new work without reopening the v2.1.4 release.
-  Use the owning artifacts below and route the next task through its matching skill.
-- v2.1.4 is public, independently read back over HTTPS, and installed on this
-  maintainer machine. The release helper passed release quality, fresh-checkout,
-  public-readback, and post-publish update steps. Separate `charness version`
-  and `charness doctor` readbacks reported 2.1.4 with no source/cache drift; no
-  real-host trigger matched this slice. See the
-  [release state](../charness-artifacts/release/latest.md).
+- v2.1.5 is the fully verified release candidate and publication is the only
+  remaining active step. The exact `v2.1.4..eae81f48` range passed cumulative
+  broad pytest, fresh mutation coverage, and the changed-line consumer. Do not
+  reopen implementation unless the release helper reports a typed blocker.
+- After publication, reconcile this paragraph with the public URL and installed
+  `charness version`/`charness doctor` readbacks. The release helper owns push,
+  tag, GitHub release, independent HTTPS confirmation, install refresh, and the
+  durable observer record. See the [release critique](../charness-artifacts/critique/2026-07-19-gajae-pattern-adoption-v2-1-5-release.md).
 - The two recurring dead-code advisory findings are now classified as registered
   dynamic entrypoints only when conservative bidirectional AST evidence proves
   their callers. The live sweep reports two registered entrypoints and zero review
@@ -43,8 +43,9 @@
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
    Finish critique packets before taking reviewer boundary fingerprints, and run
    the focused duplication ratchet before broad validation for large AST helpers.
-6. If continuing the Gajae-Code plan, run `impl` for Slice 1 only; do not bundle
-   the advisory efficiency or affected-CI probes into the correctness fix.
+6. The Gajae-Code plan is implemented and locally locked. If v2.1.5 is not yet
+   public, resume only the helper-owned release boundary; otherwise start a new
+   smallest coherent backlog slice.
 
 ## Discuss
 
@@ -54,13 +55,14 @@
 ## References
 
 - [release state](../charness-artifacts/release/latest.md)
+- [v2.1.5 release critique](../charness-artifacts/critique/2026-07-19-gajae-pattern-adoption-v2-1-5-release.md)
 - [quality review](../charness-artifacts/quality/latest.md)
 - [release-recovery critique](../charness-artifacts/critique/2026-07-18-release-local-failure-recovery.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
 - Refresh kept ([release state](../charness-artifacts/release/latest.md)):
-  public+installed v2.1.4, exact-range mutation proof, earlier durability
-  routing, host-restart condition, and D18 disposition.
+  v2.1.5 publication remains helper-owned; exact-range mutation proof, earlier
+  durability routing, host-restart condition, and D18 disposition stay current.
 - Refresh non-claims ([quality review](../charness-artifacts/quality/latest.md)):
   detailed test/runtime history remains in the owning quality/release artifacts;
   no wall-clock speedup is claimed, no real-host trigger matched, and no
