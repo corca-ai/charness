@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 
 from scripts import codex_session_audit_lib as audit_lib
@@ -117,6 +118,25 @@ def test_sqlite_thread_inventory_aggregates_in_sql_without_materializing_bodies(
     assert stats["thread-a"].line_count == 3
     assert stats["thread-a"].tool_call_count == 1
     assert stats["thread-b"].line_count == 1
+
+
+def test_sqlite_thread_inventory_applies_since_filter_in_sql(tmp_path: Path) -> None:
+    path = write_sqlite(tmp_path / "home")
+
+    stats = audit_lib.sqlite_thread_stats(
+        path,
+        tmp_path,
+        datetime.fromtimestamp(1_770_000_002, tz=timezone.utc),
+    )
+
+    assert set(stats) == {"thread-a", "thread-b"}
+    assert stats["thread-a"].line_count == 1
+    assert stats["thread-a"].first_ts == "2026-02-02T02:40:02Z"
+    assert stats["thread-b"].line_count == 1
+
+
+def test_sqlite_epoch_timestamp_degrades_invalid_values_to_none() -> None:
+    assert audit_lib.sqlite_epoch_timestamp("not-a-timestamp") is None
 
 
 def test_codex_audit_lists_threads_and_marks_missing_thread_ids(tmp_path: Path) -> None:

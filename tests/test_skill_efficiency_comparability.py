@@ -79,6 +79,10 @@ def test_missing_identity_is_incomparable_not_legacy_delta() -> None:
     assert entry["status"] == "incomparable" and entry["cost_deltas"] is None
 
 
+def test_empty_aggregate_records_return_an_empty_comparison_summary() -> None:
+    assert ab.build_comparison_summary({}, {}) == {"baseline": None, "arms": {}}
+
+
 def test_declared_order_owns_baseline_when_aggregates_are_reversed() -> None:
     config = {"comparison_identity": _identity(), "arms": [{"name": "baseline"}, {"name": "treatment"}]}
     aggregate = _aggregates()

@@ -1,0 +1,81 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-18T17:51:23Z",
+  "prepared_for": "changed-line coverage branch proof",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- tests/quality_gates/test_release_observer.py\n- tests/quality_gates/test_retro_codex_session_audit.py\n- tests/test_reviewed_input_identity_failures.py\n- tests/test_skill_efficiency_comparability.py\n\nOwning surfaces:\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_release_observer.py, tests/quality_gates/test_retro_codex_session_audit.py, tests/test_reviewed_input_identity_failures.py, tests/test_skill_efficiency_comparability.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "2ffb9311670a832a39c734b3a6cc4d717d0d0225",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "tests/quality_gates/test_release_observer.py",
+      "tests/quality_gates/test_retro_codex_session_audit.py",
+      "tests/test_reviewed_input_identity_failures.py",
+      "tests/test_skill_efficiency_comparability.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "tests/quality_gates/test_release_observer.py",
+        "content_sha256": "d3b7e953218a414094ed090792f8fbd5b2bcebf3c99ce3aaca5fbafc5a275473"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_codex_session_audit.py",
+        "content_sha256": "add93f832fbb12587a6cba584ef0d6d393e26df1d648bbeea449399a1ceed2af"
+      },
+      {
+        "path": "tests/test_reviewed_input_identity_failures.py",
+        "content_sha256": "3e6cee09fa1ba9945e395fa831aadd019e26a3860223d3dc02399a0a4a3a9af2"
+      },
+      {
+        "path": "tests/test_skill_efficiency_comparability.py",
+        "content_sha256": "85e66ffcb5817937b8d6bb8360fb85851baf931726c78419847cb6c8dd39060a"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "94c079c35eb0e620533d9fbb1683ce5617e8d074746c1f4565f9782b7ea3f228",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "3c4b5c29c419c3caf51bb00217b848875301298fee9e7f621e452b2f1ddcd92d"
+  }
+}
