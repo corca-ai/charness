@@ -1,12 +1,12 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-07-18T20:52:35Z
-- **Prepared for**: v2.1.6 release candidate after duplicate-gate repair
+- **Generated**: 2026-07-18T21:12:31Z
+- **Prepared for**: v2.1.6 final release candidate
 - **Changed ref**: `dcc4595f..HEAD`
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `2cbf148b01a7960d5d4f8d24baed0d8fcad485841b4b95ce18a0870b5fabe2b6`
-- **Reviewed paths**: 69
+- **Reviewed input identity**: `a21b9612f12c2ac8091ebb9cc11222b4297f192df070550862377bdc09f7c374`
+- **Reviewed paths**: 73
 - **Sections**: 2
 - **Overall ok**: True
 
@@ -51,6 +51,7 @@ Changed paths for ref `dcc4595f..HEAD`:
 - docs/handoff.md
 - docs/public-skill-dogfood.json
 - plugins/charness/scripts/boundary-bypass-exemptions.txt
+- plugins/charness/scripts/suggest_mutation_coverage_command.py
 - plugins/charness/skills/release/references/publication-boundary.md
 - plugins/charness/skills/release/references/real-host-proof.md
 - plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py
@@ -70,6 +71,7 @@ Changed paths for ref `dcc4595f..HEAD`:
 - plugins/charness/skills/release/scripts/release_issue_closeout_artifact.py
 - plugins/charness/skills/release/scripts/release_issue_closeout_message.py
 - scripts/boundary-bypass-exemptions.txt
+- scripts/suggest_mutation_coverage_command.py
 - skills/public/release/references/publication-boundary.md
 - skills/public/release/references/real-host-proof.md
 - skills/public/release/scripts/check_fresh_checkout_probes.py
@@ -92,6 +94,7 @@ Changed paths for ref `dcc4595f..HEAD`:
 - tests/quality_gates/fixtures/release_publish_fake_git.py
 - tests/quality_gates/test_public_skill_yaml_output_contract.py
 - tests/quality_gates/test_release_distinct_channel.py
+- tests/quality_gates/test_release_issue_closeout_behavioral_floor.py
 - tests/quality_gates/test_release_publish.py
 - tests/quality_gates/test_release_publish_real_host_delta.py
 - tests/quality_gates/test_release_publish_resilience.py
@@ -100,11 +103,12 @@ Changed paths for ref `dcc4595f..HEAD`:
 - tests/quality_gates/test_release_resume_state_validation.py
 - tests/quality_gates/test_release_run_planner.py
 - tests/quality_gates/test_staged_commit_gate_plan.py
+- tests/quality_gates/test_suggest_mutation_coverage_command.py
 
 Owning surfaces:
 - checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: scripts/boundary-bypass-exemptions.txt, skills/public/release/references/publication-boundary.md, skills/public/release/references/real-host-proof.md, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/check_real_host_proof.py, skills/public/release/scripts/check_requested_review_gate.py, skills/public/release/scripts/plan_release_run.py, skills/public/release/scripts/plan_release_run_packets.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_delta.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_artifact.py, skills/public/release/scripts/release_issue_closeout_message.py
-  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/skills/release/references/publication-boundary.md, plugins/charness/skills/release/references/real-host-proof.md, plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py, plugins/charness/skills/release/scripts/check_real_host_proof.py, plugins/charness/skills/release/scripts/check_requested_review_gate.py, plugins/charness/skills/release/scripts/plan_release_run.py, plugins/charness/skills/release/scripts/plan_release_run_packets.py, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_execute.py, plugins/charness/skills/release/scripts/publish_release_helpers.py, plugins/charness/skills/release/scripts/publish_release_resume.py, plugins/charness/skills/release/scripts/publish_release_resume_closeout.py, plugins/charness/skills/release/scripts/publish_release_runtime.py, plugins/charness/skills/release/scripts/release_delta.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_issue_closeout_artifact.py, plugins/charness/skills/release/scripts/release_issue_closeout_message.py
+  source matches: scripts/boundary-bypass-exemptions.txt, scripts/suggest_mutation_coverage_command.py, skills/public/release/references/publication-boundary.md, skills/public/release/references/real-host-proof.md, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/check_real_host_proof.py, skills/public/release/scripts/check_requested_review_gate.py, skills/public/release/scripts/plan_release_run.py, skills/public/release/scripts/plan_release_run_packets.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_delta.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_artifact.py, skills/public/release/scripts/release_issue_closeout_message.py
+  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/suggest_mutation_coverage_command.py, plugins/charness/skills/release/references/publication-boundary.md, plugins/charness/skills/release/references/real-host-proof.md, plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py, plugins/charness/skills/release/scripts/check_real_host_proof.py, plugins/charness/skills/release/scripts/check_requested_review_gate.py, plugins/charness/skills/release/scripts/plan_release_run.py, plugins/charness/skills/release/scripts/plan_release_run_packets.py, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_execute.py, plugins/charness/skills/release/scripts/publish_release_helpers.py, plugins/charness/skills/release/scripts/publish_release_resume.py, plugins/charness/skills/release/scripts/publish_release_resume_closeout.py, plugins/charness/skills/release/scripts/publish_release_runtime.py, plugins/charness/skills/release/scripts/release_delta.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_issue_closeout_artifact.py, plugins/charness/skills/release/scripts/release_issue_closeout_message.py
   sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.
@@ -147,13 +151,14 @@ Owning surfaces:
   sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
   verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e "$retro_packet_json" ]; then python3 -m json.tool "$retro_packet_json" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check
 - integrations-and-control-plane: Integration manifests and control-plane helper scripts.
-  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt
+  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/suggest_mutation_coverage_command.py
   verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json
 - repo-python: Repo-owned Python code and tests.
-  source matches: tests/quality_gates/fixtures/release_publish_fake_gh.py, tests/quality_gates/fixtures/release_publish_fake_git.py, tests/quality_gates/test_public_skill_yaml_output_contract.py, tests/quality_gates/test_release_distinct_channel.py, tests/quality_gates/test_release_publish.py, tests/quality_gates/test_release_publish_real_host_delta.py, tests/quality_gates/test_release_publish_resilience.py, tests/quality_gates/test_release_real_host.py, tests/quality_gates/test_release_resume_edge_coverage.py, tests/quality_gates/test_release_resume_state_validation.py, tests/quality_gates/test_release_run_planner.py, tests/quality_gates/test_staged_commit_gate_plan.py
+  source matches: scripts/suggest_mutation_coverage_command.py, tests/quality_gates/fixtures/release_publish_fake_gh.py, tests/quality_gates/fixtures/release_publish_fake_git.py, tests/quality_gates/test_public_skill_yaml_output_contract.py, tests/quality_gates/test_release_distinct_channel.py, tests/quality_gates/test_release_issue_closeout_behavioral_floor.py, tests/quality_gates/test_release_publish.py, tests/quality_gates/test_release_publish_real_host_delta.py, tests/quality_gates/test_release_publish_resilience.py, tests/quality_gates/test_release_real_host.py, tests/quality_gates/test_release_resume_edge_coverage.py, tests/quality_gates/test_release_resume_state_validation.py, tests/quality_gates/test_release_run_planner.py, tests/quality_gates/test_staged_commit_gate_plan.py, tests/quality_gates/test_suggest_mutation_coverage_command.py
+  derived matches: plugins/charness/scripts/suggest_mutation_coverage_command.py
   verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
 - python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
-  source matches: skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/check_real_host_proof.py, skills/public/release/scripts/check_requested_review_gate.py, skills/public/release/scripts/plan_release_run.py, skills/public/release/scripts/plan_release_run_packets.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_delta.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_artifact.py, skills/public/release/scripts/release_issue_closeout_message.py
+  source matches: scripts/suggest_mutation_coverage_command.py, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/check_real_host_proof.py, skills/public/release/scripts/check_requested_review_gate.py, skills/public/release/scripts/plan_release_run.py, skills/public/release/scripts/plan_release_run_packets.py, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_helpers.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_delta.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_artifact.py, skills/public/release/scripts/release_issue_closeout_message.py
   verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing
 
 Planned sync commands before validators:

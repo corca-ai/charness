@@ -20,6 +20,14 @@ The duplicate ratchet was then moved into ordinary skill and repo-Python slice
 closeout surfaces. A final packet-bound reviewer confirmed the extraction,
 classification, source/plugin parity, and earlier gate placement.
 
+The refreshed broad suite then found that isolated/partial installs lacked the
+new artifact helper and failed during policy-module import. The loader now
+degrades to an unavailable action and emits a typed error only when artifact
+commit behavior is actually requested. Direct real-file and partial-install
+tests cover that boundary. The coverage selector learned the one-argument
+release-local loader, eliminating an unnecessary full-instrumentation fallback;
+the focused producer and authoritative changed-line consumer passed afterward.
+
 ## Decision Under Review
 
 Publish v2.1.6 with a post-publication evidence carrier for linked-issue close
@@ -79,6 +87,9 @@ actionable, identity-preserving recovery path.
 - F6 | bin: act-before-ship | evidence: strong | ref: skills/public/release/scripts/release_issue_closeout_artifact.py | action: fix | note: artifact writing and Git commit/push behavior now have one cohesive release-local owner instead of two duplicated policy-module tails
 - F7 | bin: act-before-ship | evidence: strong | ref: .agents/surfaces.json | action: fix | note: duplicate coupling now fails at ordinary skill or repo-Python slice closeout instead of first appearing in the release-only bundle
 - F8 | bin: over-worry | evidence: strong | ref: charness-artifacts/quality/dup-review.json | action: document | note: portable CLI and bootstrap families remain intentionally independent because extraction would couple unrelated payload, exit, timeout, and installation boundaries
+- F9 | bin: act-before-ship | evidence: strong | ref: skills/public/release/scripts/release_issue_closeout.py | action: fix | note: optional artifact-helper absence no longer breaks module import and fails with a typed message only at the requested action boundary
+- F10 | bin: bundle-anyway | evidence: strong | ref: scripts/suggest_mutation_coverage_command.py | action: fix | note: release-local loader ancestry now maps the new module to standing tests and avoids an unnecessary broad instrumentation fallback
+- F11 | bin: valid-but-defer | evidence: moderate | ref: scripts/suggest_mutation_coverage_command.py | action: defer | note: identifier-boundary and comment-aware loader matching can be tightened later; the changed-line consumer remains the final fail-closed check against an optimistic suggestion
 
 ## Surface-Lock Inventory
 
@@ -128,8 +139,8 @@ parent-delegated
 ## Reviewed Input Identity
 
 - Packet path: charness-artifacts/critique/v2-1-6-release-candidate-packet.json
-- Packet SHA256: e2b568173c38b3c0aff5a2e57c6c2757973f7ea030f9583bda4df79d3d8f74fd
-- Identity SHA256: 2cbf148b01a7960d5d4f8d24baed0d8fcad485841b4b95ce18a0870b5fabe2b6
+- Packet SHA256: b5a82c30f976c7111dd12fc6e56b87cd7f1e976980803538e8fe4fb8413b8030
+- Identity SHA256: a21b9612f12c2ac8091ebb9cc11222b4297f192df070550862377bdc09f7c374
 
 ## Boundary Ownership
 
