@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
     scope.add_argument("--paths", nargs="*", help="Changed paths to evaluate; defaults to git-derived changed paths")
     scope.add_argument(
         "--changed-range",
-        help="Immutable full-SHA range BASE..HEAD whose changed paths this command resolves",
+        help="Immutable full-object-ID range BASE..HEAD whose changed paths this command resolves",
     )
     parser.add_argument("--detail", action="store_true", help="Emit the full proof-trigger payload as YAML")
     parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)

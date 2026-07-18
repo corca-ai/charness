@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-19",
-  "source_artifact_count": 365,
-  "candidate_count": 1515,
+  "source_artifact_count": 366,
+  "candidate_count": 1519,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1085,6 +1085,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:85d1814aff65",
+      "kind": "current_focus",
+      "lesson": "An aggressive autonomous improvement pass repaired the release issue-close state machine, compressed release-plan evidence, and accelerated a repeated inventory contract test.",
+      "normalized_key": "an aggressive autonomous improvement pass repaired the release issue close state machine compressed release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:5514c75035b6",
       "kind": "current_focus",
       "lesson": "The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture.",
@@ -1185,6 +1205,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f6cb13514704",
+      "kind": "next_improvement",
+      "lesson": "before optimizing or compacting a cross-process boundary, write the canonical identity/serialization/state envelope into the implementation contract.",
+      "normalized_key": "before optimizing or compacting a cross process boundary write the canonical identity serialization state",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a4af6b7f688a",
+      "kind": "next_improvement",
+      "lesson": "keep shared boundary owners small and feed all producer/consumer paths through them; add exotic-format fixtures (alternate object format, legal delimiter characters, assertion failure) at introduction time.",
+      "normalized_key": "keep shared boundary owners small and feed all producer consumer paths through them add",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:01904664c573",
       "kind": "next_improvement",
       "lesson": "out-of-scope: making packet content digests self-describing requires a backward-compatible schema migration; the repeated interpretation error is recorded in the RCA ledger and canonical verification remains authoritative.",
@@ -1205,82 +1265,22 @@
       ]
     },
     {
-      "candidate_id": "current_focus:1be57f7bb511",
-      "kind": "current_focus",
-      "lesson": "Five related autonomous-improvement rounds exposed the same structural lesson.",
-      "normalized_key": "five related autonomous improvement rounds exposed the same structural lesson",
+      "candidate_id": "next_improvement:c14a53618d12",
+      "kind": "next_improvement",
+      "lesson": "persist “irreversibility starts at the earliest observer-capable write” and “optimization must name its hermetic state envelope” in the generated recent-lessons digest.",
+      "normalized_key": "persist irreversibility starts at the earliest observer capable write and optimization must name its",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d2744f843950",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.1.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 1 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f3085a8111b4",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.1.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 1 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-1-release-auto-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-1-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:0731beee080f",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.1.2`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 1 2",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
         }
       ]
     }
@@ -2357,6 +2357,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:85d1814aff65",
+      "kind": "current_focus",
+      "lesson": "An aggressive autonomous improvement pass repaired the release issue-close state machine, compressed release-plan evidence, and accelerated a repeated inventory contract test.",
+      "normalized_key": "an aggressive autonomous improvement pass repaired the release issue close state machine compressed release",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:5514c75035b6",
       "kind": "current_focus",
       "lesson": "The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture.",
@@ -2457,6 +2477,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f6cb13514704",
+      "kind": "next_improvement",
+      "lesson": "before optimizing or compacting a cross-process boundary, write the canonical identity/serialization/state envelope into the implementation contract.",
+      "normalized_key": "before optimizing or compacting a cross process boundary write the canonical identity serialization state",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a4af6b7f688a",
+      "kind": "next_improvement",
+      "lesson": "keep shared boundary owners small and feed all producer/consumer paths through them; add exotic-format fixtures (alternate object format, legal delimiter characters, assertion failure) at introduction time.",
+      "normalized_key": "keep shared boundary owners small and feed all producer consumer paths through them add",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:01904664c573",
       "kind": "next_improvement",
       "lesson": "out-of-scope: making packet content digests self-describing requires a backward-compatible schema migration; the repeated interpretation error is recorded in the RCA ledger and canonical verification remains authoritative.",
@@ -2471,6 +2531,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c14a53618d12",
+      "kind": "next_improvement",
+      "lesson": "persist “irreversibility starts at the earliest observer-capable write” and “optimization must name its hermetic state envelope” in the generated recent-lessons digest.",
+      "normalized_key": "persist irreversibility starts at the earliest observer capable write and optimization must name its",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }

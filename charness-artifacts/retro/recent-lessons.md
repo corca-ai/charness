@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- An aggressive autonomous improvement pass repaired the release issue-close state machine, compressed release-plan evidence, and accelerated a repeated inventory contract test. (source: `charness-artifacts/retro/2026-07-19-session-retro.md`)
 - The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
-- Five related autonomous-improvement rounds exposed the same structural lesson. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 
 ## Repeat Traps
 
@@ -126,7 +126,6 @@
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-18-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md`
@@ -134,3 +133,4 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`
+- `charness-artifacts/retro/2026-07-19-session-retro.md`

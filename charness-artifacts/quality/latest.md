@@ -1,1 +1,1 @@
-2026-07-18-dynamic-entrypoint-structural-quality.md
+2026-07-19-quality-review.md
