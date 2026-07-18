@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -118,6 +119,26 @@ def test_release_real_host_proof_supports_hidden_json_and_summary_output() -> No
     assert json.loads(json_result.stdout)["required"] is False
     assert summary_result.stdout.startswith("real_host=not-required: ")
     assert summary_result.stderr == ""
+
+
+def test_release_real_host_proof_keeps_real_process_entrypoint() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "skills/public/release/scripts/check_real_host_proof.py",
+            "--repo-root",
+            str(ROOT),
+            "--paths",
+            "docs/retro-self-improvement-spec.md",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.startswith("real_host=not-required: ")
 
 
 def test_release_real_host_proof_renders_surface_errors_as_yaml(
