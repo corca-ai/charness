@@ -23,6 +23,9 @@
   fixtures remain fail-closed. Exact changed lines passed the locked
   producer-to-consumer proof; see the
   [quality review](../charness-artifacts/quality/latest.md).
+- The `../gajae-code` comparison is captured and its selected adoption sequence
+  is locked in the [adoption plan](../charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md).
+  The first slice is the current app-server per-message deadline-reset bug.
 
 ## Next Session
 
@@ -40,6 +43,8 @@
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
    Finish critique packets before taking reviewer boundary fingerprints, and run
    the focused duplication ratchet before broad validation for large AST helpers.
+6. If continuing the Gajae-Code plan, run `impl` for Slice 1 only; do not bundle
+   the advisory efficiency or affected-CI probes into the correctness fix.
 
 ## Discuss
 
