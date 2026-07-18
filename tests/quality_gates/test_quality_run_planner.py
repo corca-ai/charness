@@ -364,6 +364,45 @@ def test_quality_run_plan_yaml_loader_fails_loudly_without_repo_adapter(monkeypa
         PLAN._load_yaml_file(CATALOG)
 
 
+def test_quality_run_plan_yaml_emitter_bootstraps_repo_path(
+    capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo_text = str(ROOT)
+    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != repo_text])
+
+    PLAN._emit_yaml({"status": "ok"})
+
+    assert sys.path[0] == repo_text
+    assert yaml.safe_load(capsys.readouterr().out) == {"status": "ok"}
+
+
+def test_quality_run_plan_yaml_emitter_fails_loudly_without_renderer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class NoRendererAncestor:
+        def __truediv__(self, _part: str) -> NoRendererAncestor:
+            return self
+
+        def is_file(self) -> bool:
+            return False
+
+    class MissingPath:
+        def __init__(self, _value: object) -> None:
+            pass
+
+        def resolve(self) -> MissingPath:
+            return self
+
+        @property
+        def parents(self) -> list[NoRendererAncestor]:
+            return [NoRendererAncestor()]
+
+    monkeypatch.setattr(PLAN, "Path", MissingPath)
+
+    with pytest.raises(RuntimeError, match="scripts/yaml_output.py not found"):
+        PLAN._emit_yaml({"status": "unreachable"})
+
+
 @pytest.mark.parametrize(
     ("catalog", "expected"),
     [
