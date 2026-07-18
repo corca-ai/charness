@@ -222,8 +222,8 @@ def test_observer_without_backend_kwargs_skips_the_same_proxy_check() -> None:
     assert calls == ["gh release view v1"]
 
 
-def test_commit_release_artifact_uses_validated_draft_body_lines() -> None:
-    """A draft's paragraphs, when present, are transported verbatim to git commit."""
+def test_initial_release_commit_reserves_validated_closeout_body_for_later() -> None:
+    """The publication commit must not close issues before observer evidence exists."""
     commands: list[list[str]] = []
     writes = {"count": 0}
     cli = _release_commit_artifact_cli(commands, writes)
@@ -231,13 +231,13 @@ def test_commit_release_artifact_uses_validated_draft_body_lines() -> None:
     state = _release_commit_artifact_state()
     result = _EXECUTE._commit_release_artifact(args, Path("."), state, {}, cli=cli)
     commit = next(command for command in commands if command[:2] == ["git", "commit"])
-    assert commit == ["git", "commit", "-m", "Release v1.0.0", "-m", "Body A", "-m", "Body B"]
+    assert commit == ["git", "commit", "-m", "Release v1.0.0"]
     assert result["artifact_relpath"] == "release.md"
     assert writes["count"] == 1
 
 
-def test_commit_release_artifact_falls_back_when_draft_paragraphs_empty() -> None:
-    """Empty draft paragraphs are absence, so commit construction uses the release helper."""
+def test_initial_release_commit_never_falls_back_to_a_closeout_body() -> None:
+    """Even a legacy fallback body belongs to the later carrier commit."""
     commands: list[list[str]] = []
     writes = {"count": 0}
     cli = _release_commit_artifact_cli(commands, writes)
@@ -248,7 +248,7 @@ def test_commit_release_artifact_falls_back_when_draft_paragraphs_empty() -> Non
     _EXECUTE._commit_release_artifact(args, Path("."), state, {}, cli=cli)
 
     commit = next(command for command in commands if command[:2] == ["git", "commit"])
-    assert commit == ["git", "commit", "-m", "Release v1.0.0", "-m", "fallback body"]
+    assert commit == ["git", "commit", "-m", "Release v1.0.0"]
 
 
 def test_commit_release_artifact_rechecks_fresh_checkout_after_amend() -> None:
@@ -278,6 +278,12 @@ def _fake_state() -> dict:
 
 
 def _base_cli(observer, recorder: dict) -> SimpleNamespace:
+    events = recorder.setdefault("events", [])
+
+    def record_final(*_args, **kwargs):
+        events.append(("final-artifact", kwargs.get("has_issue_closeout")))
+        recorder["committed"] = kwargs.get("has_issue_closeout")
+
     return SimpleNamespace(
         run=lambda *a, **k: _shell_result(0),
         run_shell=lambda *a, **k: _shell_result(0),
@@ -289,8 +295,12 @@ def _base_cli(observer, recorder: dict) -> SimpleNamespace:
         evaluate_release_distinct_channel=_POST_CREATE.evaluate_release_distinct_channel,
         fail_release_distinct_channel_floor=_POST_CREATE.fail_release_distinct_channel_floor,
         fail_after_post_create_verification=_POST_CREATE.fail_after_post_create_verification,
-        commit_final_release_artifact=lambda *a, **k: recorder.__setitem__("committed", k.get("has_issue_closeout")),
-        ensure_release_issues_closed=lambda *a, **k: recorder.__setitem__("issues_closed", True),
+        commit_final_release_artifact=record_final,
+        commit_issue_closeout_carrier_artifact=lambda *a, **k: events.append(("carrier-artifact", True)),
+        ensure_release_issues_closed=lambda *a, **k: (
+            events.append(("issue-state-readback", True)),
+            recorder.__setitem__("issues_closed", True),
+        ),
         run_post_publish_install_refresh=lambda *a, **k: {"status": "not_configured"},
         collect_installed_readback=lambda *a, **k: {"status": "not_configured"},
         safe_write_release_observer=lambda *a, **k: {
@@ -325,3 +335,34 @@ def test_wiring_proceeds_to_issue_close_on_recorded_disposition() -> None:
     _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
     # F2a: a typed disposition (not a confirmation) still advances the close.
     assert recorder.get("issues_closed") is True
+    assert recorder["events"] == [
+        ("carrier-artifact", True),
+        ("issue-state-readback", True),
+        ("final-artifact", True),
+    ]
+
+
+def test_carrier_commit_failure_prevents_issue_state_mutation() -> None:
+    recorder: dict = {}
+
+    def confirmed_observer(_repo_root, payload, **_kwargs):
+        payload["distinct_channel_verification"] = {
+            "channel": "https-fetch",
+            "status": "confirmed",
+        }
+
+    cli = _base_cli(confirmed_observer, recorder)
+
+    def fail_carrier(*_args, **_kwargs):
+        recorder["events"].append(("carrier-artifact", "failed"))
+        raise RuntimeError("carrier push failed")
+
+    cli.commit_issue_closeout_carrier_artifact = fail_carrier
+    args = SimpleNamespace(remote="origin", close_issue=[44], close_issue_behavior=["Behavior #44: x"])
+
+    with pytest.raises(RuntimeError, match="carrier push failed"):
+        _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
+
+    assert recorder.get("issues_closed") is None
+    assert recorder.get("committed") is None
+    assert recorder["events"] == [("carrier-artifact", "failed")]

@@ -1,0 +1,131 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-18T19:21:38Z",
+  "prepared_for": "release issue-close evidence ordering final staged diff",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-07-18-185648-packet.json\n- charness-artifacts/critique/2026-07-18-185648-packet.md\n- charness-artifacts/critique/2026-07-19-critique-review.md\n- charness-artifacts/debug/2026-07-19-release-issue-close-evidence-ordering.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/metrics/rca-ledger.jsonl\n- charness-artifacts/spec/2026-07-19-release-close-evidence-ordering.md\n- docs/public-skill-dogfood.json\n- plugins/charness/skills/release/references/publication-boundary.md\n- plugins/charness/skills/release/scripts/publish_release_cli.py\n- plugins/charness/skills/release/scripts/publish_release_common.py\n- plugins/charness/skills/release/scripts/publish_release_execute.py\n- plugins/charness/skills/release/scripts/publish_release_resume.py\n- plugins/charness/skills/release/scripts/publish_release_resume_closeout.py\n- plugins/charness/skills/release/scripts/publish_release_runtime.py\n- plugins/charness/skills/release/scripts/release_issue_closeout.py\n- plugins/charness/skills/release/scripts/release_issue_closeout_message.py\n- skills/public/release/references/publication-boundary.md\n- skills/public/release/scripts/publish_release_cli.py\n- skills/public/release/scripts/publish_release_common.py\n- skills/public/release/scripts/publish_release_execute.py\n- skills/public/release/scripts/publish_release_resume.py\n- skills/public/release/scripts/publish_release_resume_closeout.py\n- skills/public/release/scripts/publish_release_runtime.py\n- skills/public/release/scripts/release_issue_closeout.py\n- skills/public/release/scripts/release_issue_closeout_message.py\n- tests/quality_gates/fixtures/release_publish_fake_gh.py\n- tests/quality_gates/fixtures/release_publish_fake_git.py\n- tests/quality_gates/test_release_distinct_channel.py\n- tests/quality_gates/test_release_publish.py\n- tests/quality_gates/test_release_publish_resilience.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/release/references/publication-boundary.md, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py\n  derived matches: plugins/charness/skills/release/references/publication-boundary.md, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_execute.py, plugins/charness/skills/release/scripts/publish_release_resume.py, plugins/charness/skills/release/scripts/publish_release_resume_closeout.py, plugins/charness/skills/release/scripts/publish_release_runtime.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_issue_closeout_message.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root . --json\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-18-185648-packet.md, charness-artifacts/critique/2026-07-19-critique-review.md, charness-artifacts/debug/2026-07-19-release-issue-close-evidence-ordering.md, charness-artifacts/debug/latest.md, charness-artifacts/spec/2026-07-19-release-close-evidence-ordering.md, skills/public/release/references/publication-boundary.md\n  derived matches: plugins/charness/skills/release/references/publication-boundary.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/release/references/publication-boundary.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/release/references/publication-boundary.md, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py\n  derived matches: plugins/charness/skills/release/references/publication-boundary.md, plugins/charness/skills/release/scripts/publish_release_cli.py, plugins/charness/skills/release/scripts/publish_release_common.py, plugins/charness/skills/release/scripts/publish_release_execute.py, plugins/charness/skills/release/scripts/publish_release_resume.py, plugins/charness/skills/release/scripts/publish_release_resume_closeout.py, plugins/charness/skills/release/scripts/publish_release_runtime.py, plugins/charness/skills/release/scripts/release_issue_closeout.py, plugins/charness/skills/release/scripts/release_issue_closeout_message.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/release/references/publication-boundary.md, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/release/references/publication-boundary.md, skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-18-185648-packet.json, charness-artifacts/critique/2026-07-18-185648-packet.md, charness-artifacts/critique/2026-07-19-critique-review.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-07-19-release-issue-close-evidence-ordering.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/fixtures/release_publish_fake_gh.py, tests/quality_gates/fixtures/release_publish_fake_git.py, tests/quality_gates/test_release_distinct_channel.py, tests/quality_gates/test_release_publish.py, tests/quality_gates/test_release_publish_resilience.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/release/scripts/publish_release_cli.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_runtime.py, skills/public/release/scripts/release_issue_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "dcc4595f3514b252298965aad049fe446c6d1b79",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "skills/public/release/references/publication-boundary.md",
+      "skills/public/release/scripts/publish_release_cli.py",
+      "skills/public/release/scripts/publish_release_common.py",
+      "skills/public/release/scripts/publish_release_execute.py",
+      "skills/public/release/scripts/publish_release_resume.py",
+      "skills/public/release/scripts/publish_release_resume_closeout.py",
+      "skills/public/release/scripts/publish_release_runtime.py",
+      "skills/public/release/scripts/release_issue_closeout.py",
+      "skills/public/release/scripts/release_issue_closeout_message.py",
+      "tests/quality_gates/fixtures/release_publish_fake_gh.py",
+      "tests/quality_gates/fixtures/release_publish_fake_git.py",
+      "tests/quality_gates/test_release_distinct_channel.py",
+      "tests/quality_gates/test_release_publish.py",
+      "tests/quality_gates/test_release_publish_resilience.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "skills/public/release/references/publication-boundary.md",
+        "content_sha256": "ffb7ba757cfc81fcbb129727c467bd175eb603ec351850d682a8b4a2804c661f"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_cli.py",
+        "content_sha256": "11a072329a462b8ba07bfd4940ae4e21606e379c0dbc897fb25ac1273320bc11"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_common.py",
+        "content_sha256": "22e25eb869d56b84aa04ee6402f42eef533bc6a0878c56d96d8902d052e739d9"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_execute.py",
+        "content_sha256": "aa4f0ae566793e55bf0d5278704767e22540570507968192d7d0511f4cda9536"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume.py",
+        "content_sha256": "66247da1db6efa00447e54581088916c8a58c3304cf3fe9adb98f877d7796dfb"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume_closeout.py",
+        "content_sha256": "e9db639c9510e3eb86c0d986127eacdf5f683844d656b7fa688e989c3d514d8f"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_runtime.py",
+        "content_sha256": "f670e34f128449069690545f3283db6a703bf6fe01769fab6df8f02fdbc82526"
+      },
+      {
+        "path": "skills/public/release/scripts/release_issue_closeout.py",
+        "content_sha256": "c7cbad721654e44e98247992a42c0b52b43cd4705d3ffc018beca715c98f42a4"
+      },
+      {
+        "path": "skills/public/release/scripts/release_issue_closeout_message.py",
+        "content_sha256": "e928e52d657eb22cc45963e457626484c409f4460f1aebb27308b37d35efa4fc"
+      },
+      {
+        "path": "tests/quality_gates/fixtures/release_publish_fake_gh.py",
+        "content_sha256": "0797408ed1dbdfa8d5a7c61a4c3c779c1eb5eb8de335ec2be10aeb384ef28e8b"
+      },
+      {
+        "path": "tests/quality_gates/fixtures/release_publish_fake_git.py",
+        "content_sha256": "a090710d09929651234505bed6566e73ec2cb35ee1b5399e72e1571be376ec97"
+      },
+      {
+        "path": "tests/quality_gates/test_release_distinct_channel.py",
+        "content_sha256": "cd91f38b603d2234497c328696bbbc051e94d92c6333fcd16dbf406a04730cfd"
+      },
+      {
+        "path": "tests/quality_gates/test_release_publish.py",
+        "content_sha256": "868612b2aa8bf946e2072cbb7141ae59097a34e9e96e346876d9ebfa91252444"
+      },
+      {
+        "path": "tests/quality_gates/test_release_publish_resilience.py",
+        "content_sha256": "2b8f7aa3147e22b5b8a72d03766ca0b3402da29ae712730e365c7277ab57d6e8"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "d07627aa4f43eb48793b4c91021631b47a49dda6327937cb522fc676ff486e51",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "419fd4d3222856e1d0d4912d2bc3dccdfaeee93cedf42b8363d856925d66271f"
+  }
+}

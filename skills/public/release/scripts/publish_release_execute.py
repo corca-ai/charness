@@ -97,13 +97,8 @@ def _commit_release_artifact(
     cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     cli.run(["git", "add", "-A"], cwd=repo_root)
     commit_command = ["git", "commit", "-m", payload["commit_message"]]
-    commit_paragraphs = payload.get("issue_closeout_draft_validation", {}).get("paragraphs")
-    if commit_paragraphs:
-        body_lines = list(commit_paragraphs[1:])
-    else:
-        body_lines = cli.release_commit_body(payload, args.close_issue, args.close_issue_behavior)
-    for body_line in body_lines:
-        commit_command.extend(["-m", body_line])
+    # The validated issue-close paragraphs are reserved for the post-observer
+    # carrier commit. The first default-branch push must not auto-close issues.
     cli.run(commit_command, cwd=repo_root)
     fresh_checkout_payload = _common["timed"](
         payload, "fresh_checkout_probes_initial", lambda: cli.run_fresh_checkout_probes(repo_root)

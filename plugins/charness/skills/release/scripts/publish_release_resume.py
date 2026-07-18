@@ -33,6 +33,19 @@ def _load_release_common():
 _common = _load_release_common()
 
 
+def _load_resume_closeout():
+    module_path = Path(__file__).resolve().with_name("publish_release_resume_closeout.py")
+    spec = importlib.util.spec_from_file_location("publish_release_resume_closeout", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_resume_closeout = _load_resume_closeout()
+
+
 def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
     return cli.run(["git", *args], cwd=repo_root).stdout.strip()
 
@@ -63,18 +76,50 @@ def resumable_state(
     tag_name: str,
     commit_message: str,
     remote: str,
+    branch: str,
     backend: dict[str, Any],
     cli: Any,
 ) -> dict[str, Any]:
     head_subject = _git_out(cli, repo_root, ["log", "-1", "--format=%s"])
     head_sha = _git_out(cli, repo_root, ["rev-parse", "HEAD"])
+    head_message = _git_out(cli, repo_root, ["show", "-s", "--format=%B", "HEAD"])
     tag_state = cli._helpers.tag_exists(repo_root, tag_name, remote=remote)
     tag_sha = ""
     if tag_state["local"]:
         tag_sha = _git_out(cli, repo_root, ["rev-list", "-n", "1", tag_name])
+    parent_sha = _git_out(cli, repo_root, ["rev-parse", "HEAD^"]) if head_sha != tag_sha else ""
+    grandparent_sha = _git_out(cli, repo_root, ["rev-parse", "HEAD^^"]) if parent_sha and parent_sha != tag_sha else ""
+    parent_message = _git_out(cli, repo_root, ["show", "-s", "--format=%B", "HEAD^"]) if parent_sha else ""
+    remote_result = cli.run(
+        ["git", "ls-remote", "--heads", remote, f"refs/heads/{branch}"],
+        cwd=repo_root,
+        check=False,
+    )
+    remote_branch_sha = remote_result.stdout.split(maxsplit=1)[0] if remote_result.returncode == 0 and remote_result.stdout.strip() else ""
+    close_refs = cli.release_content_close_keyword_refs(head_message)
+    parent_close_refs = cli.release_content_close_keyword_refs(parent_message)
+    phase = "release-content"
+    if tag_sha and parent_sha == tag_sha and close_refs:
+        phase = "post-publication-carrier"
+    elif (
+        tag_sha
+        and grandparent_sha == tag_sha
+        and parent_close_refs
+        and head_subject == f"Record release issue closeout for {tag_name}"
+    ):
+        phase = "post-publication-final"
     return {
         "head_is_release_commit": head_subject == commit_message,
+        "phase": phase,
         "head_sha": head_sha,
+        "head_message": head_message,
+        "head_close_refs": close_refs,
+        "tag_sha": tag_sha,
+        "head_parent_is_tag": bool(tag_sha) and parent_sha == tag_sha,
+        "parent_sha": parent_sha,
+        "parent_message": parent_message,
+        "head_grandparent_is_tag": bool(tag_sha) and grandparent_sha == tag_sha,
+        "remote_branch_sha": remote_branch_sha,
         "tag_local": tag_state["local"],
         "tag_remote": tag_state["remote"],
         "tag_points_at_head": bool(tag_sha) and tag_sha == head_sha,
@@ -83,6 +128,22 @@ def resumable_state(
 
 
 def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
+    if state["phase"] in {"post-publication-carrier", "post-publication-final"}:
+        if not (state["tag_local"] and state["tag_remote"] and state["release_exists"]):
+            raise SystemExit(
+                f"--resume: `{tag_name}` carrier HEAD lacks confirmed tag/release publication state."
+            )
+        expected_parent = state["tag_sha"] if state["phase"] == "post-publication-carrier" else state["parent_sha"]
+        if state["phase"] == "post-publication-carrier" and not state["head_parent_is_tag"]:
+            raise SystemExit(f"--resume: `{tag_name}` carrier HEAD is not directly based on its release tag.")
+        if state["phase"] == "post-publication-final" and not state["head_grandparent_is_tag"]:
+            raise SystemExit(f"--resume: `{tag_name}` final closeout HEAD is not based on its carrier and release tag.")
+        if state["remote_branch_sha"] not in {expected_parent, state["head_sha"]}:
+            raise SystemExit(
+                "--resume: remote branch is neither the release-content nor local carrier commit; "
+                "refusing ambiguous closeout recovery."
+            )
+        return
     if not state["head_is_release_commit"]:
         raise SystemExit(
             f"--resume: HEAD is not the `{tag_name}` release commit; nothing to resume. "
@@ -121,6 +182,7 @@ def preflight_resume_state(
         tag_name=tag_name,
         commit_message=f"Release {adapter_data['package_id']} {current_version}",
         remote=args.remote,
+        branch=_git_out(cli, repo_root, ["rev-parse", "--abbrev-ref", "HEAD"]),
         backend=adapter_data["release_backend"],
         cli=cli,
     )
@@ -144,10 +206,21 @@ def resume_publish(
     issue_repo = plan["issue_repo"]
     state = state or resumable_state(
         repo_root, tag_name=tag_name, commit_message=payload["commit_message"],
-        remote=args.remote, backend=backend, cli=cli,
+        remote=args.remote, branch=branch, backend=backend, cli=cli,
     )
     assert_resumable(state, tag_name=tag_name)
     payload["resume_state"] = state
+    if state["phase"] in {"post-publication-carrier", "post-publication-final"}:
+        _resume_closeout.resume_post_publication_closeout(
+            repo_root,
+            args=args,
+            plan=plan,
+            adapter_data=adapter_data,
+            state=state,
+            common=_common,
+            cli=cli,
+        )
+        return
     if not args.execute:
         payload["resume"] = (
             "dry-run: would re-validate gates, create the missing local tag when needed, "
@@ -169,17 +242,13 @@ def resume_publish(
         head_commit_message = cli.run(
             ["git", "show", "-s", "--format=%B", "HEAD"], cwd=repo_root
         ).stdout
-        head_validation = cli.validate_release_closeout_commit_message(
-            repo_root,
-            repo=issue_repo,
-            issue_numbers=args.close_issue,
-            classification=args.close_issue_classification,
-            commit_message=head_commit_message,
-            commit_ref="HEAD",
-        )
-        payload["resume_head_closeout_validation"] = head_validation
-        if not head_validation["ok"]:
-            cli.fail_release_closeout_draft_validation(head_validation)
+        close_refs = cli.release_content_close_keyword_refs(head_commit_message)
+        payload["resume_head_release_content_close_refs"] = close_refs
+        if close_refs:
+            raise SystemExit(
+                "--resume: release-content HEAD contains issue close keywords before "
+                f"post-publication observer evidence: {close_refs}"
+            )
     _common.run_pre_push_quality_gates(repo_root, adapter_data, payload, cli=cli)
     fresh_checkout_payload = _common.timed(
         payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root)

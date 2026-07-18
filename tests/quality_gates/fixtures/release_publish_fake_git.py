@@ -13,6 +13,14 @@ args = sys.argv[1:]
 entries = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
 entries.append(args)
 log_path.write_text(json.dumps(entries, indent=2) + "\n", encoding="utf-8")
+branch_push_at = int(os.environ.get("FAKE_GIT_BRANCH_PUSH_ERROR_AT", "0"))
+branch_push_count = sum(entry == ["push", "origin", "main"] for entry in entries)
+if branch_push_at and args == ["push", "origin", "main"] and branch_push_count == branch_push_at:
+    mode = os.environ.get("FAKE_GIT_BRANCH_PUSH_ERROR_MODE", "before")
+    if mode == "after":
+        subprocess.run([config["real_git"], *args], check=True)
+    print(f"forced branch push error ({mode})", file=sys.stderr)
+    raise SystemExit(49)
 if os.environ.get("FAKE_GIT_DIFF_NAME_ONLY_FAIL") == "1" and args[:2] == ["diff", "--name-only"]:
     print("forced diff failure", file=sys.stderr)
     raise SystemExit(42)

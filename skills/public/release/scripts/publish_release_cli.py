@@ -52,8 +52,10 @@ release_commit_body = _issue_closeout.release_commit_body
 ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
 preflight_release_issues = _issue_closeout.preflight_release_issues
 validate_release_closeout_commit_message = _issue_closeout.validate_release_closeout_commit_message
+release_content_close_keyword_refs = _issue_closeout.release_content_close_keyword_refs
 fail_release_closeout_draft_validation = _issue_closeout.fail_release_closeout_draft_validation
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
+commit_issue_closeout_carrier_artifact = _issue_closeout.commit_issue_closeout_carrier_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
 enforce_release_critique_gate = _preflight.enforce_release_critique_gate
 build_update_instructions_prep_payload = _preflight.build_update_instructions_prep_payload
@@ -68,6 +70,7 @@ fail_release_distinct_channel_floor = _post_create.fail_release_distinct_channel
 run_post_publish_install_refresh = _post_create.run_post_publish_install_refresh
 collect_installed_readback = _post_create.collect_installed_readback
 safe_write_release_observer = _post_create.safe_write_release_observer
+validate_release_observer_record = _post_create.validate_release_observer_record
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
 release_plan_target_version = _release_plan.target_version
@@ -86,6 +89,7 @@ def _execution_context() -> SimpleNamespace:
         "expected_github_release_url",
         "preflight_release_issues",
         "validate_release_closeout_commit_message",
+        "release_content_close_keyword_refs",
         "fail_release_closeout_draft_validation",
         "run_release_adapter_preflight",
         "run_bump",
@@ -110,11 +114,13 @@ def _execution_context() -> SimpleNamespace:
         "fail_release_distinct_channel_floor",
         "finalize_release_payload",
         "commit_final_release_artifact",
+        "commit_issue_closeout_carrier_artifact",
         "fail_after_post_create_verification",
         "ensure_release_issues_closed",
         "run_post_publish_install_refresh",
         "collect_installed_readback",
         "safe_write_release_observer",
+        "validate_release_observer_record",
     )
     return SimpleNamespace(**{name: globals()[name] for name in names})
 
@@ -137,7 +143,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--close-issue-carrier-file",
         type=Path,
-        help="Path to the closeout carrier body to stitch into the release commit before the issue-owned draft validator runs",
+        help="Path to the closeout ledger validated before release and committed only after observer evidence exists",
     )
     parser.add_argument(
         "--close-issue-behavior", action="append", default=[],

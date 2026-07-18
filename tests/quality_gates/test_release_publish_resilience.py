@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from .release_publish_fixtures import (
     REPO_ROOT,
     _release_env,
@@ -557,21 +559,169 @@ def _run_closeout_resume(
     )
 
 
-def test_resume_with_complete_existing_head_closeout_passes_preflight(tmp_path: Path) -> None:
-    repo, env, carrier = _prepare_closeout_resume(
-        tmp_path, head_closeout_body=_resume_closeout_body()
+def _run_patch_closeout(repo: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    return _run_publish_patch(
+        repo,
+        env,
+        "--close-issue", "44",
+        "--close-issue-behavior", "Behavior #44: confirmed through recovery fixture",
     )
+
+
+def _resume_patch_closeout(
+    repo: Path, env: dict[str, str], carrier: Path
+) -> subprocess.CompletedProcess[str]:
+    return _run_publish(
+        repo,
+        env,
+        "--resume",
+        "--publish-current",
+        "--execute",
+        "--close-issue", "44",
+        "--close-issue-classification", "bug",
+        "--close-issue-carrier-file", str(carrier),
+        "--close-issue-behavior", "Behavior #44: confirmed through recovery fixture",
+        "--critique-blocked", CRITIQUE_BLOCKED,
+    )
+
+
+def _seed_failed_closeout(tmp_path: Path) -> tuple[Path, dict[str, str], Path]:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _resume_closeout_env(tmp_path, bin_dir)
+    carrier = tmp_path / "synthetic-release-closeout.md"
+    return repo, env, carrier
+
+
+@pytest.mark.parametrize(
+    ("failure_mode", "expected_status"),
+    [("before", "pushed"), ("after", "already-shared")],
+)
+def test_resume_reconciles_carrier_push_without_duplicate(
+    tmp_path: Path, failure_mode: str, expected_status: str
+) -> None:
+    repo, env, carrier = _seed_failed_closeout(tmp_path)
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "1"
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = failure_mode
+
+    failed = _run_patch_closeout(repo, env)
+    assert failed.returncode != 0
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
+
+    resumed = _resume_patch_closeout(repo, env, carrier)
+    assert resumed.returncode == 0, resumed.stderr
+    payload = json.loads(resumed.stdout)
+    assert payload["resume_remote_reconcile"]["status"] == expected_status
+    log = subprocess.run(
+        ["git", "log", "--format=%B"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout
+    assert log.count("Close #44.") == 1
+
+
+def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Path) -> None:
+    repo, env, carrier = _seed_failed_closeout(tmp_path)
+    env["FAKE_GH_ISSUE_VIEW_FAIL_AFTER"] = "1"
+
+    failed = _run_patch_closeout(repo, env)
+    assert failed.returncode != 0
+    env.pop("FAKE_GH_ISSUE_VIEW_FAIL_AFTER")
+
+    resumed = _resume_patch_closeout(repo, env, carrier)
+    assert resumed.returncode == 0, resumed.stderr
+    payload = json.loads(resumed.stdout)
+    assert payload["issue_closeout"]["status"] == "state-verified"
+    assert payload["resume_remote_reconcile"]["status"] == "already-shared"
+
+
+def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Path) -> None:
+    repo, env, carrier = _seed_failed_closeout(tmp_path)
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "1"
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "before"
+    failed = _run_patch_closeout(repo, env)
+    assert failed.returncode != 0
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
+
+    artifact = "charness-artifacts/release/latest.md"
+    changed = subprocess.run(
+        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    ).stdout.splitlines()
+    observer = next(path for path in changed if path.endswith("-release-observer.json"))
+    subprocess.run(["git", "checkout", "HEAD^", "--", artifact], cwd=repo, check=True)
+    subprocess.run(["git", "rm", observer], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "--amend", "--no-edit", "--allow-empty"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    )
+
+    resumed = _resume_patch_closeout(repo, env, carrier)
+    assert resumed.returncode != 0
+    assert "carrier evidence tree must change" in resumed.stderr
+    remote_main = subprocess.run(
+        ["git", "ls-remote", "origin", "refs/heads/main"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    ).stdout.split()[0]
+    tag_sha = subprocess.run(
+        ["git", "rev-list", "-n", "1", "v0.0.1"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    assert remote_main == tag_sha
+
+
+def test_resume_reconciles_ambiguous_final_artifact_push(tmp_path: Path) -> None:
+    repo, env, carrier = _seed_failed_closeout(tmp_path)
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "2"
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "after"
+
+    failed = _run_patch_closeout(repo, env)
+    assert failed.returncode != 0
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
+
+    resumed = _resume_patch_closeout(repo, env, carrier)
+    assert resumed.returncode == 0, resumed.stderr
+    payload = json.loads(resumed.stdout)
+    assert payload["resume_state"]["phase"] == "post-publication-final"
+    assert payload["resume_remote_reconcile"]["status"] == "already-shared"
+
+
+def test_resume_refuses_final_commit_without_state_verified_artifact(tmp_path: Path) -> None:
+    repo, env, carrier = _seed_failed_closeout(tmp_path)
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "2"
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "before"
+    failed = _run_patch_closeout(repo, env)
+    assert failed.returncode != 0
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
+
+    artifact = "charness-artifacts/release/latest.md"
+    subprocess.run(["git", "checkout", "HEAD^", "--", artifact], cwd=repo, check=True)
+    subprocess.run(
+        ["git", "commit", "--amend", "--no-edit", "--allow-empty"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    )
+
+    resumed = _resume_patch_closeout(repo, env, carrier)
+    assert resumed.returncode != 0
+    assert "lacks its state-verified release artifact" in resumed.stderr
+
+
+def test_resume_with_clean_release_content_head_adds_post_observer_carrier(tmp_path: Path) -> None:
+    repo, env, carrier = _prepare_closeout_resume(tmp_path, head_closeout_body=None)
 
     result = _run_closeout_resume(repo, env, carrier)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["resume_head_closeout_validation"]["ok"] is True
-    assert payload["resume_head_closeout_validation"]["commit_ref"] == "HEAD"
+    assert payload["resume_head_release_content_close_refs"] == []
+    assert payload["issue_closeout_carrier_commit_sha"]
 
 
-def test_resume_refuses_thin_existing_head_before_quality_or_push(tmp_path: Path) -> None:
-    repo, env, carrier = _prepare_closeout_resume(tmp_path, head_closeout_body=None)
+def test_resume_refuses_existing_head_closeout_before_quality_or_push(tmp_path: Path) -> None:
+    repo, env, carrier = _prepare_closeout_resume(
+        tmp_path, head_closeout_body=_resume_closeout_body()
+    )
 
     result = _run_closeout_resume(repo, env, carrier)
 
@@ -579,8 +729,9 @@ def test_resume_refuses_thin_existing_head_before_quality_or_push(tmp_path: Path
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     assert not any(entry[:1] == ["push"] for entry in git_log)
     payload = _failure_payload(result.stderr)
-    assert "resume_head_closeout_validation" in payload, payload
-    assert payload["resume_head_closeout_validation"]["ok"] is False
+    assert payload["resume_head_release_content_close_refs"] == [
+        {"repo": None, "number": 44}
+    ]
     assert "quality_command" not in {entry["label"] for entry in payload.get("release_runtime", [])}
 
 
@@ -596,8 +747,9 @@ def test_resume_refuses_unintended_close_keyword_before_quality(tmp_path: Path) 
     assert not any(entry[:1] == ["push"] for entry in git_log)
     payload = _failure_payload(result.stderr)
     assert payload["issue_closeout_draft_validation"]["ok"] is True
-    assert payload["resume_head_closeout_validation"]["unexpected_close_keywords"] == [
-        {"repo": None, "number": 45}
+    assert payload["resume_head_release_content_close_refs"] == [
+        {"repo": None, "number": 44},
+        {"repo": None, "number": 45},
     ]
     assert "quality_command" not in {entry["label"] for entry in payload.get("release_runtime", [])}
 

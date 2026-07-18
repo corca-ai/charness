@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-ISSUE_CLOSEOUT_CARRIER = "direct_release_commit_body"
+ISSUE_CLOSEOUT_CARRIER = "direct_post_publish_commit_body"
 
 
 def _package_root(script_path: Path) -> tuple[Path, bool]:
@@ -171,6 +171,10 @@ def release_commit_message(payload: dict[str, Any], close_issues: list[int], beh
     return _message_helper().release_commit_message(payload, close_issues, behavior_lines)
 
 
+def release_content_close_keyword_refs(commit_message: str) -> list[dict[str, Any]]:
+    return _message_helper().release_content_close_keyword_refs(commit_message)
+
+
 def validate_release_closeout_draft(
     repo_root: Path,
     *,
@@ -327,7 +331,7 @@ def ensure_release_issues_closed(
                     "",
                     f"- Release: {payload.get('release_url') or 'published release URL unavailable'}",
                     f"- Commit: `{payload.get('commit_sha')}`",
-                    "- Auto-close carrier: direct release commit body.",
+                    "- Auto-close carrier: post-publication evidence carrier commit.",
                     "- Manual close reason: issue remained open after push/release verification.",
                     *(behavior_lines or []),
                 ]
@@ -372,3 +376,43 @@ def commit_issue_closeout_artifact(
     run(["git", "commit", "-m", f"Record release issue closeout for {payload['tag_name']}"], cwd=repo_root)
     run(["git", "push", remote, branch], cwd=repo_root)
     payload["issue_closeout_commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
+
+
+def commit_issue_closeout_carrier_artifact(
+    repo_root: Path,
+    *,
+    write_artifact,
+    payload: dict[str, Any],
+    fresh_checkout_payload: dict[str, Any],
+    artifact_relpath: str,
+    expected_release_url: str | None,
+    remote: str,
+    branch: str,
+    run,
+) -> None:
+    """Persist observer evidence in the commit whose push may auto-close issues."""
+    paragraphs = payload.get("issue_closeout_draft_validation", {}).get("paragraphs")
+    if not isinstance(paragraphs, list) or not paragraphs:
+        raise SystemExit("release issue closeout carrier paragraphs are missing after preflight validation")
+    preflight = payload.get("issue_closeout_preflight", {})
+    payload["issue_closeout"] = {
+        "status": "carrier-pending-state-verification",
+        "repo": preflight.get("repo"),
+        "issues": preflight.get("issues", []),
+    }
+    write_artifact(
+        fresh_checkout_payload=fresh_checkout_payload,
+        release_url=payload.get("release_url") or expected_release_url,
+        issue_closeout=payload["issue_closeout"],
+    )
+    observer_path = str((payload.get("release_observer") or {}).get("path", "")).strip()
+    paths = [artifact_relpath, *([observer_path] if observer_path else [])]
+    run(["git", "add", *paths], cwd=repo_root)
+    command = ["git", "commit"]
+    for paragraph in paragraphs:
+        command.extend(["-m", str(paragraph)])
+    run(command, cwd=repo_root)
+    run(["git", "push", remote, branch], cwd=repo_root)
+    payload["issue_closeout_carrier_commit_sha"] = run(
+        ["git", "rev-parse", "HEAD"], cwd=repo_root
+    ).stdout.strip()

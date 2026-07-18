@@ -41,7 +41,7 @@ def print_failure_payload(
         "release_runtime",
         "precommit_rollback",
         "issue_closeout_draft_validation",
-        "resume_head_closeout_validation",
+        "resume_head_release_content_close_refs",
     )
     failure_payload = {key: payload[key] for key in visible_keys if key in payload}
     failure_payload["release_failure"] = {"status": "failed", "error": str(error)}

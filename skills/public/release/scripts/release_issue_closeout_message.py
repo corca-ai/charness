@@ -116,6 +116,19 @@ def release_commit_message(payload: dict[str, Any], close_issues: list[int], beh
     return "\n\n".join(release_commit_paragraphs(payload, close_issues, behavior_lines)).rstrip() + "\n"
 
 
+def release_content_close_keyword_refs(commit_message: str) -> list[dict[str, Any]]:
+    """Return close refs forbidden on the pre-observer release-content commit."""
+    if _ISSUE_VERIFY_CLOSEOUT is None:
+        raise SystemExit(
+            "release content commit validation requires the issue skill's closeout helper, "
+            f"but it was not found on this install: {_ISSUE_CLOSEOUT_DRAFT_ERROR}"
+        )
+    return [
+        {"repo": repo, "number": number}
+        for repo, number in _ISSUE_VERIFY_CLOSEOUT.iter_close_keyword_refs(commit_message)
+    ]
+
+
 def validate_release_closeout_commit_message(
     repo_root: Path,
     *,

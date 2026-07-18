@@ -139,6 +139,7 @@ def close_issues_install_refresh_and_commit(
     issue_repo: str,
     payload: dict[str, Any],
     cli: Any,
+    carrier_already_committed: bool = False,
 ) -> None:
     payload["install_refresh"] = timed(
         payload,
@@ -169,6 +170,24 @@ def close_issues_install_refresh_and_commit(
             installed_readback=payload["installed_readback"],
         ),
     )
+    if args.close_issue and not carrier_already_committed:
+        timed(
+            payload,
+            "issue_closeout_carrier",
+            lambda: cli.commit_issue_closeout_carrier_artifact(
+                repo_root,
+                write_artifact=lambda **kwargs: cli.write_current_artifact(
+                    repo_root, adapter_data, payload, state["host_payload"], **kwargs
+                ),
+                payload=payload,
+                fresh_checkout_payload=state["fresh_checkout_payload"],
+                artifact_relpath=state["artifact_relpath"],
+                expected_release_url=state["expected_release_url"],
+                remote=args.remote,
+                branch=state["branch"],
+                run=cli.run,
+            ),
+        )
     timed(
         payload,
         "issue_closeout",
@@ -201,6 +220,7 @@ def run_release_closeout_tail(
     issue_repo: str,
     payload: dict[str, Any],
     cli: Any,
+    carrier_already_committed: bool = False,
 ) -> None:
     run_distinct_channel_floor(repo_root, args=args, adapter_data=adapter_data, state=state, payload=payload, cli=cli)
     payload["lifecycle_capture"] = _capture_lifecycle(repo_root, tag_name=state["tag_name"])
@@ -215,4 +235,5 @@ def run_release_closeout_tail(
         issue_repo=issue_repo,
         payload=payload,
         cli=cli,
+        carrier_already_committed=carrier_already_committed,
     )

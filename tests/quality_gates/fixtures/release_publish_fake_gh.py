@@ -35,7 +35,9 @@ if args[:2] == ["release", "create"]:
     print(f"https://github.com/example/demo/releases/tag/{tag}")
     raise SystemExit(0)
 if args[:2] == ["issue", "view"]:
-    if os.environ.get("FAKE_GH_ISSUE_VIEW_FAIL") == "1":
+    issue_view_count = sum(entry[:2] == ["issue", "view"] for entry in entries)
+    fail_after = int(os.environ.get("FAKE_GH_ISSUE_VIEW_FAIL_AFTER", "0"))
+    if os.environ.get("FAKE_GH_ISSUE_VIEW_FAIL") == "1" or (fail_after and issue_view_count > fail_after):
         print("issue view failed", file=sys.stderr)
         raise SystemExit(1)
     state_path = Path(os.environ["FAKE_GH_ISSUE_STATE"])

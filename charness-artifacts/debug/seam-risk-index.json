@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 96,
-  "indexed_artifact_count": 84,
+  "source_artifact_count": 97,
+  "indexed_artifact_count": 85,
   "risk_class_counts": {
     "contract-freeze-risk": 28,
-    "external-seam": 4,
+    "external-seam": 6,
     "host-disproves-local": 2,
-    "none": 27,
+    "none": 26,
     "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
-    "factor-now": 3,
+    "factor-now": 5,
     "monitor": 73,
-    "none": 8
+    "none": 7
   },
   "entries": [
     {
@@ -1168,6 +1168,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-19-release-issue-close-evidence-ordering.md",
+      "is_current_pointer": false,
+      "interrupt_id": "release-issue-close-evidence-ordering",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "git default-branch push -> GitHub issue auto-close -> release observer",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-19-release-close-evidence-ordering.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-19-release-quality-contract-gap.md",
       "is_current_pointer": false,
       "interrupt_id": "release-quality-contract-gap",
@@ -1184,16 +1198,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "codex-app-server-request-deadline",
+      "interrupt_id": "release-issue-close-evidence-ordering",
       "risk_classes": [
-        "none"
+        "external-seam"
       ],
-      "seam": "request send -> unrelated message filtering -> matching response.",
-      "generalization_pressure": "none",
+      "seam": "git default-branch push -> GitHub issue auto-close -> release observer",
+      "generalization_pressure": "factor-now",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-19-release-close-evidence-ordering.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [

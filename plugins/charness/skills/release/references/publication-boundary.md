@@ -66,15 +66,29 @@ The existing `--close-issue-behavior` value remains the release-boundary
 behavior verdict and is appended to the same commit message.
 
 Before the quality command or release mutation, the helper assembles the exact
-release commit message and sends it through the issue skill's direct-commit
+closeout carrier message and sends it through the issue skill's direct-commit
 draft validator. A missing or thin carrier refuses at this preflight; the
-release helper renders and transports the ledger but does not own or duplicate
-its schema. One classification applies to all issue numbers in a bundled
-release commit because that is the final consumer's existing carrier contract.
-The close-keyword set must exactly match the requested issue numbers. On
-`--resume`, the already-tagged `HEAD` message is the publication carrier, so the
-helper validates that stored body—not only a newly reconstructed draft—before
-quality or push.
+release helper transports the ledger but does not own or duplicate its schema.
+One classification applies to all issue numbers in a bundled carrier because
+that is the final consumer's existing contract. The close-keyword set must
+exactly match the requested issue numbers.
+
+The initial release-content commit and tag never contain issue close keywords.
+After the public release, distinct-channel verdict, install readback, and
+release-observer artifact exist, the helper writes that evidence and the exact
+validated closeout paragraphs into a dedicated carrier commit, then pushes it.
+That carrier push is the earliest operation allowed to trigger host-side issue
+auto-close. State readback and any manual fallback happen afterward, followed
+by the final closeout artifact commit. A failed push is treated as ambiguous:
+`--resume --publish-current` validates the exact carrier message plus its
+release-artifact/observer tree, compares local and remote branch identities,
+retries only when remote absence is proven, and continues state readback when
+the carrier is already shared. The same recovery path requires a
+`state-verified` artifact before reconciling a final closeout commit whose push
+response was lost. An
+already-tagged release-content `HEAD` containing close keywords is still
+refused before quality; only the identity-checked post-publication carrier and
+final closeout shapes are resumable.
 
 The rung-1 floor is record presence only: a confirmation and a typed
 non-verified disposition both satisfy the form floor. The human release

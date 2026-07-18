@@ -233,14 +233,14 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     assert payload["issue_closeout"]["status"] == "state-verified"
     assert payload["issue_closeout"]["issues"][0]["state"] == "CLOSED"
     assert payload["issue_closeout"]["issues"][0]["preflight_state"] == "OPEN"
-    assert payload["issue_closeout"]["issues"][0]["carrier"] == "direct_release_commit_body"
+    assert payload["issue_closeout"]["issues"][0]["carrier"] == "direct_post_publish_commit_body"
     assert payload["issue_closeout"]["issues"][0]["manual_fallback_used"] is True
     assert payload["issue_closeout_commit_sha"]
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "## Issue Closeout" in artifact_text
     assert "Issue closeout verification: `state-verified`." in artifact_text
     assert "Issue #44: `CLOSED`" in artifact_text
-    assert "carrier: `direct_release_commit_body`" in artifact_text
+    assert "carrier: `direct_post_publish_commit_body`" in artifact_text
     assert "manual fallback used: `True`" in artifact_text
     commit_body = subprocess.run(
         ["git", "log", "--format=%B", "-2"],

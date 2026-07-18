@@ -1,1 +1,1 @@
-2026-07-19-codex-app-server-deadline.md
+2026-07-19-release-issue-close-evidence-ordering.md
