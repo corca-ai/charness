@@ -273,12 +273,23 @@ def test_inventory_lint_ignores_falls_back_once_for_malformed_python(tmp_path: P
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "scripts" / "broken.py").write_text(
-        "import sys  # noqa: F401 -- retained before malformed EOF\nVALUE = '''unterminated\n",
+        "\n".join(
+            [
+                "# ruff: noqa: E402, I001 -- retained before malformed EOF",
+                "VALUE = 1  # pylint: disable=invalid-name -- fixture name",
+                "import sys  # noqa: F401 -- retained before malformed EOF",
+                "VALUE = '''unterminated",
+            ]
+        )
+        + "\n",
         encoding="utf-8",
     )
 
     payload = _inventory_json(repo)
 
-    assert payload["summary"]["ignore_count"] == 1
-    assert payload["findings"][0]["codes"] == ["F401"]
-    assert payload["findings"][0]["snippet"].startswith("import sys")
+    assert payload["summary"]["ignore_count"] == 3
+    assert [(finding["tool"], finding["codes"]) for finding in payload["findings"]] == [
+        ("ruff", ["E402", "I001"]),
+        ("pylint", ["invalid-name"]),
+        ("noqa", ["F401"]),
+    ]
