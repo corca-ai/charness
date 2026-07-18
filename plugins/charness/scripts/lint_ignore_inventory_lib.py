@@ -72,18 +72,14 @@ def _without_description(raw: str) -> str:
 
 
 def _parse_named_codes(raw: str | None) -> list[str]:
-    if not raw:
-        return []
-    cleaned = _without_description(raw).replace("*/", " ").replace("(", " ").replace(")", " ")
+    cleaned = _without_description(raw or "").replace("*/", " ").replace("(", " ").replace(")", " ")
     return [part.strip() for part in re.split(r"[,\s]+", cleaned) if part.strip()]
 
 
 def _parse_python_rule_codes(raw: str | None) -> list[str]:
     """Return the leading Ruff/Flake8 rule list, never its human rationale."""
-    if not raw:
-        return []
     codes: list[str] = []
-    for part in re.split(r"[,\s]+", raw.strip()):
+    for part in re.split(r"[,\s]+", (raw or "").strip()):
         if not PYTHON_RULE_CODE_RE.fullmatch(part):
             break
         codes.append(part)
