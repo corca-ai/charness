@@ -183,25 +183,26 @@ def test_every_quality_inventory_exposes_yaml_output_contract(
     assert source_names
     modules_before = set(sys.modules)
     monkeypatch.syspath_prepend(str(source_dir))
-    for script_name in sorted(source_names):
-        module = load_script_module(
-            f"quality_inventory_yaml_contract_{Path(script_name).stem}",
-            source_dir / script_name,
-        )
-        args = ("--repo-root", str(tmp_path), "--summary")
-        summary = run_loaded_script_main(script_name, module, *args)
-        compatibility = run_loaded_script_main(script_name, module, *args, "--json")
-        help_result = run_loaded_script_main(script_name, module, "--help")
+    try:
+        for script_name in sorted(source_names):
+            module = load_script_module(
+                f"quality_inventory_yaml_contract_{Path(script_name).stem}",
+                source_dir / script_name,
+            )
+            args = ("--repo-root", str(tmp_path), "--summary")
+            summary = run_loaded_script_main(script_name, module, *args)
+            compatibility = run_loaded_script_main(script_name, module, *args, "--json")
+            help_result = run_loaded_script_main(script_name, module, "--help")
 
-        assert summary.returncode == compatibility.returncode, script_name
-        assert yaml.safe_load(summary.stdout) == json.loads(compatibility.stdout), script_name
-        assert "--summary" in help_result.stdout, script_name
-        assert "--detail" in help_result.stdout, script_name
-        assert "--json" not in help_result.stdout, script_name
-    for module_name in set(sys.modules) - modules_before:
-        module_path = getattr(sys.modules[module_name], "__file__", None)
-        if module_path and Path(module_path).resolve().is_relative_to(source_dir):
+            assert summary.returncode == compatibility.returncode, script_name
+            assert yaml.safe_load(summary.stdout) == json.loads(compatibility.stdout), script_name
+            assert "--summary" in help_result.stdout, script_name
+            assert "--detail" in help_result.stdout, script_name
+            assert "--json" not in help_result.stdout, script_name
+    finally:
+        for module_name in set(sys.modules) - modules_before:
             sys.modules.pop(module_name, None)
+    assert set(sys.modules) == modules_before
 
 
 def test_quality_inventory_keeps_one_real_subprocess_entrypoint_smoke(tmp_path: Path) -> None:

@@ -23,10 +23,12 @@ python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root . --detail
 ```
 
 The helper is a trigger detector. It does not replace the host proof itself.
-For a release delta, use the planner-emitted full-SHA
+For a release delta, use the planner-emitted full-object-ID
 `--changed-range BASE..HEAD` command. The helper owns path resolution and emits only compact
 range provenance plus actual trigger hits; do not expand the range into a large
-`--paths` argv or duplicate every changed path in the plan.
+`--paths` argv or duplicate every changed path in the plan. Object IDs are
+resolved by Git rather than assuming SHA-1 width, and the path digest uses Git's
+NUL-delimited bytes so unusual filenames cannot make the evidence ambiguous.
 
 ## Broken Trigger Configuration
 

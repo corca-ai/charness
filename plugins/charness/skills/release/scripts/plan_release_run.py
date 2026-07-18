@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import runpy
 from pathlib import Path
@@ -37,6 +36,7 @@ collect_changed_paths = _real_host.collect_changed_paths
 build_review_gate_payload = _review_gate.build_payload
 release_previous_version = _publish_helpers.release_previous_version
 unreleased_scope = _publish_helpers.unreleased_scope
+path_list_sha256 = _publish_helpers.path_list_sha256
 current_branch = _publish_helpers.current_branch
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 safe_real_host_payload = _preflight.safe_real_host_payload
@@ -139,7 +139,7 @@ def _real_host_path_scope(
                 "base_sha": delta["base_sha"],
                 "head_sha": delta["head_sha"],
                 "path_count": len(changed_paths),
-                "paths_sha256": hashlib.sha256("\n".join(changed_paths).encode()).hexdigest(),
+                "paths_sha256": delta["paths_sha256"],
             },
         }
     changed_paths = collect_changed_paths(repo_root)
@@ -149,7 +149,7 @@ def _real_host_path_scope(
         "previous_version": None,
         "provenance": {
             "path_count": len(changed_paths),
-            "paths_sha256": hashlib.sha256("\n".join(changed_paths).encode()).hexdigest(),
+            "paths_sha256": path_list_sha256(changed_paths),
         },
     }
 

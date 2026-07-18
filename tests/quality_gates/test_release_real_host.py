@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
@@ -128,7 +130,45 @@ def test_release_real_host_range_requires_full_immutable_shas() -> None:
     result = _run_real_host_proof("--repo-root", str(ROOT), "--changed-range", "HEAD^..HEAD")
 
     assert result.returncode != 0
-    assert "immutable 40-character" in result.stderr
+    assert "immutable full lowercase object IDs" in result.stderr
+
+
+def test_release_real_host_range_supports_sha256_repositories(tmp_path: Path) -> None:
+    repo = tmp_path / "sha256-repo"
+    init = subprocess.run(
+        ["git", "init", "--object-format=sha256", "-b", "main", str(repo)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if init.returncode != 0:
+        pytest.skip("installed Git does not support SHA-256 repositories")
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True)
+    (repo / "README.md").write_text("base\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "Base"], cwd=repo, check=True)
+    base_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    unusual_path = "line\nbreak.txt"
+    (repo / unusual_path).write_text("changed\n", encoding="utf-8")
+    subprocess.run(["git", "add", unusual_path], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "Change"], cwd=repo, check=True)
+    head_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+    paths, provenance = _REAL_HOST.collect_range_paths(repo, f"{base_sha}..{head_sha}")
+
+    assert len(base_sha) == len(head_sha) == 64
+    assert paths == [unusual_path]
+    assert provenance == {
+        "base_sha": base_sha,
+        "head_sha": head_sha,
+        "path_count": 1,
+        "paths_sha256": hashlib.sha256(os.fsencode(unusual_path) + b"\0").hexdigest(),
+    }
 
 
 def test_release_real_host_proof_fails_loud_on_unresolved_surface_id(tmp_path: Path) -> None:

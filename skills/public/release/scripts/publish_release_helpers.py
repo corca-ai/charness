@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import runpy
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,9 @@ OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
     "auth_check": AUTH_CHECK_PLACEHOLDERS,
 }
 COMMAND_TIMEOUT_SECONDS = 1800
+_RELEASE_DELTA = runpy.run_path(str(Path(__file__).with_name("release_delta.py")))
+collect_release_delta = _RELEASE_DELTA["collect_release_delta"]
+path_list_sha256 = _RELEASE_DELTA["path_list_sha256"]
 
 
 def run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -312,26 +316,17 @@ def unreleased_scope(
         remote=remote,
         branch=branch,
     )
-    result = run(
-        ["git", "diff", "--name-only", f"{base_ref}..HEAD"],
-        cwd=repo_root,
-        check=False,
-    )
-    if result.returncode != 0:
+    try:
+        delta = collect_release_delta(repo_root, base_ref)
+    except ValueError as exc:
         raise SystemExit(
             "release diff failed while computing unreleased paths\n"
             f"base_ref: {base_ref}\n"
-            f"command: git diff --name-only {base_ref}..HEAD\n"
-            f"exit_code: {result.returncode}\n"
-            f"STDOUT:\n{result.stdout}\n"
-            f"STDERR:\n{result.stderr}"
-        )
-    changed = [line for line in result.stdout.splitlines() if line.strip()]
+            f"error: {exc}"
+        ) from exc
     return {
         "base_ref": base_ref,
-        "base_sha": run(["git", "rev-parse", base_ref], cwd=repo_root).stdout.strip(),
-        "head_sha": run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip(),
-        "changed_paths": changed,
+        **delta,
     }
 
 

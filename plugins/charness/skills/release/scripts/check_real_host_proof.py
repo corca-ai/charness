@@ -3,11 +3,8 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
-import hashlib
 import json
-import re
 import runpy
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -39,8 +36,8 @@ match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 resolve_trigger_surfaces = _scripts_surfaces_lib_module.resolve_trigger_surfaces
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
-
-IMMUTABLE_RANGE_RE = re.compile(r"^(?P<base>[0-9a-f]{40})\.\.(?P<head>[0-9a-f]{40})$")
+_release_delta_module = SKILL_RUNTIME.load_local_skill_module(__file__, "release_delta")
+collect_immutable_range = _release_delta_module.collect_immutable_range
 
 
 def parse_args() -> argparse.Namespace:
@@ -58,27 +55,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def collect_range_paths(repo_root: Path, changed_range: str) -> tuple[list[str], dict[str, object]]:
-    match = IMMUTABLE_RANGE_RE.fullmatch(changed_range)
-    if match is None:
-        raise SystemExit("--changed-range requires immutable 40-character lowercase SHA endpoints: BASE..HEAD")
-    result = subprocess.run(
-        ["git", "diff", "--name-only", changed_range],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise SystemExit(
-            f"real-host proof range resolution failed for `{changed_range}`: {result.stderr.strip()}"
-        )
-    paths = [line for line in result.stdout.splitlines() if line.strip()]
-    return paths, {
-        "base_sha": match.group("base"),
-        "head_sha": match.group("head"),
-        "path_count": len(paths),
-        "paths_sha256": hashlib.sha256("\n".join(paths).encode()).hexdigest(),
-    }
+    try:
+        delta = collect_immutable_range(repo_root, changed_range)
+    except ValueError as exc:
+        raise SystemExit(f"real-host proof range resolution failed: {exc}") from exc
+    paths = delta.pop("changed_paths")
+    return paths, delta
 
 
 def matches_any(path: str, patterns: list[str]) -> bool:
