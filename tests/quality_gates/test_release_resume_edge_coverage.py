@@ -179,6 +179,14 @@ def test_carrier_artifact_refuses_missing_preflight_paragraphs() -> None:
         )
 
 
+def test_missing_artifact_action_is_typed_on_the_real_module(monkeypatch) -> None:
+    monkeypatch.setattr(ISSUE_CLOSEOUT, "_ARTIFACT", None)
+    monkeypatch.setattr(ISSUE_CLOSEOUT, "_ARTIFACT_ERROR", "forced missing helper")
+
+    with pytest.raises(SystemExit, match="artifact helper is unavailable in this installation"):
+        ISSUE_CLOSEOUT._artifact_action("commit_issue_closeout_artifact")()
+
+
 def test_closeout_artifact_owner_stages_observer_and_commits_both_phases() -> None:
     commands: list[list[str]] = []
     writes: list[dict] = []
