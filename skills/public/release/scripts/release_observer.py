@@ -80,12 +80,9 @@ def collect_installed_readback(
     version = _readback(repo_root, command=version_command, run_shell=run_shell)
     doctor = _readback(repo_root, command=doctor_command, run_shell=run_shell)
     statuses = {str(install_refresh.get("status", "unknown")), version["status"], doctor["status"]}
+    status = "unavailable"
     if statuses <= {"refreshed", "confirmed"}:
         status = "observed"
-    elif "unavailable" in statuses or "failed" in statuses:
-        status = "unavailable"
-    else:
-        status = "unavailable"
     return {"status": status, "install_refresh": install_refresh, "version": version, "doctor": doctor}
 
 

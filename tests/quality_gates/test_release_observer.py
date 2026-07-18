@@ -268,3 +268,17 @@ def test_release_observer_readback_failure_has_unavailable_status_and_fallback_r
         "reason": "readback command failed",
     }
     assert installed["doctor"]["status"] == "unavailable"
+
+
+def test_release_observer_unknown_refresh_stays_fail_closed(tmp_path: Path) -> None:
+    installed = OBSERVER.collect_installed_readback(
+        tmp_path,
+        install_refresh={},
+        version_command="charness version",
+        doctor_command="charness doctor",
+        run_shell=lambda *_args, **_kwargs: _result(0, "confirmed\n"),
+    )
+
+    assert installed["status"] == "unavailable"
+    assert installed["version"]["status"] == "confirmed"
+    assert installed["doctor"]["status"] == "confirmed"
