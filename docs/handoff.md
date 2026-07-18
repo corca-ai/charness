@@ -8,14 +8,20 @@
 
 ## Current State
 
-- v2.1.5 is the fully verified release candidate and publication is the only
-  remaining active step. The exact `v2.1.4..eae81f48` range passed cumulative
-  broad pytest, fresh mutation coverage, and the changed-line consumer. Do not
-  reopen implementation unless the release helper reports a typed blocker.
-- After publication, reconcile this paragraph with the public URL and installed
-  `charness version`/`charness doctor` readbacks. The release helper owns push,
-  tag, GitHub release, independent HTTPS confirmation, install refresh, and the
-  durable observer record. See the [release critique](../charness-artifacts/critique/2026-07-19-gajae-pattern-adoption-v2-1-5-release.md).
+- v2.1.5 is public at the [GitHub release](https://github.com/corca-ai/charness/releases/tag/v2.1.5).
+  The repo release gate passed, the tag and branch were pushed, and an
+  independent HTTPS fetch returned 200. The maintainer install was refreshed;
+  `charness version` confirmed 2.1.5 and `charness doctor` returned confirmed
+  Codex-host guidance. The goal-scoped host log records the applicable nose
+  observations; it does not prove the generic missing-nose branch, a separate
+  post-publish `== repo` spot check, or broader source/cache health. See the
+  [release record](../charness-artifacts/release/latest.md),
+  [observer record](../charness-artifacts/probe/2026-07-18-v2.1.5-release-observer.json),
+  and [host log](../charness-artifacts/probe/2026-07-19-gajae-pattern-adoption-host-log.json).
+- The Gajae adoption goal is complete. Its exact-range repository proof passed
+  cumulative broad pytest, fresh mutation coverage, and the changed-line
+  consumer before publication. Do not reopen the bundle unless new evidence
+  identifies a regression.
 - The two recurring dead-code advisory findings are now classified as registered
   dynamic entrypoints only when conservative bidirectional AST evidence proves
   their callers. The live sweep reports two registered entrypoints and zero review
@@ -24,8 +30,8 @@
   producer-to-consumer proof; see the
   [quality review](../charness-artifacts/quality/latest.md).
 - The `../gajae-code` comparison is captured and its selected adoption sequence
-  is locked in the [adoption plan](../charness-artifacts/spec/2026-07-19-gajae-code-adoption-plan.md).
-  The first slice is the current app-server per-message deadline-reset bug.
+  is implemented and closed in the
+  [adoption goal](../charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md).
 
 ## Next Session
 
@@ -43,9 +49,8 @@
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
    Finish critique packets before taking reviewer boundary fingerprints, and run
    the focused duplication ratchet before broad validation for large AST helpers.
-6. The Gajae-Code plan is implemented and locally locked. If v2.1.5 is not yet
-   public, resume only the helper-owned release boundary; otherwise start a new
-   smallest coherent backlog slice.
+6. The Gajae-Code plan and v2.1.5 release are closed; start a new smallest
+   coherent backlog slice rather than resuming this goal.
 
 ## Discuss
 
@@ -59,11 +64,3 @@
 - [quality review](../charness-artifacts/quality/latest.md)
 - [release-recovery critique](../charness-artifacts/critique/2026-07-18-release-local-failure-recovery.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-
-- Refresh kept ([release state](../charness-artifacts/release/latest.md)):
-  v2.1.5 publication remains helper-owned; exact-range mutation proof, earlier
-  durability routing, host-restart condition, and D18 disposition stay current.
-- Refresh non-claims ([quality review](../charness-artifacts/quality/latest.md)):
-  detailed test/runtime history remains in the owning quality/release artifacts;
-  no wall-clock speedup is claimed, no real-host trigger matched, and no
-  Cautilus evaluation was run.

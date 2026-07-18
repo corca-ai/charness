@@ -1,6 +1,6 @@
 # Achieve Goal: Complete evidence-bound Gajae pattern adoption
 
-Status: active
+Status: complete
 Created: 2026-07-19
 Activation: `/goal @charness-artifacts/goals/2026-07-19-gajae-pattern-adoption.md`
 
@@ -11,11 +11,12 @@ resume form for a fresh host session.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 — publication and post-publish reconciliation.
-- Current slice intent: publish the locked v2.1.5 patch through the release
-  helper, then reconcile public, installed, goal, and handoff truth surfaces.
-- Next action: commit the release critique/retro/host proof, run publish dry-run,
-  then execute the authorized release and record its readbacks.
+- Current slice: complete — all six goal slices, publication, and the
+  goal-scoped post-publish observer/readback checks are closed.
+- Current slice intent: preserve the verified v2.1.5 outcome and route the next
+  session to a newly selected backlog slice rather than reopening this bundle.
+- Next action: none for this goal; use the handoff workflow to select the next
+  smallest coherent backlog slice.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -72,8 +73,8 @@ Implement and prove Slices 1-4 from the canonical Gajae-Code adoption plan, disp
   tests named in the slice log.
 - Run the final locked repo closeout and see all standing gates pass.
 - Inspect the release artifact and public GitHub release, then run
-  `charness version` and `charness doctor` to confirm installed version and no
-  source/cache drift.
+  `charness version` and `charness doctor` to confirm the installed version and
+  the recorded Codex-host guidance readback.
 - Inspect the canonical spec's `Probe Outcomes` and see every governed probe
   explicitly promoted or retained without silent scope expansion.
 
@@ -111,7 +112,7 @@ Implement and prove Slices 1-4 from the canonical Gajae-Code adoption plan, disp
 | 3 | Generate one release observer from existing distinct-channel evidence | Avoid parallel success records at the irreversible boundary | Schema/renderer fixtures and release integration proof | completed |
 | 4 | Add A/B comparability and retain outcome adjacency | Improve token efficiency without persuasive incomparable deltas | Comparable/incomparable report fixtures and focused tests | completed |
 | 5 | Disposition governed probes | Prevent analogy from silently becoming runtime/CI scope | Recorded probe outcome and promotion/defer rationale | completed |
-| 6 | Final bundle proof, push, and release | User requested publication only after all work is complete | Locked closeout, distinct review/channel, public+installed readback | active |
+| 6 | Final bundle proof, push, and release | User requested publication only after all work is complete | Locked closeout, distinct review/channel, public+installed readback | completed |
 
 ## Operator Decision Queue
 
@@ -151,9 +152,9 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-Routing: `achieve` coordinates the long goal; `impl`/`prove` own each build slice, `quality` owns bundle verification, and `release` owns publication.
+Routing: achieve — selected from installed skill metadata to coordinate the active long-goal lifecycle across impl, prove, quality, debug, and release boundaries.
 Gather: `charness-artifacts/gather/2026-07-19-gajae-code-pattern-review.md`.
-Release: `charness-artifacts/critique/2026-07-19-gajae-pattern-adoption-v2-1-5-release.md` authorizes entering the helper-owned v2.1.5 publication boundary.
+Release: `charness-artifacts/release/latest.md` records the helper-owned v2.1.5 publication, independent HTTPS confirmation, install refresh, and installed readbacks.
 Issue closeout: n/a — this goal does not claim a tracked GitHub issue.
 
 ## Discuss Before Activation
@@ -231,6 +232,20 @@ applies.
   focused tests, ruff, the pre-lock structural closeout, and a clean-fingerprint
   bounded fresh-eye SHIP review passed. Critique:
   `charness-artifacts/critique/2026-07-19-gajae-slice5-governed-probes.md`.
+- Slice 6 completed — `./scripts/run-quality.sh --release` passed after the
+  release-quality contract repair; the repo helper committed and tagged
+  `8465b764`, pushed `main` and `v2.1.5`, and published the GitHub release.
+  A distinct unauthenticated HTTPS fetch returned 200, `charness update`
+  refreshed the maintainer install, and separate `charness version` and
+  `charness doctor` readbacks confirmed version 2.1.5 and returned installed
+  Codex-host guidance. The separately recorded goal-scoped nose observations
+  confirm nose 0.19.0 readiness, its supported install dry-run, integration-only
+  support disposition, and advisory clone inventory. They do not prove the
+  release artifact's generic missing-nose branch or a separate post-publish
+  `== repo` spot check; those remain release-record checklist lines rather than
+  claims of this goal. Durable proof: `charness-artifacts/release/latest.md`,
+  `charness-artifacts/probe/2026-07-19-gajae-pattern-adoption-host-log.json`, and
+  `charness-artifacts/probe/2026-07-18-v2.1.5-release-observer.json`.
 
 ## Context Sources
 
@@ -298,11 +313,31 @@ Retro: charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md
 Host log probe: charness-artifacts/probe/2026-07-19-gajae-pattern-adoption-host-log.json
 Disposition review: charness-artifacts/critique/2026-07-19-gajae-pattern-adoption-v2-1-5-release.md
 
+- Final locked repository proof passed cumulative broad pytest, fresh mutation
+  coverage, exact changed-line consumer coverage, and all standing release
+  gates before publication.
+- Public proof: https://github.com/corca-ai/charness/releases/tag/v2.1.5 was
+  independently fetched over HTTPS with status 200.
+- Installed proof: `charness update` returned 0; `charness version` confirmed
+  2.1.5 and `charness doctor` returned a confirmed Codex-host guidance
+  readback. The goal-scoped host log separately records the applicable nose
+  observations; no missing-install branch, separate `== repo` spot check, or
+  broader source/cache-health claim is inferred.
+- Residual risk: active Codex and Claude sessions can retain pre-refresh skill
+  paths until restarted; this affects session freshness, not the published or
+  installed release state.
+- Non-claims: no Cautilus evaluation was run, no universal wall-clock speedup is
+  claimed, and the durable release observer preserves observations rather than
+  issuing a second release-success verdict.
+
 ## User Verification Instructions
 
-After publication, run `charness update`, then inspect YAML from
-`charness version` and `charness doctor`. The public v2.1.5 URL and final
-readback status will be recorded after the release helper completes.
+Open https://github.com/corca-ai/charness/releases/tag/v2.1.5. On another
+machine or after a fresh host session, run `charness update`, then inspect YAML
+from `charness version` and `charness doctor`; version should be 2.1.5 and the
+doctor should successfully report installed Codex-host guidance. Restart an
+already-open Codex or Claude session before judging newly installed skill
+behavior.
 
 ## Auto-Retro
 
