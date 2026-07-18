@@ -481,7 +481,7 @@ def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) ->
 
     assert result.returncode == 1
     assert "release diff failed while computing unreleased paths" in result.stderr
-    assert "command: git diff --name-only origin/main..HEAD" in result.stderr
+    assert "git diff --name-only -z" in result.stderr
     assert "exit_code: 42" in result.stderr
     assert "forced diff failure" in result.stderr
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
@@ -509,13 +509,13 @@ def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) ->
 
 
 def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: Path) -> None:
-    def fake_run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
-        if command[:3] == ["git", "diff", "--name-only"]:
-            return subprocess.CompletedProcess(command, 42, "", "forced diff failure\n")
-        return subprocess.CompletedProcess(command, 0, "", "")
+    def fail_delta(repo_root: Path, base_ref: str, head_ref: str = "HEAD") -> dict[str, object]:
+        raise ValueError(
+            f"git diff --name-only -z {base_ref}..{head_ref} failed: forced diff failure"
+        )
 
     monkeypatch = pytest.MonkeyPatch()
-    monkeypatch.setattr(_helpers, "run", fake_run)
+    monkeypatch.setattr(_helpers, "collect_release_delta", fail_delta)
     try:
         with pytest.raises(SystemExit) as excinfo:
             _helpers.unreleased_paths(tmp_path, remote="origin", branch="main")
@@ -524,7 +524,7 @@ def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: 
 
     message = str(excinfo.value)
     assert "release diff failed while computing unreleased paths" in message
-    assert "command: git diff --name-only origin/main..HEAD" in message
+    assert "git diff --name-only -z origin/main..HEAD" in message
     assert "forced diff failure" in message
 
 

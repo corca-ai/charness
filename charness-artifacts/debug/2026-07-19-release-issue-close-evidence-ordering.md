@@ -121,3 +121,18 @@ earliest close boundary.
 Separate publication and issue-carrier commits, persist a typed pending-close
 record before the carrier push, and test the earliest external effect rather
 than only the explicitly named close function.
+
+### Verification-Lock Follow-up
+
+- Observation: the first full locked suite exposed four resume/delta failures
+  after 4,912 passes. A one-commit fixture had no `HEAD^`, and a release commit
+  without a tag had no `HEAD^^`; both are valid partial states, not corrupt repos.
+- Hypothesis: ancestry used for optional phase classification was being resolved
+  as mandatory state. Disconfirmer: a seed-only or one-parent partial release
+  still exits through raw `git rev-parse` failure instead of a typed resume refusal.
+- Repair: optional ancestor probes now return absence, and grandparent lookup is
+  skipped unless a tag makes the final-carrier phase possible. Delta failure
+  injection moved to the shared delta owner and retains command/exit diagnostics.
+- Focused proof: the real-host-delta and resilience files pass 53 tests,
+  including missing-tag reconstruction, remote-tag ambiguity, no-partial-state
+  refusal, and forced NUL-diff failure.

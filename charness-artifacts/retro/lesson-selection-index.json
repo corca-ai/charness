@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-19",
   "source_artifact_count": 366,
-  "candidate_count": 1519,
+  "candidate_count": 1520,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -2541,6 +2541,26 @@
       "kind": "next_improvement",
       "lesson": "persist “irreversibility starts at the earliest observer-capable write” and “optimization must name its hermetic state envelope” in the generated recent-lessons digest.",
       "normalized_key": "persist irreversibility starts at the earliest observer capable write and optimization must name its",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d0517db5653d",
+      "kind": "next_improvement",
+      "lesson": "profile mutation coverage startup and worker instrumentation before changing test scope; preserve the 4,912-test confidence boundary while removing orchestration cost.",
+      "normalized_key": "profile mutation coverage startup and worker instrumentation before changing test scope preserve the 4",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
       "latest_source_date": "2026-07-19",

@@ -43,6 +43,7 @@ Ambient repo findings: D18 remains intentionally ignored. Seventeen near-limit f
 - `publish_release_helpers.py` remains cohesive but has only 24 code lines before its hard length limit; the new delta owner stopped further accretion but did not split older tag/version concerns.
 - The worktree-only changed-path collector remains line-oriented; the NUL-safe guarantee is deliberately scoped to immutable release deltas.
 - The process loader cache retains 20 test-private module objects; repeated runs are isolated, but no persistent-memory ceiling is claimed.
+- The first mutation-instrumented locked suite took 164.1s against a 120s advisory budget and caught four optional-ancestry/delta-test failures after 4,912 passes; correctness was repaired, while gate-baseline profiling is deferred explicitly.
 
 ## Missing
 

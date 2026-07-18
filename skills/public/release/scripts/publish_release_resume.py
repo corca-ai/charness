@@ -50,6 +50,11 @@ def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
     return cli.run(["git", *args], cwd=repo_root).stdout.strip()
 
 
+def _optional_git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
+    result = cli.run(["git", *args], cwd=repo_root, check=False)
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
 def _commit_artifact_before_push(repo_root: Path, *, cli: Any, tag_name: str) -> None:
     # B1: the resume refresh of charness-artifacts/release/latest.md (and
     # any retro-trigger artifact) must be committed BEFORE the push, mirroring the
@@ -87,8 +92,12 @@ def resumable_state(
     tag_sha = ""
     if tag_state["local"]:
         tag_sha = _git_out(cli, repo_root, ["rev-list", "-n", "1", tag_name])
-    parent_sha = _git_out(cli, repo_root, ["rev-parse", "HEAD^"]) if head_sha != tag_sha else ""
-    grandparent_sha = _git_out(cli, repo_root, ["rev-parse", "HEAD^^"]) if parent_sha and parent_sha != tag_sha else ""
+    parent_sha = _optional_git_out(cli, repo_root, ["rev-parse", "HEAD^"]) if head_sha != tag_sha else ""
+    grandparent_sha = (
+        _optional_git_out(cli, repo_root, ["rev-parse", "HEAD^^"])
+        if tag_sha and parent_sha and parent_sha != tag_sha
+        else ""
+    )
     parent_message = _git_out(cli, repo_root, ["show", "-s", "--format=%B", "HEAD^"]) if parent_sha else ""
     remote_result = cli.run(
         ["git", "ls-remote", "--heads", remote, f"refs/heads/{branch}"],

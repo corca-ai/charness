@@ -19,7 +19,9 @@ def _git(repo_root: Path, *args: str, text: bool = True):
     )
     if result.returncode != 0:
         stderr = result.stderr if text else os.fsdecode(result.stderr)
-        raise ValueError(f"git {' '.join(args)} failed: {stderr.strip()}")
+        raise ValueError(
+            f"git {' '.join(args)} failed\nexit_code: {result.returncode}\n{stderr.strip()}"
+        )
     return result.stdout
 
 

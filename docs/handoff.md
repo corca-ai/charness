@@ -56,6 +56,10 @@
 
 - Optional: a future live Codex-host session may record provider-applied
   `gpt-5.6-terra`/`medium` evidence. This is not a release or quality blocker.
+- Gate-baseline follow-up: profile mutation-coverage startup and worker
+  instrumentation before changing scope. The first locked run took 164.1s
+  against the 120s advisory budget while still earning its cost by catching
+  four late release-state failures; preserve that confidence boundary.
 
 ## References
 
