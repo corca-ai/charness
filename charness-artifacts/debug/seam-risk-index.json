@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 91,
-  "indexed_artifact_count": 79,
+  "source_artifact_count": 92,
+  "indexed_artifact_count": 80,
   "risk_class_counts": {
-    "contract-freeze-risk": 28,
+    "contract-freeze-risk": 27,
     "external-seam": 4,
     "host-disproves-local": 2,
-    "none": 22,
+    "none": 24,
     "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
     "monitor": 69,
-    "none": 7
+    "none": 8
   },
   "entries": [
     {
@@ -1112,17 +1112,31 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "artifact-validator-contract-coupling",
+      "artifact_path": "charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md",
+      "is_current_pointer": false,
+      "interrupt_id": "codex-app-server-request-deadline",
       "risk_classes": [
-        "contract-freeze-risk"
+        "none"
       ],
-      "seam": "scaffold -> owning validator -> repo-wide durability gate -> closeout.",
+      "seam": "request send -> unrelated message filtering -> matching response.",
       "generalization_pressure": "none",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/debug/2026-07-18-debug-review.md",
+      "handoff_artifact": "charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "codex-app-server-request-deadline",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "request send -> unrelated message filtering -> matching response.",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/debug/2026-07-19-codex-app-server-deadline.md",
       "forced": false
     }
   ],

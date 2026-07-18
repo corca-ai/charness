@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -165,6 +166,137 @@ def test_session_staleness_without_cache_diff_returns_none(tmp_path: Path) -> No
     )
 
     assert payload is None
+
+
+def _jsonrpc_child(source: str) -> subprocess.Popen[str]:
+    return subprocess.Popen(
+        [sys.executable, "-u", "-c", source],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+
+def test_jsonrpc_response_wait_uses_one_absolute_deadline() -> None:
+    module = load_charness_module("charness_codex_deadline_under_test")
+    proc = _jsonrpc_child(
+        "import json,time\n"
+        "for value in range(20):\n"
+        " print(json.dumps({'id': 100 + value, 'result': {}}), flush=True)\n"
+        " time.sleep(0.015)\n"
+    )
+    started = time.monotonic()
+    try:
+        with pytest.raises(module.CharnessError, match="timed out"):
+            module.wait_for_jsonrpc_response(
+                proc,
+                expected_id=2,
+                deadline=started + 0.06,
+            )
+        elapsed = time.monotonic() - started
+    finally:
+        proc.terminate()
+        proc.wait(timeout=2)
+
+    assert elapsed < 0.15
+
+
+@pytest.mark.parametrize(
+    ("source", "message"),
+    [
+        ("print('not-json', flush=True)", "invalid JSON-RPC payload"),
+        ("pass", "exited before returning a response"),
+    ],
+)
+def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(source: str, message: str) -> None:
+    module = load_charness_module(f"charness_codex_failure_{message.split()[0]}_under_test")
+    proc = _jsonrpc_child(source)
+    try:
+        with pytest.raises(module.CharnessError, match=message):
+            module.wait_for_jsonrpc_response(
+                proc,
+                expected_id=2,
+                deadline=time.monotonic() + 0.5,
+            )
+    finally:
+        proc.wait(timeout=2)
+
+
+def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message() -> None:
+    module = load_charness_module("charness_codex_matching_error_under_test")
+    proc = _jsonrpc_child(
+        "import json\n"
+        "print(json.dumps({'method': 'progress'}), flush=True)\n"
+        "print(json.dumps({'id': 2, 'error': {'code': -32000, 'message': 'nope'}}), flush=True)\n"
+    )
+    try:
+        response = module.wait_for_jsonrpc_response(
+            proc,
+            expected_id=2,
+            deadline=time.monotonic() + 0.5,
+        )
+    finally:
+        proc.wait(timeout=2)
+
+    assert response["error"] == {"code": -32000, "message": "nope"}
+
+
+def test_codex_cache_refresh_preserves_matching_error_envelope(tmp_path: Path, monkeypatch) -> None:
+    module = load_charness_module("charness_codex_error_envelope_under_test")
+    fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)
+    monkeypatch.setenv("PATH", build_test_path(fake_codex.parent))
+    home_root = tmp_path / "home"
+    home_root.mkdir()
+
+    result = module.refresh_codex_cache_via_app_server(
+        home_root=home_root,
+        codex_marketplace_path=CLI.parent / ".agents" / "plugins" / "marketplace.json",
+        plugin_name="charness",
+        timeout_seconds=0.5,
+    )
+
+    assert result == {
+        "status": "failed",
+        "reason": "plugin-install-error",
+        "method": "codex-app-server-plugin-install",
+        "error": "forced plugin/install failure",
+    }
+
+
+@pytest.mark.parametrize(
+    ("mode", "error_text"),
+    [
+        ("unrelated-stream", "timed out while waiting for Codex app-server response"),
+        ("malformed", "invalid JSON-RPC payload"),
+        ("eof", "exited before returning a response"),
+        ("initialize-error", "Codex app-server initialize failed: forced initialize failure"),
+    ],
+)
+def test_codex_cache_refresh_maps_transport_failures_to_existing_envelope(
+    tmp_path: Path,
+    monkeypatch,
+    mode: str,
+    error_text: str,
+) -> None:
+    module = load_charness_module(f"charness_codex_{mode}_envelope_under_test")
+    fake_codex = make_fake_codex(tmp_path)
+    monkeypatch.setenv("PATH", build_test_path(fake_codex.parent))
+    monkeypatch.setenv("CHARNESS_FAKE_CODEX_APP_SERVER_MODE", mode)
+    home_root = tmp_path / "home"
+    home_root.mkdir()
+
+    result = module.refresh_codex_cache_via_app_server(
+        home_root=home_root,
+        codex_marketplace_path=CLI.parent / ".agents" / "plugins" / "marketplace.json",
+        plugin_name="charness",
+        timeout_seconds=0.06 if mode == "unrelated-stream" else 0.5,
+    )
+
+    assert result["status"] == "failed"
+    assert result["reason"] == "app-server-error"
+    assert result["method"] == "codex-app-server-plugin-install"
+    assert error_text in result["error"]
 
 
 def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(tmp_path: Path) -> None:

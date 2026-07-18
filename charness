@@ -1627,8 +1627,7 @@ def codex_primary_cache_entry(
     return None, None
 
 
-def read_jsonrpc_line_with_deadline(stream: subprocess.Popen[str], *, timeout_seconds: float) -> dict[str, object]:
-    deadline = time.monotonic() + timeout_seconds
+def read_jsonrpc_line_before(stream: subprocess.Popen[str], *, deadline: float) -> dict[str, object]:
     while True:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
@@ -1649,6 +1648,18 @@ def read_jsonrpc_line_with_deadline(stream: subprocess.Popen[str], *, timeout_se
             raise CharnessError(f"Codex app-server returned invalid JSON-RPC payload: {line.strip()}") from exc
         if isinstance(payload, dict):
             return payload
+
+
+def wait_for_jsonrpc_response(
+    stream: subprocess.Popen[str],
+    *,
+    expected_id: int,
+    deadline: float,
+) -> dict[str, object]:
+    while True:
+        message = read_jsonrpc_line_before(stream, deadline=deadline)
+        if message.get("id") == expected_id:
+            return message
 
 
 def send_jsonrpc_message(stream: subprocess.Popen[str], payload: dict[str, object]) -> None:
@@ -1683,6 +1694,7 @@ def refresh_codex_cache_via_app_server(
         env=env,
     )
     try:
+        initialize_deadline = time.monotonic() + timeout_seconds
         send_jsonrpc_message(
             proc,
             {
@@ -1695,13 +1707,11 @@ def refresh_codex_cache_via_app_server(
                 },
             },
         )
-        while True:
-            message = read_jsonrpc_line_with_deadline(proc, timeout_seconds=timeout_seconds)
-            if message.get("id") == 1:
-                if isinstance(message.get("error"), dict):
-                    raise CharnessError(f"Codex app-server initialize failed: {message['error'].get('message')}")
-                break
+        message = wait_for_jsonrpc_response(proc, expected_id=1, deadline=initialize_deadline)
+        if isinstance(message.get("error"), dict):
+            raise CharnessError(f"Codex app-server initialize failed: {message['error'].get('message')}")
         send_jsonrpc_message(proc, {"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}})
+        install_deadline = time.monotonic() + timeout_seconds
         send_jsonrpc_message(
             proc,
             {
@@ -1715,25 +1725,22 @@ def refresh_codex_cache_via_app_server(
                 },
             },
         )
-        while True:
-            message = read_jsonrpc_line_with_deadline(proc, timeout_seconds=timeout_seconds)
-            if message.get("id") != 2:
-                continue
-            if isinstance(message.get("error"), dict):
-                error_message = message["error"].get("message")
-                return {
-                    "status": "failed",
-                    "reason": "plugin-install-error",
-                    "method": "codex-app-server-plugin-install",
-                    "error": error_message if isinstance(error_message, str) else str(message["error"]),
-                }
-            result = message.get("result")
+        message = wait_for_jsonrpc_response(proc, expected_id=2, deadline=install_deadline)
+        if isinstance(message.get("error"), dict):
+            error_message = message["error"].get("message")
             return {
-                "status": "attempted",
-                "reason": "plugin-install-succeeded",
+                "status": "failed",
+                "reason": "plugin-install-error",
                 "method": "codex-app-server-plugin-install",
-                "response": result if isinstance(result, dict) else {},
+                "error": error_message if isinstance(error_message, str) else str(message["error"]),
             }
+        result = message.get("result")
+        return {
+            "status": "attempted",
+            "reason": "plugin-install-succeeded",
+            "method": "codex-app-server-plugin-install",
+            "response": result if isinstance(result, dict) else {},
+        }
     except CharnessError as exc:
         return {
             "status": "failed",

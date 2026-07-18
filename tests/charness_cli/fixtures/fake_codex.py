@@ -5,12 +5,14 @@ import json
 import os
 import shutil
 import sys
+import time
 from pathlib import Path
 
 FAIL_PLUGIN_INSTALL = (
     os.environ.get("CHARNESS_FAKE_CODEX_FAIL_PLUGIN_INSTALL") == "1"
     or Path(sys.argv[0]).with_name(".codex-fail-plugin-install").exists()
 )
+APP_SERVER_MODE = os.environ.get("CHARNESS_FAKE_CODEX_APP_SERVER_MODE", "success")
 
 
 def load_json(path: Path, default=None):
@@ -68,6 +70,27 @@ if args[:3] == ["app-server", "--listen", "stdio://"]:
         method = message.get("method")
         req_id = message.get("id")
         if method == "initialize":
+            if APP_SERVER_MODE == "malformed":
+                print("not-json", flush=True)
+                continue
+            if APP_SERVER_MODE == "eof":
+                raise SystemExit(0)
+            if APP_SERVER_MODE == "initialize-error":
+                print(
+                    json.dumps(
+                        {
+                            "id": req_id,
+                            "error": {"code": -32000, "message": "forced initialize failure"},
+                        }
+                    ),
+                    flush=True,
+                )
+                continue
+            if APP_SERVER_MODE == "unrelated-stream":
+                for value in range(20):
+                    print(json.dumps({"id": 100 + value, "result": {}}), flush=True)
+                    time.sleep(0.015)
+                continue
             print(
                 json.dumps(
                     {

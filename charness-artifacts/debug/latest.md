@@ -1,1 +1,1 @@
-2026-07-18-debug-review.md
+2026-07-19-codex-app-server-deadline.md
