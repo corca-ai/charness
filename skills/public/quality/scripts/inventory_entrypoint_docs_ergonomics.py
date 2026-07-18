@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import re
+import runpy
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Iterable
 from urllib.parse import unquote
 
@@ -45,14 +46,21 @@ CORE_DOCS_TOP_LEVEL = {
     "roadmap.md",
 }
 
+_summary_output = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the entrypoint-docs ergonomics inventory")
     parser.add_argument("--doc-path", action="append", default=[], help="Entrypoint doc path relative to the repo root (repeatable; defaults applied if omitted)")
     parser.add_argument("--max-core-lines", type=int, default=140, help="Non-empty line count above which an entrypoint doc is flagged as long")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON counts and samples instead of full per-document attribution")
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML counts and samples instead of full per-document attribution",
+        detail_help="Emit full per-document attribution as YAML",
+    )
     return parser.parse_args()
 
 
@@ -207,7 +215,7 @@ def summarize_payload(payload: dict[str, object], *, sample_limit: int = 20) -> 
                 }
             )
     return {
-        "summary_note": "summary is triage output; use --json for full per-document attribution",
+        "summary_note": "summary is triage output; use --detail for full per-document attribution",
         "repo_root": payload["repo_root"],
         "max_core_lines": payload["max_core_lines"],
         "document_count": len(doc_items),
@@ -232,11 +240,7 @@ def main() -> int:
         "documents": docs,
     }
 
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    elif args.summary:
-        print(json.dumps(summarize_payload(payload), ensure_ascii=False, indent=2))
-    else:
+    if not _summary_output.emit_selected(payload, args, summarize=summarize_payload):
         for item in docs:
             heuristics = ", ".join(item["heuristics"]) or "none"
             print(

@@ -20,18 +20,18 @@
 - The vocabulary and kept exceptions live in the
   [affordance spec](../charness-artifacts/spec/cli-output-affordance-contract.md).
 - A local verified correction aligns agent-facing structured-output calls
-  with that YAML vocabulary: public skill planners and the governing Cautilus
-  preflight use YAML default/`--detail`; hidden legacy `--json` remains actual
-  JSON for parser compatibility. Plugin exports and focused contract tests are
-  included, but this work is not released or installed.
+  with the YAML vocabulary: planners use YAML default/`--detail`, and nine
+  dispatch-marked quality inventories add compact `--summary`/full `--detail`.
+  One helper owns the modes and live source/plugin tests own parity; unmarked
+  inventories remain legacy. This work is not released or installed.
 - The stale historical v0.56.7 round-5 goal is now `Status: complete` on
   immutable evidence, without current remote/install/v2 claims.
 
 ## Next Session
 
 1. Decide the next-release scope for the local post-v2.0.0 changes, including
-   the update/init self-heal and YAML planner-contract correction; do not infer
-   publish authority from this handoff.
+   the update/init self-heal and YAML planner/inventory-contract corrections;
+   do not infer publish authority from this handoff.
 2. Restart now only to test the already-installed v2.0.0 surface. Testing the
    local correction requires a later authorized release/update first and is not
    proven by that restart.
@@ -39,6 +39,8 @@
    reopen trigger) — see the 2026-07-16
    [goal artifact](../charness-artifacts/goals/2026-07-16-scout-driven-improvement.md)
    `## Operator Decision Queue`.
+4. For later migrations, lock the declared consumer set and use the smallest
+   truthful fixture; here that cut 18-surface proof from 57.29s to 10.06s.
 
 ## Discuss
 
@@ -49,8 +51,7 @@
   the older end-of-init `cli_path` re-exec (F6) and the latent
   stale-standalone-CLI variant in non-refreshing consumers (F7).
 - Optional under the 2026-07-17 per-host split: a live Codex-host session can
-  still add provider-applied evidence that the Codex-scoped
-  `gpt-5.6-terra`/`medium` request is honored; evidence polish, not a blocker.
+  add provider-applied `gpt-5.6-terra`/`medium` evidence; not a blocker.
 
 ## References
 
@@ -60,8 +61,7 @@
   [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
 - Refresh kept (`AGENTS.md`): the published-v2.0.0 restart-to-load state
-  (after a release/update), the carried D18 decision, the per-host reviewer
-  contract, and the local-unreleased YAML planner correction.
+  (after update), D18 decision, per-host reviewer contract, and local YAML work.
 - Refresh non-claims ([release state](../charness-artifacts/release/latest.md)):
   the migration-crash observation is one maintainer machine; no consumer-repo
   upgrade was exercised at refresh time; the convergence's payload renames

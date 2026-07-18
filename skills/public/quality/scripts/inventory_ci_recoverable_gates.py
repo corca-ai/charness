@@ -41,6 +41,7 @@ _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scrip
 load_yaml_file = _adapter_lib.load_yaml_file
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
 runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_lib")
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ci_local_gate_parity_lib as parity_lib  # noqa: E402
@@ -130,7 +131,8 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Named machine/runner profile for wall-clock ranking. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
     )
     parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for workflow discovery")
-    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    parser.add_argument("--detail", action="store_true", help="Emit the full triage payload as YAML")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser
 
 
@@ -146,6 +148,8 @@ def main() -> int:
     if args.json:
         json.dump(report, sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")
+    elif args.detail:
+        _summary_output.emit_yaml(report)
     else:
         _print_text(report)
         print(

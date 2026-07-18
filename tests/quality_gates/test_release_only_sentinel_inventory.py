@@ -39,7 +39,7 @@ def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
         assert fragment in option_block, f"missing help for {option}: {fragment}"
 
 
-def test_release_only_sentinel_help_describes_repo_root_and_json(
+def test_release_only_sentinel_help_describes_repo_root_and_yaml_modes(
     capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     inventory = _load_inventory()
@@ -51,10 +51,11 @@ def test_release_only_sentinel_help_describes_repo_root_and_json(
     assert excinfo.value.code == 0
     _assert_help_pairs(
         capsys.readouterr().out,
-        {
-            "--repo-root": "Repository root containing the pytest files to inspect.",
-            "--json": "Emit full per-test JSON unless --summary selects compact summary output.",
-        },
+            {
+                "--repo-root": "Repository root containing the pytest files to inspect.",
+                "--summary": "Emit compact YAML counts and samples instead of full per-test attribution.",
+                "--detail": "Emit full per-test attribution as YAML.",
+            },
     )
 
 
@@ -213,6 +214,7 @@ def test_release_only_sentinel_inventory_summary_omits_full_test_names(tmp_path:
             "--path",
             "tests/test_release_flow.py",
             "--summary",
+            "--json",
         ],
         text=True,
         capture_output=True,

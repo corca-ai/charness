@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,7 +20,6 @@ _standing_test_economics = SKILL_RUNTIME.load_local_skill_module(__file__, "stan
 _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 inventory = _standing_test_economics.inventory
 dump_yaml = _summary_output.dump_yaml
-emit_summary = _summary_output.emit_summary
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): the test-economics trend is an
@@ -57,7 +55,7 @@ SUMMARY_FIELDS = (
     "interpretation",
 )
 SUMMARY_NESTED_CLI_SAMPLE_SIZE = 10
-SUMMARY_NOTE = "summary is triage output; use --json for full nested_cli_files attribution"
+SUMMARY_NOTE = "summary is triage output; use --detail for full nested_cli_files attribution"
 
 
 def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
@@ -80,18 +78,16 @@ def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the standing-test economics inventory")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON for agent review instead of every nested-CLI path")
-    parser.add_argument("--summary-yaml", action="store_true", help="Emit compact YAML for agent review instead of compact JSON")
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML for agent review instead of every nested-CLI path",
+        detail_help="Emit the full inventory payload as YAML",
+    )
     args = parser.parse_args()
 
     payload = inventory(args.repo_root.resolve())
     payload["interpretation"] = dict(INTERPRETATION)
-    if args.summary or args.summary_yaml:
-        emit_summary(summarize_payload(payload), as_yaml=args.summary_yaml)
-        return 0
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if _summary_output.emit_selected(payload, args, summarize=summarize_payload):
         return 0
     print(f"test files: {payload['test_file_count']}")
     print(f"nested CLI files: {payload['nested_cli_file_count']}")

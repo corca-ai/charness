@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The autonomous quality slice converted nine agent-facing inventory first reads from JSON to compact YAML, centralized output selection, synchronized the plugin mirror, and added live source/plugin contract proof. (source: `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`)
 - The first autonomous-improvement slice fixed an invalid `catalog list --json` instruction and added a compact YAML summary, but the broad gate then exposed a second problem: evidence-marker validity depended on the marker occupying the same physical line as its citation. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
-- The root `charness` CLI had already migrated its public structured output to YAML, but public skill commands and the governing Cautilus preflight still taught `--json`. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
 
 ## Repeat Traps
 
@@ -126,6 +126,7 @@
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`
 - `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`

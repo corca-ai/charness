@@ -98,6 +98,7 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
         "--repo-root",
         str(repo),
         "--summary",
+        "--json",
         env={**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)},
     )
     assert result.returncode == 0, result.stderr
@@ -114,7 +115,7 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
     assert len(payload["nested_cli_standing_or_mixed_files_sample"]) == 10
     assert "nested_cli_files" not in payload
     assert "nested_cli_standing_or_mixed_files" not in payload
-    assert "--json" in payload["summary_note"]
+    assert "--detail" in payload["summary_note"]
     assert {finding["type"] for finding in payload["findings"]} == {"nested_cli_fanout"}
     assert payload["findings"][0]["severity"] == "advisory"
     assert "interpretation" in payload
@@ -133,8 +134,8 @@ def test_standing_test_economics_summary_yaml_is_compact_and_parseable(tmp_path:
             encoding="utf-8",
         )
 
-    json_result = _run_inventory_cli("--repo-root", str(repo), "--summary")
-    yaml_result = _run_inventory_cli("--repo-root", str(repo), "--summary-yaml")
+    json_result = _run_inventory_cli("--repo-root", str(repo), "--summary", "--json")
+    yaml_result = _run_inventory_cli("--repo-root", str(repo), "--summary")
     assert json_result.returncode == 0, json_result.stderr
     assert yaml_result.returncode == 0, yaml_result.stderr
     payload = yaml.safe_load(yaml_result.stdout)
@@ -146,7 +147,7 @@ def test_standing_test_economics_summary_yaml_is_compact_and_parseable(tmp_path:
     assert len(yaml_result.stdout.encode("utf-8")) < len(json_result.stdout.encode("utf-8"))
 
 
-def test_standing_test_economics_summary_yaml_reports_missing_pyyaml(monkeypatch) -> None:
+def test_standing_test_economics_summary_yaml_falls_back_without_pyyaml(monkeypatch) -> None:
     cli = _load_inventory_cli()
     original_import = builtins.__import__
 
@@ -157,12 +158,7 @@ def test_standing_test_economics_summary_yaml_reports_missing_pyyaml(monkeypatch
 
     monkeypatch.setattr(builtins, "__import__", missing_yaml_import)
 
-    try:
-        cli.dump_yaml({"ok": True})
-    except SystemExit as exc:
-        assert "PyYAML is required for --summary-yaml" in str(exc)
-    else:
-        raise AssertionError("expected missing PyYAML to raise SystemExit")
+    assert json.loads(cli.dump_yaml({"ok": True})) == {"ok": True}
 
 
 def test_standing_test_economics_splits_module_release_only_nested_cli_files(tmp_path: Path) -> None:
@@ -193,7 +189,7 @@ def test_standing_test_economics_splits_module_release_only_nested_cli_files(tmp
         encoding="utf-8",
     )
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    result = _run_inventory_cli("--repo-root", str(repo), "--summary", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 
@@ -232,7 +228,7 @@ def test_standing_test_economics_routes_empty_nested_cli_test_modules_to_standin
         encoding="utf-8",
     )
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    result = _run_inventory_cli("--repo-root", str(repo), "--summary", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
 

@@ -19,6 +19,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
 runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_lib")
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 
 RUNTIME_SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 
@@ -216,7 +217,8 @@ def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_co
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose runtime-signals.json should be rendered into a quality summary")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
+    parser.add_argument("--detail", action="store_true", help="Emit the full runtime summary as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument(
         "--runtime-profile",
         help="Named machine/runner profile to summarize. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
@@ -236,6 +238,8 @@ def main() -> int:
     )
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.detail:
+        _summary_output.emit_yaml(report)
     else:
         print("\n".join(str(line) for line in report["markdown_lines"]))
     return 0

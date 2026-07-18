@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-18",
-  "source_artifact_count": 352,
-  "candidate_count": 1484,
+  "source_artifact_count": 354,
+  "candidate_count": 1488,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1025,6 +1025,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:dfdb6cff6db9",
+      "kind": "current_focus",
+      "lesson": "The autonomous quality slice converted nine agent-facing inventory first reads from JSON to compact YAML, centralized output selection, synchronized the plugin mirror, and added live source/plugin contract proof.",
+      "normalized_key": "the autonomous quality slice converted nine agent facing inventory first reads from json to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:4c5f60733513",
       "kind": "current_focus",
       "lesson": "The first autonomous-improvement slice fixed an invalid `catalog list --json` instruction and added a compact YAML summary, but the broad gate then exposed a second problem: evidence-marker validity depended on the marker occupying the same physical line as its citation.",
@@ -1165,6 +1185,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:19ceaf4de34b",
+      "kind": "next_improvement",
+      "lesson": "for CLI contract tests, default to the smallest truthful fixture and measure the focused test before admitting it to a standing gate.",
+      "normalized_key": "for cli contract tests default to the smallest truthful fixture and measure the focused",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a91aa00d4c38",
       "kind": "next_improvement",
       "lesson": "keep finite static ratchets paired with dynamic tests at process, filesystem, or concurrency boundaries; do not market either as a sandbox.",
@@ -1179,46 +1219,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:db82ad0841a2",
-      "kind": "next_improvement",
-      "lesson": "keep the detection gap, sibling findings, and concrete tests in the debug and critique artifacts committed with this slice.",
-      "normalized_key": "keep the detection gap sibling findings and concrete tests in the debug and critique",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:802b01af0333",
-      "kind": "next_improvement",
-      "lesson": "none — the existing fingerprint rail detected and quarantined the violation exactly as designed.",
-      "normalized_key": "none the existing fingerprint rail detected and quarantined the violation exactly as designed",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
@@ -2237,6 +2237,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:dfdb6cff6db9",
+      "kind": "current_focus",
+      "lesson": "The autonomous quality slice converted nine agent-facing inventory first reads from JSON to compact YAML, centralized output selection, synchronized the plugin mirror, and added live source/plugin contract proof.",
+      "normalized_key": "the autonomous quality slice converted nine agent facing inventory first reads from json to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:4c5f60733513",
       "kind": "current_focus",
       "lesson": "The first autonomous-improvement slice fixed an invalid `catalog list --json` instruction and added a compact YAML summary, but the broad gate then exposed a second problem: evidence-marker validity depended on the marker occupying the same physical line as its citation.",
@@ -2377,6 +2397,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:19ceaf4de34b",
+      "kind": "next_improvement",
+      "lesson": "for CLI contract tests, default to the smallest truthful fixture and measure the focused test before admitting it to a standing gate.",
+      "normalized_key": "for cli contract tests default to the smallest truthful fixture and measure the focused",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a91aa00d4c38",
       "kind": "next_improvement",
       "lesson": "keep finite static ratchets paired with dynamic tests at process, filesystem, or concurrency boundaries; do not market either as a sandbox.",
@@ -2417,6 +2457,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:1c0127fb108b",
+      "kind": "next_improvement",
+      "lesson": "lock the exact capability population before editing, then reconcile docs, implementation, generated mirror, and executable tests against that set.",
+      "normalized_key": "lock the exact capability population before editing then reconcile docs implementation generated mirror and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:802b01af0333",
       "kind": "next_improvement",
       "lesson": "none — the existing fingerprint rail detected and quarantined the violation exactly as designed.",
@@ -2451,6 +2511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9be3f75e1f30",
+      "kind": "next_improvement",
+      "lesson": "preserve the partial-migration qualifier and minimal-fixture lesson in this retro plus the durable critique/quality artifacts.",
+      "normalized_key": "preserve the partial migration qualifier and minimal fixture lesson in this retro plus the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }

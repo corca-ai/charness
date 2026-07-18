@@ -117,7 +117,14 @@ def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Pa
     (repo / "tests").mkdir()
     (repo / "tests" / "conftest.py").write_text("pytest_plugins = []\n", encoding="utf-8")
 
-    payload = _run_dead_code_advisory(monkeypatch, bin_dir, "--repo-root", str(repo), "--summary")
+    payload = _run_dead_code_advisory(
+        monkeypatch,
+        bin_dir,
+        "--repo-root",
+        str(repo),
+        "--summary",
+        "--json",
+    )
 
     assert payload["summary_note"].startswith("summary is triage output")
     assert "command" not in payload["sweep"]

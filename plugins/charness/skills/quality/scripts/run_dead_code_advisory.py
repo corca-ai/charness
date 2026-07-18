@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 import re
+import runpy
 import shutil
 import subprocess
 from collections import Counter
 from pathlib import Path
+from types import SimpleNamespace
+
+_summary_output = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
+)
 
 DEFAULT_PATHS = ("runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "skills", "tests")
 FINDING_RE = re.compile(
@@ -157,7 +162,7 @@ def summarize_run(run: dict[str, object], *, sample_limit: int) -> dict[str, obj
 
 def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
     return {
-        "summary_note": "summary is triage output; use --json for full vulture command and findings",
+        "summary_note": "summary is triage output; use --detail for full vulture command and findings",
         "repo_root": payload["repo_root"],
         "paths": payload["paths"],
         "git_visible_python_file_count": payload["git_visible_python_file_count"],
@@ -212,8 +217,11 @@ def main() -> int:
     parser.add_argument("--path", action="append", default=[], help="Repo-relative path to scan for dead code (repeatable; defaults applied if omitted)")
     parser.add_argument("--primary-confidence", type=int, default=80, help="vulture --min-confidence for the high-confidence primary pass")
     parser.add_argument("--sweep-confidence", type=int, default=60, help="vulture --min-confidence for the lower-confidence sweep pass")
-    parser.add_argument("--json", action="store_true", help="Emit the full advisory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON counts and samples instead of full vulture commands")
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML counts and samples instead of full vulture commands",
+        detail_help="Emit the full advisory payload as YAML",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -232,11 +240,7 @@ def main() -> int:
             "The lower-confidence sweep is for cleanup review and will include framework conventions and dynamic-use false positives.",
         ],
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-        return 0
-    if args.summary:
-        print(json.dumps(summarize(payload), ensure_ascii=False, indent=2))
+    if _summary_output.emit_selected(payload, args, summarize=summarize):
         return 0
     review_candidates = [
         finding for finding in sweep["findings"] if finding["classification"] == "review_candidate"

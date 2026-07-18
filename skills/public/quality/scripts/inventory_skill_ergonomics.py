@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -43,7 +42,6 @@ DEFAULT_REVIEW_PROMPTS = elib.DEFAULT_REVIEW_PROMPTS
 RUNTIME_INSTALL_REVIEW_PROMPTS = elib.RUNTIME_INSTALL_REVIEW_PROMPTS
 _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 dump_yaml = _summary_output.dump_yaml
-emit_summary = _summary_output.emit_summary
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): the ergonomics heuristics are an
@@ -101,9 +99,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the skill ergonomics inventory")
     parser.add_argument("--skill-path", action="append", default=[], help="Skill directory or SKILL.md to inventory (repeatable; defaults applied if omitted)")
     parser.add_argument("--max-core-lines", type=int, default=160, help="Non-empty line count above which a SKILL.md core is flagged as long")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON for agent review instead of per-finding detail")
-    parser.add_argument("--summary-yaml", action="store_true", help="Emit compact YAML for agent review instead of compact JSON")
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML for agent review instead of per-finding detail",
+        detail_help="Emit the full inventory payload as YAML",
+    )
     return parser.parse_args()
 
 
@@ -230,11 +230,7 @@ def main() -> int:
         "interpretation": dict(INTERPRETATION),
         "skills": skills,
     }
-    if args.summary or args.summary_yaml:
-        emit_summary(summarize_payload(payload), as_yaml=args.summary_yaml)
-    elif args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
+    if not _summary_output.emit_selected(payload, args, summarize=summarize_payload):
         if payload["status"] == "unconfigured":
             print(f"status=unconfigured: {payload.get('reason', '')}")
         elif payload["finding_status"] == "zero_heuristic_findings":

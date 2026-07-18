@@ -258,7 +258,13 @@ def test_inventory_standing_gate_verbosity_cli_summary_omits_full_surfaces(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["inventory_standing_gate_verbosity.py", "--repo-root", str(repo), "--summary"],
+        [
+            "inventory_standing_gate_verbosity.py",
+            "--repo-root",
+            str(repo),
+            "--summary",
+            "--json",
+        ],
     )
 
     assert _MODULE.main() == 0

@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import public_spec_quality_lib as qlib  # noqa: E402
+import summary_output_lib as output  # noqa: E402
 from public_spec_inventory_lib import inventory  # noqa: E402
 
 
@@ -28,7 +28,7 @@ def summarize_payload(payload: dict[str, object], *, sample_limit: int = 10) -> 
     layering = payload.get("layering", {})
     layering_dict = layering if isinstance(layering, dict) else {}
     return {
-        "summary_note": "summary is triage output; use --json for full public-spec attribution",
+        "summary_note": "summary is triage output; use --detail for full public-spec attribution",
         "repo_root": payload["repo_root"],
         "summary": payload["summary"],
         "layering": {
@@ -46,19 +46,18 @@ def summarize_payload(payload: dict[str, object], *, sample_limit: int = 10) -> 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the public-skill spec quality inventory")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON rollups and samples instead of full spec attribution")
+    output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML rollups and samples instead of full spec attribution",
+        detail_help="Emit full spec attribution as YAML",
+    )
     args = parser.parse_args()
     try:
         payload = inventory(args.repo_root.resolve())
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    elif args.summary:
-        print(json.dumps(summarize_payload(payload), ensure_ascii=False, indent=2, sort_keys=True))
-    else:
+    if not output.emit_selected(payload, args, summarize=summarize_payload):
         print("\n".join(qlib.render_text_summary(payload)))
     return 0
 

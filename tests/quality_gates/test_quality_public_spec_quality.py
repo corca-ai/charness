@@ -151,6 +151,7 @@ def test_inventory_public_spec_quality_summary_omits_full_spec_attribution(tmp_p
         "--repo-root",
         str(repo),
         "--summary",
+        "--json",
     )
 
     assert result.returncode == 0, result.stderr

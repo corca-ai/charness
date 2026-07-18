@@ -129,7 +129,7 @@ gates:
     run_after: required-primer
     run_when: repo exposes this repo-native command or an equivalent standing quality gate
   - id: runtime-summary
-    command: python3 "$SKILL_DIR/scripts/render_runtime_summary.py" --repo-root . --json
+    command: python3 "$SKILL_DIR/scripts/render_runtime_summary.py" --repo-root . --detail
     purpose: measured runtime trend source before claiming cost or speed facts
     trust_model: measurement packet
     cost_tier: cheap
@@ -157,8 +157,11 @@ brief:
     consumption: >-
       Run a focused inventory only when the quality question brings its surface
       into scope; advisory inventories are review prompts, not mandates. Use
-      --summary as the first-read triage and switch to --json only when a finding
-      needs full attribution or disposition. An inventory cited in the artifact's
+      For inventories marked with --summary in the dispatch, use summary YAML as
+      the first-read triage and switch to --detail YAML only when a finding needs
+      full attribution or disposition. Unmarked legacy inventories retain their
+      documented output until migrated. Hidden JSON compatibility is for
+      programmatic consumers. An inventory cited in the artifact's
       `## Commands Run` must engage >=2 declared non-headline fields (one is
       enough when only one is declared; validate-inventory-consumption enforces).
       Inventory scripts resolve under `$SKILL_DIR/scripts/`; detail_refs under

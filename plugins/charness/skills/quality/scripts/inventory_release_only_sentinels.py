@@ -4,14 +4,19 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 import re
+import runpy
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 SENTINEL_RE = re.compile(
     r"(sentinel|smoke|guard|gate|dry_run|fail|block|reject|refuse|validate|"
     r"waiver|no_trigger|without|does_not|required|allows|warns)"
+)
+
+_summary_output = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
 )
 
 
@@ -146,7 +151,7 @@ def summarize(payload: dict[str, Any], *, sample_limit: int = 10) -> dict[str, A
     sentinel_files = [item["path"] for item in files if item["standing_sentinel_names"]]
     missing_sentinel_files = [finding["path"] for finding in payload["findings"]]
     return {
-        "summary_note": "summary is triage output; use --json for full per-test attribution",
+        "summary_note": "summary is triage output; use --detail for full per-test attribution",
         "file_count": payload["file_count"],
         "release_only_file_count": payload["release_only_file_count"],
         "release_only_test_count": payload["release_only_test_count"],
@@ -193,26 +198,17 @@ def main() -> int:
         default=[],
         help="Selected pytest file to inspect; repeatable. Defaults to tests containing release_only.",
     )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit full per-test JSON unless --summary selects compact summary output.",
-    )
-    parser.add_argument(
-        "--summary",
-        action="store_true",
-        help="Emit compact JSON counts and samples instead of full per-test attribution.",
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML counts and samples instead of full per-test attribution.",
+        detail_help="Emit full per-test attribution as YAML.",
     )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     paths = [(repo_root / path).resolve() for path in args.path]
     payload = inventory(repo_root, paths or None)
-    if args.summary:
-        print(json.dumps(summarize(payload), ensure_ascii=False, indent=2))
-    elif args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
+    if not _summary_output.emit_selected(payload, args, summarize=summarize):
         _print_text(payload)
     return 0
 

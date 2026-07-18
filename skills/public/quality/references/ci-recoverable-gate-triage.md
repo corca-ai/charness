@@ -58,7 +58,7 @@ for the changes that reach main, so moving it loses no required signal?*
 ## Use
 
 ```bash
-python3 "$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py" --repo-root . --detail
 python3 "$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py" --repo-root .
 ```
 

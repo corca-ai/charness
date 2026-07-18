@@ -97,6 +97,7 @@ def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_pa
         "--max-core-lines",
         "20",
         "--summary",
+        "--json",
     )
 
     assert result.returncode == 0, result.stderr

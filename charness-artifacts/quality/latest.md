@@ -1,1 +1,1 @@
-2026-07-18-test-isolation-quality.md
+2026-07-18-inventory-yaml-quality.md

@@ -5,12 +5,17 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import importlib.util
-import json
 import re
+import runpy
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+_summary_output = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
+)
 
 
 def _load_adapter_lib():
@@ -207,7 +212,7 @@ def summarize_report(report: dict[str, Any], *, sample_limit: int = 10) -> dict[
     terms = report.get("terms", [])
     term_items = terms if isinstance(terms, list) else []
     return {
-        "summary_note": "summary is triage output; use --json for full per-file terminology counts",
+        "summary_note": "summary is triage output; use --detail for full per-file terminology counts",
         "status": report["status"],
         "contract_path": report.get("contract_path"),
         "reason": report.get("reason"),
@@ -246,8 +251,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the ubiquitous-language terminology inventory")
     parser.add_argument("--adapter", type=Path, default=DEFAULT_CONTRACT_PATH, help="Quality adapter file declaring the domain_language_contract")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON totals and samples instead of full per-file counts")
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML totals and samples instead of full per-file counts",
+        detail_help="Emit full per-file terminology counts as YAML",
+    )
     args = parser.parse_args()
 
     try:
@@ -255,11 +263,7 @@ def main() -> int:
     except InventoryError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    elif args.summary:
-        print(json.dumps(summarize_report(report), ensure_ascii=False, indent=2, sort_keys=True))
-    else:
+    if not _summary_output.emit_selected(report, args, summarize=summarize_report):
         stream = sys.stderr if report["findings"] else sys.stdout
         stream.write(render_report(report) + "\n")
     return 1 if report["findings"] else 0

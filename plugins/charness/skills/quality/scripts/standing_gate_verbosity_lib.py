@@ -193,7 +193,7 @@ def summarize_payload(payload: dict[str, Any], *, sample_limit: int = 10) -> dic
     ]
     return {
         "repo_root": payload["repo_root"],
-        "summary_note": "summary is triage output; use --json for full surface, snippet, and finding attribution",
+        "summary_note": "summary is triage output; use --detail for full surface, snippet, and finding attribution",
         "surface_count": len(payload["surfaces"]),
         "finding_count": len(payload["findings"]),
         "axes": {

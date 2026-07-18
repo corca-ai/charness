@@ -37,7 +37,13 @@ def _inventory_json(repo: Path) -> dict:
 def _inventory_summary(repo: Path) -> dict:
     buffer = io.StringIO()
     saved_argv = _MODULE.sys.argv
-    _MODULE.sys.argv = ["inventory_lint_ignores.py", "--repo-root", str(repo), "--summary"]
+    _MODULE.sys.argv = [
+        "inventory_lint_ignores.py",
+        "--repo-root",
+        str(repo),
+        "--summary",
+        "--json",
+    ]
     try:
         with contextlib.redirect_stdout(buffer):
             assert _MODULE.main() == 0

@@ -111,6 +111,7 @@ def test_inventory_ubiquitous_language_summary_omits_full_per_file_counts(
         "--repo-root",
         str(repo),
         "--summary",
+        "--json",
     )
 
     assert result.returncode == 1

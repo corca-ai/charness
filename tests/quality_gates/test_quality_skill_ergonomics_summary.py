@@ -4,7 +4,6 @@ import builtins
 import json
 from pathlib import Path
 
-import pytest
 import yaml
 
 from .skill_ergonomics_support import _MODULE
@@ -35,7 +34,7 @@ def test_inventory_skill_ergonomics_summary_keeps_review_payload_compact(tmp_pat
         encoding="utf-8",
     )
 
-    result = _run("--repo-root", str(repo), "--summary")
+    result = _run("--repo-root", str(repo), "--summary", "--json")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -93,8 +92,8 @@ def test_inventory_skill_ergonomics_summary_yaml_is_compact_and_parseable(tmp_pa
         encoding="utf-8",
     )
 
-    json_result = _run("--repo-root", str(repo), "--summary")
-    yaml_result = _run("--repo-root", str(repo), "--summary-yaml")
+    json_result = _run("--repo-root", str(repo), "--summary", "--json")
+    yaml_result = _run("--repo-root", str(repo), "--summary")
 
     assert json_result.returncode == 0, json_result.stderr
     assert yaml_result.returncode == 0, yaml_result.stderr
@@ -102,7 +101,7 @@ def test_inventory_skill_ergonomics_summary_yaml_is_compact_and_parseable(tmp_pa
     assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
 
 
-def test_inventory_skill_ergonomics_summary_yaml_reports_missing_pyyaml(monkeypatch) -> None:
+def test_inventory_skill_ergonomics_summary_yaml_falls_back_without_pyyaml(monkeypatch) -> None:
     real_import = builtins.__import__
 
     def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
@@ -112,7 +111,6 @@ def test_inventory_skill_ergonomics_summary_yaml_reports_missing_pyyaml(monkeypa
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
 
-    with pytest.raises(SystemExit) as exc:
-        _MODULE.dump_yaml({})
+    rendered = _MODULE.dump_yaml({"ok": True})
 
-    assert "PyYAML is required for --summary-yaml" in str(exc.value)
+    assert json.loads(rendered) == {"ok": True}

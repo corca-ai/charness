@@ -3,6 +3,7 @@ from __future__ import annotations
 import builtins
 import json
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -18,6 +19,8 @@ OWNED_COMMAND_DOCS = (
     "AGENTS.md",
     "evals/cautilus/skill-experiment/README.md",
     "skills/public/quality/references/cautilus-on-demand.md",
+    "skills/public/quality/references/ci-recoverable-gate-triage.md",
+    "skills/public/quality/references/inventory-dispatch.md",
     "skills/public/release/references/index.md",
     "skills/public/create-cli/references/command-surface.md",
     "skills/public/create-cli/references/command-conventions.md",
@@ -47,6 +50,7 @@ ALWAYS_STRUCTURED_COMMANDS = (
 DETAIL_COMMANDS = (
     ("scripts/plan_cautilus_proof.py", "--repo-root", "."),
     ("skills/public/quality/scripts/plan_quality_run.py", "--repo-root", "."),
+    ("skills/public/quality/scripts/render_runtime_summary.py", "--repo-root", "."),
     ("skills/public/release/scripts/plan_release_run.py", "--repo-root", "."),
     ("scripts/plan_risk_interrupt.py", "--repo-root", "."),
     ("skills/public/setup/scripts/render_skill_routing.py", "--repo-root", "."),
@@ -58,6 +62,10 @@ DETAIL_COMMANDS = (
         "--skill-id",
         "handoff",
     ),
+)
+
+SUMMARY_COMMANDS = (
+    ("skills/public/quality/scripts/inventory_skill_ergonomics.py", "--repo-root", "."),
 )
 
 
@@ -104,6 +112,61 @@ def test_owned_command_references_do_not_teach_json_output() -> None:
     assert "--detail" in release_index
 
 
+def test_quality_catalog_declares_yaml_agent_packets() -> None:
+    catalog_path = ROOT / "skills/public/quality/references/catalog.yaml"
+    catalog = yaml.safe_load(catalog_path.read_text(encoding="utf-8"))
+    commands = {gate["id"]: gate["command"] for gate in catalog["gates"]}
+
+    assert "--json" not in "\n".join(commands.values())
+    assert commands["runtime-summary"].endswith("--detail")
+    assert commands["skill-ergonomics"].endswith("--summary")
+
+
+def test_inventory_dispatch_commands_are_runnable_yaml_surfaces(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("PYTEST_DEBUG_TEMPROOT", str(tmp_path / "pytest-debug-root"))
+    dispatch = (ROOT / "skills/public/quality/references/inventory-dispatch.md").read_text(
+        encoding="utf-8"
+    )
+    snippets = re.findall(r"`\$SKILL_DIR/scripts/((?:inventory_[^` ]+|run_dead_code_advisory\.py)[^`]*)`", dispatch)
+    summary_snippets = [snippet for snippet in snippets if "--summary" in snippet]
+
+    assert len(summary_snippets) == 9
+    for scripts_dir in (
+        "skills/public/quality/scripts",
+        "plugins/charness/skills/quality/scripts",
+    ):
+        for snippet in summary_snippets:
+            argv = shlex.split(snippet)
+            assert argv[1:3] == ["--repo-root", "."]
+            argv[2] = str(tmp_path)
+            command = f"{scripts_dir}/{argv[0]}"
+            summary = _run(command, *argv[1:])
+            legacy = _run(command, *argv[1:], "--json")
+            help_result = _run(command, "--help")
+
+            assert summary.returncode == legacy.returncode, command
+            assert yaml.safe_load(summary.stdout) == json.loads(legacy.stdout), command
+            assert "--summary" in help_result.stdout
+            assert "--detail" in help_result.stdout
+            assert "--json" not in help_result.stdout
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "plugins/charness/skills/quality/scripts/inventory_skill_ergonomics.py",
+    ],
+)
+def test_summary_and_detail_are_mutually_exclusive(command: str) -> None:
+    result = _run(command, "--repo-root", ".", "--summary", "--detail")
+
+    assert result.returncode == 2
+    assert "not allowed with argument" in result.stderr
+
+
 @pytest.mark.parametrize("command", ALWAYS_STRUCTURED_COMMANDS)
 def test_default_yaml_preserves_hidden_json_compatibility(command: tuple[str, ...]) -> None:
     default = _run(*command)
@@ -123,6 +186,17 @@ def test_detail_yaml_preserves_hidden_json_compatibility(command: tuple[str, ...
 
     assert detail.returncode == legacy.returncode
     assert yaml.safe_load(detail.stdout) == json.loads(legacy.stdout)
+    assert "--json" not in help_result.stdout
+
+
+@pytest.mark.parametrize("command", SUMMARY_COMMANDS)
+def test_summary_yaml_preserves_hidden_json_compatibility(command: tuple[str, ...]) -> None:
+    summary = _run(*command, "--summary")
+    legacy = _run(*command, "--summary", "--json")
+    help_result = _run(command[0], "--help")
+
+    assert summary.returncode == legacy.returncode == 0
+    assert yaml.safe_load(summary.stdout) == json.loads(legacy.stdout)
     assert "--json" not in help_result.stdout
 
 

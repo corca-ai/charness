@@ -3,9 +3,14 @@
 from __future__ import annotations
 
 import argparse
-import json
+import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+_summary_output = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
+)
 
 
 def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
@@ -21,7 +26,7 @@ def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str
         ),
     )[:sample_limit]
     return {
-        "summary_note": "summary is triage output; use --json for full lint-ignore findings",
+        "summary_note": "summary is triage output; use --detail for full lint-ignore findings",
         "repo_root": payload["repo_root"],
         "summary": payload["summary"],
         "priority_findings_sample": priority_sample,
@@ -43,8 +48,11 @@ def main() -> int:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the lint-ignore inventory")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON counts and priority samples instead of full findings")
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML counts and priority samples instead of full findings",
+        detail_help="Emit full lint-ignore findings as YAML",
+    )
     args = parser.parse_args()
     target_root = args.repo_root.resolve()
     adapter = load_quality_adapter_permissive(target_root)
@@ -56,11 +64,7 @@ def main() -> int:
     payload["adapter_errors"] = adapter.get("errors", [])
     payload["adapter_warnings"] = adapter.get("warnings", [])
     payload["adapter_load_mode"] = adapter.get("load_mode", "permissive")
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    elif args.summary:
-        print(json.dumps(summarize(payload), ensure_ascii=False, indent=2, sort_keys=True))
-    else:
+    if not _summary_output.emit_selected(payload, args, summarize=summarize):
         for finding in payload["findings"]:
             codes = ",".join(finding["codes"]) or "*"
             print(f"{finding['tool']}:{finding['scope']}:{codes} {finding['path']}:{finding['line']}")

@@ -1,19 +1,62 @@
 from __future__ import annotations
 
+import argparse
 import json
-from typing import Any
+import runpy
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Callable
 
 
-def dump_yaml(payload: dict[str, Any]) -> str:
-    try:
-        import yaml  # type: ignore[import-untyped]
-    except ImportError as exc:
-        raise SystemExit("PyYAML is required for --summary-yaml") from exc
-    return yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
+def _load_yaml_output() -> SimpleNamespace:
+    helper = next(
+        (
+            ancestor / "scripts" / "yaml_output.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "yaml_output.py").is_file()
+        ),
+        None,
+    )
+    if helper is None:
+        raise RuntimeError("scripts/yaml_output.py not found")
+    return SimpleNamespace(**runpy.run_path(str(helper)))
 
 
-def emit_summary(payload: dict[str, Any], *, as_yaml: bool) -> None:
-    if as_yaml:
-        print(dump_yaml(payload), end="")
-    else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+_YAML_OUTPUT = _load_yaml_output()
+dump_yaml = _YAML_OUTPUT.render_yaml
+
+
+def emit_yaml(payload: dict[str, Any]) -> None:
+    print(dump_yaml(payload), end="")
+
+
+def emit_json(payload: dict[str, Any]) -> None:
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def add_output_args(
+    parser: argparse.ArgumentParser,
+    *,
+    summary_help: str,
+    detail_help: str,
+) -> None:
+    output_mode = parser.add_mutually_exclusive_group()
+    output_mode.add_argument("--summary", action="store_true", help=summary_help)
+    output_mode.add_argument("--detail", action="store_true", help=detail_help)
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+
+
+def emit_selected(
+    payload: dict[str, Any],
+    args: argparse.Namespace,
+    *,
+    summarize: Callable[[dict[str, Any]], dict[str, Any]],
+) -> bool:
+    selected = summarize(payload) if args.summary else payload
+    if args.json:
+        emit_json(selected)
+        return True
+    if args.summary or args.detail:
+        emit_yaml(selected)
+        return True
+    return False

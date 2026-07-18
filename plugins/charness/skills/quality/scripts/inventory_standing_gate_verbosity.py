@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +17,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _standing_gate_verbosity_lib_module = SKILL_RUNTIME.load_local_skill_module(__file__, "standing_gate_verbosity_lib")
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 inventory = _standing_gate_verbosity_lib_module.inventory
 summarize_payload = _standing_gate_verbosity_lib_module.summarize_payload
 
@@ -25,18 +25,18 @@ summarize_payload = _standing_gate_verbosity_lib_module.summarize_payload
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the standing-gate verbosity inventory")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON triage output")
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML triage output",
+        detail_help="Emit the full inventory payload as YAML",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     payload = inventory(args.repo_root.resolve())
-    if args.json or args.summary:
-        output_payload = summarize_payload(payload) if args.summary else payload
-        print(json.dumps(output_payload, ensure_ascii=False, indent=2))
-    else:
+    if not _summary_output.emit_selected(payload, args, summarize=summarize_payload):
         for name, axis in payload["axes"].items():
             print(f"{name}: {axis['status']}")
             for finding in axis["findings"]:

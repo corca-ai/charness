@@ -12,10 +12,12 @@ artifact summarizes a cited inventory by headline only, and
 `check-inventory-declaration-coverage` keep the declaration drift-free and
 complete (declaration: `references/inventory-consumer-fields.json`).
 
-For inventories that support `--summary`, use the summary as the first-read
-triage surface and switch to `--json` only when a finding needs full attribution
-or disposition. A summary is not complete evidence; it is the bounded index that
-keeps quality review from spending context before a candidate earns it.
+For inventories that support `--summary`, use its compact YAML as the first-read
+triage surface and switch to `--detail` YAML only when a finding earns full
+attribution or disposition. Hidden JSON compatibility is for programmatic
+consumers, not agent review. A summary is not complete evidence; it is the
+bounded index that keeps quality review from spending context before a candidate
+earns it.
 
 ## CLI And Operator Surface
 
@@ -38,9 +40,9 @@ multiple archetype schema namespaces, and the command-docs drift gate.
 ## Docs And Readability
 
 - entrypoint docs:
-  `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py --summary`
+  `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py --repo-root . --summary`
 - reader-facing public specs:
-  `$SKILL_DIR/scripts/inventory_public_spec_quality.py --summary`
+  `$SKILL_DIR/scripts/inventory_public_spec_quality.py --repo-root . --summary`
 - rendered Markdown preview:
   `references/bootstrap-escalations.md`
 - public-spec layering:
@@ -56,7 +58,7 @@ and executable specs use the rendered Specdown report.
 ## Skills
 
 - skill ergonomics:
-  `$SKILL_DIR/scripts/inventory_skill_ergonomics.py --summary`
+  `$SKILL_DIR/scripts/inventory_skill_ergonomics.py --repo-root . --summary`
 - public-skill dogfood:
   `$SKILL_DIR/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id>`
 - skill quality lens:
@@ -75,15 +77,15 @@ does not return an empty scan.
 ## Runtime And Test Economics
 
 - standing gate verbosity:
-  `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py --summary`
+  `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py --repo-root . --summary`
 - standing test economics:
-  `$SKILL_DIR/scripts/inventory_standing_test_economics.py --summary`
+  `$SKILL_DIR/scripts/inventory_standing_test_economics.py --repo-root . --summary`
 - executable-spec runtime and dup economics:
   `references/executable-spec-economics.md`
 - duplicate discovery, broad scanner waste, and intra-test repeated reads:
   `$SKILL_DIR/scripts/inventory_structural_waste.py`
 - release-only sentinel coverage:
-  `$SKILL_DIR/scripts/inventory_release_only_sentinels.py --summary`
+  `$SKILL_DIR/scripts/inventory_release_only_sentinels.py --repo-root . --summary`
   (use `--path` for selected slow/release-only files; the default all-tests
   scan is intentionally broad and advisory-noisy)
 - startup probes:
@@ -172,7 +174,7 @@ For external/runtime capability slices, treat readiness-only proof (`surface`,
   (`references/brittle-source-guards.md` — the brittle / at_risk /
   normalization_needed taxonomy, Recommendation Order, and policy-without-tool rule)
 - lint suppression pressure:
-  `$SKILL_DIR/scripts/inventory_lint_ignores.py --summary`
+  `$SKILL_DIR/scripts/inventory_lint_ignores.py --repo-root . --summary`
   (`references/lint-ignore-discipline.md` — suppression pressure points, the
   keep-it-narrow-and-cheaper-than-the-deferred-fix rule, and Retained Policy Ignores)
 - gitignore scan hygiene:
@@ -247,7 +249,7 @@ scope, and artifacts.
 ## Language And Adapter Policy
 
 - ubiquitous language:
-  `$SKILL_DIR/scripts/inventory_ubiquitous_language.py --summary`
+  `$SKILL_DIR/scripts/inventory_ubiquitous_language.py --repo-root . --summary`
 - adapter/gate design:
   `$SKILL_DIR/scripts/inventory_adapter_gate_design.py`
 
