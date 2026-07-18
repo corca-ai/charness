@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 _common = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_common.py")))
+_rollback = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_rollback.py")))
 
 
 def _prepare_release_attempt(
@@ -139,8 +140,18 @@ def _create_release_commit(
     *,
     cli: Any,
 ) -> dict[str, Any]:
-    state = _prepare_release_attempt(args, repo_root, plan, adapter_data, cli=cli)
-    return _commit_release_artifact(args, repo_root, state, adapter_data, cli=cli)
+    snapshot = _rollback["snapshot_clean_head"](repo_root, run_command=cli.run)
+    try:
+        state = _prepare_release_attempt(args, repo_root, plan, adapter_data, cli=cli)
+        return _commit_release_artifact(args, repo_root, state, adapter_data, cli=cli)
+    except BaseException:
+        plan["payload"]["precommit_rollback"] = _rollback["rollback_precommit_changes"](
+            repo_root,
+            snapshot,
+            tag_name=plan["tag_name"],
+            run_command=cli.run,
+        )
+        raise
 
 
 def _publish_and_finalize(

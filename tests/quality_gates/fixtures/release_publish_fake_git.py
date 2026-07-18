@@ -43,4 +43,10 @@ if os.environ.get("FAKE_GIT_FETCH_TAG_FAIL") == "1" and args == [
 ]:
     print("forced tag fetch failure", file=sys.stderr)
     raise SystemExit(43)
+if os.environ.get("FAKE_GIT_ADD_FAIL") == "1" and args[:1] == ["add"]:
+    print("forced git add failure", file=sys.stderr)
+    raise SystemExit(47)
+if os.environ.get("FAKE_GIT_RESTORE_FAIL") == "1" and args[:2] == ["restore", "--source"]:
+    print("forced git restore failure", file=sys.stderr)
+    raise SystemExit(48)
 raise SystemExit(subprocess.run([config["real_git"], *args]).returncode)

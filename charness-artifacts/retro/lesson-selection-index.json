@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-18",
   "source_artifact_count": 358,
-  "candidate_count": 1496,
+  "candidate_count": 1499,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -2497,6 +2497,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:98d79eb4d285",
+      "kind": "next_improvement",
+      "lesson": "before implementing a clean-start mutating command, draw its failure states around the first history-moving operation and make every owned edge restore or resume before writing the happy path.",
+      "normalized_key": "before implementing a clean start mutating command draw its failure states around the first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:096eccc72f6b",
       "kind": "next_improvement",
       "lesson": "begin output-format migrations with a live consumer-language scan spanning governing instructions, skills, references, help, and exports.",
@@ -2531,6 +2551,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:77172d695496",
+      "kind": "next_improvement",
+      "lesson": "fault-inject the second operation in multi-step recovery, because first-operation tests cannot prove partial evidence remains truthful.",
+      "normalized_key": "fault inject the second operation in multi step recovery because first operation tests cannot",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
@@ -2701,6 +2741,26 @@
       "kind": "next_improvement",
       "lesson": "preserve this population-first migration rule and the earlier seam-first failure rule in `recent-lessons.md`, and reflect them in the next-session handoff only when they change the next move.",
       "normalized_key": "preserve this population first migration rule and the earlier seam first failure rule in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:57bbde5d9264",
+      "kind": "next_improvement",
+      "lesson": "profile the release coverage fixture's subprocess setup before the next release-helper expansion; preserve real Git transition proof while moving repeated fixture construction off the coverage critical path.",
+      "normalized_key": "profile the release coverage fixture s subprocess setup before the next release helper expansion",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",

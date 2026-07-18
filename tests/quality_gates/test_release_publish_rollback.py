@@ -1,0 +1,156 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import subprocess
+from pathlib import Path
+
+from .release_publish_fixtures import (
+    REPO_ROOT,
+    _release_env,
+    _run_publish_patch,
+    _seed_publish_release_repo,
+)
+
+ROLLBACK_PATH = (
+    REPO_ROOT
+    / "skills"
+    / "public"
+    / "release"
+    / "scripts"
+    / "publish_release_rollback.py"
+)
+
+
+def _load_rollback():
+    spec = importlib.util.spec_from_file_location("publish_release_rollback_under_test", ROLLBACK_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _git(repo: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", *args],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _failure_payload(stderr: str) -> dict:
+    start = "BEGIN publish_release_failure_payload"
+    end = "END publish_release_failure_payload"
+    assert start in stderr and end in stderr, stderr
+    return json.loads(stderr.split(start, 1)[1].split(end, 1)[0].strip())
+
+
+def test_precommit_quality_failure_restores_clean_retryable_worktree(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    quality_script = repo / "scripts" / "run-quality.sh"
+    quality_script.write_text(
+        "#!/usr/bin/env bash\nset -euo pipefail\ngit mv README.md RENAMED.md\n"
+        "echo 'prepared quality failed' >&2\nexit 1\n",
+        encoding="utf-8",
+    )
+    quality_script.chmod(0o755)
+    _git(repo, "add", "scripts/run-quality.sh")
+    _git(repo, "commit", "-m", "make release quality fail")
+
+    head_before = _git(repo, "rev-parse", "HEAD")
+    manifest = repo / "packaging" / "demo.json"
+    manifest_before = manifest.read_bytes()
+
+    result = _run_publish_patch(repo, _release_env(tmp_path, bin_dir))
+
+    assert result.returncode != 0
+    assert _git(repo, "rev-parse", "HEAD") == head_before
+    assert _git(repo, "status", "--short") == ""
+    assert manifest.read_bytes() == manifest_before
+    assert (repo / "README.md").is_file()
+    assert not (repo / "RENAMED.md").exists()
+    assert _git(repo, "tag", "--list", "v0.0.1") == ""
+
+    rollback = _failure_payload(result.stderr)["precommit_rollback"]
+    assert rollback["status"] == "restored"
+    assert "packaging/demo.json" in rollback["restored_paths"]
+    assert "charness-artifacts/release/latest.md" in rollback["quarantined_paths"]
+    assert "RENAMED.md" in rollback["quarantined_paths"]
+    quarantine = Path(rollback["quarantine_root"])
+    assert (quarantine / "charness-artifacts" / "release" / "latest.md").is_file()
+
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:1] == ["push"] for entry in git_log)
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+def test_git_add_failure_before_release_commit_rolls_back(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_GIT_ADD_FAIL"] = "1"
+    head_before = _git(repo, "rev-parse", "HEAD")
+
+    result = _run_publish_patch(repo, env)
+
+    assert result.returncode != 0
+    assert _git(repo, "rev-parse", "HEAD") == head_before
+    assert _git(repo, "status", "--short") == ""
+    rollback = _failure_payload(result.stderr)["precommit_rollback"]
+    assert rollback["status"] == "restored"
+
+
+def test_restore_failure_does_not_claim_planned_paths_were_restored(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    quality_script = repo / "scripts" / "run-quality.sh"
+    quality_script.write_text("#!/usr/bin/env bash\nexit 1\n", encoding="utf-8")
+    quality_script.chmod(0o755)
+    _git(repo, "add", "scripts/run-quality.sh")
+    _git(repo, "commit", "-m", "make release quality fail")
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_GIT_RESTORE_FAIL"] = "1"
+
+    result = _run_publish_patch(repo, env)
+
+    rollback = _failure_payload(result.stderr)["precommit_rollback"]
+    assert rollback["status"] == "failed"
+    assert rollback["restored_paths"] == []
+    assert rollback["remaining_status"]
+
+
+def test_quarantine_reports_completed_moves_before_a_later_failure(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    rollback = _load_rollback()
+    repo = tmp_path / "repo"
+    quarantine_base = tmp_path / "git-data"
+    repo.mkdir()
+    (repo / "first.txt").write_text("first", encoding="utf-8")
+    (repo / "second.txt").write_text("second", encoding="utf-8")
+    real_move = rollback.shutil.move
+    calls = 0
+
+    def fail_second_move(source: str, target: str):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("injected second move failure")
+        return real_move(source, target)
+
+    monkeypatch.setattr(rollback.shutil, "move", fail_second_move)
+
+    root, moved, errors = rollback._quarantine_new_paths(
+        repo,
+        ["first.txt", "second.txt"],
+        quarantine_base=quarantine_base,
+        tag_name="v1.2.3",
+    )
+
+    assert root is not None
+    assert moved == ["first.txt"]
+    assert errors and errors[0].startswith("second.txt: OSError:")
+    assert (Path(root) / "first.txt").is_file()
+    assert (repo / "second.txt").is_file()

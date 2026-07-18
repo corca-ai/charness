@@ -363,6 +363,6 @@ def main() -> None:
             resume_publish(repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=_execution_context())
             return
         execute_publish_plan(args, repo_root, plan, adapter_data)
-    except SystemExit as exc:
+    except BaseException as exc:
         _release_runtime.print_failure_payload(plan["payload"], exc)
         raise

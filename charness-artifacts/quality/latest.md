@@ -1,1 +1,1 @@
-2026-07-18-lint-inventory-trust-review.md
+2026-07-18-release-local-failure-recovery-review.md

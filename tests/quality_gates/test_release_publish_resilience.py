@@ -487,7 +487,12 @@ def test_publish_release_imports_from_exported_plugin_layout() -> None:
 # --- Gap 1: resumable / idempotent publish ------------------------------------
 
 
-def _simulate_partial_publish(repo: Path, *, closeout_body: str | None = None) -> None:
+def _simulate_partial_publish(
+    repo: Path,
+    *,
+    closeout_body: str | None = None,
+    create_tag: bool = True,
+) -> None:
     # Reproduce the post-commit, pre-push partial state: a local `Release demo
     # 0.0.0` commit + tag v0.0.0 that never reached the remote and has no release.
     output_dir = repo / "charness-artifacts" / "release"
@@ -498,7 +503,8 @@ def _simulate_partial_publish(repo: Path, *, closeout_body: str | None = None) -
     if closeout_body is not None:
         commit_args.extend(["-m", closeout_body])
     _git(repo, *commit_args)
-    _git(repo, "tag", "v0.0.0")
+    if create_tag:
+        _git(repo, "tag", "v0.0.0")
 
 
 def _resume_closeout_args(carrier: Path) -> tuple[str, ...]:
@@ -626,6 +632,41 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     assert "quality_command" in runtime_labels
     assert "push_create_verify_release" in runtime_labels
     assert "post_publish_install_refresh" in runtime_labels
+
+
+def test_resume_recreates_missing_local_tag_after_revalidation(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _simulate_partial_publish(repo, create_tag=False)
+    release_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_publish(
+        repo,
+        env,
+        "--resume",
+        "--publish-current",
+        "--execute",
+        "--critique-blocked",
+        CRITIQUE_BLOCKED,
+    )
+
+    assert result.returncode == 0, result.stderr
+    tag_head = subprocess.run(
+        ["git", "rev-list", "-n", "1", "v0.0.0"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert tag_head == release_head
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert ["tag", "v0.0.0", release_head] in git_log
 
 
 def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_path: Path) -> None:

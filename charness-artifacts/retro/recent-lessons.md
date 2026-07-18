@@ -17,7 +17,7 @@
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md`; sources: 101)
 - before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - before an irreversible cumulative operation, compute and prove the exact cumulative range that the boundary will consume; do not assume individually closed slices compose automatically. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
-- begin output-format migrations with a live consumer-language scan spanning governing instructions, skills, references, help, and exports. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
+- before implementing a clean-start mutating command, draw its failure states around the first history-moving operation and make every owned edge restore or resume before writing the happy path. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 
 ## Selection Policy
 
@@ -130,4 +130,3 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`

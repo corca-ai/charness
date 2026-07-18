@@ -9,7 +9,7 @@
 ## Current State
 
 - The next operator can start new work without reopening the v2.1.2 release or
-  reconstructing its lint-inventory repair. Use the owning artifacts
+  reconstructing the local release-recovery change. Use the owning artifacts
   below for proof details and route the next task through its matching skill.
 - v2.1.2 is public, independently read back over HTTPS, and installed on this
   maintainer machine. The release helper passed release quality, fresh-checkout,
@@ -23,15 +23,20 @@
 - Repo Markdown closeout now runs the existing spec-evidence durability check
   before broad pytest, so non-durable reproduction markers fail at their owning
   boundary. Stable manifest fixtures are read once per test module.
+- Local release preparation now restores its clean starting commit and
+  quarantines newly created non-ignored files when it fails before commit.
+  Partial recovery stays explicit. If the release commit exists but the local
+  tag does not, resume revalidates and tags that exact commit only before any
+  remote/public publication. This work remains local and unpushed by request.
 
 ## Next Session
 
 1. If no explicit task is present, run the workflow trigger above and choose the
    smallest coherent backlog slice.
-2. For future parser inventories, give each directive syntax its own grammar
-   owner and materialize lazy parsers inside the exception boundary. For
-   irreversible operations, prove the exact consumed range. The checklist is in
-   [recent lessons](../charness-artifacts/retro/recent-lessons.md).
+2. For clean-start mutating workflows, enumerate owned mutations before coding
+   and make every failure either restore the start state or emit a typed,
+   resumable state. For irreversible operations, prove the exact consumed range.
+   The checklist is in [recent lessons](../charness-artifacts/retro/recent-lessons.md).
 3. Keep D18 ignored unless the operator explicitly reopens it.
 
 ## Discuss
@@ -43,7 +48,7 @@
 
 - [release state](../charness-artifacts/release/latest.md)
 - [quality review](../charness-artifacts/quality/latest.md)
-- [release critique](../charness-artifacts/critique/2026-07-18-lint-inventory-trust-and-v2-1-2-release.md)
+- [release-recovery critique](../charness-artifacts/critique/2026-07-18-release-local-failure-recovery.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 
 - Refresh kept ([release state](../charness-artifacts/release/latest.md)):

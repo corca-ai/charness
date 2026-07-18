@@ -16,6 +16,20 @@ Keep these states distinct:
 
 Tag push or workflow completion is not public release verification.
 
+## Local Failure Recovery
+
+Before the release commit exists, the publish helper owns every change made by
+version bump, export, artifact preparation, and pre-push quality. A failure in
+that phase restores tracked paths to the starting `HEAD`, moves newly created
+files under Git's `charness-release-rollbacks` path, and records the result in
+`precommit_rollback`; the normal publish command can then be retried from a
+clean worktree.
+
+After the release commit exists, rollback must not rewrite it.
+`--resume --publish-current` revalidates the partial release commit and may create its
+missing local tag only when neither a remote tag nor a public release exists.
+The helper still refuses ambiguous tag or publication state.
+
 ## Public Surface Verification
 
 For every operator-facing surface the release touched, record a behavioral

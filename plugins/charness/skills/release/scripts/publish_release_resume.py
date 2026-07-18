@@ -1,8 +1,8 @@
 """Resume a partially-completed `publish_release` run.
 
-When the pre-push gate flakes after the local `Release ...` commit + tag are made
-but before the push lands, the original run leaves a partial state: commit + tag
-local, nothing on the remote, no GitHub release. Re-running the normal flow is
+When the pre-push gate flakes after the local `Release ...` commit is made but
+before the push lands, the original run leaves a partial state: a local commit,
+an optional local tag, nothing on the remote, and no GitHub release. Re-running the normal flow is
 not idempotent (`git commit` hits "nothing to commit", `git tag` hits "tag
 exists"). `--resume` detects that exact partial state, RE-VALIDATES the pre-push
 gates (it must not blindly push a stale local commit), then continues with
@@ -86,11 +86,15 @@ def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
     if not state["head_is_release_commit"]:
         raise SystemExit(
             f"--resume: HEAD is not the `{tag_name}` release commit; nothing to resume. "
-            "Resume only continues a publish whose local release commit + tag already exist."
+            "Resume only continues a publish whose local release commit already exists."
         )
     if not state["tag_local"]:
-        raise SystemExit(f"--resume: local tag `{tag_name}` is missing; nothing to resume.")
-    if not state["tag_points_at_head"]:
+        if state["tag_remote"] or state["release_exists"]:
+            raise SystemExit(
+                f"--resume: local tag `{tag_name}` is missing while remote publication state exists; "
+                "refusing to reconstruct an ambiguous tag."
+            )
+    elif not state["tag_points_at_head"]:
         raise SystemExit(
             f"--resume: tag `{tag_name}` does not point at HEAD; refusing to resume an inconsistent state."
         )
@@ -114,7 +118,10 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     assert_resumable(state, tag_name=tag_name)
     payload["resume_state"] = state
     if not args.execute:
-        payload["resume"] = "dry-run: would re-validate gates, then push/create/verify the existing commit+tag"
+        payload["resume"] = (
+            "dry-run: would re-validate gates, create the missing local tag when needed, "
+            "then push/create/verify the existing release commit"
+        )
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
 
@@ -171,6 +178,10 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     _commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
 
     def push_create_verify_release() -> tuple[str, Any]:
+        if not state["tag_local"]:
+            cli.run(["git", "tag", tag_name, state["head_sha"]], cwd=repo_root)
+            state["tag_local"] = True
+            state["tag_points_at_head"] = True
         if not state["tag_remote"]:
             cli.run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
         if state["release_exists"]:

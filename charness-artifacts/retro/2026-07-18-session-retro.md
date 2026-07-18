@@ -25,10 +25,14 @@ Five related autonomous-improvement rounds exposed the same structural lesson. F
   structural-waste inventory moved its repeated stable-file reads from 2 to 0.
 - Packet Consumed: `charness-artifacts/retro/2026-07-18-111102-packet.md` for
   the v2.1.2 continuation.
+- The release-recovery continuation fault-injected preparation, restore,
+  quarantine, commit, and missing-tag transitions. Fresh-eye review exposed
+  rename restoration, incomplete exception ownership, false partial-recovery
+  evidence, and a stranded post-commit state before local closeout.
 
 ## Waste
 
-The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range.
+The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range. The first rollback draft repeated that pattern at a smaller boundary: it named happy-path Git commands but not the complete failure-state population, mixed HEAD-backed and newly created paths, trusted rename-shaped diff output, and reported planned recovery work as completed work. Fault injection converted those assumptions into explicit states. The final focused coverage producer took 146.4 seconds because it drives many seeded Git subprocesses under coverage. That is gate-baseline runtime debt in the proof implementation, not a necessary-safety claim or a blocker for the correctness slice.
 
 ## Critical Decisions
 
@@ -46,6 +50,11 @@ The first YAML slice optimized the visible dispatch list instead of first naming
 - Route an existing deterministic check through the changed surface that can
   trigger it; a gate that exists only in the broad suite is late feedback, not
   an author-time capability.
+- Assign one owner to the complete local mutation interval. Before HEAD moves,
+  failures restore the snapshot; after HEAD moves, they preserve history and
+  enter only an explicitly checked resume transition.
+- Recovery evidence describes completed operations, not intended operations;
+  partial progress must survive the next restore or quarantine error.
 
 ## Expert Counterfactuals
 
@@ -57,6 +66,10 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   from rationale, and the tool needs syntax-specific parsers plus executable
   malformed-input proof. A generic splitter made all three look simpler while
   weakening the actual capability.
+- Engelbart's lens applies to failure recovery: the method is “retry safely,”
+  the language is a typed pre-commit/post-commit state model, and the tool is
+  snapshot, restore, quarantine, and fault injection. A rollback function
+  without the state language would merely move the terminal green.
 
 ## Sibling Search
 
@@ -72,6 +85,9 @@ The first YAML slice optimized the visible dispatch list instead of first naming
 - specialization down: lazy tokenization fallback | decision: same waste, fix now | proof: tokens materialize before findings; malformed EOF yields exactly one fallback result
 - mental-model siblings: Nose token normalization | decision: intentional boundary | proof: its caller already catches iteration-time `TokenError` and falls back atomically
 - abstraction up: repo-Markdown surface obligations | decision: same waste, fix now | proof: the existing evidence-durability validator now runs before broad pytest for changed Markdown
+- same layer: other clean-start local mutation helpers | decision: no second matching owner found; keep as a design-review question, not a framework | proof: the search and critique stayed scoped to release preparation/resume
+- abstraction up: irreversible publication | decision: intentional boundary | proof: rollback stops when HEAD moves; remote/public absence and distinct readback remain publication owners
+- specialization down: restore and quarantine operations | decision: same waste, fix now | proof: per-operation fault tests preserve only completed work and expose remaining status
 
 ## Next Improvements
 
@@ -86,6 +102,14 @@ The first YAML slice optimized the visible dispatch list instead of first naming
 - workflow: when a broad gate catches a cheap deterministic defect on a changed
   surface, first repair that surface's existing-validator routing; do not create
   a duplicate floor or rely on memory.
+- workflow: before implementing a clean-start mutating command, draw its failure
+  states around the first history-moving operation and make every owned edge
+  restore or resume before writing the happy path.
+- capability: fault-inject the second operation in multi-step recovery, because
+  first-operation tests cannot prove partial evidence remains truthful.
+- capability: profile the release coverage fixture's subprocess setup before
+  the next release-helper expansion; preserve real Git transition proof while
+  moving repeated fixture construction off the coverage critical path.
 - memory: preserve this population-first migration rule and the earlier seam-first failure rule in `recent-lessons.md`, and reflect them in the next-session handoff only when they change the next move.
 
 ## Persisted

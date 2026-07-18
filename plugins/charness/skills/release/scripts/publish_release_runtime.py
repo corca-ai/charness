@@ -39,6 +39,7 @@ def print_failure_payload(
         "fresh_checkout_probe_status",
         "public_release_verification",
         "release_runtime",
+        "precommit_rollback",
         "issue_closeout_draft_validation",
         "resume_head_closeout_validation",
     )
