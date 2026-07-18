@@ -5,6 +5,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from .release_publish_fixtures import (
     REPO_ROOT,
@@ -691,6 +692,49 @@ def test_resume_dry_run_describes_revalidation_without_mutating(tmp_path: Path) 
     assert subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
     ).stdout.strip() == head_before
+
+
+def test_normal_dry_run_prints_plan_without_mutating(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    head_before = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+    result = _run_publish(
+        repo,
+        _release_env(tmp_path, bin_dir),
+        "--part",
+        "patch",
+        "--critique-blocked",
+        CRITIQUE_BLOCKED,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["execute"] is False
+    assert subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip() == head_before
+
+
+def test_resume_preflight_rejects_non_string_manifest_version(tmp_path: Path) -> None:
+    resume = _load_resume()
+    cli = SimpleNamespace(
+        build_release_payload=lambda _repo: {
+            "surface_versions": {"packaging_manifest": None}
+        }
+    )
+
+    try:
+        resume.preflight_resume_state(
+            tmp_path,
+            args=SimpleNamespace(remote="origin"),
+            adapter_data={"package_id": "demo", "release_backend": {}},
+            cli=cli,
+        )
+    except SystemExit as exc:
+        assert "packaging manifest version" in str(exc)
+    else:
+        raise AssertionError("non-string manifest version must block resume preflight")
 
 
 def test_resume_refuses_missing_local_tag_when_remote_tag_exists(tmp_path: Path) -> None:
