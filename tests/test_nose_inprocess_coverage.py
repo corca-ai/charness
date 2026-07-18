@@ -680,7 +680,8 @@ def test_main_help_documents_clone_inventory_options(monkeypatch, capsys) -> Non
         "--min-size": "Minimum token count for a clone family",
         "--top": "Maximum ranked families to report normally (default: 20); --write-baseline ignores this limit and scans all families",
         "--sort": "Ranking field for reported families",
-        "--json": "Emit the full advisory payload as JSON",
+        "--summary": "Emit compact YAML clone-family counts and samples for triage",
+        "--detail": "Emit the full clone-family advisory payload as YAML",
     }
     for option, fragment in expected.items():
         match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
@@ -689,3 +690,4 @@ def test_main_help_documents_clone_inventory_options(monkeypatch, capsys) -> Non
         end = match.end() + next_option.start() if next_option else len(output)
         option_block = re.sub(r"\s+", " ", output[match.start() : end])
         assert fragment in option_block, f"missing help for {option}: {fragment}"
+    assert "--json" not in output

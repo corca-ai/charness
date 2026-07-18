@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, bounded_list, emit_selected  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -23,10 +25,38 @@ load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter"
 runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_lib")
 
 
+def summarize(report: dict) -> dict:
+    checked = report.get("checked", [])
+    violations = report.get("violations", [])
+    summary = {
+        "summary_note": "summary is triage output; use --detail for all checked runtime samples",
+        "runtime_profile": report.get("runtime_profile"),
+        "budgets_configured": report.get("budgets_configured"),
+        "commands_observed": report.get("commands_observed"),
+        "status": "violations" if violations else "ok",
+        "checked_status_counts": {
+            "ok": sum(1 for item in checked if item.get("status") == "ok"),
+            "other": sum(1 for item in checked if item.get("status") != "ok"),
+        },
+    }
+    for key in (
+        "violations",
+        "latest_spikes",
+        "profile_config_errors",
+        "runtime_visibility_findings",
+    ):
+        summary.update(bounded_list(report, key))
+    return summary
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose runtime-signals.json budgets should be enforced")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML runtime-budget status and violations",
+        detail_help="Emit the full runtime-budget report as YAML",
+    )
     parser.add_argument(
         "--runtime-profile",
         help="Named machine/runner profile to enforce. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
@@ -45,9 +75,7 @@ def main() -> int:
         runtime_profile=args.runtime_profile,
         top_runtime_count=max(args.top_runtime_count, 0),
     )
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    else:
+    if not emit_selected(report, args, summarize=summarize):
         print(runtime_budget_lib.format_human(report))
 
     if report["profile_config_errors"]:

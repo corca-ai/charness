@@ -47,8 +47,12 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -357,25 +361,49 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("."),
         help="Repository root used to resolve adapter and ratchet paths.",
     )
-    parser.add_argument("--code-inventory", type=Path, help="Injected full-scan inventory_nose_clones --json file; else a full nose query scan runs.")
-    parser.add_argument("--doc-inventory", type=Path, help="Injected inventory_doc_duplicates --json drift file; else the doc inventory runs.")
+    parser.add_argument("--code-inventory", type=Path, help="Injected full-scan inventory_nose_clones structured payload; else a full nose query scan runs.")
+    parser.add_argument("--doc-inventory", type=Path, help="Injected inventory_doc_duplicates structured drift payload; else the doc inventory runs.")
     parser.add_argument("--stagnation", type=int, default=None, help="Inject the stagnation commit distance (test seam); else derived from git.")
     parser.add_argument("--write-baseline", action="store_true", help="Seed the gate baseline from a full code scan and exit (accept today's code family_ids).")
     parser.add_argument("--confirm-baseline-delta", action="store_true", help="Confirm a deliberate large re-baseline (--write-baseline) past the delta threshold, e.g. a nose scanner-version swing.")
     parser.add_argument("--baseline-delta-threshold", type=int, default=DEFAULT_BASELINE_DELTA_THRESHOLD, help="Large-delta guardrail for --write-baseline: added+removed family_ids over this requires --confirm-baseline-delta.")
     parser.add_argument("--accept-rotation", action="append", metavar="OLD_ID=NEW_ID", help="Scoped re-baseline: rotate one accepted fingerprint (repeatable). Refuses any other live delta not named here or via --accept-family.")
     parser.add_argument("--accept-family", action="append", metavar="NEW_ID", help="Scoped re-baseline: accept one new fingerprint into the baseline (repeatable). Combine with --accept-rotation; any unnamed live delta is refused.")
-    parser.add_argument("--json", action="store_true", help="Emit the ratchet report as JSON.")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML duplicate-ratchet status and actionable findings",
+        detail_help="Emit the full duplicate-ratchet report as YAML",
+    )
     return parser.parse_args(argv)
+
+
+def summarize(report: dict, *, sample_limit: int = 5) -> dict:
+    new_code = report.get("new_code_families", [])
+    new_docs = report.get("new_doc_families", [])
+    messages = report.get("messages", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for full duplicate-family evidence",
+        "ok": report.get("ok"),
+        "status": report.get("status"),
+        "inert": report.get("inert", False),
+        "hard_block": report.get("hard_block", False),
+        "boy_scout_block": report.get("boy_scout_block", False),
+        "new_code_family_count": len(new_code) if isinstance(new_code, list) else 0,
+        "new_code_families_sample": new_code[:sample_limit] if isinstance(new_code, list) else [],
+        "new_doc_family_count": len(new_docs) if isinstance(new_docs, list) else 0,
+        "new_doc_families_sample": new_docs[:sample_limit] if isinstance(new_docs, list) else [],
+        "degraded_reasons": report.get("degraded_reasons", []),
+        "adapter_errors": report.get("adapter_errors", []),
+        "message_count": len(messages) if isinstance(messages, list) else 0,
+        "messages_sample": messages[:sample_limit] if isinstance(messages, list) else [],
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     repo_root = args.repo_root.resolve()
     report = run(repo_root, args)
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
+    if not emit_selected(report, args, summarize=summarize):
         for message in report.get("messages", []):
             print(message)
     return 0 if report.get("ok") else 1

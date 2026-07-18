@@ -7,63 +7,45 @@ session
 
 ## Context
 
-The first autonomous-improvement slice fixed an invalid `catalog list --json`
-instruction and added a compact YAML summary, but the broad gate then exposed a
-second problem: evidence-marker validity depended on the marker occupying the
-same physical line as its citation. The operator correctly identified this as a
-coupling smell and asked for sibling coupling risks to be examined as well.
+Two related autonomous-improvement rounds exposed the same structural lesson. First, a broad gate showed that evidence-marker validity was coupled to physical Markdown lines. Then the YAML migration had covered only dispatch-marked inventories even though the operator intended every legacy inventory, and fresh-eye review found the new “compact” claim was not bounded everywhere.
 
 ## Evidence Summary
 
-- `charness-artifacts/debug/2026-07-18-debug-review.md` records the minimal
-  reproduction, falsified alternatives, root cause, and detection gap.
-- `charness-artifacts/critique/2026-07-18-coupling-critique.md` records the
-  bounded fresh-eye and counterweight review of the expanded fixes.
-- The sibling scan found a second concrete coupling seam in
-  `scripts/render_cli_reference.py`: command topology was duplicated in Python
-  instead of being joined from the argparse parser and `.agents/command-docs.yaml`.
-- Packet Consumed: `charness-artifacts/retro/2026-07-18-052559-packet.md`.
+- `charness-artifacts/debug/2026-07-18-debug-review.md` records the earlier citation-line coupling root cause.
+- `charness-artifacts/critique/2026-07-18-coupling-critique.md` records the earlier sibling review.
+- `charness-artifacts/critique/2026-07-18-complete-inventory-yaml-contract-and-v2-1-0-release.md` records two new angles, counterweight triage, fixes, and independent PASS rechecks.
+- The all-inventory contract now discovers every `inventory_*.py`, runs source semantic parity, and byte-matches packaged commands.
+- Packet Consumed: `charness-artifacts/retro/2026-07-18-052559-packet.md`; the current continuation used the planner's existing-artifact route.
 
 ## Waste
 
-The first pass treated the failing durability gate as an artifact-format fix.
-That restored green locally but left the hidden physical-line assumption in the
-validator. The rework came from scoping the symptom before naming the seam and
-searching for sibling sources of truth.
+The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The rework came from defining the contract by current prose examples rather than by the producer population and its volatile evidence seams.
 
 ## Critical Decisions
 
-- Treat Markdown continuation text as part of the citation bullet while still
-  rejecting nested lists, blockquotes, headings, and fences.
-- Keep repo-wide durability scanning centralized; duplicating the parser or the
-  scan into every artifact validator would create a larger coupling problem.
-- Derive CLI reference topology and order from the real parser, and help argv
-  from the YAML contract, with an explicit set-equality join guard.
+- Define the population structurally: every `inventory_*.py` plus every canonical dispatch command, not a hand-maintained migrated subset.
+- Keep one shared selector/renderer and one bounded-list projection helper; individual scripts own only domain-specific summary fields.
+- Execute semantic parity once on canonical source and prove packaged plugin commands by exact-copy equality, preserving the boundary while cutting the contract module from 19.34s to about 12.4s.
+- Isolate volatile measurement input in contract tests instead of weakening equality assertions.
+- Keep hidden JSON for programmatic compatibility while removing it from agent-facing docs, help, and ownership-verifier commands.
 
 ## Expert Counterfactuals
 
-- Engelbart's system-improving lens would have treated validator semantics,
-  authoring language, and the gate schedule as one system at the first failure;
-  the next move would have been a seam inventory before editing the artifact.
-- Ousterhout's complexity lens would have asked which module owns each fact.
-  That question directly reveals both physical-line leakage and the duplicated
-  command registry.
+- Engelbart's system-improving lens treats method, language, and tool as one unit: “all inventories are YAML-first” should have shipped together with automatic population discovery and boundedness proof, not as prose plus a remembered migration list.
+- Ousterhout's ownership lens asks which layer owns variability. Full evidence belongs to each producer, selection/rendering belongs to the shared helper, generated copies belong to sync, and volatile runtime footprint belongs behind an isolated test seam.
 
 ## Sibling Search
 
-- same layer: quality/debug artifact validators | decision: intentional boundary | proof: both consume the centralized repo-wide durability scan; duplicating its parser would split ownership
-- abstraction up: evidence-durability contract and operating contract | decision: same waste, fix now | proof: both now define semantic citation-bullet continuation behavior
-- specialization down: nested list and blockquote Markdown shapes | decision: same waste, fix now | proof: focused negative tests reject both shapes
-- mental-model siblings: CLI reference command registry | decision: same waste, fix now | proof: renderer now joins argparse topology with `.agents/command-docs.yaml` and tests set mismatch plus duplicates
+- same layer: all quality `inventory_*.py` scripts | decision: same waste, fix now | proof: all 20 are discovered and semantically probed
+- abstraction up: dispatch/catalog/`.agents/surfaces.json` agent instructions | decision: same waste, fix now | proof: summary/detail YAML is taught and the lingering verifier `--json` call became `--detail`
+- specialization down: Markdown recommendation output and mutation/write flags | decision: same waste, fix now | proof: incompatible Markdown/structured modes reject; execution and write flags remain explicit
+- mental-model siblings: other programmatic JSON artifact seams | decision: intentional boundary | proof: hidden compatibility and persisted JSON files are machine consumers, not first-read agent interfaces
 
 ## Next Improvements
 
-- workflow: after a broad-gate-only failure, name the violated seam and run the
-  four-axis sibling scan before applying the smallest artifact edit.
-- capability: retain explicit set-equality and ambiguity tests wherever two
-  independently owned contracts are joined.
-- memory: keep the detection gap, sibling findings, and concrete tests in the
-  debug and critique artifacts committed with this slice.
+- workflow: before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files.
+- capability: keep structural population discovery, semantic source probes, exact generated-copy proof, bounded-list helpers, and volatile-input isolation in the existing YAML contract test rather than adding another gate.
+- memory: preserve this population-first migration rule and the earlier seam-first failure rule in `recent-lessons.md`, and reflect them in the next-session handoff only when they change the next move.
 
 ## Persisted
 

@@ -190,11 +190,14 @@ def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
     skills = payload.get("skills", [])
     skill_items = skills if isinstance(skills, list) else []
     summary = _pick(payload, SUMMARY_FIELDS)
-    summary["skills_with_heuristics"] = [
+    matching = [
         _pick(item, SUMMARY_SKILL_FIELDS)
         for item in skill_items
         if isinstance(item, dict) and item.get("heuristics")
     ]
+    summary["skills_with_heuristics_count"] = len(matching)
+    summary["skills_with_heuristics"] = matching[:10]
+    summary["skills_with_heuristics_truncated"] = len(matching) > 10
     return summary
 
 

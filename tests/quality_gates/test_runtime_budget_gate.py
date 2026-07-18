@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
@@ -22,6 +24,12 @@ _render_spec = importlib.util.spec_from_file_location("render_runtime_summary_un
 assert _render_spec is not None and _render_spec.loader is not None
 render_runtime_summary = importlib.util.module_from_spec(_render_spec)
 _render_spec.loader.exec_module(render_runtime_summary)
+_budget_spec = importlib.util.spec_from_file_location(
+    "check_runtime_budget_under_test", ROOT / SCRIPT
+)
+assert _budget_spec is not None and _budget_spec.loader is not None
+check_runtime_budget = importlib.util.module_from_spec(_budget_spec)
+_budget_spec.loader.exec_module(check_runtime_budget)
 
 
 def _seed_repo(
@@ -185,6 +193,38 @@ def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
     plain_result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
     assert plain_result.returncode == 0, plain_result.stderr
     assert "WEAK  runtime_visibility_missing_budgets" in plain_result.stdout
+
+
+def test_runtime_budget_summary_yaml_matches_json(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, budgets=None, signals=None)
+    args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
+    yaml_result = run_script(SCRIPT, *args)
+    json_result = run_script(SCRIPT, *args, "--json")
+
+    assert yaml_result.returncode == json_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+
+
+def test_runtime_budget_summary_bounds_diagnostic_lists() -> None:
+    payload = check_runtime_budget.summarize(
+        {
+            "checked": [],
+            "violations": list(range(12)),
+            "latest_spikes": list(range(12)),
+            "profile_config_errors": list(range(12)),
+            "runtime_visibility_findings": list(range(12)),
+        }
+    )
+
+    for key in (
+        "violations",
+        "latest_spikes",
+        "profile_config_errors",
+        "runtime_visibility_findings",
+    ):
+        assert payload[f"{key}_count"] == 12
+        assert len(payload[f"{key}_sample"]) == 10
+        assert payload[f"{key}_truncated"] is True
 
 
 def test_runtime_budget_gate_reports_explicit_empty_runtime_fields(tmp_path: Path) -> None:
@@ -611,6 +651,43 @@ def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) 
     assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
     assert all(interpretation[field].strip() for field in interpretation)
     assert "transient" in interpretation["blind_spots"]  # the load-bearing blind spot
+
+
+def test_render_runtime_summary_yaml_summary_matches_json(tmp_path: Path) -> None:
+    signals = {
+        "commands": {"pytest": {"latest": {"elapsed_ms": 15000, "status": "pass"}}}
+    }
+    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+    args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
+    yaml_result = run_script(RENDER_SCRIPT, *args)
+    json_result = run_script(RENDER_SCRIPT, *args, "--json")
+
+    assert yaml_result.returncode == json_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml.safe_load(yaml_result.stdout)["runtime_hotspot_count"] == 1
+
+
+def test_render_runtime_summary_bounds_diagnostic_lists() -> None:
+    payload = render_runtime_summary.summarize(
+        {
+            "runtime_profile": "default",
+            "signals_path": "signals.json",
+            "signals_present": True,
+            "commands_source": "signals",
+            "runtime_hotspots": [],
+            "stale_runtime_hotspots": [],
+            "runtime_visibility_findings": list(range(7)),
+            "missing_samples": list(range(7)),
+        },
+        sample_limit=5,
+    )
+
+    assert payload["runtime_visibility_finding_count"] == 7
+    assert len(payload["runtime_visibility_findings_sample"]) == 5
+    assert payload["runtime_visibility_findings_truncated"] is True
+    assert payload["missing_sample_count"] == 7
+    assert len(payload["missing_samples_sample"]) == 5
+    assert payload["missing_samples_truncated"] is True
 
 
 def test_render_runtime_summary_names_excluded_stale_hotspots(tmp_path: Path) -> None:

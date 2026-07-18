@@ -6,7 +6,11 @@ import argparse
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 DEFAULT_EXCLUDES = (
     ".git",
@@ -141,6 +145,22 @@ def inventory_sloc(repo_root: Path, *, excludes: list[str]) -> dict:
     return payload
 
 
+def summarize(payload: dict) -> dict:
+    return {
+        "summary_note": "summary is triage output; use --detail for per-language SLOC records",
+        "schema_version": payload["schema_version"],
+        "scope": payload["scope"],
+        "engine": payload["engine"],
+        "repo_root": payload["repo_root"],
+        "status": payload["status"],
+        "reason": payload.get("reason"),
+        "tokei_version": payload.get("tokei_version"),
+        "totals": payload["totals"],
+        "language_count": len(payload.get("languages", {})),
+        "advisory_notes": payload["advisory_notes"],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the tokei-backed SLOC inventory")
@@ -151,7 +171,11 @@ def main() -> int:
         help="Directory or path glob to exclude (repeatable). "
         "Defaults to common cache and vendor directories.",
     )
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML SLOC totals for triage",
+        detail_help="Emit the full per-language SLOC inventory as YAML",
+    )
     parser.add_argument(
         "--output",
         type=Path,
@@ -166,9 +190,7 @@ def main() -> int:
     if args.output is not None:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(rendered + "\n", encoding="utf-8")
-    if args.json:
-        print(rendered)
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         if payload["status"] == "degraded":
             print(f"SLOC inventory: degraded ({payload['reason']})")
         else:

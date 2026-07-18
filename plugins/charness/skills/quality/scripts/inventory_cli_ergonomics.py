@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -12,6 +11,7 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cli_ergonomics_lib as celib  # noqa: E402
 from git_inventory_lib import visible_repo_files  # noqa: E402
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -40,7 +40,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--registry-file", action="append", default=[], help="Path to a command-registry JSON file (repeatable; defaults auto-discover under the repo)")
     parser.add_argument("--archetype-contract-file", action="append", default=[], help="Path to a command-archetype contract JSON file (repeatable; defaults auto-discover under the repo)")
     parser.add_argument("--flat-help-threshold", type=int, default=10, help="Number of subcommands above which a flat help surface is flagged")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML counts and finding samples for triage",
+        detail_help="Emit the full CLI-ergonomics inventory as YAML",
+    )
     return parser.parse_args()
 
 
@@ -59,6 +63,26 @@ def _default_paths(repo_root: Path, patterns: list[str], vendored: list[str]) ->
             seen.add(path)
             found.append(path)
     return found
+
+
+def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
+    findings = payload.get("findings", [])
+    sample = findings[:sample_limit] if isinstance(findings, list) else []
+    return {
+        "summary_note": "summary is triage output; use --detail for full registry and archetype records",
+        "repo_root": payload["repo_root"],
+        "status": payload["status"],
+        "scope_classification": payload.get("scope_classification"),
+        "reason": payload.get("reason"),
+        "registry_count": len(payload.get("registries", [])),
+        "archetype_contract_count": len(payload.get("archetype_contracts", [])),
+        "finding_count": len(findings) if isinstance(findings, list) else 0,
+        "findings_sample": sample,
+        "adapter_path": payload.get("adapter_path"),
+        "adapter_valid": payload.get("adapter_valid", True),
+        "adapter_errors": payload.get("adapter_errors", []),
+        "adapter_warnings": payload.get("adapter_warnings", []),
+    }
 
 
 def main() -> int:
@@ -93,9 +117,7 @@ def main() -> int:
         "archetype_contracts": archetype_contracts,
         "findings": findings,
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         if payload["status"] == "unconfigured":
             print(f"status=unconfigured: {payload.get('reason', '')}")
         if payload.get("scope_classification", "scanned").startswith("advisory_only"):

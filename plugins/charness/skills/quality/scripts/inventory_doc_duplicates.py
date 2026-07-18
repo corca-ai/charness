@@ -23,8 +23,12 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 DEFAULT_SCAN_PATH = "."
 # Exclude the export mirror (every source doc would otherwise pair 1:1 with its
@@ -304,6 +308,21 @@ def print_human(payload: dict[str, Any]) -> None:
         )
 
 
+def summarize(payload: dict[str, Any], *, sample_limit: int = 5) -> dict[str, Any]:
+    """Return the advisory status and a bounded family sample for triage."""
+    families = payload.get("families", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for full Markdown family evidence",
+        "status": payload.get("status"),
+        "advisory": payload.get("advisory"),
+        "family_count": payload.get("family_count", 0),
+        "total_family_count": payload.get("total_family_count", 0),
+        "accepted_count": payload.get("accepted_count", 0),
+        "families_sample": families[:sample_limit] if isinstance(families, list) else [],
+        "notes": payload.get("notes", []),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -327,15 +346,15 @@ def main() -> int:
             "all-clear. Used by the run-quality `doc-duplicates` phase."
         ),
     )
-    parser.add_argument("--json", action="store_true", help="Emit the full advisory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML advisory counts and bounded family samples",
+        detail_help="Emit the full Markdown near-duplicate inventory as YAML",
+    )
     parser.add_argument(
         "--json-out",
         type=Path,
-        help=(
-            "Also write the JSON payload to this path (drift families with stable "
-            "signatures). Lets the dup-ratchet gate reuse this scan instead of "
-            "re-running the ~18.5s doc scan; independent of --json/human stdout."
-        ),
+        help=argparse.SUPPRESS,
     )
     args = parser.parse_args()
 
@@ -345,9 +364,7 @@ def main() -> int:
         args.json_out.write_text(
             json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         print_human(payload)
     if args.require_nose and payload["status"] in ("missing", "version-too-old", "error"):
         return 1

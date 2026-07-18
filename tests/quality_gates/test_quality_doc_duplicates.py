@@ -55,6 +55,12 @@ def _write_fake_nose(path: Path, *, version: str) -> None:
 
 
 def _run(repo: Path, nose_bin: str | None, *extra: str) -> subprocess.CompletedProcess[str]:
+    return _run_with_output(repo, nose_bin, "--json", *extra)
+
+
+def _run_with_output(
+    repo: Path, nose_bin: str | None, output_mode: str | None, *extra: str
+) -> subprocess.CompletedProcess[str]:
     env = {**os.environ}
     if nose_bin is None:
         # Simulate a host with no nose at all: empty PATH + cleared override.
@@ -64,8 +70,12 @@ def _run(repo: Path, nose_bin: str | None, *extra: str) -> subprocess.CompletedP
         # Keep the real PATH so the fake nose's python3 shebang resolves; the
         # NOSE_BIN override still pins discovery to the fake, not the real binary.
         env["NOSE_BIN"] = nose_bin
+    command = [sys.executable, str(SCRIPT), "--repo-root", str(repo)]
+    if output_mode is not None:
+        command.append(output_mode)
+    command.extend(extra)
     return subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json", *extra],
+        command,
         cwd=ROOT,
         check=False,
         capture_output=True,
@@ -173,7 +183,8 @@ def test_doc_dup_help_explains_root_and_json_options() -> None:
     assert result.returncode == 0, result.stderr
     expected = {
         "--repo-root": "Repository root to scan and use for baseline paths",
-        "--json": "Emit the full advisory payload as JSON",
+        "--summary": "Emit compact YAML advisory counts and bounded family samples",
+        "--detail": "Emit the full Markdown near-duplicate inventory as YAML",
     }
     for option, fragment in expected.items():
         match = re.search(rf"^  {re.escape(option)}\b.*$", result.stdout, re.MULTILINE)
@@ -182,3 +193,32 @@ def test_doc_dup_help_explains_root_and_json_options() -> None:
         end = match.end() + next_option.start() if next_option else len(result.stdout)
         option_block = re.sub(r"\s+", " ", result.stdout[match.start() : end])
         assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_doc_dup_output_modes_preserve_json_and_json_out_payloads(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    fake = repo / "nose-cur"
+    _write_fake_nose(fake, version="0.13.0")
+    json_out = repo / "payload.json"
+
+    summary = _run_with_output(repo, str(fake), "--summary")
+    assert summary.returncode == 0, summary.stderr
+    assert "family_count: 1" in summary.stdout
+    assert "families_sample:" in summary.stdout
+
+    detail = _run_with_output(repo, str(fake), "--detail")
+    assert detail.returncode == 0, detail.stderr
+    assert "families:" in detail.stdout
+
+    full_json = _run(repo, str(fake))
+    assert full_json.returncode == 0, full_json.stderr
+    assert "families" in json.loads(full_json.stdout)
+
+    summary_json = _run(repo, str(fake), "--summary")
+    assert summary_json.returncode == 0, summary_json.stderr
+    assert json.loads(summary_json.stdout)["family_count"] == 1
+
+    written = _run_with_output(repo, str(fake), "--summary", "--json-out", str(json_out))
+    assert written.returncode == 0, written.stderr
+    assert json.loads(json_out.read_text(encoding="utf-8"))["families"]

@@ -6,6 +6,9 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,7 +42,7 @@ def test_quality_behavior_recommendation_emits_cautilus_robustness_contract(monk
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["schemaVersion"] == "charness.quality.behavior_test_recommendation.v1"
     assert payload["state"] == "recommend_only"
     assert payload["cautilusContract"]["requestSchema"] == "cautilus.robustness_request.v1"
@@ -72,6 +75,50 @@ def test_quality_behavior_recommendation_can_render_markdown_gate(monkeypatch, c
     assert "- active NON_AUTOMATABLE: recommend Cautilus robustness proof" in result.stdout
     assert "Cautilus request: `cautilus.robustness_request.v1`" in result.stdout
     assert "state: `recommend_only`" in result.stdout
+
+
+def test_quality_behavior_recommendation_summary_yaml_matches_json(monkeypatch, capsys) -> None:
+    args = (
+        "--behavior-seam", "skill-routing",
+        "--subject-ref", "skills/public/quality/SKILL.md",
+        "--risk-focus", "wrong skill selected",
+        "--deterministic-gap", "static checks cannot prove routing judgment",
+        "--summary",
+    )
+    yaml_result = run_recommend_behavior_test(monkeypatch, capsys, *args)
+    json_result = run_recommend_behavior_test(monkeypatch, capsys, *args, "--json")
+
+    assert yaml_result.returncode == json_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+
+
+@pytest.mark.parametrize("structured_mode", ["--summary", "--detail", "--json"])
+def test_quality_behavior_recommendation_rejects_markdown_with_structured_mode(
+    structured_mode: str,
+) -> None:
+    result = subprocess.run(
+        [
+            "python3",
+            SCRIPT,
+            "--behavior-seam",
+            "skill-routing",
+            "--subject-ref",
+            "skills/public/quality/SKILL.md",
+            "--risk-focus",
+            "wrong skill selected",
+            "--deterministic-gap",
+            "static checks cannot prove routing judgment",
+            "--markdown",
+            structured_mode,
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "--markdown cannot be combined" in result.stderr
 
 
 def test_quality_behavior_recommendation_executed_requires_report_ref() -> None:

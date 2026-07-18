@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -214,11 +213,36 @@ def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_co
     return summary
 
 
+def summarize(report: dict[str, object], *, sample_limit: int = 5) -> dict[str, object]:
+    hotspots = report.get("runtime_hotspots", [])
+    stale_hotspots = report.get("stale_runtime_hotspots", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for markdown evidence and all runtime hot spots",
+        "runtime_profile": report["runtime_profile"],
+        "signals_path": report["signals_path"],
+        "signals_present": report["signals_present"],
+        "commands_source": report["commands_source"],
+        "runtime_hotspot_count": len(hotspots) if isinstance(hotspots, list) else 0,
+        "runtime_hotspots_sample": hotspots[:sample_limit] if isinstance(hotspots, list) else [],
+        "stale_runtime_hotspot_count": len(stale_hotspots) if isinstance(stale_hotspots, list) else 0,
+        "stale_runtime_hotspots_sample": stale_hotspots[:sample_limit] if isinstance(stale_hotspots, list) else [],
+        "runtime_visibility_finding_count": len(report["runtime_visibility_findings"]),
+        "runtime_visibility_findings_sample": report["runtime_visibility_findings"][:sample_limit],
+        "runtime_visibility_findings_truncated": len(report["runtime_visibility_findings"]) > sample_limit,
+        "missing_sample_count": len(report["missing_samples"]),
+        "missing_samples_sample": report["missing_samples"][:sample_limit],
+        "missing_samples_truncated": len(report["missing_samples"]) > sample_limit,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose runtime-signals.json should be rendered into a quality summary")
-    parser.add_argument("--detail", action="store_true", help="Emit the full runtime summary as YAML.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML runtime hot-spot counts and samples",
+        detail_help="Emit the full runtime summary as YAML",
+    )
     parser.add_argument(
         "--runtime-profile",
         help="Named machine/runner profile to summarize. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
@@ -236,11 +260,7 @@ def main() -> int:
         runtime_profile=args.runtime_profile,
         top_runtime_count=args.top_runtime_count,
     )
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    elif args.detail:
-        _summary_output.emit_yaml(report)
-    else:
+    if not _summary_output.emit_selected(report, args, summarize=summarize):
         print("\n".join(str(line) for line in report["markdown_lines"]))
     return 0
 

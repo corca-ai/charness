@@ -5,12 +5,12 @@ from __future__ import annotations
 import argparse
 import ast
 import fnmatch
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import GitFileListingError, visible_repo_files  # noqa: E402
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 GIT_AWARE_MARKERS = (
     "git ls-files",
@@ -149,13 +149,29 @@ def analyze_file(path: Path, repo_root: Path) -> list[dict[str, object]]:
     return findings
 
 
+def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
+    findings = payload.get("findings", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for all scan-hygiene findings",
+        "repo_root": payload["repo_root"],
+        "path_globs": payload["path_globs"],
+        "exclude_globs": payload["exclude_globs"],
+        "finding_count": len(findings) if isinstance(findings, list) else 0,
+        "findings_sample": findings[:sample_limit] if isinstance(findings, list) else [],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the gitignore scan-hygiene inventory")
     parser.add_argument("--path-glob", action="append", default=[], help="Glob of Python scanners to inspect (repeatable; defaults applied if omitted)")
     parser.add_argument("--exclude-glob", action="append", default=[], help="Glob of paths to exclude from the inventory (repeatable)")
     parser.add_argument("--require-empty", action="store_true", help="Exit non-zero when any non-git-aware repo traversal is found")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML finding counts and samples for triage",
+        detail_help="Emit the full gitignore scan-hygiene inventory as YAML",
+    )
     parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for scanner discovery")
     args = parser.parse_args()
 
@@ -175,9 +191,7 @@ def main() -> int:
         "exclude_globs": list(exclude_globs),
         "findings": findings,
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         for finding in findings:
             print(f"{finding['path']}:{finding['line']} {finding['reason']}")
             print(f"  call: {finding['call']}")

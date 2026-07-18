@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -11,6 +10,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cli_side_effect_probe_lib import build_inventory  # noqa: E402
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -39,8 +39,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--contract-file", action="append", default=[], help="Path to a side-effect probe contract file (repeatable)")
     parser.add_argument("--execute-probes", action="store_true", help="Actually execute declared probe commands rather than only inventorying them")
     parser.add_argument("--fail-on-findings", action="store_true", help="Exit non-zero when any findings are surfaced")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML counts and finding samples for triage",
+        detail_help="Emit the full CLI side-effect-probe inventory as YAML",
+    )
     return parser.parse_args()
+
+
+def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
+    findings = payload.get("findings", [])
+    sample = findings[:sample_limit] if isinstance(findings, list) else []
+    return {
+        "summary_note": "summary is triage output; use --detail for full probe records",
+        "repo_root": payload.get("repo_root"),
+        "status": payload.get("status"),
+        "reason": payload.get("reason"),
+        "contract_count": len(payload.get("contracts", [])),
+        "finding_count": len(findings) if isinstance(findings, list) else 0,
+        "findings_sample": sample,
+        "adapter_path": payload.get("adapter_path"),
+        "adapter_valid": payload.get("adapter_valid", True),
+        "adapter_errors": payload.get("adapter_errors", []),
+        "adapter_warnings": payload.get("adapter_warnings", []),
+    }
 
 
 def main() -> int:
@@ -61,9 +83,7 @@ def main() -> int:
     payload["adapter_errors"] = adapter.get("errors", [])
     payload["adapter_warnings"] = adapter.get("warnings", [])
     payload["adapter_load_mode"] = adapter.get("load_mode", "permissive")
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         if payload["status"] == "unconfigured":
             print(f"status=unconfigured: {payload.get('reason', '')}")
         if payload["adapter_valid"] is False:

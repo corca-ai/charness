@@ -4,14 +4,17 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import runpy
 import shlex
 import shutil
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -262,6 +265,24 @@ def print_human(payload: dict[str, Any]) -> None:
         )
 
 
+def summarize(payload: dict[str, Any], *, sample_limit: int = 5) -> dict[str, Any]:
+    families = payload.get("families", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for all clone-family evidence",
+        "status": payload["status"],
+        "advisory": payload.get("advisory", True),
+        "repo_root": payload.get("repo_root"),
+        "paths": payload.get("paths", []),
+        "baseline": payload.get("baseline"),
+        "tool_version": payload.get("tool_version", ""),
+        "family_count": payload.get("family_count", payload.get("code_family_count", 0)),
+        "total_dup_lines": payload.get("total_dup_lines", 0),
+        "version_skew": payload.get("version_skew"),
+        "families_sample": families[:sample_limit] if isinstance(families, list) else [],
+        "notes": payload.get("notes", []),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, required=True, help="Repository root to scan and use for baseline paths")
@@ -277,13 +298,15 @@ def main() -> int:
     parser.add_argument("--sort", default="extractability", choices=("extractability", "value", "sites"), help="Ranking field for reported families (extractability, value, or sites; default: extractability)")
     parser.add_argument("--baseline", help=f"Accepted-baseline file (repo-relative) of already-recorded families; only new/changed are reported. Defaults to {DEFAULT_BASELINE_REL} when it exists.")
     parser.add_argument("--write-baseline", action="store_true", help="Write current families to the baseline and exit (accept today's state); re-baseline per scanner version.")
-    parser.add_argument("--json", action="store_true", help="Emit the full advisory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML clone-family counts and samples for triage",
+        detail_help="Emit the full clone-family advisory payload as YAML",
+    )
     args = parser.parse_args()
 
     payload = payload_for_args(args)
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         print_human(payload)
     return 0
 

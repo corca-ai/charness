@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import visible_repo_files  # noqa: E402
+from summary_output_lib import add_output_args, emit_selected, emit_yaml  # noqa: E402
 
 FINDING_CLASSES = {
     "structural_fact", "contextual_recommendation", "acknowledgement_gap",
@@ -202,12 +202,30 @@ def inventory(repo_root: Path) -> dict[str, object]:
     }
 
 
+def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
+    findings = payload.get("findings", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for full adapter and gate-design evidence",
+        "repo": payload["repo"],
+        "review_scope_source": payload["review_scope_source"],
+        "reviewed_path_count": len(payload.get("reviewed_paths", [])),
+        "finding_count": len(findings) if isinstance(findings, list) else 0,
+        "findings_sample": findings[:sample_limit] if isinstance(findings, list) else [],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the adapter-and-gate-design inventory scan")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML finding counts and samples for triage",
+        detail_help="Emit the full adapter-and-gate-design inventory as YAML",
+    )
     args = parser.parse_args()
     payload = inventory(args.repo_root.resolve())
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    if not emit_selected(payload, args, summarize=summarize):
+        emit_yaml(payload)
     return 0
 
 

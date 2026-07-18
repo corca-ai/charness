@@ -4,6 +4,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script, write_executable
 
 SCRIPT = "skills/public/quality/scripts/measure_startup_probes.py"
@@ -84,6 +86,35 @@ def test_measure_startup_probes_filters_by_class_and_reports_timings(tmp_path: P
     assert measured["samples_requested"] == 2
     assert measured["samples_ran"] == 2
     assert measured["status"] == "ok"
+
+
+def test_measure_startup_probes_summary_yaml_matches_json(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    args = ("--repo-root", str(repo), "--class", "standing", "--summary")
+    yaml_result = run_script(SCRIPT, *args)
+    json_result = run_script(SCRIPT, *args, "--json")
+
+    assert yaml_result.returncode == json_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml.safe_load(yaml_result.stdout)["probes_measured"] == 1
+
+
+def test_measure_startup_probes_summary_bounds_failures() -> None:
+    failures = [{"label": f"probe-{index}"} for index in range(12)]
+    payload = MEASURE_STARTUP_PROBES.summarize(
+        {
+            "adapter_path": None,
+            "probe_class": "all",
+            "probes_configured": 12,
+            "probes_measured": 12,
+            "measured": failures,
+            "failures": failures,
+        }
+    )
+
+    assert payload["failures_count"] == 12
+    assert len(payload["failures_sample"]) == 10
+    assert payload["failures_truncated"] is True
 
 
 def test_measure_startup_probes_can_record_runtime_signals(tmp_path: Path) -> None:

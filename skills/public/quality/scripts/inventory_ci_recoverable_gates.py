@@ -20,7 +20,6 @@ gates to triage, and the report says so (mirroring render_runtime_summary).
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -118,6 +117,23 @@ def _print_text(report: dict[str, Any]) -> None:
         print(f"  keep-local {gate['label']} [{_format_ms(gate['wall_clock_ms'])}] — no CI step re-runs this proof")
 
 
+def summarize(report: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:
+    candidates = report.get("candidates", [])
+    keep_local = report.get("keep_local", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for all CI step evidence and gate classifications",
+        "runtime_profile": report["runtime_profile"],
+        "commands_source": report["commands_source"],
+        "workflows_scanned": report["workflows_scanned"],
+        "gates_considered": report["gates_considered"],
+        "candidate_count": len(candidates) if isinstance(candidates, list) else 0,
+        "candidates_sample": candidates[:sample_limit] if isinstance(candidates, list) else [],
+        "keep_local_count": len(keep_local) if isinstance(keep_local, list) else 0,
+        "keep_local_sample": keep_local[:sample_limit] if isinstance(keep_local, list) else [],
+        "interpretation": report["interpretation"],
+    }
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the CI-recoverable gate triage")
@@ -131,8 +147,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Named machine/runner profile for wall-clock ranking. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
     )
     parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for workflow discovery")
-    parser.add_argument("--detail", action="store_true", help="Emit the full triage payload as YAML")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+    _summary_output.add_output_args(
+        parser,
+        summary_help="Emit compact YAML CI-recoverable gate counts and samples",
+        detail_help="Emit the full CI-recoverable gate triage payload as YAML",
+    )
     return parser
 
 
@@ -145,12 +164,7 @@ def main() -> int:
         runtime_profile=args.runtime_profile,
         require_git=args.require_git_file_listing,
     )
-    if args.json:
-        json.dump(report, sys.stdout, indent=2, sort_keys=True)
-        sys.stdout.write("\n")
-    elif args.detail:
-        _summary_output.emit_yaml(report)
-    else:
+    if not _summary_output.emit_selected(report, args, summarize=summarize):
         _print_text(report)
         print(
             "  interpretation (inference-layer trend, not a verdict): "

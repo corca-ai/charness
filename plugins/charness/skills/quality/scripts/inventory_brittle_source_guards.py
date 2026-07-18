@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 DEFAULT_MIN_PATTERN_CHARS = 40
 
@@ -148,6 +151,19 @@ def inventory(
     }
 
 
+def summarize(payload: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:
+    findings = payload.get("findings", [])
+    fragile = [finding for finding in findings if finding.get("status") != "ok"] if isinstance(findings, list) else []
+    return {
+        "summary_note": "summary is triage output; use --detail for all source-guard findings",
+        "repo_root": payload["repo_root"],
+        "summary": payload["summary"],
+        "warnings": payload["warnings"],
+        "policy": payload["policy"],
+        "fragile_findings_sample": fragile[:sample_limit],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the brittle source-guard markdown inventory")
@@ -159,16 +175,18 @@ def main() -> int:
         dest="scan_roots",
         help="Markdown file or directory to scan for source guards. Repeat to override the default bounded roots.",
     )
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML fragile-guard counts and samples for triage",
+        detail_help="Emit the full brittle source-guard inventory as YAML",
+    )
     args = parser.parse_args()
     payload = inventory(
         args.repo_root.resolve(),
         min_pattern_chars=args.min_pattern_chars,
         scan_roots=args.scan_roots,
     )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         for finding in payload["findings"]:
             if finding["status"] != "ok":
                 print(f"{finding['status']}: {finding['spec_path']}:{finding['line']} -> {finding['target_path']}")

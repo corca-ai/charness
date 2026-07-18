@@ -12,19 +12,22 @@ artifact summarizes a cited inventory by headline only, and
 `check-inventory-declaration-coverage` keep the declaration drift-free and
 complete (declaration: `references/inventory-consumer-fields.json`).
 
-For inventories that support `--summary`, use its compact YAML as the first-read
-triage surface and switch to `--detail` YAML only when a finding earns full
-attribution or disposition. Hidden JSON compatibility is for programmatic
-consumers, not agent review. A summary is not complete evidence; it is the
-bounded index that keeps quality review from spending context before a candidate
-earns it.
+Every script command in this dispatch exposes the same agent-facing output
+contract: use compact `--summary` YAML as the first-read triage surface and
+switch to `--detail` YAML only when a finding earns full attribution or
+disposition. Hidden JSON compatibility is for programmatic consumers, not agent
+review. A summary is not complete evidence; it is the bounded index that keeps
+quality review from spending context before a candidate earns it. The existing
+YAML contract test derives this command list directly from this document and
+also inventories every `inventory_*.py` script, so neither a new dispatch entry
+nor an undispatched inventory can silently bypass the contract.
 
 ## CLI And Operator Surface
 
 - CLI ergonomics:
-  `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`
+  `$SKILL_DIR/scripts/inventory_cli_ergonomics.py --repo-root . --summary`
 - mutating operator commands:
-  `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`
+  `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py --repo-root . --summary`
 - installable CLI probes and side-effect contracts:
   `references/installable-cli-probes.md`
 - command docs, doctor, install/update/reset/uninstall drift:
@@ -60,7 +63,7 @@ and executable specs use the rendered Specdown report.
 - skill ergonomics:
   `$SKILL_DIR/scripts/inventory_skill_ergonomics.py --repo-root . --summary`
 - public-skill dogfood:
-  `$SKILL_DIR/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id>`
+  `$SKILL_DIR/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id> --summary`
 - skill quality lens:
   `references/skill-quality.md`
 - ergonomics policy:
@@ -69,7 +72,7 @@ and executable specs use the rendered Specdown report.
 Review concise core, progressive disclosure honesty, trigger overlap or
 undertrigger risk, unnecessary mode/option pressure, taste policing, and prose
 ritual that should become a helper script. When public-skill or durable artifact
-behavior is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`.
+behavior is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --summary`.
 If the repo stores skills outside `skills/public` or `skills/support`, record
 `skill_ergonomics_skill_paths` in the quality adapter so the default inventory
 does not return an empty scan.
@@ -83,23 +86,23 @@ does not return an empty scan.
 - executable-spec runtime and dup economics:
   `references/executable-spec-economics.md`
 - duplicate discovery, broad scanner waste, and intra-test repeated reads:
-  `$SKILL_DIR/scripts/inventory_structural_waste.py`
+  `$SKILL_DIR/scripts/inventory_structural_waste.py --repo-root . --summary`
 - release-only sentinel coverage:
   `$SKILL_DIR/scripts/inventory_release_only_sentinels.py --repo-root . --summary`
   (use `--path` for selected slow/release-only files; the default all-tests
   scan is intentionally broad and advisory-noisy)
 - startup probes:
-  `$SKILL_DIR/scripts/measure_startup_probes.py`
+  `$SKILL_DIR/scripts/measure_startup_probes.py --repo-root . --summary`
 - runtime summaries:
-  `$SKILL_DIR/scripts/render_runtime_summary.py`
+  `$SKILL_DIR/scripts/render_runtime_summary.py --repo-root . --summary`
 - runtime budgets:
-  `$SKILL_DIR/scripts/check_runtime_budget.py`
+  `$SKILL_DIR/scripts/check_runtime_budget.py --repo-root . --summary`
 - source lines:
-  `$SKILL_DIR/scripts/inventory_sloc.py`
+  `$SKILL_DIR/scripts/inventory_sloc.py --repo-root . --summary`
 - testability and affected-test selection:
   `references/testability-and-selection.md`
 - local-gate speed vs CI recoverability:
-  `$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py`
+  `$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py --repo-root . --summary`
   (`references/ci-recoverable-gate-triage.md` — the counterweight that flags only
   the costly local gates CI fully re-runs as move-off-local candidates; the rest
   stay `keep-local`)
@@ -134,7 +137,7 @@ Pytest Economics, and bounded test-ratio posture; see `standing-gate-verbosity.m
 - behavior-proof recommendation:
   `references/behavior-testing.md`
 - structured recommend-only behavior finding:
-  `$SKILL_DIR/scripts/recommend_behavior_test.py`
+  `$SKILL_DIR/scripts/recommend_behavior_test.py --behavior-seam <behavior-seam> --subject-ref <subject-ref> --risk-focus <risk-focus> --deterministic-gap <deterministic-gap> --summary`
 - external provider proof level:
   `../../../shared/references/external-capability-proof-ladder.md`
 
@@ -165,12 +168,12 @@ For external/runtime capability slices, treat readiness-only proof (`surface`,
 ## Source Hygiene
 
 - dual implementation smell:
-  `$SKILL_DIR/scripts/inventory_dual_implementation.py`
+  `$SKILL_DIR/scripts/inventory_dual_implementation.py --repo-root . --summary`
   (`references/dual-implementation-parity.md` — the shared-schema /
   exported-both / no-parity-harness signals, the three honest contracts, and the
   weak-contract classification behind the advisory)
 - brittle source guards:
-  `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`
+  `$SKILL_DIR/scripts/inventory_brittle_source_guards.py --repo-root . --summary`
   (`references/brittle-source-guards.md` — the brittle / at_risk /
   normalization_needed taxonomy, Recommendation Order, and policy-without-tool rule)
 - lint suppression pressure:
@@ -178,11 +181,11 @@ For external/runtime capability slices, treat readiness-only proof (`surface`,
   (`references/lint-ignore-discipline.md` — suppression pressure points, the
   keep-it-narrow-and-cheaper-than-the-deferred-fix rule, and Retained Policy Ignores)
 - gitignore scan hygiene:
-  `$SKILL_DIR/scripts/inventory_gitignore_scan_hygiene.py`
+  `$SKILL_DIR/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --summary`
 - Python dead-code advisory:
   `$SKILL_DIR/scripts/run_dead_code_advisory.py --repo-root . --summary`
 - code clone-family advisory:
-  `$SKILL_DIR/scripts/inventory_nose_clones.py --repo-root .`
+  `$SKILL_DIR/scripts/inventory_nose_clones.py --repo-root . --summary`
   (`--exclude <glob>` is repeatable for focused review; `--ignore-file <file>`
   applies a structured nose ignore file)
 
@@ -242,7 +245,7 @@ conditions.
 
 Boundary-bypass ratchets use `references/boundary-bypass-ratchet.md`; duplicate
 ratchets use `references/dup-ratchet.md` (the boy-scout duplicate ratchet
-`$SKILL_DIR/scripts/check_dup_ratchet.py`): `quality` owns the portable
+`$SKILL_DIR/scripts/check_dup_ratchet.py --repo-root . --summary`): `quality` owns the portable
 payload/policy and exemption contract; consumer repos own stack-specific probes,
 scope, and artifacts.
 
@@ -251,7 +254,7 @@ scope, and artifacts.
 - ubiquitous language:
   `$SKILL_DIR/scripts/inventory_ubiquitous_language.py --repo-root . --summary`
 - adapter/gate design:
-  `$SKILL_DIR/scripts/inventory_adapter_gate_design.py`
+  `$SKILL_DIR/scripts/inventory_adapter_gate_design.py --repo-root . --summary`
 
 Use domain-language alignment when user-facing docs, CLI names, code/config
 names, or artifacts may use different words for the same concept. Keep it

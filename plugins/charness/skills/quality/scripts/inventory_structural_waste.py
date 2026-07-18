@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -22,6 +21,24 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _structural_waste = SKILL_RUNTIME.load_local_skill_module(__file__, "structural_waste_lib")
 inventory = _structural_waste.inventory
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
+
+
+def summarize(payload: dict, *, sample_limit: int = 10) -> dict:
+    findings = payload.get("findings", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for all structural candidates",
+        "repo_root": payload.get("repo_root"),
+        "command_snippet_count": payload["command_snippet_count"],
+        "python_source_count": payload["python_source_count"],
+        "duplicate_discovery_candidate_count": len(payload["duplicate_discovery_candidates"]),
+        "broad_scanner_candidate_count": len(payload["broad_scanner_candidates"]),
+        "intra_test_reread_candidate_count": len(payload["intra_test_reread_candidates"]),
+        "findings_sample": findings[:sample_limit],
+        "interpretation": payload["interpretation"],
+    }
 
 
 def _print_text(payload: dict) -> None:
@@ -62,14 +79,15 @@ def _print_text(payload: dict) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the structural waste inventory")
-    parser.add_argument("--json", action="store_true", help="Emit the full inventory payload as JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML counts and finding samples for triage",
+        detail_help="Emit the full structural-waste inventory as YAML",
+    )
     args = parser.parse_args()
 
     payload = inventory(args.repo_root)
-    if args.json:
-        json.dump(payload, sys.stdout, indent=2, sort_keys=True)
-        sys.stdout.write("\n")
-    else:
+    if not emit_selected(payload, args, summarize=summarize):
         _print_text(payload)
     return 0
 

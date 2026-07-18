@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import subprocess
+import sys
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT
 
@@ -37,6 +42,29 @@ def test_inventory_dual_implementation_reports_shared_schema_id(tmp_path: Path) 
     assert candidate["languages"] == ["go", "javascript"]
     assert "doc_identity_leakage" in candidate["signals"]
     assert candidate["doc_identity_leakage"][0]["path"] == "docs/spec.md"
+
+
+def test_inventory_dual_implementation_defaults_to_yaml_with_json_compatibility(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    command = [sys.executable, str(SCRIPT), "--repo-root", str(repo)]
+
+    default = subprocess.run(command, check=False, capture_output=True, text=True)
+    detail_json = subprocess.run(
+        [*command, "--detail", "--json"], check=False, capture_output=True, text=True
+    )
+    summary = subprocess.run(
+        [*command, "--summary"], check=False, capture_output=True, text=True
+    )
+    summary_json = subprocess.run(
+        [*command, "--summary", "--json"], check=False, capture_output=True, text=True
+    )
+
+    assert default.returncode == detail_json.returncode == summary.returncode == summary_json.returncode == 0
+    assert yaml.safe_load(default.stdout) == json.loads(detail_json.stdout)
+    assert yaml.safe_load(summary.stdout) == json.loads(summary_json.stdout)
 
 
 def test_quality_skill_carries_dual_implementation_lens() -> None:

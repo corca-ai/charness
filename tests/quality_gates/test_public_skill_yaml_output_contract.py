@@ -136,28 +136,80 @@ def test_inventory_dispatch_commands_are_runnable_yaml_surfaces(
     dispatch = (ROOT / "skills/public/quality/references/inventory-dispatch.md").read_text(
         encoding="utf-8"
     )
-    snippets = re.findall(r"`\$SKILL_DIR/scripts/((?:inventory_[^` ]+|run_dead_code_advisory\.py)[^`]*)`", dispatch)
-    summary_snippets = [snippet for snippet in snippets if "--summary" in snippet]
+    snippets = re.findall(r"`\$SKILL_DIR/scripts/([^`]*)`", dispatch)
 
-    assert len(summary_snippets) == 9
-    for scripts_dir in (
-        "skills/public/quality/scripts",
-        "plugins/charness/skills/quality/scripts",
-    ):
-        for snippet in summary_snippets:
-            argv = shlex.split(snippet)
-            assert argv[1:3] == ["--repo-root", "."]
-            argv[2] = str(tmp_path)
-            command = f"{scripts_dir}/{argv[0]}"
-            summary = _run(command, *argv[1:])
-            legacy = _run(command, *argv[1:], "--json")
-            help_result = _run(command, "--help")
+    assert snippets
+    assert len({snippet.split()[0] for snippet in snippets}) == len(snippets)
+    for snippet in snippets:
+        assert "--summary" in snippet
+        argv = shlex.split(snippet)
+        if argv[0].startswith("inventory_"):
+            continue
+        probe_root = ROOT if argv[0] == "suggest_public_skill_dogfood.py" else tmp_path
+        argv = [
+            {
+                ".": str(probe_root),
+                "<skill-id>": "quality",
+                "<behavior-seam>": "contract-probe",
+                "<subject-ref>": "artifact://contract-probe",
+                "<risk-focus>": "output-contract",
+                "<deterministic-gap>": "semantic-judgment",
+            }.get(value, value)
+            for value in argv
+        ]
+        command = f"skills/public/quality/scripts/{argv[0]}"
+        summary = _run(command, *argv[1:])
+        compatibility = _run(command, *argv[1:], "--json")
+        help_result = _run(command, "--help")
 
-            assert summary.returncode == legacy.returncode, command
-            assert yaml.safe_load(summary.stdout) == json.loads(legacy.stdout), command
-            assert "--summary" in help_result.stdout
-            assert "--detail" in help_result.stdout
-            assert "--json" not in help_result.stdout
+        assert summary.returncode == compatibility.returncode, command
+        assert yaml.safe_load(summary.stdout) == json.loads(compatibility.stdout), command
+        assert "--summary" in help_result.stdout
+        assert "--detail" in help_result.stdout
+        assert "--json" not in help_result.stdout
+
+
+def test_every_quality_inventory_exposes_yaml_output_contract(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("PYTEST_DEBUG_TEMPROOT", str(tmp_path / "inventory-pytest-temp"))
+    source_dir = ROOT / "skills/public/quality/scripts"
+    plugin_dir = ROOT / "plugins/charness/skills/quality/scripts"
+    source_names = {path.name for path in source_dir.glob("inventory_*.py")}
+    plugin_names = {path.name for path in plugin_dir.glob("inventory_*.py")}
+
+    assert plugin_names == source_names
+    assert source_names
+    for script_name in sorted(source_names):
+        command = str(source_dir / script_name)
+        args = ("--repo-root", str(tmp_path), "--summary")
+        summary = _run(command, *args)
+        compatibility = _run(command, *args, "--json")
+        help_result = _run(command, "--help")
+
+        assert summary.returncode == compatibility.returncode, script_name
+        assert yaml.safe_load(summary.stdout) == json.loads(compatibility.stdout), script_name
+        assert "--summary" in help_result.stdout, script_name
+        assert "--detail" in help_result.stdout, script_name
+        assert "--json" not in help_result.stdout, script_name
+
+
+def test_quality_dispatch_plugin_commands_match_canonical_source() -> None:
+    dispatch = (ROOT / "skills/public/quality/references/inventory-dispatch.md").read_text(
+        encoding="utf-8"
+    )
+    names = {
+        shlex.split(snippet)[0]
+        for snippet in re.findall(r"`\$SKILL_DIR/scripts/([^`]*)`", dispatch)
+    }
+    names.update(
+        path.name for path in (ROOT / "skills/public/quality/scripts").glob("inventory_*.py")
+    )
+
+    for script_name in sorted(names):
+        source = ROOT / "skills/public/quality/scripts" / script_name
+        plugin = ROOT / "plugins/charness/skills/quality/scripts" / script_name
+        assert plugin.read_bytes() == source.read_bytes(), script_name
 
 
 @pytest.mark.parametrize(

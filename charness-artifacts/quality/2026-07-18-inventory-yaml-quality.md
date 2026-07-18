@@ -1,117 +1,77 @@
 # Quality Review
 Date: 2026-07-18
-Title: Quality inventory YAML-first contract
+Title: Complete quality inventory YAML-first contract
 
 ## Scope
 
-Target boundary: agent-facing quality inventory output, its source/plugin ownership,
-and the standing-test cost of proving the interface.
+Target boundary: every quality `inventory_*.py` producer, every canonical inventory-dispatch command, their source/plugin ownership, and the cost of proving that interface.
 
-Ambient repo findings: the dup ratchet reports older anchor drift and reviewed clone
-fingerprint rotations; these are baseline maintenance, not evidence that YAML output is
-incorrect. D18 remains deliberately ignored per operator direction.
+Ambient repo findings: D18 remains ignored per operator direction. The broad gate exposed two stale tests, one redundant subprocess boundary, and duplicate-family fingerprint rotations; all were repaired or explicitly re-baselined before closeout.
 
 ## Current Gates
 
-- Existing YAML-output contract, focused inventory tests, ruff, packaging validation,
-  dup ratchet, and repo read-only quality closeout.
-- Maintainer-local enforcement is healthy; worktree doctor and hook inventory passed.
+- Existing YAML-output contract, focused domain tests, ruff, source/plugin sync, packaging validation, boundary-bypass and duplicate ratchets, artifact validators, and repo read-only quality.
+- No new standalone gate was added; the existing YAML contract test now owns structural population discovery and semantic parity.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
-  rendered by `render_runtime_summary.py`; local default profile.
-- runtime hot spots: read-only quality median 55.7s versus 90s budget; pytest median
-  35.9s versus 140s budget.
-- coverage gate: read-only quality passed 81 phases with 4,742 pytest cases;
-  verification-locked closeout and changed-line mutation coverage also passed.
-- evaluator depth: deterministic-gates-only; this interface contract is fully observable
-  without Cautilus, and evaluator execution requires separate operator approval.
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; local default profile. <!-- reproduction-source -->
+- runtime hot spots: final read-only quality completed 81 phases in 54.5s; pytest completed in 34.1s, both below their configured budgets.
+- coverage gate: 4,765 standing tests passed; the final verification-locked closeout must refresh changed-line mutation coverage after commit.
+- evaluator depth: deterministic-gates-only because encoding, flag conflicts, bounds, mirror parity, and exit behavior are directly observable; Cautilus is ask-before-run and was not executed.
 
 ## Healthy
 
-- Nine high-value inventories now return compact YAML for `--summary` and full YAML for
-  `--detail`, while hidden JSON remains available to programmatic consumers.
-- The canonical YAML renderer degrades to JSON syntax, which remains valid YAML, when
-  PyYAML is unavailable.
-- One shared helper owns selection semantics and the plugin mirror is generated.
+- All 20 quality `inventory_*.py` producers and all 25 canonical dispatch commands expose compact bounded `--summary` YAML, full `--detail` YAML, and hidden JSON compatibility.
+- Human defaults, exit codes, and explicit execution/write flags remain intact; Markdown recommendation mode rejects conflicting structured flags.
+- One helper owns encoding selection and bounded-list projection; canonical source owns behavior and generated plugin commands byte-match it.
+- The all-inventory contract module runs 25 tests in about 12.4s, down from 19.34s after source semantic execution and exact plugin-copy proof replaced duplicate execution.
 
 ## Weak
 
-- The pre-slice workflow mixed YAML planner output with JSON-only inventory packets and
-  duplicated renderer behavior, increasing token use and migration drift risk.
-- Some legacy inventories remain text/JSON-first; the catalog now names that boundary
-  honestly instead of promising universal migration.
+- The initial migration scoped the population from dispatch prose and left two undispatched inventories plus two detail-only commands outside the claimed capability.
+- First-pass “compact” proof checked YAML/JSON equality but not oversized arrays; fresh-eye review found four unbounded diagnostic surfaces.
+- Duplicate-family scanning cannot distinguish standardized per-command integration glue from extractable domain duplication without reviewer judgment.
 
 ## Missing
 
-- Before this slice, no test derived live commands from the inventory dispatch and ran
-  every migrated command across both source and packaged plugin layouts.
+- Before this slice, no structural test discovered every inventory producer from the filesystem while separately deriving every agent-facing dispatch consumer.
+- Before fresh-eye review, no oversized fixture proved count/sample/truncation behavior and no test rejected Markdown combined with structured modes.
 
 ## Deferred
 
-- Compact AGENTS.md routing is a plausible universal context saving, but needs a separate
-  scenario review so operating teeth are not lost.
-- Broad subprocess-to-in-process test conversion, low-confidence dead-code candidates,
-  and unmarked legacy inventory migrations lack a sufficiently specific payoff now.
+- A separate structured dispatch registry is not justified while the canonical backticked command syntax is stable and the existing test rejects duplicate/missing contract behavior.
+- Removing hidden JSON or persisted JSON artifact seams would break programmatic consumers without improving first-read agent ergonomics.
+- Fifteen Python files remain in advisory length warn bands; current review found no cohesive split that belongs in this interface slice.
 
 ## Advisory
 
-- structural review result: artifact: `../critique/2026-07-18-inventory-yaml-critique.md`;
-  capability_needed=coherent compact inventory packets;
-  current centers were planner YAML, duplicated renderers, and per-script JSON flags;
-  next_center=`summary_output_lib.py` plus dispatch-declared support;
-  transformation=summary YAML/detail YAML/hidden JSON with generated mirrors;
-  proof_boundary=live source and plugin commands; enforcement reuses the existing YAML
-  contract test, so no new floor is added.
-- prose review result: command: `inventory_skill_ergonomics.py --summary` reported
-  `prose_review_status=required`, 22 checked skills, and 16 heuristic findings;
-  specifically `checked_skill_count=22` and `heuristic_finding_count=16`;
-  artifact: `../critique/2026-07-18-063610-packet.md` records the required judgment
-  that quality trigger boundaries and progressive disclosure remain
-  intact; `inventory-dispatch.md` now distinguishes migrated and legacy commands, and
-  every copied migrated command includes `--repo-root .`.
-- command: `inventory_skill_ergonomics.py --summary` shrank the first-read
-  packet from 12,195 to 9,424 bytes; standing-test economics shrank from 7,173 to 6,364.
-- command: `inventory_standing_test_economics.py --summary` found 399 test files,
-  169 nested-CLI files, and 154 standing nested-CLI files
-  (`test_file_count=399`, `nested_cli_file_count=169`,
-  `nested_cli_standing_file_count=154`); no specific conversion was safe enough
-  to enter this slice.
+- structural review result: capability_needed=bounded truthful inventory packets; current_centers=producer files, dispatch consumers, and generated plugin copies; next_center=filesystem producer discovery plus dispatch-derived consumers; transformation=semantic source proof and exact generated-copy proof; proof_boundary=live subprocess YAML/JSON equality, oversized fixtures, plugin bytes; enforcement_posture=existing-gate reuse under the north star.
+- prose review result: `inventory_skill_ergonomics.py --summary` reported `checked_skill_count=22`, `heuristic_finding_count=16`, and `prose_review_status=required`. The quality trigger, progressive disclosure, target-vs-ambient split, and evaluator boundary remain unchanged; only inventory output guidance changed.
+- command: `inventory_standing_test_economics.py --summary` found `test_file_count=399` and `nested_cli_standing_or_mixed_file_count=169`; this slice reduced its own expanded contract module instead of proposing broad test deletion.
+- command: compact versus detail output measured 407/1,503 bytes for CLI ergonomics (72.9% smaller), 2,349/5,078 for runtime summary (53.7% smaller), and 1,918/2,533 for structural waste (24.3% smaller).
+- command: duplicate ratchet reported 18 new families and three membership reductions after the coherent cross-command migration. Review classified them as standardized interface/bootstrap/domain pairing glue rather than a nameable shared domain owner; scoped re-baseline accepted 18 families and rotated three fingerprints, after which the ratchet passed.
 
 ## Delegated Review
 
-- Delegated Review: executed — independent interface and ownership reviewers found the
-  summary/detail ambiguity, capability overclaim, mirror drift, and missing live-command
-  proof; all act-before-ship findings were fixed. A counterweight upheld the resulting
-  scope and rejected redundant 18-way mutual-exclusion tests.
-- Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof):
-  re-delegated through the counterweight; running on `tmp_path` reduced the new contract
-  test from 57.29s to 10.06s without weakening the command boundary.
+- Delegated Review: executed — interface-semantics and structural-ownership reviewers plus a separate counterweight found three act-before-ship classes: conflicting Markdown modes, unbounded summaries, and incomplete semantic population proof. All were fixed; rechecks passed.
+- Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof): re-delegated through structural review; the contract module fell from 19.34s to ~12.4s while increasing semantic coverage from the dispatch subset to every source inventory.
+- Reviewer boundary fingerprints passed after each angle, counterweight, and fix-verification pass; details: `../critique/2026-07-18-complete-inventory-yaml-contract-and-v2-1-0-release.md`.
 
 ## Commands Run
 
 - `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --detail`
 - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary`
 - `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root . --summary`
-- focused pytest selection for the YAML contract and migrated inventories — 101 passed.
-- `ruff check skills/public/quality/scripts plugins/charness/skills/quality/scripts tests/quality_gates/test_public_skill_yaml_output_contract.py`
-- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/validate_packaging.py --repo-root .`
-- `./scripts/run-quality.sh --read-only` — 81 passed, 0 failed in 56.2s.
-- verification-locked `run_slice_closeout.py --produce-mutation-coverage` — passed.
+- focused inventory/output suites — worker subsets 47, 153, 65, and 45 passed; final blocker-focused suite 55 passed.
+- `pytest -q tests/quality_gates/test_public_skill_yaml_output_contract.py` — 25 passed in repeated 12.3–12.5s runs.
+- `ruff check` over changed Python surfaces; `python3 scripts/sync_root_plugin_manifests.py --repo-root .`; `python3 scripts/validate_packaging.py --repo-root .`.
+- `./scripts/run-quality.sh --read-only` — initial 78/3 surfaced stale contract expectations and ratchet drift; final 81 passed, 0 failed in 54.5s.
 
 ## Recommended Next Quality Moves
 
-- passive preserve the current YAML inventory contract until another consumer earns
-  expansion — capability_needed=trustworthy compact inventory packets;
-  next_center=dispatch-declared support set; transformation=migrate one coherent
-  consumer population at a time; proof_boundary=live source/plugin command equality;
-  enforcement_posture=no-new-gate because the existing YAML contract owns it.
-- passive compact first-touch agent routing because no validated safe compression
-  contract exists yet — capability_needed=lower universal context
-  cost; next_center=AGENTS.md routing shell; transformation=move detail behind linked
-  owners; proof_boundary=operator scenario review; enforcement_posture=no-gate.
+- active release v2.1.0 through the repo helper — capability_needed=publicly consumable complete YAML contract; next_center=release helper; transformation=version/sync/tag/publish/install refresh; proof_boundary=release-only gate, fresh checkout, distinct public readback, real-host and installed-version proof; enforcement_posture=irreversible-boundary helper plus distinct observer.
+- passive structured dispatch data until syntax drift is observed because capability_needed=drift-free consumer discovery; next_center=inventory-dispatch canonical notation; transformation=replace prose extraction only when a real second syntax appears; proof_boundary=current command extraction and semantic source proof; enforcement_posture=no-gate because another registry would add ownership without current escape risk.
 
 ## History
 

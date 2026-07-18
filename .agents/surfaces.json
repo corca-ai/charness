@@ -375,7 +375,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 skills/public/quality/scripts/inventory_cli_ergonomics.py --repo-root . --json"
+        "python3 skills/public/quality/scripts/inventory_cli_ergonomics.py --repo-root . --detail"
       ],
       "notes": [
         "This inventory is advisory; promote only low-noise behavior-shaped findings to failing gates."

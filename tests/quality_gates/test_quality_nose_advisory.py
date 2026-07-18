@@ -7,6 +7,8 @@ import sys
 import textwrap
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_nose_clones.py"
@@ -67,6 +69,15 @@ def test_nose_advisory_missing_json_preserves_scope_filters(tmp_path: Path) -> N
     assert payload["ignore_file"] == "nose.ignore.json"
     assert payload["scope"] == {}
     assert payload["ranking"] == {}
+
+
+def test_nose_advisory_summary_yaml_matches_json(tmp_path: Path) -> None:
+    args = ["--repo-root", str(tmp_path), "--summary"]
+    yaml_result = _run(args, bin_dir=None)
+    json_result = _run([*args, "--json"], bin_dir=None)
+
+    assert yaml_result.returncode == json_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
 
 
 def test_nose_advisory_uses_installed_binary(tmp_path: Path) -> None:

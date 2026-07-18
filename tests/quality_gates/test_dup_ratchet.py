@@ -27,6 +27,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT, run_script
 
@@ -73,7 +74,7 @@ def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
         assert fragment in option_block, f"missing help for {option}: {fragment}"
 
 
-def test_check_help_describes_repo_root_and_json(capsys) -> None:
+def test_check_help_describes_repo_root_and_structured_modes(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         check.parse_args(["--help"])
 
@@ -82,9 +83,26 @@ def test_check_help_describes_repo_root_and_json(capsys) -> None:
         capsys.readouterr().out,
         {
             "--repo-root": "Repository root used to resolve adapter and ratchet paths.",
-            "--json": "Emit the ratchet report as JSON.",
+            "--summary": "Emit compact YAML duplicate-ratchet status and actionable findings",
+            "--detail": "Emit the full duplicate-ratchet report as YAML",
         },
     )
+
+
+def test_check_summary_yaml_matches_json_for_inert_gate(tmp_path: Path, capsys) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\nlanguage: en\noutput_dir: charness-artifacts/quality\n",
+        encoding="utf-8",
+    )
+
+    assert check.main(["--repo-root", str(repo), "--summary"]) == 0
+    yaml_output = capsys.readouterr().out
+    assert check.main(["--repo-root", str(repo), "--summary", "--json"]) == 0
+    json_output = capsys.readouterr().out
+
+    assert yaml.safe_load(yaml_output) == json.loads(json_output)
 
 
 def _evaluate(**over):

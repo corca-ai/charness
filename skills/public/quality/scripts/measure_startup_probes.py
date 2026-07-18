@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import statistics
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, bounded_list, emit_selected  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -42,7 +45,11 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose adapter-declared startup probes should be measured")
     parser.add_argument("--class", dest="probe_class", choices=("standing", "release", "all"), default="all", help="Probe class to run (standing, release, or all)")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML startup-probe status and failure counts",
+        detail_help="Emit the full startup-probe measurement report as YAML",
+    )
     parser.add_argument(
         "--record-runtime-signals",
         action="store_true",
@@ -184,6 +191,24 @@ def _format_human(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def summarize(report: dict[str, Any]) -> dict[str, Any]:
+    measured = report.get("measured", [])
+    failures = report.get("failures", [])
+    summary = {
+        "summary_note": "summary is triage output; use --detail for per-sample probe timings",
+        "adapter_path": report.get("adapter_path"),
+        "probe_class": report["probe_class"],
+        "probes_configured": report["probes_configured"],
+        "probes_measured": report["probes_measured"],
+        "status_counts": {
+            "ok": sum(1 for probe in measured if probe.get("status") == "ok"),
+            "failed": len(failures),
+        },
+    }
+    summary.update(bounded_list({"failures": failures}, "failures"))
+    return summary
+
+
 def main() -> int:
     args = _parse_args()
     report = evaluate(
@@ -191,9 +216,7 @@ def main() -> int:
         probe_class=args.probe_class,
         record_runtime_signals=args.record_runtime_signals,
     )
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    else:
+    if not emit_selected(report, args, summarize=summarize):
         print(_format_human(report))
     return 1 if report["failures"] else 0
 

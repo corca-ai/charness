@@ -11,6 +11,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script
 
 SKILL_SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
@@ -193,6 +195,22 @@ def test_cli_ranks_recoverable_and_keeps_local(tmp_path: Path) -> None:
     assert "ruff-check" in candidate_labels
     assert "specdown" in keep_local_labels
     assert "specdown" not in candidate_labels  # safety: never recommend moving non-recoverable proof
+
+
+def test_cli_summary_yaml_matches_json(tmp_path: Path) -> None:
+    repo = _seed_repo(
+        tmp_path,
+        adapter_lines=_ADAPTER_WITH_LOG,
+        workflow=_WORKFLOW,
+        log_rows=[{"command": "check-doc-links", "elapsed_ms": 5000}],
+    )
+    args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
+    yaml_result = run_script(INVENTORY, *args)
+    json_result = run_script(INVENTORY, *args, "--json")
+
+    assert yaml_result.returncode == json_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml.safe_load(yaml_result.stdout)["candidate_count"] == 1
 
 
 def test_cli_reports_no_cost_signal_when_unranked(tmp_path: Path) -> None:

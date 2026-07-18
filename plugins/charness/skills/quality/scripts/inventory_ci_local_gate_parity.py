@@ -27,7 +27,6 @@ issue surfaces); the helper is asymmetric on purpose.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import runpy
 import sys
@@ -52,6 +51,7 @@ load_yaml_file = _adapter_lib.load_yaml_file
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ci_local_gate_parity_lib as plib  # noqa: E402
+from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 
 def _print_text_summary(rendered: dict[str, Any]) -> None:
@@ -89,6 +89,23 @@ def _print_text_summary(rendered: dict[str, Any]) -> None:
         )
 
 
+def summarize(rendered: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:
+    """Return bounded triage data without hiding the aggregate parity state."""
+    parity_issues = rendered.get("parity_issues", [])
+    missing = rendered.get("jobs_without_canonical_gate", [])
+    exempt = rendered.get("exempt_workflows", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for full workflow and step evidence",
+        "workflows_scanned": rendered.get("workflows_scanned", 0),
+        "parity_issue_count": len(parity_issues) if isinstance(parity_issues, list) else 0,
+        "jobs_without_canonical_gate_count": len(missing) if isinstance(missing, list) else 0,
+        "exempt_workflow_count": len(exempt) if isinstance(exempt, list) else 0,
+        "parity_issues_sample": parity_issues[:sample_limit] if isinstance(parity_issues, list) else [],
+        "jobs_without_canonical_gate_sample": missing[:sample_limit] if isinstance(missing, list) else [],
+        "exempt_workflows_sample": exempt[:sample_limit] if isinstance(exempt, list) else [],
+    }
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the CI/local gate parity inventory")
@@ -119,7 +136,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="exit 1 when a workflow has run-steps but no canonical-gate match",
     )
     parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for workflow discovery")
-    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML parity counts and bounded triage samples",
+        detail_help="Emit the full CI/local gate parity inventory as YAML",
+    )
     return parser
 
 
@@ -138,10 +159,7 @@ def main() -> int:
         workflow = plib.parse_workflow(path, load_yaml_file)
         report.append(plib.evaluate_workflow(path, workflow, gate_patterns, args.ci_only_marker))
     rendered = plib.render_report(report)
-    if args.json:
-        json.dump(rendered, sys.stdout, indent=2, sort_keys=True)
-        sys.stdout.write("\n")
-    else:
+    if not emit_selected(rendered, args, summarize=summarize):
         _print_text_summary(rendered)
     if args.require_empty_parity_issues and rendered["parity_issues"]:
         return 1

@@ -42,6 +42,8 @@ def test_inventory_skill_ergonomics_summary_keeps_review_payload_compact(tmp_pat
     assert payload["heuristic_finding_count"] == 1
     assert payload["prose_review_status"] == "required"
     assert payload["advisories"][0]["advisory_id"] == "skill_ergonomics_prose_review_required"
+    assert payload["skills_with_heuristics_count"] == 1
+    assert payload["skills_with_heuristics_truncated"] is False
     assert payload["skills_with_heuristics"] == [
         {
             "skill_id": "demo",
@@ -66,6 +68,19 @@ def test_inventory_skill_ergonomics_summary_keeps_review_payload_compact(tmp_pat
     ]
     assert "skills" not in payload
     assert "review_prompts" not in result.stdout
+
+
+def test_inventory_skill_ergonomics_summary_bounds_skill_rows() -> None:
+    skills = [
+        {"skill_id": f"skill-{index}", "heuristics": ["signal"]}
+        for index in range(12)
+    ]
+
+    payload = _MODULE.summarize_payload({"skills": skills})
+
+    assert payload["skills_with_heuristics_count"] == 12
+    assert len(payload["skills_with_heuristics"]) == 10
+    assert payload["skills_with_heuristics_truncated"] is True
 
 
 def test_inventory_skill_ergonomics_summary_yaml_is_compact_and_parseable(tmp_path: Path) -> None:

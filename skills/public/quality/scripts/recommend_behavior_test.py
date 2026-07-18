@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import json
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import add_output_args, emit_selected, emit_yaml  # noqa: E402
 
 SCHEMA_VERSION = "charness.quality.behavior_test_recommendation.v1"
 CAUTILUS_REQUEST_SCHEMA = "cautilus.robustness_request.v1"
@@ -107,20 +111,44 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--limitation", action="append", default=[], help="Known limitation to record on the recommendation (repeatable)")
     parser.add_argument("--state", choices=STATES, default="recommend_only", help="Lifecycle state of the recommendation (recommend_only, executed, blocked, unavailable)")
     parser.add_argument("--report-ref", help="Required when --state executed; points to the Cautilus report.")
-    parser.add_argument("--markdown", action="store_true", help="Render the recommendation as a markdown bullet instead of JSON")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML behavior-test recommendation metadata",
+        detail_help="Emit the full behavior-test recommendation as YAML",
+    )
+    parser.add_argument("--markdown", action="store_true", help="Render the recommendation as a markdown bullet")
     return parser
+
+
+def summarize(payload: dict[str, object]) -> dict[str, object]:
+    request = payload["suggestedRequest"]
+    assert isinstance(request, dict)
+    return {
+        "summary_note": "summary is triage output; use --detail for the complete Cautilus request contract",
+        "schemaVersion": payload["schemaVersion"],
+        "state": payload["state"],
+        "behaviorSeam": payload["behaviorSeam"],
+        "deterministicProofGap": payload["deterministicProofGap"],
+        "subjectRef": request["subjectRef"],
+        "riskFocus": request["riskFocus"],
+        "requestedMutationKinds": request["requestedMutationKinds"],
+        "sourceEvidenceRefs": request["sourceEvidenceRefs"],
+        "executedReportRef": payload.get("executedReportRef"),
+    }
 
 
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    if args.markdown and (args.summary or args.detail or args.json):
+        parser.error("--markdown cannot be combined with --summary, --detail, or --json")
     if args.state == "executed" and not args.report_ref:
         parser.error("--state executed requires --report-ref")
     payload = build_payload(args)
     if args.markdown:
         print(render_markdown(payload))
-    else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    elif not emit_selected(payload, args, summarize=summarize):
+        emit_yaml(payload)
     return 0
 
 

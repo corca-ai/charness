@@ -157,11 +157,12 @@ brief:
     consumption: >-
       Run a focused inventory only when the quality question brings its surface
       into scope; advisory inventories are review prompts, not mandates. Use
-      For inventories marked with --summary in the dispatch, use summary YAML as
-      the first-read triage and switch to --detail YAML only when a finding needs
-      full attribution or disposition. Unmarked legacy inventories retain their
-      documented output until migrated. Hidden JSON compatibility is for
-      programmatic consumers. An inventory cited in the artifact's
+      `--summary` YAML for every dispatch script's first-read triage and switch
+      to `--detail` YAML only when a finding needs full attribution or disposition.
+      Hidden JSON compatibility is for programmatic consumers. The existing
+      YAML contract test derives every dispatch script command from the routing
+      document and inventories every inventory_*.py script so new entries cannot
+      bypass the contract. An inventory cited in the artifact's
       `## Commands Run` must engage >=2 declared non-headline fields (one is
       enough when only one is declared; validate-inventory-consumption enforces).
       Inventory scripts resolve under `$SKILL_DIR/scripts/`; detail_refs under

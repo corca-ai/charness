@@ -34,6 +34,19 @@ def emit_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 
+def bounded_list(
+    payload: dict[str, Any], key: str, *, sample_limit: int = 10
+) -> dict[str, Any]:
+    """Return count/sample/truncation fields for one list-valued payload key."""
+    value = payload.get(key, [])
+    items = value if isinstance(value, list) else []
+    return {
+        f"{key}_count": len(items),
+        f"{key}_sample": items[:sample_limit],
+        f"{key}_truncated": len(items) > sample_limit,
+    }
+
+
 def add_output_args(
     parser: argparse.ArgumentParser,
     *,

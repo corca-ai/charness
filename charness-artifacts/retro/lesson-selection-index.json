@@ -1045,26 +1045,6 @@
       ]
     },
     {
-      "candidate_id": "current_focus:4c5f60733513",
-      "kind": "current_focus",
-      "lesson": "The first autonomous-improvement slice fixed an invalid `catalog list --json` instruction and added a compact YAML summary, but the broad gate then exposed a second problem: evidence-marker validity depended on the marker occupying the same physical line as its citation.",
-      "normalized_key": "the first autonomous improvement slice fixed an invalid catalog list json instruction and added",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
       "candidate_id": "current_focus:31d7d81e3965",
       "kind": "current_focus",
       "lesson": "The root `charness` CLI had already migrated its public structured output to YAML, but public skill commands and the governing Cautilus preflight still taught `--json`.",
@@ -1125,10 +1105,30 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:d500a9ae949a",
+      "candidate_id": "current_focus:b9f22f1e26b5",
+      "kind": "current_focus",
+      "lesson": "Two related autonomous-improvement rounds exposed the same structural lesson.",
+      "normalized_key": "two related autonomous improvement rounds exposed the same structural lesson",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b87a359acdda",
       "kind": "next_improvement",
-      "lesson": "after a broad-gate-only failure, name the violated seam and run the four-axis sibling scan before applying the smallest artifact edit.",
-      "normalized_key": "after a broad gate only failure name the violated seam and run the four",
+      "lesson": "before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files.",
+      "normalized_key": "before a cross command migration enumerate the producer population from the filesystem and the",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",
@@ -2257,26 +2257,6 @@
       ]
     },
     {
-      "candidate_id": "current_focus:4c5f60733513",
-      "kind": "current_focus",
-      "lesson": "The first autonomous-improvement slice fixed an invalid `catalog list --json` instruction and added a compact YAML summary, but the broad gate then exposed a second problem: evidence-marker validity depended on the marker occupying the same physical line as its citation.",
-      "normalized_key": "the first autonomous improvement slice fixed an invalid catalog list json instruction and added",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-      "latest_source_date": "2026-07-18",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
-          "date": "2026-07-18",
-          "section": "Context"
-        }
-      ]
-    },
-    {
       "candidate_id": "current_focus:31d7d81e3965",
       "kind": "current_focus",
       "lesson": "The root `charness` CLI had already migrated its public structured output to YAML, but public skill commands and the governing Cautilus preflight still taught `--json`.",
@@ -2337,10 +2317,30 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:d500a9ae949a",
+      "candidate_id": "current_focus:b9f22f1e26b5",
+      "kind": "current_focus",
+      "lesson": "Two related autonomous-improvement rounds exposed the same structural lesson.",
+      "normalized_key": "two related autonomous improvement rounds exposed the same structural lesson",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b87a359acdda",
       "kind": "next_improvement",
-      "lesson": "after a broad-gate-only failure, name the violated seam and run the four-axis sibling scan before applying the smallest artifact edit.",
-      "normalized_key": "after a broad gate only failure name the violated seam and run the four",
+      "lesson": "before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files.",
+      "normalized_key": "before a cross command migration enumerate the producer population from the filesystem and the",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",
@@ -2437,10 +2437,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:db82ad0841a2",
+      "candidate_id": "next_improvement:cc330ec28a03",
       "kind": "next_improvement",
-      "lesson": "keep the detection gap, sibling findings, and concrete tests in the debug and critique artifacts committed with this slice.",
-      "normalized_key": "keep the detection gap sibling findings and concrete tests in the debug and critique",
+      "lesson": "keep structural population discovery, semantic source probes, exact generated-copy proof, bounded-list helpers, and volatile-input isolation in the existing YAML contract test rather than adding another gate.",
+      "normalized_key": "keep structural population discovery semantic source probes exact generated copy proof bounded list helpers",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",
@@ -2537,10 +2537,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:d8c46c1681c9",
+      "candidate_id": "next_improvement:6fd19b0f54df",
       "kind": "next_improvement",
-      "lesson": "retain explicit set-equality and ambiguity tests wherever two independently owned contracts are joined.",
-      "normalized_key": "retain explicit set equality and ambiguity tests wherever two independently owned contracts are joined",
+      "lesson": "preserve this population-first migration rule and the earlier seam-first failure rule in `recent-lessons.md`, and reflect them in the next-session handoff only when they change the next move.",
+      "normalized_key": "preserve this population first migration rule and the earlier seam first failure rule in",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
       "latest_source_date": "2026-07-18",

@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import visible_repo_files  # noqa: E402
+from summary_output_lib import add_output_args, emit_selected, emit_yaml  # noqa: E402
 
 SCHEMA_ID_RE = re.compile(r"\b[a-z0-9_]+(?:\.[a-z0-9_]+){2,}\.v\d+\b")
 CODE_EXTENSIONS = {
@@ -30,6 +30,11 @@ CODE_EXTENSIONS = {
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the duplicate-implementation scan")
+    add_output_args(
+        parser,
+        summary_help="Emit compact YAML candidate counts and samples for triage",
+        detail_help="Emit the full duplicate-implementation inventory as YAML",
+    )
     return parser.parse_args()
 
 
@@ -123,10 +128,21 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     }
 
 
+def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str, object]:
+    candidates = payload.get("candidates", [])
+    return {
+        "summary_note": "summary is triage output; use --detail for full candidate evidence",
+        "candidate_count": payload["candidate_count"],
+        "candidates_sample": candidates[:sample_limit] if isinstance(candidates, list) else [],
+        "notes": payload["notes"],
+    }
+
+
 def main() -> int:
     args = parse_args()
     payload = build_payload(args.repo_root.resolve())
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if not emit_selected(payload, args, summarize=summarize):
+        emit_yaml(payload)
     return 0
 
 

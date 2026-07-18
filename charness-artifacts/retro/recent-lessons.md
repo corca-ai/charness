@@ -3,7 +3,7 @@
 ## Current Focus
 
 - The autonomous quality slice converted nine agent-facing inventory first reads from JSON to compact YAML, centralized output selection, synchronized the plugin mirror, and added live source/plugin contract proof. (source: `charness-artifacts/retro/2026-07-18-inventory-yaml-session-retro.md`)
-- The first autonomous-improvement slice fixed an invalid `catalog list --json` instruction and added a compact YAML summary, but the broad gate then exposed a second problem: evidence-marker validity depended on the marker occupying the same physical line as its citation. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
+- The root `charness` CLI had already migrated its public structured output to YAML, but public skill commands and the governing Cautilus preflight still taught `--json`. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
 
 ## Repeat Traps
 
@@ -15,7 +15,7 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`; sources: 98)
-- after a broad-gate-only failure, name the violated seam and run the four-axis sibling scan before applying the smallest artifact edit. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
+- before a cross-command migration, enumerate the producer population from the filesystem and the consumer population from routing/ownership declarations before selecting files. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - begin output-format migrations with a live consumer-language scan spanning governing instructions, skills, references, help, and exports. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
 - bind this lesson into the goal closeout critique and this persisted retro so the rerun is not silently reported as a first-pass success. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
 

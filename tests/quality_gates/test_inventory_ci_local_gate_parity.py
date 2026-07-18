@@ -33,6 +33,37 @@ def test_silent_when_no_workflows(tmp_path: Path) -> None:
     }
 
 
+def test_output_modes_keep_json_compatibility_and_offer_yaml_triage(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm run verify
+      - run: npm run lint:strict
+""",
+    )
+    full_json = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert full_json.returncode == 0, full_json.stderr
+    assert "parity_issues" in json.loads(full_json.stdout)
+
+    summary = run_script(SCRIPT, "--repo-root", str(repo), "--summary")
+    assert summary.returncode == 0, summary.stderr
+    assert "parity_issue_count: 1" in summary.stdout
+    assert "workflows:" not in summary.stdout
+
+    detail = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
+    assert detail.returncode == 0, detail.stderr
+    assert "parity_issues:" in detail.stdout
+
+    summary_json = run_script(SCRIPT, "--repo-root", str(repo), "--summary", "--json")
+    assert summary_json.returncode == 0, summary_json.stderr
+    assert json.loads(summary_json.stdout)["parity_issue_count"] == 1
+
+
 def test_strict_workflow_listing_fails_closed_outside_git(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     workflows = repo / ".github" / "workflows"
