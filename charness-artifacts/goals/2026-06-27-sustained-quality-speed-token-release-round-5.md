@@ -1,6 +1,6 @@
 # Achieve Goal: Sustained quality speed token release round 5
 
-Status: active
+Status: complete
 Created: 2026-06-27
 Activation: `/goal @charness-artifacts/goals/2026-06-27-sustained-quality-speed-token-release-round-5.md`
 Timebox: 3h
@@ -12,12 +12,13 @@ This file is the living goal scratchpad for the active three-hour quality loop.
 
 ## Active Operating Frame
 
-- Current slice: release critique and closeout.
-- Current slice intent: publish `v0.56.7` through the repo-owned release helper
-  after final gates, release critique, release notes, push, public verification,
-  and install refresh.
-- Next action: commit release critique/notes/planner UX follow-up, run final
-  closeout and quality gates, then execute release helper.
+- Archived frame: historical lifecycle repair on 2026-07-18 for work completed
+  on 2026-06-27. The immutable release tag is `v0.56.7` at `4307c2e2`; release
+  verification was recorded in `0378b519`.
+- Current slice: replace stale active-state instructions with historical
+  closeout evidence, then validate and mark this artifact complete.
+- Next action: no release, push, or install action is pending or authorized by
+  this historical goal.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -95,7 +96,7 @@ push, and release.
 | 1 | Release planning evidence scope | Handoff named clean-worktree release planning as the next smell after focused producer UX | Regression test and planner/helper fix proving release proof uses intended delta | committed `1d749d1c` |
 | 2 | Standing pytest runner startup probes | Runtime artifact names pytest as the dominant standing cost; runner startup had avoidable probe subprocesses | Focused implementation, targeted tests, timing sample, commit | committed `d6a02330` |
 | 3 | Broad pytest proof-scope self-check | User flagged broad pytest fingerprint drift as a smell; debug artifact identified proof changed_paths drift as the failure mode | Closeout self-check, targeted tests, commit | committed `9a8b49f3` |
-| Final | Push and release | User requested final push/release | Full quality, release critique, publish helper, public verification | pending |
+| Final | Push and release | User requested final push/release | Full quality, release critique, publish helper, public verification | completed historically in `4307c2e2` and `0378b519` |
 
 ## Operator Decision Queue
 
@@ -108,7 +109,9 @@ Routing: `find-skills` recommended `quality` for the loop and `release` for the
 final publication boundary. Implementation slices use `impl`; release closeout
 uses `release`.
 Gather: n/a — no external source context at activation.
-Release: pending final release helper proof.
+Release: historical v0.56.7 publication and distinct-channel verification are
+recorded immutably in `0378b519:charness-artifacts/release/latest.md`; the
+current rolling release pointer is deliberately not used as proof.
 Issue closeout: n/a — no tracked issue is currently being closed.
 
 ## Slice Log
@@ -227,7 +230,7 @@ confirmed the proof shapes match current executor output.
 
 ### Final Slice: Release critique and notes
 
-Status: in-progress.
+Status: completed historically.
 
 Changed:
 
@@ -342,12 +345,50 @@ none so far.
 
 ## Final Verification
 
-Pending until closeout.
+- Historical outcome proof: all slice commits through closeout commit
+  `b704cc47` are ancestors of tag `v0.56.7` at `4307c2e2`; subsequent commit
+  `0378b519` records the release-helper quality pass, branch/tag push, public
+  GitHub release verification, distinct-channel HTTPS status 200, and the
+  maintainer install refresh performed on 2026-06-27.
+- Acceptance reconciliation: the release record captured the branch/tag push,
+  and the goal slice commits are immutable ancestors of `v0.56.7`; current
+  `origin/main` state was not queried. The requested release was published and
+  verified historically, and this artifact no longer advertises a stale
+  publish action.
+- Historical residual: the v0.56.7 ledger left optional `nose` real-host
+  checklist items unexecuted. This repair does not silently resolve them.
+- Non-claims: the 2026-07-18 repair did not rerun the old gates, query current
+  GitHub state, test current v2.0.0 behavior, or prove current installed-plugin
+  or runtime state. It does not claim that the mutable release pointer still
+  describes v0.56.7.
+- Reviewer boundary proof: both angle-review verifications and the clean rerun
+  of the counterweight verification reported `ok: true`; the first
+  counterweight approval was quarantined after parent-created debug-artifact
+  drift and was not used.
+Retro: charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md
+Host log probe: skipped: host-log-not-exposed: this historical repair has no reliable goal-window host transcript to bind
+Disposition review: charness-artifacts/critique/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-review.md
 
 ## User Verification Instructions
 
-Pending until closeout.
+- Run `git rev-parse v0.56.7` and confirm it resolves to
+  `4307c2e28e2b263569146438334665267ae4c63a`.
+- Run `git show 0378b519:charness-artifacts/release/latest.md` to inspect the
+  immutable v0.56.7 release evidence. Use the current v2.0.0 release record and
+  handoff for present-state questions; this goal is historical.
 
 ## Auto-Retro
 
-Pending until closeout.
+Retro dispositions: applied: replaced the stale active control frame with an
+immutable historical closeout and explicit present-state non-claims; no new
+automated gate was added because one contextual stale record does not justify
+a generic release-implies-goal-complete rule.
+- workflow: applied — treated snapshot-to-verify as a parent mutation freeze
+  for the clean counterweight rerun after quarantining the drifted result.
+- capability: no change — the existing fingerprint rail detected and
+  quarantined the parent-created drift exactly as designed.
+- memory: applied — bound the sequencing lesson in the closeout critique,
+  disposition review, and persisted goal-specific retro.
+Structural follow-up: none — the shared fingerprint rail already covers all
+bounded reviewer runs; this incident required operating discipline, not a new
+generic gate.

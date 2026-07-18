@@ -29,6 +29,19 @@ def _load_yaml_file(path: Path) -> dict[str, Any]:
     raise RuntimeError("scripts/adapter_lib.py not found")
 
 
+def _emit_yaml(payload: dict[str, Any]) -> None:
+    for ancestor in Path(__file__).resolve().parents:
+        if (ancestor / "scripts" / "yaml_output.py").is_file():
+            root_text = str(ancestor)
+            if root_text not in sys.path:
+                sys.path.insert(0, root_text)
+            from scripts.yaml_output import emit_yaml
+
+            emit_yaml(payload)
+            return
+    raise RuntimeError("scripts/yaml_output.py not found")
+
+
 def _catalog() -> dict[str, Any]:
     return _load_yaml_file(CATALOG_PATH)
 
@@ -361,16 +374,15 @@ def main() -> int:
         help="Repository root to inspect for skills and quality inputs.",
     )
     parser.add_argument("--target-skill", help="Optional skill id or SKILL.md path for target-vs-ambient structural review")
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit the quality run plan as JSON.",
-    )
+    parser.add_argument("--detail", action="store_true", help="Emit the full quality run plan as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     plan = build_plan(args.repo_root.resolve(), target_skill=args.target_skill)
     if args.json:
         print(json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True))
+    elif args.detail:
+        _emit_yaml(plan)
     else:
         print(format_human(plan))
     return 0

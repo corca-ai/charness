@@ -21,7 +21,7 @@ tests commands.
 # Required Tools: rg
 sed -n '1,220p' README.md
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
-rg -n "argparse|click|typer|cobra|urfave|commander|subcommands|--json|--help|dry-run|doctor|install|update" .
+rg -n "argparse|click|typer|cobra|urfave|commander|subcommands|--detail|--help|dry-run|doctor|install|update" .
 find . -maxdepth 3 \\( -name '*.sh' -o -name '*.py' -o -name 'main.go' \\) | sort
 ```
 
@@ -56,7 +56,10 @@ steps call tools outside the baseline shell surface.
    - if the product needs one command that refreshes both itself and tracked
      external/runtime surfaces, keep that aggregate path product-owned, such as
      `update all`, instead of leaking harness-internal vocabulary
-   - `--json` or another structured output when agents may consume the result
+   - for Charness-style commands whose primary caller is an agent, emit YAML by
+     default and use `--detail` for the full evidence payload; for human-first
+     CLIs or third-party integrations, preserve the product's established
+     concise default and native structured-output mode
    - if agents may call the CLI repeatedly, define at least one cheap read-only
      startup probe such as `version`, `--version`, or a lightweight inspect
      command; keep that probe stable enough for standing latency measurement
@@ -69,13 +72,14 @@ steps call tools outside the baseline shell surface.
    - mutating subcommands with required positionals should reject flag-looking
      positional values such as `--help` before any state change
    - if wrappers or agents may probe the surface, separate machine-readable
-     command discovery such as `commands --json` or `capabilities --json` from
+     command discovery such as `commands --detail` or `capabilities --detail` from
      human help text
    - if the CLI lets agents interact with an external system, define the
      external capability boundary separately from parser shape; see
      `references/external-capability-clis.md`
-   - default stdout should stay concise for human operators; reserve full
-     structured payloads for explicit `--json` or equivalent machine-output switch
+   - human-first default stdout should stay concise; agent-first Charness-style
+     commands may use compact YAML by default, with full evidence behind
+     `--detail`
    - reserve `-v` for `verbose`, not `version`; prefer canonical `version`
      plus optional top-level `--version` alias when the parser surface is
      already stable

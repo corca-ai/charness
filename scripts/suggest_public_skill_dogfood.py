@@ -7,6 +7,8 @@ import json
 import sys
 from pathlib import Path
 
+from yaml_output import emit_yaml
+
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -23,7 +25,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--skill-id", action="append", default=[])
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--detail", action="store_true", help="Emit the full dogfood matrix payload as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -41,6 +44,8 @@ def main() -> int:
     report = build_matrix(repo_root, requested)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.detail:
+        emit_yaml(report)
     else:
         print(format_human(report))
     # Advisory only, never blocks: the scaffold stays usable while flagging

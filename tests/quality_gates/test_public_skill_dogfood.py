@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+import yaml
+
 from scripts.public_skill_dogfood_lib import build_matrix
 
 from .support import ROOT, run_script
@@ -42,10 +44,10 @@ def test_public_skill_dogfood_wrappers_match_root_script() -> None:
             "handoff",
             "--skill-id",
             "quality",
-            "--json",
+            "--detail",
         )
         assert result.returncode == 0, result.stderr
-        payloads.append(json.loads(result.stdout))
+        payloads.append(yaml.safe_load(result.stdout))
 
     assert payloads[1] == payloads[0]
     assert payloads[2] == payloads[0]

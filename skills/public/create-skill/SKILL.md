@@ -58,7 +58,7 @@ canonical adapter when the repo should own topology terms.
    - cold start, warm start, error recovery, and concrete failure cases
    - source/principal binding drift or prescribed-path self-test concerns when relevant
 3. Freeze the current consumer contract before editing an existing public skill.
-   - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
+   - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --detail`
    - decide whether the slice claims `preserve` or `improve`; if `improve`,
      name the capability failure before changing the core trigger or behavior contract
    - when the change touches adapters, examples, bootstrap, first-touch docs,

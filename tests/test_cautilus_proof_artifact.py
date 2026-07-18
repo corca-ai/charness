@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+import yaml
 
 from .cautilus_artifact_support import seed_repo
 from .charness_cli.support import ROOT
@@ -409,10 +410,10 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
         "--paths",
         "skills/public/create-skill/SKILL.md",
         "charness-artifacts/cautilus/latest.md",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["run_mode"] == "ask"
     assert payload["status"] == "ready-for-validation"
     assert payload["recommended_commands"] == []
@@ -422,7 +423,7 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     assert recommendation["validation_tier"] == "evaluator-required"
     assert any("docs/public-skill-dogfood.json" in note for note in recommendation["notes"])
     assert any(
-        "python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id create-skill --json" == item
+        "python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id create-skill --detail" == item
         for item in payload["recommended_followups"]
     )
     assert any("evals/cautilus/scenarios.json" in item for item in payload["recommended_followups"])
@@ -441,7 +442,7 @@ def test_plan_cautilus_proof_fails_closed_when_public_skill_policy_is_invalid(tm
         str(repo),
         "--paths",
         "skills/public/demo/SKILL.md",
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 1
@@ -468,10 +469,10 @@ def test_plan_cautilus_proof_adaptive_runs_without_ask_for_scenario_review(tmp_p
         str(repo),
         "--paths",
         "skills/public/impl/SKILL.md",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["run_mode"] == "adaptive"
     assert payload["must_ask_before_running"] is False
     assert payload["scenario_registry_review_required"] is True

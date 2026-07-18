@@ -21,7 +21,7 @@ then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/plan_retro_run.py" --repo-root . --invocation-text "<retro request>" --json
+python3 "$SKILL_DIR/scripts/plan_retro_run.py" --repo-root . --invocation-text "<retro request>"
 python3 "$SKILL_DIR/scripts/scaffold_retro_artifact.py" --repo-root .
 ```
 

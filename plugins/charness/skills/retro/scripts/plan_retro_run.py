@@ -57,6 +57,7 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 scaffold_retro_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_retro_artifact")
 surfaces_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.surfaces_lib")
@@ -307,14 +308,17 @@ def main() -> int:
     )
     parser.add_argument("--invocation-text", default="", help="The user's retro request, used to select session vs weekly mode")
     parser.add_argument("--changed-paths", nargs="*", help="Explicit paths for work-class classification (defaults to working tree, then recent commits)")
-    parser.add_argument("--json", action="store_true", help="Emit JSON; accepted for parity with other planners")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     payload = build_plan(
         args.repo_root.resolve(),
         invocation_text=args.invocation_text,
         changed_paths=args.changed_paths,
     )
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        yaml_output.emit_yaml(payload)
     return 0 if payload["ok"] else 1
 
 

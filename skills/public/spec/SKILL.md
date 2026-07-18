@@ -23,7 +23,7 @@ for f in README.md AGENTS.md docs/handoff.md "$SKILL_DIR/../ideation/references/
 
 # 2. existing concept/spec/design docs + implementation-side acceptance reality
 rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint|test|fixture|scenario|operator|takeover|smoke|integration" .
-python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true
+python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --detail 2>/dev/null || true
 ```
 
 If an ideation document already exists, refine it instead of restating the full

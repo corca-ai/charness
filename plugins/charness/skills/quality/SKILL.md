@@ -25,7 +25,7 @@ run the planner before broad gates or fixes. Missing binary handling follows
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent record
-python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root . --detail
 # For a target-skill review, add: --target-skill <skill-id>
 rg --files .
 git status --short

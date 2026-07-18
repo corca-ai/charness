@@ -7,6 +7,8 @@ import json
 import sys
 from pathlib import Path
 
+from yaml_output import emit_yaml
+
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -40,13 +42,16 @@ def _print_text(plan: dict[str, object]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--detail", action="store_true", help="Emit the full risk-interrupt plan as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--paths", nargs="*", help="Optional repo-relative changed paths for current-slice affinity.")
     args = parser.parse_args()
 
     plan = plan_risk_interrupt(args.repo_root.resolve(), changed_paths=args.paths)
     if args.json:
         print(json.dumps(plan, ensure_ascii=False, indent=2))
+    elif args.detail:
+        emit_yaml(plan)
     else:
         _print_text(plan)
     return 0 if plan["status"] != "blocked" else 1

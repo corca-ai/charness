@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -156,7 +158,7 @@ def test_plan_risk_interrupt_cli_maps_blocked_plan_to_exit_one(
     capsys,
 ) -> None:
     repo = seed_repo(tmp_path, debug_body=debug_artifact(), spec_body=resolved_spec())
-    monkeypatch.setattr(sys, "argv", ["plan_risk_interrupt.py", "--repo-root", str(repo), "--json"])
+    monkeypatch.setattr(sys, "argv", ["plan_risk_interrupt.py", "--repo-root", str(repo), "--detail"])
 
     assert _plan_risk_interrupt_cli.main() == 1
-    assert '"status": "blocked"' in capsys.readouterr().out
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "blocked"

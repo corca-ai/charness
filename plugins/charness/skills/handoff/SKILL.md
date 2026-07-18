@@ -23,7 +23,7 @@ the plan.
 Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
-python3 "$SKILL_DIR/scripts/plan_handoff_run.py" --repo-root . --intent auto --invocation-text "<current user request>" --json
+python3 "$SKILL_DIR/scripts/plan_handoff_run.py" --repo-root . --intent auto --invocation-text "<current user request>"
 ```
 
 By default, `handoff` writes its durable artifact to

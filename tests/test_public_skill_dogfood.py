@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 from scripts.public_skill_dogfood_lib import build_matrix
@@ -169,10 +170,10 @@ def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path,
         str(repo),
         "--skill-id",
         "demo",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["matrix"][0]["skill_id"] == "demo"
 
 
@@ -185,10 +186,10 @@ def test_suggest_cli_warns_on_description_fallback_prompt(tmp_path: Path, monkey
     seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
 
     result = run_suggest_public_skill_dogfood(
-        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--json"
+        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--detail"
     )
     assert result.returncode == 0, result.stderr
-    row = json.loads(result.stdout)["matrix"][0]
+    row = yaml.safe_load(result.stdout)["matrix"][0]
     assert row["prompt_fallback"] is True
     assert "frontmatter-description fallback" in result.stderr
 
@@ -230,12 +231,12 @@ def test_quality_skill_cli_copy_emits_fallback_stderr_warning(tmp_path: Path) ->
             str(repo),
             "--skill-id",
             "demo",
-            "--json",
+            "--detail",
         ],
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["matrix"][0]["prompt_fallback"] is True
+    assert yaml.safe_load(result.stdout)["matrix"][0]["prompt_fallback"] is True
     assert "frontmatter-description fallback" in result.stderr

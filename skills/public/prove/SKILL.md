@@ -78,7 +78,7 @@ verification preferences or `truth_surfaces`.
      docs/spec synchronization; the
      [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)
      owns the producer/consumer questions and the disposition this closeout records
-   - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --json`; if
+   - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --detail`; if
      it reports `triggered: true`, the changed paths matched the repo's cross-surface
      probe — escalate this slice to a standalone `critique`, and validate that durable
      artifact with the critique validator's `--changed-ref <base>` so the cross-surface

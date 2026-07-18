@@ -23,11 +23,13 @@ Design rules:
 - reserve `-v` for `verbose`, not `version`
 - stable public subcommands should support `--help` with exit `0` and no side
   effects unless the repo documents a strong exception
-- keep default stdout short and operator-readable; reserve full machine payloads
-  for explicit `--json` or equivalent machine mode
+- for human-first CLIs, keep default stdout short and operator-readable and use
+  the product's explicit machine mode; for Charness-style agent-first commands,
+  emit compact YAML by default and reserve the full payload for `--detail`
 - if wrappers or agents may probe the command surface, prefer an explicit
-  machine-readable registry such as `commands --json` or
-  `capabilities --json` instead of scraping help text
+  machine-readable registry such as `commands --detail` or
+  `capabilities --detail` for Charness-style CLIs, or the tool's established
+  native machine mode, instead of scraping help text
 - if agents are expected to claim bounded repo work, provide a small task
   envelope such as `task claim`, `task submit`, `task abort`, and `task status`
   before inventing a queue or scheduler
@@ -42,9 +44,10 @@ Design rules:
 
 Agent-facing rule:
 
-- if an agent is expected to chain commands, provide `--json` and keep the
-  payload stable enough to parse without scraping prose
-- if a mutation command also offers `--json`, keep progress and chatter off
+- if an agent is expected to chain Charness-style commands, provide stable YAML
+  by default and use `--detail` for full evidence; preserve native modes when
+  integrating an established third-party CLI
+- when a mutation command emits structured output, keep progress and chatter off
   stdout so the structured payload stays parseable; prefer stderr or durable
   state for in-flight visibility
 - if local plugin, skill, or materialized runtime files are part of the usable

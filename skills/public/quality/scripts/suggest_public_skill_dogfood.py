@@ -31,13 +31,15 @@ format_human = _scripts_public_skill_dogfood_lib_module.format_human
 prompt_fallback_warnings = _scripts_public_skill_dogfood_lib_module.prompt_fallback_warnings
 _scripts_public_skill_validation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.public_skill_validation_lib")
 public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose public skill dogfood matrix should be suggested")
     parser.add_argument("--skill-id", action="append", default=[], help="Public skill id to include in the matrix (repeatable; defaults to all)")
-    parser.add_argument("--json", action="store_true", help="Emit the full dogfood matrix payload as JSON")
+    parser.add_argument("--detail", action="store_true", help="Emit the full dogfood matrix payload as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -55,6 +57,8 @@ def main() -> int:
     report = build_matrix(repo_root, requested)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.detail:
+        yaml_output.emit_yaml(report)
     else:
         print(format_human(report))
     # Advisory only, never blocks: the scaffold stays usable while flagging

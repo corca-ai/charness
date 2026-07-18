@@ -2,8 +2,8 @@
 
 ## Current Focus
 
-- Autonomous pickup ("리포 자율 개선") ran the handoff chunker over the live backlog, merged handoff entries 1+3 into one goal (`charness-artifacts/goals/2026-07-17-prove-dogfood-via-444-polish.md`), and executed it end-to-end: the #444 deferred F5/F6 polish landed as commit `963e147c`, and the prove dogfood row was promoted to `reviewed` on live consumer-run evidence as commit `b1b74e0c`. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
-- Release publish triggered a configured automatic session retro for `v1.2.0`. (source: `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`)
+- The root `charness` CLI had already migrated its public structured output to YAML, but public skill commands and the governing Cautilus preflight still taught `--json`. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
+- The v0.56.7 three-hour quality goal completed its implementation, release, and public verification on 2026-06-27, but its lifecycle artifact remained `Status: active`. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`; sources: 98)
-- bounded-reviewer synchronous spawns returned results inline this session (no polling needed), unlike the 2026-07-16 session; treat the polling lesson as host-version-dependent rather than permanent. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
-- consider a scaffold-time warning when a dogfood row's prompt equals the skill description (fallback in use), so the next new skill does not inherit an unrealistic consumer prompt silently. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
-- keep critique strictly before the locked closeout even when the parallel gamble looks cheap; the loss mode (invalidated broad proof) costs more than the wait. (source: `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`)
+- begin output-format migrations with a live consumer-language scan spanning governing instructions, skills, references, help, and exports. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
+- bind this lesson into the goal closeout critique and this persisted retro so the rerun is not silently reported as a first-pass success. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
+- none — the existing fingerprint rail detected and quarantined the violation exactly as designed. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
 
 ## Selection Policy
 
@@ -123,7 +123,8 @@
 - `charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-16-scout-driven-improvement-retro.md`
 - `charness-artifacts/retro/2026-07-16-v1-1-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-17-prove-dogfood-via-444-polish-goal-session-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`
+- `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`

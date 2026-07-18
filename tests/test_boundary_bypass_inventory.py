@@ -86,6 +86,24 @@ def test_flags_subprocess_test_of_import_safe_script(tmp_path: Path) -> None:
     assert out["summary"]["internal_boundary_count"] == 0
 
 
+def test_yaml_stdout_parse_counts_as_behavior_assertion(tmp_path: Path) -> None:
+    test_body = _subprocess_test(returncode=0, behavior=False).replace(
+        'assert "boom" in result.stderr',
+        "import yaml; payload = yaml.safe_load(result.stdout); assert payload",
+    )
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("tests/test_foo.py", test_body)
+        .build(tmp_path)
+    )
+
+    candidate = LIB.find_boundary_bypass_candidates(repo)["candidates"][0]
+
+    assert candidate["behavior_assert"] is True
+    assert candidate["likely_keep_boundary"] is False
+
+
 def test_ignores_in_process_test(tmp_path: Path) -> None:
     repo = (
         Repo()

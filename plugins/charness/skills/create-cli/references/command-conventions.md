@@ -11,7 +11,9 @@ Portable baseline for repo-owned multi-command CLIs:
 - reserve `-v` for `verbose`, never `version`
 - support `-h` / `--help` as read-only help probes on the top level and stable
   public subcommands
-- keep `--json` exclusively for machine-readable output
+- for Charness-style agent-first commands, use YAML by default and `--detail`
+  for full evidence; human-first and third-party CLIs keep their established
+  structured-output mode
 - prefer explicit long flags for destructive confirmations or irreversible
   behavior
 
@@ -24,7 +26,8 @@ Read-only probe surface:
 - `tool version`
 - `tool --version` when supported
 - `tool doctor --help`
-- cheap command-discovery surfaces such as `tool commands --json`
+- cheap command-discovery surfaces such as `tool commands --detail` for a
+  Charness-style CLI, or the tool's native machine mode
 
 Do not overload probe surfaces with mutations, background refresh, or install
 side effects.

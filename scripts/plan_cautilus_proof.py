@@ -9,6 +9,8 @@ import re
 import sys
 from pathlib import Path
 
+from yaml_output import emit_yaml
+
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -104,7 +106,7 @@ def _skill_change_recommendations(repo_root: Path, changed_paths: list[str]) -> 
         if tier is None:
             continue
         commands = [
-            f"python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id {skill_id} --json",
+            f"python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id {skill_id} --detail",
         ]
         notes = [
             f"Freeze the current `{skill_id}` consumer contract in `docs/public-skill-dogfood.json` before treating the semantic change as closed.",
@@ -233,7 +235,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to current git diff.")
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--detail", action="store_true", help="Print the full plan as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -241,6 +244,8 @@ def main() -> int:
     plan = plan_cautilus_proof(repo_root, changed_paths)
     if args.json:
         print(json.dumps(plan, ensure_ascii=False, indent=2))
+    elif args.detail:
+        emit_yaml(plan)
     else:
         print(f"status: {plan['status']}")
         if plan["required"]:

@@ -7,6 +7,7 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -252,17 +253,17 @@ def test_retro_recent_commit_paths_handles_subprocess_error(tmp_path: Path, monk
     assert module._recent_commit_paths(tmp_path, 5) == []
 
 
-def test_retro_plan_main_emits_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_retro_plan_main_emits_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)
     module = load_plan_module()
     monkeypatch.setattr(
         "sys.argv",
-        ["plan_retro_run.py", "--repo-root", str(repo), "--changed-paths", "src/app.py", "--json"],
+        ["plan_retro_run.py", "--repo-root", str(repo), "--changed-paths", "src/app.py"],
     )
 
     assert module.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["schema_version"] == "retro.run_plan.v1"
     assert payload["envelope_version"] == "charness.run_plan_envelope.v1"
 

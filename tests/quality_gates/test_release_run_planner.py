@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import subprocess
 import sys
@@ -9,6 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from .release_publish_fixtures import (
     PUBLISH_SCRIPT,
@@ -48,6 +48,7 @@ def _args(**overrides: object) -> SimpleNamespace:
         "publish_current": False,
         "part": None,
         "set_version": None,
+        "detail": True,
         "json": True,
     }
     values.update(overrides)
@@ -56,7 +57,7 @@ def _args(**overrides: object) -> SimpleNamespace:
 
 def _run_plan(repo: Path, env: dict[str, str], *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["python3", str(REPO_ROOT / PLANNER), "--repo-root", str(repo), "--json", *args],
+        ["python3", str(REPO_ROOT / PLANNER), "--repo-root", str(repo), "--detail", *args],
         cwd=REPO_ROOT,
         env=env,
         check=False,
@@ -85,7 +86,7 @@ def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: P
     result = _run_plan(repo, env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["schema_version"] == "release.run_plan.v1"
     assert payload["next_action"]["kind"] == "inspect_only"
     assert payload["release_state"]["drift"] == []
@@ -116,7 +117,7 @@ def test_release_run_planner_uses_release_delta_for_real_host_evidence(tmp_path:
     result = _run_plan(repo, env, "--part", "patch")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     real_host = payload["evidence_packets"]["real_host"]
     assert real_host["evidence_scope"] == "release_delta"
     assert real_host["evidence_previous_version"] == "0.0.0"
@@ -133,7 +134,7 @@ def test_release_run_planner_uses_release_delta_for_real_host_evidence(tmp_path:
     set_version_result = _run_plan(repo, env, "--set-version", "0.0.1")
 
     assert set_version_result.returncode == 0, set_version_result.stderr
-    set_version_real_host = json.loads(set_version_result.stdout)["evidence_packets"]["real_host"]
+    set_version_real_host = yaml.safe_load(set_version_result.stdout)["evidence_packets"]["real_host"]
     assert set_version_real_host["evidence_scope"] == "release_delta"
     assert set_version_real_host["evidence_previous_version"] == "0.0.0"
     assert set_version_real_host["required"] is True
@@ -158,7 +159,7 @@ def test_release_run_planner_publish_current_uses_previous_release_delta_for_rea
     result = _run_plan(repo, env, "--publish-current")
 
     assert result.returncode == 0, result.stderr
-    real_host = json.loads(result.stdout)["evidence_packets"]["real_host"]
+    real_host = yaml.safe_load(result.stdout)["evidence_packets"]["real_host"]
     assert real_host["evidence_scope"] == "release_delta"
     assert real_host["evidence_previous_version"] == "0.0.0"
     assert real_host["required"] is True
@@ -172,7 +173,7 @@ def test_release_run_planner_requires_critique_before_publish(tmp_path: Path) ->
     result = _run_plan(repo, env, "--part", "patch")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["target"]["target_version"] == "0.0.1"
     assert payload["next_action"]["kind"] == "needs_critique"
     assert payload["publish_packets"] == []
@@ -195,7 +196,7 @@ def test_release_run_planner_surfaces_stale_update_instructions_before_publish(t
     result = _run_plan(repo, env, "--part", "patch", "--critique-blocked", "test host lacks agent tool")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["next_action"]["kind"] == "prep_update_instructions"
     assert payload["blockers"]
     assert "0.0.0" in payload["next_action"]["reason"]
@@ -220,7 +221,7 @@ def test_release_run_planner_prioritizes_update_instruction_prep_over_dirty_tree
     result = _run_plan(repo, env, "--part", "patch", "--critique-blocked", "test host lacks agent tool")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["release_state"]["git_status"]
     assert payload["next_action"]["kind"] == "prep_update_instructions"
 
@@ -237,7 +238,7 @@ def test_release_run_planner_points_to_publish_dry_run_when_ready(tmp_path: Path
     result = _run_plan(repo, env, "--part", "patch", "--critique-artifact", "charness-artifacts/critique/demo.md")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["next_action"]["kind"] == "publish_dry_run"
     execute_packet = next(packet for packet in payload["publish_packets"] if packet["id"] == "publish-execute")
     assert execute_packet["requires_user_confirmation"] is True
@@ -252,7 +253,7 @@ def test_release_run_planner_preserves_blocked_host_signal_in_publish_packet(tmp
     result = _run_plan(repo, env, "--part", "patch", "--critique-blocked", signal)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["next_action"]["kind"] == "publish_dry_run"
     assert payload["publish_packets"]
     assert all(signal in packet["command"] for packet in payload["publish_packets"])
@@ -260,7 +261,7 @@ def test_release_run_planner_preserves_blocked_host_signal_in_publish_packet(tmp
 
 
 def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(json=False))
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(json=False, detail=False))
     monkeypatch.setattr(
         _PLANNER,
         "build_plan",
@@ -279,7 +280,7 @@ def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatc
 def test_release_run_planner_plain_output_names_required_real_host_scope(
     capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(json=False))
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(json=False, detail=False))
     monkeypatch.setattr(
         _PLANNER,
         "build_plan",
@@ -305,7 +306,7 @@ def test_release_run_planner_plain_output_names_required_real_host_scope(
     assert "real_host=required scope=release_delta" in out
 
 
-def test_release_run_planner_help_points_to_json_evidence_packets(
+def test_release_run_planner_help_points_to_detail_evidence_packets(
     capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(sys, "argv", ["plan_release_run.py", "--help"])
@@ -335,7 +336,7 @@ def test_release_run_planner_help_describes_all_options(
         "--publish-current": "Plan publishing the current version without bumping it.",
         "--part": "Version bump part to include in the release plan: patch, minor, or major.",
         "--set-version": "Explicit target version to include in the release plan.",
-        "--json": "Emit the release plan as JSON.",
+        "--detail": "Emit the full release plan as YAML.",
     }
     for option, description in expected.items():
         match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
@@ -344,6 +345,7 @@ def test_release_run_planner_help_describes_all_options(
         end = match.end() + next_option.start() if next_option else len(output)
         option_block = re.sub(r"\s+", " ", output[match.start() : end])
         assert description in option_block, f"missing help for {option}: {description}"
+    assert "--json" not in output
 
 
 def test_release_run_planner_bootstrap_missing_raises(monkeypatch: pytest.MonkeyPatch) -> None:

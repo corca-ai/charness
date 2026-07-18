@@ -44,7 +44,9 @@ _SPAWN_RE = re.compile(
 # In-repo script entrypoints the test targets. This literal shape is the
 # charness-layout-specific part and is intentionally confined to this probe.
 _TARGET_RE = re.compile(r"""['"]((?:scripts|skills)/[A-Za-z0-9_./-]+\.py)['"]""")
-_BEHAVIOR_RE = re.compile(r"json\.loads\([^\n]*stdout|\.file_json\(|\.file_text\(")
+_BEHAVIOR_RE = re.compile(
+    r"(?:json\.loads|yaml\.safe_load)\([^\n]*stdout|\.file_json\(|\.file_text\("
+)
 _EXIT_RE = re.compile(r"returncode\s*[!=]=\s*[0-9]")
 _GIT_RE = re.compile(r"""['"]git['"]|(?:^|[^\w-])git\s+(?:[A-Za-z-])""")
 _IGNORE_DIRS = {"mutants", "__pycache__", ".git", "node_modules"}

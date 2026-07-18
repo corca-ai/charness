@@ -7,6 +7,7 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -306,7 +307,7 @@ def test_debug_plan_interrupts_external_seam_risk_before_impl(tmp_path: Path) ->
     assert "references/invariant-first-review.md" in required_paths
 
 
-def test_debug_plan_main_emits_json(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_debug_plan_main_emits_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)
     module = load_plan_module()
@@ -316,12 +317,11 @@ def test_debug_plan_main_emits_json(tmp_path: Path, monkeypatch, capsys) -> None
             "plan_debug_run.py",
             "--repo-root",
             str(repo),
-            "--json",
         ],
     )
 
     assert module.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["schema_version"] == "debug.run_plan.v1"
 
 
@@ -336,6 +336,7 @@ def test_debug_plan_help_includes_repo_root_help(monkeypatch, capsys) -> None:
     help_text = capsys.readouterr().out
     assert "--repo-root" in help_text
     assert "Repository root to analyze" in help_text
+    assert "--json" not in help_text
 
 
 def test_debug_plan_uses_canonical_forced_risk_taxonomy(tmp_path: Path) -> None:

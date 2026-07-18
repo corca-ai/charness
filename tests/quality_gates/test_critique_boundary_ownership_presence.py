@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import json
 import re
 import runpy
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT, run_script
 
@@ -278,13 +278,13 @@ def test_hook_parse_args_reads_flags(monkeypatch) -> None:
             "b.py",
             "--changed-ref",
             "base..HEAD",
-            "--json",
+            "--detail",
         ],
     )
     args = hook.parse_args()
     assert args.changed_path == ["a.py", "b.py"]
     assert args.changed_ref == "base..HEAD"
-    assert args.json is True
+    assert args.detail is True
     assert args.repo_root == hook.REPO_ROOT
 
 
@@ -295,9 +295,10 @@ def test_hook_parse_args_defaults_to_no_flags(monkeypatch) -> None:
     assert args.changed_path is None
     assert args.changed_ref is None
     assert args.json is False
+    assert args.detail is False
 
 
-def test_hook_main_json_output(monkeypatch, capsys) -> None:
+def test_hook_main_yaml_detail_output(monkeypatch, capsys) -> None:
     hook = _load_hook()
     fake_payload = {
         "triggered": True,
@@ -306,9 +307,9 @@ def test_hook_main_json_output(monkeypatch, capsys) -> None:
         "reason": "escalate this slice to a standalone critique",
     }
     monkeypatch.setattr(hook, "build_payload", lambda repo_root, changed_path, changed_ref: fake_payload)
-    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py", "--json"])
+    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py", "--detail"])
     assert hook.main() == 0
-    assert json.loads(capsys.readouterr().out) == fake_payload
+    assert yaml.safe_load(capsys.readouterr().out) == fake_payload
 
 
 def test_hook_main_plain_output(monkeypatch, capsys) -> None:

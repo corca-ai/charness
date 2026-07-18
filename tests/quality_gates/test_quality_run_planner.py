@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import runpy
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import validate_quality_reference_catalog as catalog_validator
 from scripts.validate_quality_reference_catalog import (
@@ -38,7 +38,7 @@ def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
         assert fragment in option_block, f"missing help for {option}: {fragment}"
 
 
-def test_quality_run_plan_help_describes_repo_root_and_json(
+def test_quality_run_plan_help_describes_repo_root_and_detail(
     capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(sys, "argv", ["plan_quality_run.py", "--help"])
@@ -51,15 +51,15 @@ def test_quality_run_plan_help_describes_repo_root_and_json(
         capsys.readouterr().out,
         {
             "--repo-root": "Repository root to inspect for skills and quality inputs.",
-            "--json": "Emit the quality run plan as JSON.",
+            "--detail": "Emit the full quality run plan as YAML.",
         },
     )
 
 
 def _run_plan(repo: Path, *extra: str) -> dict[str, object]:
-    result = run_script(SCRIPT, "--repo-root", str(repo), *extra, "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), *extra, "--detail")
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_quality_run_plan_excludes_skill_refs_when_repo_has_no_skills(tmp_path: Path) -> None:

@@ -114,7 +114,8 @@ deciding whether it belongs in the public grammar.
 
 - If a surface is genuinely necessary for operators or debugging, it should
   stay inspectable through one of `doctor`, `--help`, or
-  `commands --json`, and it should be documented.
+  `commands --detail` for a Charness-style CLI (or the established native
+  machine mode), and it should be documented.
 - If a surface is not part of the product promise, it should be absorbed
   under the right public verb or removed from the discovery surface — not
   smuggled in as a hidden top-level command.

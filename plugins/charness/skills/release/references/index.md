@@ -4,7 +4,7 @@ Use this index when browsing the package manually. The run planner owns
 progressive disclosure during normal operation:
 
 ```bash
-python3 "$SKILL_DIR/scripts/plan_release_run.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/plan_release_run.py" --repo-root . --detail
 ```
 
 ## Core References

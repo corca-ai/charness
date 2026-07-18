@@ -9,7 +9,7 @@ The repeated trap is calling `cautilus evaluate fixture` against the legacy rout
 Before invoking `cautilus evaluate fixture`, `cautilus evaluate observation`, or `cautilus evaluate skill-experiment`, consult the proof planner:
 
 ```bash
-python3 scripts/plan_cautilus_proof.py --repo-root . --json
+python3 scripts/plan_cautilus_proof.py --repo-root . --detail
 ```
 
 Interpret the output as follows:

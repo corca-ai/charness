@@ -50,7 +50,7 @@ python3 "$SKILL_DIR/scripts/synthesize_operator_acceptance.py" --repo-root .
 # Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. current repo surface
 python3 "$SKILL_DIR/scripts/inspect_repo.py" --repo-root .
-python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --detail
 python3 "$SKILL_DIR/scripts/normalize_host_docs.py" --repo-root .
 git status --short
 rg --files . | sed -n '1,200p'

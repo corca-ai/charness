@@ -32,6 +32,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _boundary_probe_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.boundary_probe_lib")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,7 +45,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--changed-path", nargs="*", help="Explicit changed paths (bypasses git).")
     parser.add_argument("--changed-ref", help="Git ref/range for changed-path discovery (else working-tree diff).")
-    parser.add_argument("--json", action="store_true", help="Emit the full payload as JSON.")
+    parser.add_argument("--detail", action="store_true", help="Emit the full payload as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -67,6 +69,8 @@ def main() -> int:
     payload = build_payload(args.repo_root.resolve(), args.changed_path, args.changed_ref)
     if args.json:
         print(json.dumps(payload, indent=2))
+    elif args.detail:
+        yaml_output.emit_yaml(payload)
     else:
         print(payload["reason"])
         print(f"triggered: {str(payload['triggered']).lower()}")

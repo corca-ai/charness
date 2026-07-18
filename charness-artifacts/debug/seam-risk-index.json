@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 89,
-  "indexed_artifact_count": 77,
+  "source_artifact_count": 90,
+  "indexed_artifact_count": 78,
   "risk_class_counts": {
-    "contract-freeze-risk": 25,
+    "contract-freeze-risk": 27,
     "external-seam": 4,
     "host-disproves-local": 2,
     "none": 22,
-    "operator-visible-recovery": 23,
+    "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 69,
+    "monitor": 70,
     "none": 5
   },
   "entries": [
@@ -1084,17 +1084,31 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "aggregate-yaml-summary-leak",
+      "artifact_path": "charness-artifacts/debug/2026-07-18-residual-json-flags-after-yaml-migration.md",
+      "is_current_pointer": false,
+      "interrupt_id": "public-skill-yaml-output-drift",
       "risk_classes": [
-        "operator-visible-recovery"
+        "contract-freeze-risk"
       ],
-      "seam": "helper payload -> nested root YAML response -> installed CLI operator.",
+      "seam": "public skill instruction -> helper parser/output -> agent command use.",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/quality/2026-07-15-quality-review.md",
+      "handoff_artifact": "charness-artifacts/debug/2026-07-18-residual-json-flags-after-yaml-migration.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "public-skill-yaml-output-drift",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "public skill instruction -> helper parser/output -> agent command use.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/debug/2026-07-18-residual-json-flags-after-yaml-migration.md",
       "forced": false
     }
   ],

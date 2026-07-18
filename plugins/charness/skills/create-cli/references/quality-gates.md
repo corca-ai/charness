@@ -14,10 +14,10 @@ A repo-owned CLI should usually have:
   preview is not meaningful
 - side-effect watch fixtures for filesystem writes, service/unit materialization,
   subprocess runners, and persisted manifests
-- JSON-shape tests when agents consume the output
-- JSON-shape tests for command discovery output when wrappers or agents probe
-  the command registry
-- redaction tests for external-capability CLIs that exercise stdout, JSON
+- structured-output shape tests when agents consume the output
+- YAML-shape tests for Charness-style command discovery, or native-format tests
+  when wrappers or agents probe an established third-party registry
+- redaction tests for external-capability CLIs that exercise stdout, structured
   payloads, bridge logs, and debug logs without exposing raw tokens, raw request bodies, or full external identifiers
 - file-mutation tests for install/update/reset commands
 - validation for any persisted lock or manifest schema

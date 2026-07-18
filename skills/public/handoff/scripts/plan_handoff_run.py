@@ -57,6 +57,7 @@ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapt
 chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(
     __file__, "chunked_routing_lib"
 )
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -406,8 +407,7 @@ def main() -> None:
                         help="Original invocation text used to derive handoff intent and routing.")
     parser.add_argument("--invoked-directly", action="store_true",
                         help="Mark that the handoff skill was invoked directly for chunked routing.")
-    parser.add_argument("--json", action="store_true",
-                        help="Accepted for CLI compatibility; planner output is always JSON.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     try:
         args = parser.parse_args()
         plan = build_plan(
@@ -416,7 +416,10 @@ def main() -> None:
             invocation_text=args.invocation_text,
             invoked_directly=args.invoked_directly,
         )
-        print(json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True))
+        if args.json:
+            print(json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            yaml_output.emit_yaml(plan)
     finally:
         cancel_timeout()
 

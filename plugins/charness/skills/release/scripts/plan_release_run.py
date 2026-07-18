@@ -26,6 +26,7 @@ _publish_helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_rele
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _planner_packets = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_run_packets")
 _publish_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
@@ -51,7 +52,7 @@ ENVELOPE = SimpleNamespace(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         epilog=(
-            "Use --json before release mutation to inspect required_reads, "
+            "Use --detail before release mutation to inspect required_reads, "
             "gate_packets, evidence_packets, and real-host proof scope."
         )
     )
@@ -89,11 +90,8 @@ def parse_args() -> argparse.Namespace:
         "--set-version",
         help="Explicit target version to include in the release plan.",
     )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit the release plan as JSON.",
-    )
+    parser.add_argument("--detail", action="store_true", help="Emit the full release plan as YAML.")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -255,12 +253,14 @@ def main() -> int:
         payload = build_plan(args)
         if args.json:
             print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        elif args.detail:
+            yaml_output.emit_yaml(payload)
         else:
             print(f"next_action={payload['next_action']['kind']}: {payload['next_action']['reason']}")
             real_host = payload.get("evidence_packets", {}).get("real_host")
             if isinstance(real_host, dict) and real_host.get("required"):
                 scope = real_host.get("evidence_scope") or "unknown"
-                print(f"real_host=required scope={scope}; inspect --json evidence_packets.real_host before closeout")
+                print(f"real_host=required scope={scope}; inspect --detail evidence_packets.real_host before closeout")
         return 0
     finally:
         cancel_timeout()

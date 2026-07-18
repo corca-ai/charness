@@ -48,7 +48,7 @@ computes a source-coverage delta against the declared obligations.
 ## Eval-only / ask-before-run
 
 `cautilus evaluate skill-experiment` is gated. Consult
-`python3 scripts/plan_cautilus_proof.py --repo-root . --json` (read-only) first and
+`python3 scripts/plan_cautilus_proof.py --repo-root . --detail` (read-only) first and
 record its verbatim output. The planner is hardcoded to `next_action: none` /
 `must_ask_before_running: true`; the wrapper proceeds **only** when a real
 `--justification-log` is supplied, printing a note. Authorization is the operator's

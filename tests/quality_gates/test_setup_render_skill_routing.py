@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -25,9 +26,9 @@ def run_render_skill_routing(monkeypatch, capsys, *args: str) -> SimpleNamespace
 def test_setup_render_skill_routing_defaults_to_compact_mode(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["recommended_action"] == "create_agents_with_skill_routing"
     assert payload["skill_routing_mode"] == "compact"
     assert payload["skill_routing_mode_source"] == "default"
@@ -51,10 +52,10 @@ def test_setup_render_skill_routing_suggests_add_block_for_mature_agents(
     repo.mkdir()
     (repo / "AGENTS.md").write_text("# Agents\n\nExisting policy.\n", encoding="utf-8")
 
-    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--detail")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["agents_has_skill_routing"] is False
     assert payload["recommended_action"] == "add_skill_routing_block"
 
@@ -69,10 +70,10 @@ def test_setup_render_skill_routing_reviews_drifted_existing_block(
         encoding="utf-8",
     )
 
-    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_render_skill_routing(monkeypatch, capsys, "--repo-root", str(repo), "--detail")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["agents_has_skill_routing"] is True
     assert payload["skill_routing_matches_compact_block"] is False
     assert payload["recommended_action"] == "review_existing_skill_routing"

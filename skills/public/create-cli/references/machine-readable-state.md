@@ -6,8 +6,10 @@ later agent can read directly.
 Prefer:
 
 - structured stdout for the current command
-- parseable machine output only in explicit machine mode such as `--json`,
-  keeping human chatter or progress on stderr when the command is still running
+- parseable YAML by default for Charness-style agent-first commands, with full
+  evidence behind `--detail`; human-first and third-party CLIs keep their
+  explicit native machine mode. Keep chatter or progress on stderr while the
+  command is still running
 - durable local state for the last observed machine condition
 - explicit paths for generated artifacts
 - enough provenance to tell which runtime binary actually handled the command
@@ -16,7 +18,7 @@ Prefer:
 
 Examples:
 
-- JSON output from `doctor`
+- structured output from `doctor`
 - lock files that record install/update/support results
 - repo-local task envelopes that record claim/submit/abort state for bounded
   agent work

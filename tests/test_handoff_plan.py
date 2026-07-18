@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -80,14 +80,14 @@ def seed_repo(tmp_path: Path, body: str, *, adapter: bool = True) -> Path:
 
 def run_plan(*args: str, cwd: Path | None = None) -> dict[str, object]:
     result = subprocess.run(
-        ["python3", SCRIPT, "--json", *args],
+        ["python3", SCRIPT, *args],
         cwd=cwd or ROOT,
         check=False,
         capture_output=True,
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
@@ -117,9 +117,9 @@ def test_handoff_plan_help_describes_all_options() -> None:
             "--intent": "Operator intent when known; auto derives only deterministic cases.",
             "--invocation-text": "Original invocation text used to derive handoff intent and routing.",
             "--invoked-directly": "Mark that the handoff skill was invoked directly for chunked routing.",
-            "--json": "Accepted for CLI compatibility; planner output is always JSON.",
         },
     )
+    assert "--json" not in result.stdout
 
 
 def test_handoff_plan_bootstrap_reports_missing_runtime(monkeypatch: pytest.MonkeyPatch) -> None:

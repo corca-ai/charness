@@ -19,7 +19,7 @@ Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
 run the planner before mutation, broad verification, tag push, or publish:
 
 ```bash
-python3 "$SKILL_DIR/scripts/plan_release_run.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/plan_release_run.py" --repo-root . --detail
 ```
 
 Read every planner `required_reads` entry and follow `next_action`. The planner

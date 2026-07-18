@@ -32,6 +32,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 scaffold_debug_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_debug_artifact")
 risk_interrupt_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.risk_interrupt_lib")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -370,10 +371,13 @@ def main() -> int:
         default=Path.cwd(),
         help="Repository root to analyze; defaults to the current working directory",
     )
-    parser.add_argument("--json", action="store_true", help="Emit JSON; accepted for parity with other planners")
+    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     payload = build_plan(args.repo_root.resolve())
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        yaml_output.emit_yaml(payload)
     return 0 if payload["ok"] else 1
 
 
