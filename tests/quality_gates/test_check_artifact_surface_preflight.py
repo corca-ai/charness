@@ -183,7 +183,16 @@ def test_emit_stub_goal_closeout_has_no_scaffold_message() -> None:
     assert "no scaffold script" in text
 
 
-def test_changed_artifacts_passes_scaffold_roundtrip() -> None:
+def test_changed_artifacts_passes_scaffold_roundtrip(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text(
+        (ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
     # the critique scaffold's own render must pass its validator at the commit
     # boundary (round-trip), proving the shape-by-construction arm is real.
     stub_text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("critique"))
@@ -204,14 +213,21 @@ def test_changed_artifacts_passes_scaffold_roundtrip() -> None:
     ]
     assert verdict_lines, "critique stub must still carry the Boundary Ownership Verdict TODO"
     filled_in_stub = filled_in_stub.replace(verdict_lines[0], "- Verdict: single-surface")
-    target = ROOT / "charness-artifacts" / "critique" / "_preflight_roundtrip_selftest.md"
-    try:
-        target.write_text(filled_in_stub, encoding="utf-8")
-        rel = target.relative_to(ROOT).as_posix()
-        report = preflight.changed_artifacts(ROOT, [rel])
-        assert report["status"] == "ok", report
-    finally:
-        target.unlink(missing_ok=True)
+    target = repo / "charness-artifacts" / "critique" / "_preflight_roundtrip_selftest.md"
+    target.parent.mkdir(parents=True)
+    target.write_text(filled_in_stub, encoding="utf-8")
+    rel = target.relative_to(repo).as_posix()
+
+    real_run = preflight._run
+
+    def run_repo_validator(repo_root: Path, argv: list[str]):
+        if len(argv) > 1 and argv[1].startswith("scripts/"):
+            argv = [argv[0], str(ROOT / argv[1]), *argv[2:]]
+        return real_run(repo_root, argv)
+
+    monkeypatch.setattr(preflight, "_run", run_repo_validator)
+    report = preflight.changed_artifacts(repo, [rel])
+    assert report["status"] == "ok", report
 
 
 def test_main_errors_on_unknown_surface(monkeypatch, capsys) -> None:

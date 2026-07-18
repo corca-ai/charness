@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from scripts.run_standing_pytest import choose_xdist_workers
@@ -198,12 +199,7 @@ def test_dead_code_advisory_gate_runs_when_explicitly_labeled(
 
 def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    real_python = subprocess.run(
-        ["python3", "-c", "import sys; print(sys.executable)"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    real_python = sys.executable
     log_path = repo / "pytest-invocation.json"
     write_executable(
         repo / "bin" / "python3",

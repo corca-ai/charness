@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The first autonomous-improvement slice fixed an invalid `catalog list --json` instruction and added a compact YAML summary, but the broad gate then exposed a second problem: evidence-marker validity depended on the marker occupying the same physical line as its citation. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - The root `charness` CLI had already migrated its public structured output to YAML, but public skill commands and the governing Cautilus preflight still taught `--json`. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
-- The v0.56.7 three-hour quality goal completed its implementation, release, and public verification on 2026-06-27, but its lifecycle artifact remained `Status: active`. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`; sources: 98)
+- after a broad-gate-only failure, name the violated seam and run the four-axis sibling scan before applying the smallest artifact edit. (source: `charness-artifacts/retro/2026-07-18-session-retro.md`)
 - begin output-format migrations with a live consumer-language scan spanning governing instructions, skills, references, help, and exports. (source: `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`)
 - bind this lesson into the goal closeout critique and this persisted retro so the rerun is not silently reported as a first-pass success. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
-- none — the existing fingerprint rail detected and quarantined the violation exactly as designed. (source: `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`)
 
 ## Selection Policy
 
@@ -126,5 +126,6 @@
 - `charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-18-session-retro.md`
 - `charness-artifacts/retro/2026-07-18-sustained-quality-speed-token-release-round-5-closeout-retro.md`
 - `charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md`

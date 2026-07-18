@@ -30,7 +30,7 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 - Cite proof from checked-in durable evidence in spec, quality, release,
   dogfood, debug, premortem, and design-study artifacts. Paths matching
   [.gitignore](../../.gitignore) are reproduction sources only and must
-  carry an inline `<!-- reproduction-source -->` marker; otherwise check in a
+  carry a citation-bullet-scoped `<!-- reproduction-source -->` marker; otherwise check in a
   selected proof artifact with the cited fields. See
   [skills/public/spec/references/evidence-durability.md](../../skills/public/spec/references/evidence-durability.md).
 

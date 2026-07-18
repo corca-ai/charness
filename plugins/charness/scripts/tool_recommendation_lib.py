@@ -83,20 +83,6 @@ def build_tool_recommendation(
     }
 
 
-def recommendations_for_public_skill(
-    repo_root: Path,
-    manifests: list[dict[str, Any]],
-    *,
-    skill_id: str,
-) -> list[dict[str, Any]]:
-    staged_ids = staged_tool_ids(repo_root)
-    return [
-        build_tool_recommendation(repo_root, manifest, next_skill_id=skill_id, staged_ids=staged_ids)
-        for manifest in manifests
-        if skill_id in manifest.get("supports_public_skills", [])
-    ]
-
-
 def recommendations_for_role(
     repo_root: Path,
     manifests: list[dict[str, Any]],

@@ -3,10 +3,10 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 90,
-  "indexed_artifact_count": 78,
+  "source_artifact_count": 91,
+  "indexed_artifact_count": 79,
   "risk_class_counts": {
-    "contract-freeze-risk": 27,
+    "contract-freeze-risk": 28,
     "external-seam": 4,
     "host-disproves-local": 2,
     "none": 22,
@@ -15,8 +15,8 @@
   },
   "generalization_pressure_counts": {
     "factor-now": 3,
-    "monitor": 70,
-    "none": 5
+    "monitor": 69,
+    "none": 7
   },
   "entries": [
     {
@@ -1084,6 +1084,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-18-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "artifact-validator-contract-coupling",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "scaffold -> owning validator -> repo-wide durability gate -> closeout.",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/debug/2026-07-18-debug-review.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-18-residual-json-flags-after-yaml-migration.md",
       "is_current_pointer": false,
       "interrupt_id": "public-skill-yaml-output-drift",
@@ -1100,15 +1114,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "public-skill-yaml-output-drift",
+      "interrupt_id": "artifact-validator-contract-coupling",
       "risk_classes": [
         "contract-freeze-risk"
       ],
-      "seam": "public skill instruction -> helper parser/output -> agent command use.",
-      "generalization_pressure": "monitor",
+      "seam": "scaffold -> owning validator -> repo-wide durability gate -> closeout.",
+      "generalization_pressure": "none",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/debug/2026-07-18-residual-json-flags-after-yaml-migration.md",
+      "handoff_artifact": "charness-artifacts/debug/2026-07-18-debug-review.md",
       "forced": false
     }
   ],

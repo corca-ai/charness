@@ -56,6 +56,54 @@ def test_passes_when_reproduction_marker_present(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_passes_when_marker_is_on_indented_continuation_of_citation_bullet(tmp_path: Path) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    spec = repo / "charness-artifacts" / "spec" / "demo.md"
+    spec.write_text(
+        "# Demo Spec\n\n- Proof: `artifacts/eval-summary.json`\n"
+        "  is reproduction-only. <!-- reproduction-source -->\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_unindented_marker_after_citation_does_not_exempt(tmp_path: Path) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    spec = repo / "charness-artifacts" / "spec" / "demo.md"
+    spec.write_text(
+        "# Demo Spec\n\n- Proof: `artifacts/eval-summary.json`\n<!-- reproduction-source -->\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "gitignored target" in result.stderr
+
+
+def test_marker_in_nested_list_item_does_not_exempt_parent_citation(tmp_path: Path) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    spec = repo / "charness-artifacts" / "spec" / "demo.md"
+    spec.write_text(
+        "# Demo Spec\n\n- Proof: `artifacts/eval-summary.json`\n  - <!-- reproduction-source -->\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "gitignored target" in result.stderr
+
+
+def test_marker_in_block_quote_does_not_exempt_parent_citation(tmp_path: Path) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    spec = repo / "charness-artifacts" / "spec" / "demo.md"
+    spec.write_text(
+        "# Demo Spec\n\n- Proof: `artifacts/eval-summary.json`\n  > <!-- reproduction-source -->\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "gitignored target" in result.stderr
+
+
 def test_passes_when_path_is_checked_in(tmp_path: Path) -> None:
     repo = _bootstrap_repo(tmp_path)
     proof = repo / "charness-artifacts" / "spec" / "demo-proof.md"

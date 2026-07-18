@@ -39,6 +39,8 @@ def test_directive_front_loads_pickup_inventory_and_otherwise_routes() -> None:
     assert "charness:handoff" in directive
     # (2) Hidden inventory route: deterministic catalog facts only.
     assert "charness catalog list" in directive
+    assert "--summary" in directive
+    assert "--json" not in directive
     assert "hidden support/integration" in lowered
     assert "treat its facts only as inventory" in lowered
     assert "start the matching workflow directly" in directive

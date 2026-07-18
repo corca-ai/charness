@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Read and refresh Charness' deterministic capability catalog."""
+
 from __future__ import annotations
 
 import argparse
@@ -14,6 +15,7 @@ if str(Path(__file__).resolve().parent.parent) not in sys.path:
 from scripts.capability_catalog_artifact import persist_catalog, read_only_result
 from scripts.capability_catalog_resolver import resolve_skill_path
 from scripts.capability_catalog_sources import build_inventory
+from scripts.yaml_output import emit_yaml
 
 
 class CatalogRepoRootError(ValueError):
@@ -38,6 +40,56 @@ def list_catalog(repo_root: Path) -> dict[str, object]:
     return {"inventory": build_inventory(repo_root), "artifacts": read_only_result()}
 
 
+def summarize_catalog(payload: dict[str, object]) -> dict[str, object]:
+    """Project the full inventory into the hidden-capability routing view."""
+
+    inventory = payload["inventory"]
+    assert isinstance(inventory, dict)
+
+    def project(items: object, fields: tuple[str, ...]) -> list[dict[str, object]]:
+        if not isinstance(items, list):
+            return []
+        return [
+            {field: item[field] for field in fields if field in item}
+            for item in items
+            if isinstance(item, dict)
+        ]
+
+    counted_layers = (
+        "public_skills",
+        "support_skills",
+        "support_capabilities",
+        "integrations",
+        "trusted_skills",
+    )
+    return {
+        "inventory": {
+            "adapter": inventory.get("adapter", {}),
+            "counts": {
+                layer: len(items) if isinstance((items := inventory.get(layer)), list) else 0
+                for layer in counted_layers
+            },
+            "support_skills": project(
+                inventory.get("support_skills"),
+                ("id", "summary", "path"),
+            ),
+            "support_capabilities": project(
+                inventory.get("support_capabilities"),
+                ("id", "summary", "path", "support_skill_path"),
+            ),
+            "integrations": project(
+                inventory.get("integrations"),
+                ("id", "summary", "path", "support_state", "support_skill_path"),
+            ),
+            "trusted_skills": project(
+                inventory.get("trusted_skills"),
+                ("id", "summary", "path"),
+            ),
+        },
+        "artifacts": payload.get("artifacts", {}),
+    }
+
+
 def refresh_catalog(repo_root: Path) -> dict[str, object]:
     if not repo_root.exists() or not repo_root.is_dir():
         raise CatalogRepoRootError(repo_root)
@@ -46,32 +98,63 @@ def refresh_catalog(repo_root: Path) -> dict[str, object]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Inspect deterministic installed capability inventory and stale skill paths.")
+    parser = argparse.ArgumentParser(
+        description="Inspect deterministic installed capability inventory and stale skill paths."
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
     def add_root(command: argparse.ArgumentParser) -> None:
         command.add_argument("--repo-root", type=Path, required=True)
         command.add_argument("--json", action="store_true")
-    list_parser = subparsers.add_parser("list", help="Read the installed capability inventory without writing artifacts.")
+
+    list_parser = subparsers.add_parser(
+        "list", help="Read the installed capability inventory without writing artifacts."
+    )
     add_root(list_parser)
-    refresh_parser = subparsers.add_parser("refresh", help="Write the canonical capability catalog current pointers.")
+    list_parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="Emit compact YAML for hidden support and integration routing.",
+    )
+    refresh_parser = subparsers.add_parser(
+        "refresh", help="Write the canonical capability catalog current pointers."
+    )
     add_root(refresh_parser)
-    resolve_parser = subparsers.add_parser("resolve-skill-path", help="Resolve a stale host-reported skill path after cache rotation.")
+    resolve_parser = subparsers.add_parser(
+        "resolve-skill-path", help="Resolve a stale host-reported skill path after cache rotation."
+    )
     resolve_parser.add_argument("--repo-root", type=Path, required=True)
     resolve_parser.add_argument("--skill-id", required=True)
     resolve_parser.add_argument("--reported-path", type=Path, required=True)
     resolve_parser.add_argument("--home", type=Path, default=Path.home())
-    resolve_parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")))
+    resolve_parser.add_argument(
+        "--codex-home",
+        type=Path,
+        default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")),
+    )
     resolve_parser.add_argument("--marketplace", default="local")
     resolve_parser.add_argument("--plugin", default="charness")
     resolve_parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
+    if args.command == "list" and args.summary and args.json:
+        parser.error("--summary emits YAML and cannot be combined with --json")
     try:
         if args.command == "list":
             payload = list_catalog(_repo_root(args.repo_root))
+            if args.summary:
+                payload = summarize_catalog(payload)
         elif args.command == "refresh":
             payload = refresh_catalog(_repo_root(args.repo_root))
         else:
-            payload = resolve_skill_path(skill_id=args.skill_id, repo_root=_repo_root(args.repo_root), home=args.home.expanduser().resolve(), codex_home=args.codex_home.expanduser().resolve(), reported_path=args.reported_path.expanduser(), marketplace=args.marketplace, plugin=args.plugin)
+            payload = resolve_skill_path(
+                skill_id=args.skill_id,
+                repo_root=_repo_root(args.repo_root),
+                home=args.home.expanduser().resolve(),
+                codex_home=args.codex_home.expanduser().resolve(),
+                reported_path=args.reported_path.expanduser(),
+                marketplace=args.marketplace,
+                plugin=args.plugin,
+            )
     except CatalogRepoRootError as exc:
         payload = {"error": str(exc), "repo_root": str(exc.repo_root)}
         if args.json:
@@ -79,7 +162,9 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(str(exc), file=sys.stderr)
         return 2
-    if args.json:
+    if args.command == "list" and args.summary:
+        emit_yaml(payload)
+    elif args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print(json.dumps(payload, ensure_ascii=False, indent=2))

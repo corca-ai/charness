@@ -7,16 +7,6 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-# Rung-2 distinct-channel verdict vocabulary. A `confirmed`, or a typed
-# non-`verified` disposition — never a `gh release view` re-read standing in for
-# confirmation (the same-proxy re-examination P4 of design-north-star.md forbids).
-# `same-proxy-flagged` is the mechanical form-check verdict (see
-# `_probe_matches_release_view_shape`) for an adapter probe that turned out to be
-# that same proxy under a different label.
-DISTINCT_CHANNEL_STATUSES = (
-    "confirmed", "not-confirmed", "blocked-needs-capability", "skipped", "same-proxy-flagged",
-)
-
 
 def run_post_publish_install_refresh(
     repo_root: Path, *, command: str, run_shell

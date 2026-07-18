@@ -3,60 +3,55 @@
 from __future__ import annotations
 
 import argparse
+import runpy
+import shlex
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-COMMANDS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("charness", ("./charness", "--help")),
-    ("charness init", ("./charness", "init", "--help")),
-    ("charness update", ("./charness", "update", "--help")),
-    ("charness doctor", ("./charness", "doctor", "--help")),
-    ("charness version", ("./charness", "version", "--help")),
-    ("charness uninstall", ("./charness", "uninstall", "--help")),
-    ("charness reset", ("./charness", "reset", "--help")),
-    ("charness task", ("./charness", "task", "--help")),
-    ("charness task claim", ("./charness", "task", "claim", "--help")),
-    ("charness task submit", ("./charness", "task", "submit", "--help")),
-    ("charness task abort", ("./charness", "task", "abort", "--help")),
-    ("charness task status", ("./charness", "task", "status", "--help")),
-    ("charness catalog", ("./charness", "catalog", "--help")),
-    ("charness catalog list", ("./charness", "catalog", "list", "--help")),
-    ("charness catalog refresh", ("./charness", "catalog", "refresh", "--help")),
-    (
-        "charness catalog resolve-skill-path",
-        ("./charness", "catalog", "resolve-skill-path", "--help"),
-    ),
-    ("charness capability", ("./charness", "capability", "--help")),
-    ("charness capability init", ("./charness", "capability", "init", "--help")),
-    ("charness capability resolve", ("./charness", "capability", "resolve", "--help")),
-    ("charness capability doctor", ("./charness", "capability", "doctor", "--help")),
-    ("charness capability env", ("./charness", "capability", "env", "--help")),
-    ("charness capability explain", ("./charness", "capability", "explain", "--help")),
-    ("charness goal", ("./charness", "goal", "--help")),
-    ("charness goal check", ("./charness", "goal", "check", "--help")),
-    ("charness tool", ("./charness", "tool", "--help")),
-    ("charness tool doctor", ("./charness", "tool", "doctor", "--help")),
-    ("charness tool repair", ("./charness", "tool", "repair", "--help")),
-    ("charness tool sync-support", ("./charness", "tool", "sync-support", "--help")),
-    ("charness tool install", ("./charness", "tool", "install", "--help")),
-    ("charness tool update", ("./charness", "tool", "update", "--help")),
-    ("charness session-capture", ("./charness", "session-capture", "--help")),
-    ("charness session-capture status", ("./charness", "session-capture", "status", "--help")),
-    ("charness session-capture install", ("./charness", "session-capture", "install", "--help")),
-    ("charness session-capture uninstall", ("./charness", "session-capture", "uninstall", "--help")),
-    ("charness worktree", ("./charness", "worktree", "--help")),
-    ("charness worktree create", ("./charness", "worktree", "create", "--help")),
-    ("charness worktree add", ("./charness", "worktree", "add", "--help")),
-    ("charness worktree doctor", ("./charness", "worktree", "doctor", "--help")),
-    ("charness worktree prepare", ("./charness", "worktree", "prepare", "--help")),
-    ("charness worktree audit", ("./charness", "worktree", "audit", "--help")),
-    ("charness worktree cleanup", ("./charness", "worktree", "cleanup", "--help")),
-)
+_command_docs = import_repo_module(__file__, "scripts.check_command_docs")
+
+
+def commands_from_contract(repo_root: Path) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    contract = _command_docs.load_contract(repo_root / ".agents" / "command-docs.yaml")
+    commands_by_path: dict[tuple[str, ...], tuple[str, ...]] = {}
+    for command_id, config in contract.items():
+        argv = tuple(shlex.split(str(config["help_command"])))
+        if len(argv) < 2 or argv[0] != "./charness" or argv[-1] != "--help":
+            raise SystemExit(f"unsupported CLI reference help command: {' '.join(argv)}")
+        path = argv[1:-1]
+        if path in commands_by_path:
+            raise SystemExit(
+                f"duplicate command-docs help path for `{command_id}`: {' '.join(argv)}"
+            )
+        commands_by_path[path] = argv
+
+    def ordered_paths(
+        parser: argparse.ArgumentParser,
+        prefix: tuple[str, ...] = (),
+    ) -> list[tuple[str, ...]]:
+        paths: list[tuple[str, ...]] = []
+        for action in parser._actions:
+            if not isinstance(action, argparse._SubParsersAction):
+                continue
+            for name, child in action.choices.items():
+                current = (*prefix, name)
+                paths.append(current)
+                paths.extend(ordered_paths(child, current))
+        return paths
+
+    cli_namespace = runpy.run_path(str(repo_root / "charness"))
+    parser_paths = [(), *ordered_paths(cli_namespace["build_parser"]())]
+    if set(parser_paths) != set(commands_by_path):
+        missing = sorted(set(parser_paths) - set(commands_by_path))
+        extra = sorted(set(commands_by_path) - set(parser_paths))
+        raise SystemExit(f"command-docs/parser mismatch: missing={missing}, extra={extra}")
+    return tuple((" ".join(("charness", *path)), commands_by_path[path]) for path in parser_paths)
+
 
 EXAMPLES: dict[str, tuple[str, ...]] = {
     "charness tool install": (
@@ -81,10 +76,10 @@ def run_help(repo_root: Path, command: tuple[str, ...]) -> str:
 
 
 def render_cli_reference(repo_root: Path) -> str:
-    with ThreadPoolExecutor(max_workers=len(COMMANDS)) as executor:
+    commands = commands_from_contract(repo_root)
+    with ThreadPoolExecutor(max_workers=len(commands)) as executor:
         help_futures = {
-            title: executor.submit(run_help, repo_root, command)
-            for title, command in COMMANDS
+            title: executor.submit(run_help, repo_root, command) for title, command in commands
         }
         help_outputs = {title: future.result() for title, future in help_futures.items()}
     sections = [
@@ -98,7 +93,7 @@ def render_cli_reference(repo_root: Path) -> str:
         "Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/generated/cli-reference.md`.",
         "",
     ]
-    for title, command in COMMANDS:
+    for title, command in commands:
         sections.extend(
             [
                 f"## `{title}`",

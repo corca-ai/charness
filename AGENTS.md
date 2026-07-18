@@ -14,7 +14,7 @@
 
 ## Skill Routing
 
-At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly. When hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo>` inventory. Treat its facts only as inventory; if the command returns nonzero, report the command failure. If the SessionStart hook is installed it may inject this context; it remains context-only.
+At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly. When hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo> --summary` inventory. Treat its facts only as inventory; if the command returns nonzero, report the command failure. If the SessionStart hook is installed it may inject this context; it remains context-only.
 
 External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.
 

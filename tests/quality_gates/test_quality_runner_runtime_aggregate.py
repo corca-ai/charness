@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import subprocess
+import sys
 from pathlib import Path
 
 from .support import clone_quality_runner_repo, run_shell_script, write_executable
@@ -9,12 +9,7 @@ from .support import clone_quality_runner_repo, run_shell_script, write_executab
 
 def _capture_run_quality_runtime_records(repo: Path) -> Path:
     log_path = repo / "quality-runtime-records.jsonl"
-    real_python = subprocess.run(
-        ["python3", "-c", "import sys; print(sys.executable)"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    real_python = sys.executable
     write_executable(
         repo / "scripts" / "record_quality_runtime.py",
         "\n".join(

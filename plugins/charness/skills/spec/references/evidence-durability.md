@@ -56,18 +56,20 @@ to read the evidence itself.
 ## Marker for Intentional Reproduction-Source Citations
 
 Inline reproduction-source paths are allowed when the surrounding prose
-explains the role and the line carries an HTML-comment marker so deterministic
-checks can skip it without inferring intent:
+explains the role and the citation bullet carries an HTML-comment marker so
+deterministic checks can skip it without inferring intent:
 
 ```markdown
 Run `make eval-self-dogfood` to refresh `artifacts/self-dogfood/latest/eval-summary.json` <!-- reproduction-source -->.
 ```
 
-The marker is a single line-scoped exemption. Use it only for lines that are
-honestly describing reproduction, not for sneaking durable claims past a
-checker. The marker keyword is matched case-insensitively but the surrounding
-HTML-comment delimiters are required so the token is invisible in rendered
-markdown while remaining greppable.
+The marker is scoped to one citation bullet. Put it on the citation line or on
+that bullet's immediately following two- or three-space-indented plain-text
+continuation. A nested list item, block quote, heading, or fenced block is a
+different semantic block and does not exempt the parent citation. Use the marker
+only for prose that honestly describes reproduction, not for sneaking durable
+claims past a checker. The keyword is matched case-insensitively, but the HTML
+comment delimiters are required so it stays invisible when rendered.
 
 ## Failure Mode This Closes
 

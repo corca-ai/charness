@@ -5014,7 +5014,10 @@ def _load_catalog_lib():
 
 
 def cmd_catalog_list(args: argparse.Namespace) -> int:
-    payload = _load_catalog_lib().list_catalog(args.repo_root.resolve())
+    catalog = _load_catalog_lib()
+    payload = catalog.list_catalog(args.repo_root.resolve())
+    if args.summary:
+        payload = catalog.summarize_catalog(payload)
     emit_yaml(payload)
     return 0
 
@@ -5260,6 +5263,11 @@ def build_parser() -> argparse.ArgumentParser:
         "list", help="Read installed public/support/synced/integration inventory without writing artifacts."
     )
     catalog_list_parser.add_argument("--repo-root", type=Path, required=True)
+    catalog_list_parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="Emit compact hidden support/integration inventory.",
+    )
     catalog_list_parser.set_defaults(func=cmd_catalog_list)
 
     catalog_refresh_parser = catalog_subparsers.add_parser(

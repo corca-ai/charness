@@ -1,1 +1,1 @@
-2026-07-15-quality-review.md
+2026-07-18-autonomous-quality-efficiency.md

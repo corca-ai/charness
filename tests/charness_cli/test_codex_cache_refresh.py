@@ -196,9 +196,16 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
     finally:
         module.sys.path[:] = original_path
 
-    args = argparse.Namespace(repo_root=tmp_path)
+    args = argparse.Namespace(repo_root=tmp_path, summary=False)
     assert module.cmd_catalog_list(args) == 0
-    capsys.readouterr()
+    full = yaml.safe_load(capsys.readouterr().out)
+    assert "public_skills" in full["inventory"]
+    assert "counts" not in full["inventory"]
+    args.summary = True
+    assert module.cmd_catalog_list(args) == 0
+    summary = yaml.safe_load(capsys.readouterr().out)
+    assert "counts" in summary["inventory"]
+    assert "public_skills" not in summary["inventory"]
     assert module.cmd_catalog_refresh(args) == 0
     capsys.readouterr()
 

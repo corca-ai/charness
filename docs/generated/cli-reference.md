@@ -325,11 +325,12 @@ options:
 ## `charness catalog list`
 
 ```text
-usage: charness catalog list [-h] --repo-root REPO_ROOT
+usage: charness catalog list [-h] --repo-root REPO_ROOT [--summary]
 
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
+  --summary             Emit compact hidden support/integration inventory.
 ```
 
 ## `charness catalog refresh`

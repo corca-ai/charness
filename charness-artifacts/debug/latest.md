@@ -1,1 +1,1 @@
-2026-07-18-residual-json-flags-after-yaml-migration.md
+2026-07-18-debug-review.md

@@ -29,6 +29,7 @@ BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.[A-Za-z0-9._-]+$")
 REPRODUCTION_MARKER_RE = re.compile(r"<!--\s*reproduction-source\s*-->", re.IGNORECASE)
+MARKDOWN_BLOCK_START_RE = re.compile(r"(?:[-*+] |\d+[.)] |>|```|~~~|#)")
 REPO_REFERENCE_PREFIXES = (
     ".agents/",
     ".charness/",
@@ -120,7 +121,8 @@ def iter_citation_lines(doc: Path) -> list[tuple[int, str, list[str]]]:
     out: list[tuple[int, str, list[str]]] = []
     in_fence = False
     in_html_comment = False
-    for lineno, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), start=1):
+    lines = doc.read_text(encoding="utf-8").splitlines()
+    for lineno, line in enumerate(lines, start=1):
         stripped = line.strip()
         if in_html_comment:
             if "-->" in stripped:
@@ -144,7 +146,19 @@ def iter_citation_lines(doc: Path) -> list[tuple[int, str, list[str]]]:
             if inner and looks_like_repo_path(inner):
                 candidates.append(inner)
         if candidates:
-            out.append((lineno, line, candidates))
+            marker_scope = line
+            continuation = lines[lineno] if lineno < len(lines) else ""
+            indentation = len(continuation) - len(continuation.lstrip(" "))
+            if (
+                line.lstrip().startswith(("- ", "* ", "+ "))
+                and indentation in (2, 3)
+                and not MARKDOWN_BLOCK_START_RE.match(continuation.lstrip())
+            ):
+                # CommonMark continuation lines belong to the same list item.
+                # Keep the evidence marker coupled to the semantic bullet, not
+                # to an arbitrary physical wrap chosen by the author/formatter.
+                marker_scope += "\n" + lines[lineno]
+            out.append((lineno, marker_scope, candidates))
     return out
 
 
@@ -175,7 +189,8 @@ def violations_for_doc(root: Path, doc: Path) -> list[str]:
             messages.append(
                 f"{rel_doc}:{lineno}: cited path `{candidate}` resolves to a gitignored target "
                 "(`" + resolved_path.relative_to(root).as_posix() + "`); cite a checked-in proof "
-                "artifact or mark the line `<!-- reproduction-source -->`. "
+                "artifact or mark the citation bullet `<!-- reproduction-source -->` "
+                "on the same line or its immediately following plain-text continuation. "
                 "See skills/public/spec/references/evidence-durability.md."
             )
     return messages
@@ -189,8 +204,7 @@ def main() -> int:
     root = args.repo_root.resolve()
     if not (root / ".git").exists():
         print(
-            "Skipping evidence-durability check: no git work tree at "
-            f"{root}.",
+            f"Skipping evidence-durability check: no git work tree at {root}.",
         )
         return 0
     docs = iter_matching_repo_files(root, DOC_GLOBS, require_git=args.require_git_file_listing)

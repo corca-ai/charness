@@ -4,7 +4,7 @@
 The hook carries context only: pickup follows the handoff, ordinary requests
 start their matching workflow from installed skill metadata and model judgment,
 and hidden support or integration availability uses the exact read-only
-`charness catalog list --repo-root <repo>` inventory. A nonzero result
+`charness catalog list --repo-root <repo> --summary` inventory. A nonzero result
 is reported as a command failure. The hook supplies context for the session.
 
 Wiring (installed at USER level so it fires in every session, pointing at the
@@ -45,7 +45,7 @@ DIRECTIVE = (
     "(2) Ordinary requests — use installed skill metadata and your own judgment "
     "to start the matching workflow directly. (3) Hidden support/integration inventory "
     "or an unclear availability question — run the read-only `charness catalog "
-    "list --repo-root <repo> --json` command. Treat its facts only as inventory; "
+    "list --repo-root <repo> --summary` command. Treat its facts only as inventory; "
     "if the command returns nonzero, report the command failure."
 )
 

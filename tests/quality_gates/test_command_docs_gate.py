@@ -24,7 +24,9 @@ def _load_render_cli_reference():
     return module
 
 
-def _parser_command_paths(parser: argparse.ArgumentParser, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
+def _parser_command_paths(
+    parser: argparse.ArgumentParser, prefix: tuple[str, ...] = ()
+) -> set[tuple[str, ...]]:
     paths: set[tuple[str, ...]] = set()
     for action in parser._actions:
         if not isinstance(action, argparse._SubParsersAction):
@@ -43,8 +45,7 @@ def _root_cli_command_paths() -> set[tuple[str, ...]]:
 def _command_doc_paths() -> set[tuple[str, ...]]:
     contract = yaml.safe_load((ROOT / ".agents" / "command-docs.yaml").read_text(encoding="utf-8"))
     return {
-        tuple(shlex.split(entry["help_command"])[1:-1])
-        for entry in contract["commands"].values()
+        tuple(shlex.split(entry["help_command"])[1:-1]) for entry in contract["commands"].values()
     }
 
 
@@ -54,7 +55,9 @@ def _command_registry_paths() -> set[tuple[str, ...]]:
 
 
 def _side_effect_probe_commands() -> set[str]:
-    contract = json.loads((ROOT / ".agents" / "cli-side-effect-probes.json").read_text(encoding="utf-8"))
+    contract = json.loads(
+        (ROOT / ".agents" / "cli-side-effect-probes.json").read_text(encoding="utf-8")
+    )
     return {entry["command"] for entry in contract["commands"]}
 
 
@@ -141,19 +144,51 @@ def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert output.read_text(encoding="utf-8") == (ROOT / "docs" / "generated" / "cli-reference.md").read_text(encoding="utf-8")
+    assert output.read_text(encoding="utf-8") == (
+        ROOT / "docs" / "generated" / "cli-reference.md"
+    ).read_text(encoding="utf-8")
 
 
 def test_root_cli_command_contracts_cover_every_parser_path() -> None:
     expected = _root_cli_command_paths()
     rendered = {
         tuple(title.split()[1:])
-        for title, _command in _load_render_cli_reference().COMMANDS
+        for title, _command in _load_render_cli_reference().commands_from_contract(ROOT)
     }
 
     assert _command_doc_paths() == {(), *expected}
     assert _command_registry_paths() == expected
     assert rendered == {(), *expected}
+
+
+def test_render_cli_reference_rejects_duplicate_help_paths(monkeypatch) -> None:
+    renderer = _load_render_cli_reference()
+    contract = renderer._command_docs.load_contract(ROOT / ".agents" / "command-docs.yaml")
+    contract["duplicate-root"] = dict(contract["root"])
+    monkeypatch.setattr(renderer._command_docs, "load_contract", lambda _path: contract)
+
+    with pytest.raises(SystemExit, match="duplicate command-docs help path"):
+        renderer.commands_from_contract(ROOT)
+
+
+def test_render_cli_reference_rejects_unsupported_help_command(monkeypatch) -> None:
+    renderer = _load_render_cli_reference()
+    contract = renderer._command_docs.load_contract(ROOT / ".agents" / "command-docs.yaml")
+    contract["root"]["help_command"] = "charness --help"
+    monkeypatch.setattr(renderer._command_docs, "load_contract", lambda _path: contract)
+
+    with pytest.raises(SystemExit, match="unsupported CLI reference help command"):
+        renderer.commands_from_contract(ROOT)
+
+
+def test_render_cli_reference_rejects_parser_contract_path_mismatch(monkeypatch) -> None:
+    renderer = _load_render_cli_reference()
+    contract = renderer._command_docs.load_contract(ROOT / ".agents" / "command-docs.yaml")
+    contract.pop("catalog-list")
+    monkeypatch.setattr(renderer._command_docs, "load_contract", lambda _path: contract)
+
+    with pytest.raises(SystemExit, match="command-docs/parser mismatch"):
+        renderer.commands_from_contract(ROOT)
 
 
 def test_root_cli_legacy_json_flag_appears_only_in_compatibility_tests() -> None:

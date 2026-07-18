@@ -109,10 +109,6 @@ _ISSUE_REF_RE = re.compile(r"#(\d+)\b")
 # agent-authored to the distinct (rung-2) observer. Presence is rung-1; whether
 # the human-audit claim is real is rung-2.
 _PROVENANCE_ALIASES = ("ai provenance", "provenance")
-AI_PROVENANCE_MARKER = (
-    "AI-provenance: agent-drafted via charness issue resolve; "
-    "human-audited per the resolution critique"
-)
 
 
 def _normalize_field_name(value: str) -> str:
