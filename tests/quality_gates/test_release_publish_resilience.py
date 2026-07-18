@@ -618,6 +618,28 @@ def test_resume_reconciles_carrier_push_without_duplicate(
     assert log.count("Close #44.") == 1
 
 
+def test_post_publication_resume_without_original_closeout_inputs_fails_actionably(
+    tmp_path: Path,
+) -> None:
+    repo, env, _carrier = _seed_failed_closeout(tmp_path)
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "1"
+    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "before"
+    failed = _run_patch_closeout(repo, env)
+    assert failed.returncode != 0
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
+    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
+
+    resumed = _run_publish(
+        repo, env, "--resume", "--publish-current", "--execute",
+        "--critique-blocked", CRITIQUE_BLOCKED,
+    )
+
+    assert resumed.returncode != 0
+    assert "post-publication issue-closeout recovery requires the original" in resumed.stderr
+    assert "--close-issue-carrier-file" in resumed.stderr
+    assert "Recovery never infers or omits issue-close context" in resumed.stderr
+
+
 def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Path) -> None:
     repo, env, carrier = _seed_failed_closeout(tmp_path)
     env["FAKE_GH_ISSUE_VIEW_FAIL_AFTER"] = "1"

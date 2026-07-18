@@ -26,6 +26,22 @@ ISSUE_CLOSEOUT = _load("release_issue_closeout")
 MESSAGE = _load("release_issue_closeout_message")
 
 
+def test_resume_closeout_requires_original_irreversible_inputs() -> None:
+    args = SimpleNamespace(
+        close_issue=[], close_issue_classification=None, close_issue_carrier_file=None,
+        close_issue_behavior=[],
+    )
+
+    with pytest.raises(SystemExit, match="Recovery never infers or omits issue-close context") as error:
+        RESUME_CLOSEOUT._require_closeout_resume_inputs(args)
+
+    for flag in (
+        "--close-issue", "--close-issue-classification",
+        "--close-issue-carrier-file", "--close-issue-behavior",
+    ):
+        assert flag in str(error.value)
+
+
 class _ResumeCli:
     def __init__(self, *, changed: list[str], files: dict[str, str], push_error: bool = False, remote_sha: str = ""):
         self.changed = changed
@@ -133,7 +149,11 @@ def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:
             observer: json.dumps({"target": {"tag": "v1.2.3"}}),
         },
     )
-    args = SimpleNamespace(execute=False, close_issue=[44], close_issue_classification="bug", remote="origin")
+    args = SimpleNamespace(
+        execute=False, close_issue=[44], close_issue_classification="bug",
+        close_issue_carrier_file=Path("carrier.md"),
+        close_issue_behavior=["Behavior #44: fixture"], remote="origin",
+    )
     plan = {
         "payload": {"issue_closeout_draft_validation": {"commit_message": message}},
         "issue_repo": "example/demo", "tag_name": "v1.2.3", "branch": "main",

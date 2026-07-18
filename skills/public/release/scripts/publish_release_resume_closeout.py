@@ -6,6 +6,27 @@ from pathlib import Path
 from typing import Any
 
 
+def _require_closeout_resume_inputs(args: Any) -> None:
+    """Refuse to infer irreversible issue-close context from commit text."""
+    required = {
+        "--close-issue": bool(args.close_issue),
+        "--close-issue-classification": bool(args.close_issue_classification),
+        "--close-issue-carrier-file": bool(args.close_issue_carrier_file),
+        "--close-issue-behavior": bool(args.close_issue_behavior),
+    }
+    missing = [flag for flag, present in required.items() if not present]
+    if not missing:
+        return
+    raise SystemExit(
+        "--resume: post-publication issue-closeout recovery requires the original "
+        "closeout inputs; missing " + ", ".join(missing) + ". Re-run with "
+        "--resume --publish-current plus the exact original --close-issue, "
+        "--close-issue-classification, --close-issue-carrier-file, and "
+        "--close-issue-behavior flags (and --close-issue-repo when it was explicit). "
+        "Recovery never infers or omits issue-close context."
+    )
+
+
 def _commit_file(repo_root: Path, *, commit_ref: str, path: str, cli: Any) -> str:
     result = cli.run(["git", "show", f"{commit_ref}:{path}"], cwd=repo_root, check=False)
     if result.returncode != 0:
@@ -142,6 +163,7 @@ def resume_post_publication_closeout(
     payload = plan["payload"]
     issue_repo = plan["issue_repo"]
     artifact_relpath = str(Path(adapter_data["output_dir"]) / "latest.md")
+    _require_closeout_resume_inputs(args)
     common.preflight_close_issue_carrier(
         repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli
     )

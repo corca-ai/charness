@@ -153,7 +153,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--execute", action="store_true", help="Execute the publish plan; without it the payload is printed dry-run")
     parser.add_argument("--prep-update-instructions", action="store_true", help="Emit version-agnostic update_instructions guidance + staleness report, then exit. Run this BEFORE the release critique so the adapter guard does not HOLD the publish; does not require a clean worktree or the critique gate.")
-    parser.add_argument("--resume", action="store_true", help="Resume a partial publish: detect the existing local release commit+tag, re-validate, then push/release/verify (requires --publish-current)")
+    parser.add_argument("--resume", action="store_true", help=(
+        "Resume a partial publish (requires --publish-current). For a post-publication issue-closeout "
+        "commit, repeat the exact original issue, classification, carrier, behavior, repo, and critique arguments."))
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")
