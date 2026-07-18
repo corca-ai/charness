@@ -272,6 +272,132 @@ def test_dead_code_advisory_marks_pytest_fixture_candidates() -> None:
     assert findings[0]["classification"] == "likely_pytest_fixture"
 
 
+def test_dead_code_advisory_recognizes_decorated_fixture_outside_conftest(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    source = repo / "tests" / "test_example.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "import pytest\n\n@pytest.fixture(autouse=True)\ndef clear_state():\n    yield\n",
+        encoding="utf-8",
+    )
+
+    findings = module.parse_findings(
+        "tests/test_example.py:3: unused function 'clear_state' (60% confidence, 2 lines)\n"
+        "tests/test_example.py:4: unused function 'clear_state' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+    )
+
+    assert [finding["classification"] for finding in findings] == [
+        "likely_pytest_fixture",
+        "likely_pytest_fixture",
+    ]
+
+
+def test_dead_code_advisory_does_not_treat_unrelated_fixture_decorator_as_pytest(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    source = repo / "scripts" / "example.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "import local_framework\n\n@local_framework.fixture\ndef abandoned():\n    pass\n",
+        encoding="utf-8",
+    )
+
+    findings = module.parse_findings(
+        "scripts/example.py:3: unused function 'abandoned' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+    )
+
+    assert findings[0]["classification"] == "review_candidate"
+
+
+def test_dead_code_advisory_recognizes_node_visitor_dispatch(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    source = repo / "scripts" / "visitor.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "import ast\n\nclass Visitor(ast.NodeVisitor):\n    def visit_Name(self, node):\n        pass\n",
+        encoding="utf-8",
+    )
+
+    findings = module.parse_findings(
+        "scripts/visitor.py:4: unused method 'visit_Name' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+    )
+
+    assert findings[0]["classification"] == "likely_framework_convention"
+
+
+def test_dead_code_advisory_does_not_treat_unrelated_node_visitor_as_ast(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repo = tmp_path / "repo"
+    source = repo / "scripts" / "visitor.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "class NodeVisitor:\n    pass\n\nclass Visitor(NodeVisitor):\n    def visit_Name(self, node):\n        pass\n",
+        encoding="utf-8",
+    )
+
+    findings = module.parse_findings(
+        "scripts/visitor.py:5: unused method 'visit_Name' (60% confidence, 2 lines)\n",
+        repo_root=repo,
+    )
+
+    assert findings[0]["classification"] == "review_candidate"
+
+
+def test_dead_code_advisory_marks_source_scanned_attention_contracts() -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    findings = module.parse_findings(
+        "scripts/report_usage_product_review.py:3: unused variable 'ATTENTION_STATES' (60% confidence, 1 line)\n"
+    )
+
+    assert findings[0]["classification"] == "source_scanned_contract"
+
+
+def test_dead_code_advisory_does_not_exempt_contract_name_in_other_file() -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    findings = module.parse_findings(
+        "scripts/reporter.py:3: unused variable 'ATTENTION_STATES' (60% confidence, 1 line)\n"
+    )
+
+    assert findings[0]["classification"] == "review_candidate"
+
+
 def test_dead_code_advisory_marks_mock_and_test_protocol_noise() -> None:
     from importlib.util import module_from_spec, spec_from_file_location
 

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-18",
-  "source_artifact_count": 358,
-  "candidate_count": 1500,
+  "source_artifact_count": 359,
+  "candidate_count": 1503,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -2597,6 +2597,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:00d694f25edd",
+      "kind": "next_improvement",
+      "lesson": "for each new static-analysis exemption, write the negative lookalike first and identify the runtime consumer before the positive case.",
+      "normalized_key": "for each new static analysis exemption write the negative lookalike first and identify the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a91aa00d4c38",
       "kind": "next_improvement",
       "lesson": "keep finite static ratchets paired with dynamic tests at process, filesystem, or concurrency boundaries; do not market either as a sandbox.",
@@ -2611,6 +2631,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-test-isolation-session-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:29d3716ce801",
+      "kind": "next_improvement",
+      "lesson": "keep one AST parse per file, but require each new role to carry provenance rather than growing a global name list.",
+      "normalized_key": "keep one ast parse per file but require each new role to carry provenance",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }
@@ -2711,6 +2751,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-18-yaml-output-contract-correction-retro.md",
+          "date": "2026-07-18",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d1c0112cd5b4",
+      "kind": "next_improvement",
+      "lesson": "preserve “exceptions need consumer provenance; ambiguous findings stay visible” in the recent-lessons digest.",
+      "normalized_key": "preserve exceptions need consumer provenance ambiguous findings stay visible in the recent lessons digest",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
+      "latest_source_date": "2026-07-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-session-retro.md",
           "date": "2026-07-18",
           "section": "Next Improvements"
         }

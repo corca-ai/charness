@@ -1,1 +1,1 @@
-2026-07-18-focused-coverage-selection.md
+2026-07-18-autonomous-release-readiness.md

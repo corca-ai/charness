@@ -26,7 +26,6 @@ CODEX_DEFAULT_REVIEWER_TIER_FIELDS = {
     "reasoning_effort": "medium",
     "fork_turns": "none",
 }
-CODEX_DEFAULT_REVIEWER_TIERS = ("high-leverage", "medium")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,

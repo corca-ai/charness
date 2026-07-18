@@ -26,6 +26,9 @@ LIKELY_CONVENTION_NAMES = ("pytest_plugins", "pytestmark")
 MOCK_PROTOCOL_NAMES = ("side_effect", "return_value", "call_args", "mock_calls")
 TEST_PROTOCOL_TERMS = ("fake", "mock", "stub", "driver", "protocol")
 STRUCTURED_OUTPUT_NAMES = ("rss_kib",)
+SOURCE_SCANNED_CONTRACTS = {
+    "scripts/report_usage_product_review.py": {"ATTENTION_STATES", "ATTENTION_EVIDENCE_TERMS"},
+}
 GIT_LIST_TIMEOUT_SECONDS = 30
 VULTURE_TIMEOUT_SECONDS = 120
 
@@ -61,12 +64,41 @@ def _is_dataclass_decorator(decorator: ast.expr) -> bool:
     return getattr(target, "id", None) == "dataclass" or getattr(target, "attr", None) == "dataclass"
 
 
-def _dataclass_field_locations(path: Path) -> set[tuple[int, str]]:
+def _import_bindings(tree: ast.AST, module: str, name: str | None = None) -> set[str]:
+    bindings: set[str] = set()
+    for node in ast.walk(tree):
+        if name is None and isinstance(node, ast.Import):
+            bindings.update(alias.asname or alias.name for alias in node.names if alias.name == module)
+        elif name is not None and isinstance(node, ast.ImportFrom) and node.module == module:
+            bindings.update(alias.asname or alias.name for alias in node.names if alias.name == name)
+    return bindings
+
+
+def _is_bound_attribute(expression: ast.expr, bindings: set[str], attribute: str) -> bool:
+    target = expression.func if isinstance(expression, ast.Call) else expression
+    return (
+        isinstance(target, ast.Attribute)
+        and isinstance(target.value, ast.Name)
+        and target.value.id in bindings
+        and target.attr == attribute
+    )
+
+
+def _is_bound_name(expression: ast.expr, bindings: set[str]) -> bool:
+    target = expression.func if isinstance(expression, ast.Call) else expression
+    return isinstance(target, ast.Name) and target.id in bindings
+
+
+def _source_role_locations(path: Path) -> dict[str, set[tuple[int, str]]]:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (OSError, SyntaxError, UnicodeDecodeError):
-        return set()
-    return {
+        return {"dataclass_fields": set(), "pytest_fixtures": set(), "visitor_methods": set()}
+    pytest_modules = _import_bindings(tree, "pytest")
+    fixture_names = _import_bindings(tree, "pytest", "fixture")
+    ast_modules = _import_bindings(tree, "ast")
+    node_visitor_names = _import_bindings(tree, "ast", "NodeVisitor")
+    dataclass_fields = {
         (statement.lineno, statement.target.id)
         for class_node in ast.walk(tree)
         if isinstance(class_node, ast.ClassDef)
@@ -74,6 +106,43 @@ def _dataclass_field_locations(path: Path) -> set[tuple[int, str]]:
         for statement in class_node.body
         if isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name)
     }
+    fixture_nodes = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and any(
+            _is_bound_attribute(decorator, pytest_modules, "fixture")
+            or _is_bound_name(decorator, fixture_names)
+            for decorator in node.decorator_list
+        )
+    ]
+    pytest_fixtures = {
+        (line, node.name)
+        for node in fixture_nodes
+        for line in {node.lineno, *(decorator.lineno for decorator in node.decorator_list)}
+    }
+    visitor_methods = {
+        (method.lineno, method.name)
+        for class_node in ast.walk(tree)
+        if isinstance(class_node, ast.ClassDef)
+        and any(
+            _is_bound_attribute(base, ast_modules, "NodeVisitor")
+            or _is_bound_name(base, node_visitor_names)
+            for base in class_node.bases
+        )
+        for method in class_node.body
+        if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and method.name.startswith("visit_")
+    }
+    return {
+        "dataclass_fields": dataclass_fields,
+        "pytest_fixtures": pytest_fixtures,
+        "visitor_methods": visitor_methods,
+    }
+
+
+def _dataclass_field_locations(path: Path) -> set[tuple[int, str]]:
+    return _source_role_locations(path)["dataclass_fields"]
 
 
 def classify_finding(
@@ -82,6 +151,7 @@ def classify_finding(
     *,
     line: int | None = None,
     dataclass_fields: set[tuple[int, str]] | None = None,
+    source_roles: dict[str, set[tuple[int, str]]] | None = None,
 ) -> str:
     name_match = UNUSED_NAME_RE.search(message)
     unused_kind = name_match.group("kind") if name_match else ""
@@ -90,6 +160,12 @@ def classify_finding(
     lower_name = unused_name.lower()
     in_tests = lower_path.startswith("tests/") or "/tests/" in lower_path or lower_path.endswith("conftest.py")
     if unused_name in LIKELY_CONVENTION_NAMES:
+        return "likely_framework_convention"
+    roles = source_roles or {}
+    location = (line, unused_name) if line is not None else None
+    if location in roles.get("pytest_fixtures", set()):
+        return "likely_pytest_fixture"
+    if location in roles.get("visitor_methods", set()):
         return "likely_framework_convention"
     if in_tests and lower_path.endswith("conftest.py") and unused_kind == "function":
         return "likely_pytest_fixture"
@@ -106,6 +182,8 @@ def classify_finding(
     fields = dataclass_fields if dataclass_fields is not None else set()
     if unused_kind == "variable" and line is not None and (line, unused_name) in (fields or set()):
         return "structured_output_field"
+    if unused_kind == "variable" and unused_name in SOURCE_SCANNED_CONTRACTS.get(path, set()):
+        return "source_scanned_contract"
     # Preserve context-free direct-call compatibility without affecting AST-aware scans.
     if dataclass_fields is None and unused_name in STRUCTURED_OUTPUT_NAMES:
         return "structured_output_field"
@@ -116,7 +194,7 @@ def classify_finding(
 
 def parse_findings(stdout: str, *, repo_root: Path | None = None) -> list[dict[str, object]]:
     findings: list[dict[str, object]] = []
-    field_cache: dict[str, set[tuple[int, str]]] = {}
+    role_cache: dict[str, dict[str, set[tuple[int, str]]]] = {}
     for line in stdout.splitlines():
         match = FINDING_RE.match(line)
         if not match:
@@ -124,9 +202,10 @@ def parse_findings(stdout: str, *, repo_root: Path | None = None) -> list[dict[s
         path = match.group("path")
         message = match.group("message")
         finding_line = int(match.group("line"))
-        if repo_root is not None and path not in field_cache:
-            field_cache[path] = _dataclass_field_locations(repo_root / path)
-        fields = field_cache.get(path)
+        if repo_root is not None and path not in role_cache:
+            role_cache[path] = _source_role_locations(repo_root / path)
+        roles = role_cache.get(path)
+        fields = roles.get("dataclass_fields") if roles is not None else None
         findings.append(
             {
                 "path": path,
@@ -134,7 +213,13 @@ def parse_findings(stdout: str, *, repo_root: Path | None = None) -> list[dict[s
                 "message": message,
                 "confidence": int(match.group("confidence")),
                 "size": int(match.group("size")),
-                "classification": classify_finding(path, message, line=finding_line, dataclass_fields=fields),
+                "classification": classify_finding(
+                    path,
+                    message,
+                    line=finding_line,
+                    dataclass_fields=fields,
+                    source_roles=roles,
+                ),
             }
         )
     return findings

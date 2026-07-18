@@ -39,12 +39,3 @@ def tool_input_strings(record: dict[str, Any]) -> list[str]:
             elif isinstance(value, list):
                 parts.append(" ".join(v for v in value if isinstance(v, str)))
     return parts
-
-
-def stream_command_blob(stream_path: Path) -> str:
-    """Every string tool-call input value across a stream.jsonl."""
-    return "\n".join(
-        value
-        for event in iter_jsonl_dicts(stream_path)
-        for value in tool_input_strings(event)
-    )

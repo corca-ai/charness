@@ -36,10 +36,16 @@ Five related autonomous-improvement rounds exposed the same structural lesson. F
 - The first locked consumer then rejected five uncovered state branches despite
   broad pytest passing. Four focused tests closed the exact gaps without a
   broader selector or a coverage exemption.
+- Packet Consumed: `charness-artifacts/retro/2026-07-18-134303-packet.md` for
+  the dead-code advisory continuation.
+- The advisory sweep fell from 24 findings / 9 review candidates to 21 / 2
+  after deleting confirmed residue and classifying runtime-external roles.
+  Two fresh-eye angles independently caught an over-broad name-only source-scan
+  exemption before lock; the repair is path-scoped with a negative lookalike.
 
 ## Waste
 
-The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range. The first rollback draft repeated that pattern at a smaller boundary: it named happy-path Git commands but not the complete failure-state population, mixed HEAD-backed and newly created paths, trusted rename-shaped diff output, and reported planned recovery work as completed work. Fault injection converted those assumptions into explicit states. The final focused coverage producer took 146.4 seconds because it drives many seeded Git subprocesses under coverage. That is gate-baseline runtime debt in the proof implementation, not a necessary-safety claim or a blocker for the correctness slice. The next selector pass first ran an already-known broad manual subset instead of deriving the nearest evidence boundary. That was verification sequencing waste: exploration was appropriate, but triage should have locked `direct -> nearest loader -> broad fallback` before paying instrumented cost. The read-only baseline also ran before generated plugin sync, producing an expected packaging failure and one avoidable gate pass.
+The first YAML slice optimized the visible dispatch list instead of first naming the complete capability population. That left two undispatched inventories and several partially migrated commands for a second pass. Later, separate CLI invocations compared a live pytest-temp footprint and created a flaky semantic test. The release attempt then paid the entire unreleased-range coverage debt at the latest possible reversible boundary. Its producer emitted the exact consumer command, but the workflow treated producer exit zero as completion; the command was data nobody consumed. The first repair also missed untracked files, accepted `{}` as a verdict, and hid `not_checked` in normal text until fresh-eye review. In the latest slice, the initial parser fix still trusted a `try` around generator construction even though `TokenError` occurs during iteration; a named fresh-eye angle and counterweight caught it before lock. The first locked run then spent 36.4 seconds reaching a durability failure that the repo already knew how to detect, because repo-Markdown surface routing omitted the existing validator. The rework came from defining contracts by current prose examples, shared string shapes, intermediate success, and broad-gate ownership rather than by the complete population, final consumer, semantic grammar, cheapest owning route, volatile seams, and irreversible range. The first rollback draft repeated that pattern at a smaller boundary: it named happy-path Git commands but not the complete failure-state population, mixed HEAD-backed and newly created paths, trusted rename-shaped diff output, and reported planned recovery work as completed work. Fault injection converted those assumptions into explicit states. The final focused coverage producer took 146.4 seconds because it drives many seeded Git subprocesses under coverage. That is gate-baseline runtime debt in the proof implementation, not a necessary-safety claim or a blocker for the correctness slice. The next selector pass first ran an already-known broad manual subset instead of deriving the nearest evidence boundary. That was verification sequencing waste: exploration was appropriate, but triage should have locked `direct -> nearest loader -> broad fallback` before paying instrumented cost. The read-only baseline also ran before generated plugin sync, producing an expected packaging failure and one avoidable gate pass. The latest classifier repeated the ownership error in miniature: it turned one observed source-scanned variable into a global identifier exemption and framework-shaped spellings into provenance. Exploration was appropriate; the waste was locking the abstraction before asking which consumer owned the exception. The read-only changed-line PASS also excluded the worktree, so it remains an explicit false green until the post-commit locked consumer runs.
 
 ## Critical Decisions
 
@@ -69,6 +75,10 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   consumer as independent backstops.
 - Cross a generated-surface sync barrier before any validator that compares the
   source and packaged mirror.
+- Model static-analysis suppressions as producer/consumer relationships, not
+  memorable names; path or import provenance must justify leaving review.
+- Keep ambiguous dynamic exports visible. Better precision is not permission
+  to manufacture zero candidates.
 
 ## Expert Counterfactuals
 
@@ -89,6 +99,10 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   selector that emits it. Memory-only manual selection recreates token and
   runtime waste, while the unchanged final consumer prevents a cheap selector
   from becoming terminal green.
+- Engelbart's method/language/tool unit applies to static-analysis exceptions:
+  the method briefs a judge, the language names runtime-external roles, and the
+  tool proves provenance plus negative lookalikes. A name-only allowlist aligned
+  none of the three.
 
 ## Sibling Search
 
@@ -111,6 +125,10 @@ The first YAML slice optimized the visible dispatch list instead of first naming
 - abstraction up: standing test dependency inference | decision: intentional boundary | proof: the changed-line consumer and broad pytest remain independent; no maintained dependency registry was added
 - specialization down: other local-loader spellings | decision: diagnostic-only | proof: repo corpus review added the observed one/two-argument and `with_name` forms; unknown computed forms fall back broadly
 - mental-model siblings: generated source/plugin validation | decision: same waste, fix now | proof: this slice now syncs before packaging validation
+- same layer: dead-code advisory framework/source-scan classifications | decision: same waste, fix now | proof: path/import provenance and negative lookalike fixtures replaced name-only suppression
+- abstraction up: other static advisory exemptions | decision: diagnostic-only | proof: bounded inventory review found no second concrete name-only exemption
+- specialization down: dynamic exports reported by vulture | decision: intentional boundary | proof: two runtime-routed exports remain review candidates rather than entering an unproven allowlist
+- mental-model siblings: changed-line pre-commit PASS with excluded worktree | decision: same waste, fix now | proof: closeout records the false green and reruns the authoritative range after commit
 
 ## Next Improvements
 
@@ -137,6 +155,12 @@ The first YAML slice optimized the visible dispatch list instead of first naming
   lock direct-reference, nearest-loader, then broad-fallback ordering before
   instrumented verification.
 - memory: preserve this population-first migration rule and the earlier seam-first failure rule in `recent-lessons.md`, and reflect them in the next-session handoff only when they change the next move.
+- workflow: for each new static-analysis exemption, write the negative
+  lookalike first and identify the runtime consumer before the positive case.
+- capability: keep one AST parse per file, but require each new role to carry
+  provenance rather than growing a global name list.
+- memory: preserve “exceptions need consumer provenance; ambiguous findings
+  stay visible” in the recent-lessons digest.
 
 ## Persisted
 
