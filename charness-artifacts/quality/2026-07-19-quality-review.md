@@ -27,7 +27,7 @@ Ambient repo findings: D18 remains intentionally ignored. Seventeen near-limit f
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
 - runtime hot spots: read-only quality latest/median 56.4/58.2s against 90s; pytest latest/median 35.7/43.5s against 140s.
-- coverage gate: focused repair packet 60 passed; read-only quality passed; locked broad and changed-line mutation proof remain pre-release barriers.
+- coverage gate: focused repair packets passed; read-only quality, final 73.0s locked broad proof, focused coverage producer, and changed-line consumer all passed.
 - evaluator depth: deterministic-gates-only; Cautilus planner required no run, so no live evaluator claim is made.
 
 ## Healthy
@@ -45,6 +45,7 @@ Ambient repo findings: D18 remains intentionally ignored. Seventeen near-limit f
 - The process loader cache retains 20 test-private module objects; repeated runs are isolated, but no persistent-memory ceiling is claimed.
 - The first mutation-instrumented locked suite took 164.1s against a 120s advisory budget and caught four optional-ancestry/delta-test failures after 4,912 passes; correctness was repaired, while gate-baseline profiling is deferred explicitly.
 - The second locked broad suite passed 4,916 tests in 141.9s, but changed-line proof still rejected 29 failure/recovery lines. Direct behavior tests now own those branches; no coverage exclusion or baseline was added.
+- The successful focused coverage producer took 333.8s because the selected release integration files ran serially under instrumentation; correctness is closed, but this selector/runtime shape is worse than the 208.3s instrumented broad run and must not be called an efficiency win.
 
 ## Missing
 
@@ -74,12 +75,14 @@ Ambient repo findings: D18 remains intentionally ignored. Seventeen near-limit f
 - Inventory output test file: 26 passed in 8.82s; repeated-interpreter isolation probe passed twice.
 - SHA-256 repository and newline-path regression passed; public/plugin release mirrors are byte-identical.
 - `run_slice_closeout.py --skip-broad-pytest`: completed after sync, packaging, docs, secrets, ruff, compile, scan hygiene, and boundary checks.
+- Final locked closeout: broad pytest passed in 73.0s; focused coverage passed in 333.8s; the fresh changed-line consumer passed with zero blocking files.
 
 ## Recommended Next Quality Moves
 
 - active prove the locked mutation set before release — capability_needed=changed-branch confidence; next_center=existing closeout producer; transformation=changed-line mutation coverage; proof_boundary=repo-owned coverage consumer; enforcement_posture=existing-gate-reuse.
 - passive split legacy release tag/version discovery when it next changes because speculative movement now would add release risk without new behavior — capability_needed=helper headroom; next_center=tag discovery; transformation=cohesive extraction; proof_boundary=existing release suites; enforcement_posture=no-gate.
 - passive revisit local markdown cost only after exact CI-scope equivalence is observed because current inventory supplies token correlation, not proof — capability_needed=faster local gate; next_center=quality routing; transformation=conditional relocation; proof_boundary=CI/local command equivalence; enforcement_posture=no-gate.
+- passive improve focused mutation selection before reusing it because this release packet was slower than instrumented broad execution — capability_needed=cheaper changed-line proof; next_center=selector plus xdist/isolation economics; transformation=parallel-safe minimal target set; proof_boundary=same empty changed-line consumer verdict at lower measured wall time; enforcement_posture=no-gate.
 
 ## History
 

@@ -142,3 +142,7 @@ than only the explicitly named close function.
   receipt, dry-run recovery, issue-helper absence, YAML/summary compatibility,
   binary Git diagnostics, noncanonical object IDs, and all published-state
   ancestry refusals; no exclusion or baseline was added.
+- Final locked proof passed the 73.0s broad suite, a focused release coverage
+  producer, and the authoritative changed-line consumer with an empty blocking
+  set. The real-process smoke is an explicit boundary-ratchet exemption because
+  startup/`__main__`/exit behavior is the subject; all logic remains in-process.

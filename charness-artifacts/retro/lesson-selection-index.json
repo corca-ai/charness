@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-19",
   "source_artifact_count": 366,
-  "candidate_count": 1520,
+  "candidate_count": 1521,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1245,6 +1245,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:df11d0266a67",
+      "kind": "next_improvement",
+      "lesson": "never infer that fewer test files means cheaper proof; measure selector output under the same coverage/parallelism environment before choosing focused versus broad production.",
+      "normalized_key": "never infer that fewer test files means cheaper proof measure selector output under the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:01904664c573",
       "kind": "next_improvement",
       "lesson": "out-of-scope: making packet content digests self-describing requires a backward-compatible schema migration; the repeated interpretation error is recorded in the RCA ledger and canonical verification remains authoritative.",
@@ -1259,26 +1279,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-          "date": "2026-07-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c14a53618d12",
-      "kind": "next_improvement",
-      "lesson": "persist “irreversibility starts at the earliest observer-capable write” and “optimization must name its hermetic state envelope” in the generated recent-lessons digest.",
-      "normalized_key": "persist irreversibility starts at the earliest observer capable write and optimization must name its",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -2501,6 +2501,26 @@
       "kind": "next_improvement",
       "lesson": "keep shared boundary owners small and feed all producer/consumer paths through them; add exotic-format fixtures (alternate object format, legal delimiter characters, assertion failure) at introduction time.",
       "normalized_key": "keep shared boundary owners small and feed all producer consumer paths through them add",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:df11d0266a67",
+      "kind": "next_improvement",
+      "lesson": "never infer that fewer test files means cheaper proof; measure selector output under the same coverage/parallelism environment before choosing focused versus broad production.",
+      "normalized_key": "never infer that fewer test files means cheaper proof measure selector output under the",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
       "latest_source_date": "2026-07-19",

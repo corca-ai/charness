@@ -17,10 +17,11 @@ An aggressive autonomous improvement pass repaired the release issue-close state
 - `./scripts/run-quality.sh --read-only` passed in 56.4s; all cost claims above are measured command/runtime evidence, not host-token estimates.
 - The first mutation-instrumented lock ran 164.1s and caught four failures after 4,912 passes; the gate failed correctly, but its >120s baseline is routed as runtime debt.
 - The second lock passed 4,916 broad tests in 141.9s, then its changed-line consumer found 29 unobserved failure/recovery lines; focused tests were added instead of weakening or baselining the consumer.
+- Final lock passed broad pytest in 73.0s and changed-line proof with zero blockers. Its focused coverage producer took 333.8s, disproving the assumption that a mapped subset is automatically cheaper than parallel broad instrumentation.
 
 ## Waste
 
-The broad exploration was requested and productive, so it was not waste. The avoidable rework was conversion delay: evidence compaction was implemented before defining the immutable-delta serialization owner, subprocess removal before defining a hermetic process-state envelope, and resume ancestry before distinguishing optional classification evidence from mandatory identity. Passing focused tests hid these because their fixtures inherited SHA-1, suite order, or deeper commit history; passing broad tests still did not prove changed failure lines were observed. The 141.9-164.1s mutation-instrumented gate is accepted release proof for now but remains gate-baseline runtime debt, not “necessary safety cost.”
+The broad exploration was requested and productive, so it was not waste. The avoidable rework was conversion delay: evidence compaction was implemented before defining the immutable-delta serialization owner, subprocess removal before defining a hermetic process-state envelope, and resume ancestry before distinguishing optional classification evidence from mandatory identity. Passing focused tests hid these because their fixtures inherited SHA-1, suite order, or deeper commit history; passing broad tests still did not prove changed failure lines were observed. Mutation instrumentation ranged from 141.9-208.3s broad and 333.8s focused: accepted release proof for now, but clearly gate-baseline runtime debt rather than “necessary safety cost.”
 
 ## Critical Decisions
 
@@ -48,6 +49,7 @@ The broad exploration was requested and productive, so it was not waste. The avo
 - capability: keep shared boundary owners small and feed all producer/consumer paths through them; add exotic-format fixtures (alternate object format, legal delimiter characters, assertion failure) at introduction time.
 - memory: persist “irreversibility starts at the earliest observer-capable write” and “optimization must name its hermetic state envelope” in the generated recent-lessons digest.
 - capability: profile mutation coverage startup and worker instrumentation before changing test scope; preserve the 4,912-test confidence boundary while removing orchestration cost.
+- workflow: never infer that fewer test files means cheaper proof; measure selector output under the same coverage/parallelism environment before choosing focused versus broad production.
 
 ## Persisted
 
