@@ -30,7 +30,7 @@ Dead-code output should direct maintainer attention to credible cleanup candidat
 
 ## Findings
 
-The two false-suppression findings were real and fixed before ship. The broad quality run then caught two new lexical duplicate families; a match/case predicate and shared function-node traversal removed them without accepting a baseline rotation. Final correctness, architecture, and counterweight re-reviews all returned SHIP. Focused tests cover wrong absolute and nested runpy paths, unrelated loaders and receivers, and loops not connected to the declared registry. The live repository scan reports two registered dynamic entrypoints and zero review candidates.
+The two false-suppression findings were real and fixed before ship. The broad quality run then caught two new lexical duplicate families; a match/case predicate and shared function-node traversal removed them without accepting a baseline rotation. Final correctness, architecture, and counterweight re-reviews all returned SHIP. The first committed-range changed-line consumer then exposed 14 unexecuted fail-closed lines; direct fixtures now cover caller-path variants, default/loop forms, directory mismatch, ignored registry rows, and unreadable/invalid consumers. A manual mutant at the cited recursive caller-path line made its owning test fail. The live repository scan reports two registered dynamic entrypoints and zero review candidates.
 
 ## Counterweight Pass
 

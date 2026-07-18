@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import contextlib
 import importlib.util
 import io
@@ -12,6 +13,7 @@ from pathlib import Path
 from .support import ROOT, init_git_repo
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "run_dead_code_advisory.py"
+EVIDENCE_SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "dynamic_entrypoint_evidence.py"
 
 
 def _run_dead_code_advisory_stdout(monkeypatch, bin_dir: Path, *args: str) -> str:
@@ -660,3 +662,74 @@ def test_dead_code_advisory_ignores_unreadable_dataclass_source(tmp_path: Path) 
     assert module._dataclass_field_locations(tmp_path / "missing.py") == set()
     assert module._dataclass_field_locations(invalid_syntax) == set()
     assert module._dataclass_field_locations(invalid_utf8) == set()
+
+
+def test_dynamic_entrypoint_evidence_covers_fail_closed_ast_branches(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("dynamic_entrypoint_evidence", EVIDENCE_SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module._caller_path(ast.parse("Path(__file__).resolve()", mode="eval").body)
+    assert not module._caller_path(ast.parse("somewhere_else", mode="eval").body)
+
+    tree = ast.parse(
+        "REGISTRY = ()\n"
+        "def positional(items=REGISTRY):\n    pass\n"
+        "def keyword_only(*, items=REGISTRY):\n    pass\n"
+        "for item in REGISTRY:\n    pass\n"
+        "for item in unrelated:\n    pass\n"
+    )
+    aliases = module._function_default_registries(tree, {"REGISTRY"})
+    assert {tuple(mapping.items()) for mapping in aliases.values()} == {
+        (("items", "REGISTRY"),),
+    }
+    direct_loop, unrelated_loop = [node for node in ast.walk(tree) if isinstance(node, ast.For)]
+    assert module._loop_registry(tree, direct_loop, {"REGISTRY"}, aliases) == "REGISTRY"
+    assert module._loop_registry(tree, unrelated_loop, {"REGISTRY"}, aliases) is None
+
+    lookup = ast.parse(
+        'runpy.run_path(str(Path(__file__).with_name("loader.py")))["load_sibling"]()'
+    )
+    assert not module._runpy_lookup_matches(
+        lookup,
+        producer=tmp_path / "scripts" / "loader.py",
+        symbol="load_sibling",
+        consumer=tmp_path / "other" / "consumer.py",
+    )
+
+
+def test_dynamic_entrypoint_evidence_rejects_non_registry_rows(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("dynamic_entrypoint_evidence", EVIDENCE_SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    tree = ast.parse(
+        'REGISTRY = (Factory(module="hook", reconcile_function="dead"), '
+        'SiblingHookIntent(module="other", reconcile_function="dead"))\n'
+    )
+
+    assert not module._registry_lookup_matches(tree, producer=tmp_path / "hook.py", symbol="dead")
+
+
+def test_dynamic_entrypoint_evidence_skips_unreadable_irrelevant_and_invalid_consumers(tmp_path: Path) -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("dynamic_entrypoint_evidence", EVIDENCE_SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "irrelevant.py").write_text("KEEP = True\n", encoding="utf-8")
+    (scripts / "invalid.py").write_text("dead = (\n", encoding="utf-8")
+
+    assert module.find_registered_dynamic_entrypoints(
+        tmp_path,
+        {("scripts/producer.py", "dead")},
+        ["scripts/missing.py", "scripts/irrelevant.py", "scripts/invalid.py"],
+    ) == set()

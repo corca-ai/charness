@@ -20,7 +20,7 @@ Ambient repo findings: D18 remains ignored. Existing near-limit files, test/prod
 
 ## Current Gates
 
-- Focused advisory and quality-runner tests own classification behavior and human-output compatibility.
+- Focused advisory and quality-runner tests own classification behavior, fail-closed helper branches, and human-output compatibility.
 - Dup ratchet owns new copy-pattern pressure; it initially rejected two families, which were structurally removed rather than baselined.
 - Packaging, plugin import smoke, and committed-mirror checks own portable export parity.
 - Broad read-only quality and locked slice closeout own final repository confidence; the advisory itself never blocks or authorizes deletion.
@@ -29,7 +29,7 @@ Ambient repo findings: D18 remains ignored. Existing near-limit files, test/prod
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
 - runtime hot spots: read-only quality latest/median 64.0/57.6s against 90s; pytest latest/median 43.9/39.8s against 140s.
-- coverage gate: focused 55-test proof passed; the uncommitted `HEAD` changed-line readback warned that it excluded three mutation-pool files and is not trusted as final proof.
+- coverage gate: focused 58-test proof passed; the first committed-range consumer exposed 14 uncovered fail-closed lines, which now have direct fixtures. Final refreshed consumer proof remains a closeout action.
 - evaluator depth: deterministic-gates-only; exact AST fixtures, live advisory output, mirror bytes, duplication scan, broad pytest, and release readback directly observe this slice. Cautilus remained ask-before-run and was not executed.
 
 ## Healthy
@@ -59,17 +59,18 @@ Ambient repo findings: D18 remains ignored. Existing near-limit files, test/prod
 - structural review result: artifact: `charness-artifacts/critique/2026-07-18-dynamic-entrypoint-evidence.md`; strengthen the existing advisory center and leave ambiguous work to judgment.
 - prose review result: command: `inventory_skill_ergonomics.py --summary`; all 16 skill findings are host-surface references. Core overfill, mode pressure, prose ritual, path ambiguity, issue/date anchors, reference discoverability, and missing argparse help are zero. Trigger boundaries and progressive disclosure remain healthy; named host/adaptor seams are intentional ambient portability structure.
 - runtime review result: command: `render_runtime_summary.py --summary`; no runtime-visibility or missing-sample findings. Six stale hotspot labels remain ambient maintenance evidence.
-- broad gate result: the first 80/81 read-only run failed only on two new duplicate families; the focused duplicate scan is now clean with no baseline acceptance.
+- command: `./scripts/run-quality.sh --read-only`; the first 80/81 run failed only on two new duplicate families; the focused duplicate scan is now clean with no baseline acceptance.
 
 ## Delegated Review
 
 - Delegated Review: executed — correctness and architecture angles plus a separate counterweight repeatedly reviewed the conservative evidence syntax; final verdicts were SHIP.
 - Parent fingerprints verified zero worktree, index, or HEAD drift after each final reviewer. The initial packet/fingerprint race was quarantined and not counted as approval.
-- Slow-gate lenses: fixture-economics is bounded to cheap synthetic repos; parallel-critical-path is unchanged; focused classification tests, broad pytest, duplication, and changed-line proof cover distinct seams rather than duplicate one assertion.
+- Slow-gate lenses: fixture-economics is bounded to cheap synthetic repos; parallel-critical-path is unchanged; duplicated-proof review found focused classification, broad pytest, duplication, and changed-line checks cover distinct seams rather than repeat one assertion.
 
 ## Commands Run
 
-- `pytest` focused advisory plus quality runner: 55 passed; broad quality pytest: 43.1s and passed.
+- `pytest` focused advisory plus quality runner: 58 passed; broad quality pytest passed in 43-48s across locked runs.
+- Exact-line proof: changing `dynamic_entrypoint_evidence.py:14` from recursive caller-path validation to `False` made the new fail-closed branch test fail; restoring it passed.
 - Live dead-code summary: primary clean; sweep 21 findings; 2 registered dynamic entrypoints; 0 review candidates.
 - Dup ratchet after refactor: zero new code/doc families; ruff, compile, packaging, skill validation, plugin sync, and artifact validators passed.
 - Final locked closeout and irreversible release verification remain downstream phase barriers.
@@ -82,4 +83,4 @@ Ambient repo findings: D18 remains ignored. Existing near-limit files, test/prod
 
 ## History
 
-- [Prior durable quality review](2026-07-18-autonomous-release-readiness.md)
+- [Prior durable quality review](history/2026-07-14-open-issue-resolution-proof.md)

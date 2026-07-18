@@ -53,6 +53,9 @@ Five related autonomous-improvement rounds exposed the same structural lesson. F
 - The first broad run passed 80/81 gates in 63.7s; its only failure was two new
   lexical duplicate families. Refactoring removed both without a baseline
   acceptance, and final fresh-eye reviews returned SHIP with zero fingerprint drift.
+- The first committed-range changed-line consumer then blocked 14 unexecuted
+  fail-closed lines. Direct fixtures plus a failing exact-line mutant closed the
+  gap; broad pytest alone had not exposed it.
 
 ## Waste
 
