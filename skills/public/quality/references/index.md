@@ -43,6 +43,7 @@ gates.
 - `references/maintainer-local-enforcement.md` — full pre-push/CI-parity/gate-policy-marker detail behind the planner brief.
 - `references/mutation-testing.md` — mutation-testing workflow and sampling.
 - `references/prompt-asset-policy.md` — prompt/content inventory policy.
+- `references/proof-path-efficiency.md` — proof-preserving runner, process, and validator acceleration.
 - `references/public-spec-layering.md` — public spec layering and source-guard pressure.
 - `references/quality-signal-scorecard.md` — structural cleanup scoring.
 - `references/security-overview.md` — security posture overview.

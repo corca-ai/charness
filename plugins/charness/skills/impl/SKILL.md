@@ -86,6 +86,11 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor || true
    - if the risk interrupt planner reports a forced interrupt, do not continue
      plain implementation until the named spec handoff says this slice may
      proceed honestly
+   - before replacing a process, runner, protocol adapter, or compatibility
+     boundary, write the acceptance envelope: preserved inputs and argument
+     boundaries, state/lifecycle, outputs, failure and exit behavior, and the
+     real-boundary smoke that must remain. Retired implementation formatting or
+     diagnostics stay out unless a current consumer actually depends on them.
 2. Keep the contract honest.
    - treat `Fixed Decisions` as fixed for this slice
    - treat `Probe Questions` as explicit learning goals, not as hidden scope

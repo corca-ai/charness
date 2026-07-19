@@ -118,6 +118,11 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
     assert "--detail" in payload["summary_note"]
     assert {finding["type"] for finding in payload["findings"]} == {"nested_cli_fanout"}
     assert payload["findings"][0]["severity"] == "advisory"
+    assert payload["proof_path_review"] == {
+        "status": "review_recommended",
+        "detail_ref": "references/proof-path-efficiency.md",
+        "observed_finding_types": ["nested_cli_fanout"],
+    }
     assert "interpretation" in payload
 
 

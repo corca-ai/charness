@@ -23,7 +23,7 @@ The avoidable rework was optimizing the process shape before writing the fake-Gi
 ## Critical Decisions
 
 - Keep real Git and temporary remotes; remove only the redundant Python proxy startup.
-- Define fixture compatibility by decoded argv, fault-injection semantics, and fresh ephemeral logs, not retired JSON whitespace or traceback text.
+- Define fixture compatibility by decoded argv, fault-injection semantics, and fresh ephemeral logs. The retired Python proxy's pretty-JSON whitespace and traceback text are explicitly outside the contract.
 - Treat surface routing as a producer/consumer contract: selecting a validator is insufficient unless that validator reads the changed file.
 
 ## Expert Counterfactuals
@@ -43,6 +43,20 @@ The avoidable rework was optimizing the process shape before writing the fake-Gi
 - workflow: write the compatibility envelope before replacing a repeated boundary process, then benchmark identical work.
 - capability: for new surface patterns, test both route selection and validator consumption of a representative file.
 - memory: preserve “remove redundant startup, not proof” and “planned validation is not consumed validation” as reusable speed rules.
+
+## Portable Candidate
+
+- abstract pattern: preserve proof while removing repeated startup; compare the
+  same workload, separate selection from execution policy, define the current-
+  consumer envelope, and prove a representative input reaches its validator.
+- triggering evidence: the runner-reuse and fake-Git measurements plus the
+  missed shell-fixture discovery recorded above.
+- intended consumer/repo shape: a repo with slow standing tests, nested command
+  runners, boundary fixtures, or generated validator routing.
+- destination: `create-skill` through the public `quality`, `impl`, and `prove` owners.
+- first-prompt acceptance claim: a quality review of a slow gate names equal
+  workload, selector/executor ownership, preserved boundary proof, actual input
+  consumption, and comparable timing before recommending weaker coverage.
 
 ## Persisted
 

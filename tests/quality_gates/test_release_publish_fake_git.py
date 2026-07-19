@@ -12,7 +12,7 @@ def _fake_git_env(log_path: Path, **overrides: str) -> dict[str, str]:
     return {**os.environ, "FAKE_GIT_LOG": str(log_path), **overrides}
 
 
-def test_fake_git_preserves_json_argv_and_argument_boundaries(tmp_path: Path) -> None:
+def test_fake_git_logs_decodable_argv_and_preserves_argument_boundaries(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     real_git = tmp_path / "real-git"

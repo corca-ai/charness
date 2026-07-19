@@ -226,13 +226,14 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     plan = _run_plan(repo)
 
     triggers = plan["on_demand_trigger_map"]
-    assert len(triggers) == 34
+    assert len(triggers) == 35
     assert "references/adapter-contract.md" in triggers
     assert "references/dup-ratchet.md" in triggers
     assert "references/security-npm.md" in triggers
     assert "references/security-pnpm.md" in triggers
     assert "references/security-uv.md" in triggers
     assert "references/unit-test-quality.md" in triggers
+    assert "references/proof-path-efficiency.md" in triggers
     # Demoted required-primers now load on demand; the planner brief carries their
     # load-bearing residue (see test_quality_run_plan_brief_carries_demoted_primer_discipline).
     assert "references/gate-classification.md" in triggers

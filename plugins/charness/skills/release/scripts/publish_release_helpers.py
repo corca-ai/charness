@@ -22,6 +22,8 @@ COMMAND_TIMEOUT_SECONDS = 1800
 _RELEASE_DELTA = runpy.run_path(str(Path(__file__).with_name("release_delta.py")))
 collect_release_delta = _RELEASE_DELTA["collect_release_delta"]
 path_list_sha256 = _RELEASE_DELTA["path_list_sha256"]
+_TAG_IDENTITY = runpy.run_path(str(Path(__file__).with_name("release_tag_identity.py")))
+_single_remote_object_id = _TAG_IDENTITY["single_remote_object_id"]
 
 
 def run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -93,10 +95,21 @@ def current_branch(repo_root: Path) -> str:
     return branch
 
 
-def tag_exists(repo_root: Path, tag_name: str, *, remote: str) -> dict[str, bool]:
+def tag_exists(repo_root: Path, tag_name: str, *, remote: str) -> dict[str, Any]:
     local = run(["git", "tag", "--list", tag_name], cwd=repo_root).stdout.strip() == tag_name
-    remote_result = run(["git", "ls-remote", "--tags", remote, f"refs/tags/{tag_name}"], cwd=repo_root)
-    return {"local": local, "remote": bool(remote_result.stdout.strip())}
+    tag_ref = f"refs/tags/{tag_name}"
+    remote_result = run(["git", "ls-remote", "--tags", remote, tag_ref], cwd=repo_root)
+    remote_tag_sha = _single_remote_object_id(remote_result.stdout, expected_ref=tag_ref)
+    if remote_tag_sha:
+        peeled_ref = f"{tag_ref}^{{}}"
+        peeled_result = run(
+            ["git", "ls-remote", "--tags", remote, peeled_ref],
+            cwd=repo_root,
+        )
+        peeled_sha = _single_remote_object_id(peeled_result.stdout, expected_ref=peeled_ref)
+        if peeled_sha:
+            remote_tag_sha = peeled_sha
+    return {"local": local, "remote": bool(remote_tag_sha), "remote_tag_sha": remote_tag_sha}
 
 
 def backend_command(

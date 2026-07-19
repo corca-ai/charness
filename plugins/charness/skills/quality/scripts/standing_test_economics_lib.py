@@ -363,5 +363,14 @@ def inventory(repo_root: Path) -> dict[str, Any]:
         "nested_cli_standing_or_mixed_file_count": len(nested_cli_standing_or_mixed_files),
         "nested_cli_standing_or_mixed_files": nested_cli_standing_or_mixed_files,
         "pytest_temp_footprint": pytest_temp,
+        "proof_path_review": (
+            {
+                "status": "review_recommended",
+                "detail_ref": "references/proof-path-efficiency.md",
+                "observed_finding_types": [finding["type"] for finding in findings],
+            }
+            if findings
+            else None
+        ),
         "findings": findings,
     }

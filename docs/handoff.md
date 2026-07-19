@@ -4,19 +4,12 @@
 
 - With no explicit task, run `charness:handoff` chunked routing over the live
   backlog. An explicit user task keeps its own authority. Restart the host first
-  only when the next task must observe the newly installed v2.1.6 plugin.
+  only when the next task must observe the newly installed v2.2.0 plugin.
 
 ## Current State
 
-- v2.1.6 is public at the [GitHub release](https://github.com/corca-ai/charness/releases/tag/v2.1.6).
-  The repo release gate passed, the tag and branch were pushed, and an
-  independent HTTPS fetch returned 200. The maintainer install was refreshed;
-  `charness version` confirmed 2.1.6 and `charness doctor` returned confirmed
-  Codex-host guidance. This release closes no linked issue, so it makes no live
-  auto-close timing claim. See the
-  [release record](../charness-artifacts/release/latest.md),
-  [observer record](../charness-artifacts/probe/2026-07-18-v2.1.6-release-observer.json),
-  and [release critique](../charness-artifacts/critique/2026-07-19-v2-1-6-release-critique.md).
+- The v2.2.0 candidate promotes proof-path lessons into portable skills and
+  verifies them here. Publication and installed-host confirmation remain pending.
 - Release publication now separates immutable content from the observer-bound
   issue-close carrier, validates complete restart inputs, and handles ambiguous
   pushes by remote identity. Planner evidence is compact and YAML-first; Git
@@ -27,14 +20,18 @@
   cumulative broad pytest, fresh mutation coverage, and the changed-line
   consumer before publication. Do not reopen the bundle unless new evidence
   identifies a regression.
-- The two recurring dead-code advisory findings are now classified as registered
-  dynamic entrypoints only when conservative bidirectional AST evidence proves
-  their callers. The live sweep reports two registered entrypoints and zero review
-  candidates; wrong-path, wrong-loader, wrong-receiver, and disconnected-loop
-  fixtures remain fail-closed; see the [quality review](../charness-artifacts/quality/latest.md).
+- Dead-code review now distinguishes proven dynamic entrypoints from review
+  candidates; the live sweep reports two registered entries and zero candidates.
 - Focused mutation proof fell 213s→7.6s and install/update's same 34 cases
   91.56s→29.29s via standing xdist. Release resilience's same 41 tests fell
   51.41s→30.38s by removing the test-only Python Git-proxy startup.
+- Quality now owns a portable proof-path efficiency method; implementation
+  defines the current-consumer envelope before boundary replacement; prove
+  requires representative input consumption; retro can promote a `Portable
+  Candidate` through create-skill. Default quality planning is about 79% smaller
+  than detail mode. Release resume now requires exact peeled tag identity, not
+  mere remote tag presence. Pretty-JSON/traceback behavior from the retired
+  Python proxy is not a compatibility surface.
 
 ## Next Session
 
@@ -52,19 +49,20 @@
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
    Finish critique packets before taking reviewer boundary fingerprints, and run
    the focused duplication ratchet before broad validation for large AST helpers.
-6. The Gajae-Code plan and v2.1.6 release are closed; start a new smallest
-   coherent backlog slice rather than resuming this goal.
+6. Once the v2.2.0 workflow records public and installed-host evidence, treat
+   the Gajae-Code plan and this release as closed; start a new smallest coherent
+   backlog slice rather than resuming this goal.
 
 ## Discuss
 
-- Quality authoring follow-up: reuse the existing inventory-consumption validator
-  in the cheap artifact preflight so missing field-name engagement fails before
-  broad pytest. The speed-slice retro records the 73.9s avoidable rerun.
+- Decide an additive migration for issue closeout's terminal-sounding
+  `verified` state; do not silently redefine existing artifacts.
+- Persist pre-commit rollback outcomes and strengthen post-publication proof
+  with an explicitly different observer identity, not only a different channel.
 
 ## References
 
 - [release state](../charness-artifacts/release/latest.md)
-- [v2.1.6 release critique](../charness-artifacts/critique/2026-07-19-v2-1-6-release-critique.md)
+- [portable proof/release critique](../charness-artifacts/critique/2026-07-19-portable-proof-path-and-release-identity-critique.md)
 - [quality review](../charness-artifacts/quality/latest.md)
-- [release-recovery critique](../charness-artifacts/critique/2026-07-18-release-local-failure-recovery.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md)

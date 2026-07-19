@@ -50,7 +50,7 @@ canonical adapter when the repo should own topology terms.
    - preset: opt-in default values for adapters or hosts
    - integration: external ownership contract, never a hidden dependency
 2. Write a capability brief before changing files.
-   - concept, audience, trigger, and consumer capability or capability failure
+   - concept, audience, trigger, capability failure, and portable candidate intake
    - current and next center only when improving an existing skill or when order matters
    - external dependencies, adjacent-skill behavior rules, accumulated state, proof boundary
    - implementation topology: shared implementation, repo-local placements,

@@ -137,6 +137,26 @@ def test_check_skill_contracts_keeps_core_contract_in_skill_body(tmp_path: Path)
         raise AssertionError("expected core-only contract to fail when it only appears in references")
 
 
+def test_check_skill_contracts_ignores_markdown_line_wrapping(tmp_path: Path) -> None:
+    skill_path = tmp_path / "SKILL.md"
+    skill_path.write_text("Core promise spans\nmultiple lines.\n", encoding="utf-8")
+
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location("check_skill_contracts_wrapping_test", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    module.validate_core_contract(skill_path, ("Core promise spans multiple lines.",))
+
+    try:
+        module.validate_core_contract(skill_path, ("Core promise changes meaning.",))
+    except module.ValidationError as exc:
+        assert "missing required core contract snippet" in str(exc)
+    else:
+        raise AssertionError("expected a semantic wording change to remain visible")
+
+
 def test_check_skill_contracts_forbidden_snippets_fail_in_skill_body(tmp_path: Path) -> None:
     skill_path = tmp_path / "SKILL.md"
     skill_path.write_text(

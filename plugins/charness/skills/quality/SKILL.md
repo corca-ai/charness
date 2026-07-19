@@ -25,7 +25,7 @@ run the planner before broad gates or fixes. Missing binary handling follows
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent record
-python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root . --detail
+python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root .
 # For a target-skill review, add: --target-skill <skill-id>
 rg --files .
 git status --short
@@ -89,7 +89,11 @@ git status --short
   implement it the same turn unless review-only was requested.
 - If you stop short of an obvious repo-owned deterministic gate, name the
   unresolved enforcement gap.
-- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`.
+- Do not stop at producer-side validators alone when the risk is public-skill
+  routing or durable artifact behavior. Use
+  `suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id>` to select
+  one realistic case, then execute its consumer path or record the concrete
+  unavailable channel; a scaffolded row alone is not consumer proof.
 - Before invoking any `cautilus evaluate ...` subcommand, consult the planner-consult contract in `references/cautilus-on-demand.md` and route the call through the repo-owned wrapper instead of bare `cautilus evaluate`.
 - Do not move local proof to CI unless another channel fully reruns the same
   proof.

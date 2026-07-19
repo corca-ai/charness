@@ -26,7 +26,7 @@ dump_yaml = _summary_output.dump_yaml
 # inference-layer proxy, so the inventory self-declares blind spots and the
 # question the `quality` consumer must answer before acting on the growth.
 INTERPRETATION = {
-    "measures": "the test surface relevant to standing economics — test-file count, nested-CLI fan-out split into standing-only, mixed release_only/standing, and all-release-only buckets, transpiler/loader and node-isolation snippets, and the pytest temp footprint",
+    "measures": "the test surface relevant to standing economics — test-file count, nested-CLI fan-out split into standing-only, mixed release_only/standing, and all-release-only buckets, transpiler/loader and node-isolation snippets, the pytest temp footprint, and a proof-preserving comparison card when acceleration candidates exist",
     "proxy_for": "standing suite cost dominated by per-file runner startup, isolation, and fixture materialization rather than by test value",
     "blind_spots": "counts files and process-spawn call sites, not coverage or value — a high test-file count can be honest behavior coverage, and an intentional real-binary smoke that spawns a subprocess counts as nested-CLI fan-out; the release_only split is structural and only sees pytest markers, so the file buckets still cannot tell whether a given test earns its isolation cost",
     "interpretation_question": "is this test-file / nested-CLI growth paying for real isolation and coverage value, or is it startup-cost waste THIS repo should consolidate?",
@@ -51,6 +51,7 @@ SUMMARY_FIELDS = (
     "nested_cli_standing_or_mixed_file_count",
     "nested_cli_standing_or_mixed_files_sample",
     "pytest_temp_footprint",
+    "proof_path_review",
     "findings",
     "interpretation",
 )

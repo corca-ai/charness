@@ -101,6 +101,8 @@ does not return an empty scan.
   `$SKILL_DIR/scripts/inventory_sloc.py --repo-root . --summary`
 - testability and affected-test selection:
   `references/testability-and-selection.md`
+- proof-preserving runner, wrapper, process, and validator acceleration:
+  `references/proof-path-efficiency.md`
 - local-gate speed vs CI recoverability:
   `$SKILL_DIR/scripts/inventory_ci_recoverable_gates.py --repo-root . --summary`
   (`references/ci-recoverable-gate-triage.md` — the counterweight that flags only

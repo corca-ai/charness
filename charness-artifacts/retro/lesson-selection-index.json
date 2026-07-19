@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-19",
-  "source_artifact_count": 373,
-  "candidate_count": 1538,
+  "source_artifact_count": 374,
+  "candidate_count": 1543,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1135,6 +1135,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7a394e27545a",
+      "kind": "current_focus",
+      "lesson": "Recent speed, quality, release, and proof slices were audited to determine which lessons were merely local history and which were usable by another repo.",
+      "normalized_key": "recent speed quality release and proof slices were audited to determine which lessons were",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:ae30d9d28d05",
       "kind": "current_focus",
       "lesson": "The focused-coverage speedup suggested a transferable boundary: selection wrappers should declare what to run, while the canonical runner owns how to execute it.",
@@ -1195,6 +1215,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f07282968eb6",
+      "kind": "next_improvement",
+      "lesson": "a route or selector proves mechanism only; closure requires a representative changed input to reach the final consumer.",
+      "normalized_key": "a route or selector proves mechanism only closure requires a representative changed input to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:047f4bc37047",
       "kind": "next_improvement",
       "lesson": "accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost.",
@@ -1239,46 +1279,6 @@
       "kind": "next_improvement",
       "lesson": "applied: cumulative and live gate path populations have separate parameters and regression tests.",
       "normalized_key": "applied cumulative and live gate path populations have separate parameters and regression tests",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-          "date": "2026-07-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:513c8006309e",
-      "kind": "next_improvement",
-      "lesson": "applied: exact missing branches received direct behavioral tests; redundant observer branches were simplified instead of exempted from coverage.",
-      "normalized_key": "applied exact missing branches received direct behavioral tests redundant observer branches were simplified instead",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-          "date": "2026-07-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7d9cf2202fbb",
-      "kind": "next_improvement",
-      "lesson": "applied: optional structured evidence is absent until real; scaffold and final-consumer roundtrip now enforce that contract.",
-      "normalized_key": "applied optional structured evidence is absent until real scaffold and final consumer roundtrip now",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
       "latest_source_date": "2026-07-19",
@@ -2417,6 +2417,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7a394e27545a",
+      "kind": "current_focus",
+      "lesson": "Recent speed, quality, release, and proof slices were audited to determine which lessons were merely local history and which were usable by another repo.",
+      "normalized_key": "recent speed quality release and proof slices were audited to determine which lessons were",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:ae30d9d28d05",
       "kind": "current_focus",
       "lesson": "The focused-coverage speedup suggested a transferable boundary: selection wrappers should declare what to run, while the canonical runner owns how to execute it.",
@@ -2473,6 +2493,26 @@
           "artifact_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
           "date": "2026-07-19",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f07282968eb6",
+      "kind": "next_improvement",
+      "lesson": "a route or selector proves mechanism only; closure requires a representative changed input to reach the final consumer.",
+      "normalized_key": "a route or selector proves mechanism only closure requires a representative changed input to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -2591,6 +2631,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3068267bd49c",
+      "kind": "next_improvement",
+      "lesson": "bind post-publication confirmation to an explicitly different observer identity as well as a different evidence channel.",
+      "normalized_key": "bind post publication confirmation to an explicitly different observer identity as well as a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:968eaa4b64e5",
+      "kind": "next_improvement",
+      "lesson": "capture the selected focused mutation command as part of the first mutation plan, before the broad lock run.",
+      "normalized_key": "capture the selected focused mutation command as part of the first mutation plan before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -2731,6 +2811,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:81feb75e1ef3",
+      "kind": "next_improvement",
+      "lesson": "persist pre-commit rollback results in a durable typed record.",
+      "normalized_key": "persist pre commit rollback results in a durable typed record",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }

@@ -76,6 +76,7 @@ EVIDENCE_OVERRIDES = {
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
         "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts",
         "starts public-skill adapter/bootstrap/example changes from the changed skill's customer journey",
+        "when a retro supplies a portable candidate, carries its abstract pattern, consumer repo shape, and first-prompt acceptance claim into the capability brief and reviewed dogfood case",
     ],
     "gather": [
         "runs or follows a gather plan that names the support owner, route order, exact-source policy, and typed stop conditions before acquisition",
@@ -104,8 +105,16 @@ EVIDENCE_OVERRIDES = {
         "when the goal is local gate speed, cross-references costly local gates against CI proof (the CI-recoverability triage) and ranks by wall-clock, recommending only gates CI fully re-runs be moved off the local hot path while keeping the rest local, rather than only widening budgets or leaving every gate local",
         "can ingest a repo-declared command-timing log as the wall-clock source when one exists, instead of reporting no samples until a hand-rolled bridge is built",
         "treats affected-test selection as structural testability before recommending caches, observation tools, or broader runtime budgets",
+        "for runner, wrapper, process, fixture, or validator speedups, compares the same workload, separates selector ownership from executor policy, preserves the current-consumer envelope, and proves representative input consumption",
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior",
         "when reviewing a target skill, answers the planner's structural review packet, separates target-skill findings from ambient repo failures, and records structural-review/prose-review judgment before broad recommendations",
+    ],
+    "prove": [
+        "when correctness depends on routing, discovery, selection, a validator, or a final consumer, executes one representative changed/new input through that consumer instead of treating selection as proof",
+        "reports compact evidence as exact command/input identity, outcome, measured time only for cost claims, and the remaining gap",
+    ],
+    "retro": [
+        "classifies a transferable lesson as repo-local or a portable candidate with abstract pattern, evidence, consumer shape, destination, and one first-prompt acceptance claim",
     ],
 }
 

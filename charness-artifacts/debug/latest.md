@@ -1,1 +1,1 @@
-2026-07-19-release-issue-close-evidence-ordering.md
+2026-07-19-skill-contract-whitespace-coupling.md

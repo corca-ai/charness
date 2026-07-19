@@ -95,6 +95,11 @@ Adapter policy:
      `n/a — trivial fix; no plausible siblings` short-circuit. The four-axis
      scan, four-decision taxonomy, follow-up identifiers, and the section-gated
      validator are owned by `references/waste-sibling-scan.md`
+   - when the pattern could improve arbitrary consuming repos, add a compact
+     `## Portable Candidate`: abstract pattern, triggering evidence, intended
+     consumer/repo shape, destination `create-skill` (or `not portable — <reason>`),
+     and one first-prompt acceptance claim. This is a judgment route, not a rule
+     that every lesson must become a public skill.
    - when an improvement is headed for an issue, classify it on two axes — a
      generalized `Structural pattern:`+`Triggering instance(s):` and a
      `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
@@ -126,6 +131,7 @@ The result should usually include:
 - `Next Improvements`
 - `Sibling Search` when a transferable waste pattern is named (opt-in;
   `n/a — trivial fix; no plausible siblings` short-circuit otherwise)
+- `Portable Candidate` when the sibling scan finds a cross-repo capability
 - `Persisted`
 - `Packet Consumed` when a retro prepare packet was produced, or
   `n/a (no adapter sections)` when no sections are declared

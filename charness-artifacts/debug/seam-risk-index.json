@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 97,
-  "indexed_artifact_count": 85,
+  "source_artifact_count": 98,
+  "indexed_artifact_count": 86,
   "risk_class_counts": {
     "contract-freeze-risk": 28,
-    "external-seam": 6,
+    "external-seam": 5,
     "host-disproves-local": 2,
-    "none": 26,
+    "none": 28,
     "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
-    "factor-now": 5,
+    "factor-now": 4,
     "monitor": 73,
-    "none": 7
+    "none": 9
   },
   "entries": [
     {
@@ -1196,18 +1196,32 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-19-skill-contract-whitespace-coupling.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none-internal-deterministic-gate",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/2026-07-19-portable-proof-path-and-release-identity-critique.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "release-issue-close-evidence-ordering",
+      "interrupt_id": "none-internal-deterministic-gate",
       "risk_classes": [
-        "external-seam"
+        "none"
       ],
-      "seam": "git default-branch push -> GitHub issue auto-close -> release observer",
-      "generalization_pressure": "factor-now",
+      "seam": "none",
+      "generalization_pressure": "none",
       "critique_required": true,
-      "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-07-19-release-close-evidence-ordering.md",
-      "forced": true
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/2026-07-19-portable-proof-path-and-release-identity-critique.md",
+      "forced": false
     }
   ],
   "skipped_artifacts": [

@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`; sources: 105)
+- a route or selector proves mechanism only; closure requires a representative changed input to reach the final consumer. (source: `charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md`)
 - accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 - after a reviewer snapshot, prohibit all parent mutations until each reviewer verify completes; gather additional ideas read-only or wait. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
-- applied: cumulative and live gate path populations have separate parameters and regression tests. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 
 ## Selection Policy
 
@@ -133,5 +133,6 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`
+- `charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md`
 - `charness-artifacts/retro/2026-07-19-session-retro.md`
 - `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`

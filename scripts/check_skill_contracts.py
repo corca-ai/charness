@@ -213,7 +213,9 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/quality/SKILL.md": (
         "$SKILL_DIR/scripts/inventory_public_spec_quality.py",
         "duplicated at the wrong layer",
-        'scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`',
+        "suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id>",
+        "then execute its consumer path or record the concrete",
+        "a scaffolded row alone is not consumer proof",
     ),
     "skills/public/release/SKILL.md": (
         "`publish_release.py --execute` refuses unless exactly one",
@@ -288,7 +290,12 @@ def _read_contract_text(path: Path) -> str:
 def _assert_snippet_membership(
     path: Path, contents: str, snippets: tuple[str, ...], *, forbidden: bool, message: str
 ) -> None:
-    violations = [snippet for snippet in snippets if (snippet in contents) == forbidden]
+    normalized_contents = " ".join(contents.split())
+    violations = [
+        snippet
+        for snippet in snippets
+        if ((" ".join(snippet.split()) in normalized_contents) == forbidden)
+    ]
     if violations:
         formatted = ", ".join(f"`{snippet}`" for snippet in violations)
         raise ValidationError(f"{path}: {message}: {formatted}")

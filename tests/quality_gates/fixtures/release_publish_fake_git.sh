@@ -91,7 +91,7 @@ if [[ "${FAKE_GIT_LS_REMOTE_TAG_HISTORY_FAIL:-}" == 1 ]] && args_equal ls-remote
   exit 46
 fi
 if [[ "${FAKE_GIT_TARGET_TAG_EXISTS:-}" == 1 ]] && args_equal ls-remote --tags origin refs/tags/v0.0.0; then
-  printf 'deadbeef\trefs/tags/v0.0.0\n'
+  printf 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\trefs/tags/v0.0.0\n'
   exit 0
 fi
 if [[ "${FAKE_GIT_FETCH_TAG_FAIL:-}" == 1 ]] && args_equal fetch --quiet origin refs/tags/v0.0.0:refs/tags/v0.0.0; then

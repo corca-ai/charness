@@ -43,6 +43,14 @@ Repo-specific: adapter paths, preset ids, output paths
 Accumulates: only when the migrated skill needs durable notes
 ```
 
+### Portable Candidate Intake
+
+When the input is a retro `Portable Candidate`, carry its abstract pattern,
+consumer/repo shape, and first-prompt acceptance claim into the capability
+brief and reviewed dogfood case. Keep repo-local evidence as provenance rather
+than copying it into portable skill prose. This is a judgment route for a
+cross-repo pattern, not a requirement that every retro produce a new skill.
+
 ## Scenario Simulation
 
 Simulate these before implementation:

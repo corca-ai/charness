@@ -123,6 +123,24 @@ def test_eval_cautilus_scenarios_writes_summary(tmp_path: Path) -> None:
     assert summary["run_evals"]["exit_code"] == 0
 
 
+def test_cautilus_summary_preserves_both_output_streams(tmp_path: Path) -> None:
+    module = load_script_module("eval_cautilus_scenarios_summary_test", ROOT / "scripts" / "eval_cautilus_scenarios.py")
+    summary = {
+        "mode": "held_out",
+        "profile": "evaluator-required",
+        "baseline_ref": "origin/main",
+        "scenario_count": 1,
+        "skills": [],
+        "run_evals": {"exit_code": 1, "stdout": "earlier pass", "stderr": "root cause"},
+    }
+
+    module.write_summary(tmp_path, summary)
+
+    rendered = (tmp_path / "summary.md").read_text(encoding="utf-8")
+    assert "### STDOUT" in rendered and "earlier pass" in rendered
+    assert "### STDERR" in rendered and "root cause" in rendered
+
+
 def test_validate_cautilus_scenarios_covers_eval_surface_wiring() -> None:
     result = _run_validate_scenarios("--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr

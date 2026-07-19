@@ -59,6 +59,9 @@ references:
   - path: references/testability-and-selection.md
     role: on-demand
     trigger: slow tests, affected-test selection, mutation workload, or broad test economics
+  - path: references/proof-path-efficiency.md
+    role: on-demand
+    trigger: a slow-proof fix changes a runner, wrapper, process boundary, validator route, fixture runtime, or execution policy
   - path: references/cautilus-on-demand.md
     role: on-demand
     trigger: cautilus evaluate fixture, observation, or skill-experiment is being considered
@@ -203,6 +206,7 @@ brief:
         detail_refs:
           - standing-gate-verbosity.md
           - testability-and-selection.md
+          - proof-path-efficiency.md
           - executable-spec-economics.md
           - ci-recoverable-gate-triage.md
       - area: agent-production-runtime

@@ -57,6 +57,10 @@ verification preferences or `truth_surfaces`.
      `../../shared/references/prescribed-path-self-test.md`; label a worker →
      host → provider seam at its highest executed proof level per
      `../../shared/references/external-capability-proof-ladder.md`
+   - when correctness depends on routing, discovery, selection, a validator, or
+     a final consumer, execute one representative changed/new input through that
+     consumer and record that it was reached. A plan saying the consumer was
+     selected is mechanism-only evidence.
    - when that policy calls for a run, use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>`
      or `cautilus evaluate observation --input <observed.json>`; treat
      source/wiring/guidance checks as mechanism-only, not runtime proof
@@ -92,6 +96,8 @@ verification preferences or `truth_surfaces`.
      for the current repo, run a short `session` retro before the final stop
    - if the user explicitly asked to keep going, treat this as a terse progress
      checkpoint and continue into the next locally decidable slice
+   - keep evidence compact: exact command or input identity → outcome → measured
+     time only when making a cost claim → remaining gap
 
 ## Output Shape
 

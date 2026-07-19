@@ -90,17 +90,18 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
     for item in summary["skills"]:
         scenario_ids = ", ".join(f"`{scenario_id}`" for scenario_id in item["scenario_ids"])
         lines.append(f"- `{item['skill_id']}`: {scenario_ids}")
-    lines.extend(
-        [
-            "",
-            "## Run Evals Output",
-            "",
-            "```text",
-            summary["run_evals"]["stdout"] or summary["run_evals"]["stderr"] or "(no output)",
-            "```",
-            "",
-        ]
-    )
+    lines.extend(["", "## Run Evals Output", ""])
+    for stream_name in ("stdout", "stderr"):
+        lines.extend(
+            [
+                f"### {stream_name.upper()}",
+                "",
+                "```text",
+                summary["run_evals"][stream_name] or "(no output)",
+                "```",
+                "",
+            ]
+        )
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
 
 

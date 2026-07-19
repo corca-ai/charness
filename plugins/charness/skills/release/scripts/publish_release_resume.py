@@ -130,12 +130,18 @@ def resumable_state(
         "remote_branch_sha": remote_branch_sha,
         "tag_local": tag_state["local"],
         "tag_remote": tag_state["remote"],
+        "remote_tag_sha": tag_state["remote_tag_sha"],
         "tag_points_at_head": bool(tag_sha) and tag_sha == head_sha,
         "release_exists": cli._helpers.release_exists(repo_root, tag_name, backend),
     }
 
 
 def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
+    if state["tag_local"] and state["tag_remote"] and state["remote_tag_sha"] != state["tag_sha"]:
+        raise SystemExit(
+            f"--resume: remote tag `{tag_name}` does not resolve to the local release commit; "
+            "refusing ambiguous recovery."
+        )
     if state["phase"] in {"post-publication-carrier", "post-publication-final"}:
         if not (state["tag_local"] and state["tag_remote"] and state["release_exists"]):
             raise SystemExit(
