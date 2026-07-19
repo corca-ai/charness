@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-07-19T02:31:27Z",
+  "generated_at": "2026-07-19T02:32:23Z",
   "prepared_for": "final committed proof selection and release recovery bundle",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
@@ -46,12 +46,11 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "680a42557445a19c9fa193a1dfc2f3dca0b1113e",
+    "base_head": "e3cf6972d02a63033b0df3d993fd67d79face417",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/quality/2026-07-19-quality-review.md",
       "charness-artifacts/quality/history/2026-07-19-portable-proof-path-learning-review.md",
-      "charness-artifacts/quality/sloc-inventory/latest.json",
       "plugins/charness/scripts/check_changed_line_mutation_coverage.py",
       "plugins/charness/scripts/mutation_changed_files_lib.py",
       "plugins/charness/scripts/suggest_mutation_coverage_command.py",
@@ -74,10 +73,6 @@
       {
         "path": "charness-artifacts/quality/history/2026-07-19-portable-proof-path-learning-review.md",
         "content_sha256": "8ecebf60cd08b714899271981274fad56c932839ba438dbe34b5a3edf85163f9"
-      },
-      {
-        "path": "charness-artifacts/quality/sloc-inventory/latest.json",
-        "content_sha256": "63f937d5fc63bb99f1304641026e212b921d75e8bf1b5aea25d256ab34ab65a9"
       },
       {
         "path": "plugins/charness/scripts/check_changed_line_mutation_coverage.py",
@@ -136,6 +131,6 @@
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
-    "identity_sha256": "3415b2a0f49d276edfab9d9c71554cd8a9215fa5819bcf8d2b9c1000968fc9e2"
+    "identity_sha256": "c911d983de166783b2a4708271136021e22a237492768e6fea4541ce9e88bef7"
   }
 }

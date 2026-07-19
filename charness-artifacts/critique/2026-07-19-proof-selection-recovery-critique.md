@@ -67,8 +67,8 @@ parent-delegated
 ## Reviewed Input Identity
 
 - Packet path: charness-artifacts/critique/2026-07-19-proof-selection-recovery-final-packet.json
-- Packet SHA256: 85b68ff2d783d9b30803ab8bc18ce12a8a72b7b5954d7ae8c0be5d3b2efd3b7c
-- Identity SHA256: 3415b2a0f49d276edfab9d9c71554cd8a9215fa5819bcf8d2b9c1000968fc9e2
+- Packet SHA256: b154082b0a72fd51746f0da261d408ed1f92f842f6940c2b87d18bc82e4ea1c7
+- Identity SHA256: c911d983de166783b2a4708271136021e22a237492768e6fea4541ce9e88bef7
 
 ## Boundary Ownership
 
