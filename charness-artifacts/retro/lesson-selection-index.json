@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-19",
-  "source_artifact_count": 375,
-  "candidate_count": 1544,
+  "source_artifact_count": 376,
+  "candidate_count": 1547,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1285,12 +1285,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:84639813576d",
+      "candidate_id": "next_improvement:7ee2d09d2c09",
       "kind": "next_improvement",
-      "lesson": "after a reviewer snapshot, prohibit all parent mutations until each reviewer verify completes; gather additional ideas read-only or wait.",
-      "normalized_key": "after a reviewer snapshot prohibit all parent mutations until each reviewer verify completes gather",
+      "lesson": "affected-test selectors should union untracked inputs, imported test helpers, and loader entrypoints while preserving an explicit broad fallback.",
+      "normalized_key": "affected test selectors should union untracked inputs imported test helpers and loader entrypoints while",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
       "latest_source_date": "2026-07-19",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -1298,7 +1298,7 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -2577,6 +2577,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7ee2d09d2c09",
+      "kind": "next_improvement",
+      "lesson": "affected-test selectors should union untracked inputs, imported test helpers, and loader entrypoints while preserving an explicit broad fallback.",
+      "normalized_key": "affected test selectors should union untracked inputs imported test helpers and loader entrypoints while",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:84639813576d",
       "kind": "next_improvement",
       "lesson": "after a reviewer snapshot, prohibit all parent mutations until each reviewer verify completes; gather additional ideas read-only or wait.",
@@ -2711,6 +2731,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8074f710913a",
+      "kind": "next_improvement",
+      "lesson": "define selection completeness from the final consumer backward; measure selector latency only after every covering path is included.",
+      "normalized_key": "define selection completeness from the final consumer backward measure selector latency only after every",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a260e57da8b6",
+      "kind": "next_improvement",
+      "lesson": "durable recovery state stores allowlisted facts, restrictive modes, atomic writes, and bounded retention; raw exceptions are not restart state.",
+      "normalized_key": "durable recovery state stores allowlisted facts restrictive modes atomic writes and bounded retention raw",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }

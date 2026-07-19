@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import re
+import subprocess
 import sys
 import time
+from pathlib import Path
 from typing import Any, Callable, TextIO, TypeVar
 
+from scripts.yaml_output import render_yaml as _render_yaml
+
 T = TypeVar("T")
+FAILURE_RECORD_RETENTION = 20
 
 
 def record_runtime(payload: dict[str, Any], label: str, start: float) -> None:
@@ -26,6 +34,8 @@ def print_failure_payload(
     payload: dict[str, Any],
     error: BaseException,
     *,
+    repo_root: Path,
+    render_yaml: Callable[[Any], str] | None = None,
     stream: TextIO = sys.stderr,
 ) -> None:
     visible_keys = (
@@ -44,7 +54,76 @@ def print_failure_payload(
         "resume_head_release_content_close_refs",
     )
     failure_payload = {key: payload[key] for key in visible_keys if key in payload}
-    failure_payload["release_failure"] = {"status": "failed", "error": str(error)}
+    durable_payload = dict(failure_payload)
+    durable_payload["release_failure"] = {
+        "status": "failed",
+        "error_type": type(error).__name__,
+        "error_sha256": hashlib.sha256(str(error).encode()).hexdigest(),
+        "detail": "raw exception text omitted from durable local state",
+    }
+    record = persist_failure_payload(repo_root, durable_payload, render_yaml=render_yaml or _render_yaml)
+    failure_payload["release_failure"] = {
+        "status": "failed",
+        "error": _compact_error(error),
+    }
+    if record["status"] != "persisted":
+        failure_payload["release_failure"]["error_detail"] = _bounded_error(error)
+    failure_payload["release_failure_record"] = record
     print("BEGIN publish_release_failure_payload", file=stream)
     print(json.dumps(failure_payload, ensure_ascii=False, indent=2), file=stream)
     print("END publish_release_failure_payload", file=stream)
+
+
+def _compact_error(error: BaseException, *, limit: int = 240) -> str:
+    summary = next((line.strip() for line in str(error).splitlines() if line.strip()), type(error).__name__)
+    return summary if len(summary) <= limit else summary[: limit - 1] + "…"
+
+
+def _bounded_error(error: BaseException, *, limit: int = 4000) -> str:
+    detail = str(error)
+    return detail if len(detail) <= limit else "…" + detail[-(limit - 1) :]
+
+
+def persist_failure_payload(
+    repo_root: Path,
+    payload: dict[str, Any],
+    *,
+    render_yaml: Callable[[Any], str],
+) -> dict[str, Any]:
+    """Persist structured recovery evidence without dirtying the release worktree."""
+    temporary_path: Path | None = None
+    try:
+        git_common = subprocess.run(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=repo_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        common_dir = Path(git_common)
+        if not common_dir.is_absolute():
+            common_dir = repo_root / common_dir
+        record_dir = common_dir.resolve() / "charness-release-failures"
+        record_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        record_dir.chmod(0o700)
+        tag = re.sub(r"[^A-Za-z0-9._-]+", "-", str(payload.get("tag_name", "release")))
+        record_path = record_dir / f"{tag}-{time.time_ns()}.yaml"
+        rendered = render_yaml(payload)
+        temporary_path = record_path.with_suffix(".yaml.tmp")
+        descriptor = os.open(temporary_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(rendered)
+        os.replace(temporary_path, record_path)
+        temporary_path = None
+        records = sorted(record_dir.glob("*.yaml"), key=lambda path: path.stat().st_mtime_ns, reverse=True)
+        for stale_record in records[FAILURE_RECORD_RETENTION:]:
+            stale_record.unlink()
+        return {
+            "status": "persisted",
+            "path": str(record_path),
+            "retention_limit": FAILURE_RECORD_RETENTION,
+        }
+    except Exception as exc:  # persistence must never replace the release failure
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+        return {"status": "failed", "error": _compact_error(exc)}

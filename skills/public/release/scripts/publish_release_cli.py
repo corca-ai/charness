@@ -391,5 +391,5 @@ def main() -> None:
             return
         execute_publish_plan(args, repo_root, plan, adapter_data)
     except BaseException as exc:
-        _release_runtime.print_failure_payload(plan["payload"], exc)
+        _release_runtime.print_failure_payload(plan["payload"], exc, repo_root=repo_root)
         raise

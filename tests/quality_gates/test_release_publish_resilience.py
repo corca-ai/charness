@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import subprocess
 import sys
@@ -66,6 +67,32 @@ def _failure_payload(stderr: str) -> dict:
     end = "END publish_release_failure_payload"
     assert start in stderr and end in stderr, stderr
     return json.loads(stderr.split(start, 1)[1].split(end, 1)[0].strip())
+
+
+def test_failure_payload_preserves_bounded_terminal_detail_when_record_write_fails(
+    tmp_path: Path,
+) -> None:
+    runtime = _load_runtime()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    stream = io.StringIO()
+
+    def broken_renderer(_payload):
+        raise OSError("renderer unavailable")
+
+    runtime.print_failure_payload(
+        {"tag_name": "v1.0.0"},
+        RuntimeError("command failed\nactionable stderr detail"),
+        repo_root=repo,
+        render_yaml=broken_renderer,
+        stream=stream,
+    )
+
+    payload = _failure_payload(stream.getvalue())
+    assert payload["release_failure_record"]["status"] == "failed"
+    assert "renderer unavailable" in payload["release_failure_record"]["error"]
+    assert "actionable stderr detail" in payload["release_failure"]["error_detail"]
 
 
 def test_publish_release_cli_direct_loader_context_without_sys_modules() -> None:

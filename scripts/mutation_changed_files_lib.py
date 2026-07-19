@@ -191,11 +191,9 @@ def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
     yields the same changed-file set and the same on-disk content across the
     commit boundary, which is what lets the freshness fingerprint match.
 
-    Note: ``git diff`` lists tracked changes only, so a brand-new pool file that
-    is still untracked at the producer's pre-commit run is omitted there but
-    included once committed — a fingerprint mismatch that makes the consumer skip
-    non-blocking (safe). Running the producer on the committed tip (the intended
-    pre-push flow) avoids it.
+    ``git diff`` lists tracked changes only, so union eligible untracked files from
+    ``git ls-files``. That keeps the pre-commit producer's selection and content
+    fingerprint identical after those files become part of the commit.
     """
     if not base_sha:
         return []
@@ -204,6 +202,23 @@ def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
     command = ["git", "diff", "--name-only", base_sha, "--", *mutation_pathspecs()]
     result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
+    untracked_result = subprocess.run(
+        [
+            "git",
+            "ls-files",
+            "--others",
+            "--exclude-standard",
+            "--",
+            *mutation_pathspecs(),
+        ],
+        cwd=repo_root,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    changed.update(
+        line.strip() for line in untracked_result.stdout.splitlines() if line.strip()
+    )
     return sorted(changed & set(list_eligible(repo_root)))
 
 

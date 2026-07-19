@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import stat
 import subprocess
 from pathlib import Path
+
+import yaml
 
 from .release_publish_fixtures import (
     REPO_ROOT,
@@ -73,13 +76,23 @@ def test_precommit_quality_failure_restores_clean_retryable_worktree(tmp_path: P
     assert not (repo / "RENAMED.md").exists()
     assert _git(repo, "tag", "--list", "v0.0.1") == ""
 
-    rollback = _failure_payload(result.stderr)["precommit_rollback"]
+    failure = _failure_payload(result.stderr)
+    rollback = failure["precommit_rollback"]
     assert rollback["status"] == "restored"
     assert "packaging/demo.json" in rollback["restored_paths"]
     assert "charness-artifacts/release/latest.md" in rollback["quarantined_paths"]
     assert "RENAMED.md" in rollback["quarantined_paths"]
     quarantine = Path(rollback["quarantine_root"])
     assert (quarantine / "charness-artifacts" / "release" / "latest.md").is_file()
+    record = failure["release_failure_record"]
+    assert record["status"] == "persisted"
+    record_path = Path(record["path"])
+    record_payload = yaml.safe_load(record_path.read_text(encoding="utf-8"))
+    assert record_payload["release_failure"]["detail"] == "raw exception text omitted from durable local state"
+    assert "error" not in record_payload["release_failure"]
+    assert stat.S_IMODE(record_path.stat().st_mode) == 0o600
+    assert stat.S_IMODE(record_path.parent.stat().st_mode) == 0o700
+    assert "prepared quality failed" not in failure["release_failure"]["error"]
 
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     assert not any(entry[:1] == ["push"] for entry in git_log)

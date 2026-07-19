@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-import json
+import ast
 import re
 import shlex
 import sys
@@ -16,6 +16,7 @@ if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
 from scripts.mutation_changed_files_lib import changed_pool_files_vs_base  # noqa: E402
 from scripts.mutation_coverage_producer import default_mutation_base_sha  # noqa: E402
 from scripts.run_standing_pytest import expand_targets  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 HELP_EPILOG = """\
 Statuses:
@@ -26,7 +27,8 @@ Statuses:
   blocked      base discovery failed; pass --base-sha explicitly
 
 Workflow:
-  1. Prefer --json when feeding this into closeout automation.
+  1. Use --detail only when mappings or machine-readable reasoning are needed;
+     the default prints only the copyable producer command.
   2. For recommended, pass closeout_args or command to --mutation-coverage-command.
   3. For partial, inspect unmapped_changed_pool_files before trusting the focused
      producer; use broad coverage fallback when those files need proof.
@@ -108,41 +110,96 @@ def _local_loader_ancestor_levels(repo_root: Path, path: str) -> list[list[str]]
     return levels
 
 
-def _candidate_test_paths(repo_root: Path) -> list[str]:
+def _candidate_test_sources(repo_root: Path) -> list[str]:
     paths: list[str] = []
     for target in expand_targets(repo_root):
         absolute = repo_root / target
         if absolute.is_dir():
             paths.extend(
                 path.relative_to(repo_root).as_posix()
-                for path in absolute.rglob("test_*.py")
+                for path in absolute.rglob("*.py")
             )
-        elif absolute.name.startswith("test_") and target.endswith(".py") and absolute.is_file():
+        elif target.endswith(".py") and absolute.is_file():
             paths.append(target)
     return sorted(dict.fromkeys(paths))
 
 
+def _module_name_to_path(paths: list[str]) -> dict[str, str]:
+    return {_module_name(path): path for path in paths}
+
+
+def _local_import_paths(path: str, text: str, module_paths: dict[str, str]) -> set[str]:
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return set()
+    current = _module_name(path).split(".")
+    found: set[str] = set()
+    for node in ast.walk(tree):
+        candidates: list[str] = []
+        if isinstance(node, ast.Import):
+            candidates.extend(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            prefix = current[:-node.level] if node.level else []
+            module = node.module.split(".") if node.module else []
+            base = ".".join([*prefix, *module])
+            if base:
+                candidates.append(base)
+            candidates.extend(
+                ".".join(part for part in (base, alias.name) if part)
+                for alias in node.names
+                if alias.name != "*"
+            )
+        found.update(module_paths[module] for module in candidates if module in module_paths)
+    return found
+
+
+def _test_source_closures(source_text: dict[str, str]) -> dict[str, set[str]]:
+    module_paths = _module_name_to_path(list(source_text))
+    dependencies = {
+        path: _local_import_paths(path, text, module_paths)
+        for path, text in source_text.items()
+    }
+    closures: dict[str, set[str]] = {}
+    for test_path in source_text:
+        if not Path(test_path).name.startswith("test_"):
+            continue
+        reachable = {test_path}
+        frontier = [test_path]
+        while frontier:
+            dependency = dependencies.get(frontier.pop(), set()) - reachable
+            reachable.update(dependency)
+            frontier.extend(dependency)
+        closures[test_path] = reachable
+    return closures
+
+
 def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[str, list[str]]:
-    tests = _candidate_test_paths(repo_root)
-    test_text: dict[str, str] = {}
-    for test_path in tests:
+    source_text: dict[str, str] = {}
+    for source_path in _candidate_test_sources(repo_root):
         try:
-            test_text[test_path] = (repo_root / test_path).read_text(encoding="utf-8")
+            source_text[source_path] = (repo_root / source_path).read_text(encoding="utf-8")
         except OSError:
             continue
+    test_sources = _test_source_closures(source_text)
     matches: dict[str, list[str]] = {}
     for changed_path in changed_paths:
         path_levels = [[changed_path], *_local_loader_ancestor_levels(repo_root, changed_path)]
+        all_found: set[str] = set()
         for level in path_levels:
             patterns = [pattern for related in level for pattern in _reference_patterns(related)]
-            found = sorted(
-                test_path
-                for test_path, text in test_text.items()
+            referring_sources = {
+                source_path
+                for source_path, text in source_text.items()
                 if any(pattern.search(text) for pattern in patterns)
+            }
+            all_found.update(
+                test_path
+                for test_path, dependencies in test_sources.items()
+                if dependencies & referring_sources
             )
-            if found:
-                matches[changed_path] = found
-                break
+        if all_found:
+            matches[changed_path] = sorted(all_found)
     return {path: sorted(paths) for path, paths in matches.items() if paths}
 
 
@@ -189,8 +246,9 @@ def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dic
     )
     status = "recommended" if not missing else "partial"
     reason = (
-        "nearest direct or local-loader references found in standing pytest targets; "
-        "use the command as changed-line coverage evidence while retaining broad proof"
+        "direct, imported-helper, or loader-entrypoint references found in standing "
+        "pytest targets; use the command as changed-line coverage evidence while "
+        "retaining broad proof"
     )
     if status == "partial":
         reason = (
@@ -244,7 +302,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--base-sha", default=None)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--detail",
+        action="store_true",
+        help="emit the full recommendation as YAML instead of compact command output",
+    )
     return parser.parse_args(argv)
 
 
@@ -252,8 +314,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     repo_root = args.repo_root.resolve()
     payload = build_recommendation(repo_root, base_sha=args.base_sha)
-    if args.json:
-        print(json.dumps(payload, indent=2, sort_keys=True))
+    if args.detail:
+        emit_yaml(payload)
     else:
         command = payload.get("command")
         if command:

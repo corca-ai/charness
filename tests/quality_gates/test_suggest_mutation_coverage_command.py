@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import run_script
 
@@ -92,6 +93,26 @@ def test_reports_partial_when_only_some_changed_files_map_to_tests(tmp_path: Pat
     assert payload["unmapped_changed_pool_files"] == ["scripts/bar.py"]
     assert "only proves mapped files" in payload["reason"]
     assert "tests/quality_gates/test_foo.py" in payload["command"]
+
+
+def test_maps_untracked_pool_file_before_commit(tmp_path: Path) -> None:
+    from scripts.suggest_mutation_coverage_command import build_recommendation
+
+    repo, base = _seed_repo(tmp_path)
+    (repo / "scripts" / "foo.py").write_text("def value():\n    return 1\n", encoding="utf-8")
+    (repo / "scripts" / "new_worker.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "tests" / "quality_gates" / "test_new_worker.py").write_text(
+        "from scripts import new_worker\n\n\ndef test_value():\n    assert new_worker.VALUE == 1\n",
+        encoding="utf-8",
+    )
+
+    payload = build_recommendation(repo, base_sha=base)
+
+    assert payload["status"] == "recommended"
+    assert payload["changed_pool_files"] == ["scripts/new_worker.py"]
+    assert payload["mapped_tests_by_file"] == {
+        "scripts/new_worker.py": ["tests/quality_gates/test_new_worker.py"]
+    }
 
 
 def test_reports_noop_when_no_pool_file_changed(tmp_path: Path) -> None:
@@ -188,6 +209,23 @@ def test_matches_split_path_expression_and_ignores_non_test_helpers(tmp_path: Pa
     assert "tests/quality_gates/support.py" not in matches["scripts/foo.py"]
 
 
+def test_maps_reference_in_imported_test_helper(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "tests" / "quality_gates" / "release_fixture.py").write_text(
+        'TARGET = "scripts/bar.py"\n', encoding="utf-8"
+    )
+    (repo / "tests" / "quality_gates" / "test_release.py").write_text(
+        "from .release_fixture import TARGET\n\n\ndef test_target():\n    assert TARGET\n",
+        encoding="utf-8",
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/bar.py"])
+
+    assert matches == {"scripts/bar.py": ["tests/quality_gates/test_release.py"]}
+
+
 def test_maps_changed_local_module_through_loader_parent(tmp_path: Path) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 
@@ -256,7 +294,7 @@ def test_maps_whitespace_before_one_argument_local_sibling(tmp_path: Path) -> No
     assert matches == {"scripts/worker.py": ["tests/quality_gates/test_entry.py"]}
 
 
-def test_prefers_direct_test_over_more_distant_loader_test(tmp_path: Path) -> None:
+def test_keeps_direct_and_entrypoint_tests_for_loaded_module(tmp_path: Path) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 
     repo, _base = _seed_repo(tmp_path)
@@ -273,7 +311,12 @@ def test_prefers_direct_test_over_more_distant_loader_test(tmp_path: Path) -> No
 
     matches = sugg.tests_referencing_paths(repo, ["scripts/worker.py"])
 
-    assert matches == {"scripts/worker.py": ["tests/quality_gates/test_worker.py"]}
+    assert matches == {
+        "scripts/worker.py": [
+            "tests/quality_gates/test_entry.py",
+            "tests/quality_gates/test_worker.py",
+        ]
+    }
 
 
 def test_maps_with_name_loader_transitively(tmp_path: Path) -> None:
@@ -296,7 +339,9 @@ def test_maps_with_name_loader_transitively(tmp_path: Path) -> None:
     assert matches == {"scripts/leaf.py": ["tests/quality_gates/test_entry.py"]}
 
 
-def test_main_prints_command_and_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_main_prints_command_and_yaml_detail(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 
     repo, base = _seed_repo(tmp_path)
@@ -304,9 +349,9 @@ def test_main_prints_command_and_json(tmp_path: Path, capsys: pytest.CaptureFixt
     assert sugg.main(["--repo-root", str(repo), "--base-sha", base]) == 0
     assert "python3 scripts/run_standing_pytest.py" in capsys.readouterr().out
 
-    assert sugg.main(["--repo-root", str(repo), "--base-sha", base, "--json"]) == 0
-    payload = capsys.readouterr().out
-    assert '"status": "recommended"' in payload
+    assert sugg.main(["--repo-root", str(repo), "--base-sha", base, "--detail"]) == 0
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "recommended"
 
 
 def test_main_warns_for_partial_focused_command(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -373,4 +418,6 @@ def test_cli_help_explains_statuses_and_closeout_workflow() -> None:
     assert "noop" in result.stdout
     assert "blocked" in result.stdout
     assert "--mutation-coverage-command" in result.stdout
+    assert "--detail" in result.stdout
+    assert "--json" not in result.stdout
     assert "broad coverage fallback" in result.stdout
