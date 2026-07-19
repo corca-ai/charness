@@ -32,9 +32,9 @@
   their callers. The live sweep reports two registered entrypoints and zero review
   candidates; wrong-path, wrong-loader, wrong-receiver, and disconnected-loop
   fixtures remain fail-closed; see the [quality review](../charness-artifacts/quality/latest.md).
-- Focused mutation coverage now reuses standing xdist: five-file proof fell from
-  213s to 7.6s, and install/update's same 34 cases from 91.56s to 29.29s. Wrappers
-  select targets; the runner owns execution. Broad passed 4,944 tests in 73.9s.
+- Focused mutation proof fell 213s→7.6s and install/update's same 34 cases
+  91.56s→29.29s via standing xdist. Release resilience's same 41 tests fell
+  51.41s→30.38s by removing the test-only Python Git-proxy startup.
 
 ## Next Session
 

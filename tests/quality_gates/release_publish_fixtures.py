@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -86,15 +87,21 @@ def _write_release_adapter(repo: Path) -> None:
     )
 
 
-def _write_fake_git(repo: Path, bin_dir: Path) -> None:
-    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+def _install_fake_git(bin_dir: Path, *, real_git: str | None = None) -> None:
     script = bin_dir / "git"
-    shutil.copy2(FIXTURES / "release_publish_fake_git.py", script)
-    script.with_suffix(".json").write_text(
-        json.dumps({"real_git": shutil.which("git") or "/usr/bin/git"}, indent=2) + "\n",
+    real_git = real_git or shutil.which("git") or "/usr/bin/git"
+    script.write_text(
+        (FIXTURES / "release_publish_fake_git.sh")
+        .read_text(encoding="utf-8")
+        .replace("__REAL_GIT__", shlex.quote(real_git)),
         encoding="utf-8",
     )
     script.chmod(0o755)
+
+
+def _write_fake_git(repo: Path, bin_dir: Path) -> None:
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    _install_fake_git(bin_dir)
 
 
 def _write_sync_script(repo: Path) -> None:

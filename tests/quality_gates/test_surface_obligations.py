@@ -170,6 +170,13 @@ def test_repo_python_surface_matches_top_level_scripts() -> None:
     assert _STANDING_PYTEST in verify
 
 
+def test_repo_python_surface_matches_shell_test_fixtures() -> None:
+    verify = _verify_commands_for("tests/quality_gates/fixtures/fake_tool.sh")
+
+    assert "./scripts/check-shell.sh" in verify
+    assert _STANDING_PYTEST in verify
+
+
 def test_duplicate_ratchet_is_deduped_across_baseline_and_python_surfaces() -> None:
     verify = _verify_commands_for(
         "charness-artifacts/quality/dup-ratchet-baseline.json",

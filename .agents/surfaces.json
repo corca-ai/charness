@@ -795,6 +795,7 @@
         "charness",
         "scripts/*.py",
         "tests/*.py",
+        "tests/*.sh",
         "runtime_bootstrap.py",
         "skill_runtime_bootstrap.py"
       ],
@@ -809,6 +810,7 @@
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
         "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .",
         "python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary",
+        "./scripts/check-shell.sh",
         "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
       ],
       "notes": [
@@ -817,6 +819,7 @@
         "check_test_repo_copy_invariants.py is the fast standalone structural checker (#307): it runs before the broad pytest so test-fixture drift fails at the commit boundary in <1s, not 172s deep.",
         "check_boundary_bypass_ratchet.py is the fast no-increase ratchet (#314): a redundant boundary-spawning test fails before the broad pytest, not only at the broad/bundle quality gate.",
         "The duplicate ratchet runs before broad pytest at slice closeout, preventing a release-only late discovery while staying out of the sub-second pre-commit budget.",
+        "Shell test fixtures are repo-test source and run the existing shell lint before broad pytest.",
         "scripts source pattern is scripts/*.py, NOT scripts/**/*.py: matching is fnmatch (* crosses /), so scripts/*.py matches both top-level and nested scripts; the bare **/ form matched zero of the all-top-level scripts and silently kept this whole verify set out of scripts closeouts (#331)."
       ]
     },

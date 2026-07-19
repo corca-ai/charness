@@ -3,14 +3,15 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 
-from tests.quality_gates.release_publish_fixtures import FIXTURES as RELEASE_FIXTURES
-from tests.quality_gates.release_publish_fixtures import _seed_publish_release_repo
+from tests.quality_gates.release_publish_fixtures import (
+    _install_fake_git,
+    _seed_publish_release_repo,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -107,13 +108,7 @@ def _publish_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
 
 
 def _write_base_ref_failing_git(bin_dir: Path) -> None:
-    script = bin_dir / "git"
-    shutil.copy2(RELEASE_FIXTURES / "release_publish_fake_git.py", script)
-    script.with_suffix(".json").write_text(
-        json.dumps({"real_git": shutil.which("git") or "/usr/bin/git"}, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    script.chmod(0o755)
+    _install_fake_git(bin_dir)
 
 
 def _assert_real_host_required(repo: Path, result: subprocess.CompletedProcess[str]) -> dict:

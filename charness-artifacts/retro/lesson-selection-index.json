@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-19",
-  "source_artifact_count": 371,
-  "candidate_count": 1534,
+  "source_artifact_count": 373,
+  "candidate_count": 1538,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1175,6 +1175,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:819cd99a946f",
+      "kind": "current_focus",
+      "lesson": "The standing suite's slowest family repeatedly started a Python fake-Git process before real Git.",
+      "normalized_key": "the standing suite s slowest family repeatedly started a python fake git process before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:047f4bc37047",
       "kind": "next_improvement",
       "lesson": "accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost.",
@@ -1269,26 +1289,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-          "date": "2026-07-19",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:f6cb13514704",
-      "kind": "next_improvement",
-      "lesson": "before optimizing or compacting a cross-process boundary, write the canonical identity/serialization/state envelope into the implementation contract.",
-      "normalized_key": "before optimizing or compacting a cross process boundary write the canonical identity serialization state",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -2457,6 +2457,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:819cd99a946f",
+      "kind": "current_focus",
+      "lesson": "The standing suite's slowest family repeatedly started a Python fake-Git process before real Git.",
+      "normalized_key": "the standing suite s slowest family repeatedly started a python fake git process before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+          "date": "2026-07-19",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:047f4bc37047",
       "kind": "next_improvement",
       "lesson": "accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost.",
@@ -2571,6 +2591,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6f9966070f53",
+      "kind": "next_improvement",
+      "lesson": "for new surface patterns, test both route selection and validator consumption of a representative file.",
+      "normalized_key": "for new surface patterns test both route selection and validator consumption of a representative",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }
@@ -2697,6 +2737,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6b68b283f48b",
+      "kind": "next_improvement",
+      "lesson": "preserve “remove redundant startup, not proof” and “planned validation is not consumed validation” as reusable speed rules.",
+      "normalized_key": "preserve remove redundant startup not proof and planned validation is not consumed validation as",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d0517db5653d",
       "kind": "next_improvement",
       "lesson": "profile mutation coverage startup and worker instrumentation before changing test scope; preserve the 4,912-test confidence boundary while removing orchestration cost.",
@@ -2791,6 +2851,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
+          "date": "2026-07-19",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:268829260069",
+      "kind": "next_improvement",
+      "lesson": "write the compatibility envelope before replacing a repeated boundary process, then benchmark identical work.",
+      "normalized_key": "write the compatibility envelope before replacing a repeated boundary process then benchmark identical work",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
+      "latest_source_date": "2026-07-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
           "date": "2026-07-19",
           "section": "Next Improvements"
         }

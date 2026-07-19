@@ -306,6 +306,34 @@ def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None
     assert args == ["-x", "scripts/check-shell.sh"]
 
 
+def test_check_shell_discovers_nested_test_fixtures(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-shell.sh")
+    fixture = repo / "tests" / "fixtures" / "fake-tool.sh"
+    fixture.parent.mkdir(parents=True)
+    fixture.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    output_path = repo / "shellcheck-args.txt"
+    write_executable(
+        bin_dir / "shellcheck",
+        "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n",
+    )
+
+    result = run_shell_script(
+        script_path,
+        cwd=repo,
+        env=dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path)),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output_path.read_text(encoding="utf-8").splitlines() == [
+        "-x",
+        "scripts/check-shell.sh",
+        "tests/fixtures/fake-tool.sh",
+    ]
+
+
 def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
