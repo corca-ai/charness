@@ -4,12 +4,13 @@
 
 - With no explicit task, run `charness:handoff` chunked routing over the live
   backlog. An explicit user task keeps its own authority. Restart the host first
-  only when the next task must observe the newly installed v2.2.0 plugin.
+  only when the next task must observe the newly installed v2.2.1 plugin.
 
 ## Current State
 
-- The v2.2.0 candidate promotes proof-path lessons into portable skills and
-  verifies them here. Publication and installed-host confirmation remain pending.
+- v2.2.1 is published and installed-host readback is recorded. It promotes the
+  proof-path lessons into portable skills, adds dependency-aware focused proof,
+  and leaves protected resumable state when release publication fails.
 - Release publication now separates immutable content from the observer-bound
   issue-close carrier, validates complete restart inputs, and handles ambiguous
   pushes by remote identity. Planner evidence is compact and YAML-first; Git
@@ -48,9 +49,8 @@
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
    Finish critique packets before taking reviewer boundary fingerprints, and run
    the focused duplication ratchet before broad validation for large AST helpers.
-6. Once the v2.2.0 workflow records public and installed-host evidence, treat
-   the Gajae-Code plan and this release as closed; start a new smallest coherent
-   backlog slice rather than resuming this goal.
+6. Treat the Gajae-Code plan and v2.2.1 release as closed; start a new smallest
+   coherent backlog slice rather than resuming this goal.
 
 ## Discuss
 
