@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-07-19T02:32:23Z",
+  "generated_at": "2026-07-19T02:37:48Z",
   "prepared_for": "final committed proof selection and release recovery bundle",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
@@ -46,7 +46,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "e3cf6972d02a63033b0df3d993fd67d79face417",
+    "base_head": "00afc87874c0232ae1188d3bd539653f4635edf7",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/quality/2026-07-19-quality-review.md",
@@ -61,6 +61,7 @@
       "scripts/suggest_mutation_coverage_command.py",
       "skills/public/release/scripts/publish_release_cli.py",
       "skills/public/release/scripts/publish_release_runtime.py",
+      "tests/quality_gates/test_release_failure_record.py",
       "tests/quality_gates/test_release_publish_resilience.py",
       "tests/quality_gates/test_release_publish_rollback.py",
       "tests/quality_gates/test_suggest_mutation_coverage_command.py"
@@ -115,6 +116,10 @@
         "content_sha256": "36af95150ce1e0781d4a3b471b70b711492d0fd432e0737babdbe980b6be1922"
       },
       {
+        "path": "tests/quality_gates/test_release_failure_record.py",
+        "content_sha256": "0dc8bd70fac43ba0c8bcc110ae76950642625c2ff48a169bc4fdd821764300f7"
+      },
+      {
         "path": "tests/quality_gates/test_release_publish_resilience.py",
         "content_sha256": "5fad4eeddef9a08f9a8e775721aed88a5abd7a328e13284cade01eb0ba0bdde7"
       },
@@ -124,13 +129,13 @@
       },
       {
         "path": "tests/quality_gates/test_suggest_mutation_coverage_command.py",
-        "content_sha256": "aab4b2771b25e193b5e9b79ecdde85fa75f652983972f5cd63a435a87efb241d"
+        "content_sha256": "7a46db7e4b7cd8dbb33b4d78e2069a5548e0aa03b881680e6b327b3766c7a49c"
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
-    "identity_sha256": "c911d983de166783b2a4708271136021e22a237492768e6fea4541ce9e88bef7"
+    "identity_sha256": "aa1817dbcaf30ed597a10def23b2d0f168b6de22257d7c0ee5f3527fa6cc911b"
   }
 }

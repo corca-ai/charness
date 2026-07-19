@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-07-19T02:32:23Z
+- **Generated**: 2026-07-19T02:37:48Z
 - **Prepared for**: final committed proof selection and release recovery bundle
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `c911d983de166783b2a4708271136021e22a237492768e6fea4541ce9e88bef7`
-- **Reviewed paths**: 15
+- **Reviewed input identity**: `aa1817dbcaf30ed597a10def23b2d0f168b6de22257d7c0ee5f3527fa6cc911b`
+- **Reviewed paths**: 16
 - **Sections**: 2
 - **Overall ok**: True
 
