@@ -1,0 +1,44 @@
+{
+  "distinct_channel_verification": {
+    "channel": "https-fetch",
+    "evidence_len": 4096,
+    "http_status": 200,
+    "status": "confirmed",
+    "url": "https://github.com/corca-ai/charness/releases/tag/v2.2.1"
+  },
+  "installed_readback": {
+    "doctor": {
+      "command": "charness doctor",
+      "returncode": 0,
+      "status": "confirmed",
+      "value": "source: codex_host_guidance"
+    },
+    "install_refresh": {
+      "command": "charness update",
+      "elapsed_seconds": 7.973,
+      "returncode": 0,
+      "status": "refreshed",
+      "stderr_tail": "STEP: refreshing source checkout\nSTEP: refreshing install surface\nSTEP: refreshing Codex host cache\nDONE: update complete",
+      "stdout_tail": "  action: refresh\n  method: codex-app-server-plugin-install\n  reason: plugin-install-succeeded\ncodex_host_guidance:\n  status: installed\n  manual_action_required: false\n  message: Codex host install markers are present. Start a new Codex session to load\n    charness.\nclaude_host_guidance:\n  status: installed\n  manual_action_required: false\n  message: Claude host install markers are present. Restart Claude Code to load or\n    refresh charness.\nhost_next_steps:\n  codex: Codex host install markers are present. Start a new Codex session to load\n    charness.\n  claude: Claude host install markers are present. Restart Claude Code to load or\n    refresh charness.\nrepo_onboarding:\n  status: skipped\n  manual_action_required: false\n  message: null\n  reason: skipped during update unless --target-repo-root is provided\nnext_action:\n  kind: restart\n  host: codex\n  status: installed\n  manual_action_required: false\n  message: Codex host install markers are present. Start a new Codex session to load\n    charness.\n  source: codex_host_guidance\nsession_staleness:\n  message: Updated plugin caches were rotated. Active Codex/Claude sessions may have\n    stale absolute skill paths injected into their system prompt. Restart those sessions,\n    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/capability_catalog.py\n    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>\n    [--marketplace <m> --plugin <p>]`.\n  affected_count: 1"
+    },
+    "status": "observed",
+    "version": {
+      "command": "charness version",
+      "returncode": 0,
+      "status": "confirmed",
+      "value": "version: 2.2.1"
+    }
+  },
+  "non_claims": [
+    "This record preserves observations; it is not a second release-success verdict.",
+    "A digest, command exit code, or recorded status is not terminal proof of operator-facing behavior."
+  ],
+  "observed_at": "2026-07-19T02:53:12.032005+00:00",
+  "schema_version": "charness.release_observer.v1",
+  "target": {
+    "commit": "6bed5fb8481ae7483463555053b90d0f63e427a4",
+    "release_url": "https://github.com/corca-ai/charness/releases/tag/v2.2.1",
+    "tag": "v2.2.1",
+    "version": "2.2.1"
+  }
+}
