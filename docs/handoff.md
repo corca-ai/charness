@@ -26,12 +26,11 @@
   91.56s→29.29s via standing xdist. Release resilience's same 41 tests fell
   51.41s→30.38s by removing the test-only Python Git-proxy startup.
 - Quality now owns a portable proof-path efficiency method; implementation
-  defines the current-consumer envelope before boundary replacement; prove
-  requires representative input consumption; retro can promote a `Portable
-  Candidate` through create-skill. Default quality planning is about 79% smaller
-  than detail mode. Release resume now requires exact peeled tag identity, not
-  mere remote tag presence. Pretty-JSON/traceback behavior from the retired
-  Python proxy is not a compatibility surface.
+  defines the current-consumer envelope before boundary replacement. Prove
+  requires representative input consumption. Retro can promote a `Portable Candidate`.
+  Default quality planning is about 79% smaller than detail mode. Release resume
+  now requires exact peeled tag identity, not mere remote tag presence. Retired
+  Python pretty-JSON/traceback behavior is not a compatibility surface.
 
 ## Next Session
 
