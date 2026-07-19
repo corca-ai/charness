@@ -226,6 +226,16 @@ def test_maps_reference_in_imported_test_helper(tmp_path: Path) -> None:
     assert matches == {"scripts/bar.py": ["tests/quality_gates/test_release.py"]}
 
 
+def test_invalid_test_helper_syntax_has_no_import_dependencies() -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    assert sugg._local_import_paths(
+        "tests/quality_gates/broken.py",
+        "from . import (\n",
+        {"tests.quality_gates.support": "tests/quality_gates/support.py"},
+    ) == set()
+
+
 def test_maps_changed_local_module_through_loader_parent(tmp_path: Path) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 
