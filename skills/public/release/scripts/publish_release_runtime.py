@@ -138,7 +138,10 @@ def persist_failure_payload(
             reverse=True,
         )
         for stale_record in records[FAILURE_RECORD_RETENTION:]:
-            stale_record.unlink()
+            # missing_ok: a concurrent eviction (two release runs sharing one git
+            # common dir) may have already removed this record; that must not flip
+            # an already-persisted record's status to failed.
+            stale_record.unlink(missing_ok=True)
         return {
             "status": "persisted",
             "path": str(record_path),

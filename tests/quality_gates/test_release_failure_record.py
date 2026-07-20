@@ -97,6 +97,38 @@ def test_failure_record_retention_evicts_by_creation_stamp_not_mtime(tmp_path: P
     assert _retained_tags(record_dir) == {f"v{index}" for index in range(1, runtime.FAILURE_RECORD_RETENTION + 1)}
 
 
+def test_failure_record_retention_tolerates_concurrent_eviction(tmp_path: Path, monkeypatch) -> None:
+    runtime = _load_runtime()
+    repo = _seed_repo(tmp_path)
+
+    for index in range(runtime.FAILURE_RECORD_RETENTION):
+        assert runtime.persist_failure_payload(repo, {"tag_name": f"v{index}"}, render_yaml=_render_yaml)["status"] == "persisted"
+
+    record_dir = repo / ".git" / "charness-release-failures"
+    real_key = runtime._record_creation_order_ns
+    raced = {"done": False}
+
+    def racing_key(path):
+        # Simulate a competing release run (sharing one git common dir) that removes
+        # the oldest record after this call globbed+sorted it but before it unlinks —
+        # the classic TOCTOU on the shared directory. persist must still persist.
+        key = real_key(path)
+        if not raced["done"]:
+            raced["done"] = True
+            min(record_dir.glob("*.yaml"), key=real_key).unlink()
+        return key
+
+    monkeypatch.setattr(runtime, "_record_creation_order_ns", racing_key)
+
+    result = runtime.persist_failure_payload(
+        repo,
+        {"tag_name": f"v{runtime.FAILURE_RECORD_RETENTION}"},
+        render_yaml=_render_yaml,
+    )
+
+    assert result["status"] == "persisted"
+
+
 def test_failed_atomic_replace_removes_temporary_record(
     tmp_path: Path,
     monkeypatch,

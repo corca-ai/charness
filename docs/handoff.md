@@ -47,9 +47,10 @@
    direct reference, nearest recognized loader ancestor, then broad fallback.
 5. When adding a new dynamic-call syntax, add wrong-path, wrong-loader,
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
-6. Tracked follow-ups (candidates, not commitments): `follow-up:mtime-recency-tiebreak`,
-   `follow-up:release-failure-unlink-missing-ok`, and reaping stale `charness-run-*`
-   basetemps left by failed standing runs (the seed-budget gate already bounds them).
+6. The `mtime-recency-tiebreak` and `release-failure-unlink-missing-ok` follow-ups are
+   RESOLVED. Still intentionally deferred: reaping stale `charness-run-*` basetemps from
+   failed standing runs — an ad-hoc reaper would reintroduce the deletion-race class
+   just fixed, and the seed-budget gate already bounds the footprint.
 
 ## Discuss
 

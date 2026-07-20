@@ -30,7 +30,9 @@ def session_dir_for(repo_root: Path, adapter: dict[str, Any], session_id: str | 
     sessions = [path for path in runtime_root.iterdir() if path.is_dir()] if runtime_root.is_dir() else []
     if not sessions:
         raise RuntimeError(f"No HITL runtime sessions found under {portable_path(repo_root, runtime_root)}")
-    return max(sessions, key=lambda path: path.stat().st_mtime)
+    # (mtime, name) tiebreak: sessions comes from unsorted iterdir(), so a
+    # same-second st_mtime tie would otherwise pick a filesystem-order-arbitrary dir.
+    return max(sessions, key=lambda path: (path.stat().st_mtime, path.name))
 
 
 def _load_json_file(path: Path) -> dict[str, Any]:

@@ -35,7 +35,9 @@ def resolve_session_path(home: Path, *, session_id: str | None, session_file: st
         matches = [path for path in matches if session_id in path.name]
     if not matches:
         return None
-    return max(matches, key=lambda path: path.stat().st_mtime)
+    # (mtime, name) tiebreak keeps selection deterministic when same-second writes
+    # share a coarse-granularity st_mtime; name ascends with the rollout timestamp.
+    return max(matches, key=lambda path: (path.stat().st_mtime, path.name))
 
 
 def _exec_command_text(payload: dict[str, Any]) -> str:

@@ -33,11 +33,11 @@ def _pick_claude_project_log(project_root: Path, repo_root: Path) -> Path | None
     preferred_dir = project_root / _claude_project_dir_name(repo_root)
     preferred_paths = sorted(preferred_dir.glob("*.jsonl"))
     if preferred_paths:
-        return max(preferred_paths, key=lambda path: path.stat().st_mtime)
+        return max(preferred_paths, key=lambda path: (path.stat().st_mtime, path.name))
     project_paths = sorted(project_root.glob("*/*.jsonl"))
     if not project_paths:
         return None
-    return max(project_paths, key=lambda path: path.stat().st_mtime)
+    return max(project_paths, key=lambda path: (path.stat().st_mtime, path.name))
 
 
 def probe_claude(
@@ -190,7 +190,7 @@ def _pick_codex_session_log(codex_root: Path) -> Path | None:
     matches = sorted(sessions_root.glob("**/rollout-*.jsonl"))
     if not matches:
         return None
-    return max(matches, key=lambda path: path.stat().st_mtime)
+    return max(matches, key=lambda path: (path.stat().st_mtime, path.name))
 
 
 def _codex_session_audit_summary(path: Path, goal_window: dict[str, Any] | None = None) -> dict[str, Any]:

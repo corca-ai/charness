@@ -16,7 +16,7 @@ def _cache_candidates(codex_home: Path, skill_id: str, marketplace: str, plugin:
     if not root.is_dir():
         return []
     source = "codex-versioned-cache" if (marketplace, plugin) == ("local", "charness") else "codex-plugin-cache"
-    versions = sorted((item for item in root.iterdir() if item.is_dir()), key=lambda item: (_version_key(item), item.stat().st_mtime), reverse=True)
+    versions = sorted((item for item in root.iterdir() if item.is_dir()), key=lambda item: (_version_key(item), item.stat().st_mtime, item.name), reverse=True)
     return [(source, version / "skills" / skill_id / "SKILL.md") for version in versions]
 
 
