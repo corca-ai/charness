@@ -10,17 +10,17 @@
 
 ## Current State
 
-- v2.3.1 is PUBLISHED and confirmed by distinct observers: GitHub API
-  `gh release view` (non-draft), the remote tag `v2.3.1 -> eb5bbc57`, and installed
-  `charness version -> 2.3.1`; install refresh (`charness update`) rc 0.
-- The flaky/parallel-suite OPEN SMELL is RESOLVED and shipped in v2.3.1. Two root
-  causes: (a) release-failure retention evicted by coarse-granularity `st_mtime_ns`
-  (now orders by the embedded `time.time_ns()` stamp), and (b) the `--release`
-  mass-error burst was a pytest temp-tree deletion race — the standing runner's
-  lock-less `pytest-*` basetemp deleted mid-run by nested pytest cleanup (leaf
-  renamed to `charness-run-<ns>`). Both pinned by deterministic regression tests;
-  the `mtime-recency-tiebreak` and `unlink-missing_ok` follow-ups are resolved. RCAs
-  and release state in References.
+- v2.4.0 is PUBLISHED and confirmed by distinct channels: GitHub API
+  `gh release view` (non-draft, published), remote tag `v2.4.0 -> 2ae99627`,
+  unauthenticated https-fetch of the release URL (HTTP 200), and installed
+  `charness version -> 2.4.0` after install refresh. Scope: sibling-scan
+  Tier-1/2 fixes, the `verify-closeout` `confirmation` object, and
+  observer-identity recording on distinct-channel verdicts. Known caveat: the
+  v2.4.0 observer JSON itself lacks the new `observer` field because the
+  publisher ran the pre-2.4.0 installed helper; it applies from the next
+  release. One publish attempt failed at quality (a wrapped inline code span
+  in the new closeout-discipline paragraph); rollback restored cleanly and the
+  durable failure record captured it.
 - The abstracted-pattern sibling-scan Tier-1 (A/B/C) and Tier-2 (D) findings are
   FIXED with regression tests and clean fresh-eye reviews
   ([Tier-1 fixes critique](../charness-artifacts/critique/2026-07-20-tier1-sibling-scan-fixes-critique.md);
