@@ -63,6 +63,10 @@ def test_standing_pytest_command_replaces_targets_without_losing_xdist(
 
     monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
+    # Pin the host-derived worker width: choose_xdist_workers() is
+    # min(cpu_count, 16), so an unpatched cpu_count makes this assertion pass
+    # only on >=16-core hosts (the 4-core CI runner computed "-n 4", #446).
+    monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
 
     command = runner.build_pytest_command(
         tmp_path,

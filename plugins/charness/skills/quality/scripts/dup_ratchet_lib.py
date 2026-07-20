@@ -171,14 +171,15 @@ def scoped_rebaseline_exemptions(
     unnamed_reductions = [r for r in reductions if r["new_fingerprint"] not in named_new_ids]
     ignored_intentional = sorted((live_ids - existing_ids) & intentional_code - named_new_ids)
     advisories = [
-        f"ADVISORY (reduction): family {r['old_fingerprint']} shrank to {r['new_fingerprint']}; "
-        f"left out of the baseline (old id kept) — accept with "
-        f"--accept-rotation {r['old_fingerprint']}={r['new_fingerprint']}"
+        f"ADVISORY (reduction): family {r['old_fingerprint']} shrank to {r['new_fingerprint']} "
+        f"(membership reduction, not new duplication); left out of the baseline (old id kept) — "
+        f"accept with --accept-rotation {r['old_fingerprint']}={r['new_fingerprint']}"
         for r in unnamed_reductions
     ]
     if ignored_intentional:
         advisories.append(
-            "left intentional (dup-review) live family(ies) out of the baseline: "
+            "ADVISORY (intentional): left overlay-intentional live family(ies) out of the "
+            "baseline by design (the dup-review overlay owns them; no action needed): "
             + ", ".join(ignored_intentional)
         )
     return {
