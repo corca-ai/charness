@@ -14,28 +14,14 @@ from typing import Any
 sys.path.append(str(Path(__file__).resolve().parent))
 _DISCOVERY = __import__("standing_gate_discovery_lib")
 _MARKERS = __import__("surface_marker_lib")
+# Test-file discovery is an adapter-owned contract, held in its own module.
+_TEST_DISCOVERY = __import__("test_discovery_lib")
 discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
 find_nested_cli_files = _MARKERS.nested_cli_files
 find_pytest_file_test_counts = _MARKERS.pytest_file_test_counts
+resolve_test_files = _TEST_DISCOVERY.resolve_test_files
 
-IGNORED_DIRS = {
-    ".artifacts", ".charness", ".git", ".hg", ".mypy_cache", ".pytest_cache",
-    ".ruff_cache", ".venv", "charness-artifacts", "mutants", "node_modules", "vendor",
-}
-TEST_FILE_PATTERNS = (
-    ":(glob)**/test_*.py",
-    ":(glob)**/*_test.py",
-    ":(glob)**/*.test.js",
-    ":(glob)**/*.test.jsx",
-    ":(glob)**/*.test.ts",
-    ":(glob)**/*.test.tsx",
-    ":(glob)**/*.spec.js",
-    ":(glob)**/*.spec.jsx",
-    ":(glob)**/*.spec.ts",
-    ":(glob)**/*.spec.tsx",
-)
-FALLBACK_TEST_FILE_PATTERNS = tuple(pattern.removeprefix(":(glob)**/") for pattern in TEST_FILE_PATTERNS)
 TRANSPILE_EXTENSIONS = {".ts", ".tsx"}
 NODE_TEST_RE = re.compile(r"(?:^|\s)node\b[^\n]*(?:^|\s)--test(?:\s|$)")
 TS_LOADER_RE = re.compile(r"\b(tsx|ts-node|swc-node|esbuild-register)\b")
@@ -65,31 +51,6 @@ def _iter_child_stats(path: Path):
 
 def _iter_child_dirs(path: Path) -> list[Path]:
     return [child for child, child_stat in _iter_child_stats(path) if stat.S_ISDIR(child_stat.st_mode)]
-
-
-def _is_ignored(path: Path) -> bool:
-    return any(part in IGNORED_DIRS for part in path.parts)
-
-
-def _test_files(repo_root: Path) -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", *TEST_FILE_PATTERNS],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
-    if result.returncode == 0:
-        return sorted(
-            path
-            for rel in result.stdout.split(b"\0")
-            if rel and (path := repo_root / rel.decode("utf-8")).is_file()
-        )
-    return sorted({
-        path
-        for pattern in FALLBACK_TEST_FILE_PATTERNS
-        for path in repo_root.rglob(pattern)
-        if path.is_file() and not _is_ignored(path.relative_to(repo_root))
-    })
 
 
 def _runner_snippets(repo_root: Path) -> list[dict[str, str]]:
@@ -252,9 +213,9 @@ def _pytest_temp_footprint() -> dict[str, Any]:
     }
 
 
-def inventory(repo_root: Path) -> dict[str, Any]:
+def inventory(repo_root: Path, discovery: dict[str, Any] | None = None) -> dict[str, Any]:
     repo_root = repo_root.resolve()
-    test_files = _test_files(repo_root)
+    test_files, test_discovery = resolve_test_files(repo_root, discovery)
     by_extension: dict[str, int] = {}
     for path in test_files:
         by_extension[path.suffix] = by_extension.get(path.suffix, 0) + 1
@@ -347,6 +308,7 @@ def inventory(repo_root: Path) -> dict[str, Any]:
             )
     return {
         "repo_root": str(repo_root),
+        "test_discovery": test_discovery,
         "test_file_count": len(test_files),
         "test_files_by_extension": dict(sorted(by_extension.items())),
         "runner_snippets": snippets,

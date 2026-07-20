@@ -792,3 +792,4 @@ def test_pytest_temp_iter_helpers_skip_missing_and_stale_children(
 
     assert list(lib._iter_child_stats(missing)) == []
     assert [item.st_size for item in lib._iter_file_stats(root)] == [1]
+

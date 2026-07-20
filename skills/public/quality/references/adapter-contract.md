@@ -55,6 +55,7 @@ Quality-specific fields:
 - `skill_ergonomics_gate_rules`
 - `runtime_budgets`
 - `command_timing_log`
+- `test_file_discovery`
 - `startup_probes`
 - `quality_phases`
 - `prompt_asset_roots`
@@ -225,6 +226,44 @@ Repo-owned quality artifacts may use runner-specific section labels or runtime
 signals such as `Pytest Economics` when that is the honest local seam. Keep the
 portable public skill body runner-neutral with broader concepts such as
 `Standing Test Economics`, `Runtime Signals`, or `Executable Test Economics`.
+
+`test_file_discovery` lets the consuming repo own how the standing-test-economics
+inventory discovers its test-file surface, instead of the portable skill body
+re-deriving it from a fixed glob list. This is the Design Rule "keep
+repo-specific patterns in the adapter, not the skill body" applied to test
+discovery: a repo whose real test surface is defined by its own runner (for
+example a Node ESM runner that resolves `.test.mjs` plus workspace filtering) can
+point the inventory at that runner so the measurement can never diverge from the
+suite that actually runs. It is **inert when omitted** — the built-in default
+glob list (Python `test_*.py`/`*_test.py` plus JS/TS/ESM `*.test.*`/`*.spec.*`
+including `.mjs`) is used unchanged.
+
+Fields:
+
+- `command` — the repo's authoritative test-surface lister, emitting one
+  test-file path per line (repo-relative or absolute-inside-repo; paths outside
+  `repo_root` are dropped). When non-empty it is consumed verbatim and wins over
+  `patterns`. Highest priority. It is run through the shell in `repo_root` as
+  **trusted repo-owned config** — the same trust boundary as `gate_commands` and
+  mutation `commands.*` — so the repo owner is responsible for its contents; the
+  inventory bounds it with a timeout and drops any path that escapes `repo_root`.
+- `patterns` — bare globs (the form after `**/`, e.g. `*.test.mjs`) used only when
+  `command` is empty. Default `[]`.
+- `patterns_mode` — `extend` (default; adapter globs are added to the built-in
+  defaults) or `replace` (only the adapter globs are used).
+
+Precedence is a graded fallback: `command` → `patterns` → built-in defaults. The
+inventory reports the resolved source in `test_discovery.source`
+(`command` / `adapter-patterns` / `default`). A declared `command` that exits
+non-zero, times out, or cannot run is **not** silently ignored: the inventory
+falls back to patterns/defaults but marks `test_discovery.degraded: true`
+(`command_status: failed`) with the captured `error`. A `command` that exits 0
+but resolves no test files is likewise degraded (`command_status: empty`),
+keeping the authoritative empty answer rather than substituting the default
+globs — so a broken or misconfigured authoritative lister surfaces as a degraded
+measurement rather than a quiet undercount, the exact failure class this field
+exists to remove. Shape is validated at adapter load; the command's runtime
+success is proven by the consumer. Unknown sub-keys land in warnings.
 
 `startup_probes` is an optional list of startup probe records for installable
 or agent-facing CLIs. Each record should include:

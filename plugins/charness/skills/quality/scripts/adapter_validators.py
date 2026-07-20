@@ -135,6 +135,45 @@ def command_timing_log(value: Any, errors: list[str]) -> dict[str, Any] | None:
     return dict(value)
 
 
+TEST_FILE_DISCOVERY_KNOWN_KEYS = {"command", "patterns", "patterns_mode"}
+TEST_FILE_DISCOVERY_MODES = {"extend", "replace"}
+
+
+def test_file_discovery(value: Any, errors: list[str], warnings: list[str]) -> dict[str, Any] | None:
+    """Validate the adapter-owned test-file discovery block.
+
+    File discovery is the consuming repo's contract, not the portable skill
+    body's: the precedence the inventory applies is a non-empty `command` (the
+    repo's authoritative test-surface lister, consumed verbatim) first, then
+    `patterns` (extend or replace the built-in defaults), then the built-in
+    defaults. An absent block returns None so the inventory keeps its inert
+    default. Only shape is validated here; a declared command's runtime success
+    is proven by the consumer, which surfaces a degraded source rather than
+    silently undercounting.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("test_file_discovery must be a mapping")
+        return None
+    command = value.get("command", "")
+    if not isinstance(command, str):
+        errors.append("test_file_discovery.command must be a string")
+        command = ""
+    patterns = value.get("patterns", [])
+    if not isinstance(patterns, list) or not all(isinstance(item, str) and item for item in patterns):
+        errors.append("test_file_discovery.patterns must be a list of non-empty strings")
+        patterns = []
+    patterns_mode = value.get("patterns_mode", "extend")
+    if patterns_mode not in TEST_FILE_DISCOVERY_MODES:
+        errors.append("test_file_discovery.patterns_mode must be extend or replace")
+        patterns_mode = "extend"
+    for key in value:
+        if key not in TEST_FILE_DISCOVERY_KNOWN_KEYS:
+            warnings.append(f"test_file_discovery.{key} is not a recognized key")
+    return {"command": command, "patterns": list(patterns), "patterns_mode": patterns_mode}
+
+
 def skill_ergonomics_gate_rules(value: Any, errors: list[str]) -> list[str] | None:
     return validate_skill_ergonomics_gate_rules(value, errors)
 

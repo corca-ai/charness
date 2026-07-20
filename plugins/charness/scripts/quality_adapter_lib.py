@@ -156,6 +156,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "runtime_budgets": {},
         "runtime_budget_profiles": {},
         "command_timing_log": {},
+        "test_file_discovery": {"command": "", "patterns": [], "patterns_mode": "extend"},
         "startup_probes": [],
         "quality_phases": [],
         "concept_paths": [],
@@ -304,6 +305,14 @@ def _apply_dup_ratchet(
         validated["dup_ratchet"] = block
 
 
+def _apply_test_file_discovery(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    block = adapter_validators.test_file_discovery(data.get("test_file_discovery"), errors, warnings)
+    if block is not None:
+        validated["test_file_discovery"] = block
+
+
 def validate_quality_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -325,6 +334,7 @@ def validate_quality_adapter_data(
     _apply_standing_doc_provenance(data, validated, errors, warnings)
     _apply_changed_line_mutation_gate(data, validated, errors, warnings)
     _apply_dup_ratchet(data, validated, errors, warnings)
+    _apply_test_file_discovery(data, validated, errors, warnings)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

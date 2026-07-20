@@ -64,6 +64,17 @@ runtime_budget_profiles: {}
 #     elapsed: elapsed_ms
 #   elapsed_unit: ms
 #   recent_window: 10
+# Optional: own test-file discovery for the standing-test-economics inventory so
+# it consumes THIS repo's real test surface instead of the portable default glob
+# list. Inert when omitted. Precedence: a non-empty `command` (your authoritative
+# test-surface lister, one repo-relative path per line, consumed verbatim) wins;
+# else `patterns` (bare globs, extend|replace the built-in defaults); else the
+# built-in defaults. A declared command that fails is reported as a degraded
+# source, never a silent undercount. See references/adapter-contract.md.
+# test_file_discovery:
+#   command: "node --input-type=module -e \"import { resolveDiscoverableUnitTestFiles } from './scripts/test-surface-lib.mjs'; console.log(resolveDiscoverableUnitTestFiles().join('\\n'))\""
+#   patterns: []
+#   patterns_mode: extend
 startup_probes: []
 quality_phases: []
 concept_paths: []

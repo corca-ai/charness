@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -21,6 +22,20 @@ _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_outpu
 inventory = _standing_test_economics.inventory
 dump_yaml = _summary_output.dump_yaml
 
+
+def _load_quality_adapter_permissive(repo_root: Path) -> dict[str, object]:
+    lib_root = next(
+        (parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "quality_adapter_lib.py").is_file()),
+        None,
+    )
+    if lib_root is None:
+        return {"data": {}, "path": None, "valid": True, "errors": [], "warnings": [], "load_mode": "permissive"}
+    if str(lib_root) not in sys.path:
+        sys.path.insert(0, str(lib_root))
+    from scripts.quality_adapter_lib import load_quality_adapter_permissive
+
+    return load_quality_adapter_permissive(repo_root)
+
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): the test-economics trend is an
 # inference-layer proxy, so the inventory self-declares blind spots and the
@@ -35,6 +50,7 @@ INTERPRETATION = {
 SUMMARY_FIELDS = (
     "repo_root",
     "summary_note",
+    "test_discovery",
     "test_file_count",
     "test_files_by_extension",
     "runner_snippets",
@@ -54,6 +70,11 @@ SUMMARY_FIELDS = (
     "proof_path_review",
     "findings",
     "interpretation",
+    "adapter_path",
+    "adapter_valid",
+    "adapter_errors",
+    "adapter_warnings",
+    "adapter_load_mode",
 )
 SUMMARY_NESTED_CLI_SAMPLE_SIZE = 10
 SUMMARY_NOTE = "summary is triage output; use --detail for full nested_cli_files attribution"
@@ -86,11 +107,28 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    payload = inventory(args.repo_root.resolve())
+    target_root = args.repo_root.resolve()
+    adapter = _load_quality_adapter_permissive(target_root)
+    adapter_data = adapter.get("data", {}) if isinstance(adapter, dict) else {}
+    discovery = adapter_data.get("test_file_discovery") if isinstance(adapter_data, dict) else None
+    payload = inventory(target_root, discovery=discovery)
     payload["interpretation"] = dict(INTERPRETATION)
+    payload["adapter_path"] = adapter.get("path")
+    payload["adapter_valid"] = adapter.get("valid", True)
+    payload["adapter_errors"] = adapter.get("errors", [])
+    payload["adapter_warnings"] = adapter.get("warnings", [])
+    payload["adapter_load_mode"] = adapter.get("load_mode", "permissive")
     if _summary_output.emit_selected(payload, args, summarize=summarize_payload):
         return 0
     print(f"test files: {payload['test_file_count']}")
+    discovery_provenance = payload.get("test_discovery") or {}
+    if discovery_provenance.get("source") != "default":
+        print(f"test discovery source: {discovery_provenance.get('source')}")
+    if discovery_provenance.get("degraded"):
+        print(
+            f"test discovery DEGRADED (command_status={discovery_provenance.get('command_status')}, "
+            f"source={discovery_provenance.get('source')}): {discovery_provenance.get('error')}"
+        )
     print(f"nested CLI files: {payload['nested_cli_file_count']}")
     print(
         "nested CLI buckets: "
@@ -108,6 +146,8 @@ def main() -> int:
             f"{interpretation['proxy_for']}; blind spots: {interpretation['blind_spots']}. "
             f"Consumer must answer first: {interpretation['interpretation_question']}"
         )
+    if payload.get("adapter_valid") is False:
+        print("adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.")
     return 0
 
 
