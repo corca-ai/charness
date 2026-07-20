@@ -3,18 +3,18 @@
 ## Current Focus
 
 - Release publish triggered a configured automatic session retro for `v2.3.0`. (source: `charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md`)
-- A speed-only slice reused the standing xdist runner for focused mutation coverage and removed repeated duplicate-ratchet execution without weakening the changed-line consumer. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
+- Release publish triggered a configured automatic session retro for `v2.3.1`. (source: `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md`; sources: 108)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`; sources: 109)
 - Artifact-validation waste: the quality artifact used two inventory values but omitted their exact field names. The broad suite caught this after 4,943 passes, forcing a 73.9s rerun even though the semantic inventory-consumption validator was cheap. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
 - Broad final proof itself was correctly timed after scope lock and is not classified as waste. The eliminated serial focused producer was gate-baseline runtime debt because it exceeded the broad parallel path while proving less. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
 - Verification sequencing waste: the parent edited two files while reviewers were active, invalidating their otherwise useful approvals and requiring a complete fresh packet and review rerun. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md`; sources: 108)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`; sources: 109)
 - a route or selector proves mechanism only; closure requires a representative changed input to reach the final consumer. (source: `charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md`)
 - accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
 - affected-test selectors should union untracked inputs, imported test helpers, and loader entrypoints while preserving an explicit broad fallback. (source: `charness-artifacts/retro/2026-07-19-session-retro.md`)
@@ -139,3 +139,4 @@
 - `charness-artifacts/retro/2026-07-19-v2-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-19-v2-2-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`
