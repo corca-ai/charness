@@ -115,6 +115,19 @@ status is useful before push or merge, but it is not final closeout. Final
 issue-resolution handoff requires `status: verified`, which means every selected
 issue matched the expected GitHub state.
 
+The status tokens are compatibility vocabulary, not endpoints: each means only
+that this observer's checks passed over its channel. The payload therefore also
+carries an additive `confirmation` object — `observer`, `channel`, `scope`, and
+a pre-rendered `line` whose verb tracks the scope: `confirmed: <observer> via
+<channel> (<scope>)` only for the final state-checked verdict, and
+`carrier-checked: …` when only carrier-body checks ran, so a pre-publication
+pass never renders the stronger claim. Final handoffs and closeout prose
+should render that line instead of re-claiming a bare `verified`, so the claim
+never sounds stronger than the observation. The line names the verifier's own
+observer and channel; it is not the distinct-observer behavioral confirmation
+the next section mandates. Existing artifacts that recorded bare status tokens
+are grandfathered as-written; do not reinterpret or rewrite them.
+
 ## Per-Issue Behavioral Verdict At Close (the irreversible-boundary mandate)
 
 Closing a GitHub issue — and merging a PR that closes it — is an **irreversible

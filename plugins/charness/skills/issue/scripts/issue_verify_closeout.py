@@ -274,9 +274,28 @@ def verify_closeout(
         and ai_provenance["ok"]
     )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
+    # Additive migration: the bare status tokens sound terminal,
+    # but each is only this observer's checks passing over its channel.
+    # `confirmation` names observer/channel/scope so downstream handoffs render
+    # `confirmed: <observer> via <channel> (<scope>)` instead of re-claiming a
+    # bare `verified` as an endpoint. Status tokens stay unchanged for existing
+    # consumers; artifacts that recorded bare statuses are grandfathered.
+    observer = f"issue_verify_closeout@{backend.get('id', 'gh')}"
+    channel = "backend-state-readback" if expect_state is not None else "carrier-body-checks"
+    scope = "state-and-carrier-checks-only" if expect_state is not None else "carrier-checks-only"
+    # The verb tracks the scope so a pre-publication pass never renders the
+    # stronger claim: `confirmed` only for the final state-checked verdict.
+    verb = "confirmed" if expect_state is not None else "carrier-checked"
+    confirmation = {
+        "observer": observer,
+        "channel": channel,
+        "scope": scope,
+        "line": f"{verb}: {observer} via {channel} ({scope})" if ok else None,
+    }
     result = {
         "ok": ok,
         "status": status,
+        "confirmation": confirmation,
         "repo": repo,
         "numbers": numbers,
         "classification": classification,

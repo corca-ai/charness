@@ -42,6 +42,7 @@ def test_issue_verify_closeout_rejects_missing_direct_commit_close_keyword(tmp_p
     assert payload["ok"] is False
     assert payload["missing_close_keywords"] == [42]
     assert payload["missing_fields"] == []
+    assert payload["confirmation"]["line"] is None
 
 
 def test_issue_verify_closeout_accepts_direct_commit_carrier_without_final_state(tmp_path: Path) -> None:
@@ -69,6 +70,12 @@ def test_issue_verify_closeout_accepts_direct_commit_carrier_without_final_state
     assert payload["ok"] is True
     assert payload["status"] == "carrier_verified"
     assert payload["verified_state"] == []
+    assert payload["confirmation"] == {
+        "observer": "issue_verify_closeout@gh",
+        "channel": "carrier-body-checks",
+        "scope": "carrier-checks-only",
+        "line": "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)",
+    }
 
 
 def test_issue_verify_closeout_uses_github_keyword_boundaries(tmp_path: Path) -> None:
@@ -351,6 +358,15 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "verified"
+    assert payload["confirmation"] == {
+        "observer": "issue_verify_closeout@acme-github",
+        "channel": "backend-state-readback",
+        "scope": "state-and-carrier-checks-only",
+        "line": (
+            "confirmed: issue_verify_closeout@acme-github via backend-state-readback "
+            "(state-and-carrier-checks-only)"
+        ),
+    }
     assert payload["verified_state"][0]["state"] == "CLOSED"
     entries = json.loads(log.read_text(encoding="utf-8"))
     assert ["github", "issue", "view", "-R", "corca-ai/charness", "42", "--json", "number,state,url,comments"] in entries

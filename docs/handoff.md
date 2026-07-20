@@ -22,13 +22,11 @@
   the `mtime-recency-tiebreak` and `unlink-missing_ok` follow-ups are resolved. RCAs
   and release state in References.
 - The abstracted-pattern sibling-scan Tier-1 (A/B/C) and Tier-2 (D) findings are
-  FIXED with regression tests. Tier 1 has a durable critique artifact
-  ([Tier-1 fixes critique](../charness-artifacts/critique/2026-07-20-tier1-sibling-scan-fixes-critique.md));
-  Tier 2's short-scope fresh-eye review returned approve (one doc-wording
-  should-fix, applied; one accepted nit: a bare file literally named `sessions`
-  would be over-excluded) and is recorded in its commit ledger. The live
-  usage-episodes guard now ignores live-writer-owned paths (`sessions` tree,
-  the episode log) while keeping strict #194 leak teeth.
+  FIXED with regression tests and clean fresh-eye reviews
+  ([Tier-1 fixes critique](../charness-artifacts/critique/2026-07-20-tier1-sibling-scan-fixes-critique.md);
+  Tier 2's approve + accepted `sessions`-file nit is in its commit ledger). The
+  live usage-episodes guard now ignores live-writer-owned paths while keeping
+  strict #194 leak teeth.
 - Durable prior context (all closed, do not reopen without regression evidence):
   v2.3.0 adapter-owned measurement-contract discovery, the Gajae goal, dead-code
   dynamic-entrypoint review, standing-xdist speedups, and quality's portable
@@ -55,10 +53,12 @@
 
 ## Discuss
 
-- Decide an additive migration for issue closeout's terminal-sounding `verified`
-  state; do not silently redefine existing artifacts.
-- Persist pre-commit rollback outcomes and strengthen post-publication proof with an
-  explicitly different observer identity, not only a different channel.
+- RESOLVED: the `verified` additive migration shipped (`verify-closeout` emits
+  `confirmation` {observer, channel, scope, line}; status tokens unchanged, old
+  artifacts grandfathered), and pre-commit rollback persistence was already
+  shipped before the entry was written (failure records carry `precommit_rollback`).
+- Strengthen post-publication proof with an explicitly different observer
+  identity (in progress: unauthenticated-channel check; CI observer follow-up).
 
 ## References
 
