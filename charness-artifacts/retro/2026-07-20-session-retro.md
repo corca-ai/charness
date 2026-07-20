@@ -12,6 +12,12 @@ deletion race (the standing runner's lock-less `pytest-*` basetemp deleted mid-r
 by nested pytest cleanup). What matters next: the harness's own proof-infra now has
 deterministic regression tests for both; the next session picks a fresh slice.
 
+Addendum (same day, second unit): the sibling-scan Tier-1 fixes slice
+(commit 092ab996) — three 1-2 line concurrency/tie-direction fixes (A/B
+`unlink missing_ok`, C mtime tie `>=`→`>`), mirrors synced, two regression
+tests, clean bounded critique, locked closeout with mutation coverage.
+Auto-triggered by changed export surfaces.
+
 ## Waste
 
 - False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two
@@ -28,6 +34,12 @@ deterministic regression tests for both; the next session picks a fresh slice.
   and a fresh-eye reviewer caught a third consumer (the economics session regex)
   that would have silently under-reported.
 
+- (Tier-1 fixes slice) Near-zero repo waste — the audit artifact's exact
+  file:line + remediation + confirmed-safe set made the slice mechanical. One
+  host-side friction: the spawned bounded reviewer's final report arrived only
+  as an idle notification, so the parent had to extract it from the subagent
+  transcript JSONL by hand before the boundary-fingerprint verify.
+
 ## Critical Decisions
 
 - Routing through `debug` (falsifiable hypothesis + reproduction before repair)
@@ -38,6 +50,14 @@ deterministic regression tests for both; the next session picks a fresh slice.
   ~1-in-3 flake into a deterministic probe, then a regression test with teeth.
 - Deferring the third follow-up (reaping stale `charness-run-*` basetemps): an
   ad-hoc reaper would reintroduce the very deletion-race class just fixed.
+
+- (Tier-1 fixes slice) Used the default single instrumented broad run for
+  mutation coverage instead of the suggested "focused" producer, which spanned
+  nearly the whole quality-gates directory anyway — avoided a double broad run.
+- (Tier-1 fixes slice) The boundary-escalation probe fired on
+  `scripts/*_lib.py`, so the self-assessed small slice was escalated to a
+  standalone durable critique validated with `--changed-ref` — the objective
+  probe overriding self-assessment, as designed.
 
 ## Expert Counterfactuals
 
@@ -55,6 +75,15 @@ deterministic regression tests for both; the next session picks a fresh slice.
   but the coupling stays a convention; a shared named constant consumed by producer
   and matchers would make the next rename refactor-safe rather than grep-dependent.
 
+- (Tier-1 fixes slice) Engelbart (system-improving-itself). The sibling-scan
+  audit artifact IS the tool (T) this loop built: a durable fix backlog with
+  exact locations, remediations, and a confirmed-safe set. The method (LAM)
+  "record scan findings fix-ready so a later session fixes without
+  re-deriving" demonstrably worked — the whole slice consumed zero re-scan
+  effort. The counterfactual is restraint: a machine-readable fix manifest for
+  three one-line items would have been tooling for its own sake; keep the
+  markdown-artifact form at this scale.
+
 ## Next Improvements
 
 - workflow: before writing "not reproduced" / "does not happen" for a flake,
@@ -66,6 +95,15 @@ deterministic regression tests for both; the next session picks a fresh slice.
   and batch the assertion updates with the rename.
 - memory: persist both lessons in the generated recent-lessons digest so the next
   session inherits the disconfirmer-scope and rename-consumer-grep guards.
+
+- memory: (Tier-1 fixes slice) when a spawned named subagent goes idle without
+  its report reaching the parent, read the last assistant text from its
+  transcript under `~/.claude/projects/<session>/subagents/` instead of
+  re-spawning or substituting a same-agent pass; verify the reviewer boundary
+  fingerprint afterward as usual.
+- workflow: (Tier-1 fixes slice) keep the fix-ready scan-artifact pattern
+  (file:line + severity + remediation + confirmed-safe set) for any multi-
+  finding audit that hands fixes to a later session.
 
 ## Sibling Search
 

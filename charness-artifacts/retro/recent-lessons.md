@@ -10,7 +10,7 @@
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`; sources: 109)
 - False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two named files in isolation at `-n 16`, saw them pass, and wrote "did NOT reproduce / resource contention" into BOTH the durable debug artifact and the handoff. The full `--release` suite falsified it minutes later (11 failed, 1439 errors). Cost: a wrong durable claim that fresh-eye review (Angle C) flagged and that I then had to correct twice. The isolated subset never exercised the nested-pytest cleanup that only the full suite triggers — it was not a valid disconfirmer for a load-dependent flake. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 - Rename without a consumer grep. I renamed the `default_basetemp` leaf (`pytest-<ns>` → `charness-run-<ns>`) without first grepping for its name-based consumers; two tests asserting the old leaf failed only when the full suite ran, and a fresh-eye reviewer caught a third consumer (the economics session regex) that would have silently under-reported. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
-- Artifact-validation waste: the quality artifact used two inventory values but omitted their exact field names. The broad suite caught this after 4,943 passes, forcing a 73.9s rerun even though the semantic inventory-consumption validator was cheap. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
+- (Tier-1 fixes slice) Near-zero repo waste — the audit artifact's exact file:line + remediation + confirmed-safe set made the slice mechanical. One host-side friction: the spawned bounded reviewer's final report arrived only as an idle notification, so the parent had to extract it from the subagent transcript JSONL by hand before the boundary-fingerprint verify. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 
 ## Next-Time Checklist
 
@@ -132,7 +132,6 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`
 - `charness-artifacts/retro/2026-07-19-v2-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-19-v2-2-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-20-session-retro.md`

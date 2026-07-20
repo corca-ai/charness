@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-20",
   "source_artifact_count": 381,
-  "candidate_count": 1556,
+  "candidate_count": 1559,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1255,6 +1255,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ffd51babae77",
+      "kind": "next_improvement",
+      "lesson": "(Tier-1 fixes slice) keep the fix-ready scan-artifact pattern (file:line + severity + remediation + confirmed-safe set) for any multi- finding audit that hands fixes to a later session.",
+      "normalized_key": "tier 1 fixes slice keep the fix ready scan artifact pattern file line severity",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cb2fb2e36c64",
+      "kind": "next_improvement",
+      "lesson": "(Tier-1 fixes slice) when a spawned named subagent goes idle without its report reaching the parent, read the last assistant text from its transcript under `~/.claude/projects/<session>/subagents/` instead of re-spawning or substituting a same-agent pass; verify the reviewer boundary fingerprint afterward as usual.",
+      "normalized_key": "tier 1 fixes slice when a spawned named subagent goes idle without its report",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:2cfab907f5ae",
       "kind": "repeat_trap",
       "lesson": "False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two named files in isolation at `-n 16`, saw them pass, and wrote \"did NOT reproduce / resource contention\" into BOTH the durable debug artifact and the handoff. The full `--release` suite falsified it minutes later (11 failed, 1439 errors). Cost: a wrong durable claim that fresh-eye review (Angle C) flagged and that I then had to correct twice. The isolated subset never exercised the nested-pytest cleanup that only the full suite triggers — it was not a valid disconfirmer for a load-dependent flake.",
@@ -1291,46 +1331,6 @@
           "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
           "date": "2026-07-20",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:dcd1ee7fed01",
-      "kind": "current_focus",
-      "lesson": "A speed-only slice reused the standing xdist runner for focused mutation coverage and removed repeated duplicate-ratchet execution without weakening the changed-line consumer.",
-      "normalized_key": "a speed only slice reused the standing xdist runner for focused mutation coverage and",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:85d1814aff65",
-      "kind": "current_focus",
-      "lesson": "An aggressive autonomous improvement pass repaired the release issue-close state machine, compressed release-plan evidence, and accelerated a repeated inventory contract test.",
-      "normalized_key": "an aggressive autonomous improvement pass repaired the release issue close state machine compressed release",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
         }
       ]
     }
@@ -2577,6 +2577,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ffd51babae77",
+      "kind": "next_improvement",
+      "lesson": "(Tier-1 fixes slice) keep the fix-ready scan-artifact pattern (file:line + severity + remediation + confirmed-safe set) for any multi- finding audit that hands fixes to a later session.",
+      "normalized_key": "tier 1 fixes slice keep the fix ready scan artifact pattern file line severity",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cb2fb2e36c64",
+      "kind": "next_improvement",
+      "lesson": "(Tier-1 fixes slice) when a spawned named subagent goes idle without its report reaching the parent, read the last assistant text from its transcript under `~/.claude/projects/<session>/subagents/` instead of re-spawning or substituting a same-agent pass; verify the reviewer boundary fingerprint afterward as usual.",
+      "normalized_key": "tier 1 fixes slice when a spawned named subagent goes idle without its report",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:2cfab907f5ae",
       "kind": "repeat_trap",
       "lesson": "False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two named files in isolation at `-n 16`, saw them pass, and wrote \"did NOT reproduce / resource contention\" into BOTH the durable debug artifact and the handoff. The full `--release` suite falsified it minutes later (11 failed, 1439 errors). Cost: a wrong durable claim that fresh-eye review (Angle C) flagged and that I then had to correct twice. The isolated subset never exercised the nested-pytest cleanup that only the full suite triggers — it was not a valid disconfirmer for a load-dependent flake.",
@@ -2601,6 +2641,26 @@
       "kind": "repeat_trap",
       "lesson": "Rename without a consumer grep. I renamed the `default_basetemp` leaf (`pytest-<ns>` → `charness-run-<ns>`) without first grepping for its name-based consumers; two tests asserting the old leaf failed only when the full suite ran, and a fresh-eye reviewer caught a third consumer (the economics session regex) that would have silently under-reported.",
       "normalized_key": "rename without a consumer grep i renamed the default basetemp leaf pytest ns charness",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2ff49f92b4ef",
+      "kind": "repeat_trap",
+      "lesson": "(Tier-1 fixes slice) Near-zero repo waste — the audit artifact's exact file:line + remediation + confirmed-safe set made the slice mechanical. One host-side friction: the spawned bounded reviewer's final report arrived only as an idle notification, so the parent had to extract it from the subagent transcript JSONL by hand before the boundary-fingerprint verify.",
+      "normalized_key": "tier 1 fixes slice near zero repo waste the audit artifact s exact file",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
       "latest_source_date": "2026-07-20",
