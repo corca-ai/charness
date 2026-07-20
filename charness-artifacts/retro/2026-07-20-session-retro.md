@@ -25,6 +25,14 @@ sibling Discuss clause (pre-commit rollback persistence) was closed by
 evidence as already-shipped rather than rebuilt. Auto-triggered by changed
 export surfaces.
 
+Addendum (same day, fourth unit): the observer-identity slice (commit
+26d16c0f) — distinct-channel verification records and the release-artifact
+markdown now name observer identity and its distinctness limits; the
+machine-distinct CI-side observer is tracked as #449 rather than claimed.
+The reviewer's should-fix (renderer omitted the observer) and a dup-ratchet
+hard block (two families classified intentional with recorded rationale)
+were both resolved pre-commit. Auto-triggered by changed export surfaces.
+
 ## Waste
 
 - False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two
