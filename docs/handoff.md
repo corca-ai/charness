@@ -28,10 +28,15 @@
 
 ## Next Session
 
-1. Recommended next slice (no explicit task): run the workflow trigger and choose
-   the smallest coherent backlog slice. The deferred discovery follow-ups (inline
-   `.rglob`/`ls-files` pathspec discovery, `CODE_LANGUAGE_FAMILIES` expansion,
-   zero/near-zero test-surface advisory) are candidates, not commitments.
+1. Recommended next slice: fix the abstracted-pattern sibling-scan Tier-1 findings
+   (full detail + severity + remediation + confirmed-safe set in the scan file under
+   References): `record_quality_runtime.py:102` and `mutation_baseline_abort_lib.py:53`
+   unlink `missing_ok` (both are the odd-one-out vs already-guarded siblings), and
+   `check_mutation_score.py:280` mtime `>=` tie direction. Each 1-2 lines; sync the
+   `plugins/` mirrors, add cheap regression coverage, run the critique, commit. Tier 2
+   (a live-shared-dir test snapshot) is a separate small slice; Tier 3 is opportunistic.
+   The deferred discovery follow-ups (inline `.rglob`/`ls-files` pathspec discovery,
+   `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory) remain candidates.
 2. For clean-start mutating workflows, enumerate owned mutations before coding and
    make every failure either restore the start state or emit a typed, resumable
    state; for irreversible operations, prove the exact consumed range (see recent
@@ -54,6 +59,7 @@
 
 ## References
 
+- [abstracted-pattern sibling scan (next-session fix backlog)](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)
 - [retention RCA](../charness-artifacts/debug/2026-07-20-debug-review.md)
 - [basetemp deletion-race RCA](../charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md)
 - [release state](../charness-artifacts/release/latest.md)
