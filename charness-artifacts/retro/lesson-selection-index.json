@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-20",
-  "source_artifact_count": 379,
-  "candidate_count": 1550,
+  "source_artifact_count": 381,
+  "candidate_count": 1556,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1135,6 +1135,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c6ed9793c1b6",
+      "kind": "current_focus",
+      "lesson": "Handoff OPEN SMELL (flaky/nondeterministic suite under parallel/`--release` load) was routed through `debug` → `impl` → follow-up resolution → `release`.",
+      "normalized_key": "handoff open smell flaky nondeterministic suite under parallel release load was routed through debug",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:25e71d628c76",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v2.3.0`.",
@@ -1175,6 +1195,106 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:30951601939f",
+      "kind": "next_improvement",
+      "lesson": "before renaming a widely-referenced constant, grep for its name-based consumers (`startswith`/`==`/regex) across scripts, skills, tests, and mirrors, and batch the assertion updates with the rename.",
+      "normalized_key": "before renaming a widely referenced constant grep for its name based consumers startswith regex",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a2893bfc39fe",
+      "kind": "next_improvement",
+      "lesson": "before writing \"not reproduced\" / \"does not happen\" for a flake, scope-match the disconfirmer to the failure's trigger conditions (load, concurrency, scale) and reproduce under the FULL environment; an isolated subset passing is not a valid absence proof.",
+      "normalized_key": "before writing not reproduced does not happen for a flake scope match the disconfirmer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:abc4a3ab663f",
+      "kind": "next_improvement",
+      "lesson": "persist both lessons in the generated recent-lessons digest so the next session inherits the disconfirmer-scope and rename-consumer-grep guards.",
+      "normalized_key": "persist both lessons in the generated recent lessons digest so the next session inherits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2cfab907f5ae",
+      "kind": "repeat_trap",
+      "lesson": "False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two named files in isolation at `-n 16`, saw them pass, and wrote \"did NOT reproduce / resource contention\" into BOTH the durable debug artifact and the handoff. The full `--release` suite falsified it minutes later (11 failed, 1439 errors). Cost: a wrong durable claim that fresh-eye review (Angle C) flagged and that I then had to correct twice. The isolated subset never exercised the nested-pytest cleanup that only the full suite triggers — it was not a valid disconfirmer for a load-dependent flake.",
+      "normalized_key": "false non claim from a scope mismatched disconfirmer i ran symptom b s two",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0834aa9ec7d3",
+      "kind": "repeat_trap",
+      "lesson": "Rename without a consumer grep. I renamed the `default_basetemp` leaf (`pytest-<ns>` → `charness-run-<ns>`) without first grepping for its name-based consumers; two tests asserting the old leaf failed only when the full suite ran, and a fresh-eye reviewer caught a third consumer (the economics session regex) that would have silently under-reported.",
+      "normalized_key": "rename without a consumer grep i renamed the default basetemp leaf pytest ns charness",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:dcd1ee7fed01",
       "kind": "current_focus",
       "lesson": "A speed-only slice reused the standing xdist runner for focused mutation coverage and removed repeated duplicate-ratchet execution without weakening the changed-line consumer.",
@@ -1209,126 +1329,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-19-session-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:7a394e27545a",
-      "kind": "current_focus",
-      "lesson": "Recent speed, quality, release, and proof slices were audited to determine which lessons were merely local history and which were usable by another repo.",
-      "normalized_key": "recent speed quality release and proof slices were audited to determine which lessons were",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:9bca602aa132",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.2.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 2 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-v2-2-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-v2-2-0-release-auto-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a3269ad5549b",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.2.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 2 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-v2-2-1-release-auto-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-v2-2-1-release-auto-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:ae30d9d28d05",
-      "kind": "current_focus",
-      "lesson": "The focused-coverage speedup suggested a transferable boundary: selection wrappers should declare what to run, while the canonical runner owns how to execute it.",
-      "normalized_key": "the focused coverage speedup suggested a transferable boundary selection wrappers should declare what to",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-runner-reuse-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:5514c75035b6",
-      "kind": "current_focus",
-      "lesson": "The `gajae-pattern-adoption` goal translated selected patterns from the sibling repository into Charness without importing its runtime architecture.",
-      "normalized_key": "the gajae pattern adoption goal translated selected patterns from the sibling repository into charness",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md",
-          "date": "2026-07-19",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:819cd99a946f",
-      "kind": "current_focus",
-      "lesson": "The standing suite's slowest family repeatedly started a Python fake-Git process before real Git.",
-      "normalized_key": "the standing suite s slowest family repeatedly started a python fake git process before",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
-      "latest_source_date": "2026-07-19",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-fake-git-proxy-speed-retro.md",
           "date": "2026-07-19",
           "section": "Context"
         }
@@ -2457,6 +2457,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c6ed9793c1b6",
+      "kind": "current_focus",
+      "lesson": "Handoff OPEN SMELL (flaky/nondeterministic suite under parallel/`--release` load) was routed through `debug` → `impl` → follow-up resolution → `release`.",
+      "normalized_key": "handoff open smell flaky nondeterministic suite under parallel release load was routed through debug",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:25e71d628c76",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v2.3.0`.",
@@ -2493,6 +2513,106 @@
           "artifact_path": "charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md",
           "date": "2026-07-20",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:30951601939f",
+      "kind": "next_improvement",
+      "lesson": "before renaming a widely-referenced constant, grep for its name-based consumers (`startswith`/`==`/regex) across scripts, skills, tests, and mirrors, and batch the assertion updates with the rename.",
+      "normalized_key": "before renaming a widely referenced constant grep for its name based consumers startswith regex",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a2893bfc39fe",
+      "kind": "next_improvement",
+      "lesson": "before writing \"not reproduced\" / \"does not happen\" for a flake, scope-match the disconfirmer to the failure's trigger conditions (load, concurrency, scale) and reproduce under the FULL environment; an isolated subset passing is not a valid absence proof.",
+      "normalized_key": "before writing not reproduced does not happen for a flake scope match the disconfirmer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:abc4a3ab663f",
+      "kind": "next_improvement",
+      "lesson": "persist both lessons in the generated recent-lessons digest so the next session inherits the disconfirmer-scope and rename-consumer-grep guards.",
+      "normalized_key": "persist both lessons in the generated recent lessons digest so the next session inherits",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2cfab907f5ae",
+      "kind": "repeat_trap",
+      "lesson": "False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two named files in isolation at `-n 16`, saw them pass, and wrote \"did NOT reproduce / resource contention\" into BOTH the durable debug artifact and the handoff. The full `--release` suite falsified it minutes later (11 failed, 1439 errors). Cost: a wrong durable claim that fresh-eye review (Angle C) flagged and that I then had to correct twice. The isolated subset never exercised the nested-pytest cleanup that only the full suite triggers — it was not a valid disconfirmer for a load-dependent flake.",
+      "normalized_key": "false non claim from a scope mismatched disconfirmer i ran symptom b s two",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0834aa9ec7d3",
+      "kind": "repeat_trap",
+      "lesson": "Rename without a consumer grep. I renamed the `default_basetemp` leaf (`pytest-<ns>` → `charness-run-<ns>`) without first grepping for its name-based consumers; two tests asserting the old leaf failed only when the full suite ran, and a fresh-eye reviewer caught a third consumer (the economics session regex) that would have silently under-reported.",
+      "normalized_key": "rename without a consumer grep i renamed the default basetemp leaf pytest ns charness",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste"
         }
       ]
     },

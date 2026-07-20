@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Handoff OPEN SMELL (flaky/nondeterministic suite under parallel/`--release` load) was routed through `debug` → `impl` → follow-up resolution → `release`. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 - Release publish triggered a configured automatic session retro for `v2.3.0`. (source: `charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v2.3.1`. (source: `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`)
 
 ## Repeat Traps
 
 - Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`; sources: 109)
+- False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two named files in isolation at `-n 16`, saw them pass, and wrote "did NOT reproduce / resource contention" into BOTH the durable debug artifact and the handoff. The full `--release` suite falsified it minutes later (11 failed, 1439 errors). Cost: a wrong durable claim that fresh-eye review (Angle C) flagged and that I then had to correct twice. The isolated subset never exercised the nested-pytest cleanup that only the full suite triggers — it was not a valid disconfirmer for a load-dependent flake. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
+- Rename without a consumer grep. I renamed the `default_basetemp` leaf (`pytest-<ns>` → `charness-run-<ns>`) without first grepping for its name-based consumers; two tests asserting the old leaf failed only when the full suite ran, and a fresh-eye reviewer caught a third consumer (the economics session regex) that would have silently under-reported. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 - Artifact-validation waste: the quality artifact used two inventory values but omitted their exact field names. The broad suite caught this after 4,943 passes, forcing a 73.9s rerun even though the semantic inventory-consumption validator was cheap. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
-- Broad final proof itself was correctly timed after scope lock and is not classified as waste. The eliminated serial focused producer was gate-baseline runtime debt because it exceeded the broad parallel path while proving less. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
-- Verification sequencing waste: the parent edited two files while reviewers were active, invalidating their otherwise useful approvals and requiring a complete fresh packet and review rerun. (source: `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`)
 
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`; sources: 109)
-- a route or selector proves mechanism only; closure requires a representative changed input to reach the final consumer. (source: `charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md`)
-- accepted-risk: full mutation-aware broad proof remains about 107 seconds; this is gate-baseline runtime debt, not a claimed necessary safety cost. (source: `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`)
-- affected-test selectors should union untracked inputs, imported test helpers, and loader entrypoints while preserving an explicit broad fallback. (source: `charness-artifacts/retro/2026-07-19-session-retro.md`)
+- before renaming a widely-referenced constant, grep for its name-based consumers (`startswith`/`==`/regex) across scripts, skills, tests, and mirrors, and batch the assertion updates with the rename. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
+- before writing "not reproduced" / "does not happen" for a flake, scope-match the disconfirmer to the failure's trigger conditions (load, concurrency, scale) and reproduce under the FULL environment; an isolated subset passing is not a valid absence proof. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
+- persist both lessons in the generated recent-lessons digest so the next session inherits the disconfirmer-scope and rename-consumer-grep guards. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 
 ## Selection Policy
 
@@ -132,11 +132,9 @@
 - `charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md`
-- `charness-artifacts/retro/2026-07-19-gajae-pattern-adoption-retro.md`
-- `charness-artifacts/retro/2026-07-19-portable-proof-learning-retro.md`
-- `charness-artifacts/retro/2026-07-19-session-retro.md`
 - `charness-artifacts/retro/2026-07-19-speed-only-slice-retro.md`
 - `charness-artifacts/retro/2026-07-19-v2-2-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-19-v2-2-1-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-20-session-retro.md`
 - `charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`
