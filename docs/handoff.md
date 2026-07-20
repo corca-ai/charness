@@ -10,30 +10,29 @@
 
 ## Current State
 
-- v2.4.0 is PUBLISHED, confirmed by distinct channels (gh API, remote tag
-  `v2.4.0 -> 2ae99627`, unauthenticated https 200, installed
-  `charness version -> 2.4.0`). Caveat: the v2.4.0 observer JSON predates the
-  new `observer` field; it applies from the next release.
-- #448 charness-side fix LANDED, issue stays OPEN: scoped dup-ratchet accepts
-  (`--accept-rotation`/`--accept-family`) now exempt overlay-intentional
-  families and unnamed membership reductions (evaluate-path parity; never
-  absorbed) —
-  [critique](../charness-artifacts/critique/2026-07-20-dup-ratchet-scoped-rebaseline-parity-critique.md).
-  Residuals NOT fixed: wrapper cached-inventory / fingerprint-normalization
-  hypothesis, cross-invocation drift. Closure proof = Ceal re-verification
-  against a released build.
-- #446 (mutation-test regression on main): both failing scheduled runs were on
-  pre-fix `5235228e`; the fix (`1834090b`) landed after. The next scheduled
-  `Mutation Tests` run (12:17 UTC cadence) on current main should auto-close it;
-  a dispatch-green run must NOT be used to close (workflow false-proof note).
+- v2.4.1 is PUBLISHED (tag `v2.4.1 -> e36a0b93`, unauthenticated https 200,
+  installed `charness version -> 2.4.1` after refresh). Scope: the #448
+  scoped-rebaseline parity fix and the #446 CI test-determinism fix. The
+  v2.4.1 observer JSON now carries `distinct_channel_verification.observer`
+  (v2.4.0 caveat resolved) —
+  [release critique](../charness-artifacts/critique/2026-07-20-v2-4-1-release-critique.md).
+- #448 stays OPEN by design: shipped fix covers within-invocation universe
+  parity only ([slice critique](../charness-artifacts/critique/2026-07-20-dup-ratchet-scoped-rebaseline-parity-critique.md)).
+  Residuals: wrapper cached-inventory / fingerprint-normalization hypothesis,
+  cross-invocation drift. Closure proof = Ceal re-verification against v2.4.1.
+- #446 root cause re-diagnosed and fixed in `6dda14c0`: NOT the basetemp
+  flake — the xdist test hardcoded `-n 16` while CI runners have 4 cores
+  (deterministic host dependence; class fully drained per fresh-eye review).
+  Only a scheduled green `Mutation Tests` run auto-closes it.
 - Sibling scan closed through Tier 2; Tier 3 (E-J) stays boy-scout only.
 
 ## Next Session
 
-1. Check the scheduled `Mutation Tests` run after 2026-07-20 ~12:40 UTC: green
-   auto-closes #446; red means the basetemp fix is insufficient — debug on
-   current main with a full-suite scope-matched reproduction.
-2. After the next release, ask/verify the Ceal-side #448 scenario (accept the
+1. Check the next scheduled `Mutation Tests` run (00:17/12:17 UTC cadence,
+   cron delay up to ~45 min) on post-`6dda14c0` main: green auto-closes #446;
+   red now falsifies the cpu-pin diagnosis — read the failing nodeid before
+   theorizing.
+2. Ask/verify the Ceal-side #448 scenario against v2.4.1 (accept the exact
    suggested rotations) before any #448 closure; then #449 (machine-distinct
    CI observer) remains the open release-proof design item.
 3. Deferred discovery follow-ups remain available: inline `.rglob`/`ls-files`
