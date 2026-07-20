@@ -10,27 +10,21 @@
 
 ## Current State
 
-- The release-failure retention flake is FIXED. `persist_failure_payload`
-  ([publish_release_runtime.py](../skills/public/release/scripts/publish_release_runtime.py))
-  evicted records by
-  filesystem `st_mtime_ns`, which ties on coarse-granularity filesystems
-  (ext2/ext3, ext4 with 128-byte inodes), so eviction dropped an arbitrary record
-  under a same-second burst. It now orders by the embedded `time.time_ns()` stamp
-  with an mtime fallback and a `path.name` tiebreak. A deterministic
-  adversarial-mtime regression test pins it on any filesystem. RCA in References.
-- The `--release` mass-error flake ("12 failed + 1321 errors") is FIXED. It was a
-  pytest temp-tree deletion race, not resource contention: the standing runner's
-  explicit `--basetemp` was named `pytest-<ns>` under a `pytest-of-<user>` rootdir
-  shared with nested pytest runs (via inherited `PYTEST_DEBUG_TEMPROOT`), and pytest
-  gives explicit basetemps no cleanup lock, so a nested run's exit-time
-  `make_numbered_dir_with_cleanup` deleted it (and every live xdist worker dir)
-  mid-run. `default_basetemp` now emits `charness-run-<ns>`, invisible to that
-  `pytest-*` cleanup glob. Proof: 10/10 clean full `--release` runs (prior base rate
-  ~1-in-3 failing) plus a deterministic regression test. RCA in References.
+- v2.3.1 is PUBLISHED and confirmed by distinct observers: GitHub API
+  `gh release view` (non-draft), the remote tag `v2.3.1 -> eb5bbc57`, and installed
+  `charness version -> 2.3.1`; install refresh (`charness update`) rc 0.
+- The flaky/parallel-suite OPEN SMELL is RESOLVED and shipped in v2.3.1. Two root
+  causes: (a) release-failure retention evicted by coarse-granularity `st_mtime_ns`
+  (now orders by the embedded `time.time_ns()` stamp), and (b) the `--release`
+  mass-error burst was a pytest temp-tree deletion race — the standing runner's
+  lock-less `pytest-*` basetemp deleted mid-run by nested pytest cleanup (leaf
+  renamed to `charness-run-<ns>`). Both pinned by deterministic regression tests;
+  the `mtime-recency-tiebreak` and `unlink-missing_ok` follow-ups are resolved. RCAs
+  and release state in References.
 - Durable prior context (all closed, do not reopen without regression evidence):
-  v2.3.0 release and adapter-owned measurement-contract discovery, the Gajae goal,
-  dead-code dynamic-entrypoint review, standing-xdist speedups, and quality's
-  portable proof-path method.
+  v2.3.0 adapter-owned measurement-contract discovery, the Gajae goal, dead-code
+  dynamic-entrypoint review, standing-xdist speedups, and quality's portable
+  proof-path method.
 
 ## Next Session
 
@@ -47,10 +41,9 @@
    direct reference, nearest recognized loader ancestor, then broad fallback.
 5. When adding a new dynamic-call syntax, add wrong-path, wrong-loader,
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
-6. The `mtime-recency-tiebreak` and `release-failure-unlink-missing-ok` follow-ups are
-   RESOLVED. Still intentionally deferred: reaping stale `charness-run-*` basetemps from
-   failed standing runs — an ad-hoc reaper would reintroduce the deletion-race class
-   just fixed, and the seed-budget gate already bounds the footprint.
+6. Intentionally deferred: reaping stale `charness-run-*` basetemps from failed
+   standing runs — an ad-hoc reaper would reintroduce the deletion-race class just
+   fixed, and the seed-budget gate already bounds the footprint.
 
 ## Discuss
 
