@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-07-20",
   "source_artifact_count": 381,
-  "candidate_count": 1559,
+  "candidate_count": 1560,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -2661,6 +2661,26 @@
       "kind": "repeat_trap",
       "lesson": "(Tier-1 fixes slice) Near-zero repo waste — the audit artifact's exact file:line + remediation + confirmed-safe set made the slice mechanical. One host-side friction: the spawned bounded reviewer's final report arrived only as an idle notification, so the parent had to extract it from the subagent transcript JSONL by hand before the boundary-fingerprint verify.",
       "normalized_key": "tier 1 fixes slice near zero repo waste the audit artifact s exact file",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+      "latest_source_date": "2026-07-20",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:569eb16dfe01",
+      "kind": "repeat_trap",
+      "lesson": "(verified-migration slice) Two locked closeout runs blocked on a stale cached broad-proof fingerprint before the pattern registered: after any critique-driven edit the cache is expectedly stale, so the final run should go straight to `--refresh-broad-pytest-proof` instead of paying a blocked full-gate pass first.",
+      "normalized_key": "verified migration slice two locked closeout runs blocked on a stale cached broad proof",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
       "latest_source_date": "2026-07-20",

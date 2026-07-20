@@ -18,6 +18,13 @@ Addendum (same day, second unit): the sibling-scan Tier-1 fixes slice
 tests, clean bounded critique, locked closeout with mutation coverage.
 Auto-triggered by changed export surfaces.
 
+Addendum (same day, third unit): the `verified` additive migration slice
+(commit 18483dc9) — `verify-closeout` gains a `confirmation`
+{observer, channel, scope, line} object with a scope-tracking verb; the
+sibling Discuss clause (pre-commit rollback persistence) was closed by
+evidence as already-shipped rather than rebuilt. Auto-triggered by changed
+export surfaces.
+
 ## Waste
 
 - False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two
@@ -39,6 +46,11 @@ Auto-triggered by changed export surfaces.
   host-side friction: the spawned bounded reviewer's final report arrived only
   as an idle notification, so the parent had to extract it from the subagent
   transcript JSONL by hand before the boundary-fingerprint verify.
+- (verified-migration slice) Two locked closeout runs blocked on a stale
+  cached broad-proof fingerprint before the pattern registered: after any
+  critique-driven edit the cache is expectedly stale, so the final run should
+  go straight to `--refresh-broad-pytest-proof` instead of paying a blocked
+  full-gate pass first.
 
 ## Critical Decisions
 
@@ -58,6 +70,12 @@ Auto-triggered by changed export surfaces.
   `scripts/*_lib.py`, so the self-assessed small slice was escalated to a
   standalone durable critique validated with `--changed-ref` — the objective
   probe overriding self-assessment, as designed.
+- (verified-migration slice) Resolving a Discuss item by evidence of prior
+  shipment (commit archaeology: the entry predated the implementation by an
+  hour) instead of rebuilding the mechanism; and adopting both reviewer
+  should-fixes (scope-tracking verb, distinct-observer disclaimer) before
+  commit, which is what kept the new vocabulary from recreating the
+  terminal-sounding trap it was built to remove.
 
 ## Expert Counterfactuals
 
