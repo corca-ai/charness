@@ -18,6 +18,7 @@ IGNORED_PARTS = {
     "__pycache__",
     "node_modules",
 }
+# discovery-boundary: lint-suppression directives are language-syntax-specific (see the per-language regexes below); py/js/ts is the deliberate covered default. Broadening needs each new language's directive syntax, not just an extension.
 TEXT_SUFFIXES = {".cjs", ".js", ".jsx", ".mjs", ".py", ".pyi", ".ts", ".tsx"}
 PYTHON_NOQA_RE = re.compile(r"# noqa(?::\s*(?P<codes>[A-Za-z0-9_,\s-]+))?", re.IGNORECASE)
 PYTHON_RUFF_FILE_RE = re.compile(r"^\s*#\s*ruff:\s*noqa(?:\s*:\s*(?P<codes>.*))?\s*$", re.IGNORECASE)

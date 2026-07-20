@@ -98,6 +98,15 @@
       "note": "Duplicate discovery and broad scanner waste advisory. Token evidence surfaces candidate collection and broad AST parser patterns; the consumer must decide whether the candidate duplicates a real runner/target-list owner or whether broad parsing is the correctness boundary."
     },
     {
+      "surface_id": "hardcoded-discovery",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/inventory_hardcoded_discovery.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/inventory-dispatch.md",
+      "consumer_anchor": "should this surface be adapter-owned",
+      "note": "Polyglot discovery-list advisory. A multi-language test/source discovery list baked into a portable body is an inference of divergence risk, not proof; the consumer must decide per unmarked site whether it should be adapter-owned or is a genuinely intentional language-scoped boundary worth marking."
+    },
+    {
       "surface_id": "quality-next-moves-ranking",
       "kind": "prose",
       "declaration_file": "skills/public/quality/references/gate-classification.md",

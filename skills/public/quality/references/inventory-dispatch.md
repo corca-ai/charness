@@ -184,6 +184,14 @@ For external/runtime capability slices, treat readiness-only proof (`surface`,
   keep-it-narrow-and-cheaper-than-the-deferred-fix rule, and Retained Policy Ignores)
 - gitignore scan hygiene:
   `$SKILL_DIR/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --summary`
+- hardcoded polyglot discovery:
+  `$SKILL_DIR/scripts/inventory_hardcoded_discovery.py --repo-root . --summary`
+  (flags portable constants that hardcode a multi-language test/source discovery
+  list — the measurement-contract divergence class where a baked-in list omits a
+  language the consuming repo uses; each site should be adapter-owned or carry an
+  inline `# discovery-boundary: <reason>` marker). Consumer must answer for each
+  unmarked site: should this surface be adapter-owned, or is a language-scoped
+  boundary genuinely intentional and worth marking?
 - Python dead-code advisory:
   `$SKILL_DIR/scripts/run_dead_code_advisory.py --repo-root . --summary`
 - code clone-family advisory:

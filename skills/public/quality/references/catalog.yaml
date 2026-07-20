@@ -217,13 +217,14 @@ brief:
           - agent-production-runtime.md
           - behavior-testing.md
       - area: source-hygiene
-        scope: dual implementations, clone families, brittle source guards, lint suppressions, dead code, gitignore hygiene, or boundary-bypass ratchets are in scope
+        scope: dual implementations, clone families, brittle source guards, lint suppressions, dead code, gitignore hygiene, hardcoded polyglot discovery lists, or boundary-bypass ratchets are in scope
         inventories:
           - inventory_dual_implementation.py
           - inventory_brittle_source_guards.py
           - inventory_lint_ignores.py
           - inventory_nose_clones.py
           - inventory_gitignore_scan_hygiene.py
+          - inventory_hardcoded_discovery.py
           - run_dead_code_advisory.py
         detail_refs:
           - dual-implementation-parity.md

@@ -139,6 +139,10 @@
       "non_headline_fields": [],
       "opt_out_reason": "consumed by the run-quality phase that fails on findings via --require-empty; consumer-side engagement is the gate's pass/fail status, not artifact-body field citation."
     },
+    "inventory_hardcoded_discovery.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "preventive tripwire for polyglot discovery lists; findings are advisory and self-classify via inline discovery-boundary markers, so no committed quality artifact engages its non-headline fields yet."
+    },
     "inventory_sloc.py": {
       "non_headline_fields": [],
       "opt_out_reason": "writes a separate sloc-inventory artifact; consumer engagement happens through that artifact, not via citation in the main quality artifact body."

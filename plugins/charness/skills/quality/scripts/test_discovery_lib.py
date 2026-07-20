@@ -19,6 +19,7 @@ IGNORED_DIRS = {
     ".artifacts", ".charness", ".git", ".hg", ".mypy_cache", ".pytest_cache",
     ".ruff_cache", ".venv", "charness-artifacts", "mutants", "node_modules", "vendor",
 }
+# discovery-boundary: adapter-owned default — consumers override this surface via the adapter `test_file_discovery` command/patterns; this list is only the zero-config fallback.
 TEST_FILE_PATTERNS = (
     ":(glob)**/test_*.py",
     ":(glob)**/*_test.py",
