@@ -118,10 +118,11 @@ issue matched the expected GitHub state.
 The status tokens are compatibility vocabulary, not endpoints: each means only
 that this observer's checks passed over its channel. The payload therefore also
 carries an additive `confirmation` object — `observer`, `channel`, `scope`, and
-a pre-rendered `line` whose verb tracks the scope: `confirmed: <observer> via
-<channel> (<scope>)` only for the final state-checked verdict, and
-`carrier-checked: …` when only carrier-body checks ran, so a pre-publication
-pass never renders the stronger claim. Final handoffs and closeout prose
+a pre-rendered `line` whose verb tracks the scope: it renders
+`confirmed: <observer> via <channel> (<scope>)` only for the final
+state-checked verdict, and the `carrier-checked:` verb with the same shape
+when only carrier-body checks ran, so a pre-publication pass never renders the
+stronger claim. Final handoffs and closeout prose
 should render that line instead of re-claiming a bare `verified`, so the claim
 never sounds stronger than the observation. The line names the verifier's own
 observer and channel; it is not the distinct-observer behavioral confirmation
