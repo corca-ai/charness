@@ -174,6 +174,73 @@ def test_file_discovery(value: Any, errors: list[str], warnings: list[str]) -> d
     return {"command": command, "patterns": list(patterns), "patterns_mode": patterns_mode}
 
 
+LINT_IGNORE_DISCOVERY_KNOWN_KEYS = {"directives"}
+LINT_IGNORE_DIRECTIVE_KNOWN_KEYS = {"tool", "suffixes", "pattern", "scope"}
+LINT_IGNORE_DIRECTIVE_SCOPES = {"inline", "file", "leading"}
+
+
+def lint_ignore_discovery(value: Any, errors: list[str], warnings: list[str]) -> dict[str, Any] | None:
+    """Validate adapter-declared lint-suppression directive matchers.
+
+    Suppression detection is language-syntax-specific, so a repo whose linters
+    live outside the built-in py/js/ts set declares each directive's `suffixes`,
+    `pattern` (a regex, ideally with a `(?P<codes>...)` group), and optional
+    `scope` (inline/file/leading, default leading). Absent block returns None so
+    the inventory keeps only the built-in matchers. Shape and regex-compilability
+    are validated here; whether a pattern truly matches the repo's linters is the
+    consumer's proof.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("lint_ignore_discovery must be a mapping")
+        return None
+    for key in value:
+        if key not in LINT_IGNORE_DISCOVERY_KNOWN_KEYS:
+            warnings.append(f"lint_ignore_discovery.{key} is not a recognized key")
+    raw_directives = value.get("directives", [])
+    if not isinstance(raw_directives, list):
+        errors.append("lint_ignore_discovery.directives must be a list")
+        raw_directives = []
+    validated: list[dict[str, Any]] = []
+    for index, directive in enumerate(raw_directives):
+        parsed = _validate_lint_directive(directive, f"lint_ignore_discovery.directives[{index}]", errors, warnings)
+        if parsed is not None:
+            validated.append(parsed)
+    return {"directives": validated}
+
+
+def _validate_lint_directive(
+    directive: Any, prefix: str, errors: list[str], warnings: list[str]
+) -> dict[str, Any] | None:
+    if not isinstance(directive, dict):
+        errors.append(f"{prefix} must be a mapping")
+        return None
+    tool = directive.get("tool")
+    if not isinstance(tool, str) or not tool:
+        errors.append(f"{prefix}.tool must be a non-empty string")
+    suffixes = directive.get("suffixes")
+    if not isinstance(suffixes, list) or not suffixes or not all(isinstance(item, str) and item.startswith(".") for item in suffixes):
+        errors.append(f"{prefix}.suffixes must be a non-empty list of dot-prefixed extensions")
+    pattern = directive.get("pattern")
+    if not isinstance(pattern, str) or not pattern:
+        errors.append(f"{prefix}.pattern must be a non-empty regex string")
+    else:
+        try:
+            re.compile(pattern)
+        except re.error as exc:
+            errors.append(f"{prefix}.pattern is not a valid regex: {exc}")
+    scope = directive.get("scope", "leading")
+    if scope not in LINT_IGNORE_DIRECTIVE_SCOPES:
+        errors.append(f"{prefix}.scope must be one of inline, file, leading")
+    for key in directive:
+        if key not in LINT_IGNORE_DIRECTIVE_KNOWN_KEYS:
+            warnings.append(f"{prefix}.{key} is not a recognized key")
+    if any(message.startswith(prefix) for message in errors):
+        return None
+    return {"tool": tool, "suffixes": list(suffixes), "pattern": pattern, "scope": scope}
+
+
 def skill_ergonomics_gate_rules(value: Any, errors: list[str]) -> list[str] | None:
     return validate_skill_ergonomics_gate_rules(value, errors)
 

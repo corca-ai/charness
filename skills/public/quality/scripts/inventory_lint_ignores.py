@@ -58,7 +58,12 @@ def main() -> int:
     adapter = load_quality_adapter_permissive(target_root)
     data = adapter.get("data", {}) if isinstance(adapter, dict) else {}
     vendored_paths = data.get("vendored_paths", []) if isinstance(data, dict) else []
-    payload = inventory_lint_ignores(target_root, vendored_paths if isinstance(vendored_paths, list) else [])
+    lint_ignore_discovery = data.get("lint_ignore_discovery") if isinstance(data, dict) else None
+    payload = inventory_lint_ignores(
+        target_root,
+        vendored_paths if isinstance(vendored_paths, list) else [],
+        lint_ignore_discovery,
+    )
     payload["adapter_path"] = adapter.get("path")
     payload["adapter_valid"] = adapter.get("valid", True)
     payload["adapter_errors"] = adapter.get("errors", [])

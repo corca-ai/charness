@@ -293,3 +293,80 @@ def test_inventory_lint_ignores_falls_back_once_for_malformed_python(tmp_path: P
         ("pylint", ["invalid-name"]),
         ("noqa", ["F401"]),
     ]
+
+
+def _write_lint_adapter(repo: Path, lint_ignore_discovery: dict) -> None:
+    import yaml
+
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "version": 1,
+                "repo": "fixture",
+                "language": "en",
+                "output_dir": "charness-artifacts/quality",
+                "lint_ignore_discovery": lint_ignore_discovery,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_adapter_lint_ignore_discovery_covers_other_languages(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "pkg").mkdir(parents=True)
+    (repo / "pkg" / "main.go").write_text(
+        "func run() {\n\tfoo() //nolint:errcheck\n\tbar() // nolint\n}\n", encoding="utf-8"
+    )
+    _write_lint_adapter(
+        repo,
+        {"directives": [{"tool": "nolint", "suffixes": [".go"], "pattern": r"//\s*nolint(?::(?P<codes>\S+))?"}]},
+    )
+
+    payload = _inventory_json(repo)
+
+    assert payload["adapter_valid"] is True
+    assert payload["summary"]["by_tool"].get("nolint") == 2
+    coded = [finding for finding in payload["findings"] if finding["codes"]]
+    blanket = [finding for finding in payload["findings"] if finding["blanket"]]
+    assert [finding["codes"] for finding in coded] == [["errcheck"]]
+    assert len(blanket) == 1
+
+
+def test_adapter_lint_ignore_discovery_inert_without_config(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "pkg").mkdir(parents=True)
+    # A .go suppression is invisible to the built-in py/js/ts matchers with no
+    # adapter directive declared — the extension is opt-in, not a default undercount.
+    (repo / "pkg" / "main.go").write_text("func run() {\n\tfoo() //nolint:errcheck\n}\n", encoding="utf-8")
+
+    payload = _inventory_json(repo)
+    assert payload["summary"]["ignore_count"] == 0
+
+
+def test_invalid_lint_ignore_discovery_marks_adapter_invalid(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "demo.py").write_text("import sys  # noqa: F401\n", encoding="utf-8")
+    # An uncompilable regex must invalidate the adapter, not crash the scan.
+    _write_lint_adapter(repo, {"directives": [{"tool": "bad", "suffixes": [".go"], "pattern": "([unclosed"}]})
+
+    payload = _inventory_json(repo)
+    assert payload["adapter_valid"] is False
+    assert any("pattern" in error for error in payload["adapter_errors"])
+    # inventory still runs on validated defaults (the built-in py noqa is found).
+    assert payload["summary"]["by_tool"].get("noqa") == 1
+
+
+def test_lint_ignore_discovery_top_level_typo_warns(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "demo.py").write_text("import sys  # noqa: F401\n", encoding="utf-8")
+    # A mistyped top-level key (`directves`) must not silently produce zero
+    # matchers — the exact undercount this feature removes, at the outermost key.
+    _write_lint_adapter(repo, {"directves": [{"tool": "nolint", "suffixes": [".go"], "pattern": "//nolint"}]})
+
+    payload = _inventory_json(repo)
+    assert payload["adapter_valid"] is True  # an unknown key is a warning, not an error
+    assert any("directves" in warning for warning in payload["adapter_warnings"])

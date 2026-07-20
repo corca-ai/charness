@@ -56,6 +56,7 @@ Quality-specific fields:
 - `runtime_budgets`
 - `command_timing_log`
 - `test_file_discovery`
+- `lint_ignore_discovery`
 - `startup_probes`
 - `quality_phases`
 - `prompt_asset_roots`
@@ -264,6 +265,43 @@ globs — so a broken or misconfigured authoritative lister surfaces as a degrad
 measurement rather than a quiet undercount, the exact failure class this field
 exists to remove. Shape is validated at adapter load; the command's runtime
 success is proven by the consumer. Unknown sub-keys land in warnings.
+
+`lint_ignore_discovery` lets the consuming repo own how the lint-ignore inventory
+discovers lint-suppression sites, the sibling of `test_file_discovery` for the
+same measurement-contract class: the built-in matchers only understand py/js/ts
+suppression syntax (`# noqa`, `# ruff: noqa`, `# pylint: disable`,
+`eslint-disable`), so a repo whose linters live elsewhere (Go `//nolint`, Ruby
+`# rubocop:disable`, …) would silently undercount. Because suppression syntax is
+language-specific, broadening declares a directive matcher, not just an
+extension. It is **inert when omitted** — only the built-in py/js/ts matchers
+run.
+
+Shape:
+
+```yaml
+lint_ignore_discovery:
+  directives:
+    - tool: nolint
+      suffixes: [".go"]
+      pattern: "//\\s*nolint(?::(?P<codes>\\S+))?"
+      scope: leading
+```
+
+Fields per directive:
+
+- `tool` — the label recorded on findings from this matcher (required).
+- `suffixes` — dot-prefixed file extensions the matcher applies to (required,
+  non-empty); their union is added to the built-in discovery suffix set.
+- `pattern` — a regex, ideally with a `(?P<codes>...)` named group so coded
+  suppressions are distinguished from blanket ones (required; validated as
+  compilable at adapter load).
+- `scope` — `inline`, `file`, or `leading` (default `leading`: file-scope when
+  the directive begins the line, else inline).
+
+The `pattern` is trusted repo-owned config — the same boundary as other
+adapter-declared matchers — and is applied to file content line by line; the
+validator checks shape and regex-compilability, and unknown sub-keys (per
+directive and at the block top level) land in warnings.
 
 `startup_probes` is an optional list of startup probe records for installable
 or agent-facing CLIs. Each record should include:

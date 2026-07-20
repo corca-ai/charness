@@ -18,7 +18,7 @@ IGNORED_PARTS = {
     "__pycache__",
     "node_modules",
 }
-# discovery-boundary: lint-suppression directives are language-syntax-specific (see the per-language regexes below); py/js/ts is the deliberate covered default. Broadening needs each new language's directive syntax, not just an extension.
+# discovery-boundary: adapter-owned default — py/js/ts is the built-in set; consumers add other languages' suffixes+directive syntax via the adapter `lint_ignore_discovery.directives`. Suppression detection is language-syntax-specific, so broadening declares a directive matcher, not just an extension.
 TEXT_SUFFIXES = {".cjs", ".js", ".jsx", ".mjs", ".py", ".pyi", ".ts", ".tsx"}
 PYTHON_NOQA_RE = re.compile(r"# noqa(?::\s*(?P<codes>[A-Za-z0-9_,\s-]+))?", re.IGNORECASE)
 PYTHON_RUFF_FILE_RE = re.compile(r"^\s*#\s*ruff:\s*noqa(?:\s*:\s*(?P<codes>.*))?\s*$", re.IGNORECASE)
@@ -28,6 +28,8 @@ ESLINT_RE = re.compile(
     r"(?:^|\s)(?://|/\*)\s*eslint-disable(?P<scope>-next-line|-line)?(?:\s+(?P<codes>[^*\n]+?))?\s*(?:\*/)?$",
     re.IGNORECASE,
 )
+DEFAULT_LINT_IGNORE_DISCOVERY: dict[str, Any] = {"directives": []}
+_ADAPTER_DIRECTIVE_SCOPES = {"inline", "file", "leading"}
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): suppression pressure is an
@@ -36,8 +38,8 @@ ESLINT_RE = re.compile(
 INTERPRETATION = {
     "measures": (
         "lint-suppression sites — `# noqa`, `# ruff: noqa`, `# pylint: disable`, and "
-        "`eslint-disable` comments, counted by scope (file/inline), blanket-vs-coded, "
-        "and tool"
+        "`eslint-disable` comments, plus any adapter-declared language directives, "
+        "counted by scope (file/inline), blanket-vs-coded, and tool"
     ),
     "proxy_for": "normalized lint debt — suppressions that defer a structural fix instead of paying it",
     "blind_spots": (
@@ -53,14 +55,14 @@ INTERPRETATION = {
 }
 
 
-def _iter_candidate_files(repo_root: Path, vendored: list[str]) -> list[Path]:
+def _iter_candidate_files(repo_root: Path, vendored: list[str], suffixes: set[str]) -> list[Path]:
     paths: list[Path] = []
     for path in iter_repo_files(repo_root):
         if not path.is_file():
             continue
         if any(part in IGNORED_PARTS for part in path.relative_to(repo_root).parts):
             continue
-        if path.suffix.lower() not in TEXT_SUFFIXES:
+        if path.suffix.lower() not in suffixes:
             continue
         if is_vendored(repo_root, path, vendored):
             continue
@@ -152,11 +154,89 @@ def _inventory_text_lines(repo_root: Path, path: Path, text: str, findings: list
             _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="eslint", scope="file" if match.group("scope") is None else "inline", codes=_parse_named_codes(match.group("codes")), raw=line)
 
 
-def inventory_lint_ignores(repo_root: Path, vendored_paths: list[str] | None = None) -> dict[str, Any]:
+def _compile_directives(config: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Compile adapter-declared language directive matchers.
+
+    Suppression detection is language-syntax-specific, so a consuming repo whose
+    linters live outside py/js/ts (Go `//nolint`, Ruby `# rubocop:disable`, …)
+    declares each directive's suffixes + regex here rather than the portable body
+    guessing them. Malformed entries are dropped defensively here; the adapter
+    validator is the authoritative shape gate that surfaces them as errors, so a
+    bad directive is never a silent no-op.
+    """
+    compiled: list[dict[str, Any]] = []
+    for directive in (config or {}).get("directives") or []:
+        if not isinstance(directive, dict):
+            continue
+        tool = directive.get("tool")
+        pattern = directive.get("pattern")
+        suffixes = directive.get("suffixes")
+        if not (isinstance(tool, str) and tool and isinstance(pattern, str) and pattern):
+            continue
+        if not (isinstance(suffixes, list) and suffixes and all(isinstance(item, str) and item for item in suffixes)):
+            continue
+        try:
+            regex = re.compile(pattern)
+        except re.error:
+            continue
+        scope = directive.get("scope", "leading")
+        compiled.append(
+            {
+                "tool": tool,
+                "suffixes": {item.lower() for item in suffixes},
+                "regex": regex,
+                "scope": scope if scope in _ADAPTER_DIRECTIVE_SCOPES else "leading",
+            }
+        )
+    return compiled
+
+
+def _effective_suffixes(directives: list[dict[str, Any]]) -> set[str]:
+    suffixes = set(TEXT_SUFFIXES)
+    for directive in directives:
+        suffixes |= directive["suffixes"]
+    return suffixes
+
+
+def _directive_scope(line: str, match: re.Match[str], scope: str) -> str:
+    if scope in {"file", "inline"}:
+        return scope
+    return "file" if not line[: match.start()].strip() else "inline"
+
+
+def _inventory_adapter_directives(
+    repo_root: Path, path: Path, text: str, findings: list[dict[str, Any]], directives: list[dict[str, Any]]
+) -> None:
+    applicable = [directive for directive in directives if path.suffix.lower() in directive["suffixes"]]
+    if not applicable:
+        return
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        for directive in applicable:
+            for match in directive["regex"].finditer(line):
+                codes = _parse_named_codes(match.groupdict().get("codes")) if "codes" in match.groupdict() else []
+                _record_finding(
+                    findings,
+                    repo_root=repo_root,
+                    path=path,
+                    line_no=line_no,
+                    tool=directive["tool"],
+                    scope=_directive_scope(line, match, directive["scope"]),
+                    codes=codes,
+                    raw=line,
+                )
+
+
+def inventory_lint_ignores(
+    repo_root: Path,
+    vendored_paths: list[str] | None = None,
+    lint_ignore_discovery: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
     vendored = vendored_prefixes(vendored_paths)
-    for path in _iter_candidate_files(repo_root, vendored):
+    directives = _compile_directives(lint_ignore_discovery)
+    for path in _iter_candidate_files(repo_root, vendored, _effective_suffixes(directives)):
         text = path.read_text(encoding="utf-8", errors="replace")
+        _inventory_adapter_directives(repo_root, path, text, findings, directives)
         lower_text = text.lower()
         has_eslint_marker = "eslint-disable" in lower_text
         has_python_marker = "noqa" in lower_text or "pylint:" in lower_text or "ruff:" in lower_text

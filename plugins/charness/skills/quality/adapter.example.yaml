@@ -75,6 +75,20 @@ runtime_budget_profiles: {}
 #   command: "node --input-type=module -e \"import { resolveDiscoverableUnitTestFiles } from './scripts/test-surface-lib.mjs'; console.log(resolveDiscoverableUnitTestFiles().join('\\n'))\""
 #   patterns: []
 #   patterns_mode: extend
+# Optional: own lint-suppression discovery for the lint-ignore inventory so it
+# also counts suppressions in languages outside the built-in py/js/ts set.
+# Suppression syntax is language-specific, so each directive declares its file
+# suffixes, a regex (ideally with a `(?P<codes>...)` group), and an optional
+# scope (inline | file | leading; default leading). Inert when omitted.
+# lint_ignore_discovery:
+#   directives:
+#     - tool: nolint
+#       suffixes: [".go"]
+#       pattern: "//\\s*nolint(?::(?P<codes>\\S+))?"
+#       scope: leading
+#     - tool: rubocop
+#       suffixes: [".rb"]
+#       pattern: "#\\s*rubocop:disable\\s+(?P<codes>.+)"
 startup_probes: []
 quality_phases: []
 concept_paths: []
