@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 98,
-  "indexed_artifact_count": 86,
+  "source_artifact_count": 100,
+  "indexed_artifact_count": 88,
   "risk_class_counts": {
     "contract-freeze-risk": 28,
     "external-seam": 5,
     "host-disproves-local": 2,
-    "none": 28,
+    "none": 30,
     "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 4,
     "monitor": 73,
-    "none": 9
+    "none": 11
   },
   "entries": [
     {
@@ -1210,9 +1210,9 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "none-internal-deterministic-gate",
+      "artifact_path": "charness-artifacts/debug/2026-07-20-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
       "risk_classes": [
         "none"
       ],
@@ -1220,7 +1220,35 @@
       "generalization_pressure": "none",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/critique/2026-07-19-portable-proof-path-and-release-identity-critique.md",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
       "forced": false
     }
   ],

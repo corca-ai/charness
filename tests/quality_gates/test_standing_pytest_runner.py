@@ -4,6 +4,7 @@ import runpy
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -116,7 +117,10 @@ def test_standing_pytest_default_basetemp_uses_user_and_time(
     )
     monkeypatch.setattr(runner.time, "time_ns", lambda: 123)
 
-    assert runner.default_basetemp(repo, {"HOME": str(tmp_path / "home")}).name == "pytest-123"
+    # The leaf is deliberately NOT "pytest-*" so nested pytest runs' numbered-dir
+    # cleanup cannot target this lock-less explicit basetemp (see
+    # test_default_basetemp_survives_nested_pytest_cleanup).
+    assert runner.default_basetemp(repo, {"HOME": str(tmp_path / "home")}).name == "charness-run-123"
     assert "pytest-of-alice" in str(runner.default_basetemp(repo, {"HOME": str(tmp_path / "home")}))
 
 
@@ -368,3 +372,57 @@ def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: P
         "--pytest-target",
         "tests/charness_cli/test_update_propagation.py",
     ]
+
+
+def test_default_basetemp_leaf_is_not_a_pytest_cleanup_candidate(tmp_path: Path) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    env = {"PYTEST_DEBUG_TEMPROOT": str(tmp_path / "temproot")}
+
+    basetemp = runner.default_basetemp(repo, env)
+
+    # The basetemp shares its pytest-of-<user> parent with nested pytest runs'
+    # numbered dirs; a "pytest-" leaf would be an unlocked deletion candidate for
+    # their cleanup glob (prefix="pytest-").
+    assert not basetemp.name.startswith("pytest-")
+    assert basetemp.parent.name.startswith("pytest-of-")
+
+
+def test_default_basetemp_survives_nested_pytest_cleanup(tmp_path: Path) -> None:
+    # Regression for the mid-run temp-tree deletion race: a nested pytest run that
+    # shares the pytest-of-<user> rootdir (via inherited PYTEST_DEBUG_TEMPROOT) runs
+    # make_numbered_dir_with_cleanup at process exit, which renames+removes unlocked
+    # "pytest-*" dirs. pytest's explicit --basetemp branch creates the standing
+    # runner's basetemp WITHOUT a cleanup lock, so it must not carry a "pytest-*"
+    # name or a nested run's cleanup would delete it (and every live xdist worker's
+    # popen-gw* subdir) mid-run.
+    from _pytest.pathlib import (  # noqa: PLC0415
+        LOCK_TIMEOUT,
+        cleanup_numbered_dir,
+        make_numbered_dir_with_cleanup,
+    )
+
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    env = {"PYTEST_DEBUG_TEMPROOT": str(tmp_path / "temproot")}
+
+    basetemp = runner.default_basetemp(repo, env)
+    basetemp.mkdir(parents=True, mode=0o700)  # mimic pytest's explicit-basetemp mkdir (no lock file)
+    (basetemp / "popen-gw0").mkdir()  # a live xdist worker temp dir
+
+    rootdir = basetemp.parent
+    for _ in range(6):  # nested default-scheme pytest runs create higher-numbered locked dirs
+        make_numbered_dir_with_cleanup(
+            root=rootdir, prefix="pytest-", keep=3, lock_timeout=LOCK_TIMEOUT, mode=0o700
+        )
+    # a nested run's exit-time cleanup sweep of the shared rootdir (treat every lock as dead)
+    cleanup_numbered_dir(
+        root=rootdir, prefix="pytest-", keep=3, consider_lock_dead_if_created_before=time.time() + 1
+    )
+
+    assert basetemp.exists()
+    assert (basetemp / "popen-gw0").exists()

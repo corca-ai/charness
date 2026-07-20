@@ -259,7 +259,10 @@ def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_qua
     assert "tests/charness_cli" in payload["args"]
     basetemp = payload["args"][payload["args"].index("--basetemp") + 1]
     assert basetemp.startswith(payload["temproot"] + "/pytest-of-")
-    assert Path(basetemp).name.startswith("pytest-")
+    # The leaf must NOT be a "pytest-*" dir: it shares pytest-of-<user> with nested
+    # pytest runs whose exit-time cleanup deletes unlocked "pytest-*" dirs, and this
+    # explicit basetemp carries no cleanup lock (see test_standing_pytest_runner.py).
+    assert Path(basetemp).name.startswith("charness-run-")
     assert not basetemp.endswith("/pytest-0")
 
 

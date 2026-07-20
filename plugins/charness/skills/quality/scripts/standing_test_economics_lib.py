@@ -25,7 +25,12 @@ resolve_test_files = _TEST_DISCOVERY.resolve_test_files
 TRANSPILE_EXTENSIONS = {".ts", ".tsx"}
 NODE_TEST_RE = re.compile(r"(?:^|\s)node\b[^\n]*(?:^|\s)--test(?:\s|$)")
 TS_LOADER_RE = re.compile(r"\b(tsx|ts-node|swc-node|esbuild-register)\b")
-PYTEST_SESSION_RE = re.compile(r"^pytest-\d+$")
+# Recognize both pytest's own numbered session dirs (`pytest-<n>`) and the standing
+# runner's explicit basetemp (`charness-run-<time_ns>`, deliberately not named
+# `pytest-*` so pytest's numbered-dir cleanup cannot delete it mid-run — see
+# scripts/run_standing_pytest.py default_basetemp). Both hold the same
+# `popen-gw*`/seed footprint the drill-down inventory reports.
+PYTEST_SESSION_RE = re.compile(r"^(?:pytest|charness-run)-\d+$")
 PYTEST_WORKER_RE = re.compile(r"^popen-gw\d+$")
 PYTEST_SEED_PREFIXES = ("charness-repo-seed", "charness-git-repo-seed", "managed-home-seed")
 

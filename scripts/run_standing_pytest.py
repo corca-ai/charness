@@ -57,7 +57,16 @@ def default_basetemp(repo_root: Path, env: dict[str, str] | None = None) -> Path
         capture_output=True,
         text=True,
     ).stdout.strip() or "unknown"
-    return temp_root / f"pytest-of-{user}" / f"pytest-{time.time_ns()}"
+    # The leaf MUST NOT start with "pytest-". This basetemp lives under the shared
+    # PYTEST_DEBUG_TEMPROOT/pytest-of-<user> rootdir, and nested pytest runs spawned
+    # by tests inherit PYTEST_DEBUG_TEMPROOT and run pytest's numbered-dir cleanup
+    # (make_numbered_dir_with_cleanup, prefix "pytest-") over that same rootdir at
+    # process exit. pytest's explicit --basetemp branch creates this dir WITHOUT a
+    # cleanup lock file, so a "pytest-*" name would be an unlocked deletion candidate
+    # and a nested run's exit-time cleanup could rename+remove it — and every live
+    # xdist worker's popen-gw* subdir — mid-run, producing mass FileNotFoundError in
+    # tmp_path setup. A non-"pytest-" prefix is invisible to that cleanup glob.
+    return temp_root / f"pytest-of-{user}" / f"charness-run-{time.time_ns()}"
 
 
 def choose_pytest_command(env: dict[str, str] | None = None) -> list[str]:

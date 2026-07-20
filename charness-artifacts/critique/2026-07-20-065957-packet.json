@@ -1,0 +1,148 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-20T06:59:57Z",
+  "prepared_for": "standing-pytest-basetemp-deletion-race-fix",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- docs/handoff.md\n- plugins/charness/scripts/run_standing_pytest.py\n- plugins/charness/skills/release/scripts/publish_release_runtime.py\n- scripts/run_standing_pytest.py\n- skills/public/release/scripts/publish_release_runtime.py\n- tests/quality_gates/test_quality_runner.py\n- tests/quality_gates/test_release_failure_record.py\n- tests/quality_gates/test_standing_pytest_runner.py\n- charness-artifacts/critique/2026-07-20-060931-packet.json\n- charness-artifacts/critique/2026-07-20-060931-packet.md\n- charness-artifacts/debug/2026-07-20-debug-review.md\n- charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/run_standing_pytest.py, skills/public/release/scripts/publish_release_runtime.py\n  derived matches: plugins/charness/scripts/run_standing_pytest.py, plugins/charness/skills/release/scripts/publish_release_runtime.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/latest.md, docs/handoff.md, charness-artifacts/critique/2026-07-20-060931-packet.md, charness-artifacts/debug/2026-07-20-debug-review.md, charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/release/scripts/publish_release_runtime.py\n  derived matches: plugins/charness/skills/release/scripts/publish_release_runtime.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/release/scripts/publish_release_runtime.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/release/scripts/publish_release_runtime.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-20-060931-packet.json, charness-artifacts/critique/2026-07-20-060931-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/debug/2026-07-20-debug-review.md, charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/run_standing_pytest.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/run_standing_pytest.py, tests/quality_gates/test_quality_runner.py, tests/quality_gates/test_release_failure_record.py, tests/quality_gates/test_standing_pytest_runner.py\n  derived matches: plugins/charness/scripts/run_standing_pytest.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/run_standing_pytest.py, skills/public/release/scripts/publish_release_runtime.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "14ab80cc309af77784f28a58935d3ff616b31475",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/critique/2026-07-20-060931-packet.json",
+      "charness-artifacts/critique/2026-07-20-060931-packet.md",
+      "charness-artifacts/debug/2026-07-20-debug-review.md",
+      "charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "docs/handoff.md",
+      "plugins/charness/scripts/run_standing_pytest.py",
+      "plugins/charness/skills/release/scripts/publish_release_runtime.py",
+      "scripts/run_standing_pytest.py",
+      "skills/public/release/scripts/publish_release_runtime.py",
+      "tests/quality_gates/test_quality_runner.py",
+      "tests/quality_gates/test_release_failure_record.py",
+      "tests/quality_gates/test_standing_pytest_runner.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/2026-07-20-060931-packet.json",
+        "content_sha256": "bbf39a8b926e7a09bddc5369105c95d3b0adf6c3cd1241e93becc03c14cb42fd"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-20-060931-packet.md",
+        "content_sha256": "db612200ea355d19cc53e4a1107525254f8985e610ec14c484570547c56b44c4"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-20-debug-review.md",
+        "content_sha256": "53ec031600bcacdf8fd9afb36d00856417ab742fcbc5deb1341dd08c9c570b42"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md",
+        "content_sha256": "13ea24c69ed4f59f9136ed98240712366ab06d1507836f8c4da87d2242938444"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "1fee6c5600e7d19ef70896dd8d5abb08c4be239a24fcb6aad78c19bcee19f7cb"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "554e3b046e3455d6051b2888731e8c3e8d3c95d7db490a8ed172a157ae6b9a9a"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "6562d16fc6cce8d7dec236fdaaa35bd73f028ee86498cf2f8138482d3cd4369e"
+      },
+      {
+        "path": "plugins/charness/scripts/run_standing_pytest.py",
+        "content_sha256": "9a6f656f36ed10899740d3faad75c5d91c172889d9a5d4f23b64ee526c51c07a"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_runtime.py",
+        "content_sha256": "715b4bfd301436455de27788fe105c0edff0dd0c88832fdc23ade8577840ebe4"
+      },
+      {
+        "path": "scripts/run_standing_pytest.py",
+        "content_sha256": "9a6f656f36ed10899740d3faad75c5d91c172889d9a5d4f23b64ee526c51c07a"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_runtime.py",
+        "content_sha256": "715b4bfd301436455de27788fe105c0edff0dd0c88832fdc23ade8577840ebe4"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_runner.py",
+        "content_sha256": "4f4d3f7ec9f876f29e50bb8894e56a3341322352e894e3802435babb4074dfb0"
+      },
+      {
+        "path": "tests/quality_gates/test_release_failure_record.py",
+        "content_sha256": "a46d046d470fd379881ec9238d7523a98dcf0ea8fd1b54abde60cc59ef10d74f"
+      },
+      {
+        "path": "tests/quality_gates/test_standing_pytest_runner.py",
+        "content_sha256": "0a5e22a5d78579e34a6cb666a5957654d613458aecd24d10f7b8d050098beea8"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "abb5c99312fa12bf7d25bc36ffdd0a2770cf405b8fcf848fe346f71ed97234ab",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/critique/2026-07-20-060931-packet.json",
+        "content_sha256": "bbf39a8b926e7a09bddc5369105c95d3b0adf6c3cd1241e93becc03c14cb42fd"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-20-060931-packet.md",
+        "content_sha256": "db612200ea355d19cc53e4a1107525254f8985e610ec14c484570547c56b44c4"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-20-debug-review.md",
+        "content_sha256": "53ec031600bcacdf8fd9afb36d00856417ab742fcbc5deb1341dd08c9c570b42"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md",
+        "content_sha256": "13ea24c69ed4f59f9136ed98240712366ab06d1507836f8c4da87d2242938444"
+      }
+    ],
+    "identity_sha256": "542536cc60c326f617fb112aec0e7fcf1c4ecb571c5bce609da00dba085e6827"
+  }
+}

@@ -84,6 +84,23 @@ def _bounded_error(error: BaseException, *, limit: int = 4000) -> str:
     return detail if len(detail) <= limit else "…" + detail[-(limit - 1) :]
 
 
+def _record_creation_order_ns(path: Path) -> int:
+    """Return a creation-order key (epoch nanoseconds) for a persisted record.
+
+    The filename embeds the wall-clock ``time.time_ns()`` stamp taken when the
+    record was written, which is far higher resolution than filesystem mtime.
+    Coarse-granularity filesystems (ext2/ext3, or ext4 with 128-byte inodes)
+    collapse every same-second write to one identical ``st_mtime_ns``, so mtime
+    alone cannot order a burst of records and retention would evict an arbitrary
+    one instead of the oldest. Prefer the embedded stamp and fall back to mtime
+    for any foreign file; the caller breaks any remaining ties on ``path.name``.
+    """
+    match = re.search(r"-(\d+)\.yaml$", path.name)
+    if match is not None:
+        return int(match.group(1))
+    return path.stat().st_mtime_ns
+
+
 def persist_failure_payload(
     repo_root: Path,
     payload: dict[str, Any],
@@ -115,7 +132,11 @@ def persist_failure_payload(
             stream.write(rendered)
         os.replace(temporary_path, record_path)
         temporary_path = None
-        records = sorted(record_dir.glob("*.yaml"), key=lambda path: path.stat().st_mtime_ns, reverse=True)
+        records = sorted(
+            record_dir.glob("*.yaml"),
+            key=lambda path: (_record_creation_order_ns(path), path.name),
+            reverse=True,
+        )
         for stale_record in records[FAILURE_RECORD_RETENTION:]:
             stale_record.unlink()
         return {

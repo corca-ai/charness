@@ -1,1 +1,1 @@
-2026-07-19-skill-contract-whitespace-coupling.md
+2026-07-20-standing-pytest-basetemp-deletion-race.md

@@ -678,6 +678,28 @@ def test_standing_test_economics_reports_pytest_temp_footprint(tmp_path: Path) -
     assert footprint["top_test_dirs"][0]["disk_bytes"] >= 13
 
 
+def test_standing_test_economics_counts_charness_run_session_dirs(tmp_path: Path) -> None:
+    # The standing runner's explicit basetemp is named `charness-run-<time_ns>` (not
+    # `pytest-*`, so pytest's cleanup cannot delete it mid-run). The drill-down
+    # footprint must still recognize it as a session, or it silently under-reports the
+    # standing suite's own popen-gw*/seed footprint while whole-root du still counts it.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    pytest_root = tmp_path / f"pytest-of-{getpass.getuser()}" / "charness-run-123" / "popen-gw0"
+    seed = pytest_root / "charness-repo-seed0"
+    seed.mkdir(parents=True)
+    (seed / "payload.bin").write_bytes(b"x" * 11)
+
+    env = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)}
+    result = _run_inventory_cli("--repo-root", str(repo), "--json", env=env)
+    assert result.returncode == 0, result.stderr
+    footprint = json.loads(result.stdout)["pytest_temp_footprint"]
+
+    assert footprint["session_count"] == 1
+    assert footprint["worker_dir_count"] == 1
+    assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
+
+
 def test_pytest_tmp_retention_keeps_only_failed_session_dirs() -> None:
     config = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
