@@ -1,0 +1,121 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-20T11:53:43Z",
+  "prepared_for": "dup-ratchet scoped rebaseline evaluate-parity fix (#448) final staged state",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-07-20-111813-packet.json\n- charness-artifacts/critique/2026-07-20-111813-packet.md\n- docs/handoff.md\n- plugins/charness/skills/quality/references/dup-ratchet.md\n- plugins/charness/skills/quality/scripts/check_dup_ratchet.py\n- plugins/charness/skills/quality/scripts/dup_ratchet_lib.py\n- plugins/charness/skills/quality/scripts/dup_ratchet_scan.py\n- skills/public/quality/references/dup-ratchet.md\n- skills/public/quality/scripts/check_dup_ratchet.py\n- skills/public/quality/scripts/dup_ratchet_lib.py\n- skills/public/quality/scripts/dup_ratchet_scan.py\n- tests/quality_gates/test_dup_ratchet_scoped_rebaseline.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/quality/references/dup-ratchet.md, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_ratchet_lib.py, skills/public/quality/scripts/dup_ratchet_scan.py\n  derived matches: plugins/charness/skills/quality/references/dup-ratchet.md, plugins/charness/skills/quality/scripts/check_dup_ratchet.py, plugins/charness/skills/quality/scripts/dup_ratchet_lib.py, plugins/charness/skills/quality/scripts/dup_ratchet_scan.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-20-111813-packet.md, docs/handoff.md, skills/public/quality/references/dup-ratchet.md\n  derived matches: plugins/charness/skills/quality/references/dup-ratchet.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/quality/references/dup-ratchet.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/dup-ratchet.md, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_ratchet_lib.py, skills/public/quality/scripts/dup_ratchet_scan.py\n  derived matches: plugins/charness/skills/quality/references/dup-ratchet.md, plugins/charness/skills/quality/scripts/check_dup_ratchet.py, plugins/charness/skills/quality/scripts/dup_ratchet_lib.py, plugins/charness/skills/quality/scripts/dup_ratchet_scan.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/dup-ratchet.md, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_ratchet_lib.py, skills/public/quality/scripts/dup_ratchet_scan.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/dup-ratchet.md, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_ratchet_lib.py, skills/public/quality/scripts/dup_ratchet_scan.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-20-111813-packet.json, charness-artifacts/critique/2026-07-20-111813-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_dup_ratchet_scoped_rebaseline.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_ratchet_lib.py, skills/public/quality/scripts/dup_ratchet_scan.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "c107299e19359ef02338aceff4580060641f5ffb",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/critique/2026-07-20-111813-packet.json",
+      "charness-artifacts/critique/2026-07-20-111813-packet.md",
+      "docs/handoff.md",
+      "plugins/charness/skills/quality/references/dup-ratchet.md",
+      "plugins/charness/skills/quality/scripts/check_dup_ratchet.py",
+      "plugins/charness/skills/quality/scripts/dup_ratchet_lib.py",
+      "plugins/charness/skills/quality/scripts/dup_ratchet_scan.py",
+      "skills/public/quality/references/dup-ratchet.md",
+      "skills/public/quality/scripts/check_dup_ratchet.py",
+      "skills/public/quality/scripts/dup_ratchet_lib.py",
+      "skills/public/quality/scripts/dup_ratchet_scan.py",
+      "tests/quality_gates/test_dup_ratchet_scoped_rebaseline.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/2026-07-20-111813-packet.json",
+        "content_sha256": "f2dac29ca3e343f1c61f7850b31a230a5929d60030439e12f4d33b5a597dfc05"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-20-111813-packet.md",
+        "content_sha256": "2d9873e905ffc80efd313400f955fe94f48033b4824020e050a8109dbd958cd8"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "3476f5e919c75867e082b58fbe50e8ff6c8919880a6ced31ff4f7d8fa12b32f6"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/dup-ratchet.md",
+        "content_sha256": "dc561dfedbde7a3c7f3a5eda045528a5501fcf70347cefd771e15d5a4e4a188b"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/check_dup_ratchet.py",
+        "content_sha256": "d26b4a1f54c2888c3d015a0284d659cba5fc8c6fed726b465c95f0a5e4c6174e"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/dup_ratchet_lib.py",
+        "content_sha256": "266950fc7515194e0625bada8d3e3b22a7fca328be902c3434723ef6b99fec17"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/dup_ratchet_scan.py",
+        "content_sha256": "6ae044dbcd28bc2313efa9c144c4b2dbac49114b4cde737499c2a4ee687cd93d"
+      },
+      {
+        "path": "skills/public/quality/references/dup-ratchet.md",
+        "content_sha256": "dc561dfedbde7a3c7f3a5eda045528a5501fcf70347cefd771e15d5a4e4a188b"
+      },
+      {
+        "path": "skills/public/quality/scripts/check_dup_ratchet.py",
+        "content_sha256": "d26b4a1f54c2888c3d015a0284d659cba5fc8c6fed726b465c95f0a5e4c6174e"
+      },
+      {
+        "path": "skills/public/quality/scripts/dup_ratchet_lib.py",
+        "content_sha256": "266950fc7515194e0625bada8d3e3b22a7fca328be902c3434723ef6b99fec17"
+      },
+      {
+        "path": "skills/public/quality/scripts/dup_ratchet_scan.py",
+        "content_sha256": "6ae044dbcd28bc2313efa9c144c4b2dbac49114b4cde737499c2a4ee687cd93d"
+      },
+      {
+        "path": "tests/quality_gates/test_dup_ratchet_scoped_rebaseline.py",
+        "content_sha256": "a2073b7d92fe5a153cadca8a19e2a60c529de34edcfc7661584f86fcc056d4e2"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "4505024cc0ea1830ec5e00bd764e1c7cd45643741c8f9469c47268213d28a2a7",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "f1d05d60f60956f92b3718713dbf2c4dd94602c2a6208e36a36e7373a5f639a4"
+  }
+}

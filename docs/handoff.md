@@ -10,55 +10,47 @@
 
 ## Current State
 
-- v2.4.0 is PUBLISHED and confirmed by distinct channels: GitHub API
-  `gh release view` (non-draft, published), remote tag `v2.4.0 -> 2ae99627`,
-  unauthenticated https-fetch of the release URL (HTTP 200), and installed
-  `charness version -> 2.4.0` after install refresh. Scope: sibling-scan
-  Tier-1/2 fixes, the `verify-closeout` `confirmation` object, and
-  observer-identity recording on distinct-channel verdicts. Known caveat: the
-  v2.4.0 observer JSON itself lacks the new `observer` field because the
-  publisher ran the pre-2.4.0 installed helper; it applies from the next
-  release. One publish attempt failed at quality (a wrapped inline code span
-  in the new closeout-discipline paragraph); rollback restored cleanly and the
-  durable failure record captured it.
-- The abstracted-pattern sibling-scan Tier-1 (A/B/C) and Tier-2 (D) findings are
-  FIXED with regression tests and clean fresh-eye reviews
-  ([Tier-1 fixes critique](../charness-artifacts/critique/2026-07-20-tier1-sibling-scan-fixes-critique.md);
-  Tier 2's approve + accepted `sessions`-file nit is in its commit ledger). The
-  live usage-episodes guard now ignores live-writer-owned paths while keeping
-  strict #194 leak teeth.
-- Durable prior context (all closed, do not reopen without regression evidence):
-  v2.3.0 adapter-owned measurement-contract discovery, the Gajae goal, dead-code
-  dynamic-entrypoint review, standing-xdist speedups, and quality's portable
-  proof-path method.
+- v2.4.0 is PUBLISHED, confirmed by distinct channels (gh API, remote tag
+  `v2.4.0 -> 2ae99627`, unauthenticated https 200, installed
+  `charness version -> 2.4.0`). Caveat: the v2.4.0 observer JSON predates the
+  new `observer` field; it applies from the next release.
+- #448 charness-side fix LANDED, issue stays OPEN: scoped dup-ratchet accepts
+  (`--accept-rotation`/`--accept-family`) now exempt overlay-intentional
+  families and unnamed membership reductions (evaluate-path parity; never
+  absorbed) —
+  [critique](../charness-artifacts/critique/2026-07-20-dup-ratchet-scoped-rebaseline-parity-critique.md).
+  Residuals NOT fixed: wrapper cached-inventory / fingerprint-normalization
+  hypothesis, cross-invocation drift. Closure proof = Ceal re-verification
+  against a released build.
+- #446 (mutation-test regression on main): both failing scheduled runs were on
+  pre-fix `5235228e`; the fix (`1834090b`) landed after. The next scheduled
+  `Mutation Tests` run (12:17 UTC cadence) on current main should auto-close it;
+  a dispatch-green run must NOT be used to close (workflow false-proof note).
+- Sibling scan closed through Tier 2; Tier 3 (E-J) stays boy-scout only.
 
 ## Next Session
 
-1. The sibling scan is closed through Tier 2; Tier 3 (E-J) stays opportunistic /
-   boy-scout only. Recommended next: pick from the Discuss items below or the
-   deferred discovery follow-ups (inline `.rglob`/`ls-files` pathspec discovery,
-   `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory).
-2. For clean-start mutating workflows, enumerate owned mutations before coding and
-   make every failure either restore the start state or emit a typed, resumable
-   state; for irreversible operations, prove the exact consumed range (see recent
-   lessons in References).
-3. Keep D18 ignored unless the operator explicitly reopens it.
-4. For mutation-pool changes, ask the selector before widening a producer by hand:
-   direct reference, nearest recognized loader ancestor, then broad fallback.
-5. When adding a new dynamic-call syntax, add wrong-path, wrong-loader,
-   wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
-6. Intentionally deferred: reaping stale `charness-run-*` basetemps from failed
-   standing runs — an ad-hoc reaper would reintroduce the deletion-race class just
-   fixed, and the seed-budget gate already bounds the footprint.
+1. Check the scheduled `Mutation Tests` run after 2026-07-20 ~12:40 UTC: green
+   auto-closes #446; red means the basetemp fix is insufficient — debug on
+   current main with a full-suite scope-matched reproduction.
+2. After the next release, ask/verify the Ceal-side #448 scenario (accept the
+   suggested rotations) before any #448 closure; then #449 (machine-distinct
+   CI observer) remains the open release-proof design item.
+3. Deferred discovery follow-ups remain available: inline `.rglob`/`ls-files`
+   pathspec discovery, `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero
+   test-surface advisory.
+4. Keep D18 ignored unless the operator explicitly reopens it. Stale
+   `charness-run-*` basetemp reaping stays intentionally deferred.
+5. For mutation-pool changes, ask the selector before widening a producer by
+   hand; for new dynamic-call syntax, add wrong-path/loader/receiver and
+   disconnected-control-flow fixtures first.
 
 ## Discuss
 
-- RESOLVED: the `verified` additive migration shipped (`verify-closeout` emits
-  `confirmation` {observer, channel, scope, line}; old artifacts grandfathered);
-  pre-commit rollback persistence was already shipped before the entry was written.
-- RESOLVED locally: distinct-channel records now name observer identity (the
-  credential-distinct, host-shared HTTP probe says so explicitly); the
-  machine-distinct CI-side observer is tracked in #449.
+- #448 scoped-accept deferred items (recorded in the critique): overlay-missing
+  advisory in scoped mode, advisories on the refused early-return, explicit
+  `--accept-family` of an intentional id test — pick up only with the next
+  dup-ratchet slice.
 
 ## References
 

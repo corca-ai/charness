@@ -24,7 +24,11 @@ It is still a full-scan overwrite though, silently re-accepting every unreviewed
 family too — for routine rotation churn prefer the scoped mode instead:
 `--accept-rotation OLD_ID=NEW_ID` / `--accept-family NEW_ID` (both repeatable) apply
 ONLY the named pairs/ids onto the existing baseline and refuse any other live delta
-(listing it); `--write-baseline` prints a WARN naming this path on overwrite.
+(listing it); overlay-intentional families and membership reductions are exempt from
+that refusal (the evaluate path already tolerates them; they stay out of the
+baseline), so both paths judge the same family universe (given readable
+overlay/baseline inputs) and an evaluate-suggested rotation is acceptable as-is;
+`--write-baseline` prints a WARN naming this path on overwrite.
 
 Advisory (degraded, never blocks) inputs: overlay/baseline/nose missing, an empty
 `scope_paths` while enabled (falls back to nose DEFAULT_PATHS), and a present but
@@ -99,12 +103,12 @@ def _write_gate_baseline(out: Path, members: dict, live_version: str) -> None:
 
 
 def _write_baseline(repo_root: Path, config: dict, args) -> dict:
-    scope_paths = list(config.get("scope_paths") or [])
-    baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
-    members, _spans, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
-    if reason:
-        return {"ok": False, "inert": False, "status": "write-baseline-failed",
-                "messages": [f"cannot write gate baseline: {reason}"]}
+    baseline_rel, members, live_version, error = _scan.live_scan_for_rebaseline(
+        repo_root, config, args, default_baseline_rel=DEFAULT_GATE_BASELINE_REL,
+        fail_status="write-baseline-failed", fail_prefix="cannot write gate baseline",
+    )
+    if error:
+        return error
     ids = set(members)
     out = repo_root / baseline_rel
     # C: guard a large, possibly-accidental rewrite of the accepted baseline. A
@@ -156,8 +160,12 @@ def _write_baseline(repo_root: Path, config: dict, args) -> dict:
 def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
     """Scoped re-baseline (see module docstring): apply ONLY named rotations /
     new-family accepts onto the existing baseline; refuse any other live delta."""
-    scope_paths = list(config.get("scope_paths") or [])
-    baseline_rel = config.get("gate_baseline_path") or DEFAULT_GATE_BASELINE_REL
+    baseline_rel, live_members, live_version, error = _scan.live_scan_for_rebaseline(
+        repo_root, config, args, default_baseline_rel=DEFAULT_GATE_BASELINE_REL,
+        fail_status="scoped-rebaseline-failed", fail_prefix="cannot compute live fingerprints",
+    )
+    if error:
+        return error
     out = repo_root / baseline_rel
     existing_members = _ratchet_baseline.load_gate_baseline_members(_scan.load_json(out))
     if existing_members is None:
@@ -165,15 +173,21 @@ def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
                 "messages": [f"no readable gate baseline at {baseline_rel}; run --write-baseline "
                              "once to seed one before using scoped accepts."]}
     existing_ids = set(existing_members)
-    live_members, _spans, reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
-    if reason:
-        return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
-                "messages": [f"cannot compute live fingerprints: {reason}"]}
     live_ids = set(live_members)
     accept_families = list(args.accept_family or [])
     rotations, malformed = _ratchet.parse_rotations(args.accept_rotation or [])
+    # Evaluate-parity universe trim: exempt overlay-intentional families and
+    # membership reductions from refusal (they are never absorbed either), so the
+    # rotations the evaluate path suggests are acceptable as-is.
+    review_rel = config.get("review_artifact_path") or DEFAULT_REVIEW_REL
+    exemptions = _ratchet.scoped_rebaseline_exemptions(
+        live_members=live_members, existing_members=existing_members,
+        overlay=_scan.load_json(repo_root / review_rel),
+        named_new_ids={new for _old, new in rotations} | set(accept_families),
+    )
     plan = _ratchet.plan_scoped_rebaseline(
         existing_ids=existing_ids, live_ids=live_ids, rotations=rotations, accept_families=accept_families,
+        exempt_live_ids=exemptions["exempt_live_ids"],
     )
     errors = [f"malformed --accept-rotation {raw!r}; expected OLD_ID=NEW_ID" for raw in malformed] + plan["errors"]
     if errors:
@@ -201,7 +215,10 @@ def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
     return {"ok": True, "inert": False, "status": "scoped-rebaseline-written",
             "accepted_rotations": [{"old": old, "new": new} for old, new in rotations],
             "accepted_families": accept_families, "code_family_count": len(updated_ids),
-            "gate_baseline_path": baseline_rel, "tool_version": live_version, "messages": [message]}
+            "ignored_intentional": exemptions["ignored_intentional"],
+            "unnamed_reductions": exemptions["unnamed_reductions"],
+            "gate_baseline_path": baseline_rel, "tool_version": live_version,
+            "messages": [message, *exemptions["advisories"]]}
 
 
 def _evaluate_config(repo_root: Path, config: dict, args) -> dict:

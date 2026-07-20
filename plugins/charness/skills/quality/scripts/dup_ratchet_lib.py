@@ -148,12 +148,54 @@ def parse_rotations(raw_rotations: list[str]) -> tuple[list[tuple[str, str]], li
     return pairs, malformed
 
 
+def scoped_rebaseline_exemptions(
+    *,
+    live_members: dict[str, list[str]],
+    existing_members: dict[str, list[str]],
+    overlay: dict[str, Any] | None,
+    named_new_ids: set[str],
+) -> dict[str, Any]:
+    """Evaluate-parity universe trim for the scoped re-baseline: the gate's evaluate
+    path never blocks on overlay-``intentional`` families or membership reductions,
+    so a scoped accept must not refuse them as "unnamed new" either — otherwise the
+    exact rotations the evaluator suggests are un-acceptable whenever tolerated
+    families are live. Returns the ``exempt_live_ids`` refusal exclusion plus the
+    ``ignored_intentional`` / ``unnamed_reductions`` evidence and one advisory line
+    per exemption class (never silent). Exempt ids are left OUT of the baseline:
+    intentional families are owned by the review overlay, and an unrotated reduction
+    keeps its vanished old family until the operator names the rotation."""
+    live_ids, existing_ids = set(live_members), set(existing_members)
+    intentional_code, _doc = overlay_intentional(overlay)
+    candidate_new = live_ids - existing_ids - intentional_code
+    reductions = classify_reductions(live_members, existing_members, candidate_new)
+    unnamed_reductions = [r for r in reductions if r["new_fingerprint"] not in named_new_ids]
+    ignored_intentional = sorted((live_ids - existing_ids) & intentional_code - named_new_ids)
+    advisories = [
+        f"ADVISORY (reduction): family {r['old_fingerprint']} shrank to {r['new_fingerprint']}; "
+        f"left out of the baseline (old id kept) — accept with "
+        f"--accept-rotation {r['old_fingerprint']}={r['new_fingerprint']}"
+        for r in unnamed_reductions
+    ]
+    if ignored_intentional:
+        advisories.append(
+            "left intentional (dup-review) live family(ies) out of the baseline: "
+            + ", ".join(ignored_intentional)
+        )
+    return {
+        "exempt_live_ids": set(ignored_intentional) | {r["new_fingerprint"] for r in unnamed_reductions},
+        "ignored_intentional": ignored_intentional,
+        "unnamed_reductions": unnamed_reductions,
+        "advisories": advisories,
+    }
+
+
 def plan_scoped_rebaseline(
     *,
     existing_ids: set[str],
     live_ids: set[str],
     rotations: list[tuple[str, str]],
     accept_families: list[str],
+    exempt_live_ids: set[str] = frozenset(),
 ) -> dict[str, Any]:
     """Pure planner for a scoped re-baseline: apply ONLY the named rotation pairs
     and named new-family accepts onto ``existing_ids``, and refuse (never silently
@@ -161,6 +203,10 @@ def plan_scoped_rebaseline(
     fix for ``--write-baseline``'s full-scan overwrite, which re-accepts every
     unreviewed new family wholesale on routine rotation churn. Returns ``ok`` plus
     either ``updated_ids`` (the new accepted set) or ``errors``/``refused_added``.
+    ``exempt_live_ids`` are live ids the gate's evaluate path already
+    tolerates (overlay-intentional families, membership reductions): they are
+    neither refused nor absorbed, so both paths judge the same family universe
+    (given readable overlay/baseline inputs).
     """
     errors: list[str] = []
     seen_old: set[str] = set()
@@ -186,7 +232,7 @@ def plan_scoped_rebaseline(
         updated_ids.add(new_id)
     updated_ids.update(accept_families)
 
-    refused_added = sorted(live_ids - updated_ids)
+    refused_added = sorted(live_ids - updated_ids - set(exempt_live_ids))
     if refused_added:
         return {"ok": False, "errors": [], "refused_added": refused_added, "updated_ids": None}
     return {"ok": True, "errors": [], "refused_added": [], "updated_ids": updated_ids}

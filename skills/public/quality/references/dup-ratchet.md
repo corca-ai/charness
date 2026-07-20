@@ -158,7 +158,10 @@ new one, wholesale — the exact erosion a re-baseline should not cause. For tri
 `--accept-family NEW_ID` (repeatable) instead: it starts from the existing baseline,
 applies ONLY the named pairs/ids, and refuses (listing them) any other live delta —
 so an unrelated new family riding along with a rotation still hard-blocks instead of
-being silently absorbed. `--write-baseline` remains for first-time bootstrap (trigger
+being silently absorbed. Two evaluate-tolerated classes are exempt from that
+refusal and stay OUT of the baseline: overlay-`intentional` families and unnamed
+membership reductions (each re-advised with its `--accept-rotation` hint), so a
+rotation the evaluate path itself suggested is acceptable as-is. `--write-baseline` remains for first-time bootstrap (trigger
 4, a genuine reviewed batch accept) and prints a WARN naming the scoped mode whenever
 it overwrites an existing baseline.
 

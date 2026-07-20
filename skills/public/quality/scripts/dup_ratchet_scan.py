@@ -230,3 +230,19 @@ def doc_drift_signatures(args, repo_root: Path) -> tuple[set[str], str | None]:
         if isinstance(fam, dict) and isinstance(fam.get("signature"), str) and fam.get("signature")
     }
     return signatures, None
+
+
+def live_scan_for_rebaseline(
+    repo_root: Path, config: dict, args, *, default_baseline_rel: str,
+    fail_status: str, fail_prefix: str,
+) -> tuple[str, dict, str, dict | None]:
+    """Shared preamble of the gate's --write-baseline and scoped-accept paths:
+    resolve the adapter paths, run the live scan, and typed-fail on a scan reason."""
+    scope_paths = list(config.get("scope_paths") or [])
+    baseline_rel = config.get("gate_baseline_path") or default_baseline_rel
+    members, _spans, reason, live_version = code_family_members(args, repo_root, scope_paths)
+    error = None
+    if reason:
+        error = {"ok": False, "inert": False, "status": fail_status,
+                 "messages": [f"{fail_prefix}: {reason}"]}
+    return baseline_rel, members, live_version, error

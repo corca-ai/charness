@@ -26,23 +26,29 @@ def _write_json(path: Path, obj: dict) -> Path:
     path.write_text(json.dumps(obj), encoding="utf-8")
     return path
 
-def _code_inventory(path: Path, family_ids: list[str]) -> Path:
+def _code_inventory(
+    path: Path, family_ids: list[str], members: dict[str, list[str]] | None = None
+) -> Path:
     return _write_json(path, {
         "status": "findings",
-        "families": [{"family_fingerprint": fid, "family_member_hashes": [fid]} for fid in family_ids],
+        "families": [{"family_fingerprint": fid,
+                      "family_member_hashes": (members or {}).get(fid, [fid])} for fid in family_ids],
     })
 
 def _consumer_repo(
     tmp_path: Path, *, baseline_ids: tuple[str, ...] = ("known1",),
+    baseline_members: dict[str, list[str]] | None = None,
+    review_entries: tuple[dict, ...] = (),
 ) -> Path:
     repo = tmp_path / "consumer"
     (repo / ".agents").mkdir(parents=True)
     _write_json(repo / "q" / "dup-review.json", {
-        "schemaVersion": "charness.quality.dup_review.v1", "fixable_ceiling": 0, "entries": [],
+        "schemaVersion": "charness.quality.dup_review.v1", "fixable_ceiling": 0,
+        "entries": list(review_entries),
     })
-    _write_json(repo / "q" / "dup-ratchet-baseline.json", baseline_lib.build_gate_baseline({
-        fid: [fid] for fid in baseline_ids
-    }))
+    _write_json(repo / "q" / "dup-ratchet-baseline.json", baseline_lib.build_gate_baseline(
+        baseline_members if baseline_members is not None else {fid: [fid] for fid in baseline_ids}
+    ))
     (repo / ".agents" / "quality-adapter.yaml").write_text(
         "version: 1\nrepo: consumer\ndup_ratchet:\n  enabled: true\n  floor_F: 0\n  escalation_K: 10\n  scope_paths:\n    - src\n  review_artifact_path: q/dup-review.json\n  gate_baseline_path: q/dup-ratchet-baseline.json\n",
         encoding="utf-8",
@@ -116,6 +122,33 @@ def test_plan_scoped_rebaseline_validates_rotation_and_family_names() -> None:
     assert "already in the baseline" in joined
 
 
+def test_plan_scoped_rebaseline_exempts_named_exempt_live_ids() -> None:
+    plan = lib.plan_scoped_rebaseline(
+        existing_ids={"old1", "keep"}, live_ids={"rot_new", "keep", "tolerated"},
+        rotations=[("old1", "rot_new")], accept_families=[],
+        exempt_live_ids={"tolerated"},
+    )
+    assert plan["ok"] is True
+    assert plan["updated_ids"] == {"rot_new", "keep"}  # exempt id neither refused nor absorbed
+
+
+def test_scoped_rebaseline_exemptions_mirror_evaluate_universe() -> None:
+    # Scoped-rebaseline disagreement regression: the evaluate path tolerates
+    # overlay-intentional families and membership reductions, so the scoped
+    # planner's refusal universe must exempt exactly those.
+    live = {"SHRUNK": ["h1", "h2"], "INTENT": ["x"], "keep": ["keep"], "NAMED": ["n"]}
+    existing = {"bigfam": ["h1", "h1", "h2"], "keep": ["keep"], "old1": ["o"]}
+    overlay = {"entries": [{"class": "intentional", "surface": "code", "id": "INTENT"}]}
+    exemptions = lib.scoped_rebaseline_exemptions(
+        live_members=live, existing_members=existing, overlay=overlay, named_new_ids={"NAMED"},
+    )
+    assert exemptions["ignored_intentional"] == ["INTENT"]
+    assert exemptions["unnamed_reductions"] == [{"new_fingerprint": "SHRUNK", "old_fingerprint": "bigfam"}]
+    assert exemptions["exempt_live_ids"] == {"INTENT", "SHRUNK"}
+    joined = " ".join(exemptions["advisories"])
+    assert "--accept-rotation bigfam=SHRUNK" in joined and "INTENT" in joined
+
+
 def test_inproc_scoped_rebaseline_rotation_updates_only_named_pair(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("old1", "keep"))
     code_json = _code_inventory(tmp_path / "code.json", ["ROT_NEW", "keep"])
@@ -145,6 +178,62 @@ def test_inproc_scoped_rebaseline_refuses_unnamed_new_family_and_preserves_basel
     assert report["refused_added"] == ["BRANDNEW"]
     preserved = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
     assert baseline_lib.load_gate_baseline_ids(preserved) == {"old1", "keep"}  # unchanged
+
+
+def test_inproc_scoped_rebaseline_leaves_intentional_family_unrefused(tmp_path: Path) -> None:
+    # A live family classified `intentional` in the review overlay is clean to the
+    # evaluate path, so a scoped accept of an evaluate-suggested rotation must not
+    # refuse it as "unnamed new" — and must not absorb it into the baseline either.
+    repo = _consumer_repo(
+        tmp_path, baseline_ids=("old1", "keep"),
+        review_entries=({"class": "intentional", "surface": "code", "id": "INTENT"},),
+    )
+    code_json = _code_inventory(tmp_path / "code.json", ["ROT_NEW", "keep", "INTENT"])
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--accept-rotation", "old1=ROT_NEW")
+    assert report["ok"] is True and report["status"] == "scoped-rebaseline-written"
+    assert report["ignored_intentional"] == ["INTENT"]
+    written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert baseline_lib.load_gate_baseline_ids(written) == {"ROT_NEW", "keep"}  # INTENT not absorbed
+
+
+def test_inproc_scoped_rebaseline_leaves_unnamed_reduction_unrefused(tmp_path: Path) -> None:
+    # A membership reduction is advisory-only to the evaluate path; a scoped accept
+    # that does not name its rotation must proceed, keep the vanished old family,
+    # leave the shrunk fingerprint out, and re-print the rotation hint.
+    repo = _consumer_repo(
+        tmp_path,
+        baseline_members={"bigfam": ["h1", "h1", "h2"], "old1": ["old1"], "keep": ["keep"]},
+    )
+    code_json = _code_inventory(
+        tmp_path / "code.json", ["ROT_NEW", "keep", "SHRUNK"], members={"SHRUNK": ["h1", "h2"]},
+    )
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--accept-rotation", "old1=ROT_NEW")
+    assert report["ok"] is True and report["status"] == "scoped-rebaseline-written"
+    assert report["unnamed_reductions"] == [{"new_fingerprint": "SHRUNK", "old_fingerprint": "bigfam"}]
+    assert any("--accept-rotation bigfam=SHRUNK" in m for m in report["messages"])
+    written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert baseline_lib.load_gate_baseline_ids(written) == {"bigfam", "ROT_NEW", "keep"}
+
+
+def test_inproc_scoped_rebaseline_refuses_genuine_new_alongside_exemptions(tmp_path: Path) -> None:
+    # Over-swallow guard: the exemptions must not widen past the evaluate-tolerated
+    # classes. With an intentional family, an unnamed reduction, AND a genuinely new
+    # unnamed family all live in one run, only the genuine one is refused, and the
+    # baseline is left untouched.
+    repo = _consumer_repo(
+        tmp_path,
+        baseline_members={"bigfam": ["h1", "h1", "h2"], "old1": ["old1"], "keep": ["keep"]},
+        review_entries=({"class": "intentional", "surface": "code", "id": "INTENT"},),
+    )
+    code_json = _code_inventory(
+        tmp_path / "code.json", ["ROT_NEW", "keep", "SHRUNK", "INTENT", "BRANDNEW"],
+        members={"SHRUNK": ["h1", "h2"]},
+    )
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--accept-rotation", "old1=ROT_NEW")
+    assert report["ok"] is False and report["status"] == "scoped-rebaseline-refused"
+    assert report["refused_added"] == ["BRANDNEW"]
+    preserved = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert baseline_lib.load_gate_baseline_ids(preserved) == {"bigfam", "old1", "keep"}
 
 
 def test_inproc_scoped_rebaseline_fails_when_live_fingerprints_unreadable(tmp_path: Path) -> None:
