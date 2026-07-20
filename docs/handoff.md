@@ -54,11 +54,11 @@
 ## Discuss
 
 - RESOLVED: the `verified` additive migration shipped (`verify-closeout` emits
-  `confirmation` {observer, channel, scope, line}; status tokens unchanged, old
-  artifacts grandfathered), and pre-commit rollback persistence was already
-  shipped before the entry was written (failure records carry `precommit_rollback`).
-- Strengthen post-publication proof with an explicitly different observer
-  identity (in progress: unauthenticated-channel check; CI observer follow-up).
+  `confirmation` {observer, channel, scope, line}; old artifacts grandfathered);
+  pre-commit rollback persistence was already shipped before the entry was written.
+- RESOLVED locally: distinct-channel records now name observer identity (the
+  credential-distinct, host-shared HTTP probe says so explicitly); the
+  machine-distinct CI-side observer is tracked in #449.
 
 ## References
 

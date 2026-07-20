@@ -97,6 +97,14 @@ The rung-1 floor is record presence only: a confirmation and a typed
 non-verified disposition both satisfy the form floor. The human release
 closeout judges whether the verdict is actually acceptable.
 
+Each verdict record also names its `observer` identity, additively to the
+channel: the default HTTP probe is credential-distinct but shares the
+publisher's host and process, and the record says so explicitly. Observer
+distinctness is therefore a recorded observable the rung-2 audit reads, never
+an inferred property; a machine-distinct observer (for example a CI-side
+post-publication check with its own credentials) is a separate surface that a
+local record must not claim.
+
 A mechanical check in `confirm_release_via_distinct_channel`
 (`publish_release_post_create.py`) flags a configured probe that matches the
 release backend's own `release_view` command shape as `same-proxy-flagged`

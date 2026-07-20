@@ -77,6 +77,12 @@ def _http_release_probe(url: str, *, timeout: float = 10.0) -> dict[str, Any]:
     typed non-``verified`` disposition. Never raises: a publish is already an
     external fact, so a failed probe is a recorded disposition, not a fatal error.
     """
+    # Observer identity is a recorded observable, additive to the channel: the
+    # rung-2 audit must be able to SEE how distinct the observer was, not only
+    # the transport. This probe is credential-distinct (no auth) but shares the
+    # publisher's host and process; a machine-distinct observer is a separate
+    # surface, never claimed here.
+    observer = "unauthenticated-http (credential-free; same host/process as publisher)"
     request = urllib.request.Request(
         url, method="GET", headers={"User-Agent": "charness-release-distinct-channel"}
     )
@@ -86,16 +92,18 @@ def _http_release_probe(url: str, *, timeout: float = 10.0) -> dict[str, Any]:
             status = getattr(response, "status", None) or response.getcode()
     except (urllib.error.URLError, OSError, ValueError) as exc:
         return {
-            "channel": "https-fetch", "url": url, "status": "blocked-needs-capability",
+            "channel": "https-fetch", "observer": observer, "url": url,
+            "status": "blocked-needs-capability",
             "reason": f"distinct-channel HTTP fetch of the public release URL failed: {exc}",
         }
     if status == 200 and body:
         return {
-            "channel": "https-fetch", "url": url, "status": "confirmed",
+            "channel": "https-fetch", "observer": observer, "url": url, "status": "confirmed",
             "http_status": status, "evidence_len": len(body),
         }
     return {
-        "channel": "https-fetch", "url": url, "status": "not-confirmed", "http_status": status,
+        "channel": "https-fetch", "observer": observer, "url": url,
+        "status": "not-confirmed", "http_status": status,
         "reason": f"distinct-channel HTTP fetch returned HTTP {status} with {len(body)} body bytes",
     }
 
@@ -148,7 +156,9 @@ def confirm_release_via_distinct_channel(
             rendered, backend=backend, backend_command=backend_command, tag_name=tag_name
         ):
             record = {
-                "channel": "adapter-probe", "command": rendered, "status": "same-proxy-flagged",
+                "channel": "adapter-probe",
+                "observer": "same-proxy (backend release_view shape; not a distinct observer)",
+                "command": rendered, "status": "same-proxy-flagged",
                 "reason": (
                     "configured post_publish_distinct_channel_probe matches this backend's own "
                     "`release_view` command -- the SAME proxy `verify_release_visible` already used, "
@@ -159,7 +169,11 @@ def confirm_release_via_distinct_channel(
         else:
             result = run_shell(rendered, cwd=repo_root, check=False)
             record: dict[str, Any] = {
-                "channel": "adapter-probe", "command": rendered,
+                "channel": "adapter-probe",
+                "observer": (
+                    "adapter-probe-shell (operator-configured; same host/process as publisher)"
+                ),
+                "command": rendered,
                 "status": "confirmed" if result.returncode == 0 else "not-confirmed",
                 "returncode": result.returncode,
             }
@@ -170,7 +184,7 @@ def confirm_release_via_distinct_channel(
         record = http_probe(expected_release_url)
     else:
         record = {
-            "channel": "none", "status": "skipped",
+            "channel": "none", "observer": "none", "status": "skipped",
             "reason": (
                 "no published release URL and no adapter `post_publish_distinct_channel_probe` "
                 "declared; declare a distinct channel (e.g. an HTTP fetch of the public release "

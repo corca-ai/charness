@@ -132,6 +132,23 @@ def test_release_observer_capture_error_renders_unavailable_record_disposition()
     assert "- Capture disposition: ValueError: target commit is missing" in lines
 
 
+def test_distinct_channel_section_renders_observer_identity() -> None:
+    # The rung-2 audit reads the markdown section, so the observer identity
+    # recorded on the verification record must surface there, not only in the
+    # persisted JSON probe artifact.
+    observer = "unauthenticated-http (credential-free; same host/process as publisher)"
+    lines = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {
+            "channel": "https-fetch",
+            "observer": observer,
+            "status": "confirmed",
+            "url": "https://x/v9",
+            "http_status": 200,
+        }
+    )
+    assert f"- Observer identity: {observer}" in lines
+
+
 def test_post_publish_artifact_commits_untracked_observer_after_git_tracking_check_fails(tmp_path: Path) -> None:
     calls: list[list[str]] = []
     writes: list[dict] = []

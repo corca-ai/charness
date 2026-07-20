@@ -206,7 +206,7 @@
   {
    "class": "intentional",
    "id": "222aaec8531c8f44",
-   "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) — extraction would obscure the distinction — intentional",
+   "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) \u2014 extraction would obscure the distinction \u2014 intentional",
    "reviewed_at": "2026-07-02",
    "surface": "code"
   },
@@ -248,7 +248,7 @@
   {
    "class": "intentional",
    "id": "2dd39753778c7cb1",
-   "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable — intentional",
+   "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable \u2014 intentional",
    "reviewed_at": "2026-07-02",
    "surface": "code"
   },
@@ -297,7 +297,7 @@
   {
    "class": "intentional",
    "id": "3b537fee705455a7",
-   "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom — intentional",
+   "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom \u2014 intentional",
    "reviewed_at": "2026-06-30",
    "surface": "code"
   },
@@ -353,7 +353,7 @@
   {
    "class": "intentional",
    "id": "479ac3885e3e2227",
-   "note": "stdlib import header (argparse/json/re/runpy/pathlib/SimpleNamespace/typing) shared by plan_handoff_run and audit_public_release_narrative; a shared import shim would couple independent portable scripts for a stdlib boilerplate — intentional",
+   "note": "stdlib import header (argparse/json/re/runpy/pathlib/SimpleNamespace/typing) shared by plan_handoff_run and audit_public_release_narrative; a shared import shim would couple independent portable scripts for a stdlib boilerplate \u2014 intentional",
    "reviewed_at": "2026-07-02",
    "surface": "code"
   },
@@ -388,14 +388,14 @@
   {
    "class": "intentional",
    "id": "50f11ad09152927c",
-   "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape — a shared echo helper would couple unrelated skill adapter libs for negligible value",
+   "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape \u2014 a shared echo helper would couple unrelated skill adapter libs for negligible value",
    "reviewed_at": "2026-06-28",
    "surface": "code"
   },
   {
    "class": "intentional",
    "id": "5159d62f261a8894",
-   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
    "reviewed_at": "2026-06-30",
    "surface": "code"
   },
@@ -444,14 +444,14 @@
   {
    "class": "intentional",
    "id": "57a52ad013e764b8",
-   "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
+   "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained \u2014 intentional",
    "reviewed_at": "2026-07-02",
    "surface": "doc"
   },
   {
    "class": "intentional",
    "id": "58d074440dbf9aa2",
-   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
    "reviewed_at": "2026-06-30",
    "surface": "code"
   },
@@ -465,7 +465,7 @@
   {
    "class": "intentional",
    "id": "604e4e6088db9c52",
-   "note": "session-start hook `_debug` env-gated stderr helper shared by two STANDALONE user-level SessionStart entrypoints (scripts/session_start_find_skills.py, scripts/usage_episode_session_start.py), differing only by the module prefix string; family rotated when the 0.61.0 routing front-load shifted surrounding lines (the helper itself pre-existed in v0.60.0). session_start_find_skills.py is deliberately stdlib-only so the every-session hook cannot break on a sibling import; extracting the 3-line helper would add import/bootstrap coupling to the most safety-critical hook for no real value — intentional",
+   "note": "session-start hook `_debug` env-gated stderr helper shared by two STANDALONE user-level SessionStart entrypoints (scripts/session_start_find_skills.py, scripts/usage_episode_session_start.py), differing only by the module prefix string; family rotated when the 0.61.0 routing front-load shifted surrounding lines (the helper itself pre-existed in v0.60.0). session_start_find_skills.py is deliberately stdlib-only so the every-session hook cannot break on a sibling import; extracting the 3-line helper would add import/bootstrap coupling to the most safety-critical hook for no real value \u2014 intentional",
    "reviewed_at": "2026-07-04",
    "surface": "code"
   },
@@ -486,7 +486,7 @@
   {
    "class": "intentional",
    "id": "62e19bb7ee0fbe0a",
-   "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
+   "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) \u2014 intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
    "reviewed_at": "2026-07-05",
    "surface": "code"
   },
@@ -675,7 +675,7 @@
   {
    "class": "intentional",
    "id": "b01eea3857c9c9a6",
-   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
    "reviewed_at": "2026-06-30",
    "surface": "code"
   },
@@ -689,7 +689,7 @@
   {
    "class": "intentional",
    "id": "b84a05853c8b2d2a",
-   "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants — a util module would couple them for little value; intentional",
+   "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants \u2014 a util module would couple them for little value; intentional",
    "reviewed_at": "2026-06-30",
    "surface": "code"
   },
@@ -759,7 +759,7 @@
   {
    "class": "intentional",
    "id": "d2a9d918b9d972a1",
-   "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain — intentional",
+   "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain \u2014 intentional",
    "reviewed_at": "2026-07-02",
    "surface": "code"
   },
@@ -857,7 +857,7 @@
   {
    "class": "intentional",
    "id": "e7cd6cac93eb10b9",
-   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+   "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
    "reviewed_at": "2026-06-30",
    "surface": "code"
   },
@@ -892,7 +892,7 @@
   {
    "class": "intentional",
    "id": "ee2f2b3e036c78a7",
-   "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution — intentional, not extractable",
+   "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution \u2014 intentional, not extractable",
    "reviewed_at": "2026-07-02",
    "surface": "code"
   },
@@ -906,7 +906,7 @@
   {
    "class": "intentional",
    "id": "fba5b0dd854c84ab",
-   "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them — intentional; revisit if a 3rd consumer appears",
+   "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them \u2014 intentional; revisit if a 3rd consumer appears",
    "reviewed_at": "2026-07-02",
    "surface": "code"
   },
@@ -922,6 +922,20 @@
    "id": "ff84c95bf1ddf43e",
    "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
    "reviewed_at": "2026-06-30",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "0333eb4651d70480",
+   "note": "per-evidence-section markdown renderers (distinct-channel, observer, adjacent release sections) deliberately stay parallel: each surfaces a hand-picked field set for its evidence type, and a generic key-to-line renderer would hide which fields each closeout section intentionally exposes",
+   "reviewed_at": "2026-07-20",
+   "surface": "code"
+  },
+  {
+   "class": "intentional",
+   "id": "4d30b51c2b79649b",
+   "note": "run-shell probe-record shape is deliberately mirrored between announcement readback (repo lib) and release distinct-channel (portable package); extracting a shared helper would couple a portable skill package to a repo-local lib across boundary owners",
+   "reviewed_at": "2026-07-20",
    "surface": "code"
   }
  ],

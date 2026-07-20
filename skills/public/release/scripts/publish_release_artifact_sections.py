@@ -172,6 +172,8 @@ def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[s
         f"- Rung-2 distinct-channel verdict: `{record.get('status')}` via "
         f"`{record.get('channel', 'unknown')}` (a channel distinct from `gh release view`)."
     )
+    if observer := record.get("observer"):
+        lines.append(f"- Observer identity: {observer}")
     if url := record.get("url"):
         lines.append(f"- Channel URL: `{url}`")
     if command := record.get("command"):

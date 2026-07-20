@@ -166,6 +166,42 @@ def test_observer_flags_probe_matching_release_view_shape_as_same_proxy() -> Non
     record = payload["distinct_channel_verification"]
     assert record["status"] == "same-proxy-flagged"
     assert record["status"] != "confirmed"
+    assert record["observer"].startswith("same-proxy")
+
+
+def test_distinct_channel_records_name_observer_identity(monkeypatch) -> None:
+    # Observer identity is a recorded observable additive to the channel: the
+    # default HTTP probe names its credential-distinct-but-host-shared
+    # identity, the adapter probe names the operator-configured shell, and a
+    # skipped record names `none`. Network-free: urlopen is stubbed.
+    import urllib.error
+
+    def raising_urlopen(request, timeout):
+        raise urllib.error.URLError("offline")
+
+    monkeypatch.setattr(_POST_CREATE.urllib.request, "urlopen", raising_urlopen)
+    blocked = _POST_CREATE._http_release_probe("https://example/releases/tag/v9")
+    assert blocked["status"] == "blocked-needs-capability"
+    assert blocked["observer"].startswith("unauthenticated-http")
+    assert "same host/process" in blocked["observer"]
+
+    adapter_payload: dict = {}
+    _POST_CREATE.confirm_release_via_distinct_channel(
+        Path("."), adapter_payload,
+        adapter_data={"post_publish_distinct_channel_probe": "probe ok {tag}"},
+        run_shell=lambda command, *, cwd, check: _shell_result(0),
+        tag_name="v9", expected_release_url="https://x/v9",
+    )
+    assert adapter_payload["distinct_channel_verification"]["observer"].startswith(
+        "adapter-probe-shell"
+    )
+
+    skipped_payload: dict = {}
+    _POST_CREATE.confirm_release_via_distinct_channel(
+        Path("."), skipped_payload, adapter_data={}, run_shell=None,
+        tag_name="v9", expected_release_url=None,
+    )
+    assert skipped_payload["distinct_channel_verification"]["observer"] == "none"
 
 
 def test_observer_confirms_genuinely_distinct_probe_with_backend_supplied() -> None:
