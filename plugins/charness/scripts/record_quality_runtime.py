@@ -103,7 +103,10 @@ def rotate_archives(history_dir: Path) -> None:
     archives = sorted(history_dir.glob(f"{ARCHIVE_PREFIX}*.jsonl"))
     while len(archives) > MAX_ARCHIVE_FILES:
         oldest = archives.pop(0)
-        oldest.unlink()
+        # missing_ok: a concurrent recorder may have already rotated this
+        # archive away between our glob and this unlink; that must not fail
+        # the recorder run.
+        oldest.unlink(missing_ok=True)
 
 
 def _update_commands(commands: dict[str, Any], record: dict[str, Any]) -> None:

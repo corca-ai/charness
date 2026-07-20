@@ -276,6 +276,20 @@ def test_marker_is_stale_false_when_marker_is_newer(tmp_path: Path) -> None:
     assert check_mutation_score._marker_is_stale(marker_path, stats_path) is False
 
 
+def test_marker_is_stale_false_on_mtime_tie_keeps_marker_authoritative(tmp_path: Path) -> None:
+    # On a coarse-granularity filesystem a persisted previous-run stats file can
+    # tie the marker's mtime to the second; the tie must keep the marker
+    # authoritative so a genuine current abort is not masked.
+    marker_path = tmp_path / "baseline-abort.json"
+    stats_path = tmp_path / "dump.jsonl"
+    marker_path.write_text("{}", encoding="utf-8")
+    stats_path.write_text("{}", encoding="utf-8")
+    os.utime(marker_path, (1_000, 2_000))
+    os.utime(stats_path, (1_000, 2_000))
+
+    assert check_mutation_score._marker_is_stale(marker_path, stats_path) is False
+
+
 def test_marker_is_stale_false_when_stats_file_absent(tmp_path: Path) -> None:
     marker_path = tmp_path / "baseline-abort.json"
     marker_path.write_text("{}", encoding="utf-8")

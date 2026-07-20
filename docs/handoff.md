@@ -21,6 +21,9 @@
   renamed to `charness-run-<ns>`). Both pinned by deterministic regression tests;
   the `mtime-recency-tiebreak` and `unlink-missing_ok` follow-ups are resolved. RCAs
   and release state in References.
+- The abstracted-pattern sibling-scan Tier-1 findings (A/B/C) are FIXED with
+  regression tests, mirrors synced, and a clean fresh-eye critique
+  ([Tier-1 fixes critique](../charness-artifacts/critique/2026-07-20-tier1-sibling-scan-fixes-critique.md)).
 - Durable prior context (all closed, do not reopen without regression evidence):
   v2.3.0 adapter-owned measurement-contract discovery, the Gajae goal, dead-code
   dynamic-entrypoint review, standing-xdist speedups, and quality's portable
@@ -28,13 +31,12 @@
 
 ## Next Session
 
-1. Recommended next slice: fix the abstracted-pattern sibling-scan Tier-1 findings
-   (full detail + severity + remediation + confirmed-safe set in the scan file under
-   References): `record_quality_runtime.py:102` and `mutation_baseline_abort_lib.py:53`
-   unlink `missing_ok` (both are the odd-one-out vs already-guarded siblings), and
-   `check_mutation_score.py:280` mtime `>=` tie direction. Each 1-2 lines; sync the
-   `plugins/` mirrors, add cheap regression coverage, run the critique, commit. Tier 2
-   (a live-shared-dir test snapshot) is a separate small slice; Tier 3 is opportunistic.
+1. Recommended next slice: the sibling-scan Tier-2 finding (D) — scope the
+   live-shared-dir snapshot assertions in
+   [test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py)
+   to the paths the test itself could have created, or run the guard against a
+   copied/redirected tree. Needs a little design; full detail in the scan file
+   under References. Tier 3 (E-J) stays opportunistic / boy-scout only.
    The deferred discovery follow-ups (inline `.rglob`/`ls-files` pathspec discovery,
    `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory) remain candidates.
 2. For clean-start mutating workflows, enumerate owned mutations before coding and

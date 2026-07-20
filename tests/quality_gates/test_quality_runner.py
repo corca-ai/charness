@@ -148,6 +148,42 @@ def test_record_quality_runtime_rotates_old_monthly_archives(tmp_path: Path) -> 
     assert "runtime-signals-2026-01.jsonl" in archives
 
 
+def test_rotate_archives_tolerates_concurrently_deleted_oldest(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # Two concurrent recorders can both glob the same archive list and both
+    # target the same oldest file; the loser's unlink must not raise
+    # FileNotFoundError and fail the recorder run.
+    from scripts import record_quality_runtime
+
+    history_dir = tmp_path / "history"
+    history_dir.mkdir()
+    for month in range(1, record_quality_runtime.MAX_ARCHIVE_FILES + 3):
+        name = f"{record_quality_runtime.ARCHIVE_PREFIX}2025-{month:02d}.jsonl"
+        (history_dir / name).write_text("", encoding="utf-8")
+
+    original_glob = Path.glob
+
+    def racing_glob(self, pattern):
+        results = sorted(original_glob(self, pattern))
+        # Simulate the competing recorder evicting the same oldest archive
+        # between this recorder's enumeration and its unlink.
+        if results:
+            results[0].unlink()
+        return results
+
+    monkeypatch.setattr(Path, "glob", racing_glob)
+    record_quality_runtime.rotate_archives(history_dir)  # must not raise
+    monkeypatch.undo()
+
+    remaining = [
+        path
+        for path in history_dir.iterdir()
+        if path.name.startswith(record_quality_runtime.ARCHIVE_PREFIX)
+    ]
+    assert len(remaining) <= record_quality_runtime.MAX_ARCHIVE_FILES
+
+
 def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"

@@ -51,8 +51,9 @@ def resolve_baseline_abort_marker(repo_root: Path, marker_path: Path) -> Path:
 
 
 def delete_stale_baseline_abort_marker(marker_path: Path) -> None:
-    if marker_path.exists():
-        marker_path.unlink()
+    # missing_ok (no exists() pre-check): a concurrent run may remove the
+    # marker between any check and this unlink; absence is the desired state.
+    marker_path.unlink(missing_ok=True)
 
 
 def write_baseline_abort_marker(

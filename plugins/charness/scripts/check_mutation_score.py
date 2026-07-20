@@ -269,15 +269,17 @@ def _read_timeout_marker(marker_path: Path) -> tuple[bool, int | None]:
 
 
 def _marker_is_stale(marker_path: Path, stats_path: Path) -> bool:
-    """Return True when `stats_path` is at least as fresh as `marker_path`.
+    """Return True when `stats_path` is strictly fresher than `marker_path`.
 
     Locally `reports/mutation/` persists across runs, so an abort marker left
     over from an earlier aborted attempt must not mask the results of a
-    newer mutation run that produced a fresher stats file.
+    newer mutation run that produced a fresher stats file. A same-mtime tie
+    keeps the marker authoritative: on a coarse-granularity filesystem a
+    persisted previous-run stats file must not mask a genuine current abort.
     """
     if not stats_path.is_file():
         return False
-    return stats_path.stat().st_mtime >= marker_path.stat().st_mtime
+    return stats_path.stat().st_mtime > marker_path.stat().st_mtime
 
 
 def main() -> int:
