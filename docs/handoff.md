@@ -4,34 +4,32 @@
 
 - With no explicit task, run `charness:handoff` chunked routing over the live
   backlog. An explicit user task keeps its own authority. Restart the host first
-  only when the next task must observe the newly installed v2.2.1 plugin.
+  only when the next task must observe the newly installed v2.3.0 plugin.
 
 ## Current State
 
-- v2.2.1 is published and installed-host readback is recorded. It promotes the
-  proof-path lessons into portable skills, adds dependency-aware focused proof,
-  and leaves protected resumable state when release publication fails.
-- Release publication now separates immutable content from the observer-bound
-  issue-close carrier, validates complete restart inputs, and handles ambiguous
-  pushes by remote identity. Planner evidence is compact and YAML-first; Git
-  delta serialization and closeout artifact commits have cohesive owners.
-  Duplicate coupling now fails during ordinary slice closeout, and the focused
-  coverage selector recognizes release-local module loaders.
-- The Gajae adoption goal is complete. Its exact-range repository proof passed
-  cumulative broad pytest, fresh mutation coverage, and the changed-line
-  consumer before publication. Do not reopen the bundle unless new evidence
-  identifies a regression.
-- Dead-code review now distinguishes proven dynamic entrypoints from review
-  candidates; the live sweep reports two registered entries and zero candidates.
-- Focused mutation proof fell 213s→7.6s and install/update's same 34 cases
-  91.56s→29.29s via standing xdist. Release resilience's same 41 tests fell
-  51.41s→30.38s by removing the test-only Python Git-proxy startup.
-- Quality now owns a portable proof-path efficiency method; implementation
-  defines the current-consumer envelope before boundary replacement. Prove
-  requires representative input consumption. Retro can promote a `Portable Candidate`.
-  Default quality planning is about 79% smaller than detail mode. Release resume
-  now requires exact peeled tag identity, not mere remote tag presence. Retired
-  Python pretty-JSON/traceback behavior is not a compatibility surface.
+- v2.3.0 is published and installed-host readback is recorded (distinct-channel
+  release-URL fetch + `charness update`/`version`/`doctor`). It makes
+  measurement-contract file discovery adapter-owned: a consumer repo declares
+  its real test surface via `test_file_discovery` (fixing the `.mjs` undercount,
+  issue #447) and its non-default linter directive syntax via
+  `lint_ignore_discovery`, instead of the portable body re-deriving discovery and
+  diverging from the repo's actual surface.
+- A new advisory quality inventory `inventory_hardcoded_discovery` is a tripwire
+  for that divergence class: it flags portable constants that hardcode a polyglot
+  (2+ code-language-family) discovery list, which must be adapter-owned or carry
+  an inline `# discovery-boundary: <reason>` marker. A broad lexical version was
+  noise (71 sites); the narrow polyglot-only scope reads 0 unmarked on charness.
+- Deferred follow-ups (recorded, not blocking): make the discovery-scan cover
+  inline `.rglob`/`git ls-files` pathspec discovery (dropped to avoid the 71-site
+  noise), expand `CODE_LANGUAGE_FAMILIES` (php/cs/swift/scala/elixir), and a
+  stack-agnostic zero/near-zero test-surface advisory.
+- Durable prior context (all closed): the Gajae adoption goal, dead-code review
+  distinguishing proven dynamic entrypoints from candidates, and standing-xdist
+  focused-proof speedups. Do not reopen without new regression evidence.
+- Quality owns a portable proof-path efficiency method (define the current
+  consumer envelope before boundary replacement; prove requires representative
+  input consumption). Release resume requires exact peeled-tag identity.
 
 ## Next Session
 
@@ -49,8 +47,9 @@
    wrong-receiver, and disconnected-control-flow fixtures before recognizing it.
    Finish critique packets before taking reviewer boundary fingerprints, and run
    the focused duplication ratchet before broad validation for large AST helpers.
-6. Treat the Gajae-Code plan and v2.2.1 release as closed; start a new smallest
-   coherent backlog slice rather than resuming this goal.
+6. Treat the v2.3.0 release and the adapter-owned-discovery work as closed; start
+   a new smallest coherent backlog slice rather than resuming it. The deferred
+   discovery follow-ups above are candidates, not commitments.
 
 ## Discuss
 
