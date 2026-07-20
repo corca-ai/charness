@@ -16,28 +16,61 @@ LIVE_STATE_PATH = REPO_ROOT / lib.HOST_HOOKS_STATE_RELATIVE
 LIVE_USAGE_EPISODES_DIR = REPO_ROOT / ".charness" / "usage-episodes"
 
 
-def _snapshot_live_usage_episodes() -> dict[Path, bytes | None]:
-    """Snapshot every file under the live `.charness/usage-episodes/` tree.
+# Paths a legitimate live writer may touch while the suite runs: the
+# SessionStart hook writes `sessions/<id>/start.json` and refreshes
+# `sessions/current`, and the slice-closeout emitter appends
+# `usage_episode.jsonl`. The guarded CLI commands never write these paths on
+# any code path, so ignoring them keeps the #194 leak teeth (the state file
+# and every other path stay strict) while a live hook or closeout firing
+# mid-test can no longer fail the suite (sibling-scan Tier-2 finding D).
+_LIVE_WRITER_DIR_NAMES = ("sessions",)
+_LIVE_WRITER_FILES = (Path("usage_episode.jsonl"),)
 
-    Covers `host-hooks-state.json`, `sessions/<id>/start.json`, `sessions/current`,
-    and `usage_episode.jsonl` — every gitignored writer that could leak from a
-    CLI test taking `--repo-root REPO_ROOT`. Issue #194 only reported the
-    state-file leak, but the same plumbing reaches each of these paths.
+
+def _is_live_writer_path(path: Path, episodes_dir: Path) -> bool:
+    try:
+        relative = path.relative_to(episodes_dir)
+    except ValueError:
+        return False
+    if relative in _LIVE_WRITER_FILES:
+        return True
+    return bool(relative.parts) and relative.parts[0] in _LIVE_WRITER_DIR_NAMES
+
+
+def _snapshot_live_usage_episodes(
+    state_path: Path = LIVE_STATE_PATH,
+    episodes_dir: Path = LIVE_USAGE_EPISODES_DIR,
+) -> dict[Path, bytes | None]:
+    """Snapshot the live `.charness/usage-episodes/` tree, minus live-writer paths.
+
+    Covers `host-hooks-state.json` and every other gitignored path that could
+    leak from a CLI test taking `--repo-root REPO_ROOT` (issue #194).
+    Live-writer-owned paths (`sessions/**`, `usage_episode.jsonl`) are excluded:
+    the guarded CLI commands never write them, and a concurrent live session
+    hook legitimately does.
     """
-    snapshot: dict[Path, bytes | None] = {LIVE_STATE_PATH: None}
-    if LIVE_STATE_PATH.is_file():
-        snapshot[LIVE_STATE_PATH] = LIVE_STATE_PATH.read_bytes()
-    if LIVE_USAGE_EPISODES_DIR.is_dir():
-        for path in LIVE_USAGE_EPISODES_DIR.rglob("*"):
-            if path.is_file():
+    snapshot: dict[Path, bytes | None] = {state_path: None}
+    if state_path.is_file():
+        snapshot[state_path] = state_path.read_bytes()
+    if episodes_dir.is_dir():
+        for path in episodes_dir.rglob("*"):
+            if path.is_file() and not _is_live_writer_path(path, episodes_dir):
                 snapshot[path] = path.read_bytes()
     return snapshot
 
 
-def _assert_live_usage_episodes_unchanged(before: dict[Path, bytes | None]) -> None:
+def _assert_live_usage_episodes_unchanged(
+    before: dict[Path, bytes | None],
+    state_path: Path = LIVE_STATE_PATH,
+    episodes_dir: Path = LIVE_USAGE_EPISODES_DIR,
+) -> None:
     after_paths: set[Path] = set()
-    if LIVE_USAGE_EPISODES_DIR.is_dir():
-        after_paths = {p for p in LIVE_USAGE_EPISODES_DIR.rglob("*") if p.is_file()}
+    if episodes_dir.is_dir():
+        after_paths = {
+            p
+            for p in episodes_dir.rglob("*")
+            if p.is_file() and not _is_live_writer_path(p, episodes_dir)
+        }
     new_files = after_paths - {p for p, content in before.items() if content is not None}
     assert not new_files, (
         "test created new files under the live usage-episodes tree: "
@@ -667,3 +700,54 @@ def test_codex_toml_uninstall_session_routing_preserves_usage_episodes_block(fak
     assert "# charness:usage-episodes" in text
     assert "usage_episode_session_start.py" in text
     assert text.count("[[hooks.SessionStart]]") == 1
+
+
+# ---------------------------------------------------------------------------
+# live usage-episodes guard: concurrent live writers vs genuine leaks
+# (sibling-scan Tier-2 finding D)
+
+
+def _seed_guard_tree(tmp_path: Path) -> tuple[Path, Path]:
+    episodes = tmp_path / ".charness" / "usage-episodes"
+    (episodes / "sessions" / "old-session").mkdir(parents=True)
+    (episodes / "sessions" / "old-session" / "start.json").write_text("{}", encoding="utf-8")
+    (episodes / "sessions" / "current").write_text("old-session", encoding="utf-8")
+    (episodes / "usage_episode.jsonl").write_text('{"n": 1}\n', encoding="utf-8")
+    state = episodes / "host-hooks-state.json"
+    state.write_text("{}", encoding="utf-8")
+    return state, episodes
+
+
+def test_live_usage_episodes_guard_tolerates_concurrent_live_writers(tmp_path: Path) -> None:
+    state, episodes = _seed_guard_tree(tmp_path)
+    before = _snapshot_live_usage_episodes(state_path=state, episodes_dir=episodes)
+
+    # A live SessionStart hook and a slice-closeout emitter firing mid-test:
+    # new session dir, refreshed `sessions/current`, appended episode record.
+    (episodes / "sessions" / "live-session").mkdir()
+    (episodes / "sessions" / "live-session" / "start.json").write_text("{}", encoding="utf-8")
+    (episodes / "sessions" / "current").write_text("live-session", encoding="utf-8")
+    with (episodes / "usage_episode.jsonl").open("a", encoding="utf-8") as handle:
+        handle.write('{"n": 2}\n')
+
+    _assert_live_usage_episodes_unchanged(before, state_path=state, episodes_dir=episodes)
+
+
+def test_live_usage_episodes_guard_still_catches_state_file_mutation(tmp_path: Path) -> None:
+    state, episodes = _seed_guard_tree(tmp_path)
+    before = _snapshot_live_usage_episodes(state_path=state, episodes_dir=episodes)
+
+    state.write_text('{"leaked": true}', encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="mutated live usage-episodes"):
+        _assert_live_usage_episodes_unchanged(before, state_path=state, episodes_dir=episodes)
+
+
+def test_live_usage_episodes_guard_still_catches_unexpected_new_file(tmp_path: Path) -> None:
+    state, episodes = _seed_guard_tree(tmp_path)
+    before = _snapshot_live_usage_episodes(state_path=state, episodes_dir=episodes)
+
+    (episodes / "rogue-leak.json").write_text("{}", encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="created new files"):
+        _assert_live_usage_episodes_unchanged(before, state_path=state, episodes_dir=episodes)
