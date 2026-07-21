@@ -486,6 +486,29 @@ def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
     assert resolved["data"]["skill_ergonomics_gate_rules"] == DEFAULT_SKILL_ERGONOMICS_GATE_RULES
 
 
+def test_quality_bootstrap_ignores_prose_specdown_documents_and_preserves_explicit_lineage(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    docs = repo / "docs" / "specs"
+    docs.mkdir(parents=True)
+    (docs / "contract.spec.md").write_text("# Prose contract\n", encoding="utf-8")
+    write_explicit_quality_adapter(repo)
+
+    first = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+    assert first.returncode == 0, first.stderr
+    payload = json.loads(first.stdout)
+    assert payload["adapter_status"] == "updated"
+    assert "python-quality" in payload["preset_lineage"]
+    assert "specdown-quality" not in payload["preset_lineage"]
+    assert payload["field_statuses"]["preset_lineage"] == "augmented"
+
+    adapter_path = repo / ".agents" / "quality-adapter.yaml"
+    canonical_text = adapter_path.read_text(encoding="utf-8")
+    second = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+    assert second.returncode == 0, second.stderr
+    assert json.loads(second.stdout)["adapter_status"] == "unchanged"
+    assert adapter_path.read_text(encoding="utf-8") == canonical_text
+
+
 def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
