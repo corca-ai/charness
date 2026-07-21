@@ -1,0 +1,209 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-21T23:01:28Z",
+  "prepared_for": "release-v2.4.2",
+  "changed_ref": "v2.4.1..HEAD",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `v2.4.1..HEAD`:\n- .agents/surfaces.json\n- charness-artifacts/critique/2026-07-22-five-pass-quality-review-critique.md\n- charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.json\n- charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.md\n- charness-artifacts/critique/2026-07-22-issue-450-resolution-critique.md\n- charness-artifacts/critique/five-pass-quality-final-packet-packet.json\n- charness-artifacts/critique/five-pass-quality-final-packet-packet.md\n- charness-artifacts/debug/2026-07-22-debug-review.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/issue/2026-07-22-issue-449-brief.md\n- charness-artifacts/probe/2026-07-20-v2.4.1-release-observer.json\n- charness-artifacts/quality/2026-07-22-quality-review.md\n- charness-artifacts/quality/latest.md\n- charness-artifacts/quality/sloc-inventory/latest.json\n- charness-artifacts/release/latest.md\n- docs/handoff.md\n- integrations/tools/defuddle.json\n- plugins/charness/integrations/tools/defuddle.json\n- plugins/charness/scripts/lint_ignore_inventory_lib.py\n- plugins/charness/scripts/quality_bootstrap_detect.py\n- plugins/charness/scripts/run-quality.sh\n- plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py\n- scripts/lint_ignore_inventory_lib.py\n- scripts/quality_bootstrap_detect.py\n- scripts/run-quality.sh\n- skills/public/quality/scripts/standing_gate_verbosity_lib.py\n- tests/quality_gates/test_quality_bootstrap.py\n- tests/quality_gates/test_quality_runner.py\n- tests/quality_gates/test_quality_standing_gate_verbosity.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: integrations/tools/defuddle.json, scripts/lint_ignore_inventory_lib.py, scripts/quality_bootstrap_detect.py, scripts/run-quality.sh, skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  derived matches: plugins/charness/integrations/tools/defuddle.json, plugins/charness/scripts/lint_ignore_inventory_lib.py, plugins/charness/scripts/quality_bootstrap_detect.py, plugins/charness/scripts/run-quality.sh, plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-22-five-pass-quality-review-critique.md, charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.md, charness-artifacts/critique/2026-07-22-issue-450-resolution-critique.md, charness-artifacts/critique/five-pass-quality-final-packet-packet.md, charness-artifacts/debug/2026-07-22-debug-review.md, charness-artifacts/issue/2026-07-22-issue-449-brief.md, charness-artifacts/quality/2026-07-22-quality-review.md, charness-artifacts/quality/latest.md, charness-artifacts/release/latest.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  derived matches: plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- surface-obligations: Repo-owned changed-surface manifest that drives slice closeout obligations.\n  source matches: .agents/surfaces.json\n  verify: python3 scripts/validate_surfaces.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-22-five-pass-quality-review-critique.md, charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.json, charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.md, charness-artifacts/critique/2026-07-22-issue-450-resolution-critique.md, charness-artifacts/critique/five-pass-quality-final-packet-packet.json, charness-artifacts/critique/five-pass-quality-final-packet-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-07-20-v2.4.1-release-observer.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-07-22-debug-review.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- external-tool-control-plane: External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.\n  source matches: integrations/tools/defuddle.json\n  derived matches: plugins/charness/integrations/tools/defuddle.json\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: integrations/tools/defuddle.json\n  derived matches: plugins/charness/integrations/tools/defuddle.json, plugins/charness/scripts/lint_ignore_inventory_lib.py, plugins/charness/scripts/quality_bootstrap_detect.py, plugins/charness/scripts/run-quality.sh\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/lint_ignore_inventory_lib.py, scripts/quality_bootstrap_detect.py, tests/quality_gates/test_quality_bootstrap.py, tests/quality_gates/test_quality_runner.py, tests/quality_gates/test_quality_standing_gate_verbosity.py\n  derived matches: plugins/charness/scripts/lint_ignore_inventory_lib.py, plugins/charness/scripts/quality_bootstrap_detect.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- inference-interpretation-contract: Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.\n  source matches: scripts/lint_ignore_inventory_lib.py\n  verify: python3 scripts/validate_inference_interpretation.py --repo-root . --require-git-file-listing\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/lint_ignore_inventory_lib.py, scripts/quality_bootstrap_detect.py, skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "v2.4.1..HEAD",
+    "resolved_changed_ref": [
+      "d9d9d8edf8eeda09bf5909efe1636f09818ccd7a",
+      "^e36a0b93ecb1f61ccf2974f242d47fb25df7e04a"
+    ],
+    "base_head": "d9d9d8edf8eeda09bf5909efe1636f09818ccd7a",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/surfaces.json",
+      "charness-artifacts/critique/2026-07-22-five-pass-quality-review-critique.md",
+      "charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.json",
+      "charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.md",
+      "charness-artifacts/critique/2026-07-22-issue-450-resolution-critique.md",
+      "charness-artifacts/critique/five-pass-quality-final-packet-packet.json",
+      "charness-artifacts/critique/five-pass-quality-final-packet-packet.md",
+      "charness-artifacts/debug/2026-07-22-debug-review.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/issue/2026-07-22-issue-449-brief.md",
+      "charness-artifacts/probe/2026-07-20-v2.4.1-release-observer.json",
+      "charness-artifacts/quality/2026-07-22-quality-review.md",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/quality/sloc-inventory/latest.json",
+      "charness-artifacts/release/latest.md",
+      "docs/handoff.md",
+      "integrations/tools/defuddle.json",
+      "plugins/charness/integrations/tools/defuddle.json",
+      "plugins/charness/scripts/lint_ignore_inventory_lib.py",
+      "plugins/charness/scripts/quality_bootstrap_detect.py",
+      "plugins/charness/scripts/run-quality.sh",
+      "plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py",
+      "scripts/lint_ignore_inventory_lib.py",
+      "scripts/quality_bootstrap_detect.py",
+      "scripts/run-quality.sh",
+      "skills/public/quality/scripts/standing_gate_verbosity_lib.py",
+      "tests/quality_gates/test_quality_bootstrap.py",
+      "tests/quality_gates/test_quality_runner.py",
+      "tests/quality_gates/test_quality_standing_gate_verbosity.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/surfaces.json",
+        "content_sha256": "a514cb3057ce4689fadb0b63e172fbde05e753ba84b23811b114eb1047941610"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-22-five-pass-quality-review-critique.md",
+        "content_sha256": "02f3dea5e507a5928f8f744dc793d04c8164bf5aef640bbf299e5c973a1b322d"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.json",
+        "content_sha256": "9ed808f7d58294d98291b8e82e499d4e1433fea9081852168dc6b857b1626314"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-22-issue-450-resolution-critique-packet.md",
+        "content_sha256": "9ed862028124b00a709723998b21fc491ab05336e416b4fd746d33d053ded46c"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-07-22-issue-450-resolution-critique.md",
+        "content_sha256": "c35f4e4d73c43bf01f2ab216d119a1ede2797995e275b8d19ae67738d7cc1950"
+      },
+      {
+        "path": "charness-artifacts/critique/five-pass-quality-final-packet-packet.json",
+        "content_sha256": "50ed69c80be91730fb6d85a2a3fa35c5a3bbbd221d11d07e1fa45d262e7ef164"
+      },
+      {
+        "path": "charness-artifacts/critique/five-pass-quality-final-packet-packet.md",
+        "content_sha256": "c4a21d8e4d40f3d2bbbdc47569536d40b9d31d6c00ebe02c7c4006652b1aacfe"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-22-debug-review.md",
+        "content_sha256": "6f6752e5c0e3004623eb529e8bd8ba606d9888308fd7e1ff912bf63945b52f92"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "f6b7a7973feeb425c2023cbb032fab16e28bc1975637d33ced0f442f26e002a5"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-07-22-issue-449-brief.md",
+        "content_sha256": "3fc6f2ab12e6d53c85572932283b381201df197a78a848d00078ce0e128f8532"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-07-20-v2.4.1-release-observer.json",
+        "content_sha256": "e2245c2873fae9d8d3851065763dc074b17068dbf42adee4e894490c92edd9d7"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-07-22-quality-review.md",
+        "content_sha256": "b8e0df27dd5a00d494447b2478a6866dbb1259331988735d13f6de56c19a949d"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "8b95108058a4c4cc2e41e559193ab2ee003a32efba64f42cf1c05a3322800118"
+      },
+      {
+        "path": "charness-artifacts/quality/sloc-inventory/latest.json",
+        "content_sha256": "07f7cfd2a773cad47ce06beffa6cf479c0f00c12e7033ee11ab643c86dadfaf6"
+      },
+      {
+        "path": "charness-artifacts/release/latest.md",
+        "content_sha256": "de4f044d74da22dc10ddc2223710164ee3386cc45752792782c12ba69f8cd86b"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "81797a9a64508d4777dcbf2d7856132a185a0e95b98c5f659c948158747ec171"
+      },
+      {
+        "path": "integrations/tools/defuddle.json",
+        "content_sha256": "a082e9f022705ee5a994b7452105a65dea01cbf14b3366b9f18059b48ac59450"
+      },
+      {
+        "path": "plugins/charness/integrations/tools/defuddle.json",
+        "content_sha256": "a082e9f022705ee5a994b7452105a65dea01cbf14b3366b9f18059b48ac59450"
+      },
+      {
+        "path": "plugins/charness/scripts/lint_ignore_inventory_lib.py",
+        "content_sha256": "3c2c1917569da6901f12be60dccf8e1689cf8743022a146532cbc79ce227acf1"
+      },
+      {
+        "path": "plugins/charness/scripts/quality_bootstrap_detect.py",
+        "content_sha256": "4fc601851fce15ea43c83c1a90739d9813ba0e3451446ad4a2de13bf0050b088"
+      },
+      {
+        "path": "plugins/charness/scripts/run-quality.sh",
+        "content_sha256": "5c4645d2562720663cbe1f84c9f8330774c07742f695313a0669b91bf109c99f"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py",
+        "content_sha256": "8b798ca5c0024fb7926ab24716fd10f91e3fb81aef1981b9f2cfc68d0862b3cb"
+      },
+      {
+        "path": "scripts/lint_ignore_inventory_lib.py",
+        "content_sha256": "3c2c1917569da6901f12be60dccf8e1689cf8743022a146532cbc79ce227acf1"
+      },
+      {
+        "path": "scripts/quality_bootstrap_detect.py",
+        "content_sha256": "4fc601851fce15ea43c83c1a90739d9813ba0e3451446ad4a2de13bf0050b088"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "5c4645d2562720663cbe1f84c9f8330774c07742f695313a0669b91bf109c99f"
+      },
+      {
+        "path": "skills/public/quality/scripts/standing_gate_verbosity_lib.py",
+        "content_sha256": "8b798ca5c0024fb7926ab24716fd10f91e3fb81aef1981b9f2cfc68d0862b3cb"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_bootstrap.py",
+        "content_sha256": "856f0d0a3836f9a6fd35d310e3dce5bf7653a088f4a4d8f1d523395c1fcc90aa"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_runner.py",
+        "content_sha256": "4d949433e3fbdceb2f04b3824ac2877e8ffb59fdac46a22cec194452667f1144"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_standing_gate_verbosity.py",
+        "content_sha256": "e4eba7bd3581a4ed7c848864f9284717365588fc21427384766de3117e361719"
+      }
+    ],
+    "reviewed_patch_sha256": "13d27599c44367db76ac585869023a4b8e20d8604dc1c1bbc11054f029c7d1e3",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "2c22f0e9a47092ef5a94f70c8333963efd8339abbc3da7a6d5894b19a053f69d"
+  }
+}
