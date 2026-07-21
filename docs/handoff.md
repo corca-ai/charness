@@ -10,6 +10,11 @@
 
 ## Current State
 
+- v2.4.2 is PUBLISHED (tag `v2.4.2 -> 5fb4b7a4`, public GitHub release and
+  unauthenticated HTTPS observer verified, installed refresh completed). Scope:
+  supported temporary Specdown reports, conservative executable-spec bootstrap
+  selection, Defuddle upstream guidance, and release-quality evidence repair.
+  No issue closeout was requested.
 - v2.4.1 is PUBLISHED (tag `v2.4.1 -> e36a0b93`, unauthenticated https 200,
   installed `charness version -> 2.4.1` after refresh). Scope: the #448
   scoped-rebaseline parity fix and the #446 CI test-determinism fix. The
@@ -28,19 +33,22 @@
 
 ## Next Session
 
-1. Check the next scheduled `Mutation Tests` run (00:17/12:17 UTC cadence,
+1. Treat v2.4.2 as the current published baseline; use `charness update` and
+   restart the active host session before diagnosing an installed-versus-repo
+   version mismatch.
+2. Check the next scheduled `Mutation Tests` run (00:17/12:17 UTC cadence,
    cron delay up to ~45 min) on post-`6dda14c0` main: green auto-closes #446;
    red now falsifies the cpu-pin diagnosis — read the failing nodeid before
    theorizing.
-2. Ask/verify the Ceal-side #448 scenario against v2.4.1 (accept the exact
+3. Ask/verify the Ceal-side #448 scenario against v2.4.1 (accept the exact
    suggested rotations) before any #448 closure; then #449 (machine-distinct
    CI observer) remains the open release-proof design item.
-3. Deferred discovery follow-ups remain available: inline `.rglob`/`ls-files`
+4. Deferred discovery follow-ups remain available: inline `.rglob`/`ls-files`
    pathspec discovery, `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero
    test-surface advisory.
-4. Keep D18 ignored unless the operator explicitly reopens it. Stale
+5. Keep D18 ignored unless the operator explicitly reopens it. Stale
    `charness-run-*` basetemp reaping stays intentionally deferred.
-5. For mutation-pool changes, ask the selector before widening a producer by
+6. For mutation-pool changes, ask the selector before widening a producer by
    hand; for new dynamic-call syntax, add wrong-path/loader/receiver and
    disconnected-control-flow fixtures first.
 
