@@ -35,7 +35,7 @@ The final read-only quality run, `./scripts/run-quality.sh --read-only`, complet
 
 ## Deferred
 
-- Test-file/nested-CLI economics are measured but not changed: 415 test files and 163 standing nested-CLI files need value-preserving profiling before consolidation.
+- Test-file/nested-CLI economics are measured but not changed: `test_file_count=415`, `nested_cli_file_count=181`, and `nested_cli_standing_file_count=163` show meaningful startup/fan-out surface, but not enough evidence to remove isolation before value-preserving profiling.
 
 ## Advisory
 

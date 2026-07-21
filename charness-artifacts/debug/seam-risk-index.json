@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 101,
-  "indexed_artifact_count": 89,
+  "source_artifact_count": 102,
+  "indexed_artifact_count": 90,
   "risk_class_counts": {
-    "contract-freeze-risk": 28,
+    "contract-freeze-risk": 30,
     "external-seam": 5,
     "host-disproves-local": 2,
-    "none": 31,
+    "none": 30,
     "operator-visible-recovery": 22,
     "repeated-symptom": 1
   },
   "generalization_pressure_counts": {
     "factor-now": 4,
-    "monitor": 74,
-    "none": 11
+    "monitor": 76,
+    "none": 10
   },
   "entries": [
     {
@@ -1238,6 +1238,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-22-debug-review-followup.md",
+      "is_current_pointer": false,
+      "interrupt_id": "release-quality-contract-gap",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "quality artifact authoring to release-only inventory consumer.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-22-debug-review.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1254,12 +1268,12 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "none",
+      "interrupt_id": "release-quality-contract-gap",
       "risk_classes": [
-        "none"
+        "contract-freeze-risk"
       ],
-      "seam": "none",
-      "generalization_pressure": "none",
+      "seam": "quality artifact authoring to release-only inventory consumer.",
+      "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
