@@ -807,3 +807,14 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
         "run-quality.sh queues repo-script gates with no seeded harness stub; "
         f"add them to QUALITY_PYTHON_STUBS in tests/quality_gates/support.py: {missing}"
     )
+
+
+def test_quality_runner_keeps_specdown_reports_out_of_the_worktree() -> None:
+    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    specdown_command = next(line for line in runner.splitlines() if 'queue_selected "specdown"' in line)
+
+    assert 'queue_selected "specdown" bash -c' in specdown_command
+    assert "specdown run -jobs 4 -out" in specdown_command
+    assert "RUN_QUALITY_TMPDIR/specdown-report" in specdown_command
+    assert "-quiet" not in specdown_command
+    assert "-no-report" not in specdown_command

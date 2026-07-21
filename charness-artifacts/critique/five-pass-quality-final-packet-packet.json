@@ -1,0 +1,141 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-21T22:58:48Z",
+  "prepared_for": "five-pass-quality-final-binding",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- .agents/surfaces.json\n- charness-artifacts/debug/2026-07-22-debug-review.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/quality/2026-07-22-quality-review.md\n- charness-artifacts/quality/latest.md\n- charness-artifacts/quality/sloc-inventory/latest.json\n- integrations/tools/defuddle.json\n- plugins/charness/integrations/tools/defuddle.json\n- plugins/charness/scripts/lint_ignore_inventory_lib.py\n- plugins/charness/scripts/run-quality.sh\n- plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py\n- scripts/lint_ignore_inventory_lib.py\n- scripts/run-quality.sh\n- skills/public/quality/scripts/standing_gate_verbosity_lib.py\n- tests/quality_gates/test_quality_runner.py\n- tests/quality_gates/test_quality_standing_gate_verbosity.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: integrations/tools/defuddle.json, scripts/lint_ignore_inventory_lib.py, scripts/run-quality.sh, skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  derived matches: plugins/charness/integrations/tools/defuddle.json, plugins/charness/scripts/lint_ignore_inventory_lib.py, plugins/charness/scripts/run-quality.sh, plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/2026-07-22-debug-review.md, charness-artifacts/quality/2026-07-22-quality-review.md, charness-artifacts/quality/latest.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  derived matches: plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- surface-obligations: Repo-owned changed-surface manifest that drives slice closeout obligations.\n  source matches: .agents/surfaces.json\n  verify: python3 scripts/validate_surfaces.py --repo-root .\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-07-22-debug-review.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- external-tool-control-plane: External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.\n  source matches: integrations/tools/defuddle.json\n  derived matches: plugins/charness/integrations/tools/defuddle.json\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: integrations/tools/defuddle.json\n  derived matches: plugins/charness/integrations/tools/defuddle.json, plugins/charness/scripts/lint_ignore_inventory_lib.py, plugins/charness/scripts/run-quality.sh\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/lint_ignore_inventory_lib.py, tests/quality_gates/test_quality_runner.py, tests/quality_gates/test_quality_standing_gate_verbosity.py\n  derived matches: plugins/charness/scripts/lint_ignore_inventory_lib.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- inference-interpretation-contract: Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.\n  source matches: scripts/lint_ignore_inventory_lib.py\n  verify: python3 scripts/validate_inference_interpretation.py --repo-root . --require-git-file-listing\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/lint_ignore_inventory_lib.py, skills/public/quality/scripts/standing_gate_verbosity_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "9bd8b02ff39291c6124bcafd4ac6a24e043e8480",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/surfaces.json",
+      "charness-artifacts/debug/2026-07-22-debug-review.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/quality/2026-07-22-quality-review.md",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/quality/sloc-inventory/latest.json",
+      "integrations/tools/defuddle.json",
+      "plugins/charness/integrations/tools/defuddle.json",
+      "plugins/charness/scripts/lint_ignore_inventory_lib.py",
+      "plugins/charness/scripts/run-quality.sh",
+      "plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py",
+      "scripts/lint_ignore_inventory_lib.py",
+      "scripts/run-quality.sh",
+      "skills/public/quality/scripts/standing_gate_verbosity_lib.py",
+      "tests/quality_gates/test_quality_runner.py",
+      "tests/quality_gates/test_quality_standing_gate_verbosity.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/surfaces.json",
+        "content_sha256": "2541ce531ee9e57d2041e70832252f4d0f637d1df9dbf237864bbd3b298e4489"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-22-debug-review.md",
+        "content_sha256": "280e14d3d5ce970c3487e4d95d2736db6d73b3c46eecb164baadc3f6b00dfe5b"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "b6802709966edf079a6aa20df1d9aeb8ff1beffeb548b6669d546cdc3a3c785e"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-07-22-quality-review.md",
+        "content_sha256": "d49cc586aa4009fbaf0a1902ac9dbb58d74493a055dd7026f1701e66baf261ed"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "3e85bdabb937c998505ef2840d35468bb6b088780b576445c2d858a9ada1e4f4"
+      },
+      {
+        "path": "charness-artifacts/quality/sloc-inventory/latest.json",
+        "content_sha256": "52c13c058c63a2c3bb17854207f35f863c933410de6f8e11fa1ec6ce9d7e343e"
+      },
+      {
+        "path": "integrations/tools/defuddle.json",
+        "content_sha256": "24663e975385491a51fb36afa6b287127e77ca4cb6a6a0d7bac367cf0534a6e7"
+      },
+      {
+        "path": "plugins/charness/integrations/tools/defuddle.json",
+        "content_sha256": "24663e975385491a51fb36afa6b287127e77ca4cb6a6a0d7bac367cf0534a6e7"
+      },
+      {
+        "path": "plugins/charness/scripts/lint_ignore_inventory_lib.py",
+        "content_sha256": "6c1fdb132eee4cdb562cec86c15fa411f6d5c5baadc8cb6183186a5fa4033f88"
+      },
+      {
+        "path": "plugins/charness/scripts/run-quality.sh",
+        "content_sha256": "259b3751b27956a196290eed52d3c1aab0c7572ccaef661273131137b7a384e0"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/standing_gate_verbosity_lib.py",
+        "content_sha256": "1feaa58dcb5786643794b0ec87323ae635d1842625e618a28607d9ca342b1a65"
+      },
+      {
+        "path": "scripts/lint_ignore_inventory_lib.py",
+        "content_sha256": "6c1fdb132eee4cdb562cec86c15fa411f6d5c5baadc8cb6183186a5fa4033f88"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "259b3751b27956a196290eed52d3c1aab0c7572ccaef661273131137b7a384e0"
+      },
+      {
+        "path": "skills/public/quality/scripts/standing_gate_verbosity_lib.py",
+        "content_sha256": "1feaa58dcb5786643794b0ec87323ae635d1842625e618a28607d9ca342b1a65"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_runner.py",
+        "content_sha256": "cf72cebe71f017f3858f7979132c11d4dffff7186c905484c6c8c08bf1841fb2"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_standing_gate_verbosity.py",
+        "content_sha256": "066e4daba4201d48e1d2f8c3952023a9de384442c368f42f16103b6f6804b3a7"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "ad2c1c76a5dd6b2235cae3f144335da4b61f027eb83bf5c6672c27d1b13b85bd",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "8f4270bab13f21f6c09b1fbe800e42b814532c9ece09622c30f618cf300343f7"
+  }
+}

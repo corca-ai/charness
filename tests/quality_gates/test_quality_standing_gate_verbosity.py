@@ -178,6 +178,31 @@ def test_inventory_standing_gate_verbosity_recognizes_charness_quiet_default() -
     assert payload["axes"]["failure_detail"]["status"] == "healthy"
 
 
+def test_inventory_standing_gate_verbosity_recognizes_queued_specdown_output(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".githooks").mkdir(parents=True)
+    (repo / "scripts").mkdir()
+    (repo / ".githooks" / "pre-push").write_text("./scripts/run-quality.sh\n", encoding="utf-8")
+    (repo / "scripts" / "run-quality.sh").write_text(
+        "\n".join(
+            [
+                "queue_timed() {",
+                '  if "$@" >"$log_path" 2>&1; then :; fi',
+                "}",
+                "print_phase_output() { :; }",
+                'queue_selected "specdown" specdown run -jobs 4',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    payload = INVENTORY(repo)
+    specdown = next(finding for finding in payload["findings"] if finding["tool"] == "specdown")
+    assert specdown["state"] == "quiet"
+    assert payload["axes"]["per_gate_chatter"]["status"] == "healthy"
+
+
 def test_inventory_standing_gate_verbosity_flags_quiet_failure_without_detail(
     tmp_path: Path,
 ) -> None:

@@ -50,8 +50,35 @@ def _is_quiet_pytest_runner(snippet: str) -> bool:
     return "run_standing_pytest.py" in snippet or bool(re.search(r"(^|\s)(-q|--quiet)(\s|$)", snippet))
 
 
+def _tool_findings(
+    snippets: list[dict[str, str]],
+    specs: list[tuple[str, Any, Any, str]],
+    finding_type: str,
+    quiet_for: Any,
+) -> list[dict[str, Any]]:
+    findings = []
+    for item in snippets:
+        lowered = item["snippet"].lower()
+        for tool, matcher, quiet, suggestion in specs:
+            if matcher(lowered):
+                is_quiet = quiet_for(tool, quiet, item, lowered)
+                findings.append(
+                    {
+                        "type": finding_type,
+                        "path": item["path"],
+                        "origin": item["origin"],
+                        "tool": tool,
+                        "state": "quiet" if is_quiet else "loud",
+                        "snippet": item["snippet"],
+                        "suggestion": "" if is_quiet else suggestion,
+                    }
+                )
+                break
+    return findings
+
+
 def _runner_axis(snippets: list[dict[str, str]]) -> dict[str, Any]:
-    findings, specs = [], [
+    specs = [
         ("node --test", lambda s: "node" in s and "--test" in s, lambda s: "--test-reporter=dot" in s and "--test-reporter-destination=stdout" in s, "Pin `node --test --test-reporter=dot --test-reporter-destination=stdout` for standing gates."),
         ("pytest", _is_pytest_runner, _is_quiet_pytest_runner, "Use `pytest -q` for standing-gate runs; add `--tb=short` if traceback bulk dominates."),
         ("jest", lambda s: bool(re.search(r"\bjest\b", s)), lambda s: "--reporter=dot" in s or "--reporters=dot" in s, "Prefer `jest --reporter=dot` in standing gates."),
@@ -59,13 +86,7 @@ def _runner_axis(snippets: list[dict[str, str]]) -> dict[str, Any]:
         ("go test", lambda s: bool(re.search(r"\bgo\s+test\b", s)), lambda s: not bool(re.search(r"(^|\s)-v(\s|$)", s)), "Drop `go test -v` from the standing gate unless the extra stream is required."),
         ("cargo test", lambda s: bool(re.search(r"\bcargo\s+test\b", s)), lambda s: "-- --nocapture" not in s, "Avoid `cargo test -- --nocapture` in the default standing gate."),
     ]
-    for item in snippets:
-        lowered = item["snippet"].lower()
-        for tool, matcher, quiet, suggestion in specs:
-            if matcher(lowered):
-                is_quiet = quiet(lowered)
-                findings.append({"type": "test_runner_reporter", "path": item["path"], "origin": item["origin"], "tool": tool, "state": "quiet" if is_quiet else "loud", "snippet": item["snippet"], "suggestion": "" if is_quiet else suggestion})
-                break
+    findings = _tool_findings(snippets, specs, "test_runner_reporter", lambda _tool, quiet, _item, lowered: quiet(lowered))
     return {"status": _quiet_status(findings), "findings": findings}
 
 
@@ -82,19 +103,30 @@ def _orchestrator_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
     return {"status": _quiet_status(findings), "findings": findings}
 
 
-def _chatter_axis(snippets: list[dict[str, str]]) -> dict[str, Any]:
-    findings, specs = [], [
+def _quiet_queue_paths(surfaces: list[dict[str, Any]]) -> set[str]:
+    return {
+        surface["path"]
+        for surface in surfaces
+        if "queue_selected" in surface["text"]
+        and 'if "$@" >"$log_path" 2>&1' in surface["text"]
+        and "print_phase_output" in surface["text"]
+    }
+
+
+def _chatter_axis(surfaces: list[dict[str, Any]], snippets: list[dict[str, str]]) -> dict[str, Any]:
+    quiet_queue_paths = _quiet_queue_paths(surfaces)
+    specs = [
         ("pylint", lambda s: bool(re.search(r"\bpylint\b", s)), lambda s: "--score=n" in s or "--score=no" in s or bool(re.search(r"(^|\s)-sn(\s|$)", s)), "Run `pylint` with `-sn --score=n` or equivalent quiet defaults in the standing gate."),
         ("coverage report", lambda s: "coverage report" in s, lambda s: "--skip-covered" in s or "--skip-empty" in s, "Prefer `coverage report --skip-covered` or another bounded summary in the default gate."),
         ("specdown", lambda s: bool(re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)), lambda s: bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s)), "Gate `specdown` behind a quieter default or a repo-owned `VERBOSE=1` escape hatch."),
     ]
-    for item in snippets:
-        lowered = item["snippet"].lower()
-        for tool, matcher, quiet, suggestion in specs:
-            if matcher(lowered):
-                is_quiet = quiet(lowered)
-                findings.append({"type": "per_gate_chatter", "path": item["path"], "origin": item["origin"], "tool": tool, "state": "quiet" if is_quiet else "loud", "snippet": item["snippet"], "suggestion": "" if is_quiet else suggestion})
-                break
+    findings = _tool_findings(
+        snippets,
+        specs,
+        "per_gate_chatter",
+        lambda tool, quiet, item, lowered: quiet(lowered)
+        or (tool == "specdown" and "queue_selected" in lowered and item["path"] in quiet_queue_paths),
+    )
     return {"status": _quiet_status(findings), "findings": findings}
 
 
@@ -128,13 +160,15 @@ def _escape_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _failure_detail_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
     findings = []
+    quiet_queue_paths = _quiet_queue_paths(surfaces)
     for surface in surfaces:
         text = surface["text"]
         lower_text = text.lower()
         has_failure_detail = any(marker in lower_text for marker in FAILURE_DETAIL_MARKERS)
         output_suppressed = bool(SUPPRESSED_OUTPUT_RE.search(text))
         for tool, pattern, unit_label, native_detail in QUIET_FAILURE_TOOLS:
-            if not pattern.search(text):
+            queued_specdown = tool == "specdown" and surface["path"] in quiet_queue_paths
+            if not pattern.search(text) and not queued_specdown:
                 continue
             actionable = has_failure_detail or (native_detail and not output_suppressed)
             findings.append(
@@ -165,7 +199,7 @@ def inventory(repo_root: Path) -> dict[str, Any]:
     axes = {
         "test_runner_reporter": _runner_axis(snippets),
         "orchestrator_output_mode": _orchestrator_axis(surfaces),
-        "per_gate_chatter": _chatter_axis(snippets),
+        "per_gate_chatter": _chatter_axis(surfaces, snippets),
         "phase_level_signal": _phase_axis(surfaces),
         "escape_hatch": _escape_axis(surfaces),
         "failure_detail": _failure_detail_axis(surfaces),

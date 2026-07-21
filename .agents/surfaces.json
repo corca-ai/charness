@@ -692,7 +692,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "specdown run -quiet -no-report"
+        "specdown_report_dir=$(mktemp -d); trap 'rm -rf \"$specdown_report_dir\"' EXIT; specdown run -jobs 4 -out \"$specdown_report_dir\""
       ],
       "notes": [
         "Keep executable specs focused on stable operator-facing behavior; avoid adding adapters until setup or JSON extraction repeats.",

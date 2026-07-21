@@ -17,7 +17,7 @@
         "npm install -g defuddle"
       ],
       "docs_url": "https://github.com/kepano/defuddle",
-      "install_url": "https://www.npmjs.com/package/defuddle",
+      "install_url": "https://github.com/kepano/defuddle",
       "notes": [
         "The historical `defuddle-cli` package is deprecated; install the current `defuddle` package.",
         "The upstream skill at skills.sh remains useful as workflow guidance, but the active runtime package is `defuddle`.",
@@ -29,7 +29,7 @@
       "commands": [
         "npm install -g defuddle@latest"
       ],
-      "docs_url": "https://www.npmjs.com/package/defuddle",
+      "docs_url": "https://github.com/kepano/defuddle",
       "notes": [
         "Update through npm when the current binary was installed from `defuddle`."
       ]

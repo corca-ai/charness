@@ -28,7 +28,6 @@ ESLINT_RE = re.compile(
     r"(?:^|\s)(?://|/\*)\s*eslint-disable(?P<scope>-next-line|-line)?(?:\s+(?P<codes>[^*\n]+?))?\s*(?:\*/)?$",
     re.IGNORECASE,
 )
-DEFAULT_LINT_IGNORE_DISCOVERY: dict[str, Any] = {"directives": []}
 _ADAPTER_DIRECTIVE_SCOPES = {"inline", "file", "leading"}
 
 # Advisory interpretation contract (see skills/shared/references/
