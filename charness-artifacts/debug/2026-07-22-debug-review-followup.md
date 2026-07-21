@@ -3,8 +3,10 @@ Date: 2026-07-22
 
 ## Problem
 
-The v2.4.2 release helper rolled back before tag or push because release-only
-quality rejected the current quality artifact's inventory-consumption record.
+The v2.4.2 release helper first rolled back because release-only quality
+rejected the current quality artifact's inventory-consumption record, then a
+second replay exposed a release-only test that rejected a valid idempotent
+Specdown update result.
 
 ## Correct Behavior
 
@@ -24,11 +26,16 @@ past its quality phase without changing tracked Specdown evidence.
   `nested_cli_file_count=181`, and `nested_cli_standing_file_count=163`.
 - The existing Deferred sentence used prose counts but did not include the
   validator's exact field keys.
+- After that repair, the release suite had one failure: the Specdown
+  provenance test expected `updated`, while the seeded lock and fake binary
+  both report `0.47.2`, so `update_tools.py` correctly returned `refreshed`.
 
 ## Reproduction
 
 - Run `./scripts/run-quality.sh --release` from clean commit `05d427fb`; the
-  `validate-inventory-consumption` phase fails on the cited economics inventory.
+  first replay fails `validate-inventory-consumption`. After its repair, the
+  same gate fails `test_tool_update_routes_go_provenance_for_specdown` because
+  it asserts `updated` against the valid idempotent `refreshed` result.
 
 ## Candidate Causes
 
@@ -36,33 +43,42 @@ past its quality phase without changing tracked Specdown evidence.
 - The quality artifact cited an inventory it had not actually consumed.
 - The artifact consumed the inventory but omitted the consumer contract's exact
   non-headline field keys.
+- A provenance-routing test confused a successful package-manager invocation
+  with a mandatory version transition.
 
 ## Hypothesis
 
-- The validator matches declared field names literally; adding the measured
-  field keys to the Deferred observation will make the release gate pass |
-  disconfirmer: run `validate_inventory_consumption.py` against the artifact.
+- The inventory validator matches declared field names literally, and the
+  provenance test must accept both successful transition states; adding the
+  measured field keys and allowing `updated` or `refreshed` will make the
+  release gate pass | disconfirmer: run the inventory validator and the focused
+  Specdown provenance test.
 
 ## Verification
 
 - result: confirmed — the release gate names the cited inventory and reports
   zero engaged declared fields; the revised observation names three measured
-  keys for the same decision.
+  keys. The focused failure shows `refreshed` with matching seeded and detected
+  versions, which is the success branch in `update_tools.py`.
 
 ## Root Cause
 
 The quality artifact was written before the inventory-consumer contract was
 enforced. Its human-readable summary retained the counts but not the declared
-field identifiers the release validator uses to prove actual consumption.
+field identifiers the release validator uses to prove actual consumption. The
+release-only provenance test separately overfit the prior version-change state
+instead of the stable package-manager routing contract it owns.
 
 ## Invariant Proof
 
 - Invariant: an artifact that cites a declared quality inventory exposes enough
-  named evidence for its consumer contract to verify real use.
+  named evidence for its consumer contract to verify real use, and an update
+  provenance test accepts either successful transition state.
 - Producer Proof: the economics inventory emits the three named fields.
 - Final-Consumer Proof: `validate_inventory_consumption.py` accepts the
   quality artifact only when at least two declared field names occur outside
-  `## Commands Run`.
+  `## Commands Run`; the Specdown test accepts `updated` or `refreshed` while
+  still asserting the Go package-manager provenance.
 - Interface-Shape Sibling Scan: other inventory citations use their declared
   fields or avoid a citation when no durable consumer conclusion exists.
 - Non-Claims: the fields measure fan-out, not that a test consolidation is safe.
@@ -70,14 +86,18 @@ field identifiers the release validator uses to prove actual consumption.
 ## Detection Gap
 
 - Five-pass read-only closeout | did not run the release-only inventory consumer
-  | rerun the exact `--release` gate before publishing.
+  or its release-only provenance test | rerun the exact `--release` gate before
+  publishing.
 
 ## Sibling Search
 
 - Mental model: prose summaries are not evidence when the consumer contract
-  defines machine-checkable field names.
+  defines machine-checkable field names, and successful idempotence is not a
+  failed update.
 - release-only validation: `scripts/validate_inventory_consumption.py` |
   decision: retain literal field evidence in the artifact | proof: focused gate.
+- package-manager provenance: `tests/charness_cli/test_tool_lifecycle.py` |
+  decision: accept both successful transition states | proof: focused test.
 - cross-file: `skills/public/quality/references/inventory-consumer-fields.json`
   owns the declared field vocabulary.
 
@@ -102,7 +122,8 @@ field identifiers the release validator uses to prove actual consumption.
 
 Keep the release helper's exact quality command as the final release consumer;
 when a quality artifact cites an inventory, record the measured declared fields
-in the judgment section rather than only a prose paraphrase. A scoped follow-up
-fresh-eye spawn was attempted but blocked by host signal `agent thread limit
-reached`; the existing v2.4.2 release critique remains the release-boundary
-review evidence.
+in the judgment section rather than only a prose paraphrase. Keep provenance
+tests focused on routing and accept the documented idempotent update result. A
+scoped follow-up fresh-eye spawn was attempted but blocked by host signal
+`agent thread limit reached`; the existing v2.4.2 release critique remains the
+release-boundary review evidence.
