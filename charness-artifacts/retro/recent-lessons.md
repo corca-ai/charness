@@ -2,19 +2,19 @@
 
 ## Current Focus
 
+- Release publish triggered a configured automatic session retro for `v2.4.2`. (source: `charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md`)
 - Handoff OPEN SMELL (flaky/nondeterministic suite under parallel/`--release` load) was routed through `debug` → `impl` → follow-up resolution → `release`. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
-- Release publish triggered a configured automatic session retro for `v2.3.0`. (source: `charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-20-v2-4-1-release-auto-retro.md`; sources: 111)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md`; sources: 112)
 - False non-claim from a scope-mismatched disconfirmer. I ran symptom (b)'s two named files in isolation at `-n 16`, saw them pass, and wrote "did NOT reproduce / resource contention" into BOTH the durable debug artifact and the handoff. The full `--release` suite falsified it minutes later (11 failed, 1439 errors). Cost: a wrong durable claim that fresh-eye review (Angle C) flagged and that I then had to correct twice. The isolated subset never exercised the nested-pytest cleanup that only the full suite triggers — it was not a valid disconfirmer for a load-dependent flake. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 - Rename without a consumer grep. I renamed the `default_basetemp` leaf (`pytest-<ns>` → `charness-run-<ns>`) without first grepping for its name-based consumers; two tests asserting the old leaf failed only when the full suite ran, and a fresh-eye reviewer caught a third consumer (the economics session regex) that would have silently under-reported. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 - (Tier-1 fixes slice) Near-zero repo waste — the audit artifact's exact file:line + remediation + confirmed-safe set made the slice mechanical. One host-side friction: the spawned bounded reviewer's final report arrived only as an idle notification, so the parent had to extract it from the subagent transcript JSONL by hand before the boundary-fingerprint verify. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-20-v2-4-1-release-auto-retro.md`; sources: 111)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md`; sources: 112)
 - before renaming a widely-referenced constant, grep for its name-based consumers (`startswith`/`==`/regex) across scripts, skills, tests, and mirrors, and batch the assertion updates with the rename. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 - before writing "not reproduced" / "does not happen" for a flake, scope-match the disconfirmer to the failure's trigger conditions (load, concurrency, scale) and reproduce under the FULL environment; an isolated subset passing is not a valid absence proof. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
 - persist both lessons in the generated recent-lessons digest so the next session inherits the disconfirmer-scope and rename-consumer-grep guards. (source: `charness-artifacts/retro/2026-07-20-session-retro.md`)
@@ -139,3 +139,4 @@
 - `charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-20-v2-4-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-20-v2-4-1-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md`
