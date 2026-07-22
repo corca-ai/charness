@@ -101,6 +101,7 @@ def test_init_adapter_scaffolds_public_body_shape(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     adapter_text = (tmp_path / ".agents" / "announcement-adapter.yaml").read_text(encoding="utf-8")
     assert "public_body_shape: chat_update" in adapter_text
+    assert "message_size_limit: 0" in adapter_text
 
 
 def test_outputs_validation_rejects_duplicate_id_and_unknown_delivery_role(tmp_path: Path) -> None:
