@@ -10,60 +10,56 @@
 
 ## Current State
 
-- v2.4.2 is PUBLISHED (tag `v2.4.2 -> 5fb4b7a4`, public GitHub release and
-  unauthenticated HTTPS observer verified, installed refresh completed). Scope:
-  supported temporary Specdown reports, conservative executable-spec bootstrap
-  selection, Defuddle upstream guidance, and release-quality evidence repair.
-  No issue closeout was requested.
-- v2.4.1 is PUBLISHED (tag `v2.4.1 -> e36a0b93`, unauthenticated https 200,
-  installed `charness version -> 2.4.1` after refresh). Scope: the #448
-  scoped-rebaseline parity fix and the #446 CI test-determinism fix. The
-  v2.4.1 observer JSON now carries `distinct_channel_verification.observer`
-  (v2.4.0 caveat resolved) —
-  [release critique](../charness-artifacts/critique/2026-07-20-v2-4-1-release-critique.md).
-- #448 stays OPEN by design: shipped fix covers within-invocation universe
-  parity only ([slice critique](../charness-artifacts/critique/2026-07-20-dup-ratchet-scoped-rebaseline-parity-critique.md)).
-  Residuals: wrapper cached-inventory / fingerprint-normalization hypothesis,
-  cross-invocation drift. Closure proof = Ceal re-verification against v2.4.1.
-- #446 root cause re-diagnosed and fixed in `6dda14c0`: NOT the basetemp
-  flake — the xdist test hardcoded `-n 16` while CI runners have 4 cores
-  (deterministic host dependence; class fully drained per fresh-eye review).
-  Only a scheduled green `Mutation Tests` run auto-closes it.
+- v2.4.3 is PUBLISHED (tag `v2.4.3 -> 7dddb494`, public GitHub release and
+  unauthenticated HTTPS observer verified, installed refresh confirmed
+  `charness version -> 2.4.3`). Scope: #451 mutation-score test-coverage fix,
+  #452 create-cli named-option order-independence baseline, and a recorded
+  decision not to build #449's CI-side release observer —
+  [release critique](../charness-artifacts/critique/2026-07-23-v2-4-3-release-critique.md).
+- v2.4.2 (tag `5fb4b7a4`) is superseded by v2.4.3.
+- All previously-tracked issues are CLOSED as of 2026-07-23: #446 (scheduled
+  green Mutation Tests auto-close), #448 (closed directly by the operator),
+  #449 (declined feature, not built — [brief](../charness-artifacts/issue/2026-07-23-issue-449-brief.md)),
+  #450 (fix had already landed pre-session in `543785c3` without a close
+  keyword; closed this session after re-verification), #451/#452 (resolved
+  end-to-end this session; critiques in References). Re-check
+  `gh issue list --state open` fresh rather than trusting this line.
 - Sibling scan closed through Tier 2; Tier 3 (E-J) stays boy-scout only.
 
 ## Next Session
 
-1. Treat v2.4.2 as the current published baseline; use `charness update` and
-   restart the active host session before diagnosing an installed-versus-repo
-   version mismatch.
-2. Check the next scheduled `Mutation Tests` run (00:17/12:17 UTC cadence,
-   cron delay up to ~45 min) on post-`6dda14c0` main: green auto-closes #446;
-   red now falsifies the cpu-pin diagnosis — read the failing nodeid before
-   theorizing.
-3. Ask/verify the Ceal-side #448 scenario against v2.4.1 (accept the exact
-   suggested rotations) before any #448 closure; then #449 (machine-distinct
-   CI observer) remains the open release-proof design item.
-4. Deferred discovery follow-ups remain available: inline `.rglob`/`ls-files`
+1. Treat v2.4.3 as the published baseline; use `charness update` and restart
+   the active host session before diagnosing a version mismatch.
+2. No open issues remain as of this session's close; start any new backlog
+   scan from a fresh `gh issue list`.
+3. Deferred discovery follow-ups remain available: inline `.rglob`/`ls-files`
    pathspec discovery, `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero
    test-surface advisory.
-5. Keep D18 ignored unless the operator explicitly reopens it. Stale
+4. Keep D18 ignored unless the operator explicitly reopens it. Stale
    `charness-run-*` basetemp reaping stays intentionally deferred.
-6. For mutation-pool changes, ask the selector before widening a producer by
+5. For mutation-pool changes, ask the selector before widening a producer by
    hand; for new dynamic-call syntax, add wrong-path/loader/receiver and
    disconnected-control-flow fixtures first.
+6. #451's causal review deferred two siblings, neither acted on: ~20 sibling
+   `init_adapter.py` scaffolds share a thin-assertion emit idiom, and an
+   unconfirmed identifier-literal comparison blind spot at
+   `scripts/announcement_adapter_lib.py:125` — see its critique before acting.
+7. #449 was designed then explicitly declined over the new CI write-
+   permission surface it would need; do not re-propose without new
+   information — see the brief.
 
 ## Discuss
 
-- #448 scoped-accept deferred items (recorded in the critique): overlay-missing
-  advisory in scoped mode, advisories on the refused early-return, explicit
-  `--accept-family` of an intentional id test — pick up only with the next
-  dup-ratchet slice.
+- #448 scoped-accept deferred items (its critique): overlay-missing advisory
+  in scoped mode, refused-early-return advisories, explicit `--accept-family`
+  of an intentional id test — pick up only with the next dup-ratchet slice.
 
 ## References
 
-- [abstracted-pattern sibling scan (next-session fix backlog)](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)
+- [v2.4.3 release critique](../charness-artifacts/critique/2026-07-23-v2-4-3-release-critique.md)
+- [#451 critique](../charness-artifacts/critique/2026-07-23-issue-451-resolution-critique.md) · [#452 critique](../charness-artifacts/critique/2026-07-23-issue-452-resolution-critique.md)
+- [#449 brief and decision](../charness-artifacts/issue/2026-07-23-issue-449-brief.md)
+- [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)
 - [retention RCA](../charness-artifacts/debug/2026-07-20-debug-review.md)
 - [basetemp deletion-race RCA](../charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md)
-- [release state](../charness-artifacts/release/latest.md)
-- [quality review](../charness-artifacts/quality/latest.md)
-- [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [release state](../charness-artifacts/release/latest.md) · [quality review](../charness-artifacts/quality/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
