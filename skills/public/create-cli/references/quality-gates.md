@@ -3,6 +3,8 @@
 A repo-owned CLI should usually have:
 
 - parser smoke tests for representative commands
+- named-option order-independence and duplicate/unknown/missing-value
+  rejection probes, per `command-conventions.md` "Named Option Semantics"
 - version probe tests for `version` and any supported top-level `--version`
   alias
 - `--help` smoke for stable public subcommands
@@ -61,6 +63,9 @@ When the CLI owns lifecycle state, test both:
 Quality review should ask:
 
 - do stable public subcommands expose a no-side-effect `--help` contract
+- are named options order-independent, and does the parser reject a
+  duplicate, unknown, or missing-value named option instead of silently
+  accepting it
 - do mutating commands reject option-looking positional values before touching
   local or host-visible state
 - do lifecycle mutations expose dry-run/plan behavior, or is the waiver

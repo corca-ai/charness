@@ -20,7 +20,37 @@ Portable baseline for repo-owned multi-command CLIs:
 When a CLI diverges from this baseline, make the reason product-shaped, not
 stylistic. "The parser happened to allow it" is not a reason.
 
-Read-only probe surface:
+## Named Option Semantics
+
+Named options (`--flag`, `--flag value`) are order-independent by default:
+any valid named option may appear before or after any other named option on
+the same command line. A command may diverge from this only for a
+documented product reason (for example, a mode flag that changes how later
+options are interpreted); "the parser happened to require this order" is not
+a reason, matching the baseline rule above.
+
+This baseline is scoped to named options only:
+
+- positional arguments keep whatever order the command's grammar defines;
+  order-independence does not extend to them
+- an option's *value* (`--target foo`) is bound to that option, not to
+  position on the command line, so `--target foo --profile bar` and
+  `--profile bar --target foo` must parse identically
+
+A parser that satisfies this baseline must also reject, rather than
+silently accept:
+
+- a duplicate named option (unless the command explicitly documents
+  last-wins or accumulate semantics)
+- an unknown named option
+- a named option that requires a value but is missing one
+
+Test the parser contract directly (duplicate/unknown/missing-value
+rejection, and that a representative pair of named options parses the same
+both orders) rather than enumerating every flag permutation; see
+`quality-gates.md` for where this fits alongside other parser smoke tests.
+
+## Read-only Probe Surface
 
 - `tool --help`
 - `tool version`

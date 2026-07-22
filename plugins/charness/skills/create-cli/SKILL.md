@@ -46,8 +46,8 @@ steps call tools outside the baseline shell surface.
      skill) owns each command before locking names
    - stable nouns and verbs
    - for multi-command CLIs, prefer a subcommand-first surface and follow
-     `references/command-conventions.md` for canonical lifecycle verbs and
-     version/help flag conventions
+     `references/command-conventions.md` for canonical lifecycle verbs,
+     version/help flag conventions, and flag-ordering independence
    - one obvious install/bootstrap path
    - explicit `doctor`, `update`, `reset`, or `uninstall` commands when the
      product owns lifecycle state
@@ -126,9 +126,11 @@ steps call tools outside the baseline shell surface.
    - choose proof from the operator contract, command surface, mutation rules,
      and distribution contract before listing gate families
    - cover the gate axes per `references/quality-gates.md`: parser/`--help` smoke,
-     mutating-command side-effect probe fixtures (read-only help probes,
-     option-looking positional rejection, dry-run/plan coverage or waiver, watched
-     side effects), machine-state + command-discovery JSON validation,
+     flag-ordering independence and duplicate/unknown/missing-value
+     rejection, mutating-command side-effect probe fixtures (read-only help
+     probes, option-looking positional rejection, dry-run/plan coverage or
+     waiver, watched side effects), machine-state + command-discovery JSON
+     validation,
      external-capability log redaction tests, help/healthcheck/readiness-not-conflated
      checks, a command-docs drift gate, and broad-verification worktree safety
      (clean `git status`/`HEAD`)
