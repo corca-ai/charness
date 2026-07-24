@@ -866,3 +866,51 @@ def test_render_runtime_summary_escalates_empty_runtime_visibility(tmp_path: Pat
         "- runtime visibility: weak due to `runtime_visibility_missing_budgets`, "
         "`runtime_visibility_missing_startup_probes`;"
     )
+
+
+def test_budget_slack_findings_names_budgets_that_can_no_longer_fail() -> None:
+    """A runtime budget only ever moves one way on its own: a violation forces a
+    raise, and nothing reports when the raise stopped being needed. This repo's
+    `check-coverage` reached 55000ms against a 7835ms observed max that way. The
+    slack advisory closes that loop — it is the only signal a budget emits other
+    than "raise me"."""
+    lib = check_runtime_budget.runtime_budget_lib
+    checked = [
+        # 7.0x — the real check-coverage case.
+        {"label": "check-coverage", "budget_ms": 55000, "max_recent_elapsed_ms": 7835},
+        # Under the factor: honest, must stay silent.
+        {"label": "run-quality-read-only", "budget_ms": 90000, "max_recent_elapsed_ms": 69616},
+        # Sub-threshold budget: jitter dominates, so a ratio here is noise.
+        {"label": "charness-version", "budget_ms": 500, "max_recent_elapsed_ms": 20},
+        # No sample yet: nothing to compare against.
+        {"label": "never-run", "budget_ms": 30000, "max_recent_elapsed_ms": None},
+    ]
+    findings = lib.budget_slack_findings(checked)
+    assert [f["label"] for f in findings] == ["check-coverage"]
+    assert findings[0]["slack_ratio"] == 7.0
+    assert findings[0]["suggested_budget_ms"] == int(7835 * lib.SLACK_SUGGESTION_HEADROOM)
+
+
+def test_budget_slack_advisory_never_changes_exit_code(tmp_path: Path) -> None:
+    """Retuning a budget is reversible work, so the advisory forces the question
+    and leaves the judgment to the operator (north star P1/P5). It must never fail
+    the gate on its own."""
+    repo = _seed_repo(
+        tmp_path,
+        budgets={"pytest": 100000},
+        signals={
+            "commands": {
+                "pytest": {
+                    "latest": {"elapsed_ms": 1000, "status": "pass"},
+                    "median_recent_elapsed_ms": 1000,
+                    "max_recent_elapsed_ms": 1200,
+                }
+            }
+        },
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    slack = payload["budget_slack_findings"]
+    assert [f["label"] for f in slack] == ["pytest"]
+    assert payload["violations"] == []

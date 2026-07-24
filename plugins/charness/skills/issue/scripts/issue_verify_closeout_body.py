@@ -306,11 +306,42 @@ def evaluate_behavioral_verdict(text: str, classification: str, numbers: list[in
 # WS-2 (Direction-3): the typed HOTL disposition vocabulary
 # (``hotl/references/ledger-and-dispositions.md`` §Statuses) plus the
 # ``local-only-by-contract`` escape the behavioral-verdict floor already names.
-# Longest alternants first so a prefix cannot shadow a longer typed token.
-_HOTL_STATUS_RE = re.compile(
-    r"(?i)\b(?:blocked-needs-(?:operator|capability)|deferred-by-operator|accepted-risk"
-    r"|out-of-scope|local-only-by-contract|verified|issue)\b"
+# ANCHORED to the value's leading token, mirroring the repo's existing disposition
+# grammar (``scripts/disposition_form.py`` ``_APPLIED`` / ``_ISSUE_LEAD``). An
+# unanchored search over the same vocabulary accepts a status's own NEGATION
+# ("not verified", "could not be verified; no readback available") and incidental
+# English prose ("a known issue with the provider") — so the floor rubber-stamped
+# exactly the undispositioned entries it exists to refuse. Mirrored rather than
+# imported: this public skill script stays portable and never imports repo-internal
+# ``scripts/``. The mirror covers ``_APPLIED``/``_ISSUE_LEAD``'s leading-token shape
+# only, NOT ``_NONE``/``_ACCEPTED_RISK``/``_OUT_OF_SCOPE``'s additional
+# separator-plus-reason requirement: whether a status carries a real reason is the
+# resolution critique's judgment (rung-2), never this presence floor's.
+# Longest alternants first so a prefix cannot shadow a longer token.
+_HOTL_STATUS_LEAD = re.compile(
+    r"(?i)^(?:blocked-needs-(?:operator|capability)|deferred-by-operator|accepted-risk"
+    r"|out-of-scope|local-only-by-contract|verified)\b"
 )
+# ``issue`` is the one status whose bare token is also an ordinary English word, so
+# it must carry the tracker ref its own contract requires ("the entry links the
+# tracker ref"). Same shape as ``disposition_form``'s ``_ISSUE_LEAD`` + ``_ISSUE_NUM``.
+_HOTL_ISSUE_LEAD = re.compile(r"(?i)^(?:issues?\b|#\d)")
+_HOTL_ISSUE_REF = re.compile(r"#\d+")
+# Leading bullet/emphasis/quote/code markers stripped before judging. Backticks are
+# in the class because the contract renders the vocabulary AS code (``verified``,
+# ``blocked-needs-operator``), so an author copying the reference's own rendering
+# writes a backticked status; ``_normalize_field_name`` already strips them for the
+# sibling floors. ``#`` stays OUT: a leading ``#`` here is a tracker ref (``#77``),
+# not a heading marker.
+_HOTL_VALUE_LEAD = re.compile(r"^[ \t\-\*>`]+")
+
+
+def _hotl_status_typed(value: str) -> bool:
+    """True when the value *leads* with a typed HOTL status, not merely mentions one."""
+    cleaned = _HOTL_VALUE_LEAD.sub("", value.strip()).strip().strip("*`").strip()
+    if _HOTL_STATUS_LEAD.match(cleaned):
+        return True
+    return bool(_HOTL_ISSUE_LEAD.match(cleaned) and _HOTL_ISSUE_REF.search(cleaned))
 # A HOTL ledger entry in the carrier body: ``HOTL #N: <disposition>`` per issue,
 # single-issue shorthand ``HOTL: <disposition>`` — mirrors the ``Behavior #N:`` grammar.
 _HOTL_LINE_RE = re.compile(
@@ -334,9 +365,10 @@ def evaluate_hotl_dispositions(text: str, classification: str) -> dict:
     HOTL loop to dispose), exactly like ``evaluate_source_preservation``'s
     ``Source origin:`` gate — internal / no-live closes stay exempt. When a
     ``HOTL #N:`` entry (single-issue shorthand ``HOTL:``) IS presented, its value
-    must carry one of the typed HOTL statuses
+    must **lead with** one of the typed HOTL statuses
     (``hotl/references/ledger-and-dispositions.md``) **or** ``local-only-by-contract``;
-    an entry present **without** one is *undispositioned* and refused.
+    an entry that merely *mentions* one — including its negation ("not verified") —
+    is *undispositioned* and refused.
 
     **Presence/form only — rung-1.** It refuses *silence/malformation* on the typed
     status (an empty/placeholder/untyped value); it NEVER judges whether the chosen
@@ -355,7 +387,7 @@ def evaluate_hotl_dispositions(text: str, classification: str) -> dict:
     undispositioned: list[dict] = []
     parsed: list[dict] = []
     for line in lines:
-        dispositioned = _has_substantive_value(line["value"]) and bool(_HOTL_STATUS_RE.search(line["value"]))
+        dispositioned = _has_substantive_value(line["value"]) and _hotl_status_typed(line["value"])
         parsed.append({"target": line["target"], "value": line["value"], "dispositioned": dispositioned})
         if not dispositioned:
             undispositioned.append({"target": line["target"], "value": line["value"]})

@@ -103,9 +103,31 @@ discovery for zero changed files.
    `mutation-report` actions artifact.
 4. when `auto_issue.enabled` is true and the run failed, opens or comments on
    an issue labeled `auto_issue.label`, marked
-   `<!-- ${{ github.repository }}-${marker_token} -->` so repos sharing a
-   tracker do not collide. When the run succeeds, the same marker closes the
-   issue.
+   `<!-- ${{ github.repository }}-${marker_token} -->`. The marker is what
+   identifies an issue as this workflow's own, on both the open-or-comment path
+   and the recovery path. Both paths list open issues by label and select on the
+   marker; neither uses issue *search*, because `in:title` is GitHub full-text
+   (so it matches human-filed issues), search results are relevance-truncated,
+   and the search index lags issue creation. **Rotating `auto_issue.marker_token`
+   orphans every issue filed under the old token**: the next failure cannot see
+   them, files a duplicate, and the orphans never receive a recovery candidate.
+   Close them by hand when you change the token.
+5. when a **scheduled** `full` run succeeds, comments a recovery *candidate* on
+   its marked issues and labels them `mutation-recovered-candidate`; it never
+   changes issue state. The sample seed rotates per run, so the green may not
+   have mutated the same file population as the run that filed the issue, and it
+   does not verify that the reported surviving mutant is dead. Closing on it
+   would be the workflow certifying its own green at an irreversible boundary,
+   per *P4*/*P5* of the authoring-repo-internal `docs/design-north-star.md`; the
+   close is a distinct observer's call, made against the observables in that
+   comment. Operational detail: the comment is a point-in-time snapshot posted
+   **once** per recovery — the label is the dedupe key, so later greens are
+   silent, and if the label write fails after the comment lands the run logs an
+   error and a later green may repeat the comment. A fresh failure removes the
+   label and re-arms the next candidate, and
+   `mutation-recovered-candidate` is a fixed name, not an adapter slot. Routing a
+   human to the candidate is the consuming repo's job — the workflow populates
+   the record but assigns no observer.
 
 `yq` is pre-installed on `ubuntu-latest`. macOS/Windows/self-hosted host
 support is a deferred Probe Question; the initial install target is Ubuntu.

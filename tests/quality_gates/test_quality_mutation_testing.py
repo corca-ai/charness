@@ -353,10 +353,100 @@ def test_a4_template_has_required_steps() -> None:
         "name: Run mutation",
         "name: Summarize mutation report",
         "name: Open or update mutation issue",
-        "name: Close recovered mutation issue",
+        "name: Comment mutation recovery candidate",
         "name: Fail workflow on mutation failure",
     ):
         assert required_step in body, f"missing step: {required_step}"
+
+
+def _mutation_workflow_copies() -> list[Path]:
+    """Every checked-in copy of the workflow, template AND live instance.
+
+    The live `.github/workflows/mutation-tests.yml` is a hand-customized instance,
+    not generated from the template, so pinning the template alone would let the
+    escape return on the one copy that actually writes to this repo's tracker.
+    """
+    return [
+        TEMPLATE_PATH,
+        ROOT / ".github" / "workflows" / "mutation-tests.yml",
+        ROOT
+        / "plugins"
+        / "charness"
+        / "skills"
+        / "quality"
+        / "scripts"
+        / "templates"
+        / "mutation-tests.yml",
+    ]
+
+
+def test_auto_issue_label_with_comma_is_refused() -> None:
+    """`issues.listForRepo(labels: ...)` reads its value as a comma-separated
+    AND-filter, so a label whose own name contains a comma is created and attached
+    literally but can never be listed back: the workflow would file a duplicate on
+    every failing run and never annotate a recovery candidate, silently. Refuse the
+    config rather than ship the silent failure."""
+    from scripts.quality_policy_defaults import _validate_mutation_auto_issue
+
+    validated: dict = {}
+    errors: list[str] = []
+    _validate_mutation_auto_issue({"label": "mutation,test"}, validated, errors, [])
+    assert any("must not contain a comma" in e for e in errors), errors
+    # The rejected value never reaches the merged config; the default stands.
+    assert validated["auto_issue"]["label"] == DEFAULT_MUTATION_TESTING["auto_issue"]["label"]
+
+    validated = {}
+    errors = []
+    _validate_mutation_auto_issue({"label": "mutation test"}, validated, errors, [])
+    assert errors == []
+    assert validated["auto_issue"]["label"] == "mutation test"
+
+
+def test_mutation_workflows_never_change_issue_state() -> None:
+    """The scheduled green is the workflow's own evidence channel read by its own
+    observer, and the rotating sample seed means it may not have mutated the file
+    that filed the issue at all. A machine closing on it declares completion at an
+    irreversible boundary (north star P4/P5), so the recovery path may only comment
+    and label. Asserting the absence of `issues.update` pins the invariant itself —
+    `state: 'closed'` alone is evaded by a double-quoted rewrite."""
+    for path in _mutation_workflow_copies():
+        body = path.read_text(encoding="utf-8")
+        assert "issues.update" not in body, f"{path}: recovery path must never change issue state"
+        assert "state_reason" not in body, f"{path}: recovery path must never change issue state"
+        # Also catches a raw-request evasion (github.request PATCH ... state: 'closed')
+        # that carries neither `issues.update` nor `state_reason`.
+        assert "closed" not in body, f"{path}: no copy may close an issue by any call form"
+        assert "mutation-recovered-candidate" in body, f"{path}: recovery must label a candidate"
+
+
+def test_mutation_workflows_scope_issue_selection_to_their_own_marker() -> None:
+    """Both the open-or-comment path and the recovery path must select on the marker
+    this workflow itself wrote, never on label+title alone: `in:title` is GitHub
+    full-text, so the query can select a human-filed issue, and search results are
+    relevance-truncated and index-lagged. Pinning the whole selection statement (not
+    a bare substring count) means a reverted selection cannot leave the count intact."""
+    for path in _mutation_workflow_copies():
+        body = path.read_text(encoding="utf-8")
+        assert body.count("search.issuesAndPullRequests") == 0, path
+        assert (
+            body.count(
+                "const existing = openIssues.find(\n"
+                "              (issue) => !issue.pull_request && (issue.body || '').includes(marker),\n"
+                "            );"
+            )
+            == 1
+        ), path
+        assert (
+            body.count(
+                "const mine = openIssues.filter(\n"
+                "              (issue) => !issue.pull_request && (issue.body || '').includes(marker),\n"
+                "            );"
+            )
+            == 1
+        ), path
+        assert (
+            body.count("MARKER_TOKEN: ${{ steps.adapter.outputs.auto_issue_marker_token }}") == 2
+        ), path
 
 
 def test_a4_template_does_not_summarize_dry_run_without_dump() -> None:

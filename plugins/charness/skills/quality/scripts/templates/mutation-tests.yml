@@ -198,6 +198,7 @@ jobs:
             const label = process.env.ISSUE_LABEL;
             const { owner, repo } = context.repo;
             const marker = `<!-- ${owner}/${repo}-${process.env.MARKER_TOKEN} -->`;
+            const RECOVERY_CANDIDATE_LABEL = 'mutation-recovered-candidate';
             const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
             const summaryPath = process.env.SUMMARY_PATH;
             const summary = summaryPath && fs.existsSync(summaryPath)
@@ -232,11 +233,21 @@ jobs:
               }
             }
 
-            const { data } = await github.rest.search.issuesAndPullRequests({
-              q: `repo:${owner}/${repo} is:issue is:open label:${label} in:title "${title}"`,
-              per_page: 1,
+            // Not the search endpoint: `in:title` is full-text, so it selects human-filed
+            // issues that merely share the label and title words; results are relevance-
+            // truncated; and the search index lags issue creation by minutes. Each of those
+            // files a duplicate. Listing by label and selecting on the marker this workflow
+            // itself wrote is exact, complete, and read-your-writes current.
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              labels: label,
+              per_page: 100,
             });
-            const existing = data.items[0];
+            const existing = openIssues.find(
+              (issue) => !issue.pull_request && (issue.body || '').includes(marker),
+            );
 
             if (existing) {
               await github.rest.issues.createComment({
@@ -245,6 +256,19 @@ jobs:
                 issue_number: existing.number,
                 body,
               });
+              // A fresh failure retires any standing recovery candidate.
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: existing.number,
+                  name: RECOVERY_CANDIDATE_LABEL,
+                });
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+              }
             } else {
               await github.rest.issues.create({
                 owner,
@@ -255,34 +279,100 @@ jobs:
               });
             }
 
-      - name: Close recovered mutation issue
-        # Only a scheduled run may auto-close: workflow_dispatch computes no
+      - name: Comment mutation recovery candidate
+        # Only a scheduled run may report recovery: workflow_dispatch computes no
         # base_sha, so its changed-line classifier is inert and a dispatch-green
-        # run cannot prove a changed-line regression recovered — closing on it
-        # is the dispatch-no-base-sha false-proof class performed by machine.
+        # run cannot speak to a changed-line regression at all.
+        #
+        # This step records a recovery CANDIDATE and never changes issue state. The
+        # green is this job's own evidence channel read by this job's own observer,
+        # and the sample seed rotates per run, so a green may not have mutated the
+        # same file population as the run that filed the issue, and does not verify
+        # the surviving mutant that opened it. Closing on that would be a
+        # machine declaring completion at an irreversible boundary. The close belongs
+        # to a distinct observer reading the observables this comment carries.
         if: github.event_name == 'schedule' && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && steps.run.outcome == 'success' && (steps.summary.outcome == 'success' || steps.adapter.outputs.cmd_summary == '')
         uses: actions/github-script@v8
         env:
-          ISSUE_TITLE: ${{ steps.adapter.outputs.auto_issue_title }}
+          SAMPLE_PATH: ${{ steps.adapter.outputs.sample_md }}
           ISSUE_LABEL: ${{ steps.adapter.outputs.auto_issue_label }}
+          MARKER_TOKEN: ${{ steps.adapter.outputs.auto_issue_marker_token }}
+          RUN_MODE: ${{ steps.plan.outputs.mode }}
         with:
           script: |
-            const title = process.env.ISSUE_TITLE;
+            const fs = require('node:fs');
             const label = process.env.ISSUE_LABEL;
             const { owner, repo } = context.repo;
-            const { data } = await github.rest.search.issuesAndPullRequests({
-              q: `repo:${owner}/${repo} is:issue is:open label:${label} in:title "${title}"`,
-              per_page: 10,
-            });
+            const marker = `<!-- ${owner}/${repo}-${process.env.MARKER_TOKEN} -->`;
+            const RECOVERY_CANDIDATE_LABEL = 'mutation-recovered-candidate';
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const samplePath = process.env.SAMPLE_PATH;
+            const sample = samplePath && fs.existsSync(samplePath)
+              ? fs.readFileSync(samplePath, 'utf8')
+              : 'No mutation sample manifest was generated for this green run.';
 
-            for (const issue of data.items) {
-              await github.rest.issues.update({
-                owner,
-                repo,
-                issue_number: issue.number,
-                state: 'closed',
-                state_reason: 'completed',
-              });
+            // Listed by label rather than searched, for the same reasons as the open step.
+            // Only issues carrying this workflow's marker are its own to annotate.
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              labels: label,
+              per_page: 100,
+            });
+            const mine = openIssues.filter(
+              (issue) => !issue.pull_request && (issue.body || '').includes(marker),
+            );
+
+            const body = [
+              `Scheduled mutation run passed on \`${context.sha}\` (mode \`${process.env.RUN_MODE}\`).`,
+              '',
+              `Workflow run: ${runUrl}`,
+              '',
+              'This is a recovery **candidate**, not a verdict. The sample seed rotates per',
+              'run, so this green may not have mutated the same file population as the run',
+              'that filed this issue, and it does not verify that the specific surviving',
+              'mutant reported above is dead. Close only once a distinct observer has',
+              'confirmed it.',
+              '',
+              sample,
+            ].join('\n');
+
+            for (const issue of mine) {
+              const labelled = (issue.labels || []).some(
+                (entry) => (typeof entry === 'string' ? entry : entry.name) === RECOVERY_CANDIDATE_LABEL,
+              );
+              // One candidate comment per recovery, not one per scheduled cycle.
+              if (labelled) {
+                continue;
+              }
+              // Annotating is best-effort: a locked or transferred issue must not turn a
+              // GREEN mutation run red. `core.error` cannot fail the run either, but a
+              // systematically unpopulated evidence record is the P5 failure that has to
+              // stay loud, so it is never downgraded to a warning.
+              try {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body,
+                });
+              } catch (error) {
+                core.error(`could not comment the recovery candidate on #${issue.number}: ${error.message}`);
+                continue;
+              }
+              // Separately caught: the label is the dedupe key, so a comment that landed
+              // without its label would silently re-post on every later scheduled green.
+              try {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  labels: [RECOVERY_CANDIDATE_LABEL],
+                });
+              } catch (error) {
+                core.error(`commented #${issue.number} but could not apply ${RECOVERY_CANDIDATE_LABEL}; a later green may repeat the comment: ${error.message}`);
+              }
             }
 
       - name: Fail workflow on mutation failure

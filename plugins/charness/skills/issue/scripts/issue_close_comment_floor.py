@@ -5,8 +5,9 @@
 check beyond "the file exists" — the rung-1 presence checks only ran when the
 agent *voluntarily* invoked one of those separate commands first. This module
 composes the existing rung-1 checks (behavioral verdict or a typed
-non-verified disposition, resolution-critique binding, source preservation) so
-the manual-close mutation itself cannot happen on a silent body.
+non-verified disposition, HOTL entry disposition, resolution-critique binding,
+source preservation) so the manual-close mutation itself cannot happen on a
+silent body.
 """
 from __future__ import annotations
 
@@ -37,12 +38,19 @@ def evaluate_close_comment_floor(
     numbers = [number]
     source_preservation = _BODY.evaluate_source_preservation(body)
     behavioral_verdict = _BODY.evaluate_behavioral_verdict(body, classification, numbers)
+    # The HOTL-disposition floor landed after this composition and was never wired
+    # in, so the carrier that mutates GitHub *directly* was the one carrier where an
+    # undispositioned HOTL entry could not be refused. Presence-gated like the rest:
+    # a body with no HOTL entry is inert, so this adds no obligation to bodies that
+    # never had a live loop.
+    hotl_dispositions = _BODY.evaluate_hotl_dispositions(body, classification)
     resolution_critique = _CRITIQUE.check_resolution_critique(
         repo_root=repo_root, body=body, classification=classification, numbers=numbers
     )
     ok = (
         source_preservation["ok"]
         and behavioral_verdict["ok"]
+        and hotl_dispositions["ok"]
         and resolution_critique.get("ok", True)
     )
     return {
@@ -51,6 +59,7 @@ def evaluate_close_comment_floor(
         "number": number,
         "source_preservation": source_preservation,
         "behavioral_verdict": behavioral_verdict,
+        "hotl_dispositions": hotl_dispositions,
         "resolution_critique": resolution_critique,
     }
 
@@ -65,6 +74,13 @@ def format_close_comment_floor_failure(report: dict[str, Any]) -> str:
         lines.append(
             "  missing behavioral verdict: add a `Behavior: <distinct evidence channel>` line, "
             "or a typed non-verified disposition (HOTL status or local-only-by-contract)."
+        )
+    hotl = report["hotl_dispositions"]
+    for entry in hotl.get("undispositioned", []):
+        target = entry.get("target") or f"#{report['number']}"
+        lines.append(
+            f"  undispositioned HOTL entry {target}: the value must LEAD WITH a typed HOTL "
+            f"status (or local-only-by-contract), not merely mention one; got {entry['value']!r}."
         )
     critique = report["resolution_critique"]
     if not critique.get("ok", True):

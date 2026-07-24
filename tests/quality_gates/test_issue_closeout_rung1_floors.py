@@ -143,6 +143,40 @@ def test_evaluate_hotl_dispositions_unit() -> None:
     assert fn("HOTL #1: TODO", "bug")["ok"] is False
 
 
+def test_evaluate_hotl_dispositions_refuses_a_status_negation() -> None:
+    """Seeded escape: an unanchored search over the typed vocabulary accepts a
+    status's own NEGATION and incidental English prose, so the floor accepted
+    exactly the undispositioned entries it exists to refuse. The recognizer is
+    anchored to the value's leading token (the repo's existing disposition
+    grammar), so a mention is no longer a disposition."""
+    fn = load_verify_module().evaluate_hotl_dispositions
+    for undispositioned in (
+        "not verified",
+        "could not be verified; no readback available",
+        "not yet verified, will follow up",
+        "this is a known issue with the provider",
+        "see issue tracker",
+        "unverified so far",
+    ):
+        verdict = fn(f"HOTL #1: {undispositioned}", "bug")
+        assert verdict["applies"] is True, undispositioned
+        assert verdict["ok"] is False, undispositioned
+    # A leading typed status still disposes, including through markdown emphasis
+    # and the bare tracker-ref form of `issue`.
+    for dispositioned in (
+        "verified — readback captured 2026-07-25",
+        "**verified**: roundtrip observed",
+        # The contract renders the vocabulary AS code, so an author copying the
+        # reference's own rendering writes a backticked status. Anchoring must not
+        # refuse the form the docs themselves teach.
+        "`verified` — readback captured 2026-07-25",
+        "`blocked-needs-capability`: no repo-owned command",
+        "blocked-needs-operator — awaiting prod approval",
+        "#77 tracks the residual defect",
+    ):
+        assert fn(f"HOTL #1: {dispositioned}", "bug")["ok"] is True, dispositioned
+
+
 def test_issue_verify_closeout_rejects_missing_ai_provenance_marker(tmp_path: Path) -> None:
     """Seeded escape: an agent-authored bug carrier without an AI-provenance marker
     is not legible to the distinct observer and must FAIL its presence check."""

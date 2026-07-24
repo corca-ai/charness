@@ -135,32 +135,37 @@ runtime_budget_profiles:
   local-linux-x86_64-36cpu:
     budgets:
       charness-version: 500
-      check-cli-skill-surface: 11000
+      check-cli-skill-surface: 5000
       check-inventory-declaration-coverage: 500
-      check-references-link-inventory: 1500
-      check-seed-fixture-budget: 5000
+      check-references-link-inventory: 800
+      check-seed-fixture-budget: 2000
       # The 2.5s limit was set in May.  The current 20-sample median is 2513ms
       # and the release gate observed a 4404ms peak, so retain a bounded 5s
       # budget (also used by the slower aarch64 profile) instead of a flaky bar.
       check-spec-evidence-durability: 5000
       inventory-ci-local-gate-parity: 500
-      inventory-sloc: 1000
+      inventory-sloc: 500
       inventory-ubiquitous-language: 1200
       run-quality-read-only: 90000
-      pytest: 140000
-      # 2026-06-14: raised 45000 -> 55000. check-coverage was documented as
-      # "keeps brushing its 45s budget" and crossed it (median 45878ms, latest
-      # 49397ms this turn) as the instrumented suite grew; 55000 gives honest
-      # headroom over the observed median/latest while staying below the aarch64
-      # profile's 60000.
-      check-coverage: 55000
-      doc-duplicates: 28000
-      check-markdown: 11000
+      # 2026-07-25 retune. A runtime budget only ever moved one way here: a
+      # violation forced a raise and nothing reported when the raise stopped being
+      # needed, so several budgets had drifted to 6-10x their worst observed run
+      # and could no longer fail. `check-coverage` is the clearest case — raised
+      # 45000 -> 55000 on 2026-06-14 for "brushing its budget", it now peaks at
+      # 7835ms. `pytest` had also drifted ABOVE the slower aarch64 profile's
+      # 110000, which is backwards. Values below are ~1.4-1.5x the worst run in
+      # the recent 20-sample window for this profile: still absorbs variance, but
+      # a genuine 2x regression trips. `check_runtime_budget`'s new slack advisory
+      # now reports this class so it cannot silently re-inflate.
+      pytest: 90000
+      check-coverage: 12000
+      doc-duplicates: 6000
+      check-markdown: 8000
       check-secrets: 6000
-      run-evals: 6500
-      specdown: 10500
+      run-evals: 2000
+      specdown: 5000
       validate-cautilus-call-provenance: 500
-      validate-inventory-consumption-declaration: 35000
+      validate-inventory-consumption-declaration: 6000
   local-linux-aarch64-4cpu:
     # Budgets set above this machine's measured median_recent/max_recent so the
     # gate is honest for the slower 4-CPU aarch64 box (same key scope as the

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 DEFAULT_COVERAGE_FRAGILE_MARGIN_PP = 1.0
 DEFAULT_SPECDOWN_SMOKE_PATTERNS = [
@@ -204,70 +204,99 @@ def validate_prompt_asset_policy(value: Any, errors: list[str]) -> dict[str, Any
     return validated
 
 
-def _validate_mutation_commands(
-    raw: Any, validated: dict[str, Any], errors: list[str], warnings: list[str]
+def _mutation_string_problem(section: str, key: str, value: Any) -> str | None:
+    if not isinstance(value, str):
+        return f"mutation_testing.{section}.{key} must be a string"
+    return None
+
+
+def _auto_issue_value_problem(key: str, value: Any) -> str | None:
+    if key == "enabled":
+        if not isinstance(value, bool):
+            return "mutation_testing.auto_issue.enabled must be a boolean"
+        return None
+    problem = _mutation_string_problem("auto_issue", key, value)
+    if problem:
+        return problem
+    # The workflow selects its own issues with `issues.listForRepo(labels: ...)`, whose
+    # `labels` parameter is a comma-separated AND-filter. A label whose own name contains
+    # a comma is created and attached literally but can never be listed back, so the
+    # workflow would silently file a duplicate on every failing run and never annotate a
+    # recovery candidate. Refuse the config rather than ship the silent failure.
+    if key == "label" and "," in value:
+        return (
+            "mutation_testing.auto_issue.label must not contain a comma: the workflow's "
+            "issue lookup reads `labels` as a comma-separated filter, so a comma in the "
+            "name makes the label unmatchable"
+        )
+    return None
+
+
+def _validate_mutation_mapping(
+    section: str,
+    allowed_keys: Any,
+    raw: Any,
+    validated: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    value_problem: Callable[[str, Any], str | None] | None = None,
 ) -> None:
+    """Shared skeleton for the `mutation_testing.<section>` sub-mappings.
+
+    `value_problem` returns an error message for a rejected value, or None to accept;
+    it defaults to the string-typed check the three sections otherwise share.
+    """
     if raw is None:
         return
     if not isinstance(raw, dict):
-        errors.append("mutation_testing.commands must be a mapping")
+        errors.append(f"mutation_testing.{section} must be a mapping")
         return
-    merged = dict(DEFAULT_MUTATION_TESTING["commands"])
+    merged = dict(DEFAULT_MUTATION_TESTING[section])
     for key, value in raw.items():
-        if key not in MUTATION_TESTING_COMMAND_SLOTS:
-            warnings.append(f"unknown mutation_testing.commands sub-key: {key}")
+        if key not in allowed_keys:
+            warnings.append(f"unknown mutation_testing.{section} sub-key: {key}")
             continue
-        if not isinstance(value, str):
-            errors.append(f"mutation_testing.commands.{key} must be a string")
+        problem = (
+            value_problem(key, value)
+            if value_problem is not None
+            else _mutation_string_problem(section, key, value)
+        )
+        if problem:
+            errors.append(problem)
             continue
         merged[key] = value
-    validated["commands"] = merged
+    validated[section] = merged
+
+
+def _validate_mutation_commands(
+    raw: Any, validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    _validate_mutation_mapping(
+        "commands", MUTATION_TESTING_COMMAND_SLOTS, raw, validated, errors, warnings
+    )
 
 
 def _validate_mutation_auto_issue(
     raw: Any, validated: dict[str, Any], errors: list[str], warnings: list[str]
 ) -> None:
-    if raw is None:
-        return
-    if not isinstance(raw, dict):
-        errors.append("mutation_testing.auto_issue must be a mapping")
-        return
-    merged = dict(DEFAULT_MUTATION_TESTING["auto_issue"])
-    for key, value in raw.items():
-        if key not in MUTATION_TESTING_AUTO_ISSUE_KEYS:
-            warnings.append(f"unknown mutation_testing.auto_issue sub-key: {key}")
-            continue
-        if key == "enabled":
-            if not isinstance(value, bool):
-                errors.append("mutation_testing.auto_issue.enabled must be a boolean")
-                continue
-            merged[key] = value
-        else:
-            if not isinstance(value, str):
-                errors.append(f"mutation_testing.auto_issue.{key} must be a string")
-                continue
-            merged[key] = value
-    validated["auto_issue"] = merged
+    _validate_mutation_mapping(
+        "auto_issue",
+        MUTATION_TESTING_AUTO_ISSUE_KEYS,
+        raw,
+        validated,
+        errors,
+        warnings,
+        value_problem=_auto_issue_value_problem,
+    )
 
 
 def _validate_mutation_report_paths(
     raw: Any, validated: dict[str, Any], errors: list[str], warnings: list[str]
 ) -> None:
-    if raw is None:
-        return
-    if not isinstance(raw, dict):
-        errors.append("mutation_testing.report_paths must be a mapping")
-        return
-    merged = dict(DEFAULT_MUTATION_TESTING["report_paths"])
-    for key, value in raw.items():
-        if key not in MUTATION_TESTING_REPORT_PATH_KEYS:
-            warnings.append(f"unknown mutation_testing.report_paths sub-key: {key}")
-            continue
-        if not isinstance(value, str):
-            errors.append(f"mutation_testing.report_paths.{key} must be a string")
-            continue
-        merged[key] = value
-    validated["report_paths"] = merged
+    _validate_mutation_mapping(
+        "report_paths", MUTATION_TESTING_REPORT_PATH_KEYS, raw, validated, errors, warnings
+    )
 
 
 def _validate_mutation_score_break(raw: Any, validated: dict[str, Any], errors: list[str]) -> None:

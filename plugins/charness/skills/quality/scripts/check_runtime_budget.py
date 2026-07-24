@@ -41,6 +41,7 @@ def summarize(report: dict) -> dict:
     }
     for key in (
         "violations",
+        "budget_slack_findings",
         "latest_spikes",
         "profile_config_errors",
         "runtime_visibility_findings",

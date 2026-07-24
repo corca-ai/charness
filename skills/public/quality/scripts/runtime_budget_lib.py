@@ -13,6 +13,19 @@ SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"
 DEFAULT_TOP_RUNTIME_COUNT = 5
 STALE_HOTSPOT_SAMPLE_DAYS = 14
+# A runtime budget only ever moves one way on its own: a violation forces a raise,
+# and nothing ever reports that the raise is no longer needed. That makes a stale
+# budget invisible — the gate keeps passing precisely because it can no longer fail
+# (charness's own `check-coverage` sat at 55000ms against a 7835ms observed max).
+# This advisory closes the loop by naming budgets whose worst recent run is far
+# under the bar. Advisory, never blocking: retuning a budget is reversible work, so
+# it forces the question and leaves the judgment to the operator (north star P1/P5).
+BUDGET_SLACK_FACTOR = 3.0
+# Below this, ordinary scheduling jitter dominates and a slack ratio is noise.
+MIN_SLACK_ADVISORY_BUDGET_MS = 1000
+# Headroom retained when suggesting a retune: 1.4x the worst observed run still
+# absorbs normal variance while letting a genuine 2x regression trip.
+SLACK_SUGGESTION_HEADROOM = 1.4
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -153,6 +166,36 @@ def _checked_entry(label: str, max_ms: int, entry: Any, smoothing_entry: dict[st
     }
 
 
+def budget_slack_findings(checked: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Name budgets whose worst recent run is far under the bar.
+
+    Presence/report only — it never changes an exit code. The point is that a
+    budget which cannot fail is not evidence of health, and without this the only
+    signal a budget ever emits is "raise me".
+    """
+    findings: list[dict[str, Any]] = []
+    for entry in checked:
+        budget = entry.get("budget_ms")
+        worst = entry.get("max_recent_elapsed_ms")
+        if not isinstance(budget, int) or not isinstance(worst, int):
+            continue
+        if budget < MIN_SLACK_ADVISORY_BUDGET_MS or worst <= 0:
+            continue
+        ratio = budget / worst
+        if ratio < BUDGET_SLACK_FACTOR:
+            continue
+        findings.append(
+            {
+                "label": entry["label"],
+                "budget_ms": budget,
+                "max_recent_elapsed_ms": worst,
+                "slack_ratio": round(ratio, 1),
+                "suggested_budget_ms": int(worst * SLACK_SUGGESTION_HEADROOM),
+            }
+        )
+    return sorted(findings, key=lambda item: item["slack_ratio"], reverse=True)
+
+
 def evaluate(
     repo_root: Path,
     load_adapter: Callable[[Path], dict[str, Any]],
@@ -231,6 +274,7 @@ def evaluate(
         "budgets_configured": len(budgets),
         "checked": checked,
         "violations": violations,
+        "budget_slack_findings": budget_slack_findings(checked),
         "latest_spikes": latest_spikes,
         "missing_samples": missing_samples,
         "runtime_hotspots": runtime_hotspots,
@@ -246,6 +290,45 @@ def evaluate(
             "source_used": commands_source == "command_timing_log",
         },
     }
+
+
+def _render_hotspot(item: dict[str, Any]) -> str:
+    budget = item.get("budget_ms")
+    budget_text = f"budget {budget}ms" if isinstance(budget, int) else "unbudgeted"
+    return (
+        f"HOTSPOT      {item['label']}: latest {item['latest_elapsed_ms']}ms, "
+        f"median {item['median_recent_elapsed_ms']}ms ({budget_text})"
+    )
+
+
+def _render_slack(item: dict[str, Any]) -> str:
+    return (
+        f"SLACK        {item['label']}: budget {item['budget_ms']}ms vs worst recent "
+        f"{item['max_recent_elapsed_ms']}ms ({item['slack_ratio']}x); "
+        f"consider {item['suggested_budget_ms']}ms"
+    )
+
+
+def _render_stale_hotspot(item: dict[str, Any]) -> str:
+    return (
+        f"STALE       {item['label']}: latest sample {item.get('latest_timestamp') or 'unknown'} "
+        f"({item.get('stale_days')}d old)"
+    )
+
+
+def _append_section(
+    lines: list[str],
+    report: dict[str, Any],
+    key: str,
+    header: str,
+    render: Callable[[dict[str, Any]], str],
+) -> None:
+    """Append `header` plus one rendered line per item, or nothing when empty."""
+    items = report.get(key)
+    if not isinstance(items, list) or not items:
+        return
+    lines.append(header)
+    lines.extend(render(item) for item in items)
 
 
 def format_human(report: dict[str, Any]) -> str:
@@ -267,22 +350,10 @@ def format_human(report: dict[str, Any]) -> str:
         if entry["ewma_advisory_elapsed_ms"] is not None:
             detail += f", ewma {entry['ewma_advisory_elapsed_ms']:.1f}ms advisory"
         lines.append(f"{entry['status'].upper():<12} {entry['label']}: {detail} (budget {entry['budget_ms']}ms)")
-    hotspots = report.get("runtime_hotspots")
-    if isinstance(hotspots, list) and hotspots:
-        lines.append("Runtime hot spots:")
-        for item in hotspots:
-            budget = item.get("budget_ms")
-            budget_text = f"budget {budget}ms" if isinstance(budget, int) else "unbudgeted"
-            lines.append(
-                f"HOTSPOT      {item['label']}: latest {item['latest_elapsed_ms']}ms, "
-                f"median {item['median_recent_elapsed_ms']}ms ({budget_text})"
-            )
-    stale_hotspots = report.get("stale_runtime_hotspots")
-    if isinstance(stale_hotspots, list) and stale_hotspots:
-        lines.append("Stale runtime hot spots excluded:")
-        for item in stale_hotspots:
-            lines.append(
-                f"STALE       {item['label']}: latest sample {item.get('latest_timestamp') or 'unknown'} "
-                f"({item.get('stale_days')}d old)"
-            )
+    for key, header, render in (
+        ("runtime_hotspots", "Runtime hot spots:", _render_hotspot),
+        ("budget_slack_findings", "Budget slack (advisory: these budgets can no longer fail):", _render_slack),
+        ("stale_runtime_hotspots", "Stale runtime hot spots excluded:", _render_stale_hotspot),
+    ):
+        _append_section(lines, report, key, header, render)
     return "\n".join(lines)

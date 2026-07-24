@@ -180,9 +180,12 @@ so the irreversible external write is legible to that distinct observer.
 A sibling **rung-1 HOTL-disposition floor** (Direction-3) refuses an
 *undispositioned HOTL entry*. It is **presence-gated**: a carrier that presents no
 HOTL entry is inert (no live loop to dispose). When a `HOTL #N: <…>` entry
-(single-issue shorthand `HOTL: <…>`) IS present, its value must carry one of the
-typed HOTL ledger statuses (`../../hotl/references/ledger-and-dispositions.md`) or
-`local-only-by-contract`; an entry present without one is refused. This is the
+(single-issue shorthand `HOTL: <…>`) IS present, its value must **lead with** one
+of the typed HOTL ledger statuses (`../../hotl/references/ledger-and-dispositions.md`)
+or `local-only-by-contract`; an entry that merely *mentions* one is refused. Leading
+is what separates a disposition from a report about one: an anchored recognizer
+refuses `not verified` and `a known issue with the provider`, which a
+carry-anywhere recognizer accepts as dispositioned. This is the
 first *typed* HOTL-status recognizer — the behavioral-verdict floor above accepts
 a HOTL status only as an opaque value. It reads the **carrier body** (never a
 fixed ledger path — the ledger schema/path is adapter-owned), and stays
