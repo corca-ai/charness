@@ -279,8 +279,11 @@ If a skill repeatedly depends on deterministic steps such as:
 - validation of repeated fields
 - bootstrap checks with stable output
 
-then ship a helper script instead of leaving the process as prose-only
-instructions.
+then ship it. Stated as one rule:
+
+> If a skill needs the same bootstrap, adapter resolution, artifact upsert, or
+> recovery step more than once, ship a helper script instead of leaving the
+> behavior as prose-only ritual.
 
 Good scripts reduce cold-start variance and make error recovery real. A future
 session should not have to reinterpret the same ritual from scratch.

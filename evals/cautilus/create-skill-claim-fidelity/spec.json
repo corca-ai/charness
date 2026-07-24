@@ -54,7 +54,7 @@
     },
     "portable-authoring.md": {
       "engagement": "engage-always",
-      "rationale": "Step 1 (artifact classification) routes directly to the classifier table; Rules section cites three named rules ('Named Anchor Rule', 'Option Minimalism', 'Closeout Schema Rule'); Step 7 Verification gates on 'Closeout Schema Rule'; and the entire decision spine (portable vs host-specific, adapter fallback, helper scripts, cross-skill propagation) depends on this contract.",
+      "rationale": "Step 1 (artifact classification) routes directly to the classifier table; the Rules section cites 'Named Anchor Rule' and 'Cross-Skill Propagation Rule', and the Workflow steps cite 'Reuse Rule', 'Option Minimalism', 'Expert Reference Hygiene', 'WebSearch Rule', 'Helper Script Rule', and 'Progressive Disclosure Rule' at the step where each applies; Step 7 Verification gates on 'Closeout Schema Rule'; and the entire decision spine (portable vs host-specific, adapter fallback, helper scripts, cross-skill propagation) depends on this contract.",
       "claimRole": "authoring contract",
       "classTag": "DEPTH"
     },

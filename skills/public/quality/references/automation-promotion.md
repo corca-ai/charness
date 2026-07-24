@@ -148,8 +148,12 @@ in ~1s, not after a ~4-min broad-pytest run.
 - **A public-skill behavior worth dogfooding?** Update the dogfood
   `EVIDENCE_OVERRIDES` scaffold per the authoring-repo-internal
   `docs/public-skill-dogfood.md`.
-- **Touching a `SKILL.md`?** Keep it inside the ≤200-line core budget (the
-  `check-skill-core-headroom` ratchet) — push depth into `references/`.
+- **Touching a `SKILL.md`?** Check its headroom first
+  (the authoring-repo-internal `scripts/check_skill_surface_preflight.py`, shipped
+  to consumers at `<plugin>/scripts/`, with `--path <SKILL.md>`; the
+  `check-skill-core-headroom` ratchet gates changed cores at the commit boundary).
+  When it blocks, separate a concept into its own surface or delete one — never
+  shave lines or displace overflow into `references/` to clear the bar.
 
 If you add a new commit-boundary structural check, record its timing verdict in
 the authoring-repo-internal `docs/conventions/validator-timing-layers.md`.

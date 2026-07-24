@@ -260,15 +260,18 @@ the exact reflex the rule names.
   this because it does not see the final message.
 - Machine-local discovery output under `.agents/charness-discovery/` is not a
   checked-in surface; generated local stubs should not be committed as drift.
-- **Batch source edits before regenerating a derived surface.** Re-baselining the
-  dup-ratchet / clone id-set baselines, re-running the plugin mirror sync, and
-  rebuilding the debug-seam index each cost a regen+verify cycle. Editing any
-  scanned clone-member file (`skills/public/quality/scripts/*` and the rest of the
-  scanned scope) rotates nose `family_id`s every time — the documented #395 trigger
-  — so make ALL planned edits to those files, **including critique-driven fixes**,
-  before a single `check_dup_ratchet.py --write-baseline`, not one re-baseline per
-  edit round. The structural elimination of this rotation churn is tracked as
-  deferred decision D30 in [deferred-decisions.md](../deferred-decisions.md).
+- **Batch source edits before regenerating a derived surface.** Re-running the
+  plugin mirror sync and rebuilding the debug-seam index each cost a regen+verify
+  cycle, so make ALL planned edits — **including critique-driven fixes** — before
+  the regen, not one regen per edit round. A pure line-shift no longer rotates a
+  dup-ratchet family (slice 4 re-keyed the gate onto a path-independent content
+  fingerprint, resolving D30), so ordinary edits to scanned clone-member files are
+  not a re-baseline trigger; membership growth, a nose-version bump, and an algo
+  bump still are. When the ratchet does report a delta, prefer the scoped accepts
+  (`--accept-family NEW_ID`, `--accept-rotation OLD=NEW`) over `--write-baseline`,
+  which is a full-scan overwrite that silently re-accepts every unreviewed family
+  too. [dup-ratchet.md](../../skills/public/quality/references/dup-ratchet.md) owns
+  the mechanism; keep it there rather than restating it here.
 - **Author strict-validator artifacts to their contract first.** Debug, critique,
   retro, goal, and issue-closeout carriers have machine-enforced required shapes.
   Read the contract before authoring (`describe_closeout_draft_shape.py --stub`,

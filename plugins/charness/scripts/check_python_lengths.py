@@ -197,7 +197,8 @@ def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | No
         relative = path.relative_to(root)
         return (
             f"WARN: {relative}: Python code lines {code_lines} are within the advisory warn "
-            f"band [{warn}, {limit}]; trim before it reaches the hard limit {limit}."
+            f"band [{warn}, {limit}]; separate a concept or delete before it reaches the hard "
+            f"limit {limit} — do not shave lines to stay under the bar."
         )
     return None
 
@@ -326,7 +327,7 @@ def main() -> int:
     if warnings:
         print(
             f"WARN: {len(warnings)} file(s) within the advisory file-length warn band "
-            "(exit 0; trim before they reach the hard limit)."
+            "(exit 0; separate a concept or delete before they reach the hard limit)."
         )
         _print_warn_band_interpretation()
     return 0

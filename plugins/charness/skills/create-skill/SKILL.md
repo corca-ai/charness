@@ -50,9 +50,13 @@ canonical adapter when the repo should own topology terms.
    - preset: opt-in default values for adapters or hosts
    - integration: external ownership contract, never a hidden dependency
 2. Write a capability brief before changing files.
-   - concept, audience, trigger, capability failure, and portable candidate intake
+   - concept, audience, trigger, capability failure, and portable candidate intake;
+     port an existing body or reference when it already captures the behavior
+     (`references/portable-authoring.md` "Reuse Rule")
    - current and next center only when improving an existing skill or when order matters
-   - external dependencies, adjacent-skill behavior rules, accumulated state, proof boundary
+   - external dependencies, adjacent-skill behavior rules, accumulated state, proof
+     boundary; use WebSearch explicitly for research steps, never weakly implied
+     (`references/portable-authoring.md` "WebSearch Rule")
    - implementation topology: shared implementation, repo-local placements,
      aliases, or intentional fork signals from the adapter
    - cold start, warm start, error recovery, and concrete failure cases
@@ -76,9 +80,11 @@ canonical adapter when the repo should own topology terms.
    - repo or host specifics move to adapter files or presets
    - when one skill spans multiple repo-local placements, use the adapter's
      topology vocabulary to decide shared implementation versus intentional fork
-     before writing files
+     before writing files (`references/adapter-pattern.md`)
    - optional fields must distinguish `unset` from `explicitly empty`
    - prefer strong defaults and inference over user-facing branches or flags
+     (`references/portable-authoring.md` "Option Minimalism"); presets are explicit
+     defaults, never hidden behavior changes (`references/preset-conventions.md`)
 5. Decide dependency ownership honestly.
    - harness-owned support logic belongs in `skills/support/`
    - if `charness` owns the runtime capability, keep its machine-readable metadata next to the support skill as `skills/support/<skill-id>/capability.json`
@@ -87,7 +93,10 @@ canonical adapter when the repo should own topology terms.
    - if an upstream support skill already exists, prefer reference, sync, or a
      thin wrapper over copying
    - keep manifest metadata rich enough to reveal capability kind and supported access modes
-   - express setup prerequisites as manifest readiness checks
+   - express setup prerequisites as manifest readiness checks; a dependency implied
+     by a casual command example is not declared (`references/integration-seams.md`)
+   - on possibly-isolated hosts prefer grant-first and authenticated-binary flows
+     over direct secret-file assumptions (`references/runtime-capabilities.md`)
    - use `create-cli` for repo-owned command lifecycle; use deployable packaging refs for plugin bundle proof
    - when the skill depends on an external or runtime capability, name which
      proof levels apply per `../../shared/references/external-capability-proof-ladder.md`
@@ -97,7 +106,8 @@ canonical adapter when the repo should own topology terms.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - treat sparse named person anchors in `SKILL.md` core as a deliberate
      retrieval tool when they materially improve recall of a real reasoning
-     frame
+     frame; verify fuzzy or non-obvious claims before compressing them
+     (`references/portable-authoring.md` "Expert Reference Hygiene")
    - keep the behavior or capability rule in core when it should shape repeated
      moves; put factual essence, nuance, and reference contents in `references/`
    - for sequencing-shaped skill improvements, consume
@@ -106,6 +116,8 @@ canonical adapter when the repo should own topology terms.
    - move schemas, examples, prose theory to `references/`; keep tokens a closeout emits VERBATIM in a core `## Closeout Vocabulary` H2 (that ref's rule)
    - add scripts for repeated bootstrap, adapter resolution, artifact upsert,
      or recovery behavior that would otherwise become prose-only ritual
+     (`references/portable-authoring.md` "Helper Script Rule",
+     "Progressive Disclosure Rule")
    - ship a deterministic planner emitting the canonical run-plan envelope
      (`../../shared/references/run-plan-envelope.md`) ONLY when the skill has a real briefing decision; linear ones use its minimal emitter (no fake branches), and a skill with no briefing decision ships none — forcing one is concept-adding boilerplate
 7. Verify before stopping.
@@ -125,34 +137,19 @@ canonical adapter when the repo should own topology terms.
 
 ## Rules
 
-- Maximize reuse first. Port an existing skill body or reference when it
-  already captures the right behavior.
 - Do not let a public skill smuggle multiple concepts; a body at the length cap
   is that smell — separate a concept into its own skill or delete it, never
   shave lines or displace overflow into `references/` (north-star P2).
 - Use a named person anchor in the public core only when it reliably retrieves a
-  real reasoning frame (the decoration/strip guidance and the multi-skill
-  propagation rule live in `references/portable-authoring.md` "Named Anchor Rule").
+  real reasoning frame (decoration/strip guidance and anchor propagation live in
+  `references/portable-authoring.md` "Named Anchor Rule"; propagating a *pattern*
+  across skills is its "Cross-Skill Propagation Rule").
 - Keep selection logic in `SKILL.md` core. References should deepen a chosen
   move, not become a second workflow that re-decides when to act.
 - Keep host-specific behavior and repo-local placement topology out of the
   `SKILL.md` body; use `create-skill` adapter terms/presets for implementation
   identity, exposed placements, aliases, and intentional fork signals.
-- Keep expert references source-faithful and minimal. Verify fuzzy or
-  non-obvious claims before compressing them into a public skill or reference.
-- Prefer strong defaults over user-facing branches or flags; add a branch only
-  when the behaviors are genuinely distinct, user-meaningful, and unsafe to infer
-  (`references/portable-authoring.md` "Option Minimalism").
-- External tool dependencies must be explicit in manifests and degradation
-  rules, not implied by a casual command example.
-- When a host may be isolated, prefer grant-first and authenticated-binary
-  flows over direct secret-file assumptions.
-- Presets are explicit defaults, not hidden behavior changes.
-- Use WebSearch explicitly for research steps; do not imply it weakly.
 - Never ask users to paste secrets into chat.
-- If a skill needs the same bootstrap, adapter resolution, artifact upsert, or
-  recovery step more than once, ship a helper script instead of leaving the
-  behavior as prose-only ritual.
 - Treat public-skill frontmatter and generated AGENTS hints as classifier input,
   not only documentation; prove at least one realistic consumer prompt for the
   changed skill before calling the slice done.
@@ -169,7 +166,6 @@ canonical adapter when the repo should own topology terms.
 - When adding a high-leverage reasoning or review pattern to one public skill,
   inspect adjacent public skills for obvious propagation opportunities before
   stopping.
-- If the adjacent skill sits at its line ceiling (surface preflight warns near-cap), split a concept out of it into its own surface or delete one — never trim prose to make the line fit, and never silently drop the reciprocal line.
 
 ## References
 
