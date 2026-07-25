@@ -617,7 +617,16 @@ queue_selected "dup-ratchet" python3 skills/public/quality/scripts/check_dup_rat
 # The gate no longer fails OPEN on a scan error, so moving it back here would now
 # fail the RUN rather than silently stop gating — do not move it on the strength
 # of the older "it just goes advisory" reasoning, which is no longer true.
-queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
+# The gate's escape hatch has to be reachable from HERE, because here is where it
+# fires. `CHARNESS_QUALITY_LABELS` is an allowlist, so an operator cannot subtract
+# one gate without enumerating the other ~80, which leaves `--no-verify` -- turning
+# off all 82 gates to get past one. A gate whose remediation names a flag the
+# operator cannot pass is a gate that lies at the moment it blocks.
+seed_budget_args=(--repo-root "$REPO_ROOT")
+if [[ -n "${CHARNESS_SEED_FIXTURE_ADVISORY:-}" ]]; then
+  seed_budget_args+=(--advisory-on-scan-failure)
+fi
+queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py "${seed_budget_args[@]}"
 
 queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT" --require-empty-parity-issues --require-git-file-listing
 if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py" ]]; then

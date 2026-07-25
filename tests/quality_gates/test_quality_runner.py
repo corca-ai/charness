@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from runtime_bootstrap import import_repo_module
 from scripts.run_standing_pytest import choose_xdist_workers
 
@@ -159,6 +161,45 @@ def test_run_quality_seed_budget_uses_repo_local_pytest_temp_root(
 
     assert result.returncode == 0, result.stderr
     assert "/charness/pytest-tmp/" in log_path.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("advisory_env", "expect_flag"),
+    [(None, False), ("1", True)],
+    ids=["unset", "set"],
+)
+def test_run_quality_can_reach_the_seed_budget_escape_hatch(
+    tmp_path: Path, seeded_quality_runner_repo: Path, advisory_env: str | None, expect_flag: bool
+) -> None:
+    """The gate's remediation names `--advisory-on-scan-failure`, but the runner fixes
+    the argv and `CHARNESS_QUALITY_LABELS` is an allowlist -- an operator cannot
+    subtract one gate. Without a pass-through the only exit is `--no-verify`, which
+    turns off all 82 gates to get past one."""
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    log_path = repo / "seed-budget-argv.txt"
+    write_executable(
+        repo / "scripts" / "check_seed_fixture_budget.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import sys",
+                "from pathlib import Path",
+                f"Path({str(log_path)!r}).write_text(' '.join(sys.argv[1:]), encoding='utf-8')",
+                "print('quality success output from check-seed-fixture-budget')",
+                "",
+            ]
+        ),
+    )
+    env["CHARNESS_QUALITY_LABELS"] = "check-seed-fixture-budget"
+    if advisory_env is not None:
+        env["CHARNESS_SEED_FIXTURE_ADVISORY"] = advisory_env
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    argv = log_path.read_text(encoding="utf-8")
+    assert ("--advisory-on-scan-failure" in argv) is expect_flag
+    assert "--repo-root" in argv
 
 
 def test_run_quality_passes_expanded_targets_to_test_completeness(

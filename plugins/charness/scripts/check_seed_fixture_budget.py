@@ -176,8 +176,9 @@ def main() -> int:
             "    remediation: run `du -d 4 -B1 "
             f"{footprint.get('root')}` to see why the walk dies before printing the root "
             "total. A vanished entry is already tolerated and an early death is already "
-            "retried, so a failure here is a real one. Pass --advisory-on-scan-failure to "
-            "report it without blocking.",
+            "retried, so a failure here is a real one. To report it without blocking, pass "
+            "--advisory-on-scan-failure directly, or set CHARNESS_SEED_FIXTURE_ADVISORY=1 "
+            "when this runs inside run-quality.sh (where the argv is fixed).",
             file=sys.stderr,
         )
         return 1
