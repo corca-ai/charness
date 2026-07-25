@@ -16,6 +16,13 @@
     },
     {
       "class": "intentional",
+      "id": "02923daf7e01c82e",
+      "note": "runtime_bootstrap import/alias boilerplate shared by two unrelated mutation-gate scripts (check_changed_line_mutation_coverage.py, check_js_mutation_score.py); this is the per-script portability preamble the nose advisory names as its own known blind spot, and extracting it would replace an explicit import block with an indirection every script would still have to spell out",
+      "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "02b7ada2b79e5f0a",
       "note": "repo-root sys.path bootstrap shim introduced by focused mutation coverage suggester; top-level scripts keep local import bootstraps for direct execution",
       "reviewed_at": "2026-06-27",
@@ -170,6 +177,13 @@
     },
     {
       "class": "intentional",
+      "id": "31821ab1395dc82b",
+      "note": "argparse/re/date/Path + runtime_bootstrap preamble shared by validate_critique_artifacts.py and validate_retro_artifact.py; converged because both gained the same `report_validation_failure` alias when the scaffold-hint helper was extracted - i.e. this family is the SYMPTOM of correctly sharing a helper, not duplicated logic",
+      "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "322d067a80402fbc",
       "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
       "reviewed_at": "2026-06-30",
@@ -187,6 +201,13 @@
       "id": "355892af703b8e23",
       "note": "portable planner envelope and direct-execution bootstrap shared across skill-owned planners whose packet and parser semantics remain distinct",
       "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "398be936164f6588",
+      "note": "same runtime_bootstrap import/alias preamble across sample_mutation_files.py and check_js_mutation_score.py; identical rationale to 02923daf7e01c82e, surfaced separately because the spans differ by a line",
+      "reviewed_at": "2026-07-25",
       "surface": "code"
     },
     {
@@ -369,6 +390,13 @@
       "id": "58d074440dbf9aa2",
       "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "59db8a7cccfd59c2",
+      "note": "`if __name__ == \"__main__\"` entrypoint arms of validate_ideation_artifact.py and validate_retro_artifact.py, now identical except the `artifact_type=` argument because both delegate to the shared report_validation_failure helper; Python cannot extract a module's own __main__ block, so this is the irreducible floor of sharing that helper",
+      "reviewed_at": "2026-07-25",
       "surface": "code"
     },
     {
@@ -751,6 +779,13 @@
     },
     {
       "class": "intentional",
+      "id": "d23fd22eb5ed3ac5",
+      "note": "same irreducible __main__ entrypoint arm, validate_critique_artifacts.py vs validate_ideation_artifact.py; identical rationale to 59db8a7cccfd59c2",
+      "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d24f9bbb352ab75b",
       "note": "three-branch label mapping shape appears in unrelated status and sentinel-channel classifiers; labels and domains differ, so a shared helper would conflate separate taxonomies",
       "reviewed_at": "2026-07-09",
@@ -936,6 +971,13 @@
       "id": "fba5b0dd854c84ab",
       "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them — intentional; revisit if a 3rd consumer appears",
       "reviewed_at": "2026-07-02",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fbfd9b794551cc30",
+      "note": "two unrelated sys.stderr.write message blocks inside check_changed_line_mutation_coverage.py (the no-base_sha non-proof warning vs the uncovered-changed-lines blocking summary); lexically similar because both are multi-line f-string writes, semantically unrelated - the only shared 'helper' available is sys.stderr.write itself",
+      "reviewed_at": "2026-07-25",
       "surface": "code"
     },
     {
