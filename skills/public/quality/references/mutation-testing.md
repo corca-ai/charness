@@ -145,9 +145,15 @@ the command needs setup, redirects, or multi-step orchestration.
 `mutation_testing.schedule_cron` is rendered into the workflow file's
 `schedule.cron` field when `propose_mutation_testing.py --execute` writes the
 template, because GitHub Actions parses `on.schedule` before any job step
-runs. Other slots are read at runtime each job. To change the cron, edit the
-adapter and re-run `propose_mutation_testing.py --execute` so the workflow is
-re-rendered.
+runs. Other slots are read at runtime each job.
+
+**The workflow file is written once, at first install, and never re-rendered.**
+`propose_mutation_testing.py --execute` acts only when `mutation_testing` is
+`missing`, and even then it refuses to overwrite an existing `workflow_path`
+(it reports `workflow already present, not overwritten`). So changing
+`schedule_cron` — or picking up a newer charness workflow template after an
+upgrade — means editing the installed workflow yourself, or deleting it and
+re-running install. There is no re-render command; do not expect one.
 
 ## Detect / Propose Stage
 

@@ -59,8 +59,8 @@ budget-staleness class the operator raised mid-session:
   channel but the same observer, so it is still self-certification.
 - **Valid but Defer:** wiring `evaluate_ai_provenance` and the ledger-field /
   close-keyword checks into `close_comment_floor` (same argument as the HOTL gap,
-  but a behavior change beyond this slice — recorded as a known residual in the
-  dogfood entry); the pre-existing run-log-tail divergence between the live
+  but a behavior change beyond this slice — recorded as a known residual in
+  `docs/handoff.md`); the pre-existing run-log-tail divergence between the live
   workflow and the shipped template (confirmed pre-existing at `835181c3`).
 
 ## Structured Findings
@@ -113,10 +113,17 @@ working tree and the base ref `835181c3`).
 
 - **No local gate executes `actions/github-script`.** The mutation workflow change
   is deterministically verified only as text (three-copy invariant tests and
-  `check_github_actions.py`); its runtime behavior is unproven until the next
-  scheduled cycle. No claim is made that the recovery step has run.
+  `check_github_actions.py`). Its runtime behavior is unproven until a mutation
+  FAILURE files a marked issue and a subsequent scheduled GREEN runs — the next
+  cycle alone cannot prove it, because with no open marked issue the recovery step
+  iterates an empty set and emits nothing observable. No claim is made that either
+  the rewritten open path or the recovery step has ever executed.
 - Consumer repos holding an installed copy of the template are not re-rendered by
-  this change; only `propose_mutation_testing.py --execute` rewrites `workflow_path`.
+  this change, and **there is no re-render path at all**: `--execute` acts only when
+  `mutation_testing` is `missing`, and even then refuses to overwrite an existing
+  `workflow_path`. Adoption is a manual copy. (An earlier draft of this line claimed
+  `--execute` rewrites the workflow; the release review falsified it against
+  `propose_mutation_testing.py:154-155,183`.)
 - No live GitHub issue was closed, commented, or labeled during this slice. The
   `issue` floor changes are proven by seeded carriers and a fake `gh` backend.
 - The retuned budgets are honest for `local-linux-x86_64-36cpu` only, from that

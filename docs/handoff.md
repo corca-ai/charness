@@ -15,14 +15,15 @@
   reconcile after it records the published version. Critiques in References.
 - **The mutation workflow no longer closes GitHub issues.** A scheduled green now
   comments a recovery *candidate* (run URL, sha, mode, sample manifest), labels it
-  `mutation-recovered-candidate`, and stops. The close is a human's call. Both the
-  open and recovery paths select on the workflow's own marker and list by label
-  instead of searching. **Runtime-unproven until the next scheduled cycle** — no
-  local gate executes `actions/github-script`.
+  `mutation-recovered-candidate`, and stops; the close is a human's call. Both paths
+  select on the workflow's own marker. **Runtime-unproven until a failure files a
+  marked issue AND a later scheduled green runs** — the next cycle alone proves
+  nothing (empty issue set) and no local gate runs `actions/github-script`.
+  Installed consumer workflows are never re-rendered; adoption is a manual copy.
 - `check_runtime_budget` now emits a **budget slack advisory** naming budgets whose
   worst recent run is far under the bar, so they cannot silently re-inflate.
-- No open issues as of this session. Re-check `gh issue list --state open` fresh.
-- Sibling scan closed through Tier 2; Tier 3 (E-J) stays boy-scout only.
+- No open issues as of this session (re-check `gh issue list --state open` fresh);
+  sibling scan closed through Tier 2, Tier 3 (E-J) stays boy-scout only.
 
 ## Next Session
 
@@ -45,11 +46,10 @@
    Run `check_runtime_budget.py --runtime-profile <profile>` and act on `SLACK`.
 4. Still deferred, unchanged: inline `.rglob`/`ls-files` pathspec discovery,
    `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory, D18,
-   stale `charness-run-*` basetemp reaping, and #451's two unacted siblings (the
-   ~20 `init_adapter.py` thin-assertion scaffolds and the identifier-literal blind
-   spot at `announcement_adapter_lib.py:125` — read its critique first). #449 was
-   declined over its CI write-permission surface; do not re-propose without new
-   information.
+   stale `charness-run-*` basetemp reaping, and #451's two unacted siblings (~20
+   `init_adapter.py` thin-assertion scaffolds; the identifier-literal blind spot at
+   `announcement_adapter_lib.py:125` — read its critique first). #449 was declined
+   over its CI write-permission surface; do not re-propose without new information.
 
 ## Discuss
 

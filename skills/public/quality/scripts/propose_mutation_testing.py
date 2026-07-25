@@ -156,8 +156,10 @@ def _execute_install(repo_root: Path, adapter_path: str | None, block: dict) -> 
     else:
         # Substitute the schedule cron at install time. GitHub Actions parses
         # `schedule.cron` before any job step runs, so runtime adapter parsing
-        # cannot reach it. Re-run --execute to refresh the cron after changing
-        # mutation_testing.schedule_cron.
+        # cannot reach it. This is the ONLY write: the branch above refuses to
+        # overwrite an existing workflow, and `--execute` runs only when the
+        # block is `missing`, so there is no re-render path. Changing
+        # schedule_cron later means editing the installed workflow by hand.
         schedule_cron = block.get("schedule_cron") or "17 */3 * * *"
         rendered = template_source.read_text(encoding="utf-8").replace(
             SCHEDULE_CRON_PLACEHOLDER, schedule_cron
