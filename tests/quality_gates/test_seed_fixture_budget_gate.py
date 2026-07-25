@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -80,6 +82,45 @@ def test_scan_failure_blocks_in_json_mode_too(monkeypatch) -> None:
     assert payload["pytest_temp_scan_reason"] == "du_timeout"
     assert payload["pytest_temp_scan_attempts"] == 3
     assert payload["total_disk_bytes"] is None
+
+
+@pytest.mark.parametrize("reason", ["du_timeout", "du_exit_nonzero"])
+def test_scan_failure_on_an_unowned_temp_root_stays_advisory(monkeypatch, reason: str) -> None:
+    """Without PYTEST_DEBUG_TEMPROOT the scan walks the shared system temp dir, where
+    every other project's pytest tree also lands. Someone else's huge tree blowing the
+    timeout is not this repo's verdict to block a push on."""
+    result = _run(
+        monkeypatch,
+        {
+            "status": "unavailable",
+            "root": "/tmp/pytest-of-someone",
+            "root_source": "shared_fallback",
+            "reason": reason,
+            "attempts": 3,
+            "capability_gap": False,
+        },
+    )
+    assert result.returncode == 0
+    assert "advisory_only_unowned_temp_root" in result.stdout
+    assert "PYTEST_DEBUG_TEMPROOT" in result.stdout
+
+
+def test_scan_failure_on_a_repo_scoped_root_still_blocks(monkeypatch) -> None:
+    """The unowned-root carve-out must not swallow the fail-open fix: once the repo
+    points at its own root, the same failure is the repo's to answer for."""
+    result = _run(
+        monkeypatch,
+        {
+            "status": "unavailable",
+            "root": "/repo/.charness/pytest-tmp/pytest-of-someone",
+            "root_source": "configured",
+            "reason": "du_timeout",
+            "attempts": 3,
+            "capability_gap": False,
+        },
+    )
+    assert result.returncode == 1
+    assert "blocking_pytest_temp_scan_failed" in result.stderr
 
 
 def test_scan_failure_can_be_waived_without_disabling_every_gate(monkeypatch) -> None:
@@ -262,6 +303,10 @@ def _completed(stdout: str, returncode: int = 0, stderr: str = "") -> subprocess
 
 def _stub_root(monkeypatch, lib: ModuleType, root: Path, scripted: _Scripted) -> None:
     monkeypatch.setattr(lib, "pytest_temp_root", lambda: root)
+    # Pin the ownership label. `run-quality.sh` sets PYTEST_DEBUG_TEMPROOT and bare
+    # pytest does not, so leaving this to the ambient environment would make these
+    # assertions pass under one runner and fail under the other.
+    monkeypatch.setattr(lib, "pytest_temp_root_source", lambda: "configured")
     monkeypatch.setattr(lib, "PYTEST_TEMP_SCAN_RETRY_SECONDS", 0)
     # Scope the stub to the module under test rather than mutating the global
     # `subprocess` module: `lib.subprocess` IS the shared stdlib object, so
@@ -357,6 +402,7 @@ def test_quick_scan_gives_up_after_the_attempt_budget(monkeypatch, tmp_path: Pat
     assert footprint == {
         "status": "unavailable",
         "root": str(root),
+        "root_source": "configured",
         "reason": "du_exit_nonzero",
         "attempts": lib.PYTEST_TEMP_SCAN_ATTEMPTS,
         "capability_gap": False,
@@ -450,8 +496,83 @@ def test_quick_scan_reports_a_missing_root_without_running_du(monkeypatch, tmp_p
     scripted = _Scripted([_completed("")])
     _stub_root(monkeypatch, lib, root, scripted)
 
-    assert lib.pytest_temp_footprint_quick() == {"status": "missing", "root": str(root)}
+    assert lib.pytest_temp_footprint_quick() == {
+        "status": "missing",
+        "root": str(root),
+        "root_source": "configured",
+    }
     assert scripted.calls == 0
+
+
+@pytest.mark.parametrize(
+    ("env_value", "expected"),
+    [(None, "shared_fallback"), ("/repo/.charness/pytest-tmp", "configured")],
+    ids=["unset", "set"],
+)
+def test_temp_root_source_reports_who_owns_the_scanned_tree(
+    monkeypatch, env_value: str | None, expected: str
+) -> None:
+    lib = _lib()
+    if env_value is None:
+        monkeypatch.delenv("PYTEST_DEBUG_TEMPROOT", raising=False)
+    else:
+        monkeypatch.setenv("PYTEST_DEBUG_TEMPROOT", env_value)
+
+    assert lib.pytest_temp_root_source() == expected
+
+
+@pytest.mark.skipif(shutil.which("busybox") is None, reason="busybox not installed on this host")
+def test_real_busybox_du_is_detected_as_a_capability_gap(monkeypatch, tmp_path: Path) -> None:
+    """Probed, not inferred. `DU_USAGE_ERROR_TOKENS` claims BusyBox `du` rejects `-B`,
+    and the whole capability-gap carve-out rests on that claim being true of a real
+    binary rather than of its documentation. This drives the production scan against
+    the actual `busybox du` by putting a shim first on PATH."""
+    lib = _lib()
+    root = tmp_path / "pytest-of-someone"
+    (root / "pytest-1" / "charness-repo-seed0").mkdir(parents=True)
+    shim_dir = tmp_path / "bin"
+    shim_dir.mkdir()
+    shim = shim_dir / "du"
+    shim.write_text(f'#!/usr/bin/env bash\nexec {shutil.which("busybox")} du "$@"\n', encoding="utf-8")
+    shim.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{shim_dir}:{os.environ['PATH']}")
+    monkeypatch.setattr(lib, "pytest_temp_root", lambda: root)
+
+    footprint = lib.pytest_temp_footprint_quick()
+
+    assert footprint["status"] == "unavailable"
+    assert footprint["reason"] == "du_unsupported_options"
+    assert footprint["capability_gap"] is True
+    # A capability gap is identical on every retry, so it must not burn attempts.
+    assert footprint["attempts"] == 1
+
+
+@pytest.mark.skipif(shutil.which("du") is None, reason="du not installed on this host")
+def test_real_du_still_totals_after_an_unreadable_subdir(monkeypatch, tmp_path: Path) -> None:
+    """The load-bearing premise of this whole design, against the real binary: `du`
+    exits nonzero when it cannot read an entry, yet keeps walking and still prints the
+    scanned root's own total. If that were false, accepting a nonzero exit would be
+    accepting a fabricated number."""
+    lib = _lib()
+    root = tmp_path / "pytest-of-someone"
+    seed = root / "pytest-1" / "charness-repo-seed0"
+    seed.mkdir(parents=True)
+    (seed / "payload.bin").write_bytes(b"x" * 4096)
+    denied = root / "pytest-1" / "denied"
+    denied.mkdir()
+    (denied / "inner.bin").write_bytes(b"y" * 4096)
+    denied.chmod(0o000)
+    monkeypatch.setattr(lib, "pytest_temp_root", lambda: root)
+
+    try:
+        footprint = lib.pytest_temp_footprint_quick()
+    finally:
+        denied.chmod(0o755)
+
+    assert footprint["status"] == "available"
+    assert footprint["partial"] is True, "a nonzero du exit that still totalled must be marked partial"
+    assert footprint["total_disk_bytes"] > 0
+    assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
 
 
 def test_quick_scan_counts_a_nested_seed_dir_only_once(monkeypatch, tmp_path: Path) -> None:

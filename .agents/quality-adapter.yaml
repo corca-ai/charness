@@ -246,41 +246,55 @@ runtime_budget_profiles:
     # gate is honest for the slower 4-CPU aarch64 box (same key scope as the
     # x86_64 profile; values derived from runtime-signals.json this turn).
     #
-    # NOT RE-MEASURED against the 2026-07-26 barrier removal, and this is more than
-    # a documentation gap: the failure rule is median-based and wired into the
-    # pre-push path, so a bar left below the contended reality is a BLOCKING false
-    # red on a box where nothing regressed. Concretely, the 36-core x86_64 profile
-    # already observes `check-secrets` at 11639ms contended against this profile's
-    # 8000 bar, and `check-markdown` at 12098ms against 15000 — on 4 cores shared
-    # with pytest's workers those gaps get worse, not better. The bars marked
-    # `(contended, derived)` below are raised by the ~2.3x contention factor
-    # measured on x86_64, applied to the value that was measured here. That factor
-    # is an inference from another machine, NOT a measurement on this one: it is
-    # chosen to fail open rather than block a maintainer whose box is fine.
-    # Re-measure on the aarch64 box and replace these with real numbers.
+    # RE-DERIVED 2026-07-26 FROM A REAL 4-CORE MEASUREMENT, not from a contention
+    # factor. Three `taskset -c 0-3 ./scripts/run-quality.sh --read-only` runs on
+    # x86_64 measured every gate below under genuine 4-core contention, and EIGHT
+    # of the eighteen bars were already exceeded — including five never marked
+    # `(contended, derived)` at all, and `check-secrets` at 76.6s against a 20s
+    # bar. The failure rule is median-based and wired into the pre-push path, so
+    # each of those was a BLOCKING false red waiting for a maintainer on a small
+    # box where nothing had regressed.
+    #
+    # These are FLOORS, not the real aarch64 bars. x86_64 at 4 cores is FASTER
+    # than aarch64 at 4 cores, so a measurement here bounds the aarch64 profile
+    # from below: a bar under one of these numbers is definitively too tight,
+    # while a bar above it is still unproven. Each raised value is ~1.4x its
+    # measured 4-core max, matching the contended-relevel convention used by the
+    # x86_64 profile. What remains unmeasured is the ARCHITECTURE term only; the
+    # core-count term is no longer an inference.
+    #
+    # Still owed: a run on the actual aarch64 box to replace these floors with
+    # measurements. `check-coverage` is absent from `--read-only` and so was not
+    # measured here at all.
     budgets:
       charness-version: 1000
-      check-cli-skill-surface: 15000
+      # 4-core floor 20300ms (was 15000, a false red)
+      check-cli-skill-surface: 28000
       check-inventory-declaration-coverage: 1500
       check-references-link-inventory: 2500
       check-seed-fixture-budget: 5000
-      # (contended, derived) was 5000
-      check-spec-evidence-durability: 12000
+      # 4-core floor 18400ms (was 12000, a false red)
+      check-spec-evidence-durability: 26000
       inventory-ci-local-gate-parity: 1000
       inventory-sloc: 1500
       inventory-ubiquitous-language: 2500
-      pytest: 110000
+      # 4-core floor 130800ms (was 110000, a false red)
+      pytest: 185000
+      # NOT measured: check-coverage does not run in --read-only
       check-coverage: 60000
+      # 4-core floor 36100ms; bar already above it, left alone
       doc-duplicates: 60000
-      # (contended, derived) was 15000
-      check-markdown: 35000
-      # (contended, derived) was 8000
-      check-secrets: 20000
-      run-evals: 8000
-      specdown: 13000
+      # 4-core floor 39300ms (was 35000, a false red)
+      check-markdown: 55000
+      # 4-core floor 76600ms (was 20000, a false red at 3.8x)
+      check-secrets: 110000
+      # 4-core floor 9400ms (was 8000, a false red)
+      run-evals: 13000
+      # 4-core floor 22500ms (was 13000, a false red)
+      specdown: 32000
       validate-cautilus-call-provenance: 1500
-      # (contended, derived) was 12000
-      validate-inventory-consumption-declaration: 28000
+      # 4-core floor 39100ms (was 28000, a false red)
+      validate-inventory-consumption-declaration: 55000
 startup_probes:
   - label: charness-version
     command:

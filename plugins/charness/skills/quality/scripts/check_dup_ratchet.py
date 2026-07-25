@@ -49,7 +49,6 @@ naming the one-shot `--accept-rotation OLD=NEW` that folds it into the baseline.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -73,6 +72,8 @@ _ratchet_git = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_git"
 _scan = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_scan")
 _nose_report = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
 _fingerprint = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
+# The three baseline-writing modes and their refusals live together in their own module.
+_rebaseline = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_rebaseline")
 _quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
 
 DEFAULT_REVIEW_REL = "charness-artifacts/quality/dup-review.json"
@@ -92,133 +93,6 @@ def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | N
     is_ancestor = _ratchet_git.anchor_is_ancestor(repo_root, anchor)
     stagnation = _ratchet_git.stagnation_commits(repo_root, anchor) if is_ancestor else None
     return stagnation, anchor, is_ancestor
-
-
-def _write_gate_baseline(out: Path, members: dict, live_version: str) -> None:
-    baseline = _ratchet_baseline.build_gate_baseline(
-        members, tool_version=live_version, algo_version=_fingerprint.FINGERPRINT_ALGO_VERSION
-    )
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(baseline, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def _write_baseline(repo_root: Path, config: dict, args) -> dict:
-    baseline_rel, members, live_version, error = _scan.live_scan_for_rebaseline(
-        repo_root, config, args, default_baseline_rel=DEFAULT_GATE_BASELINE_REL,
-        fail_status="write-baseline-failed", fail_prefix="cannot write gate baseline",
-    )
-    if error:
-        return error
-    ids = set(members)
-    out = repo_root / baseline_rel
-    # C: guard a large, possibly-accidental rewrite of the accepted baseline. A
-    # deliberate re-baseline (a nose scanner-version swing re-hashes every family_id;
-    # a reviewed batch accept) is the legitimate large-delta case — it proceeds with
-    # --confirm-baseline-delta. This is the maintenance command refusing a silent
-    # overwrite; it never touches the gate evaluate path, so it cannot false-block a push.
-    existing_ids = _ratchet_baseline.load_gate_baseline_ids(_scan.load_json(out))
-    delta_note = None
-    if existing_ids is not None:
-        added, removed = ids - existing_ids, existing_ids - ids
-        delta = len(added) + len(removed)
-        if delta > args.baseline_delta_threshold:
-            if not args.confirm_baseline_delta:
-                return {
-                    "ok": False, "inert": False, "status": "baseline-delta-unconfirmed",
-                    "baseline_delta": {"added": len(added), "removed": len(removed),
-                                       "threshold": args.baseline_delta_threshold},
-                    "messages": [
-                        f"refusing to overwrite the gate baseline: delta {delta} "
-                        f"(+{len(added)}/-{len(removed)}) exceeds the large-delta threshold "
-                        f"({args.baseline_delta_threshold}). If this is a deliberate "
-                        "re-baseline (e.g. a nose scanner-version change, or a reviewed "
-                        "batch accept), re-run with --confirm-baseline-delta; otherwise it "
-                        "is likely a broken scan or misconfigured scope_paths.",
-                    ],
-                }
-            delta_note = f"confirmed large delta (+{len(added)}/-{len(removed)})"
-    # Stamp the producing nose version from THIS scan (the run that minted these
-    # fingerprints) plus the fingerprint algo version, never a fresh probe — so the stamps
-    # can never disagree with the fingerprints they label.
-    _write_gate_baseline(out, members, live_version)
-    message = f"wrote gate baseline ({len(ids)} code family fingerprints) -> {baseline_rel}"
-    if delta_note:
-        message += f" [{delta_note}]"
-    messages = [message]
-    if existing_ids is not None:  # overwrite, not first-time bootstrap
-        messages.append(
-            "WARN: --write-baseline is a full-scan overwrite that silently re-accepts every "
-            "current family, including unreviewed new ones. Prefer --accept-rotation "
-            "OLD_ID=NEW_ID / --accept-family NEW_ID for routine re-baseline churn; reserve "
-            "--write-baseline for first-time bootstrap or a deliberate, reviewed full re-baseline."
-        )
-    return {"ok": True, "inert": False, "status": "baseline-written",
-            "code_family_count": len(ids), "gate_baseline_path": baseline_rel,
-            "tool_version": live_version, "messages": messages}
-
-
-def _scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
-    """Scoped re-baseline (see module docstring): apply ONLY named rotations /
-    new-family accepts onto the existing baseline; refuse any other live delta."""
-    baseline_rel, live_members, live_version, error = _scan.live_scan_for_rebaseline(
-        repo_root, config, args, default_baseline_rel=DEFAULT_GATE_BASELINE_REL,
-        fail_status="scoped-rebaseline-failed", fail_prefix="cannot compute live fingerprints",
-    )
-    if error:
-        return error
-    out = repo_root / baseline_rel
-    existing_members = _ratchet_baseline.load_gate_baseline_members(_scan.load_json(out))
-    if existing_members is None:
-        return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
-                "messages": [f"no readable gate baseline at {baseline_rel}; run --write-baseline "
-                             "once to seed one before using scoped accepts."]}
-    existing_ids = set(existing_members)
-    live_ids = set(live_members)
-    accept_families = list(args.accept_family or [])
-    rotations, malformed = _ratchet.parse_rotations(args.accept_rotation or [])
-    # Evaluate-parity universe trim: exempt overlay-intentional families and
-    # membership reductions from refusal (they are never absorbed either), so the
-    # rotations the evaluate path suggests are acceptable as-is.
-    review_rel = config.get("review_artifact_path") or DEFAULT_REVIEW_REL
-    exemptions = _ratchet.scoped_rebaseline_exemptions(
-        live_members=live_members, existing_members=existing_members,
-        overlay=_scan.load_json(repo_root / review_rel),
-        named_new_ids={new for _old, new in rotations} | set(accept_families),
-    )
-    plan = _ratchet.plan_scoped_rebaseline(
-        existing_ids=existing_ids, live_ids=live_ids, rotations=rotations, accept_families=accept_families,
-        exempt_live_ids=exemptions["exempt_live_ids"],
-    )
-    errors = [f"malformed --accept-rotation {raw!r}; expected OLD_ID=NEW_ID" for raw in malformed] + plan["errors"]
-    if errors:
-        return {"ok": False, "inert": False, "status": "scoped-rebaseline-invalid", "messages": errors}
-    if plan["refused_added"]:
-        return {
-            "ok": False, "inert": False, "status": "scoped-rebaseline-refused",
-            "refused_added": plan["refused_added"],
-            "messages": [
-                "refusing to silently accept unnamed new fixable-eligible family(ies) into the baseline "
-                f"({', '.join(plan['refused_added'])}). Name each with --accept-rotation OLD_ID=NEW_ID "
-                "or --accept-family NEW_ID, or use --write-baseline for a full reviewed re-baseline.",
-            ],
-        }
-    updated_ids = plan["updated_ids"]
-    # Each kept/rotated/accepted id's member hashes come from wherever it is still
-    # known: unchanged ids from the existing baseline, rotated/accepted ids from the
-    # live scan (the only place a brand-new fingerprint's members can come from).
-    updated_members = {fid: existing_members.get(fid, live_members.get(fid, [])) for fid in updated_ids}
-    _write_gate_baseline(out, updated_members, live_version)
-    message = (
-        f"scoped re-baseline: accepted {len(rotations)} rotation(s) + {len(accept_families)} new "
-        f"family(ies); baseline now has {len(updated_ids)} code family fingerprints -> {baseline_rel}"
-    )
-    return {"ok": True, "inert": False, "status": "scoped-rebaseline-written",
-            "accepted_rotations": [{"old": old, "new": new} for old, new in rotations],
-            "accepted_families": accept_families, "code_family_count": len(updated_ids),
-            "ignored_intentional": exemptions["ignored_intentional"],
-            "unnamed_reductions": exemptions["unnamed_reductions"],
-            "gate_baseline_path": baseline_rel, "tool_version": live_version,
-            "messages": [message, *exemptions["advisories"]]}
 
 
 def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
@@ -360,10 +234,12 @@ def run(repo_root: Path, args) -> dict:
                 "adapter_errors": list(adapter["errors"]),
                 "messages": ["quality adapter invalid: " + "; ".join(str(e) for e in adapter["errors"])]}
     config = adapter["data"].get("dup_ratchet") or {}
+    if args.restamp_tool_version:
+        return _rebaseline.restamp_tool_version(repo_root, config, args)
     if args.accept_rotation or args.accept_family:
-        return _scoped_rebaseline(repo_root, config, args)
+        return _rebaseline.scoped_rebaseline(repo_root, config, args)
     if args.write_baseline:
-        return _write_baseline(repo_root, config, args)
+        return _rebaseline.write_baseline(repo_root, config, args)
     if not config.get("enabled"):
         return {"ok": True, "inert": True, "status": "inert",
                 "messages": ["dup_ratchet.enabled is false; gate inert (opted out)."]}
@@ -384,6 +260,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--write-baseline", action="store_true", help="Seed the gate baseline from a full code scan and exit (accept today's code family_ids).")
     parser.add_argument("--confirm-baseline-delta", action="store_true", help="Confirm a deliberate large re-baseline (--write-baseline) past the delta threshold, e.g. a nose scanner-version swing.")
     parser.add_argument("--baseline-delta-threshold", type=int, default=DEFAULT_BASELINE_DELTA_THRESHOLD, help="Large-delta guardrail for --write-baseline: added+removed family_ids over this requires --confirm-baseline-delta.")
+    parser.add_argument("--restamp-tool-version", action="store_true", help="Re-stamp the baseline's scanner version when ONLY that version changed. Refuses if the live family set differs from the baseline's in either direction, since that is a real re-baseline and not a version-only skew.")
     parser.add_argument("--accept-rotation", action="append", metavar="OLD_ID=NEW_ID", help="Scoped re-baseline: rotate one accepted fingerprint (repeatable). Refuses any other live delta not named here or via --accept-family, except overlay-intentional families and membership reductions (evaluate-tolerated; exempt, never absorbed).")
     parser.add_argument("--accept-family", action="append", metavar="NEW_ID", help="Scoped re-baseline: accept one new fingerprint into the baseline (repeatable). Combine with --accept-rotation; any unnamed live delta is refused except the evaluate-tolerated exemptions described under --accept-rotation.")
     add_output_args(

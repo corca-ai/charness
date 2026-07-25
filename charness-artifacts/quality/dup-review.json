@@ -240,6 +240,13 @@
     },
     {
       "class": "intentional",
+      "id": "3c13e2e9b432a6fd",
+      "note": "two-line `if <predicate>: return \"<literal>\"` classifier arm, same shape already accepted as 907963a5caacf849/d86058cd07319fec; here the seed-budget scan classifier rhymes with support_sync_lib's manifest-kind arm. Unrelated domains, each returning its own constant, nothing to centralize",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "3c301f25c9dd81c5",
       "note": "two-line missing-file early return shared by host-hook discovery and feedback JSONL reading; the call sites have unrelated return contracts and no stable helper concept",
       "reviewed_at": "2026-07-10",
@@ -474,6 +481,13 @@
       "id": "70725ebd1c848880",
       "note": "small importlib loader guard idiom across independently executable repo and portable skill scripts; each loader retains local failure ownership and direct-execution portability",
       "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7205c9cd09e28aee",
+      "note": "the 111-member `_load_skill_runtime_bootstrap` portability preamble every portable skill script carries so it stays directly executable in both source and exported plugin layouts. This is the blind spot the nose advisory names about itself; the family rotated only because dup_ratchet_rebaseline.py (a split forced by check-python-lengths) became member 111. Extracting it is impossible by construction: the preamble is what finds the shared loader",
+      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {
@@ -733,6 +747,13 @@
       "id": "b89f4eca9f566307",
       "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
       "reviewed_at": "2026-06-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c178ae00e001f90a",
+      "note": "the gate `run()` convention already accepted as 119fa9bcafbd3048: load the strict quality adapter, return a typed adapter-invalid report, read this gate's config block, dispatch. check_dup_ratchet and migrate_dup_fingerprints dispatch to different modes with different report shapes; a shared runner would take those as data and each script would still spell them out through an indirection",
+      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {

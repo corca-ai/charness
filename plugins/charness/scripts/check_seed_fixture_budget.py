@@ -100,6 +100,15 @@ def classify_scan(footprint: dict, advisory_on_scan_failure: bool) -> str:
         return "advisory_only_no_pytest_temp_yet"
     if footprint.get("capability_gap"):
         return "advisory_only_du_unavailable"
+    if footprint.get("root_source") == "shared_fallback":
+        # Without PYTEST_DEBUG_TEMPROOT the scan walks the shared system temp
+        # dir, where every other project's pytest tree also lands. A failure
+        # there says nothing about THIS repo's seed footprint -- someone else's
+        # huge tree can blow the timeout, and someone else's teardown can kill
+        # the walk -- so blocking this repo's push on it grades work the repo
+        # neither owns nor can fix. Point the runner at a repo-scoped root and
+        # the same failure becomes blocking, as it should.
+        return "advisory_only_unowned_temp_root"
     if advisory_on_scan_failure:
         return "advisory_only_scan_failure_waived"
     return "blocking_pytest_temp_scan_failed"
@@ -156,6 +165,7 @@ def main() -> int:
         "pytest_temp_scan_reason": footprint.get("reason"),
         "pytest_temp_scan_attempts": footprint.get("attempts"),
         "pytest_temp_scan_partial": footprint.get("partial"),
+        "pytest_temp_root_source": footprint.get("root_source"),
         "total_disk_bytes": total_disk_bytes,
         "total_budget_bytes": args.total_budget_bytes,
         "per_seed_budget_bytes": args.per_seed_budget_bytes,
@@ -187,6 +197,15 @@ def main() -> int:
             f"scope_classification={classification}: `du` cannot run this measurement on "
             f"this box ({footprint.get('reason')}), so the seed footprint is unmeasurable "
             "here; gate is advisory-only."
+        )
+        return 0
+    if classification == "advisory_only_unowned_temp_root":
+        print(
+            f"scope_classification={classification}: the pytest tmp scan failed "
+            f"({footprint.get('reason')}) against {footprint.get('root')}, which is the "
+            "shared system temp dir rather than a repo-scoped root, so the failure is not "
+            "this repo's to block on. Set PYTEST_DEBUG_TEMPROOT to a repo-owned path to "
+            "make this measurement -- and its failures -- yours."
         )
         return 0
     if classification == "advisory_only_scan_failure_waived":

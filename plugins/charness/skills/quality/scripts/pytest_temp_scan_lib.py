@@ -38,7 +38,27 @@ PYTEST_TEMP_SCAN_TOTAL_TIMEOUT_SECONDS = 30.0
 #: Reasons a retry cannot clear and that mean the box cannot run this measurement
 #: at all, rather than that the measurement failed. Consumers keep these advisory.
 DU_CAPABILITY_GAP_REASONS = frozenset({"du_missing", "du_not_executable", "du_unsupported_options"})
+# Measured, not inferred. BusyBox v1.30.1 `du -d 4 -B1` emits, on stderr, exit 1:
+#     du: invalid option -- 'B'
+#     Usage: du [-aHLdclsxhmk] [FILE]...
+# GNU coreutils `du` emits `du: invalid option -- 'Q'` for a bad short option and
+# `du: unrecognized option '--bogus'` for a bad long one. `illegal option` covers
+# the BSD/macOS getopt wording, which remains the one unprobed entry here.
 DU_USAGE_ERROR_TOKENS = ("unrecognized option", "invalid option", "illegal option", "unknown option", "usage:")
+
+#: The temp root is only this repo's to grade when the repo pointed at it. Without
+#: `PYTEST_DEBUG_TEMPROOT` the scan falls back to the shared system temp dir, where
+#: any other project's pytest tree lands.
+TEMP_ROOT_SOURCE_CONFIGURED = "configured"
+TEMP_ROOT_SOURCE_SHARED_FALLBACK = "shared_fallback"
+
+
+def pytest_temp_root_source() -> str:
+    return (
+        TEMP_ROOT_SOURCE_CONFIGURED
+        if os.environ.get("PYTEST_DEBUG_TEMPROOT")
+        else TEMP_ROOT_SOURCE_SHARED_FALLBACK
+    )
 
 
 def pytest_temp_root() -> Path:
@@ -177,13 +197,15 @@ def pytest_temp_footprint_quick(
     total_timeout: float = PYTEST_TEMP_SCAN_TOTAL_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
     root = pytest_temp_root()
+    root_source = pytest_temp_root_source()
     if not root.exists():
-        return {"status": "missing", "root": str(root)}
+        return {"status": "missing", "root": str(root), "root_source": root_source}
     result, reason, attempt = _scan_with_retry(root, attempts, total_timeout)
     if result is None:
         return {
             "status": "unavailable",
             "root": str(root),
+            "root_source": root_source,
             "reason": reason,
             "attempts": attempt,
             "capability_gap": reason in DU_CAPABILITY_GAP_REASONS,
@@ -191,6 +213,7 @@ def pytest_temp_footprint_quick(
     return {
         "status": "available",
         "root": str(root),
+        "root_source": root_source,
         **_parse_du_footprint(result.stdout, root),
         # Kept on the SUCCESS path too: a scan that failed once and succeeded on
         # the retry is the exact flaky state the retry exists to absorb, and

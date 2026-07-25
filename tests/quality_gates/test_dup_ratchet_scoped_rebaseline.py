@@ -282,3 +282,93 @@ def test_inproc_write_baseline_no_warn_on_first_bootstrap(tmp_path: Path) -> Non
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--write-baseline")
     assert report["ok"] is True and report["status"] == "baseline-written"
     assert not any("WARN" in m for m in report["messages"])
+
+
+# --------------------------------------------------------------------------- #
+# `--restamp-tool-version` — the version-only skew fix. A nose bump re-stamps
+# nothing, so the skew warning fires on every run until someone re-baselines; but
+# `--write-baseline` absorbs every unreviewed new family and the scoped accepts
+# require naming an id, so "only the version moved" had no honest fix and the
+# warning became furniture. This path re-stamps ONLY when the family set is
+# provably unchanged.
+# --------------------------------------------------------------------------- #
+def _stamped_inventory(path: Path, family_ids: list[str], tool_version: str) -> Path:
+    return _write_json(path, {
+        "status": "findings",
+        "tool_version": tool_version,
+        "families": [{"family_fingerprint": fid, "family_member_hashes": [fid]} for fid in family_ids],
+    })
+
+
+def _stamped_repo(tmp_path: Path, family_ids: tuple[str, ...], tool_version: str) -> Path:
+    repo = _consumer_repo(tmp_path, baseline_ids=family_ids)
+    _write_json(repo / "q" / "dup-ratchet-baseline.json", baseline_lib.build_gate_baseline(
+        {fid: [fid] for fid in family_ids},
+        tool_version=tool_version,
+        algo_version=fingerprint.FINGERPRINT_ALGO_VERSION,
+    ))
+    return repo
+
+
+def test_inproc_restamp_rewrites_the_version_when_only_the_version_moved(tmp_path: Path) -> None:
+    repo = _stamped_repo(tmp_path, ("keep1", "keep2"), "0.19.0")
+    code_json = _stamped_inventory(tmp_path / "code.json", ["keep1", "keep2"], "0.20.0")
+
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--restamp-tool-version")
+
+    assert report["ok"] is True and report["status"] == "restamp-written"
+    assert report["baseline_tool_version"] == "0.19.0"
+    assert report["tool_version"] == "0.20.0"
+    assert report["code_family_count"] == 2
+    written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert baseline_lib.load_gate_baseline_tool_version(written) == "0.20.0"
+    # The set must survive the re-stamp untouched; that is the whole claim.
+    assert set(baseline_lib.load_gate_baseline_members(written)) == {"keep1", "keep2"}
+
+
+def test_inproc_restamp_refuses_when_the_family_set_changed(tmp_path: Path) -> None:
+    """A bump that regrouped families makes the stored set genuinely stale. Re-stamping
+    it would assert a review under the new scanner that never happened."""
+    repo = _stamped_repo(tmp_path, ("keep", "gone"), "0.19.0")
+    code_json = _stamped_inventory(tmp_path / "code.json", ["keep", "arrived"], "0.20.0")
+
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--restamp-tool-version")
+
+    assert report["ok"] is False and report["status"] == "restamp-refused"
+    assert report["added"] == ["arrived"] and report["removed"] == ["gone"]
+    written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
+    assert baseline_lib.load_gate_baseline_tool_version(written) == "0.19.0", "refusal must not write"
+    assert set(baseline_lib.load_gate_baseline_members(written)) == {"keep", "gone"}
+
+
+def test_inproc_restamp_refuses_a_pure_addition(tmp_path: Path) -> None:
+    """Refusal is in BOTH directions: a new family arriving is new duplication, and
+    slipping it in under a version re-stamp is exactly the absorption this avoids."""
+    repo = _stamped_repo(tmp_path, ("keep",), "0.19.0")
+    code_json = _stamped_inventory(tmp_path / "code.json", ["keep", "arrived"], "0.20.0")
+
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--restamp-tool-version")
+
+    assert report["ok"] is False and report["status"] == "restamp-refused"
+    assert report["added"] == ["arrived"] and report["removed"] == []
+
+
+def test_inproc_restamp_is_a_noop_when_the_version_already_matches(tmp_path: Path) -> None:
+    repo = _stamped_repo(tmp_path, ("keep",), "0.20.0")
+    code_json = _stamped_inventory(tmp_path / "code.json", ["keep"], "0.20.0")
+
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--restamp-tool-version")
+
+    assert report["ok"] is True and report["status"] == "restamp-noop"
+    assert any("nothing to re-stamp" in m for m in report["messages"])
+
+
+def test_inproc_restamp_fails_without_a_readable_baseline(tmp_path: Path) -> None:
+    repo = _stamped_repo(tmp_path, ("keep",), "0.19.0")
+    (repo / "q" / "dup-ratchet-baseline.json").unlink()
+    code_json = _stamped_inventory(tmp_path / "code.json", ["keep"], "0.20.0")
+
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--restamp-tool-version")
+
+    assert report["ok"] is False and report["status"] == "restamp-failed"
+    assert any("--write-baseline" in m for m in report["messages"])
