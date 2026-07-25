@@ -20,10 +20,8 @@ Two conversions run in sequence on every DOC_GLOBS markdown file:
 from __future__ import annotations
 
 import argparse
-import os.path
 import re
 import sys
-from collections import defaultdict
 from os.path import relpath
 from pathlib import Path
 
@@ -34,6 +32,14 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 iter_repo_files = _scripts_repo_file_listing_module.iter_repo_files
+# The repo-path listing, the unique-basename index, and the directory set are
+# `check_doc_links`' to define: this migration exists to move docs onto the
+# convention that gate enforces, so a divergent copy here would migrate docs to a
+# shape the gate then rejects.
+_check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
+iter_known_repo_paths = _check_doc_links.iter_known_repo_paths
+build_unique_basename_index = _check_doc_links.build_unique_basename_index
+build_known_directories = _check_doc_links.build_known_directories
 
 DOC_GLOBS = (
     "README.md",
@@ -51,32 +57,6 @@ BACKTICK_SPAN_RE = re.compile(r"`([^`\n]+)`")
 MARKDOWN_LINK_RE = re.compile(r"(\[[^\]]+\])\(([^)]+)\)")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
 EXTENSION_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.-]+\.[A-Za-z][A-Za-z0-9]{0,5}$")
-
-
-def iter_known_repo_paths(root: Path) -> set[str]:
-    known: set[str] = set()
-    for path in iter_repo_files(root):
-        if any(part in SKIP_DIR_NAMES for part in path.parts):
-            continue
-        known.add(path.relative_to(root).as_posix())
-    return known
-
-
-def build_unique_basename_index(known_repo_paths: set[str]) -> dict[str, str]:
-    groups: dict[str, list[str]] = defaultdict(list)
-    for rel_path in known_repo_paths:
-        groups[os.path.basename(rel_path)].append(rel_path)
-    return {name: paths[0] for name, paths in groups.items() if len(paths) == 1}
-
-
-def build_known_directories(known_repo_paths: set[str]) -> set[str]:
-    dirs: set[str] = set()
-    for rel_path in known_repo_paths:
-        parent = os.path.dirname(rel_path)
-        while parent:
-            dirs.add(parent)
-            parent = os.path.dirname(parent)
-    return dirs
 
 
 def is_portable_skill_body(root: Path, path: Path) -> bool:

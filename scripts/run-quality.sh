@@ -528,6 +528,7 @@ queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imp
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-documented-command-flags" python3 scripts/check_documented_command_flags.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py

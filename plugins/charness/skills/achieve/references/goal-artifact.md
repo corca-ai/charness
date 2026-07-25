@@ -341,7 +341,7 @@ Render the measured-vs-proxy closeout summary instead of hand-assembling it, so
 every goal narrates the same signals the same way:
 
 ```bash
-python3 "$SKILL_DIR/scripts/probe_host_logs.py" --goal-path <artifact> --format markdown
+python3 "$SKILL_DIR/../retro/scripts/probe_host_logs.py" --goal-path <artifact> --format markdown
 ```
 
 The block surfaces the window status verbatim (so an `absent` window cannot

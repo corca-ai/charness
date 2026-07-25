@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import shlex
 import sys
 from pathlib import Path
@@ -18,6 +17,8 @@ load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
 run_processes_in_order = _subprocess_guard.run_processes_in_order
+_gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
+emit_findings_report = _gate_report_emit.emit_findings_report
 
 DEFAULT_CONTRACT = Path(".agents/command-docs.yaml")
 
@@ -197,11 +198,7 @@ def main() -> int:
     args = parser.parse_args()
 
     report = build_report(args.repo_root.resolve(), args.contract)
-    stream = sys.stderr if report["findings"] else sys.stdout
-    if args.json:
-        stream.write(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-    else:
-        stream.write(render_report(report) + "\n")
+    emit_findings_report(report, as_json=args.json, render=render_report)
     return 1 if report["findings"] else 0
 
 

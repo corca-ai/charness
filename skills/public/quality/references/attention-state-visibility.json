@@ -119,6 +119,20 @@
       ],
       "rationale": "Coverage library preserves disabled tool state and skipped healthcheck state through shared lifecycle payloads."
     },
+    "scripts/check_documented_command_flags.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "operator_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "Not proven"
+      ],
+      "rationale": "A documented invocation this gate cannot resolve to a runnable script -- a <placeholder> path for a consuming repo, or a path check_doc_links.py owns -- is counted by reason instead of dropped. render_report appends the \"Not proven\" count and every reason to the PASS output as well as the fail output, and the same map rides in the --json payload as skipped, so a green run states how much of the documented command surface it did not prove rather than reading as full coverage."
+    },
     "scripts/check_mutation_score.py": {
       "states": [
         "skipped"

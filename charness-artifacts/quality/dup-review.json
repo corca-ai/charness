@@ -93,6 +93,13 @@
     },
     {
       "class": "intentional",
+      "id": "119fa9bcafbd3048",
+      "note": "gate CLI convention shared by seven validators (check_skill_surface_preflight, check_artifact_surface_preflight, eval_cautilus_chatbot_proposals, inventory_quality_handoff, suggest_public_skill_validation, check_command_docs, check_documented_command_flags): declare this gate's own flags, resolve --repo-root, call build_report, return 1 on findings. The shared *behavior* in this shape was already extracted this session into scripts/gate_report_emit.py (stream selection plus --json vs text), which is what made the residue visible. What rhymes after that extraction is each script's own argparse declaration -- the flags differ per gate, so a common main() would take them as data and every script would still spell the same list out through an indirection",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "13741926e48b3ac1",
       "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
       "reviewed_at": "2026-06-27",
@@ -705,6 +712,13 @@
       "id": "b84a05853c8b2d2a",
       "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants — a util module would couple them for little value; intentional",
       "reviewed_at": "2026-06-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b8998493b935c03f",
+      "note": "findings-list rendering shared by inventory_ubiquitous_language.py and check_command_docs.py: a header line plus `lines.extend(f\"- {finding}\")` plus \"\\n\".join. The wording, header, and remediation tail are each gate's own operator-facing message, and inventory_ubiquitous_language ships inside the portable quality skill package -- importing a repo-only scripts/ helper there would break package portability, which is the boundary the harness keeps deliberately",
+      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {

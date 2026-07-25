@@ -71,29 +71,28 @@ def iter_docs(root: Path, *, require_git: bool = False) -> list[Path]:
     return iter_matching_repo_files(root, DOC_GLOBS, require_git=require_git)
 
 
+def iter_known_repo_paths(root: Path, *, require_git: bool = False, suffix: str | None = None) -> set[str]:
+    known: set[str] = set()
+    for path in iter_repo_files(root, require_git=require_git):
+        if suffix is not None and path.suffix != suffix:
+            continue
+        if any(part in SKIP_DIR_NAMES for part in path.parts):
+            continue
+        known.add(path.relative_to(root).as_posix())
+    return known
+
+
 def iter_known_markdown_paths(root: Path, *, require_git: bool = False) -> set[str]:
-    known: set[str] = set()
-    for path in iter_repo_files(root, require_git=require_git):
-        if path.suffix != ".md":
-            continue
-        if any(part in SKIP_DIR_NAMES for part in path.parts):
-            continue
-        known.add(path.relative_to(root).as_posix())
-    return known
+    return iter_known_repo_paths(root, require_git=require_git, suffix=".md")
 
 
-def iter_known_repo_paths(root: Path, *, require_git: bool = False) -> set[str]:
-    known: set[str] = set()
-    for path in iter_repo_files(root, require_git=require_git):
-        if any(part in SKIP_DIR_NAMES for part in path.parts):
-            continue
-        known.add(path.relative_to(root).as_posix())
-    return known
-
-
-def build_unique_basename_index(known_repo_paths: set[str]) -> dict[str, str]:
+def build_unique_basename_index(known_repo_paths: set[str], *, keep=None) -> dict[str, str]:
+    # `keep` narrows what counts toward uniqueness, for callers resolving a
+    # canonical source out of a listing that also carries generated mirrors.
     groups: dict[str, list[str]] = defaultdict(list)
     for rel_path in known_repo_paths:
+        if keep is not None and not keep(rel_path):
+            continue
         groups[os.path.basename(rel_path)].append(rel_path)
     return {name: paths[0] for name, paths in groups.items() if len(paths) == 1}
 
