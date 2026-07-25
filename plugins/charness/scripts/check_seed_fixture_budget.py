@@ -66,7 +66,16 @@ def main() -> int:
     breaches: list[dict[str, object]] = []
     classification: str
     total_disk_bytes: int | None
-    if footprint.get("status") != "available":
+    if footprint.get("status") == "unavailable":
+        # A failed scan is not an absent tree. `du` exits nonzero when a file
+        # vanishes mid-walk, which is what a concurrent pytest teardown looks like;
+        # reporting that as "no tmp directory yet" told the operator the gate had
+        # nothing to measure when in fact the measurement failed. Still advisory
+        # (a shared box can lose the race for reasons no push should block on),
+        # but it now says which of the two happened.
+        classification = "advisory_only_pytest_temp_scan_failed"
+        total_disk_bytes = None
+    elif footprint.get("status") != "available":
         classification = "advisory_only_no_pytest_temp_yet"
         total_disk_bytes = None
     else:
@@ -109,6 +118,13 @@ def main() -> int:
     if args.json:
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 1 if breaches else 0
+    if classification == "advisory_only_pytest_temp_scan_failed":
+        print(
+            f"WARNING: scope_classification={classification}: the pytest tmp scan failed "
+            f"(root {footprint.get('root')}); nothing was measured, so this run proves nothing "
+            "about the seed budget. A concurrent pytest teardown is the usual cause."
+        )
+        return 0
     if classification.startswith("advisory_only"):
         print(f"scope_classification={classification}: no pytest tmp directory present yet; gate is advisory-only.")
         return 0

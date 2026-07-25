@@ -50,6 +50,8 @@ mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
+RUN_QUALITY_RUNTIME_BATCH="$RUN_QUALITY_TMPDIR/runtime-batch.jsonl"
+: >"$RUN_QUALITY_RUNTIME_BATCH"
 
 RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
 RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
@@ -165,6 +167,43 @@ coverage_relevant_changes_present() {
   done <"$changed_paths_path"
 
   return 1
+}
+
+# One interpreter start plus a full rewrite of runtime-signals.json per gate cost
+# ~70ms x ~80 gates (~5.5s, ~9% of wall) of strictly serial time inside flush_phase.
+# The per-gate samples are queued into this batch file instead and handed to the
+# recorder once per phase; the aggregate label below still records on its own
+# because it is a single sample with its own failure handling.
+queue_runtime_record() {
+  # Gate labels are double-quoted literals in this file (the timing/verbosity
+  # inventories parse the queue lines for them, so a quote-bearing label is not
+  # expressible), statuses are pass/fail, timestamps come from `date` — none need JSON
+  # string escaping. `elapsed_ms` is the one field that can arrive empty: a gate
+  # subshell killed (OOM, SIGKILL) after its meta path exists but before it is
+  # written yields "", which would emit `"elapsed_ms":` and make the line invalid.
+  # Refuse to write that line rather than hand the recorder a broken batch.
+  local label="$1"
+  local elapsed_ms="$2"
+  local status="$3"
+  local timestamp="$4"
+  if [[ ! "$elapsed_ms" =~ ^-?[0-9]+$ ]]; then
+    echo "run-quality: warning: no usable elapsed time for ${label}; runtime sample skipped." >&2
+    return 0
+  fi
+  printf '{"label":"%s","elapsed_ms":%s,"status":"%s","timestamp":"%s"}\n' \
+    "$label" "$elapsed_ms" "$status" "$timestamp" >>"$RUN_QUALITY_RUNTIME_BATCH"
+}
+
+flush_runtime_batch() {
+  if [[ ! -s "$RUN_QUALITY_RUNTIME_BATCH" ]]; then
+    return 0
+  fi
+  if ! python3 scripts/record_quality_runtime.py \
+    --repo-root "$REPO_ROOT" \
+    --batch "$RUN_QUALITY_RUNTIME_BATCH" >/dev/null; then
+    echo "run-quality: warning: failed to record phase runtimes." >&2
+  fi
+  : >"$RUN_QUALITY_RUNTIME_BATCH"
 }
 
 record_runtime() {
@@ -331,7 +370,7 @@ flush_phase() {
     status="${meta_lines[1]}"
     timestamp="${meta_lines[2]}"
     cmd_rc="${meta_lines[3]}"
-    record_runtime "$label" "$elapsed_ms" "$status" "$timestamp"
+    queue_runtime_record "$label" "$elapsed_ms" "$status" "$timestamp"
 
     print_phase_output "$label" "$status" "$elapsed_ms" "$log_path"
     COMPLETED_LABELS+=("$label")
@@ -347,6 +386,8 @@ flush_phase() {
       rc="$cmd_rc"
     fi
   done
+
+  flush_runtime_batch
 
   PHASE_LABELS=()
   PHASE_PIDS=()
@@ -391,6 +432,27 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-baseline"; then
     print_final_summary
     exit "$OVERALL_RC"
   fi
+fi
+
+# `pytest` is the critical path (~44s against ~9s for every other gate combined),
+# so it is queued FIRST and the cheap gates below overlap it instead of the other
+# way round. It has no data dependency on any of them; the only real ordering in
+# this script is `doc-duplicates` -> `dup-ratchet` (a later phase) and the
+# agent-browser baseline above.
+PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
+# Standing and release-only pytest are different workloads (the release set adds
+# minutes of subprocess-heavy tests). Recording both under one label made the
+# budget unable to catch a standing regression: it was sized from the release
+# mode's max, so a 2x standing slowdown still landed under the bar. Same
+# `-release` suffix convention as the aggregate label below.
+# Both arms spell the label literally on purpose: the timing-completeness and
+# gate-verbosity inventories parse this file for queued gate labels and cannot
+# resolve a shell variable, so a computed label reads as an untimed gate.
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+  PYTEST_FLAGS+=(--include-release-only)
+  queue_selected "pytest-release" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
+else
+  queue_selected "pytest" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 fi
 
 queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
@@ -468,11 +530,16 @@ queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
 queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py
 queue_selected "check-markdown" ./scripts/check-markdown.sh
-flush_phase || OVERALL_RC=$?
 
+# No barrier here: `flush_phase` is not fail-fast (every phase runs regardless of
+# an earlier failure), so a barrier between independent gates buys output grouping
+# and nothing else — while the gates below wait on the slowest gate above. The
+# barriers that stay are the ones that carry a real dependency: `doc-duplicates`
+# hands its drift JSON to `dup-ratchet`, `check-seed-fixture-budget` needs pytest's
+# temp tree to be settled (see its comment below), and `check-runtime-budget` reads
+# the samples every earlier phase recorded.
 queue_selected "check-secrets" ./scripts/check-secrets.sh
 queue_selected "check-supply-chain" python3 scripts/check_supply_chain.py --repo-root "$REPO_ROOT"
 queue_selected "check-github-actions" python3 scripts/check_github_actions.py --repo-root "$REPO_ROOT"
@@ -492,23 +559,7 @@ python_files=(
 )
 queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts skills/shared/scripts
-flush_phase || OVERALL_RC=$?
 
-PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
-# Standing and release-only pytest are different workloads (the release set adds
-# minutes of subprocess-heavy tests). Recording both under one label made the
-# budget unable to catch a standing regression: it was sized from the release
-# mode's max, so a 2x standing slowdown still landed under the bar. Same
-# `-release` suffix convention as the aggregate label above.
-# Both arms spell the label literally on purpose: the timing-completeness and
-# gate-verbosity inventories parse this file for queued gate labels and cannot
-# resolve a shell variable, so a computed label reads as an untimed gate.
-if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
-  PYTEST_FLAGS+=(--include-release-only)
-  queue_selected "pytest-release" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
-else
-  queue_selected "pytest" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
-fi
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
@@ -554,6 +605,16 @@ flush_phase || OVERALL_RC=$?
 # advisory (never blocks) when the overlay/baseline/nose are missing. See
 # skills/public/quality/references/dup-ratchet.md.
 queue_selected "dup-ratchet" python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root "$REPO_ROOT" --doc-inventory "$RUN_QUALITY_TMPDIR/doc-duplicates.json"
+
+# A THIRD real ordering dependency, found by review after the barrier removal:
+# this gate scans `$PYTEST_DEBUG_TEMPROOT/pytest-of-<user>`, the same tree the
+# `pytest` gate fills and then rmtree's. Run concurrently it either measures a
+# half-built tree or hits `du`'s vanishing-file error, and its own failure mode is
+# fail-OPEN (`advisory_only_no_pytest_temp_yet`, exit 0) — the gate silently stops
+# being a gate. Reproduced directly: polling it during a standing pytest run
+# returned `unavailable` the moment pytest tore its basetemp down. It belongs
+# after the pytest barrier, where the tree is settled.
+queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
 
 queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT" --require-empty-parity-issues --require-git-file-listing
 if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py" ]]; then

@@ -891,6 +891,13 @@
     },
     {
       "class": "intentional",
+      "id": "e1546a949d6f123c",
+      "note": "five-line stdlib import block (re, sys, datetime, pathlib, typing) that record_quality_runtime.py and skills/public/achieve/scripts/goal_artifact_timebox.py now share because the recorder gained `import sys` to report malformed batch lines on stderr; identical stdlib imports in two unrelated scripts are not extractable duplication, and the nose advisory names per-script import preamble as its own blind spot",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "e32bc7ae8aa9104c",
       "note": "scanner-reported zero-shared-line control-flow resemblance between release and achieve helpers; there is no shared body or contract to extract",
       "reviewed_at": "2026-07-11",

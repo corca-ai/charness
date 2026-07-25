@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import platform
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import median
-from typing import Any
+from typing import Any, Callable
 
 from runtime_bootstrap import load_path_module, repo_root_from_script
 
@@ -46,16 +48,81 @@ RUNTIME_PROFILE_ID_RE = re.compile(r"[^A-Za-z0-9_.-]+")
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--label", required=True)
-    parser.add_argument("--elapsed-ms", type=int, required=True)
-    parser.add_argument("--status", choices=("pass", "fail"), required=True)
+    parser.add_argument("--label")
+    parser.add_argument("--elapsed-ms", type=int)
+    parser.add_argument("--status", choices=("pass", "fail"))
     parser.add_argument("--timestamp")
+    parser.add_argument(
+        "--batch",
+        type=Path,
+        help=(
+            "JSONL file of {label, elapsed_ms, status, timestamp} records applied in order "
+            "in one process. Same resulting state as one --label call per record, without "
+            "paying an interpreter start and a full summary rewrite per gate."
+        ),
+    )
     parser.add_argument(
         "--runtime-profile",
         default=os.environ.get("CHARNESS_RUNTIME_PROFILE"),
         help="Named machine/runner profile for runtime samples. Defaults to a fast local machine profile.",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.batch is None:
+        missing = [
+            name
+            for name, value in (("--label", args.label), ("--elapsed-ms", args.elapsed_ms), ("--status", args.status))
+            if value is None
+        ]
+        if missing:
+            parser.error(f"the following arguments are required: {', '.join(missing)}")
+    elif args.label is not None or args.elapsed_ms is not None or args.status is not None or args.timestamp is not None:
+        parser.error("--batch cannot be combined with --label/--elapsed-ms/--status/--timestamp")
+    return args
+
+
+def _read_batch_line(line: str) -> dict[str, Any]:
+    """Validate one batch line, raising ValueError with the reason if it is bad."""
+    parsed = json.loads(line)
+    if not isinstance(parsed, dict):
+        raise ValueError("not a JSON object")
+    missing = [key for key in ("label", "elapsed_ms", "status") if key not in parsed]
+    if missing:
+        raise ValueError(f"missing {', '.join(missing)}")
+    if parsed["status"] not in ("pass", "fail"):
+        raise ValueError(f"status {parsed['status']!r}; expected 'pass' or 'fail'")
+    return {
+        "label": str(parsed["label"]),
+        "elapsed_ms": int(parsed["elapsed_ms"]),
+        "status": parsed["status"],
+        "timestamp": parsed.get("timestamp"),
+    }
+
+
+def load_batch_records(batch_path: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    """Parse the runner-written batch file, reporting every malformed line.
+
+    The producer is `run-quality.sh`, not a human, so a bad line means the runner
+    broke and must be reported loudly. It must NOT cost the whole phase's samples
+    though: one killed gate subshell emitting a truncated line would otherwise
+    discard every other gate's sample for that phase and leave `check-runtime-budget`
+    silently grading a stale store. Good records are applied; the caller still exits
+    nonzero with the errors.
+    """
+    try:
+        raw_lines = batch_path.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        raise SystemExit(f"runtime batch {batch_path} is unreadable: {exc}") from exc
+
+    records: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for line_number, line in enumerate(raw_lines, start=1):
+        if not line.strip():
+            continue
+        try:
+            records.append(_read_batch_line(line))
+        except (ValueError, TypeError) as exc:
+            errors.append(f"runtime batch {batch_path} line {line_number} is malformed: {exc}")
+    return records, errors
 
 
 def normalize_runtime_profile(value: str | None) -> str:
@@ -140,26 +207,48 @@ def _update_commands(commands: dict[str, Any], record: dict[str, Any]) -> None:
     }
 
 
-def update_summary(summary_path: Path, record: dict[str, Any]) -> None:
-    summary = load_json(summary_path)
-    if not summary:
-        summary = {
-            "schema_version": 2,
-            "updated_at": record["timestamp"],
-            "commands": {},
-            "profiles": {},
-        }
+def update_store(
+    store_path: Path,
+    records: list[dict[str, Any]],
+    empty_store: dict[str, Any],
+    apply_record: Callable[[dict[str, Any], dict[str, Any]], None],
+) -> None:
+    """Apply records in order against one load/store of a runtime state file.
 
-    profile_id = record["runtime_profile"]
-    profiles = summary.setdefault("profiles", {})
-    profile_entry = profiles.setdefault(profile_id, {"commands": {}})
-    profile_commands = profile_entry.setdefault("commands", {})
-    _update_commands(profile_commands, record)
-    profile_entry["updated_at"] = record["timestamp"]
-    if profile_id == DEFAULT_RUNTIME_PROFILE:
-        _update_commands(summary.setdefault("commands", {}), record)
-    summary["updated_at"] = record["timestamp"]
-    summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    Read-apply-write per record is what made this recorder cost ~70ms a gate; the
+    per-record apply is unchanged, so a batch leaves the same state as the same
+    records applied one process at a time. The summary and the smoothing store
+    differ only in their empty document and their per-command apply.
+    """
+    if not records:
+        return
+
+    store = load_json(store_path)
+    if not store:
+        # deepcopy, not dict(): the loop below mutates the nested `commands`/
+        # `profiles` dicts, and a shallow copy would write through into the
+        # caller's literal — harmless only while both callers rebuild it per call.
+        store = copy.deepcopy(empty_store)
+
+    for record in records:
+        profile_id = record["runtime_profile"]
+        profiles = store.setdefault("profiles", {})
+        profile_entry = profiles.setdefault(profile_id, {"commands": {}})
+        apply_record(profile_entry.setdefault("commands", {}), record)
+        profile_entry["updated_at"] = record["timestamp"]
+        if profile_id == DEFAULT_RUNTIME_PROFILE:
+            apply_record(store.setdefault("commands", {}), record)
+        store["updated_at"] = record["timestamp"]
+    store_path.write_text(json.dumps(store, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def update_summary(summary_path: Path, records: list[dict[str, Any]]) -> None:
+    update_store(
+        summary_path,
+        records,
+        {"schema_version": 2, "updated_at": None, "commands": {}, "profiles": {}},
+        _update_commands,
+    )
 
 
 def adaptive_alpha(sample_count: int) -> float:
@@ -194,12 +283,13 @@ def _update_smoothing_commands(commands: dict[str, Any], record: dict[str, Any])
     }
 
 
-def update_smoothing(smoothing_path: Path, record: dict[str, Any]) -> None:
-    smoothing = load_json(smoothing_path)
-    if not smoothing:
-        smoothing = {
+def update_smoothing(smoothing_path: Path, records: list[dict[str, Any]]) -> None:
+    update_store(
+        smoothing_path,
+        records,
+        {
             "schema_version": 2,
-            "updated_at": record["timestamp"],
+            "updated_at": None,
             "policy": {
                 "kind": "ewma",
                 "advisory": True,
@@ -208,17 +298,9 @@ def update_smoothing(smoothing_path: Path, record: dict[str, Any]) -> None:
             },
             "commands": {},
             "profiles": {},
-        }
-
-    profile_id = record["runtime_profile"]
-    profiles = smoothing.setdefault("profiles", {})
-    profile_entry = profiles.setdefault(profile_id, {"commands": {}})
-    _update_smoothing_commands(profile_entry.setdefault("commands", {}), record)
-    profile_entry["updated_at"] = record["timestamp"]
-    if profile_id == DEFAULT_RUNTIME_PROFILE:
-        _update_smoothing_commands(smoothing.setdefault("commands", {}), record)
-    smoothing["updated_at"] = record["timestamp"]
-    smoothing_path.write_text(json.dumps(smoothing, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        },
+        _update_smoothing_commands,
+    )
 
 
 def append_archive(history_dir: Path, record: dict[str, Any]) -> Path:
@@ -242,31 +324,53 @@ def main() -> int:
         runtime_profile = normalize_runtime_profile(args.runtime_profile or machine_runtime_profile())
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
-    timestamp = parse_timestamp(args.timestamp).isoformat().replace("+00:00", "Z")
-    record = {
-        "timestamp": timestamp,
-        "label": args.label,
-        "elapsed_ms": args.elapsed_ms,
-        "status": args.status,
-        "runtime_profile": runtime_profile,
-    }
+    batch_errors: list[str] = []
+    if args.batch is not None:
+        pending, batch_errors = load_batch_records(args.batch)
+    else:
+        pending = [
+            {
+                "label": args.label,
+                "elapsed_ms": args.elapsed_ms,
+                "status": args.status,
+                "timestamp": args.timestamp,
+            }
+        ]
+
+    records = [
+        {
+            "timestamp": parse_timestamp(item["timestamp"]).isoformat().replace("+00:00", "Z"),
+            "label": item["label"],
+            "elapsed_ms": item["elapsed_ms"],
+            "status": item["status"],
+            "runtime_profile": runtime_profile,
+        }
+        for item in pending
+    ]
 
     summary_path = state_dir / SUMMARY_FILENAME
     smoothing_path = state_dir / SMOOTHING_FILENAME
-    archive_path = append_archive(state_dir / "history", record)
-    update_summary(summary_path, record)
-    update_smoothing(smoothing_path, record)
-    print(
-        json.dumps(
-            {
-                "summary_path": str(summary_path.relative_to(repo_root)),
-                "smoothing_path": str(smoothing_path.relative_to(repo_root)),
-                "archive_path": str(archive_path.relative_to(repo_root)),
-                "recorded": record,
-            },
-            ensure_ascii=False,
-        )
-    )
+    archive_paths = [append_archive(state_dir / "history", record) for record in records]
+    update_summary(summary_path, records)
+    update_smoothing(smoothing_path, records)
+    payload: dict[str, Any] = {
+        "summary_path": str(summary_path.relative_to(repo_root)),
+        "smoothing_path": str(smoothing_path.relative_to(repo_root)),
+    }
+    if args.batch is not None:
+        payload["archive_paths"] = sorted({str(path.relative_to(repo_root)) for path in archive_paths})
+        payload["recorded_count"] = len(records)
+        payload["malformed_lines"] = batch_errors
+    else:
+        payload["archive_path"] = str(archive_paths[0].relative_to(repo_root))
+        payload["recorded"] = records[0]
+    print(json.dumps(payload, ensure_ascii=False))
+    if batch_errors:
+        # The good records above are already applied; this exit only reports the
+        # runner bug that produced the bad ones.
+        for error in batch_errors:
+            print(error, file=sys.stderr)
+        return 1
     return 0
 
 

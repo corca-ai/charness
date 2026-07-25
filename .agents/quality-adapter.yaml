@@ -127,26 +127,51 @@ runtime_budgets:
   pytest: 70000
   check-coverage: 15000
   doc-duplicates: 28000
-  check-markdown: 11000
-  check-secrets: 6000
+  # Same (contended) relevel as the x86_64 profile below: these two ran under their
+  # old bars only while a barrier kept them off pytest's cores. Note this map binds
+  # ONLY on a host that sets CHARNESS_RUNTIME_PROFILE=default (a named machine
+  # profile replaces it wholesale), so these numbers are 36-CPU contention figures
+  # generalized to an unmeasured machine — loose on purpose, for the same
+  # fail-open-not-block reason as the aarch64 block below.
+  check-markdown: 17000
+  check-secrets: 16500
   run-evals: 6500
   specdown: 10500
 runtime_budget_profiles:
   local-linux-x86_64-36cpu:
+    # 2026-07-26 relevel. `run-quality.sh` dropped the two barriers that separated
+    # independent gates, so every cheap gate now runs ALONGSIDE `pytest` and its 16
+    # xdist workers instead of before it. That cut ~10s of wall (63s -> ~53s) and it
+    # changed what a per-gate bar measures: contended wall time, not isolated gate
+    # time. `check-markdown` went 4.9s -> 10.2-11.8s with no change to the gate.
+    # Nine bars below are re-drawn at ~1.4x the CONTENDED max of the post-change
+    # window (samples at or after 2026-07-25T15:34, n=13 for the standing gates) and
+    # are marked `(contended)`. They are honestly looser: a 2x regression
+    # in one of those gates can now hide. The teeth move to where the maintainer
+    # actually feels time — the aggregate `run-quality-read-only` bar and `pytest`,
+    # both TIGHTENED below against the same window. Sizing any of these from the
+    # pre-change window would draw a bar the layout can no longer honor.
     budgets:
       charness-version: 500
-      check-cli-skill-surface: 5000
+      # (contended) was 5000; post-change max 5933
+      check-cli-skill-surface: 8500
       check-inventory-declaration-coverage: 500
       check-references-link-inventory: 800
       check-seed-fixture-budget: 2000
-      # The 2.5s limit was set in May.  The current 20-sample median is 2513ms
-      # and the release gate observed a 4404ms peak, so retain a bounded 5s
-      # budget (also used by the slower aarch64 profile) instead of a flaky bar.
-      check-spec-evidence-durability: 5000
+      # The 2.5s limit was set in May; a 5s bar replaced it because the release
+      # gate observed a 4404ms peak. That 5s bar predates the barrier removal.
+      # (contended) was 5000; post-change max 6980
+      check-spec-evidence-durability: 10000
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 500
-      inventory-ubiquitous-language: 1200
-      run-quality-read-only: 90000
+      # NOT a contention casualty: post-change max is 1081 and the old 1200 bar was
+      # never approached, contended or not. 1200 was simply too tight to be a bar
+      # (1.11x max); 1500 is 1.39x max and still 1.43x median.
+      inventory-ubiquitous-language: 1500
+      # Tightened from 90000: the barrier removal made the whole read-only run
+      # faster, and this aggregate is the bar that still has to trip on a real
+      # slowdown. 1.4x the 54535ms max of the post-change window.
+      run-quality-read-only: 76500
       # 2026-07-25 retune. A runtime budget only ever moved one way here: a
       # violation forced a raise and nothing reported when the raise stopped being
       # needed, so several budgets had drifted to 6-10x their worst observed run
@@ -157,7 +182,12 @@ runtime_budget_profiles:
       # the recent 20-sample window for this profile: still absorbs variance, but
       # a genuine 2x regression trips. `check_runtime_budget`'s new slack advisory
       # now reports this class so it cannot silently re-inflate.
-      pytest: 90000
+      #
+      # 2026-07-26: retightened from 90000, closing the deliberate revisit the
+      # comment below records. The conflated-window objection no longer applies —
+      # this window is standing-mode only AND post-barrier-removal, so 1.4x its
+      # 52138ms max is drawn from the regime the gate now runs in.
+      pytest: 73000
       # 2026-07-25: the release-path variants were the slowest observed labels on
       # this profile and the only unbudgeted ones, so a 2x regression on the gate
       # that actually precedes a release would not have tripped anything. Same
@@ -167,7 +197,15 @@ runtime_budget_profiles:
       # is 1.7x the worse of the two samples (cannot flake) and still under 2x the
       # median (trips a real regression). Leaving it unbudgeted was the state this
       # very comment calls the bug. Tighten when the window fills.
-      run-quality-read-only-release: 150000
+      #
+      # 2026-07-26: that "tighten when the window fills" is now overdue and the
+      # claim above went false. The window holds 4 samples with median 71319, so
+      # 150000 is ABOVE 2x median — the bar can no longer trip the 2x regression its
+      # own comment promises, which is exactly the anti-pattern this block was
+      # written to fix. The barrier removal cut this path further (66175ms observed),
+      # so 110000 stays above 1.4x the worst sample in the window (86353) while
+      # coming back under 2x median. Still deliberately loose; still able to fail.
+      run-quality-read-only-release: 110000
       run-quality-full-release: 125000
       # 9 samples, not 20 -- looser evidence than the labels above, tight enough to
       # trip 2x (median 67172).
@@ -185,37 +223,64 @@ runtime_budget_profiles:
       # bundle CONTAINING this gate, so no possible run could trip it. A bar that
       # cannot fail is the exact anti-pattern the retune above was written to fix.
       pytest-release: 87000
-      check-coverage: 12000
-      doc-duplicates: 6000
-      check-markdown: 8000
-      check-secrets: 6000
-      run-evals: 2000
-      specdown: 5000
+      # (contended) was 12000, which sat 259ms above an already-observed contended
+      # run (11741) — it would have gone red on its own, weeks later, with nothing
+      # regressed. This gate is queued conditionally, so its window turns over
+      # slowly and the false red would have landed far from its cause.
+      check-coverage: 16500
+      # (contended) was 6000; post-change max 8146
+      doc-duplicates: 11500
+      # (contended) was 8000; post-change max 12098
+      check-markdown: 17000
+      # (contended) was 6000; post-change max 11639
+      check-secrets: 16500
+      # (contended) was 2000; post-change max 2089
+      run-evals: 3000
+      # (contended) was 5000; post-change max 6269
+      specdown: 9000
       validate-cautilus-call-provenance: 500
-      validate-inventory-consumption-declaration: 6000
+      # (contended) was 6000; post-change max 10906
+      validate-inventory-consumption-declaration: 15500
   local-linux-aarch64-4cpu:
     # Budgets set above this machine's measured median_recent/max_recent so the
     # gate is honest for the slower 4-CPU aarch64 box (same key scope as the
     # x86_64 profile; values derived from runtime-signals.json this turn).
+    #
+    # NOT RE-MEASURED against the 2026-07-26 barrier removal, and this is more than
+    # a documentation gap: the failure rule is median-based and wired into the
+    # pre-push path, so a bar left below the contended reality is a BLOCKING false
+    # red on a box where nothing regressed. Concretely, the 36-core x86_64 profile
+    # already observes `check-secrets` at 11639ms contended against this profile's
+    # 8000 bar, and `check-markdown` at 12098ms against 15000 — on 4 cores shared
+    # with pytest's workers those gaps get worse, not better. The bars marked
+    # `(contended, derived)` below are raised by the ~2.3x contention factor
+    # measured on x86_64, applied to the value that was measured here. That factor
+    # is an inference from another machine, NOT a measurement on this one: it is
+    # chosen to fail open rather than block a maintainer whose box is fine.
+    # Re-measure on the aarch64 box and replace these with real numbers.
     budgets:
       charness-version: 1000
       check-cli-skill-surface: 15000
       check-inventory-declaration-coverage: 1500
       check-references-link-inventory: 2500
       check-seed-fixture-budget: 5000
-      check-spec-evidence-durability: 5000
+      # (contended, derived) was 5000
+      check-spec-evidence-durability: 12000
       inventory-ci-local-gate-parity: 1000
       inventory-sloc: 1500
       inventory-ubiquitous-language: 2500
       pytest: 110000
       check-coverage: 60000
       doc-duplicates: 60000
-      check-markdown: 15000
-      check-secrets: 8000
+      # (contended, derived) was 15000
+      check-markdown: 35000
+      # (contended, derived) was 8000
+      check-secrets: 20000
       run-evals: 8000
       specdown: 13000
       validate-cautilus-call-provenance: 1500
-      validate-inventory-consumption-declaration: 12000
+      # (contended, derived) was 12000
+      validate-inventory-consumption-declaration: 28000
 startup_probes:
   - label: charness-version
     command:
