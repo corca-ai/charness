@@ -174,10 +174,17 @@ runtime_budget_profiles:
       run-quality-full: 100000
       # `pytest` now records standing-mode runs only (release-only pytest moved to
       # its own `pytest-release` label). This 90000 was sized from the CONFLATED
-      # window and is loose for standing mode alone; the slack advisory will report
-      # it once the split window fills, and it should be retightened then rather
-      # than guessed at now from contaminated samples.
-      pytest-release: 125000
+      # window and is loose for standing mode alone. Note the slack advisory will
+      # NOT flag it: BUDGET_SLACK_FACTOR is 3.0 and 90000/41826 is 2.15, so this
+      # retune is owed a deliberate revisit, not an automatic one.
+      #
+      # `pytest-release` has no samples under its own label yet. Sized from the only
+      # evidence that exists -- the conflated window's 62483ms max, which the release
+      # mode dominates -- at the same 1.4x. A first pass at 125000 was rejected in
+      # release critique: that is 1.4x the max of the whole `run-quality-full-release`
+      # bundle CONTAINING this gate, so no possible run could trip it. A bar that
+      # cannot fail is the exact anti-pattern the retune above was written to fix.
+      pytest-release: 87000
       check-coverage: 12000
       doc-duplicates: 6000
       check-markdown: 8000

@@ -125,3 +125,9 @@ sections never count as claims, and a baton with no version claim is an ask,
 not a pass. The record is an observation that forces the question; it never
 declares the baton reconciled — refresh the baton (or record an explicit n/a
 disposition) before ending the release session.
+
+Reconciling never requires the baton to assert a decaying fact. A repo whose
+baton discipline forbids transcribing regenerable values (`handoff`'s
+`Regenerable Facts` rule) satisfies both contracts with a quoted version: the
+reconcile scan reads it as a claim, while the prose quotes a string instead of
+asserting current state.

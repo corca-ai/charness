@@ -61,6 +61,12 @@ INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 # Facts a command regenerates decay in place; the handoff carries the command
 # instead. Issue ids are deliberately absent -- an id is a stable identifier, not a
 # snapshot, and the artifact already tells the reader to re-check its state.
+#
+# NO RULE_DATE grandfather, deliberately. Every RULE_DATE precedent in this repo
+# guards a DATED, append-only artifact (critiques, retros, goals) where old files
+# persist and must not retroactively fail. The handoff is a single rolling document
+# rewritten each session, so there is no landing date to key a floor on and nothing
+# historical to protect -- the next rewrite is the migration.
 REGENERABLE_PATTERNS = (
     (
         # `v` prefix allows a two-component version (`v1.2` goes stale just as

@@ -38,6 +38,12 @@ Stable identifiers are not snapshots and stay: an issue id, a file path, a
 link target that happens to contain a version. What decays is an identifier's
 STATE, so name the command that reads it.
 
+A quoted value is an address, not a claim. A version inside a backticked span or
+a link target reads as "this exact string", not "this is the current state", and
+stays. That carve-out is what satisfies a post-publish baton reconcile: `release`
+asks the baton to stop claiming the previous version, and a backticked version
+answers it without the prose asserting a fact that decays tomorrow.
+
 ## Compression Rule
 
 For each bullet, ask: would removing this line make the next operator choose a

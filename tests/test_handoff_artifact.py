@@ -222,6 +222,15 @@ def test_validate_handoff_artifact_allows_a_version_inside_a_link_target(tmp_pat
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_handoff_artifact_allows_a_quoted_version_for_baton_reconcile(tmp_path: Path) -> None:
+    # Load-bearing carve-out, not an accident: `release`'s post-publish baton
+    # reconcile asks the baton to stop claiming the previous version, and its
+    # scan counts a backticked version as a claim. Closing this escape would make
+    # the two public skills contradict each other.
+    result = run_on_state(tmp_path, "- Published `2.8.0`; scope in the release artifact.")
+    assert result.returncode == 0, result.stderr
+
+
 def test_validate_handoff_artifact_does_not_read_a_date_as_a_count(tmp_path: Path) -> None:
     # `25 docs` from an ISO date: the lookbehind excluded `#` and word chars but
     # not `-`, and a dated reference is the commonest shape in handoff prose.
