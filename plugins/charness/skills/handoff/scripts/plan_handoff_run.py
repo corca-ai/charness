@@ -71,9 +71,11 @@ try:
     _handoff_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_handoff_artifact")
     MAX_ARTIFACT_LINES = int(_handoff_validator.MAX_ARTIFACT_LINES)
     REQUIRED_SECTIONS = tuple(_handoff_validator.REQUIRED_SECTIONS)
+    OPTIONAL_SECTIONS = tuple(getattr(_handoff_validator, "OPTIONAL_SECTIONS", ()))
 except Exception:
     MAX_ARTIFACT_LINES = 70
     REQUIRED_SECTIONS = ("## Workflow Trigger", "## Current State", "## Next Session", "## Discuss", "## References")
+    OPTIONAL_SECTIONS = ("## Continuation Capability",)
 NEAR_LIMIT_LINES = MAX_ARTIFACT_LINES - 10
 
 
@@ -127,7 +129,8 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         next_session_entry_count = 0
     h2_sections = [line.strip() for line in lines if line.startswith("## ")]
     missing = [section for section in REQUIRED_SECTIONS if section not in h2_sections]
-    extra = [section for section in h2_sections if section not in REQUIRED_SECTIONS]
+    canonical = set(REQUIRED_SECTIONS) | set(OPTIONAL_SECTIONS)
+    extra = [section for section in h2_sections if section not in canonical]
     dated_sessions = sum(1 for line in h2_sections if line.startswith("## This Session ("))
     line_count = len(lines)
     if line_count > MAX_ARTIFACT_LINES:

@@ -42,11 +42,27 @@ REQUIRED_SECTIONS = (
     "## Discuss",
     "## References",
 )
+# The handoff skill's Output Shape lists this section; rejecting it here would make
+# following the skill a gate failure. It stays optional because the skill says the
+# handoff "should usually contain" it, not always -- but an empty one is a header
+# pretending to be a baton, so presence implies content.
+OPTIONAL_SECTIONS = ("## Continuation Capability",)
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
 )
+
+
+def ordered_present_sections(lines: list[str]) -> tuple[str, ...]:
+    """Canonical sections present in this artifact, in document order.
+
+    `validate_nonempty_sections` bounds each section by the NEXT entry it is given,
+    so an optional section left out of that list would be silently absorbed into
+    the preceding section's content and never checked for emptiness.
+    """
+    canonical = set(REQUIRED_SECTIONS) | set(OPTIONAL_SECTIONS)
+    return tuple(line.strip() for line in lines if line.strip() in canonical)
 
 
 def validate_references(lines: list[str]) -> None:
@@ -75,8 +91,8 @@ def validate_handoff_artifact(path: Path) -> None:
         error_message="handoff artifact must start with a `# ... Handoff` heading",
     )
     validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="handoff artifact")
-    validate_exact_h2_sections(lines, REQUIRED_SECTIONS)
-    validate_nonempty_sections(lines, REQUIRED_SECTIONS)
+    validate_exact_h2_sections(lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS)
+    validate_nonempty_sections(lines, ordered_present_sections(lines))
     validate_references(lines)
     validate_subagent_blocker_reasoning(lines)
 

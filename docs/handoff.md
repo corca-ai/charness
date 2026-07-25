@@ -8,10 +8,13 @@
   source, sync generated/plugin mirrors before validators, then prove with the
   mandated bounded fresh-eye critique before commit.
 
+## Continuation Capability
+
+The only open issue is #453; every residual below names an owning artifact that
+already holds its evidence.
+
 ## Current State
 
-- The only open issue is #453; every residual below names an owning artifact that
-  already holds its evidence.
 - **Released through v2.7.0** (#454, #455, #456 all resolved and shipped). The
   standing operator direction is bug fixes, friction/rework reduction, and
   test/code speed.
@@ -41,12 +44,9 @@
    mismatch, specdown preset duplication, and `recommended_commands` in
    `plan_cautilus_proof.py` (the sweep's one surfaced twin — the sweep itself is
    signed off, do not re-run it).
-6. **New, unowned:** the `handoff` skill's Output Shape lists a
-   `## Continuation Capability` section that `validate_handoff_artifact.py`
-   rejects as non-canonical — following the skill blocks the gate.
-7. Budgets retuned for `local-linux-x86_64-36cpu` only; run the budget check on
+6. Budgets retuned for `local-linux-x86_64-36cpu` only; run the budget check on
    aarch64/unprofiled hardware.
-8. Still deferred: inline `.rglob`/`ls-files` pathspec discovery,
+7. Still deferred: inline `.rglob`/`ls-files` pathspec discovery,
    `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory, D18,
    stale `charness-run-*` basetemp reaping, #451's two unacted siblings. #449 declined.
 

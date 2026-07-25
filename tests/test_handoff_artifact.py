@@ -148,6 +148,87 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
     assert "under 70" in result.stderr
 
 
+def test_validate_handoff_artifact_accepts_the_optional_continuation_capability(tmp_path: Path) -> None:
+    # The handoff skill's Output Shape lists this section; a repo validator that
+    # rejects it makes following the skill a gate failure.
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Continuation Capability",
+                "",
+                "- the reader can pick a slice without re-deriving state",
+                "",
+                "## Current State",
+                "",
+                "- state",
+                "",
+                "## Next Session",
+                "",
+                "- next",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_rejects_an_empty_continuation_capability(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Continuation Capability",
+                "",
+                "## Current State",
+                "",
+                "- state",
+                "",
+                "## Next Session",
+                "",
+                "- next",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Continuation Capability" in result.stderr
+
+
 def test_validate_handoff_artifact_rejects_explicit_allowance_as_subagent_blocker(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
