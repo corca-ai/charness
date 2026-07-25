@@ -11,11 +11,9 @@ runs the activation command.
 
 - Current disposition: real draft awaiting activation — shaped and plan-critiqued
   2026-07-25, consequential discussion resolved with the operator, not stale.
-- Current slice: slices 1-5 done. Slice 6 (the unused-mode sweep) is next.
-- Next action: slice 6 — sweep all four surface families (adapter enum fields,
-  planner branches, `--mode`/`--part` flags, preset variants) for
-  built-with-intent-but-unused options; emit the candidate inventory with usage
-  evidence to `charness-artifacts/audit/`. Zero deletions: operator signs off.
+- Current slice: all six slices done. Closeout is next.
+- Next action: closeout — retro, handoff rewrite (three residuals closed, one
+  shipped bug found), then flip this goal to `complete`.
 - Standing hazard (slice 2): never restore a mutation-test target with
   `git checkout -- <path>` while the slice is uncommitted; it reverts to HEAD and
   silently discards the work being proven. Use a pristine `cp` copy and assert a
@@ -373,7 +371,7 @@ Test-duplication pressure:
 | 3 | [done] Wire `evaluate_ai_provenance` into `issue_close_comment_floor.py`; record close-keyword and ledger-field as intentionally not wired, with reasons, and close the residual | Operator decision 2026-07-25: only the provenance check is a genuine gap for the close-with-comment carrier. Close-keyword needs a repo slug `evaluate_close_comment_floor` never receives and is inert inside a comment; ledger fields would need a new public wrapper for unclear benefit | Test that fails with the provenance check removed; the two not-wired rationales recorded in the floor's own docstring/reference so the residual does not return a third time; quality read-only green | planned |
 | 4 | [done, reproduced and fixed] Reproduce the tracked-specdown-report churn first, then act | Both the runner (`scripts/run-quality.sh:523`) and the owning surface already write to a temp dir, and `-quiet -no-report` was removed on 2026-07-22 because specdown rejects them — the residual may already be closed | Step 0: full quality gate, then `git status --short .charness/specdown/`. If clean: record "already fixed by the 2026-07-22 change" with the evidence and **stop — do not backfill the slot** (operator decision 2026-07-25; no regression guard, no substitute work). Only debug further if it reproduces | planned |
 | 5 | [done, found a shipped bug] Test the fresh-install render path: from a plugin copy, `propose_mutation_testing.py --execute` renders `templates/mutation-tests.yml` into `workflow_path` | Sole delivery path — the workflow is written once at first install, never re-rendered, and `--execute` refuses to overwrite | Test over a fresh temp repo asserting rendered workflow content including `schedule_cron` substitution | planned |
-| 6 | Sweep all four surface families for built-with-intent-but-unused modes/options; emit a candidate inventory with usage evidence | Standing operator request; safest once the gate is trustworthy. Scope confirmed 2026-07-25: (a) adapter enum fields, (b) planner branches, (c) `--mode`/`--part` style flags, (d) preset variants — not flags-only, because the `retro` `weekly` instance lived in a planner branch | Audit artifact under `charness-artifacts/audit/` listing each candidate with its usage evidence (artifact counts, git history) and the branch-arms-produce-the-same-plan test result; zero deletions | planned |
+| 6 | [done, 9 confirmed / 3 refuted, zero deletions] Sweep all four surface families for built-with-intent-but-unused modes/options; emit a candidate inventory with usage evidence | Standing operator request; safest once the gate is trustworthy. Scope confirmed 2026-07-25: (a) adapter enum fields, (b) planner branches, (c) `--mode`/`--part` style flags, (d) preset variants — not flags-only, because the `retro` `weekly` instance lived in a planner branch | Audit artifact under `charness-artifacts/audit/` listing each candidate with its usage evidence (artifact counts, git history) and the branch-arms-produce-the-same-plan test result; zero deletions | planned |
 
 Critique plan: a bounded `bounded-reviewer` fresh-eye pass on this plan before
 activation, and one per substantial slice (1, 3, 4, 6 at minimum) with the slice
@@ -419,7 +417,11 @@ packet named in the Active Operating Frame.
 - Owner: operator
 - Why deferred: the operator chose report-first; deletions at repo scale are the
   change class most likely to be wrong without a human read
-- Unblock action: read the slice 6 audit artifact and name the candidates to delete
+- Unblock action: read [the sweep artifact](../audit/2026-07-25-unused-mode-option-sweep.md)
+  and name which of the 9 confirmed candidates to delete. Note that four of them
+  (`run_mode: auto`, achieve `default_mode`, hitl `default_scope`, the cautilus
+  enum) are published portable contracts, so removal narrows a downstream contract
+  this repo cannot observe
 - Revisit trigger: delivery of the sweep artifact at the end of this run
 
 ## Slice Log
@@ -492,6 +494,20 @@ packet named in the Active Operating Frame.
 - Critique: Bounded fresh-eye bounded-reviewer (agent aaaf6310fb2670780); boundary verify run immediately on return — ok, no drift. F1 (blocker, release surface): confirmed by git — v2.2.1 through v2.5.0 all ship the broken constant, and the v2.5.0 notes' 'Why minor' rationale says the change reaches 'only fresh installs', which is exactly the population that cannot complete. Recorded a Correction section in those notes, fixed the hand-copy path they gave (it named the authoring path, which does not exist in an install), and queued the patch-release decision for the operator since releasing is outside this goal's Non-Goals. F6 (the durable fix) applied: check_export_safe_imports.py already encoded this exact insight for imports and stopped one syntax short of filesystem paths; extended it to reject REPO_ROOT-rooted skills/public paths, with an exemption for deliberate dual-layout probes like resolve_artifact_path.py. F5 applied: four dead constants of the same shape deleted. F2/F3/F4/F9 applied: dead kwarg removed; the render test now anchors to the shipped template instead of only 'a cron is present' (the reviewer noted the identical-renders test would pass if BOTH were wrong); a dry-run test asserts the reported source path exists; and a cheap in-process ordering test carries the partial-write invariant in standing runs, since the layout-faithful one is necessarily release_only.
 - Off-goal findings: F1's patch-release decision is queued for the operator rather than acted on — releasing is an irreversible boundary and this goal's Non-Goals exclude it.
 - Lessons carried forward: The handoff said 'untested'; it was broken, and had been through eight releases. 'Untested' on a sole delivery path should be read as 'unknown', not 'probably fine'. The durable win was not the three tests — it was noticing that an existing gate already encoded the insight for imports and stopped one syntax short of the filesystem, where the same collapse fails silently instead of raising ModuleNotFoundError.
+- Metrics:
+
+### Slice 6: Slice 6 — unused mode/option sweep
+
+- Objective: Sweep all four surface families (adapter enum fields, planner branches, --mode/--part flags, preset variants) for built-with-intent-but-unused options; emit an evidence-backed candidate inventory. Zero deletions per operator decision.
+- Why this approach: Four independent surface families each needing a different search method, then per-candidate usage evidence — genuine fan-out work. Ran a 17-agent dynamic workflow: four parallel scouts, then an adversarial refutation pass whose default was that each candidate is WRONG, then synthesis. The refutation pass earned its cost: it killed 3 of 12.
+- Commits:
+- What changed: charness-artifacts/audit/2026-07-25-unused-mode-option-sweep.md (new)
+- Alternatives rejected: Rejected a flags-only sweep: the one confirmed archetype (retro's weekly) lived in a planner branch, so the narrow scope would have missed the case that motivated the request. Rejected acting on any candidate: operator chose report-first.
+- Targeted verification: 27 candidates scouted, 13 refutation-verified, 9 confirmed-unused, 3 refuted. Confirmations carry concrete evidence (in-process A/B runs with a monkeypatched adapter; scan_scenario A/B across all 54 real JSON specs; git log -S birth-and-never-touched history; artifact-count proxies). The artifact names its own blind spots explicitly: static-only, cannot see downstream installs of published portable contracts, artifact counts are a proxy, agent-selected options are invisible to flag greps.
+- Test duplication pressure: No tests added; the deliverable is an audit artifact. Dup-ratchet clean at the previous slice boundary and the closeout gate's check passed again here.
+- Critique: No separate fresh-eye pass: the workflow's own refutation stage IS the adversarial review, run by 12 independent agents whose instructed default was to refute. It overturned 3 candidates — reviewer_tiers.medium (two real consumers the scout missed, one of them prose in a shared reference that a flag-grep cannot see), release-adapter requested_review_policy (the arms genuinely differ and the delta is published in every release artifact), and presets/*.md bodies (deliberate markdown-first contract recorded in deferred-decisions D9/D13, and commit 3b0750a6 from this very session wrote a lesson into one of them).
+- Off-goal findings: The sweep flagged two adjacent issues it declined to act on, both recorded in the artifact: a packet tier-propagation inconsistency (critique packets hardcode high-leverage while agents record 'Requested tier: medium'), and presets/specdown-quality.md duplicating DEFAULT_SPECDOWN_SMOKE_PATTERNS with no drift gate.
+- Lessons carried forward: My workflow agents were not constrained to read-only and one edited .agents/cautilus-adapter.yaml (run_mode ask -> auto) to A/B a branch, leaving it dirty. Caught by git status and restored, but the parent-side lesson is that a discovery fan-out should spawn read-only reviewers — the repo has a bounded-reviewer type for exactly this and I did not use it for workflow agents. Second lesson, from the refutations: 'no CLI caller' is not evidence of no caller in this repo, because agent-selected options are chosen by prose in SKILL.md and shared references.
 - Metrics:
 
 ## Context Sources
