@@ -15,22 +15,19 @@ its evidence, so none needs re-deriving.
 
 ## Current State
 
-- Published `2.8.0` — scope and verification live in the
-  [release state](../charness-artifacts/release/latest.md). Standing operator
-  direction: bug fixes, friction/rework reduction, test/code speed.
+- Published `2.8.0` ([release state](../charness-artifacts/release/latest.md)).
+  Standing operator direction: bug fixes, friction/rework, test/code speed.
 - **`check-documented-command-flags` is new and blocking** (broad-gate only,
   ~1.4s): a documented flag must be one its script's argparse accepts. Two live
   broken commands found on its first run; five reviewer-fixed defects and two
-  shipped-unfixed residuals in the
-  [flag-gate critique](../charness-artifacts/critique/2026-07-26-documented-command-flag-gate.md).
-- **The handoff may not transcribe a fact a command regenerates** (versions,
-  shas, as-of counts); a commit-time gate enforces it. A quoted value is an
-  address, not a claim — that carve-out is load-bearing and must not be closed.
+  residuals: [flag-gate critique](../charness-artifacts/critique/2026-07-26-documented-command-flag-gate.md).
+- **The handoff may not transcribe a fact a command regenerates** (versions, shas,
+  as-of counts); a commit-time gate enforces it. A quoted value is an address,
+  not a claim — that carve-out is load-bearing and must not be closed.
 - **A gate's measured time is now co-scheduled**, so per-gate wall budgets partly
-  measure contention; nine bars are marked `(contended)` in the adapter and must
-  be re-derived on any parallelism or core-count change — prefer per-gate CPU
-  time over another hand relevel. Speed posture and both refuted levers:
-  [runner critique](../charness-artifacts/critique/2026-07-26-quality-runner-barrier-removal.md).
+  measure contention; nine `(contended)` bars must be re-derived on any
+  parallelism or core-count change — prefer per-gate CPU time over a hand
+  relevel. Both refuted levers: [runner critique](../charness-artifacts/critique/2026-07-26-quality-runner-barrier-removal.md).
 - **#453 stays deliberately OPEN** for a human close; its fixes are pushed.
 
 ## Next Session
@@ -40,8 +37,11 @@ its evidence, so none needs re-deriving.
    re-run cannot prove it (no `base_sha`).
 2. **Re-measure `local-linux-aarch64-4cpu`.** Four bars are `(contended,
    derived)` — raised by this box's contention factor, not measured.
-3. **`check-seed-fixture-budget` fails open on ANY scan error** — a permanently
-   broken `du` reads as passing; bounded-retry-then-fail is a design call.
+3. **The unpushed range cannot pass the pre-push mutation gate.** `--base-sha
+   origin/main` blocks on 15 uncovered changed lines from `b12af528` in
+   `check_seed_fixture_budget.py` and `record_quality_runtime.py` — and the first
+   set IS the fail-open path (a permanently broken `du` reads as passing), so
+   covering it and deciding bounded-retry-then-fail is one move, not two.
 4. **Add a `--restamp-tool-version` path to `check_dup_ratchet.py`.** `run()`
    reaches the restamping `_scoped_rebaseline` only when an id is named, so the
    nose skew warning has no fix that does not absorb the parked #448 items.
@@ -49,11 +49,11 @@ its evidence, so none needs re-deriving.
    latent; both need per-token positions threaded through `split_arguments`.
 6. **Pinned, not fixed:** `REPO_ROOT.resolve() / "skills" / "public"` escapes the
    export-safety predicate ([decision point](../tests/quality_gates/test_export_safe_asset_paths.py)).
-7. Unowned: critique packet tier mismatch, specdown preset duplication,
-   `recommended_commands` in `plan_cautilus_proof.py` (sweep signed off). Still
-   deferred: inline `.rglob`/`ls-files` pathspec discovery,
-   `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory, D18,
-   D38, stale `charness-run-*` basetemps, #451's two unacted siblings.
+7. Unowned (sweep signed off): critique packet tier mismatch, specdown preset
+   duplication, `recommended_commands` in `plan_cautilus_proof.py`. Still
+   deferred: inline `.rglob`/`ls-files` pathspec discovery, D18, D38,
+   `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory,
+   stale `charness-run-*` basetemps, #451's two unacted siblings.
 
 ## Discuss
 

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 SHARED_PARSER_HELPER = """
 def add_shared_arguments(parser):
@@ -421,3 +422,213 @@ def test_mirrored_plugin_copies_do_not_make_every_basename_ambiguous(gate, tmp_p
     assert len(findings) == 1
     assert "scripts/log.py" in findings[0]
     assert "plugins/" not in findings[0]
+
+
+CHOICES_NOT_SUBCOMMANDS_SCRIPT = """
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--mode", choices=["alpha", "beta"])
+parser.add_argument("--path")
+parser.parse_args()
+"""
+
+BROKEN_HELP_SCRIPT = """
+import sys
+print("boom", file=sys.stderr)
+raise SystemExit(3)
+"""
+
+
+def test_main_reports_findings_on_stderr_and_exits_one(gate, tmp_path, monkeypatch, capsys) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/preflight.py": PLAIN_SCRIPT},
+        doc="Run `python3 scripts/preflight.py --gone`.\n",
+    )
+    monkeypatch.setattr("sys.argv", ["check_documented_command_flags.py", "--repo-root", str(root)])
+    assert gate.main() == 1
+    captured = capsys.readouterr()
+    assert "Documented command flag drift detected:" in captured.err
+    assert "`--gone`" in captured.err
+    assert captured.out == ""
+
+
+def test_main_json_payload_goes_to_stdout_when_clean(gate, tmp_path, monkeypatch, capsys) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/preflight.py": PLAIN_SCRIPT},
+        doc="Run `python3 scripts/preflight.py --path X`.\n",
+    )
+    monkeypatch.setattr(
+        "sys.argv", ["check_documented_command_flags.py", "--repo-root", str(root), "--json"]
+    )
+    assert gate.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "pass"
+    assert payload["invocations"] == 1
+
+
+def test_command_whose_help_itself_fails_is_reported_as_not_runnable(gate, tmp_path: Path) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/broken.py": BROKEN_HELP_SCRIPT},
+        doc="Run `python3 scripts/broken.py --path X`.\n",
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "exits 3" in findings[0]
+    assert "not runnable" in findings[0]
+
+
+def test_a_choices_brace_group_is_not_mistaken_for_a_subcommand(gate, tmp_path: Path) -> None:
+    # `--mode {alpha,beta}` renders the same `{...}` shape a subparser does. The
+    # documented value `alpha` therefore looks like a subcommand; probing
+    # `script alpha --help` fails, and the path must trim back rather than report
+    # a false "not runnable".
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/mode.py": CHOICES_NOT_SUBCOMMANDS_SCRIPT},
+        doc="Run `python3 scripts/mode.py --mode alpha --path X`.\n",
+    )
+    assert _findings(gate, root) == []
+
+
+def test_flagless_invocations_are_left_to_the_link_gate(gate, tmp_path: Path) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc="First `python3 scripts/log.py`, then `python3 scripts/log.py --gone`.\n",
+    )
+    report = gate.build_report(root)
+    assert report["invocations"] == 1
+    assert len(report["findings"]) == 1
+
+
+def test_non_repo_owned_and_package_less_skill_dir_paths_are_counted(gate, tmp_path: Path) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc=(
+            "Run `python3 build/vendor.py --their-flag`.\n"
+            'Run `python3 "$SKILL_DIR/scripts/thing.py" --their-flag`.\n'
+        ),
+    )
+    report = gate.build_report(root)
+    assert report["findings"] == []
+    assert report["skipped"] == {
+        "not-a-repo-owned-path": 1,
+        "skill-dir-outside-a-skill-package": 1,
+    }
+
+
+def test_package_relative_path_resolves_inside_its_own_skill_package(gate, tmp_path: Path) -> None:
+    # A portable skill package documents `python3 scripts/x.py` meaning its OWN
+    # scripts/, not the repo's.
+    root = _repo(
+        tmp_path,
+        scripts={"skills/public/quality/scripts/probe.py": PLAIN_SCRIPT},
+        doc="Run `python3 scripts/probe.py --path . --gone`.\n",
+        doc_path="skills/public/quality/references/dispatch.md",
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "skills/public/quality/scripts/probe.py" in findings[0]
+
+
+def test_skill_dir_path_escaping_the_repo_root_is_counted_not_resolved(gate, tmp_path: Path) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"skills/public/quality/scripts/probe.py": PLAIN_SCRIPT},
+        doc='Run `python3 "$SKILL_DIR/../../../../outside/probe.py" --gone`.\n',
+        doc_path="skills/public/quality/references/dispatch.md",
+    )
+    report = gate.build_report(root)
+    assert report["findings"] == []
+    assert report["skipped"] == {"unresolved-path-owned-by-check-doc-links": 1}
+
+
+def test_resolution_falls_back_to_the_filesystem_without_a_path_listing(gate, tmp_path: Path) -> None:
+    # build_report always threads the git-honouring listing; the filesystem branch
+    # is the library-caller path and must still resolve.
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc="Run `python3 scripts/log.py --gone`.\n",
+    )
+    found, skipped = gate.iter_documented_invocations(root, root / "docs" / "guide.md")
+    assert skipped == []
+    assert [(script, flags) for _, script, _, flags in found] == [("scripts/log.py", ("--gone",))]
+
+
+def test_a_dangling_continuation_at_end_of_document_is_still_scanned(gate, tmp_path: Path) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc="```bash\npython3 scripts/log.py --gone \\\n",
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "`--gone`" in findings[0]
+
+
+def test_a_dangling_continuation_is_flushed_when_prose_follows(gate, tmp_path: Path) -> None:
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc="```bash\npython3 scripts/log.py --gone \\\n```\nprose after the block\n",
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "`--gone`" in findings[0]
+
+
+def test_shared_reference_anchor_is_none_for_a_doc_outside_the_repo(gate, tmp_path: Path) -> None:
+    assert gate.shared_reference_anchor(tmp_path / "repo", tmp_path / "elsewhere" / "x.md") is None
+
+
+BRACES_AND_SUBPARSERS_SCRIPT = """
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--mode", choices=["alpha", "beta"])
+subparsers = parser.add_subparsers(dest="command")
+subparsers.add_parser("run")
+parser.parse_args()
+"""
+
+
+def test_a_choices_value_is_trimmed_back_when_it_is_not_a_real_subcommand(gate, tmp_path: Path) -> None:
+    # argparse renders `--mode {alpha,beta}` with the same brace shape a subparser
+    # uses, so `alpha` reads as a subcommand path. Here the script really does have
+    # subparsers, so `script alpha --help` dies on invalid choice before --help can
+    # short-circuit -- the exact case the trim exists to keep from becoming a false
+    # "not runnable" verdict on a correct doc.
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/mode.py": BRACES_AND_SUBPARSERS_SCRIPT},
+        doc="Run `python3 scripts/mode.py --mode alpha`.\n",
+    )
+    assert _findings(gate, root) == []
+
+
+def test_module_entrypoint_exits_with_the_gate_verdict(gate, tmp_path: Path) -> None:
+    # Covers the `if __name__ == "__main__"` guard: the exit code an operator and
+    # the quality runner actually see.
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc="Run `python3 scripts/log.py --gone`.\n",
+    )
+    failing = run_script(
+        str(ROOT / "scripts" / "check_documented_command_flags.py"), "--repo-root", str(root)
+    )
+    assert failing.returncode == 1
+    assert "`--gone`" in failing.stderr
+
+    (root / "docs" / "guide.md").write_text("Run `python3 scripts/log.py --path X`.\n", encoding="utf-8")
+    clean = run_script(
+        str(ROOT / "scripts" / "check_documented_command_flags.py"), "--repo-root", str(root)
+    )
+    assert clean.returncode == 0
+    assert "Validated 1 documented command invocation(s)" in clean.stdout

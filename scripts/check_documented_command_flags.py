@@ -172,9 +172,9 @@ def iter_command_carriers(doc: Path) -> Iterator[tuple[int, str]]:
             pending_lineno = None
         previous_lineno = lineno
         if not in_fence:
-            if pending_lineno is not None:
-                yield pending_lineno, pending_text
-                pending_lineno = None
+            # No pending flush needed here: leaving a fence always crosses a
+            # delimiter line that `iter_doc_lines` consumes, so the gap check
+            # above has already flushed. A second flush would be dead code.
             for span in BACKTICK_CONTENT_RE.finditer(line):
                 yield lineno, span.group(1)
             continue
