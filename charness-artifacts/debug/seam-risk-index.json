@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 102,
-  "indexed_artifact_count": 90,
+  "source_artifact_count": 103,
+  "indexed_artifact_count": 91,
   "risk_class_counts": {
-    "contract-freeze-risk": 30,
-    "external-seam": 5,
+    "contract-freeze-risk": 29,
+    "external-seam": 7,
     "host-disproves-local": 2,
     "none": 30,
     "operator-visible-recovery": 22,
-    "repeated-symptom": 1
+    "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 4,
-    "monitor": 76,
+    "monitor": 77,
     "none": 10
   },
   "entries": [
@@ -1266,18 +1266,34 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "release-quality-contract-gap",
+      "artifact_path": "charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md",
+      "is_current_pointer": false,
+      "interrupt_id": "reviewer-result-delivery-2026-07-25",
       "risk_classes": [
-        "contract-freeze-risk"
+        "external-seam",
+        "repeated-symptom"
       ],
-      "seam": "quality artifact authoring to release-only inventory consumer.",
+      "seam": "parent-to-reviewer result delivery, owned by host runtime and selected by a caller-supplied spawn parameter; no repo code owns it.",
       "generalization_pressure": "monitor",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "none",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-25-reviewer-delivery-seam.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "reviewer-result-delivery-2026-07-25",
+      "risk_classes": [
+        "external-seam",
+        "repeated-symptom"
+      ],
+      "seam": "parent-to-reviewer result delivery, owned by host runtime and selected by a caller-supplied spawn parameter; no repo code owns it.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-25-reviewer-delivery-seam.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [
