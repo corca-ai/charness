@@ -3,14 +3,14 @@
 goal, charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md).
 
 A RANKING + scenario-coverage tool, never a deletion prover: `split` cuts a
-skill's SKILL.md + references into section-level mutation units (a stable,
+skill's SKILL.md + references into mutation units (a stable,
 content-addressed manifest); `generate` builds one throwaway parentless
 snapshot commit per selected unit -- either removing the unit or rewriting it
 in place with provided replacement text, always on the installed-plugin mirror
 tree (`plugins/charness/skills/<skill>/**`, the surface `capture-skill-run.sh`
 actually resolves) -- and returns raw snapshot SHAs only; `cleanup` deletes
 legacy `refs/prompt-mutants/...` refs once downstream capture experiments are
-done. See prompt_mutant_lib.py for the splitting algorithm and git-plumbing
+done. See prompt_mutant_split_lib.py for the splitting algorithm and git-plumbing
 mechanics; this module is CLI wiring only.
 """
 
@@ -23,6 +23,7 @@ from pathlib import Path
 
 from prompt_mutant_files_lib import list_skill_files_worktree, read_worktree_file
 from prompt_mutant_lib import (
+    GRANULARITIES,
     PromptMutantError,
     build_split_manifest,
     cleanup_mutant_refs,
@@ -32,7 +33,8 @@ from prompt_mutant_lib import (
 from runtime_bootstrap import repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
-GRANULARITY_CHOICES = ["section"]
+# Single source: the CLI cannot accept a granularity the splitter does not implement.
+GRANULARITY_CHOICES = list(GRANULARITIES)
 SENTINEL_CHANNELS = {"required_command_fragment", "required_summary_fragment", "trace_command_marker"}
 
 
@@ -90,7 +92,12 @@ def _cmd_generate(args: argparse.Namespace) -> int:
     try:
         sentinels = [_parse_sentinel(raw) for raw in args.sentinel]
         result = generate_mutants(
-            args.repo_root, args.skill, args.baseline_ref, args.unit_id or None, args.replacement_text
+            args.repo_root,
+            args.skill,
+            args.baseline_ref,
+            args.unit_id or None,
+            args.replacement_text,
+            args.granularity,
         )
         result["sentinels"] = sentinels
     except PromptMutantError as exc:
@@ -122,7 +129,7 @@ def _cmd_cleanup(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Split a skill's prompt surface into section-level mutation units and build/cleanup "
+            "Split a skill's prompt surface into mutation units and build/cleanup "
             "throwaway parentless snapshot commits over the installed-plugin mirror tree. Advisory "
             "tooling for the prompt-mutation-pilot goal; never a commit/CI gate."
         )
@@ -134,7 +141,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     split_parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     split_parser.add_argument("--skill", required=True)
-    split_parser.add_argument("--granularity", choices=GRANULARITY_CHOICES, default="section")
+    split_parser.add_argument(
+        "--granularity",
+        choices=GRANULARITY_CHOICES,
+        default="section",
+        help="Mutation unit size. `section` (default) is one heading plus its body; "
+        "`paragraph` additionally emits blank-line-separated blocks inside each "
+        "section, which distinguishes load-bearing prose from decoration within a "
+        "section that survives as a whole.",
+    )
     split_parser.add_argument(
         "--json", action="store_true", help="Present for CLI-shape compatibility; output is always JSON."
     )
@@ -148,6 +163,13 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser.add_argument("--baseline-ref", required=True)
     generate_parser.add_argument(
         "--unit-id", action="append", default=[], help="Repeatable; defaults to every unit of --skill."
+    )
+    generate_parser.add_argument(
+        "--granularity",
+        choices=GRANULARITY_CHOICES,
+        default="section",
+        help="Must match the granularity the selected --unit-id values came from; a "
+        "paragraph unit id is unknown to a section-granularity split.",
     )
     generate_parser.add_argument(
         "--replacement-text",

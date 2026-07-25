@@ -1,7 +1,8 @@
-"""Pure splitter + git-plumbing helpers for `generate_prompt_mutants.py`.
+"""Git plumbing for `generate_prompt_mutants.py`: units in, throwaway commits out.
 
-Split a skill's prompt surface (SKILL.md + references/*.md) into section-level
-mutation units, and build/cleanup throwaway mutant commits over those units
+The splitting half lives in `prompt_mutant_split_lib.py` (pure, no I/O); its
+public names are re-exported here so existing importers keep working. This module
+builds and cleans up throwaway mutant commits over the selected units
 using object-database plumbing ONLY (`git hash-object` / `read-tree` /
 `update-index --cacheinfo` / `write-tree` / `commit-tree` / `update-ref`) --
 NEVER `git checkout`/`add`/`commit`/`reset`/`stash` in the shared worktree
@@ -14,27 +15,17 @@ only the `skills/public/<skill>/**` source (plan-critique F1). The
 `skills/public/...` sibling is mutated too when it contains an
 identical-by-content copy of the selected section.
 
-A "unit" is one markdown section: a heading line (any level) plus its body up
-to the next heading of the SAME OR HIGHER level -- so a `###` nested under a
-`##` is folded into the `##` unit's own content, while the `###` heading also
-gets its own (finer-grained, independently selectable) unit. Because of that
-nesting, the file-reassembly (lossless) invariant holds only over the
-TOP-LEVEL units (those not nested inside another unit in the same file) plus
-the preamble: those spans are contiguous and non-overlapping and tile the
-whole file. Nested units are additional, finer-grained entries for selection,
-not part of that flat tiling.
+See `prompt_mutant_split_lib.py` for what a "unit" is and which units tile a file
+losslessly -- the invariant every rewrite below depends on.
 """
 
 from __future__ import annotations
 
-import hashlib
 import os
-import re
 import subprocess
 import tempfile
 from pathlib import Path
 
-from artifact_naming_lib import slugify
 from prompt_mutant_files_lib import (
     list_skill_files_at_ref,
     read_file_at_ref,
@@ -46,9 +37,32 @@ from prompt_mutant_rewrite_lib import (
     rewrite_matching_public_unit,
     rewrite_unit_by_lines,
 )
+from prompt_mutant_split_lib import (
+    GRANULARITIES,
+    PromptMutantError,
+    build_split_manifest,
+    build_unit_id,
+    reassemble_top_level,
+    split_units,
+    unit_content_sha256,
+    units_for_file,
+)
 
-_HEADING_RE = re.compile(r"^(#{1,6})(\s+.*)?$")
-_FENCE_RE = re.compile(r"^(`{3,}|~{3,})")
+# Exactly the splitter names re-exported for importers that predate the split
+# (`from prompt_mutant_lib import build_split_manifest`, ...). Listed explicitly so
+# the linter does not prune imports that are deliberately part of this module's
+# surface. This module's OWN public functions are not listed: they are defined
+# here, so they need no re-export, and mixing the two would document neither.
+__all__ = [
+    "GRANULARITIES",
+    "PromptMutantError",
+    "build_split_manifest",
+    "build_unit_id",
+    "reassemble_top_level",
+    "split_units",
+    "unit_content_sha256",
+    "units_for_file",
+]
 
 MUTANT_REF_PREFIX = "refs/prompt-mutants"
 NEUTRAL_COMMIT_MESSAGE = "chore: snapshot"
@@ -70,159 +84,6 @@ GIT_ENV_ALLOWLIST = {
     "GIT_COMMITTER_NAME",
     "GIT_INDEX_FILE",
 }
-
-
-class PromptMutantError(RuntimeError):
-    pass
-
-
-# --- splitting (pure, no I/O) ----------------------------------------------
-
-
-def split_units(text: str) -> list[dict]:
-    """Split `text` into section units: one `preamble` unit (content before the
-    first heading, always present) followed by one unit per heading line, in
-    document order. Each unit's `content` is the exact contiguous slice of
-    `text` it owns (0-based line slice `lines[start:end]`), so re-slicing the
-    original text at those boundaries is exact -- never re-derived from a hash
-    or a fuzzy match. `heading_level` is 0 for the preamble. `top_level` is
-    True for the preamble and for headings not nested inside another unit in
-    this file (see module docstring); only `top_level` units tile the file
-    losslessly."""
-    lines = text.splitlines(keepends=True)
-    headings: list[tuple[int, int, str]] = []  # (0-based line index, level, title)
-    fence_char: str | None = None
-    fence_len = 0
-    for idx, line in enumerate(lines):
-        stripped = line.rstrip("\r\n")
-        lstripped = stripped.lstrip()
-        fence_match = _FENCE_RE.match(lstripped)
-        if fence_match:
-            marker = fence_match.group(1)
-            if fence_char is None:
-                fence_char, fence_len = marker[0], len(marker)
-            elif marker[0] == fence_char and len(marker) >= fence_len:
-                fence_char, fence_len = None, 0
-            continue
-        if fence_char is not None:
-            continue
-        heading_match = _HEADING_RE.match(stripped)
-        if heading_match:
-            level = len(heading_match.group(1))
-            title = (heading_match.group(2) or "").strip()
-            headings.append((idx, level, title))
-
-    units: list[dict] = []
-    preamble_end = headings[0][0] if headings else len(lines)
-    units.append(
-        {
-            "heading_level": 0,
-            "heading_path": ["preamble"],
-            "start_line": 1,
-            "end_line": preamble_end,
-            "content": "".join(lines[0:preamble_end]),
-            "top_level": True,
-        }
-    )
-
-    ancestors: list[tuple[int, str]] = []
-    for position, (idx, level, title) in enumerate(headings):
-        end_idx = len(lines)
-        for later_idx, later_level, _later_title in headings[position + 1 :]:
-            if later_level <= level:
-                end_idx = later_idx
-                break
-        while ancestors and ancestors[-1][0] >= level:
-            ancestors.pop()
-        top_level = not ancestors
-        heading_path = [ancestor_title for _level, ancestor_title in ancestors] + [title]
-        units.append(
-            {
-                "heading_level": level,
-                "heading_path": heading_path,
-                "start_line": idx + 1,
-                "end_line": end_idx,
-                "content": "".join(lines[idx:end_idx]),
-                "top_level": top_level,
-            }
-        )
-        ancestors.append((level, title))
-    return units
-
-
-def reassemble_top_level(units: list[dict]) -> str:
-    """Concatenate the `top_level` units of one file's `split_units` output, in
-    order -- the lossless-reassembly proof: this must equal the original text
-    byte-for-byte."""
-    return "".join(unit["content"] for unit in units if unit["top_level"])
-
-
-def unit_content_sha256(content: str) -> str:
-    return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
-
-def build_unit_id(file_relpath: str, heading_path: list[str], content: str) -> str:
-    digest = unit_content_sha256(content)
-    slug = "/".join(slugify(part) for part in heading_path)
-    return f"{file_relpath}#{slug}@{digest[:10]}"
-
-
-def units_for_file(file_relpath: str, text: str) -> list[dict]:
-    """`split_units(text)` decorated with the stable `unit_id` and `file` every
-    downstream consumer (manifest output, mutant construction) keys off."""
-    entries = []
-    for unit in split_units(text):
-        content = unit["content"]
-        entries.append(
-            {
-                "unit_id": build_unit_id(file_relpath, unit["heading_path"], content),
-                "file": file_relpath,
-                "heading_path": unit["heading_path"],
-                "heading_level": unit["heading_level"],
-                "start_line": unit["start_line"],
-                "end_line": unit["end_line"],
-                "content_sha256": unit_content_sha256(content),
-                "content": content,
-                "top_level": unit["top_level"],
-            }
-        )
-    return entries
-
-
-# --- split manifest (used by the `split` CLI subcommand) --------------------
-
-
-def build_split_manifest(repo_root: Path, skill: str, granularity: str, list_files, read_file) -> dict:
-    """Assemble the `split` subcommand's manifest. `list_files(repo_root, skill)`
-    and `read_file(repo_root, relpath)` are injected so this same builder
-    serves both the worktree-backed `split` CLI and (via a ref-bound closure)
-    a baseline-ref-aware split for `generate`."""
-    if granularity != "section":
-        raise PromptMutantError(f"unsupported granularity: {granularity!r} (only 'section' is implemented)")
-    file_pairs = list_files(repo_root, skill)
-    if not file_pairs:
-        raise PromptMutantError(f"no SKILL.md found for skill {skill!r} under {skill_plugin_root(skill)}")
-    files_out = []
-    units_out = []
-    for plugin_relpath, public_relpath in file_pairs:
-        text = read_file(repo_root, plugin_relpath)
-        if text is None:
-            continue
-        for entry in units_for_file(plugin_relpath, text):
-            units_out.append(
-                {
-                    "unit_id": entry["unit_id"],
-                    "file": entry["file"],
-                    "public_sibling": public_relpath,
-                    "heading_path": entry["heading_path"],
-                    "heading_level": entry["heading_level"],
-                    "start_line": entry["start_line"],
-                    "end_line": entry["end_line"],
-                    "content_sha256": entry["content_sha256"],
-                }
-            )
-        files_out.append({"path": plugin_relpath, "public_sibling": public_relpath})
-    return {"skill": skill, "granularity": granularity, "files": files_out, "units": units_out}
 
 
 # --- mutant construction (object-database plumbing only) --------------------
@@ -329,7 +190,9 @@ def mutant_ref_name(skill: str, content_sha256: str) -> str:
     return f"{MUTANT_REF_PREFIX}/{skill}/{content_sha256}"
 
 
-def collect_baseline_units(repo_root: Path, baseline_sha: str, skill: str) -> tuple[dict[str, dict], dict[str, str]]:
+def collect_baseline_units(
+    repo_root: Path, baseline_sha: str, skill: str, granularity: str = "section"
+) -> tuple[dict[str, dict], dict[str, str]]:
     """Split every file of `skill` freshly at `baseline_sha` (ref-aware, never
     the working tree) so unit ids match the baseline content exactly. Returns
     (units_by_id, file_text_by_relpath); file_text covers both plugin and
@@ -346,8 +209,17 @@ def collect_baseline_units(repo_root: Path, baseline_sha: str, skill: str) -> tu
         if text is None:
             continue
         file_text[plugin_relpath] = text
-        for entry in units_for_file(plugin_relpath, text):
+        for entry in units_for_file(plugin_relpath, text, granularity):
             entry["public_sibling"] = public_relpath
+            if entry["unit_id"] in units_by_id:
+                # Paragraph granularity can produce byte-identical blocks inside one
+                # section, and `unit_id` is path+heading+content-digest. A silent
+                # overwrite would drop an arm and quietly shrink the experiment.
+                raise PromptMutantError(
+                    f"duplicate unit id {entry['unit_id']!r}: two units have the same file, "
+                    "heading path, and content. Disambiguate the source text or select by a "
+                    "narrower granularity."
+                )
             units_by_id[entry["unit_id"]] = entry
         if public_relpath is not None and public_relpath not in file_text:
             public_text = read_file_at_ref(repo_root, baseline_sha, public_relpath)
@@ -363,6 +235,7 @@ def mutate_unit(
     file_text: dict[str, str],
     commit_date: str,
     replacement_text: str | None = None,
+    granularity: str = "section",
 ) -> dict:
     """Build one mutant snapshot for `unit`.
 
@@ -389,7 +262,10 @@ def mutate_unit(
         public_text = file_text.get(public_path)
         if public_text is not None:
             new_public_content = rewrite_matching_public_unit(
-                public_text, unit, units_for_file(public_path, public_text), replacement_text
+                public_text,
+                unit,
+                units_for_file(public_path, public_text, granularity),
+                replacement_text,
             )
         if new_public_content is not None:
             public_mutated = True
@@ -416,7 +292,12 @@ def mutate_unit(
 
 
 def generate_mutants(
-    repo_root: Path, skill: str, baseline_ref: str, unit_ids: list[str] | None, replacement_text: str | None = None
+    repo_root: Path,
+    skill: str,
+    baseline_ref: str,
+    unit_ids: list[str] | None,
+    replacement_text: str | None = None,
+    granularity: str = "section",
 ) -> dict:
     """Resolve `baseline_ref`, split fresh at that commit, build one mutant
     commit per selected unit (default: every unit), and return the mutation
@@ -431,7 +312,7 @@ def generate_mutants(
     commit_date = resolve_baseline_committer_date(repo_root, baseline_sha)
     baseline_tree_sha = resolve_baseline_tree_sha(repo_root, baseline_sha)
     baseline_snapshot_sha = build_snapshot_commit(repo_root, baseline_tree_sha, commit_date)
-    units_by_id, file_text = collect_baseline_units(repo_root, baseline_sha, skill)
+    units_by_id, file_text = collect_baseline_units(repo_root, baseline_sha, skill, granularity)
     if unit_ids:
         missing = [unit_id for unit_id in unit_ids if unit_id not in units_by_id]
         if missing:
@@ -442,7 +323,15 @@ def generate_mutants(
     else:
         selected = list(units_by_id.keys())
     results = [
-        mutate_unit(repo_root, baseline_sha, units_by_id[unit_id], file_text, commit_date, replacement_text)
+        mutate_unit(
+            repo_root,
+            baseline_sha,
+            units_by_id[unit_id],
+            file_text,
+            commit_date,
+            replacement_text,
+            granularity,
+        )
         for unit_id in selected
     ]
     return {

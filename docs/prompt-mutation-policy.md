@@ -11,7 +11,7 @@ this policy is
 A **ranking and scenario-coverage detector, never a deletion prover**. It
 splits a skill's installed-plugin prompt surface
 (`plugins/charness/skills/<skill>/**` — the tree captures actually resolve)
-into section-level mutation units, and asks two questions:
+into mutation units (section-level by default, or finer with `--granularity paragraph`), and asks two questions:
 
 1. Statically (zero capture cost): which units have a **deterministic
    witness** — an eval floor or behavior-trace marker that would fire

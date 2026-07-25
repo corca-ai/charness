@@ -348,6 +348,9 @@ per the bullets above when that boundary is crossed):
   prose; keeps interaction effects inside units; keeps arm count affordable).
   axis: granularity is a real design axis; the splitter takes it as a
   parameter with only `section` implemented in the pilot.
+  **Addendum 2026-07-25:** `paragraph` is implemented now, end to end through
+  `generate`. The pilot's scope statement above stands as the record of what this
+  goal shipped; it is no longer the current state of the tool.
 - Runs per arm — family: N=1 anecdote / N=2 / N≥4; chosen: **N=2** with
   survival reported as rate + explicit small-N caveat (never binary deadness).
   Rejected N≥4 for spend; rejected N=1 because stochastic runs make single

@@ -47,6 +47,116 @@ FIXTURE_MD = (
 )
 
 
+PARAGRAPH_FIXTURE_MD = (
+    "Preamble para one.\n"
+    "\n"
+    "Preamble para two, line 1.\n"
+    "Preamble para two, line 2.\n"
+    "\n"
+    "# One\n"
+    "Claim A.\n"
+    "\n"
+    "Claim B.\n"
+    "\n"
+    "```bash\n"
+    "echo first\n"
+    "\n"
+    "echo after blank line inside fence\n"
+    "```\n"
+    "\n"
+    "## Sub A\n"
+    "Sub A only paragraph.\n"
+)
+
+
+def _paragraphs(units: list[dict]) -> list[dict]:
+    return [u for u in units if u["unit_kind"] == "paragraph"]
+
+
+def test_paragraph_granularity_keeps_every_section_unit() -> None:
+    """The coarse arm stays selectable: paragraph granularity ADDS finer units, it
+    does not replace the section ones. A caller that only knew about sections before
+    sees exactly what it saw."""
+    sections_only = lib.split_units(PARAGRAPH_FIXTURE_MD)
+    with_paragraphs = lib.split_units(PARAGRAPH_FIXTURE_MD, "paragraph")
+
+    assert all(u["unit_kind"] == "section" for u in sections_only)
+    kept = [u for u in with_paragraphs if u["unit_kind"] == "section"]
+    assert kept == sections_only
+
+
+def test_paragraph_units_split_on_blank_lines_but_not_inside_fences() -> None:
+    """A blank line inside a fenced code block is content. Splitting there would
+    build a mutant that deletes half a code block -- a malformed-markdown arm, which
+    proves nothing about whether the prose was load-bearing."""
+    paragraphs = _paragraphs(lib.split_units(PARAGRAPH_FIXTURE_MD, "paragraph"))
+    contents = [u["content"] for u in paragraphs]
+
+    assert "Preamble para one.\n" in contents
+    assert "Preamble para two, line 1.\nPreamble para two, line 2.\n" in contents
+    assert "Claim A.\n" in contents
+    assert "Claim B.\n" in contents
+    fenced = [c for c in contents if c.startswith("```bash")]
+    assert len(fenced) == 1, contents
+    assert "echo after blank line inside fence" in fenced[0]
+
+
+def test_paragraph_units_exclude_the_heading_line() -> None:
+    """A paragraph unit that swallowed its heading would, when applied, delete the
+    heading and reparent every following paragraph into the previous section."""
+    paragraphs = _paragraphs(lib.split_units(PARAGRAPH_FIXTURE_MD, "paragraph"))
+    assert not any(u["content"].lstrip().startswith("#") for u in paragraphs)
+    sub_a = [u for u in paragraphs if u["heading_path"][-1] == "Sub A"]
+    assert [u["content"] for u in sub_a] == ["Sub A only paragraph.\n"]
+
+
+def test_paragraph_units_carry_their_owning_section_path() -> None:
+    """A paragraph is located by the section it argues inside. Nested headings make
+    this non-trivial: a paragraph under `## Sub A` must not be attributed to `# One`,
+    whose section span also contains it."""
+    paragraphs = _paragraphs(lib.split_units(PARAGRAPH_FIXTURE_MD, "paragraph"))
+    by_content = {u["content"]: u["heading_path"] for u in paragraphs}
+
+    assert by_content["Preamble para one.\n"] == ["preamble"]
+    assert by_content["Claim A.\n"] == ["One"]
+    assert by_content["Sub A only paragraph.\n"] == ["One", "Sub A"]
+
+
+def test_paragraph_units_are_exact_line_slices_and_never_overlap() -> None:
+    """The whole pipeline re-slices the original text at these boundaries to build a
+    mutant, so an off-by-one produces a mutant that deletes the wrong text while
+    still looking plausible. Overlap would let two arms claim the same line."""
+    lines = PARAGRAPH_FIXTURE_MD.splitlines(keepends=True)
+    paragraphs = _paragraphs(lib.split_units(PARAGRAPH_FIXTURE_MD, "paragraph"))
+
+    spans = sorted((u["start_line"], u["end_line"]) for u in paragraphs)
+    for unit in paragraphs:
+        sliced = "".join(lines[unit["start_line"] - 1 : unit["end_line"]])
+        assert sliced == unit["content"], unit
+    for (_, prev_end), (next_start, _) in zip(spans, spans[1:]):
+        assert prev_end <= next_start - 1, spans
+
+
+def test_paragraph_granularity_preserves_the_lossless_tiling_proof() -> None:
+    """`reassemble_top_level` is the splitter's core invariant. Paragraph units are
+    additional finer entries, so they must stay out of the flat tiling or
+    reassembly would emit every line twice."""
+    units = lib.split_units(PARAGRAPH_FIXTURE_MD, "paragraph")
+    assert lib.reassemble_top_level(units) == PARAGRAPH_FIXTURE_MD
+    assert all(not u["top_level"] for u in _paragraphs(units))
+
+
+def test_paragraph_units_get_distinct_stable_ids() -> None:
+    """Two paragraphs in one section share a heading path, so the content digest is
+    what separates their unit ids -- and identical prose in different sections must
+    still be independently selectable."""
+    entries = lib.units_for_file("a/SKILL.md", PARAGRAPH_FIXTURE_MD, "paragraph")
+    ids = [e["unit_id"] for e in entries]
+    assert len(ids) == len(set(ids)), ids
+    again = lib.units_for_file("a/SKILL.md", PARAGRAPH_FIXTURE_MD, "paragraph")
+    assert [e["unit_id"] for e in again] == ids
+
+
 def test_split_units_produces_one_unit_per_heading_plus_preamble() -> None:
     units = lib.split_units(FIXTURE_MD)
     # preamble + One, Sub A, Sub A Detail, Sub B, Two, Sub C = 7
@@ -133,9 +243,13 @@ def test_build_unit_id_changes_when_content_changes() -> None:
 
 
 def test_build_split_manifest_rejects_unknown_granularity() -> None:
+    """`paragraph` used to be the rejected value here; it is implemented now, so the
+    guard is exercised with a value that is still unimplemented. The guard itself
+    stays load-bearing: `build_split_manifest` is a public entry point that callers
+    reach without argparse's `choices` in front of it."""
     with pytest.raises(lib.PromptMutantError):
         lib.build_split_manifest(
-            Path("/tmp"), "x", "paragraph", lambda *_a: [], lambda *_a: None
+            Path("/tmp"), "x", "sentence", lambda *_a: [], lambda *_a: None
         )
 
 
@@ -182,6 +296,99 @@ def _section_a_unit_id(repo: Path, baseline_sha: str) -> str:
     matches = [uid for uid, u in units_by_id.items() if u["heading_path"][-1] == "Section A"]
     assert len(matches) == 1
     return matches[0]
+
+
+def test_generate_builds_a_mutant_from_a_paragraph_unit(tmp_path: Path) -> None:
+    """`split --granularity paragraph` is useless if the next pipeline stage cannot
+    consume what it mints. Without granularity threaded through `generate`, every
+    paragraph unit id comes back `unknown unit id` -- a flag that advertises
+    selection handles no arm can be built from."""
+    repo, baseline_sha = _build_fixture_repo(tmp_path, public_section_a_body="Content A.\n")
+    units_by_id, _ = lib.collect_baseline_units(repo, baseline_sha, "x", "paragraph")
+    paragraphs = {
+        uid: u for uid, u in units_by_id.items() if u["unit_kind"] == "paragraph"
+    }
+    target_id, target = next(
+        (uid, u) for uid, u in paragraphs.items() if u["content"] == "Content A.\n"
+    )
+
+    result = lib.generate_mutants(repo, "x", baseline_sha, [target_id], None, "paragraph")
+
+    assert len(result["units"]) == 1
+    unit = result["units"][0]
+    baseline_text = (repo / "plugins" / "charness" / "skills" / "x" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    mutated = _git(repo, "show", f"{unit['mutant_sha']}:plugins/charness/skills/x/SKILL.md")
+    # Exactly the paragraph, nothing else: an off-by-one here builds a plausible
+    # mutant that removes the wrong text.
+    assert mutated + "\n" == baseline_text.replace(target["content"], "", 1)
+
+
+def test_generate_mutates_the_public_sibling_for_paragraph_units_too(tmp_path: Path) -> None:
+    """The public sibling is split to match the unit under mutation. Split at section
+    granularity, a paragraph's content hash can never equal a public SECTION unit's,
+    so every paragraph arm would silently report `public_mutated: False` and leave the
+    text readable in the captured workspace's public copy."""
+    repo, baseline_sha = _build_fixture_repo(tmp_path, public_section_a_body="Content A.\n")
+    units_by_id, _ = lib.collect_baseline_units(repo, baseline_sha, "x", "paragraph")
+    target_id = next(
+        uid
+        for uid, u in units_by_id.items()
+        if u["unit_kind"] == "paragraph" and u["content"] == "Content A.\n"
+    )
+
+    result = lib.generate_mutants(repo, "x", baseline_sha, [target_id], None, "paragraph")
+
+    unit = result["units"][0]
+    assert unit["public_mutated"] is True
+    assert "skills/public/x/SKILL.md" in unit["files_mutated"]
+
+
+def test_collect_baseline_units_refuses_duplicate_unit_ids(tmp_path: Path) -> None:
+    """`unit_id` is file + heading path + content digest, so two byte-identical
+    paragraphs in one section collide. A silent dict overwrite would drop an arm and
+    quietly shrink the experiment, reporting a smaller denominator as if complete."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    plugin_dir = repo / "plugins" / "charness" / "skills" / "x"
+    plugin_dir.mkdir(parents=True)
+    (plugin_dir / "SKILL.md").write_text(
+        "# X\n\n## Section A\nRepeated note.\n\nRepeated note.\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "seed")
+    baseline_sha = _git(repo, "rev-parse", "HEAD")
+
+    with pytest.raises(lib.PromptMutantError) as excinfo:
+        lib.collect_baseline_units(repo, baseline_sha, "x", "paragraph")
+    assert "duplicate unit id" in str(excinfo.value)
+
+
+def test_split_units_rejects_an_unimplemented_granularity() -> None:
+    """Validated in the splitter itself, not only in `build_split_manifest`: the
+    `generate` path and library callers reach `split_units` directly, and silently
+    falling back to section behaviour would run an experiment at the wrong
+    granularity and emit a plausible-looking manifest."""
+    with pytest.raises(lib.PromptMutantError):
+        lib.split_units(FIXTURE_MD, "sentence")
+
+
+def test_paragraph_units_skip_yaml_frontmatter(tmp_path: Path) -> None:
+    """Removing frontmatter does not remove a claim -- it makes the skill fail to
+    register, so the arm reads as a strong DETECTED while proving nothing about
+    whether any prose was load-bearing."""
+    text = "---\nname: x\ndescription: y\n---\n\nReal preamble claim.\n\n# One\nBody.\n"
+    paragraphs = _paragraphs(lib.split_units(text, "paragraph"))
+    contents = [u["content"] for u in paragraphs]
+
+    assert "Real preamble claim.\n" in contents
+    assert not any("name: x" in c for c in contents)
+    assert not any(c.lstrip().startswith("---") for c in contents)
 
 
 def test_generate_removes_unit_from_plugin_mirror_tree(tmp_path: Path) -> None:
@@ -463,8 +670,9 @@ def test_cli_split_prints_manifest_with_files_and_units(tmp_path: Path, capsys: 
     for unit in manifest["units"]:
         assert set(unit) == {
             "unit_id", "file", "public_sibling", "heading_path", "heading_level",
-            "start_line", "end_line", "content_sha256",
+            "start_line", "end_line", "content_sha256", "unit_kind",
         }
+        assert unit["unit_kind"] == "section"
 
 
 @pytest.mark.parametrize("argv", [[], ["split"], ["generate"], ["cleanup"]])
@@ -477,8 +685,17 @@ def test_cli_help_exits_zero_for_every_subcommand(argv: list[str]) -> None:
 def test_cli_split_unknown_granularity_errors(tmp_path: Path) -> None:
     _write_skill_fixture(tmp_path, "y")
     with pytest.raises(SystemExit) as excinfo:
-        cli.main(["split", "--repo-root", str(tmp_path), "--skill", "y", "--granularity", "paragraph"])
+        cli.main(["split", "--repo-root", str(tmp_path), "--skill", "y", "--granularity", "sentence"])
     assert excinfo.value.code != 0
+
+
+def test_cli_granularity_choices_track_the_implemented_splitter() -> None:
+    """argparse's `choices` and the splitter's own guard are two lists that must not
+    drift: a choice the CLI accepts with no splitter behind it fails deep inside a
+    run, and a granularity the splitter implements but the CLI rejects is
+    unreachable."""
+    assert cli.GRANULARITY_CHOICES == list(lib.GRANULARITIES)
+    assert "section" in lib.GRANULARITIES
 
 
 def test_cli_generate_writes_manifest_and_cleanup_reports_deletion(tmp_path: Path) -> None:
