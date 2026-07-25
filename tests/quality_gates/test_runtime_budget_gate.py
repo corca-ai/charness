@@ -7,10 +7,9 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT, run_script
+from .support import ROOT, run_script, seed_runtime_budget_repo
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
-RENDER_SCRIPT = "skills/public/quality/scripts/render_runtime_summary.py"
 QUALITY_SCRIPTS_DIR = ROOT / "skills" / "public" / "quality" / "scripts"
 if str(QUALITY_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(QUALITY_SCRIPTS_DIR))
@@ -19,73 +18,12 @@ _spec = importlib.util.spec_from_file_location("runtime_profile_lib_under_test",
 assert _spec is not None and _spec.loader is not None
 runtime_profile_lib = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(runtime_profile_lib)
-RENDER_RUNTIME_SUMMARY = ROOT / "skills" / "public" / "quality" / "scripts" / "render_runtime_summary.py"
-_render_spec = importlib.util.spec_from_file_location("render_runtime_summary_under_test", RENDER_RUNTIME_SUMMARY)
-assert _render_spec is not None and _render_spec.loader is not None
-render_runtime_summary = importlib.util.module_from_spec(_render_spec)
-_render_spec.loader.exec_module(render_runtime_summary)
 _budget_spec = importlib.util.spec_from_file_location(
     "check_runtime_budget_under_test", ROOT / SCRIPT
 )
 assert _budget_spec is not None and _budget_spec.loader is not None
 check_runtime_budget = importlib.util.module_from_spec(_budget_spec)
 _budget_spec.loader.exec_module(check_runtime_budget)
-
-
-def _seed_repo(
-    tmp_path: Path,
-    *,
-    budgets: dict[str, int] | None,
-    signals: dict | None,
-    budget_profiles: dict[str, dict[str, dict[str, int]]] | None = None,
-    smoothing: dict | None = None,
-    explicit_empty_budgets: bool = False,
-    startup_probes: list[dict[str, object]] | None = None,
-) -> Path:
-    repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".charness" / "quality").mkdir(parents=True)
-    adapter_lines = ["version: 1", "repo: testrepo", "output_dir: charness-artifacts/quality"]
-    if budgets is not None:
-        adapter_lines.append("runtime_budgets:")
-        for label, ms in budgets.items():
-            adapter_lines.append(f"  {label}: {ms}")
-    elif explicit_empty_budgets:
-        adapter_lines.append("runtime_budgets:")
-    if budget_profiles is not None:
-        adapter_lines.append("runtime_budget_profiles:")
-        for profile_id, profile in budget_profiles.items():
-            adapter_lines.append(f"  {profile_id}:")
-            adapter_lines.append("    budgets:")
-            for label, ms in profile["budgets"].items():
-                adapter_lines.append(f"      {label}: {ms}")
-    if startup_probes is not None:
-        if not startup_probes:
-            adapter_lines.append("startup_probes: []")
-        else:
-            adapter_lines.append("startup_probes:")
-            for probe in startup_probes:
-                adapter_lines.extend(
-                    [
-                        f"  - label: {probe['label']}",
-                        "    command:",
-                        *[f"      - {item}" for item in probe["command"]],
-                        f"    class: {probe['class']}",
-                        f"    startup_mode: {probe['startup_mode']}",
-                        f"    surface: {probe['surface']}",
-                        f"    samples: {probe['samples']}",
-                    ]
-                )
-    (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(adapter_lines) + "\n", encoding="utf-8")
-    if signals is not None:
-        (repo / ".charness" / "quality" / "runtime-signals.json").write_text(
-            json.dumps(signals), encoding="utf-8"
-        )
-    if smoothing is not None:
-        (repo / ".charness" / "quality" / "runtime-smoothing.json").write_text(
-            json.dumps(smoothing), encoding="utf-8"
-        )
-    return repo
 
 
 def test_runtime_profile_lib_default_profile_uses_top_level_commands_and_budgets() -> None:
@@ -178,7 +116,7 @@ def test_machine_runtime_profile_uses_detected_system(monkeypatch) -> None:
 
 
 def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, budgets=None, signals=None)
+    repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -196,7 +134,7 @@ def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
 
 
 def test_runtime_budget_summary_yaml_matches_json(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, budgets=None, signals=None)
+    repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
     args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
     yaml_result = run_script(SCRIPT, *args)
     json_result = run_script(SCRIPT, *args, "--json")
@@ -228,7 +166,7 @@ def test_runtime_budget_summary_bounds_diagnostic_lists() -> None:
 
 
 def test_runtime_budget_gate_reports_explicit_empty_runtime_fields(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, budgets=None, signals=None, explicit_empty_budgets=True, startup_probes=[])
+    repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None, explicit_empty_budgets=True, startup_probes=[])
 
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
 
@@ -241,7 +179,7 @@ def test_runtime_budget_gate_reports_explicit_empty_runtime_fields(tmp_path: Pat
 
 
 def test_runtime_budget_gate_reports_empty_selected_profile_budget(tmp_path: Path) -> None:
-    repo = _seed_repo(
+    repo = seed_runtime_budget_repo(
         tmp_path,
         budgets=None,
         budget_profiles={"ci": {"budgets": {}}},
@@ -258,7 +196,7 @@ def test_runtime_budget_gate_reports_empty_selected_profile_budget(tmp_path: Pat
 
 
 def test_runtime_budget_gate_has_no_visibility_findings_when_budget_and_probe_exist(tmp_path: Path) -> None:
-    repo = _seed_repo(
+    repo = seed_runtime_budget_repo(
         tmp_path,
         budgets={"pytest": 22000},
         signals={"commands": {"pytest": {"latest": {"elapsed_ms": 15000, "status": "pass"}}}},
@@ -282,7 +220,7 @@ def test_runtime_budget_gate_has_no_visibility_findings_when_budget_and_probe_ex
 
 def test_runtime_budget_gate_passes_when_within_budget(tmp_path: Path) -> None:
     signals = {"commands": {"pytest": {"latest": {"elapsed_ms": 15000, "status": "pass"}}}}
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -303,7 +241,7 @@ def test_runtime_budget_gate_passes_when_within_budget(tmp_path: Path) -> None:
 
 def test_runtime_budget_gate_fails_when_over_budget(tmp_path: Path) -> None:
     signals = {"commands": {"pytest": {"latest": {"elapsed_ms": 30000, "status": "pass"}}}}
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
     assert result.returncode == 1
     payload = json.loads(result.stdout)
@@ -340,7 +278,7 @@ def test_runtime_budget_gate_reports_latest_spike_without_failing(tmp_path: Path
             }
         }
     }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals, smoothing=smoothing)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals, smoothing=smoothing)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -376,7 +314,7 @@ def test_runtime_budget_gate_reports_advisory_ewma_without_enforcing_it(tmp_path
             }
         }
     }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals, smoothing=smoothing)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals, smoothing=smoothing)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -401,7 +339,7 @@ def test_runtime_budget_gate_fails_on_recent_median_drift(tmp_path: Path) -> Non
             }
         }
     }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
     assert result.returncode == 1
     payload = json.loads(result.stdout)
@@ -416,7 +354,7 @@ def test_runtime_budget_gate_fails_on_recent_median_drift(tmp_path: Path) -> Non
 
 
 def test_runtime_budget_gate_warns_on_missing_sample(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals={"commands": {}})
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals={"commands": {}})
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -425,7 +363,7 @@ def test_runtime_budget_gate_warns_on_missing_sample(tmp_path: Path) -> None:
 
 
 def test_runtime_budget_gate_auto_selects_machine_profile(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals={"profiles": {}})
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals={"profiles": {}})
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -454,7 +392,7 @@ def test_runtime_budget_gate_selects_named_profile_budget_and_samples(tmp_path: 
             },
         }
     }
-    repo = _seed_repo(
+    repo = seed_runtime_budget_repo(
         tmp_path,
         budgets={"pytest": 70000},
         budget_profiles={
@@ -473,7 +411,7 @@ def test_runtime_budget_gate_selects_named_profile_budget_and_samples(tmp_path: 
 
 
 def test_runtime_budget_gate_fails_unknown_explicit_profile(tmp_path: Path) -> None:
-    repo = _seed_repo(
+    repo = seed_runtime_budget_repo(
         tmp_path,
         budgets={"pytest": 70000},
         budget_profiles={"local-fast": {"budgets": {"pytest": 45000}}},
@@ -504,7 +442,7 @@ def test_runtime_budget_gate_reports_top_runtime_hotspots(tmp_path: Path) -> Non
             },
         }
     }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
     result = run_script(
         SCRIPT,
         "--repo-root",
@@ -574,7 +512,7 @@ def test_runtime_budget_gate_excludes_stale_runtime_hotspots(tmp_path: Path) -> 
             },
         },
     }
-    repo = _seed_repo(tmp_path, budgets={"current-pytest": 22000}, signals=signals)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"current-pytest": 22000}, signals=signals)
 
     result = run_script(
         SCRIPT,
@@ -613,7 +551,7 @@ def test_runtime_budget_gate_keeps_invalid_timestamps_active(tmp_path: Path) -> 
             },
         },
     }
-    repo = _seed_repo(tmp_path, budgets={"unknown-age": 50000}, signals=signals)
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"unknown-age": 50000}, signals=signals)
 
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
 
@@ -621,251 +559,6 @@ def test_runtime_budget_gate_keeps_invalid_timestamps_active(tmp_path: Path) -> 
     payload = json.loads(result.stdout)
     assert [item["label"] for item in payload["runtime_hotspots"]] == ["unknown-age"]
     assert payload["stale_runtime_hotspots"] == []
-
-
-def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) -> None:
-    signals = {
-        "commands": {
-            "pytest": {
-                "latest": {"elapsed_ms": 15000, "status": "pass"},
-                "median_recent_elapsed_ms": 14000,
-            }
-        }
-    }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
-
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["signals_present"] is True
-    assert payload["markdown_lines"][:3] == [
-        "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `default`.",
-        "- runtime hot spots: `pytest` 15.0s latest / 14.0s median, budget 22.0s.",
-        "- runtime visibility: weak due to `runtime_visibility_missing_startup_probes`; Add at least one standing startup probe for agent-facing CLI or adapter startup.",
-    ]
-    # Advisory-interpretation contract rollout (#322): the hot-spot ranking is
-    # inference-layer, so a 4th interpretation bullet rides the lines and the JSON.
-    assert payload["markdown_lines"][3].startswith("- runtime interpretation (inference-layer trend, not a verdict):")
-    interpretation = payload["interpretation"]
-    assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
-    assert all(interpretation[field].strip() for field in interpretation)
-    assert "transient" in interpretation["blind_spots"]  # the load-bearing blind spot
-
-
-def test_render_runtime_summary_yaml_summary_matches_json(tmp_path: Path) -> None:
-    signals = {
-        "commands": {"pytest": {"latest": {"elapsed_ms": 15000, "status": "pass"}}}
-    }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
-    args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
-    yaml_result = run_script(RENDER_SCRIPT, *args)
-    json_result = run_script(RENDER_SCRIPT, *args, "--json")
-
-    assert yaml_result.returncode == json_result.returncode == 0
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
-    assert yaml.safe_load(yaml_result.stdout)["runtime_hotspot_count"] == 1
-
-
-def test_render_runtime_summary_bounds_diagnostic_lists() -> None:
-    payload = render_runtime_summary.summarize(
-        {
-            "runtime_profile": "default",
-            "signals_path": "signals.json",
-            "signals_present": True,
-            "commands_source": "signals",
-            "runtime_hotspots": [],
-            "stale_runtime_hotspots": [],
-            "runtime_visibility_findings": list(range(7)),
-            "missing_samples": list(range(7)),
-        },
-        sample_limit=5,
-    )
-
-    assert payload["runtime_visibility_finding_count"] == 7
-    assert len(payload["runtime_visibility_findings_sample"]) == 5
-    assert payload["runtime_visibility_findings_truncated"] is True
-    assert payload["missing_sample_count"] == 7
-    assert len(payload["missing_samples_sample"]) == 5
-    assert payload["missing_samples_truncated"] is True
-
-
-def test_render_runtime_summary_names_excluded_stale_hotspots(tmp_path: Path) -> None:
-    signals = {
-        "updated_at": "2026-06-26T00:00:00Z",
-        "commands": {
-            "pytest": {
-                "latest": {
-                    "timestamp": "2026-06-26T00:00:00Z",
-                    "elapsed_ms": 15000,
-                    "status": "pass",
-                },
-                "median_recent_elapsed_ms": 14000,
-            },
-            "check-duplicates": {
-                "latest": {
-                    "timestamp": "2026-06-04T12:11:36Z",
-                    "elapsed_ms": 9995,
-                    "status": "pass",
-                },
-                "median_recent_elapsed_ms": 11877,
-            },
-        },
-    }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
-
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert [item["label"] for item in payload["runtime_hotspots"]] == ["pytest"]
-    assert [item["label"] for item in payload["stale_runtime_hotspots"]] == ["check-duplicates"]
-    assert any("stale runtime hot spots excluded" in line for line in payload["markdown_lines"])
-
-
-def test_render_runtime_summary_names_excluded_stale_hotspots_without_fresh_hotspots(tmp_path: Path) -> None:
-    signals = {
-        "updated_at": "2026-06-26T00:00:00Z",
-        "commands": {
-            "retired-check": {
-                "latest": {
-                    "timestamp": "2026-06-04T12:11:36Z",
-                    "elapsed_ms": 9995,
-                    "status": "pass",
-                },
-                "median_recent_elapsed_ms": 11877,
-            },
-        },
-    }
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
-
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["runtime_hotspots"] == []
-    assert [item["label"] for item in payload["stale_runtime_hotspots"]] == ["retired-check"]
-    assert payload["markdown_lines"][:3] == [
-        "- runtime source: structured metrics file `.charness/quality/runtime-signals.json` has no fresh samples for profile `default`.",
-        "- stale runtime hot spots excluded: `retired-check` latest sample 2026-06-04T12:11:36Z, 21d old.",
-        "- runtime hot spots: unavailable until structured runtime metrics have samples.",
-    ]
-    assert "interpretation" not in payload
-
-
-def test_render_runtime_summary_handles_command_timing_log_without_stale_hotspots(tmp_path: Path) -> None:
-    lines = render_runtime_summary.render_markdown_lines(
-        {
-            "runtime_profile": "default",
-            "runtime_hotspots": [],
-            "stale_runtime_hotspots": [],
-            "runtime_visibility_findings": [],
-            "timing_log": {"configured": True, "file_present": True, "path": "reports/timing.jsonl"},
-        },
-        repo_root=tmp_path,
-        signals_present=False,
-    )
-
-    assert lines[:2] == [
-        "- runtime source: command-timing log `reports/timing.jsonl` has no usable samples for profile `default`.",
-        "- runtime hot spots: unavailable until structured runtime metrics have samples.",
-    ]
-
-
-def test_render_runtime_summary_handles_command_timing_log_with_only_stale_hotspots(tmp_path: Path) -> None:
-    lines = render_runtime_summary.render_markdown_lines(
-        {
-            "runtime_profile": "default",
-            "runtime_hotspots": [],
-            "stale_runtime_hotspots": [
-                {
-                    "label": "retired-check",
-                    "latest_timestamp": "2026-06-04T00:00:00Z",
-                    "stale_days": 22,
-                }
-            ],
-            "runtime_visibility_findings": [],
-            "timing_log": {"configured": True, "file_present": True, "path": "reports/timing.jsonl"},
-        },
-        repo_root=tmp_path,
-        signals_present=False,
-    )
-
-    assert lines[:3] == [
-        "- runtime source: command-timing log `reports/timing.jsonl` has no fresh usable samples for profile `default`.",
-        "- stale runtime hot spots excluded: `retired-check` latest sample 2026-06-04T00:00:00Z, 22d old.",
-        "- runtime hot spots: unavailable until structured runtime metrics have samples.",
-    ]
-
-
-def test_render_runtime_summary_normalizes_unexpected_stale_hotspot_shape(tmp_path: Path) -> None:
-    lines = render_runtime_summary.render_markdown_lines(
-        {
-            "runtime_profile": "default",
-            "runtime_hotspots": [],
-            "stale_runtime_hotspots": {"label": "bad-shape"},
-            "runtime_visibility_findings": [],
-            "timing_log": {},
-        },
-        repo_root=tmp_path,
-        signals_present=True,
-    )
-
-    assert lines[0] == (
-        "- runtime source: structured metrics file "
-        "`.charness/quality/runtime-signals.json` has no samples for profile `default`."
-    )
-    assert not any("stale runtime hot spots excluded" in line for line in lines)
-
-
-def test_render_runtime_summary_omits_interpretation_without_hotspots(tmp_path: Path) -> None:
-    # Cardinal-error guard: no hot spots -> no inference-layer declaration (it must
-    # never attach to an empty report; only a produced ranking is re-interpreted).
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=None)
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["runtime_hotspots"] == []
-    assert "interpretation" not in payload
-    assert not any("runtime interpretation" in line for line in payload["markdown_lines"])
-
-    reference = (
-        Path(__file__).resolve().parents[2]
-        / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
-    ).read_text(encoding="utf-8")
-    assert "render_runtime_summary.py" in reference
-
-
-def test_render_runtime_summary_reports_missing_structured_signals(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=None)
-
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
-
-    assert result.returncode == 0, result.stderr
-    assert (
-        "- runtime source: not configured; add structured timing capture "
-        "(or a `command_timing_log` adapter key) before reporting timing trends."
-        in result.stdout
-    )
-    assert "runtime_visibility_missing_startup_probes" in result.stdout
-    assert "10s" not in result.stdout
-
-
-def test_render_runtime_summary_escalates_empty_runtime_visibility(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, budgets=None, signals=None)
-
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert [finding["type"] for finding in payload["runtime_visibility_findings"]] == [
-        "runtime_visibility_missing_budgets",
-        "runtime_visibility_missing_startup_probes",
-    ]
-    assert payload["markdown_lines"][2].startswith(
-        "- runtime visibility: weak due to `runtime_visibility_missing_budgets`, "
-        "`runtime_visibility_missing_startup_probes`;"
-    )
 
 
 def test_budget_slack_findings_names_budgets_that_can_no_longer_fail() -> None:
@@ -891,11 +584,69 @@ def test_budget_slack_findings_names_budgets_that_can_no_longer_fail() -> None:
     assert findings[0]["suggested_budget_ms"] == int(7835 * lib.SLACK_SUGGESTION_HEADROOM)
 
 
+def test_budget_slack_advisory_renders_every_number_needed_to_act(tmp_path: Path) -> None:
+    """The advisory's whole job is to be acted on — the handoff instruction is
+    literally "act on SLACK lines from check_runtime_budget.py". An operator can
+    only do that from the default human output, and only if the line carries all
+    four numbers: which budget, what it is now, what the worst recent run actually
+    took, and what to set it to. `budget_slack_findings` returning the right dict is
+    not enough; the rendered line is the operator-facing surface, so it is what has
+    to be pinned."""
+    signals = {
+        "commands": {
+            "check-coverage": {
+                "latest": {"elapsed_ms": 7835, "status": "pass"},
+                "median_recent_elapsed_ms": 7000,
+                "max_recent_elapsed_ms": 7835,
+            }
+        }
+    }
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"check-coverage": 55000}, signals=signals)
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
+    assert result.returncode == 0, result.stderr
+
+    assert "Budget slack (advisory: these budgets can no longer fail):" in result.stdout
+    slack_lines = [line for line in result.stdout.splitlines() if line.startswith("SLACK")]
+    assert len(slack_lines) == 1, result.stdout
+    line = slack_lines[0]
+    assert "check-coverage" in line
+    assert "budget 55000ms" in line
+    assert "worst recent 7835ms" in line
+    assert "(7.0x)" in line
+    lib = check_runtime_budget.runtime_budget_lib
+    assert f"consider {int(7835 * lib.SLACK_SUGGESTION_HEADROOM)}ms" in line
+
+    # In-process witness for the same renderer. The subprocess assertions above only
+    # reach `_render_slack` while the coverage harness's `COVERAGE_PROCESS_START` is
+    # inherited by the child; a later edit that hands this `run_script` call an
+    # explicit `env=` dict would silently stop measuring it. This call cannot drift
+    # that way.
+    assert lib._render_slack(
+        {
+            "label": "check-coverage",
+            "budget_ms": 55000,
+            "max_recent_elapsed_ms": 7835,
+            "slack_ratio": 7.0,
+            "suggested_budget_ms": int(7835 * lib.SLACK_SUGGESTION_HEADROOM),
+        }
+    ) == line
+
+    # An honest budget renders no advisory at all, so the section is a signal
+    # rather than permanent furniture in the output.
+    quiet_repo = seed_runtime_budget_repo(
+        tmp_path / "quiet", budgets={"check-coverage": 12000}, signals=signals
+    )
+    quiet = run_script(SCRIPT, "--repo-root", str(quiet_repo), "--runtime-profile", "default")
+    assert quiet.returncode == 0, quiet.stderr
+    assert "SLACK" not in quiet.stdout
+    assert "Budget slack" not in quiet.stdout
+
+
 def test_budget_slack_advisory_never_changes_exit_code(tmp_path: Path) -> None:
     """Retuning a budget is reversible work, so the advisory forces the question
     and leaves the judgment to the operator (north star P1/P5). It must never fail
     the gate on its own."""
-    repo = _seed_repo(
+    repo = seed_runtime_budget_repo(
         tmp_path,
         budgets={"pytest": 100000},
         signals={

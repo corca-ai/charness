@@ -447,3 +447,66 @@ def make_minimal_skill_repo(tmp_path: Path, description: str) -> Path:
         encoding="utf-8",
     )
     return repo
+
+
+def seed_runtime_budget_repo(
+    tmp_path: Path,
+    *,
+    budgets: dict[str, int] | None,
+    signals: dict | None,
+    budget_profiles: dict[str, dict[str, dict[str, int]]] | None = None,
+    smoothing: dict | None = None,
+    explicit_empty_budgets: bool = False,
+    startup_probes: list[dict[str, object]] | None = None,
+) -> Path:
+    """Seed a repo whose quality adapter + runtime-signals drive the runtime budget
+    gate and the runtime summary renderer.
+
+    The gate uses every knob; the renderer uses only the `budgets`/`signals` subset.
+    Keeping one seeder means a change to the signals shape cannot leave the
+    renderer's fixtures silently stale.
+    """
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".charness" / "quality").mkdir(parents=True)
+    adapter_lines = ["version: 1", "repo: testrepo", "output_dir: charness-artifacts/quality"]
+    if budgets is not None:
+        adapter_lines.append("runtime_budgets:")
+        for label, ms in budgets.items():
+            adapter_lines.append(f"  {label}: {ms}")
+    elif explicit_empty_budgets:
+        adapter_lines.append("runtime_budgets:")
+    if budget_profiles is not None:
+        adapter_lines.append("runtime_budget_profiles:")
+        for profile_id, profile in budget_profiles.items():
+            adapter_lines.append(f"  {profile_id}:")
+            adapter_lines.append("    budgets:")
+            for label, ms in profile["budgets"].items():
+                adapter_lines.append(f"      {label}: {ms}")
+    if startup_probes is not None:
+        if not startup_probes:
+            adapter_lines.append("startup_probes: []")
+        else:
+            adapter_lines.append("startup_probes:")
+            for probe in startup_probes:
+                adapter_lines.extend(
+                    [
+                        f"  - label: {probe['label']}",
+                        "    command:",
+                        *[f"      - {item}" for item in probe["command"]],
+                        f"    class: {probe['class']}",
+                        f"    startup_mode: {probe['startup_mode']}",
+                        f"    surface: {probe['surface']}",
+                        f"    samples: {probe['samples']}",
+                    ]
+                )
+    (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(adapter_lines) + "\n", encoding="utf-8")
+    if signals is not None:
+        (repo / ".charness" / "quality" / "runtime-signals.json").write_text(
+            json.dumps(signals), encoding="utf-8"
+        )
+    if smoothing is not None:
+        (repo / ".charness" / "quality" / "runtime-smoothing.json").write_text(
+            json.dumps(smoothing), encoding="utf-8"
+        )
+    return repo
