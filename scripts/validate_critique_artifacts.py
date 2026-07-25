@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import re
-import sys
 from datetime import date
 from pathlib import Path
 
@@ -15,6 +14,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
 ValidationError = _artifact_validator.ValidationError
+report_validation_failure = _artifact_validator.report_validation_failure
 add_changed_artifact_args = _artifact_validator.add_changed_artifact_args
 git_changed_paths = _artifact_validator.git_changed_paths
 is_valid_followup_tail = _artifact_validator.is_valid_followup_tail
@@ -580,5 +580,4 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except ValidationError as exc:
-        print(str(exc), file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(report_validation_failure(str(exc), artifact_type="critique"))

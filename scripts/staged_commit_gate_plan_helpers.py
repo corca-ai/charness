@@ -4,8 +4,9 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
+_PLAN_HELPERS_ROOT = repo_root_from_script(__file__)
 _artifact_preflight = import_repo_module(__file__, "scripts.check_artifact_surface_preflight")
 
 
@@ -108,12 +109,20 @@ def artifact_shape_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]
     ]
     if not matched:
         return []
+    # Absolute when this tree has the script: the command runs with cwd=repo_root,
+    # and charness is consumed as a plugin, so a bare relative path only resolves
+    # when the target repo IS the charness source tree. Mirrors
+    # `check_artifact_surface_preflight._validator_argv_path`; falls back to the
+    # relative form so an unusual layout keeps the old behavior.
+    preflight_rel = "scripts/check_artifact_surface_preflight.py"
+    preflight_local = _PLAN_HELPERS_ROOT / preflight_rel
+    preflight = str(preflight_local) if preflight_local.is_file() else preflight_rel
     return [
         GateCommand(
             "check-artifact-shape (staged)",
             (
                 "python3",
-                "scripts/check_artifact_surface_preflight.py",
+                preflight,
                 "--repo-root",
                 str(repo_root),
                 "--changed-artifacts",

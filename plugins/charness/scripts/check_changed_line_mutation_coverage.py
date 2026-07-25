@@ -26,6 +26,9 @@ Usage::
 Exit 1 when any changed pool file has uncovered changed lines (the blocker);
 exit 0 when clean or when there is no base SHA (the changed-line classifier is
 non-blocking by construction without one — matching ``workflow_dispatch``).
+Exit 2 when the run is REFUSED up front (contaminated inputs) or when its result
+is UNTRUSTED because the repo moved mid-run — both are "no verdict", not a
+verdict; see ``dirty_pool_refusal`` and ``run_state_drift``.
 """
 
 from __future__ import annotations
@@ -36,6 +39,12 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+
+#: Exit code for "no verdict was produced" — a startup refusal (contaminated
+#: inputs) or an untrusted result (the repo moved mid-run). Deliberately distinct
+#: from 1 (a real changed-line blocker) so callers can tell "I refused to judge"
+#: from "I judged and it failed".
+REFUSED_EXIT = 2
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -89,6 +98,17 @@ def parse_args() -> argparse.Namespace:
             "(produced before the changed lines existed) cannot raise false 'uncovered "
             "changed line' positives. The closeout producer writes the marker when it "
             "refreshes coverage."
+        ),
+    )
+    parser.add_argument(
+        "--allow-dirty",
+        action="store_true",
+        help=(
+            "Escape hatch: proceed even when mutation-pool files have uncommitted "
+            "worktree/index changes that base..HEAD cannot see. The run then costs the "
+            "full probe and its verdict is ADVISORY ONLY — the payload records "
+            "`dirty_pool_unverified: true` plus the offending files, so a clean result "
+            "cannot be cited as changed-line proof for them."
         ),
     )
     parser.add_argument(
@@ -192,6 +212,89 @@ def uncommitted_pool_changes(repo_root: Path, eligible: set[str]) -> list[str]:
     return sorted(path for path in changed if path in eligible)
 
 
+def contaminating_pool_changes(repo_root: Path, head_sha: str, eligible: set[str]) -> list[str]:
+    """The single detector for "this run's inputs are contaminated".
+
+    Non-empty exactly when the analyzed head resolves to ``HEAD`` *and* eligible
+    mutation-pool files carry uncommitted worktree/index changes, i.e. when
+    ``base..HEAD`` structurally cannot see them. Both the up-front refusal and the
+    legacy late ``warning`` read this one function so they can never disagree.
+    """
+    if not _head_resolves_to_head(repo_root, head_sha):
+        return []
+    return uncommitted_pool_changes(repo_root, eligible)
+
+
+def dirty_pool_refusal(uncommitted: list[str]) -> str:
+    """Refuse-fast message for the contaminated-input case.
+
+    The old behaviour emitted this as a ``warning`` only AFTER the ~10 minute
+    coverage probe, so the wasted run was already paid for and a contaminated
+    green read IDENTICALLY to a real green. Refusing at startup makes the cost
+    ~0s and makes the contaminated state unrepresentable as a verdict.
+    """
+    return (
+        f"REFUSING to run: {len(uncommitted)} mutation-pool file(s) have uncommitted "
+        f"worktree/index changes that base..HEAD cannot see ({', '.join(uncommitted)}). "
+        "A clean verdict would be a FALSE GREEN for them and is indistinguishable from a "
+        "real green to the reader. Commit (or stash) those files and re-run, or pass "
+        "--allow-dirty for an explicitly ADVISORY read that records itself as unverified."
+    )
+
+
+def _pin_run_state(repo_root: Path, base_sha: str, head_sha: str) -> dict[str, str]:
+    """Snapshot what the whole run must stay anchored to.
+
+    ``resolved_head_sha`` pins ``--head-sha HEAD`` to a concrete commit once, so a
+    commit landing mid-run cannot re-resolve the range or shift the line mapping
+    the ``blocking_detail`` numbers are computed against. ``head_commit`` and the
+    changed-pool content fingerprint are the drift tripwires re-read at the end.
+    """
+    resolved = _git_lines(repo_root, ["rev-parse", head_sha])
+    head_commit = _git_lines(repo_root, ["rev-parse", "HEAD"])
+    try:
+        fingerprint = changed_pool_fingerprint(repo_root, base_sha)
+    except (subprocess.CalledProcessError, OSError):
+        fingerprint = ""
+    return {
+        "resolved_head_sha": resolved[0] if resolved else head_sha,
+        "head_commit": head_commit[0] if head_commit else "",
+        "pool_fingerprint": fingerprint,
+    }
+
+
+def run_state_drift(repo_root: Path, base_sha: str, head_sha: str, pinned: dict[str, str]) -> str | None:
+    """Re-read the pinned state at the end; describe any drift, else None.
+
+    A commit (or a worktree edit to a changed pool file) landing WHILE the probe
+    runs makes the coverage and the line mapping come from different trees — the
+    reported line attributions look plausible and are wrong. There is no way to
+    repair that after the fact, so the run reports "untrusted" instead of a verdict.
+    """
+    now = _pin_run_state(repo_root, base_sha, head_sha)
+    drift = []
+    if now["head_commit"] != pinned["head_commit"]:
+        drift.append(
+            f"HEAD moved {pinned['head_commit'][:12] or '<unknown>'} -> "
+            f"{now['head_commit'][:12] or '<unknown>'} during the run"
+        )
+    if now["pool_fingerprint"] != pinned["pool_fingerprint"]:
+        drift.append("mutation-pool worktree content changed during the run")
+    return "; ".join(drift) if drift else None
+
+
+def _mark_untrusted(report: dict, drift: str) -> dict:
+    """A stale result must never render as ``ok: true``."""
+    report["ok"] = False
+    report["untrusted"] = True
+    report["untrusted_reason"] = (
+        f"{drift}: the coverage and the changed-line mapping no longer come from the same "
+        "tree, so this run reports NO verdict. Re-run against a settled tree."
+    )
+    report["changed_line_proof"] = "untrusted"
+    return report
+
+
 def false_green_warning(repo_root: Path, head_sha: str, eligible: set[str]) -> str | None:
     """handoff-4 tripwire: warn when this run is a false-green dry-run.
 
@@ -200,13 +303,17 @@ def false_green_warning(repo_root: Path, head_sha: str, eligible: set[str]) -> s
     clean verdict is a false green for them (the exact trap recorded in
     ``charness-artifacts/retro/2026-06-07-producer-rerun-waste.md``: HEAD is the
     parent of the uncommitted changes, so they are judged only post-commit).
-    Non-blocking — it warns; the verdict for the in-range lines stands.
+    Non-blocking — it warns; the verdict for the in-range lines stands. Since the
+    refuse-fast change this is only reachable under ``--allow-dirty`` (the default
+    path refuses at startup), and it shares ``contaminating_pool_changes`` with
+    that refusal so the two can never disagree about what is contaminated.
     """
-    if not _head_resolves_to_head(repo_root, head_sha):
-        return None
-    uncommitted = uncommitted_pool_changes(repo_root, eligible)
-    if not uncommitted:
-        return None
+    uncommitted = contaminating_pool_changes(repo_root, head_sha, eligible)
+    return false_green_message(uncommitted) if uncommitted else None
+
+
+def false_green_message(uncommitted: list[str]) -> str:
+    """The advisory (``--allow-dirty``) wording for an already-detected dirty pool."""
     return (
         f"analyzed head resolves to HEAD but {len(uncommitted)} mutation-pool file(s) have "
         f"uncommitted worktree changes excluded from base..HEAD ({', '.join(uncommitted)}); "
@@ -241,19 +348,18 @@ def coverage_not_verified_warning(changed_eligible: list[str], reason: str) -> s
     )
 
 
-def _emit_skip_with_surfacing(skip: dict, changed_before_coverage: list[str], fg_warning: str | None) -> int:
-    """Emit a non-blocking skip, but surface the #335 recurrence obligation loudly.
+def _surface_skip(skip: dict, changed_before_coverage: list[str]) -> dict:
+    """Annotate a non-blocking skip and surface the #335 recurrence obligation loudly.
 
     The skip path is only reached with a non-empty ``changed_before_coverage`` (the
     empty case returns earlier), so a skip ALWAYS means "eligible files changed but
     went unverified" — the recurrence driver. Write the obligation to stderr and
-    record it structurally, then exit 0 (verdict unchanged)."""
+    record it structurally; the verdict itself stays unchanged (exit 0)."""
     not_verified = coverage_not_verified_warning(changed_before_coverage, str(skip.get("reason", "coverage unavailable")))
     sys.stderr.write(f"WARNING (changed-line mutation gate): {not_verified}\n")
     skip["coverage_not_verified"] = True
     skip["changed_eligible_files"] = changed_before_coverage
-    _emit(_attach_warning(skip, fg_warning))
-    return 0
+    return skip
 
 
 def _emit_no_base_sha() -> int:
@@ -278,53 +384,61 @@ def _emit_no_base_sha() -> int:
     return 0
 
 
-def main() -> int:
-    args = parse_args()
-    repo_root = args.repo_root.resolve()
-    base_sha = (args.base_sha if args.base_sha is not None else os.environ.get("MUTATION_BASE_SHA") or "").strip() or None
-    head_sha = (args.head_sha if args.head_sha is not None else os.environ.get("MUTATION_HEAD_SHA") or "").strip() or "HEAD"
+def _emit_dirty_refusal(uncommitted: list[str], metadata: dict) -> int:
+    """Startup refusal — emitted BEFORE any coverage/probe work."""
+    message = dirty_pool_refusal(uncommitted)
+    sys.stderr.write(f"ERROR (changed-line mutation gate): {message}\n")
+    _emit({
+        "ok": False,
+        "blocking": [],
+        "refused": True,
+        "reason": message,
+        **metadata,
+        "changed_line_proof": "refused",
+    })
+    return REFUSED_EXIT
 
-    if not base_sha:
-        return _emit_no_base_sha()
 
-    all_eligible = set(list_eligible(repo_root))
-    fg_warning = false_green_warning(repo_root, head_sha, all_eligible)
-    if fg_warning:
-        sys.stderr.write(f"WARNING (changed-line mutation gate): {fg_warning}\n")
-    changed_before_coverage = [p for p in list_changed(repo_root, base_sha, head_sha) if p in all_eligible]
-    if not changed_before_coverage:
-        _emit(_attach_warning({
-            "ok": True,
-            "blocking": [],
-            "base_sha": base_sha,
-            "head_sha": head_sha,
-            "reason": "no eligible mutation-pool files changed in this range",
-        }, fg_warning))
-        return 0
+def _run_metadata(base_sha: str, head_sha: str, pinned: dict[str, str], contaminated: list[str]) -> dict:
+    """Additive payload metadata shared by every verdict this run can emit."""
+    metadata: dict[str, object] = {
+        "base_sha": base_sha,
+        "head_sha": head_sha,
+        "resolved_head_sha": pinned["resolved_head_sha"],
+    }
+    if contaminated:
+        metadata["dirty_pool_unverified"] = True
+        metadata["uncommitted_pool_files"] = contaminated
+        metadata["changed_line_proof"] = "unverified-dirty-worktree"
+    return metadata
 
-    coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
-    skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
-    if skip is not None:
-        return _emit_skip_with_surfacing(skip, changed_before_coverage, fg_warning)
+
+def _finalize(report: dict, repo_root: Path, base_sha: str, head_sha: str, pinned: dict, exit_code: int) -> int:
+    """Emit the report, downgrading it to UNTRUSTED when the repo moved mid-run."""
+    drift = run_state_drift(repo_root, base_sha, head_sha, pinned)
+    if drift:
+        _mark_untrusted(report, drift)
+        sys.stderr.write(f"ERROR (changed-line mutation gate): {report['untrusted_reason']}\n")
+        _emit(report)
+        return REFUSED_EXIT
+    _emit(report)
+    return exit_code
+
+
+def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverage, coverage_json) -> dict:
+    """The authoritative changed-line verdict body for the analyzed (pinned) range."""
     _ensure_coverage(args, repo_root, coverage_json, base_sha)
     statement_lines = load_file_statement_lines(repo_root, coverage_json)
-
-    blocking = classify_changed_line_scope_gap(
-        repo_root=repo_root,
-        base_sha=base_sha,
-        head_sha=head_sha,
-        changed_before_coverage=changed_before_coverage,
-        statement_lines=statement_lines,
-        coverage_enabled=True,
-    )
-    blocking_targets = changed_line_scope_gap_targets(
-        repo_root=repo_root,
-        base_sha=base_sha,
-        head_sha=head_sha,
-        changed_before_coverage=changed_before_coverage,
-        statement_lines=statement_lines,
-        coverage_enabled=True,
-    )
+    scope = {
+        "repo_root": repo_root,
+        "base_sha": base_sha,
+        "head_sha": head_sha,
+        "changed_before_coverage": changed_before_coverage,
+        "statement_lines": statement_lines,
+        "coverage_enabled": True,
+    }
+    blocking = classify_changed_line_scope_gap(**scope)
+    blocking_targets = changed_line_scope_gap_targets(**scope)
 
     blocking_detail: dict[str, object] = {}
     for path in blocking:
@@ -335,10 +449,8 @@ def main() -> int:
             _executed, missing = statement_lines[path]
             blocking_detail[path] = {"changed_and_missing": sorted(changed & missing)}
 
-    _emit(_attach_warning({
+    return {
         "ok": not blocking,
-        "base_sha": base_sha,
-        "head_sha": head_sha,
         "changed_pool_files": changed_before_coverage,
         "blocking": blocking,
         "blocking_detail": blocking_detail,
@@ -350,22 +462,74 @@ def main() -> int:
                 "entry, mutate that exact line, record the failing test, then revert."
             ),
         },
-    }, fg_warning))
-    if blocking:
-        missing_targets = sorted(set(blocking) - set(blocking_targets))
-        if missing_targets:
-            sys.stderr.write(
-                "changed-line blocker could not produce exact proof targets for: "
-                f"{', '.join(missing_targets)}\n"
-            )
+    }
+
+
+def _write_blocking_stderr(blocking: list[str], blocking_targets: dict) -> None:
+    missing_targets = sorted(set(blocking) - set(blocking_targets))
+    if missing_targets:
         sys.stderr.write(
-            f"\n{len(blocking)} changed file(s) have uncovered changed lines; the mutation gate "
-            "drops them before mutation (the #260 blocking signal). Use blocking_targets to bind "
-            "manual mutant proof to the exact path:line before editing, then cover the listed lines "
-            "before merge.\n"
+            "changed-line blocker could not produce exact proof targets for: "
+            f"{', '.join(missing_targets)}\n"
         )
-        return 1
-    return 0
+    sys.stderr.write(
+        f"\n{len(blocking)} changed file(s) have uncovered changed lines; the mutation gate "
+        "drops them before mutation (the #260 blocking signal). Use blocking_targets to bind "
+        "manual mutant proof to the exact path:line before editing, then cover the listed lines "
+        "before merge.\n"
+    )
+
+
+def main() -> int:
+    args = parse_args()
+    repo_root = args.repo_root.resolve()
+    base_sha = (args.base_sha if args.base_sha is not None else os.environ.get("MUTATION_BASE_SHA") or "").strip() or None
+    head_sha = (args.head_sha if args.head_sha is not None else os.environ.get("MUTATION_HEAD_SHA") or "").strip() or "HEAD"
+
+    if not base_sha:
+        return _emit_no_base_sha()
+
+    # Startup preflight: detect contamination and pin the analyzed head BEFORE any
+    # coverage/probe work, so a contaminated run costs ~0s instead of ~10 minutes
+    # and a commit landing mid-run cannot re-resolve `HEAD` under the analysis.
+    all_eligible = set(list_eligible(repo_root))
+    contaminated = contaminating_pool_changes(repo_root, head_sha, all_eligible)
+    pinned = _pin_run_state(repo_root, base_sha, head_sha)
+    metadata = _run_metadata(base_sha, head_sha, pinned, contaminated)
+    if contaminated and not args.allow_dirty:
+        return _emit_dirty_refusal(contaminated, metadata)
+    fg_warning = false_green_message(contaminated) if contaminated else None
+    if fg_warning:
+        sys.stderr.write(f"WARNING (changed-line mutation gate): {fg_warning}\n")
+    analyzed_head = pinned["resolved_head_sha"]
+
+    changed_before_coverage = [p for p in list_changed(repo_root, base_sha, analyzed_head) if p in all_eligible]
+    if not changed_before_coverage:
+        return _finalize(_attach_warning({
+            "ok": True,
+            "blocking": [],
+            **metadata,
+            "reason": "no eligible mutation-pool files changed in this range",
+        }, fg_warning), repo_root, base_sha, head_sha, pinned, 0)
+
+    coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
+    skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
+    if skip is not None:
+        skip = {**skip, **metadata}
+        report = _attach_warning(_surface_skip(skip, changed_before_coverage), fg_warning)
+        return _finalize(report, repo_root, base_sha, head_sha, pinned, 0)
+
+    report = _blocking_report(
+        repo_root, args, base_sha, analyzed_head, changed_before_coverage, coverage_json
+    )
+    blocking = list(report["blocking"])
+    code = _finalize(
+        _attach_warning({**report, **metadata}, fg_warning),
+        repo_root, base_sha, head_sha, pinned, 1 if blocking else 0,
+    )
+    if blocking and code == 1:
+        _write_blocking_stderr(blocking, report["blocking_targets"])
+    return code
 
 
 if __name__ == "__main__":

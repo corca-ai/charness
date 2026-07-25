@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import importlib
 import re
 import subprocess
+import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -12,6 +14,61 @@ H2_RE = re.compile(r"^##\s+.+$")
 
 class ValidationError(Exception):
     pass
+
+
+def _scaffold_rel(artifact_type: str) -> str | None:
+    """Repo-relative scaffold script that owns an artifact type's shape.
+
+    The owning scaffold is declared once, in
+    `check_artifact_surface_preflight.REGISTRY`; read it from there rather than
+    re-declaring the mapping here. Imported lazily so a passing run never pays
+    for it, and any import failure degrades to "no hint" — a hint must never
+    change a verdict. The scaffold must exist in this layout (an installed
+    consumer repo may not ship the skill tree), otherwise the command would name
+    a file the author cannot run.
+    """
+    scripts_dir = Path(__file__).resolve().parent
+    try:
+        if str(scripts_dir) not in sys.path:
+            sys.path.insert(0, str(scripts_dir))
+        registry = importlib.import_module("check_artifact_surface_preflight").REGISTRY
+    except Exception:
+        return None
+    for surface in registry:
+        if surface.artifact_type == artifact_type and surface.scaffold:
+            if (scripts_dir.parent / surface.scaffold).is_file():
+                return surface.scaffold
+    return None
+
+
+def scaffold_hint(artifact_type: str) -> str | None:
+    """One trailing hint line naming the scaffold an author should start from.
+
+    Every artifact rule is a shape the owning scaffold already emits, so a
+    violation report that names only WHAT is wrong leaves the author to
+    rediscover the contract one failed run at a time. This names the command
+    instead. Hint only: no verdict, requirement, or exit code depends on it.
+    """
+    scaffold = _scaffold_rel(artifact_type)
+    if scaffold is None:
+        return None
+    return (
+        f"hint: start from the owning scaffold instead of hand-authoring — "
+        f'`python3 {scaffold} --repo-root . --title "<title>"` emits a conforming '
+        f"stub plus the write path and validator command."
+    )
+
+
+def report_validation_failure(message: str, *, artifact_type: str) -> int:
+    """Print a validator's violations, then the scaffold hint ONCE per run.
+
+    Returns the failing exit code so callers can `return`/`raise SystemExit` it.
+    """
+    print(message, file=sys.stderr)
+    hint = scaffold_hint(artifact_type)
+    if hint:
+        print(hint, file=sys.stderr)
+    return 1
 
 
 def read_lines(path: Path) -> list[str]:
@@ -68,12 +125,21 @@ def selected_artifact_paths(
     return candidate_paths_fn(repo_root, paths, all_artifacts=args.all)
 
 
-def validate_max_lines(lines: Sequence[str], *, max_lines: int, artifact_label: str) -> None:
+def validate_max_lines(
+    lines: Sequence[str], *, max_lines: int, artifact_label: str, artifact_type: str | None = None
+) -> None:
     if len(lines) > max_lines:
-        raise ValidationError(
+        message = (
             f"{artifact_label} is {len(lines)} lines; should stay concise — archive or move "
             f"durable detail to get back under {max_lines} (cut ~{len(lines) - max_lines} lines)"
         )
+        # A ceiling discovered only after writing long is a wasted draft; when the
+        # owning scaffold publishes it as `size_budget.max_lines`, say so here so
+        # the next author writes-to-fit up front.
+        scaffold = _scaffold_rel(artifact_type) if artifact_type else None
+        if scaffold:
+            message += f"; `python3 {scaffold} --repo-root .` reports this ceiling up front as `size_budget.max_lines`"
+        raise ValidationError(message)
 
 
 def validate_title(

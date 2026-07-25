@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -12,6 +11,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
+report_validation_failure = _artifact_validator.report_validation_failure
 add_changed_artifact_args = _artifact_validator.add_changed_artifact_args
 git_changed_paths = _artifact_validator.git_changed_paths
 selected_artifact_paths = _artifact_validator.selected_artifact_paths
@@ -135,5 +135,4 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except ValidationError as exc:
-        print(str(exc), file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(report_validation_failure(str(exc), artifact_type="ideation"))

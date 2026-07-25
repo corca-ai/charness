@@ -67,10 +67,15 @@ def test_surface_for_path_maps_adapter_scoped_trio() -> None:
     assert preflight.surface_for_path("docs/other.md") is None
     # adapter-scoped validators validate-all (no --paths) and are author-time-only
     # (NOT in the fail-fast commit-boundary sweep — a validate-all gate there would
-    # reorder the deeper closeout stages).
-    for t in ("debug", "quality", "handoff"):
+    # block a commit on pre-existing siblings the author never touched).
+    for t in ("quality", "handoff"):
         assert preflight.surface_for_type(t).paths_arg is False
         assert preflight.surface_for_type(t).commit_boundary is False
+    # debug left that tier once its validator gained `--paths` (#454 follow-up): its
+    # shape was previously discoverable only at the RELEASE gate, which cost ~10
+    # round trips. Changed-scoped, it is a commit-boundary peer of critique/retro.
+    assert preflight.surface_for_type("debug").paths_arg is True
+    assert preflight.surface_for_type("debug").commit_boundary is True
 
 
 def test_surface_for_type_and_goal_closeout_has_no_scaffold() -> None:
@@ -150,10 +155,10 @@ def test_changed_artifacts_skips_author_time_only_surfaces(monkeypatch) -> None:
     monkeypatch.setattr(preflight, "_run", fake_run)
     report = preflight.changed_artifacts(
         ROOT,
-        ["charness-artifacts/debug/a.md", "charness-artifacts/quality/b.md", "docs/handoff.md"],
+        ["charness-artifacts/quality/b.md", "docs/handoff.md"],
     )
     assert report["status"] == "ok"
-    assert report["checked"] == []  # none of the trio run at the commit boundary
+    assert report["checked"] == []  # neither adapter-scoped surface runs at the commit boundary
     assert captured == []
 
 
@@ -191,11 +196,18 @@ def test_emit_stub_critique_carries_required_sections() -> None:
 def test_describe_adapter_scoped_runs_validate_all_without_paths() -> None:
     # an adapter-scoped surface (paths_arg=False) must NOT get --paths in describe
     # (its validator has no such flag); it reports a surface-level validate-all
-    # verdict. charness-artifacts/debug/latest.md is a real valid debug artifact.
-    out = preflight.describe(ROOT, preflight.surface_for_type("debug"), target_rel="charness-artifacts/debug/latest.md")
-    assert "owning validator: python3 scripts/validate_debug_artifact.py --repo-root ." in out
+    # verdict. docs/handoff.md is a real valid handoff artifact.
+    out = preflight.describe(ROOT, preflight.surface_for_type("handoff"), target_rel="docs/handoff.md")
+    assert "owning validator: python3 scripts/validate_handoff_artifact.py --repo-root ." in out
     assert "--paths" not in out
     assert "validate-all" in out
+
+
+def test_describe_debug_is_changed_scoped_after_gaining_paths() -> None:
+    # debug moved to the changed-scoped tier, so describe must now bind --paths to
+    # the target rather than reporting a whole-corpus verdict.
+    out = preflight.describe(ROOT, preflight.surface_for_type("debug"), target_rel="charness-artifacts/debug/latest.md")
+    assert "--paths charness-artifacts/debug/latest.md" in out
 
 
 def test_emit_stub_goal_closeout_has_no_scaffold_message() -> None:

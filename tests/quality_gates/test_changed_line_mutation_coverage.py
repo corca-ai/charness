@@ -424,10 +424,16 @@ def test_git_lines_handles_missing_git_binary(tmp_path: Path, monkeypatch) -> No
 
 
 def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> None:
+    # The late warning is now only reachable under the explicit --allow-dirty
+    # advisory read; the default path refuses at startup instead (see
+    # test_refuses_fast_before_any_probe_when_pool_is_dirty).
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     _dirty_pool_file(repo)  # uncommitted def c, excluded from base..HEAD
     cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])  # in-range lines covered
-    result = _run(repo, base, head, cov)  # --head-sha <HEAD sha> -> resolves to HEAD
+    result = run_script(  # --head-sha <HEAD sha> -> resolves to HEAD
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
+    )
 
     assert result.returncode == 0, result.stdout + result.stderr
     payload = json.loads(result.stdout)
@@ -435,6 +441,151 @@ def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> No
     assert "warning" in payload and "FALSE GREEN" in payload["warning"]
     assert "scripts/foo.py" in payload["warning"]
     assert "WARNING (changed-line mutation gate)" in result.stderr
+
+
+def test_refuses_fast_before_any_probe_when_pool_is_dirty(tmp_path: Path) -> None:
+    # Refuse-fast: the contaminated-input case used to cost the FULL ~10 minute
+    # coverage probe and then emit an after-the-fact `warning` whose clean verdict
+    # was indistinguishable from a real green. Now it refuses at startup: exit 2
+    # (no verdict, distinct from 1 = real blocker), naming the offending files.
+    # No --reuse-coverage here on purpose — if the refusal regressed, the run would
+    # fall through to the probe instead of returning immediately.
+    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)
+
+    result = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
+
+    assert result.returncode == 2, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["refused"] is True
+    assert payload["uncommitted_pool_files"] == ["scripts/foo.py"]
+    assert payload["changed_line_proof"] == "refused"
+    assert "scripts/foo.py" in payload["reason"] and "--allow-dirty" in payload["reason"]
+    assert "REFUSING to run" in result.stderr
+
+
+def test_refusal_happens_before_the_coverage_probe_runs(tmp_path: Path, monkeypatch) -> None:
+    # The point of the refusal is the wasted ~10 minutes, so pin that the probe is
+    # never reached: a probe stub that explodes must not be called.
+    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)
+    teeth = _load_teeth()
+
+    def explode(*_args, **_kwargs):
+        raise AssertionError("the coverage probe must not run after a startup refusal")
+
+    monkeypatch.setattr(teeth, "run_test_coverage", explode)
+    monkeypatch.setattr(teeth, "read_test_command", lambda config: "python3 -m pytest -q")
+    monkeypatch.setattr(
+        sys, "argv",
+        ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD"],
+    )
+
+    assert teeth.main() == teeth.REFUSED_EXIT
+
+
+def test_allow_dirty_proceeds_but_records_the_result_as_unverified(tmp_path: Path) -> None:
+    # The escape hatch keeps the old advisory read available (run-quality's
+    # read-only lane uses it), but the payload must SAY it is unverified so a clean
+    # result cannot be cited as changed-line proof for the dirty files.
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)
+    cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True  # advisory in-range verdict still stands
+    assert payload["dirty_pool_unverified"] is True
+    assert payload["uncommitted_pool_files"] == ["scripts/foo.py"]
+    assert payload["changed_line_proof"] == "unverified-dirty-worktree"
+    assert "FALSE GREEN" in payload["warning"]
+
+
+def test_clean_worktree_does_not_refuse_and_reports_the_pinned_head(tmp_path: Path) -> None:
+    # No false positive on a clean tree, and `--head-sha HEAD` is pinned once to a
+    # concrete SHA that the payload reports (so the reader knows which tree the
+    # line numbers were mapped against).
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD",
+        "--reuse-coverage", "--coverage-json", str(cov),
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert "refused" not in payload
+    assert payload["head_sha"] == "HEAD"  # unchanged field contract for consumers
+    assert payload["resolved_head_sha"] == head
+
+
+def test_mid_run_commit_marks_the_result_untrusted(tmp_path: Path, monkeypatch) -> None:
+    # The run-3 trap: the parent commits WHILE the probe runs, so the coverage and
+    # the changed-line mapping come from different trees and the reported line
+    # attributions look plausible and are wrong. That must never render ok: true.
+    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    teeth = _load_teeth()
+    cov_path = repo / "cov.json"
+
+    def commit_during_probe(repo_root, test_command, coverage_json, *, dynamic_context=True) -> None:
+        foo = repo / "scripts" / "foo.py"
+        foo.write_text(foo.read_text(encoding="utf-8") + "\n\ndef d():\n    return 4\n", encoding="utf-8")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "mid-run")
+        Path(coverage_json).write_text(
+            json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(teeth, "run_test_coverage", commit_during_probe)
+    monkeypatch.setattr(teeth, "read_test_command", lambda config: "python3 -m pytest -q")
+    captured: list[dict] = []
+    monkeypatch.setattr(teeth, "_emit", captured.append)
+    monkeypatch.setattr(
+        sys, "argv",
+        ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD",
+         "--coverage-json", str(cov_path)],
+    )
+
+    rc = teeth.main()
+
+    assert rc == teeth.REFUSED_EXIT
+    payload = captured[-1]
+    assert payload["ok"] is False
+    assert payload["untrusted"] is True
+    assert payload["changed_line_proof"] == "untrusted"
+    assert "HEAD moved" in payload["untrusted_reason"]
+
+
+def test_run_state_drift_is_silent_on_a_settled_tree(tmp_path: Path) -> None:
+    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    teeth = _load_teeth()
+    pinned = teeth._pin_run_state(repo, base, "HEAD")
+
+    assert teeth.run_state_drift(repo, base, "HEAD", pinned) is None
+
+    _dirty_pool_file(repo)  # worktree edit to a changed pool file mid-run
+    drift = teeth.run_state_drift(repo, base, "HEAD", pinned)
+    assert drift is not None and "worktree content changed" in drift
+
+
+def test_contaminating_pool_changes_is_the_single_detector(tmp_path: Path) -> None:
+    # The refusal and the legacy late warning must never disagree about what is
+    # contaminated, so both read this one function.
+    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    _dirty_pool_file(repo)
+    teeth = _load_teeth()
+
+    assert teeth.contaminating_pool_changes(repo, "HEAD", {"scripts/foo.py"}) == ["scripts/foo.py"]
+    assert teeth.contaminating_pool_changes(repo, base, {"scripts/foo.py"}) == []  # explicit older ref
+    assert "scripts/foo.py" in teeth.false_green_warning(repo, "HEAD", {"scripts/foo.py"})
 
 
 def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> None:

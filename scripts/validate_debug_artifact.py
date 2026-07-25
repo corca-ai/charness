@@ -26,6 +26,8 @@ _debug_resolve_adapter = load_path_module("debug_resolve_adapter", _resolver_pat
 load_adapter = _debug_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
+report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
+add_changed_artifact_args = _scripts_artifact_validator_module.add_changed_artifact_args
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
@@ -346,7 +348,9 @@ def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
             error_message="debug artifact must start with a `# ... Debug ...` heading",
         ),
         lambda: validate_date_line(lines),
-        lambda: validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact"),
+        lambda: validate_max_lines(
+            lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact", artifact_type="debug"
+        ),
     )
     if path.name == "latest.md":
         required_sections = (
@@ -380,9 +384,42 @@ def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
     run_validation_checks(checks, collect_all=collect_all, artifact_label="debug artifact")
 
 
+def _selected_artifacts(args, repo_root: Path, output_dir: Path) -> list[Path] | None:
+    """Resolve which debug artifacts to validate.
+
+    `--paths` exists so this validator can run CHANGED-SCOPED at the commit
+    boundary. Validate-all was the documented reason debug sat outside the
+    fail-fast structural sweep: a whole-corpus gate there would block a commit on
+    pre-existing siblings the author never touched. Scoped to the paths actually
+    being committed, that objection does not apply, and the author learns the
+    artifact's shape at commit time instead of at the release gate (the #454
+    session discovered it by failing the release-only validator).
+
+    Scoping is OPT-IN, unlike the critique/ideation/retro siblings whose bare
+    default is changed-paths. Validate-all stays the default here because every
+    existing caller — the broad gate, CI, and this validator's own suite — relies
+    on it, and the commit boundary passes `--paths` explicitly, so nothing is
+    gained by flipping the default and a lot of working callers would break.
+    """
+    if args.all or args.paths is None:
+        return sorted(output_dir.glob("*.md"))
+    prefix = f"{output_dir.relative_to(repo_root).as_posix()}/"
+    scoped = [
+        repo_root / rel
+        for rel in args.paths
+        if rel.startswith(prefix) and rel.endswith(".md") and (repo_root / rel).is_file()
+    ]
+    # No debug artifact in scope is a no-op, not a failure: most commits touch none.
+    return scoped or None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    add_changed_artifact_args(
+        parser,
+        default_repo_root=REPO_ROOT,
+        all_help="Validate every checked-in debug artifact.",
+    )
     parser.add_argument(
         "--report-all",
         action="store_true",
@@ -396,7 +433,10 @@ def main() -> int:
     if not output_dir.is_dir():
         print(f"No debug output directory at {output_dir.relative_to(repo_root)}.", file=sys.stderr)
         return 1
-    artifacts = sorted(output_dir.glob("*.md"))
+    artifacts = _selected_artifacts(args, repo_root, output_dir)
+    if artifacts is None:
+        print("No debug artifacts in scope.")
+        return 0
     if not artifacts:
         print(f"No debug artifacts found in {output_dir.relative_to(repo_root)}.", file=sys.stderr)
         return 1
@@ -410,8 +450,7 @@ def main() -> int:
             continue
         print(f"Validated debug artifact {artifact_label}.")
     if errors:
-        print("\n".join(errors), file=sys.stderr)
-        return 1
+        return report_validation_failure("\n".join(errors), artifact_type="debug")
     return 0
 
 
@@ -419,5 +458,4 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except ValidationError as exc:
-        print(str(exc), file=sys.stderr)
-        sys.exit(1)
+        sys.exit(report_validation_failure(str(exc), artifact_type="debug"))

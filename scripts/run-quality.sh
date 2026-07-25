@@ -516,7 +516,13 @@ fi
 # `run_slice_closeout.py --produce-mutation-coverage` (run with --verification-lock).
 # CHANGED_LINE_BASE_SHA is defined above (hoisted so the critique cross-surface
 # probe shares the same merge-base anchor).
-queue_selected "check-changed-line-mutation-coverage" python3 scripts/check_changed_line_mutation_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --head-sha HEAD --reuse-coverage --skip-if-no-coverage --require-fresh-coverage
+# --allow-dirty keeps this lane's long-standing ADVISORY semantics: run-quality
+# runs against a live (often dirty) worktree, and the consumer's default is now to
+# REFUSE when mutation-pool files are uncommitted. Refusing here would hard-fail an
+# ordinary pre-push run; instead the payload records `dirty_pool_unverified` and the
+# existing FALSE GREEN warning still fires. Authoritative changed-line proof comes
+# from the closeout producer/consumer pair, which runs WITHOUT --allow-dirty.
+queue_selected "check-changed-line-mutation-coverage" python3 scripts/check_changed_line_mutation_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --head-sha HEAD --reuse-coverage --skip-if-no-coverage --require-fresh-coverage --allow-dirty
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"

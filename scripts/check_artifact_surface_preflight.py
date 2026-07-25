@@ -61,16 +61,16 @@ class Surface:
 
 
 # The artifact-authoring shape family. Two coverage tiers, by validator shape:
-#  - Prefix-mapped surfaces (critique, ideation, retro) accept `--paths` and run
-#    CHANGED-SCOPED, so they are wired into the blocking fail-fast structural
+#  - Prefix-mapped surfaces (critique, ideation, retro, debug) accept `--paths` and
+#    run CHANGED-SCOPED, so they are wired into the blocking fail-fast structural
 #    sweep (`commit_boundary=True`): cheap, changed-scoped, no reordering of the
 #    deeper run_slice_closeout stages.
-#  - Adapter-scoped siblings (debug, quality, handoff) validate-ALL (no --paths)
-#    and the debug surface feeds run_slice_closeout's risk-interrupt machinery, so
-#    they are NOT in the fail-fast sweep (`commit_boundary=False`); they get
-#    author-time shape help via `--type`/`--emit-stub`/`--path` and the broad gate
-#    remains their enforcement. (Putting a validate-all gate in the fail-fast sweep
-#    would reorder shape-before-risk-interrupt and block on pre-existing siblings.)
+#  - Adapter-scoped siblings (quality, handoff) validate-ALL (no --paths), so they
+#    are NOT in the fail-fast sweep (`commit_boundary=False`); they get author-time
+#    shape help via `--type`/`--emit-stub`/`--path` and the broad gate remains their
+#    enforcement. (Putting a validate-all gate in the fail-fast sweep would block a
+#    commit on pre-existing siblings the author never touched.) Giving one of these
+#    `--paths` is what moves it into the tier above — that is how debug moved.
 #  - goal-closeout shape is owned at the achieve complete-flip (not a commit gate).
 # See charness-artifacts/spec/authoring-preflight-generalization-and-disposition-delaunder.md
 # and charness-artifacts/spec/artifact-shape-preflight-coverage.md.
@@ -151,13 +151,18 @@ REGISTRY: tuple[Surface, ...] = (
         template_preamble=_GOAL_TEMPLATE,
         owner="achieve goal validation — the default `check_goal_artifact.py` check (`goal_lib.check_goal`'s `Activation:`-line requirement; e.g. `charness goal check --goal-path <goal>`). NOT `--pursue-ready` (which skips the section/Activation check) and not the complete flip.",
     ),
+    # debug moved into the fail-fast sweep (#454 follow-up): the validator gained
+    # `--paths`, so the documented objection — a validate-ALL gate blocking a commit
+    # on pre-existing siblings — no longer applies. Scoped to the artifacts actually
+    # being committed it is cheap and changed-scoped like its critique/retro/ideation
+    # peers. This is the surface whose shape was previously discoverable only at the
+    # RELEASE gate, which is where the #454 session spent ~10 round trips learning it.
     Surface(
         "debug", "charness-artifacts/debug/",
         "scripts/validate_debug_artifact.py",
         "skills/public/debug/scripts/scaffold_debug_artifact.py",
-        None, False,
+        None, True,
         "Hand-authored debug artifact; required sections + seam-risk/interrupt prefixed values + cross-file sibling marker.",
-        paths_arg=False,
     ),
     Surface(
         "quality", "charness-artifacts/quality/",
@@ -202,6 +207,21 @@ def surface_for_type(artifact_type: str) -> Surface | None:
 
 def _run(repo_root: Path, argv: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(argv, cwd=repo_root, check=False, capture_output=True, text=True)
+
+
+def _validator_argv_path(validator: str) -> str:
+    """Resolve an owning validator against the tree this preflight lives in.
+
+    Commands run with ``cwd=repo_root``, so a bare relative ``scripts/...`` path
+    only resolves when the target repo IS the charness source tree. Charness is
+    consumed as a plugin, and the commit-boundary arm is exactly the surface a
+    consuming repo runs over its OWN artifacts — there, the validator lives in the
+    installed plugin, not under ``<consumer>/scripts/``. Fall back to the relative
+    path when the local copy is absent so an unusual layout still gets the old
+    behavior rather than a hard failure.
+    """
+    local = REPO_ROOT / validator
+    return str(local) if local.is_file() else validator
 
 
 def _run_shape_command(repo_root: Path, surface: Surface, *, stub: bool) -> tuple[str, int]:
@@ -379,7 +399,10 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     for artifact_type in sorted(groups):
         surface, group = groups[artifact_type]
-        proc = _run(repo_root, ["python3", surface.validator, "--repo-root", str(repo_root), "--paths", *sorted(group)])
+        proc = _run(
+            repo_root,
+            ["python3", _validator_argv_path(surface.validator), "--repo-root", str(repo_root), "--paths", *sorted(group)],
+        )
         results.append({
             "artifact_type": artifact_type,
             "validator": surface.validator,

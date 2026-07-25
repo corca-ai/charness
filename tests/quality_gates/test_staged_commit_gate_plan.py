@@ -173,9 +173,12 @@ def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
     plan = staged_commit_gate_plan(ROOT, ["charness-artifacts/critique/x.md"], ruff_path="")
     gate = next((c for c in plan if c.label == "check-artifact-shape (staged)"), None)
     assert gate is not None
+    # absolute preflight path: the command runs with cwd=repo_root, and charness is
+    # consumed as a plugin, so a bare relative path only resolves when the target
+    # repo IS the charness source tree.
     assert gate.argv == (
         "python3",
-        "scripts/check_artifact_surface_preflight.py",
+        str(ROOT / "scripts" / "check_artifact_surface_preflight.py"),
         "--repo-root",
         str(ROOT),
         "--changed-artifacts",
@@ -196,7 +199,6 @@ def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md() -> None:
         ["README.md"],
         ["scripts/x.py"],
         ["charness-artifacts/spec/x.md"],
-        ["charness-artifacts/debug/2026-06-08-x.md"],
         ["charness-artifacts/quality/2026-06-08-x.md"],
         ["docs/handoff.md"],
     ):
@@ -204,6 +206,7 @@ def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md() -> None:
     for paths in (
         ["charness-artifacts/critique/2026-06-08-x.md"],
         ["charness-artifacts/ideation/2026-06-08-x.md"],
+        ["charness-artifacts/debug/2026-06-08-x.md"],
         ["charness-artifacts/retro/2026-06-08-x.md"],
     ):
         assert "check-artifact-shape (staged)" in _labels(paths)
