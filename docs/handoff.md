@@ -26,14 +26,16 @@
 
 ## Next Session
 
-1. **Three operator decisions**, all in the completed goal's
-   `## Operator Decision Queue`: (a) patch release for the plugin-copy fix, or let it
-   ride the next cut; (b) close #453 — needs the next **scheduled** mutation run
-   verified with `check_mutation_run_proof.py --claim changed-line`, since a
-   dispatch re-run cannot prove it; (c) which of the 9 unused options to delete.
-2. **The sweep is done, awaiting sign-off — do not re-run it.** 9 confirmed / 3
-   refuted, zero deletions, blast radius per candidate; four confirmed items are
-   published portable contracts whose downstream use this repo cannot observe.
+1. **Two operator decisions**, in the completed goal's `## Operator Decision Queue`:
+   (a) patch release for the plugin-copy fix, or let it ride the next cut; (b) close
+   #453 — needs the next **scheduled** mutation run verified with
+   `check_mutation_run_proof.py --claim changed-line`, since a dispatch re-run
+   cannot prove it.
+2. **The sweep is signed off and acted on — do not re-run it.** 4 deleted, 5 kept
+   (four published portable contracts, plus `--granularity`, whose extension is now
+   implemented end to end). One newly surfaced twin, `recommended_commands` in
+   `plan_cautilus_proof.py`, is the same dead-literal shape as the deleted `required`
+   and needs the same call; it was left alone only because it was not in the sign-off.
 3. Three unowned follow-ups, each with its evidence in the artifacts below: the
    critique packet tier mismatch and the specdown preset duplication (sweep
    artifact), and a proxy-assertion review of ~9 source-grepping tests (retro
