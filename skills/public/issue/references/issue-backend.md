@@ -135,8 +135,9 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" close-with-comment \
 ```
 
 `--classification` drives a rung-1 presence floor (behavioral verdict or a typed
-non-verified disposition, resolution-critique binding, source preservation) that
-runs against `--body-file` before any GitHub mutation; a silent body is refused
+non-verified disposition, HOTL entry disposition, AI-provenance marker,
+resolution-critique binding, source preservation) that runs against
+`--body-file` before any GitHub mutation; a silent body is refused
 before the comment or close command is invoked. This mirrors `verify-closeout`'s
 existing checks so the manual-fallback carrier cannot mutate the issue on
 evidence-free text.

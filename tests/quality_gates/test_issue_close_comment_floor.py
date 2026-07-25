@@ -4,10 +4,16 @@ import json
 import os
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
 from tests.quality_gates.issue_closeout_support import bug_closeout_body
-from tests.quality_gates.support import run_script, write_argv_logging_fake
+from tests.quality_gates.support import ROOT, run_script, write_argv_logging_fake
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
+FLOOR_MODULE = ROOT / "skills/public/issue/scripts/issue_close_comment_floor.py"
+
+
+def _load_close_comment_floor():
+    return import_repo_module(FLOOR_MODULE, "skills.public.issue.scripts.issue_close_comment_floor")
 
 
 def test_close_with_comment_refuses_silent_body_before_any_gh_call(tmp_path: Path) -> None:
@@ -277,3 +283,72 @@ def test_close_with_comment_refuses_on_missing_source_preservation_for_external_
     assert payload["ok"] is False
     assert "source preservation" in payload["error"]
     assert not log.exists()
+
+
+def test_close_with_comment_refuses_body_without_ai_provenance(tmp_path: Path) -> None:
+    """Seeded escape, same shape as the HOTL one above: `verify-closeout` and the
+    commit-msg carrier both check the AI-provenance marker, and this carrier -- the
+    only one that writes to GitHub itself -- did not. The marker is what lets the
+    rung-2 observer read an irreversible external write as agent-authored, so the
+    carrier with the strongest need for it was the one without it. Every other
+    rung-1 field here is compliant, so the refusal can only come from the
+    provenance floor, and no gh call may run before it."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "gh-log.json"
+    write_argv_logging_fake(
+        bin_dir,
+        "gh",
+        "GH_LOG",
+        [
+            "if 'comment' in sys.argv: print('commented')",
+            "if 'close' in sys.argv: print('closed')",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+        ],
+    )
+    body = tmp_path / "body.md"
+    body.write_text(bug_closeout_body(provenance_line=None), encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--body-file",
+        str(body),
+        "--classification",
+        "bug",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "missing `AI-provenance:` marker" in payload["error"]
+    # The other floors stayed silent, so this is the provenance check and not a
+    # fixture that happens to fail several ways at once.
+    assert "missing behavioral verdict" not in payload["error"]
+    assert "missing/invalid resolution-critique evidence" not in payload["error"]
+    assert not log.exists(), "no gh call should have run before the floor refused"
+
+
+def test_close_with_comment_provenance_floor_skips_non_behavioral_classifications(
+    tmp_path: Path,
+) -> None:
+    """The provenance floor is presence-gated by classification, exactly like the
+    behavioral-verdict floor it rides beside. A `question` closeout is not an
+    agent-authored fix carrier, so requiring the marker there would be an
+    obligation invented by the wiring rather than by the contract."""
+    floor = _load_close_comment_floor()
+    report = floor.evaluate_close_comment_floor(
+        repo_root=tmp_path,
+        body="Answered inline; no code change.\n",
+        classification="question",
+        number=42,
+    )
+    assert report["ai_provenance"]["applies"] is False
+    assert report["ai_provenance"]["ok"] is True
