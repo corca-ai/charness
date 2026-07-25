@@ -199,6 +199,48 @@ def test_breaches_exit_nonzero_in_json_mode(monkeypatch) -> None:
     assert payload["breaches"][0]["type"] == "total_budget_exceeded"
 
 
+def _write_lib_stub(root: Path, relative: str) -> Path:
+    target = root.joinpath(*relative.split("/"))
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("MARKER = 'loaded'\n", encoding="utf-8")
+    return target
+
+
+@pytest.mark.parametrize(
+    "layout",
+    [
+        "skills/public/quality/scripts/standing_test_economics_lib.py",
+        "skills/quality/scripts/standing_test_economics_lib.py",
+    ],
+    ids=["source-layout", "plugin-export-layout"],
+)
+def test_load_inventory_resolves_both_layouts(monkeypatch, tmp_path: Path, layout: str) -> None:
+    """The plugin export flattens `skills/public/` to `skills/`. Hard-coding the
+    source layout left the exported gate dead on arrival with a bare
+    FileNotFoundError out of exec_module."""
+    module = _gate()
+    repo_root = tmp_path / "repo"
+    _write_lib_stub(repo_root, layout)
+    monkeypatch.setattr(module, "__file__", str(repo_root / "scripts" / "check_seed_fixture_budget.py"))
+
+    assert module._load_inventory().MARKER == "loaded"
+
+
+def test_load_inventory_names_both_layouts_when_neither_exists(monkeypatch, tmp_path: Path) -> None:
+    """A bare FileNotFoundError from exec_module does not say what was looked for."""
+    module = _gate()
+    repo_root = tmp_path / "repo"
+    (repo_root / "scripts").mkdir(parents=True)
+    monkeypatch.setattr(module, "__file__", str(repo_root / "scripts" / "check_seed_fixture_budget.py"))
+
+    with pytest.raises(ImportError) as excinfo:
+        module._load_inventory()
+
+    message = str(excinfo.value)
+    assert "skills/public/quality/scripts/standing_test_economics_lib.py" in message
+    assert "skills/quality/scripts/standing_test_economics_lib.py" in message
+
+
 class _Scripted:
     """Stand-in for subprocess.run that replays a fixed list of outcomes."""
 
@@ -410,6 +452,26 @@ def test_quick_scan_reports_a_missing_root_without_running_du(monkeypatch, tmp_p
 
     assert lib.pytest_temp_footprint_quick() == {"status": "missing", "root": str(root)}
     assert scripted.calls == 0
+
+
+def test_quick_scan_counts_a_nested_seed_dir_only_once(monkeypatch, tmp_path: Path) -> None:
+    """`du -d 4` reports a seed dir AND anything seed-named inside it. Counting both
+    would double-count the same bytes against the per-seed budget."""
+    lib = _lib()
+    root = tmp_path / "pytest-of-someone"
+    outer = root / "pytest-1" / "charness-repo-seed0"
+    outer.mkdir(parents=True)
+    stdout = (
+        f"4096\t{outer}\n"
+        f"1024\t{outer / 'charness-repo-seed-nested'}\n"
+        f"8192\t{root}\n"
+    )
+    scripted = _Scripted([_completed(stdout)])
+    _stub_root(monkeypatch, lib, root, scripted)
+
+    footprint = lib.pytest_temp_footprint_quick()
+
+    assert footprint["seed_totals"]["charness-repo-seed"] == {"count": 1, "disk_bytes": 4096}
 
 
 def test_quick_scan_ignores_unparsable_and_out_of_root_du_lines(monkeypatch, tmp_path: Path) -> None:
