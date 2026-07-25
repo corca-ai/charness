@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import getpass
 import json
-import os
 import re
 import stat
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +13,9 @@ _DISCOVERY = __import__("standing_gate_discovery_lib")
 _MARKERS = __import__("surface_marker_lib")
 # Test-file discovery is an adapter-owned contract, held in its own module.
 _TEST_DISCOVERY = __import__("test_discovery_lib")
+# The `du`-backed pytest temp scan is its own concern, with its own retry policy
+# and failure taxonomy.
+_SCAN = __import__("pytest_temp_scan_lib")
 discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
 find_nested_cli_files = _MARKERS.nested_cli_files
@@ -30,9 +30,10 @@ TS_LOADER_RE = re.compile(r"\b(tsx|ts-node|swc-node|esbuild-register)\b")
 # `pytest-*` so pytest's numbered-dir cleanup cannot delete it mid-run — see
 # scripts/run_standing_pytest.py default_basetemp). Both hold the same
 # `popen-gw*`/seed footprint the drill-down inventory reports.
-PYTEST_SESSION_RE = re.compile(r"^(?:pytest|charness-run)-\d+$")
-PYTEST_WORKER_RE = re.compile(r"^popen-gw\d+$")
-PYTEST_SEED_PREFIXES = ("charness-repo-seed", "charness-git-repo-seed", "managed-home-seed")
+PYTEST_SESSION_RE = _SCAN.PYTEST_SESSION_RE
+PYTEST_WORKER_RE = _SCAN.PYTEST_WORKER_RE
+PYTEST_SEED_PREFIXES = _SCAN.PYTEST_SEED_PREFIXES
+PYTEST_TEMP_SCAN_ATTEMPTS = _SCAN.PYTEST_TEMP_SCAN_ATTEMPTS
 
 
 def _iter_child_stats(path: Path):
@@ -104,63 +105,13 @@ def _dir_usage(path: Path) -> dict[str, int]:
         "disk_bytes": disk if disk is not None else sum(item.st_blocks * 512 for item in _iter_file_stats(path)),
     }
 
-def _pytest_temp_root() -> Path:
-    base = Path(os.environ.get("PYTEST_DEBUG_TEMPROOT") or tempfile.gettempdir())
-    user = getpass.getuser() if hasattr(getpass, "getuser") else "unknown"
-    return base / f"pytest-of-{user}"
-
-
-def _pytest_temp_footprint_quick() -> dict[str, Any]:
-    root = _pytest_temp_root()
-    if not root.exists():
-        return {"status": "missing", "root": str(root)}
-    try:
-        result = subprocess.run(
-            ["du", "-d", "4", "-B1", str(root)],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return {"status": "unavailable", "root": str(root)}
-    seed_totals: dict[str, dict[str, int]] = {
-        prefix: {"count": 0, "disk_bytes": 0} for prefix in PYTEST_SEED_PREFIXES
-    }
-    total_disk_bytes = 0
-    session_names: set[str] = set()
-    matched_paths: list[Path] = []
-    for line in result.stdout.splitlines():
-        try:
-            size_str, raw_path = line.split("\t", 1)
-            size = int(size_str)
-        except ValueError:
-            continue
-        path = Path(raw_path)
-        if path == root:
-            total_disk_bytes = size
-            continue
-        try:
-            rel_parts = path.relative_to(root).parts
-        except ValueError:
-            continue
-        if rel_parts and PYTEST_SESSION_RE.match(rel_parts[0]):
-            session_names.add(rel_parts[0])
-        if any(parent in matched_paths for parent in path.parents):
-            continue
-        for prefix in PYTEST_SEED_PREFIXES:
-            if path.name.startswith(prefix):
-                seed_totals[prefix]["count"] += 1
-                seed_totals[prefix]["disk_bytes"] += size
-                matched_paths.append(path)
-                break
-    return {
-        "status": "available",
-        "root": str(root),
-        "session_count": len(session_names),
-        "total_disk_bytes": total_disk_bytes,
-        "seed_totals": seed_totals,
-    }
+# The `du`-backed quick scan, its retry policy, and its failure taxonomy live in
+# their own module. Re-exported under the historical private names so existing
+# callers and the plugin export keep working.
+_pytest_temp_root = _SCAN.pytest_temp_root
+_du_scan_once = _SCAN.du_scan_once
+_du_reported_root_total = _SCAN.du_reported_root_total
+_pytest_temp_footprint_quick = _SCAN.pytest_temp_footprint_quick
 
 
 def _pytest_temp_footprint() -> dict[str, Any]:

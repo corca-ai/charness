@@ -164,6 +164,103 @@ def test_record_quality_runtime_batch_reports_a_malformed_record_without_losing_
     assert commands["ruff"]["latest"]["elapsed_ms"] == 28
 
 
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        ('["pytest", 1, "pass"]', "not a JSON object"),
+        ('{"label": "pytest"}', "missing elapsed_ms, status"),
+        ('{"label": "pytest", "elapsed_ms": 1, "status": "skipped"}', "expected 'pass' or 'fail'"),
+    ],
+    ids=["not-an-object", "missing-keys", "bad-status"],
+)
+def test_record_quality_runtime_batch_names_why_a_record_is_malformed(
+    tmp_path: Path, monkeypatch, capsys, line: str, expected: str
+) -> None:
+    """Each rejection reason is reported by name. A batch line is machine-written, so
+    "malformed" alone does not tell the maintainer which part of the runner broke."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    batch_path = tmp_path / "batch.jsonl"
+    batch_path.write_text(line + "\n", encoding="utf-8")
+
+    assert _record(monkeypatch, repo, "--batch", str(batch_path)) == 1
+    captured = capsys.readouterr()
+    assert "line 1" in captured.err
+    assert expected in captured.err
+
+
+def test_record_quality_runtime_batch_skips_blank_lines(tmp_path: Path, monkeypatch, capsys) -> None:
+    """A trailing newline or a blank separator is not a runner bug and must not be
+    reported as a malformed record."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    batch_path = tmp_path / "batch.jsonl"
+    batch_path.write_text(
+        "\n   \n"
+        + json.dumps({"label": "pytest", "elapsed_ms": 7, "status": "pass", "timestamp": "2026-04-10T09:00:00Z"})
+        + "\n\n",
+        encoding="utf-8",
+    )
+
+    assert _record(monkeypatch, repo, "--batch", str(batch_path)) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["recorded_count"] == 1
+    assert payload["malformed_lines"] == []
+
+
+def test_record_quality_runtime_batch_reports_an_unreadable_file(tmp_path: Path) -> None:
+    """An unreadable batch is the runner failing to hand over its samples; silently
+    recording nothing would leave `check-runtime-budget` grading a stale store."""
+    missing = tmp_path / "absent.jsonl"
+
+    with pytest.raises(SystemExit) as excinfo:
+        record_quality_runtime.load_batch_records(missing)
+
+    assert "is unreadable" in str(excinfo.value)
+    assert str(missing) in str(excinfo.value)
+
+
+def test_record_quality_runtime_empty_batch_leaves_no_store_behind(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """Zero records must not create an empty store: `check-runtime-budget` would then
+    read a document that looks initialized but holds no samples."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    batch_path = tmp_path / "batch.jsonl"
+    batch_path.write_text("\n", encoding="utf-8")
+
+    assert _record(monkeypatch, repo, "--batch", str(batch_path)) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["recorded_count"] == 0
+    assert not (repo / ".charness" / "quality" / "runtime-signals.json").exists()
+    assert not (repo / ".charness" / "quality" / "runtime-smoothing.json").exists()
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        ((), "--label, --elapsed-ms, --status"),
+        (("--label", "pytest"), "--elapsed-ms, --status"),
+        (("--label", "pytest", "--elapsed-ms", "5"), "--status"),
+    ],
+    ids=["none", "label-only", "label-and-elapsed"],
+)
+def test_record_quality_runtime_names_every_missing_single_record_flag(
+    tmp_path: Path, monkeypatch, capsys, args: tuple[str, ...], expected: str
+) -> None:
+    """Without `--batch` the three sample fields are required. argparse cannot mark
+    them `required` (a batch run supplies none of them), so the check is hand-rolled
+    and has to name what is actually missing."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    with pytest.raises(SystemExit):
+        _record(monkeypatch, repo, *args)
+
+    assert expected in capsys.readouterr().err
+
+
 def test_record_quality_runtime_batch_refuses_a_single_record_timestamp(
     tmp_path: Path, monkeypatch
 ) -> None:

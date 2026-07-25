@@ -609,12 +609,14 @@ queue_selected "dup-ratchet" python3 skills/public/quality/scripts/check_dup_rat
 
 # A THIRD real ordering dependency, found by review after the barrier removal:
 # this gate scans `$PYTEST_DEBUG_TEMPROOT/pytest-of-<user>`, the same tree the
-# `pytest` gate fills and then rmtree's. Run concurrently it either measures a
-# half-built tree or hits `du`'s vanishing-file error, and its own failure mode is
-# fail-OPEN (`advisory_only_no_pytest_temp_yet`, exit 0) — the gate silently stops
-# being a gate. Reproduced directly: polling it during a standing pytest run
-# returned `unavailable` the moment pytest tore its basetemp down. It belongs
-# after the pytest barrier, where the tree is settled.
+# `pytest` gate fills and then rmtree's. Run concurrently it measures a half-built
+# tree. Reproduced directly: polling it during a standing pytest run returned
+# `unavailable` the moment pytest tore its basetemp down. It belongs after the
+# pytest barrier, where the tree is settled.
+#
+# The gate no longer fails OPEN on a scan error, so moving it back here would now
+# fail the RUN rather than silently stop gating — do not move it on the strength
+# of the older "it just goes advisory" reasoning, which is no longer true.
 queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
 
 queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT" --require-empty-parity-issues --require-git-file-listing

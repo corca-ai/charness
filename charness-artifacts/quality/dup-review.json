@@ -590,6 +590,13 @@
     },
     {
       "class": "intentional",
+      "id": "907963a5caacf849",
+      "note": "two-line `if <predicate>: return \"<literal>\"` classifier arm, shared lexically by four unrelated owners (seed-budget scan classification, host log probe verdicts, lint-ignore inventory, gather record rendering). Each arm returns its own domain's string constant and shares no behavior; extracting it would replace four readable guard clauses with an indirection that still has to spell out both the predicate and the literal",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "90cebad1d0bdb633",
       "note": "nine-line top-level import and usage-stream constant overlap between the standalone validator and reporter after both consume the shared records module; it is script bootstrap shape, not duplicated behavior",
       "reviewed_at": "2026-07-10",
@@ -852,6 +859,13 @@
       "id": "d851b553d64868c6",
       "note": "failure-payload scaffolding across worktree_create_lib.py and worktree_cleanup_lib.py: per-lib standalone command payload shape by design; rotation-surfaced, members untouched (#441 rotation class)",
       "reviewed_at": "2026-07-17",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d86058cd07319fec",
+      "note": "same two-line classifier-arm shape as 907963a5caacf849, here between the seed-budget scan classifier and propose_mutation_testing.py; unrelated domains, no shared behavior to centralize",
+      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {

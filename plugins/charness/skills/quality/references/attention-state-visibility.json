@@ -201,9 +201,12 @@
       ],
       "evidence_terms": [
         "advisory_only_no_pytest_temp_yet",
+        "advisory_only_du_unavailable",
+        "advisory_only_scan_failure_waived",
+        "blocking_pytest_temp_scan_failed",
         "scope_classification"
       ],
-      "rationale": "Seed fixture budget gate reports advisory-only when no pytest tmp directory has been materialized yet; payload exposes the classification."
+      "rationale": "Seed fixture budget gate reports advisory-only for the three states where no measurement is possible or the block was explicitly waived (no pytest tmp directory yet, a `du` this box cannot run, or --advisory-on-scan-failure). A scan that failed for any other reason is BLOCKING, not advisory: a run that measured nothing must not read as a pass. The payload exposes the classification, the scan reason, and the attempt count."
     },
     "scripts/check_upstream_support_drift.py": {
       "states": [

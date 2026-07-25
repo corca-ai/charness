@@ -15,7 +15,19 @@ DEFAULT_PER_SEED_BUDGET_BYTES = 3 * 1024 * 1024 * 1024
 def _load_inventory():
     here = Path(__file__).resolve()
     repo_root = here.parents[1]
-    target = repo_root / "skills" / "public" / "quality" / "scripts" / "standing_test_economics_lib.py"
+    # Two layouts, one script: this repo keeps the lib under `skills/public/`,
+    # the plugin export flattens it to `skills/`. Hard-coding the first made the
+    # exported copy die with a bare FileNotFoundError from exec_module.
+    candidates = (
+        repo_root / "skills" / "public" / "quality" / "scripts" / "standing_test_economics_lib.py",
+        repo_root / "skills" / "quality" / "scripts" / "standing_test_economics_lib.py",
+    )
+    target = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if target is None:
+        raise ImportError(
+            "standing_test_economics_lib.py not found in either layout: "
+            + ", ".join(str(candidate) for candidate in candidates)
+        )
     spec = importlib.util.spec_from_file_location("standing_test_economics_lib", target)
     if spec is None or spec.loader is None:
         raise ImportError(f"unable to load {target}")
@@ -55,7 +67,75 @@ def parse_args() -> argparse.Namespace:
         help=f"Fail when any single seed prefix exceeds this budget (default {DEFAULT_PER_SEED_BUDGET_BYTES}).",
     )
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--advisory-on-scan-failure",
+        action="store_true",
+        help=(
+            "Report a failed pytest tmp scan without blocking. The escape hatch for a box "
+            "whose scan breaks for a reason this gate cannot classify; strictly narrower "
+            "than `git push --no-verify`, which disables every gate instead of this one."
+        ),
+    )
     return parser.parse_args()
+
+
+def classify_scan(footprint: dict, advisory_on_scan_failure: bool) -> str:
+    """Name what this run actually learned about the seed footprint.
+
+    A failed scan is not an absent tree, and it is not automatically forgivable
+    either. The scan accepts a partial walk and retries one that died early, so a
+    failure that survives all of that means this run measured nothing -- and a
+    gate that reports "nothing to measure" as success is a gate a permanently
+    broken `du` passes forever.
+
+    The exception is a capability gap: a `du` that is absent, not executable, or
+    too old to accept `-B` is something this box cannot do, not a measurement
+    that broke. A portable harness must not block a push on it, and no retry
+    would change the answer.
+    """
+    status = footprint.get("status")
+    if status == "available":
+        return "scanned"
+    if status != "unavailable":
+        return "advisory_only_no_pytest_temp_yet"
+    if footprint.get("capability_gap"):
+        return "advisory_only_du_unavailable"
+    if advisory_on_scan_failure:
+        return "advisory_only_scan_failure_waived"
+    return "blocking_pytest_temp_scan_failed"
+
+
+def collect_breaches(footprint: dict, args: argparse.Namespace) -> tuple[list[dict[str, object]], int]:
+    # `pytest_temp_footprint_quick` is the only producer here and it reports
+    # `total_disk_bytes`; the old `total_bytes` fallback belonged to the slow
+    # scan and could never fire from this call site.
+    total_disk_bytes = int(footprint.get("total_disk_bytes") or 0)
+    breaches: list[dict[str, object]] = []
+    if total_disk_bytes > args.total_budget_bytes:
+        breaches.append({
+            "type": "total_budget_exceeded",
+            "observed_bytes": total_disk_bytes,
+            "budget_bytes": args.total_budget_bytes,
+            "remediation": (
+                "Reduce pytest tmp retention or clean stale `pytest-of-*/pytest-*` sessions; "
+                "see inventory_standing_test_economics.py for the per-session breakdown."
+            ),
+        })
+    for prefix, totals in (footprint.get("seed_totals") or {}).items():
+        disk = int(totals.get("disk_bytes") or 0)
+        if disk > args.per_seed_budget_bytes:
+            breaches.append({
+                "type": "per_seed_budget_exceeded",
+                "seed_prefix": prefix,
+                "observed_bytes": disk,
+                "budget_bytes": args.per_seed_budget_bytes,
+                "session_count": int(totals.get("count") or 0),
+                "remediation": (
+                    f"Stop materializing `{prefix}-*` per session; share via a content-addressed cache or "
+                    f"reduce pytest tmp retention."
+                ),
+            })
+    return breaches, total_disk_bytes
 
 
 def main() -> int:
@@ -63,53 +143,19 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     lib = _load_inventory()
     footprint = lib._pytest_temp_footprint_quick()
-    breaches: list[dict[str, object]] = []
-    classification: str
-    total_disk_bytes: int | None
-    if footprint.get("status") == "unavailable":
-        # A failed scan is not an absent tree. `du` exits nonzero when a file
-        # vanishes mid-walk, which is what a concurrent pytest teardown looks like;
-        # reporting that as "no tmp directory yet" told the operator the gate had
-        # nothing to measure when in fact the measurement failed. Still advisory
-        # (a shared box can lose the race for reasons no push should block on),
-        # but it now says which of the two happened.
-        classification = "advisory_only_pytest_temp_scan_failed"
-        total_disk_bytes = None
-    elif footprint.get("status") != "available":
-        classification = "advisory_only_no_pytest_temp_yet"
-        total_disk_bytes = None
+    classification = classify_scan(footprint, args.advisory_on_scan_failure)
+    if classification == "scanned":
+        breaches, total_disk_bytes = collect_breaches(footprint, args)
     else:
-        total_disk_bytes = int(footprint.get("total_disk_bytes") or footprint.get("total_bytes") or 0)
-        if total_disk_bytes > args.total_budget_bytes:
-            breaches.append({
-                "type": "total_budget_exceeded",
-                "observed_bytes": total_disk_bytes,
-                "budget_bytes": args.total_budget_bytes,
-                "remediation": (
-                    "Reduce pytest tmp retention or clean stale `pytest-of-*/pytest-*` sessions; "
-                    "see inventory_standing_test_economics.py for the per-session breakdown."
-                ),
-            })
-        seed_totals = footprint.get("seed_totals") or {}
-        for prefix, totals in seed_totals.items():
-            disk = int(totals.get("disk_bytes") or 0)
-            if disk > args.per_seed_budget_bytes:
-                breaches.append({
-                    "type": "per_seed_budget_exceeded",
-                    "seed_prefix": prefix,
-                    "observed_bytes": disk,
-                    "budget_bytes": args.per_seed_budget_bytes,
-                    "session_count": int(totals.get("count") or 0),
-                    "remediation": (
-                        f"Stop materializing `{prefix}-*` per session; share via a content-addressed cache or "
-                        f"reduce pytest tmp retention."
-                    ),
-                })
-        classification = "scanned"
+        breaches, total_disk_bytes = [], None
+    scan_failed = classification == "blocking_pytest_temp_scan_failed"
     out = {
         "repo_root": str(repo_root),
         "scope_classification": classification,
         "pytest_temp_status": footprint.get("status"),
+        "pytest_temp_scan_reason": footprint.get("reason"),
+        "pytest_temp_scan_attempts": footprint.get("attempts"),
+        "pytest_temp_scan_partial": footprint.get("partial"),
         "total_disk_bytes": total_disk_bytes,
         "total_budget_bytes": args.total_budget_bytes,
         "per_seed_budget_bytes": args.per_seed_budget_bytes,
@@ -117,12 +163,36 @@ def main() -> int:
     }
     if args.json:
         print(json.dumps(out, ensure_ascii=False, indent=2))
-        return 1 if breaches else 0
-    if classification == "advisory_only_pytest_temp_scan_failed":
+        return 1 if breaches or scan_failed else 0
+    if scan_failed:
         print(
-            f"WARNING: scope_classification={classification}: the pytest tmp scan failed "
-            f"(root {footprint.get('root')}); nothing was measured, so this run proves nothing "
-            "about the seed budget. A concurrent pytest teardown is the usual cause."
+            f"scope_classification={classification}: the pytest tmp scan failed "
+            f"{footprint.get('attempts')}x (root {footprint.get('root')}, "
+            f"reason {footprint.get('reason')}); nothing was measured, so this run proves "
+            "nothing about the seed budget.",
+            file=sys.stderr,
+        )
+        print(
+            "    remediation: run `du -d 4 -B1 "
+            f"{footprint.get('root')}` to see why the walk dies before printing the root "
+            "total. A vanished entry is already tolerated and an early death is already "
+            "retried, so a failure here is a real one. Pass --advisory-on-scan-failure to "
+            "report it without blocking.",
+            file=sys.stderr,
+        )
+        return 1
+    if classification == "advisory_only_du_unavailable":
+        print(
+            f"scope_classification={classification}: `du` cannot run this measurement on "
+            f"this box ({footprint.get('reason')}), so the seed footprint is unmeasurable "
+            "here; gate is advisory-only."
+        )
+        return 0
+    if classification == "advisory_only_scan_failure_waived":
+        print(
+            f"scope_classification={classification}: the pytest tmp scan failed "
+            f"({footprint.get('reason')}) and --advisory-on-scan-failure waived the block; "
+            "nothing was measured, so this run proves nothing about the seed budget."
         )
         return 0
     if classification.startswith("advisory_only"):
