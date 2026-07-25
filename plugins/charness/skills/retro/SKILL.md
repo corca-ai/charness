@@ -1,6 +1,6 @@
 ---
 name: retro
-description: "Use after a meaningful work unit or when the user asks for a retrospective. Reviews what happened, what created waste, which decisions mattered, which named expert lens or direct counterfactual would have changed the next move, and which workflow/capability/memory improvements should make the next session better. Auto-selects `session` or `weekly` mode from context; ambiguous cases default to `session`."
+description: "Use after a meaningful work unit or when the user asks for a retrospective. Reviews what happened, what created waste, which decisions mattered, which named expert lens or direct counterfactual would have changed the next move, and which workflow/capability/memory improvements should make the next session better. One retro shape; scale the depth to the work unit under review."
 ---
 
 # Retro
@@ -21,11 +21,11 @@ then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/plan_retro_run.py" --repo-root . --invocation-text "<retro request>"
+python3 "$SKILL_DIR/scripts/plan_retro_run.py" --repo-root .
 python3 "$SKILL_DIR/scripts/scaffold_retro_artifact.py" --repo-root .
 ```
 
-The planner names the mode, the work-class counterfactual lens brief, required
+The planner names the work-class counterfactual lens brief, required
 reads (incl. `references/expert-lens.md` for the briefed lens), gate packets, and
 the next action. Open the `required_reads` before writing; expert-lens.md is an
 unconditional read because the counterfactual is mandatory and its lens catalog is
@@ -36,24 +36,19 @@ Adapter policy:
 
 - If the adapter is missing and the request is session-like, continue with
   inferred defaults.
-- If the adapter is missing and the request is weekly-like, metrics-heavy, or
-  explicitly asks for durable artifacts, create `<repo-root>/.agents/retro-adapter.yaml`
-  first, then continue.
+- If the adapter is missing and the request is metrics-heavy or explicitly asks for
+  durable artifacts, create `<repo-root>/.agents/retro-adapter.yaml` first, then continue.
 - If the adapter is invalid, repair it using `references/adapter-contract.md`
   before relying on adapter-defined paths or metrics.
 - Never block a `session` retro solely because the adapter is missing.
 
 ## Workflow
 
-1. Select the retro shape.
-   - explicit user wording wins
-   - `this session`, `this task`, `what just happened` => `session`
-   - `this week`, `sprint`, `recent pattern` => `weekly`
-   - if still ambiguous, default to `session`
+1. Scale the retro to the work unit under review.
 2. Gather evidence in this order.
    - current thread, current task, changed files, recent commits
    - existing handoff or prior retro artifacts when they matter
-   - for `weekly`, the most recent durable weekly retro under `output_dir` when one exists
+   - the most recent durable retro under `output_dir` when a trend line matters
    - adapter-defined `evidence_paths`
    - for host-log-derived efficiency signals, prefer `$SKILL_DIR/scripts/probe_host_logs.py`
      (`--repo-root .`) before claiming turns, tokens, or tool-call counts, and
@@ -66,17 +61,19 @@ Adapter policy:
      `--format markdown` for the provider-safe measured-vs-proxy closeout block.
      The measured / proxy / unavailable signal distinctions live in
      `references/phase-aware-efficiency.md`.
-   - adapter-defined `metrics_commands` only when they sharpen a weekly claim
+   - adapter-defined `metrics_commands` only when they sharpen a real claim
+   - recurring gate-runtime and artifact-only-commit waste via
+     `$SKILL_DIR/scripts/mine_closeout_telemetry.py`, per `references/closeout-telemetry.md`
    - if the adapter declares `packet_sections`, run
      `$SKILL_DIR/scripts/prepare_packet.py` once and read the markdown packet
      before writing lessons; see `references/prepare-packet.md`
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next
-   - `Window`: for `weekly`, the time window being summarized
+   - `Window`: the span of work being reviewed
    - `Evidence Summary`: which durable artifacts, commands, or metrics actually informed the retro
    - `Waste`: where time, clarity, or trust was lost
    - `Critical Decisions`: which decisions changed outcome or constrained later work
-   - `Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists
+   - `Trends vs Last Retro`: compare against the last durable retro when one exists
    - `Expert Counterfactuals`: what 1-2 counterfactual lenses, named experts
      when useful, would likely have done differently
    - `Next Improvements`: concrete changes for the next session
@@ -105,7 +102,6 @@ Adapter policy:
      `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward
-   - if `weekly` and the adapter defines `snapshot_path`, write a compact machine-readable snapshot with the window, evidence sources, and any real metrics or deltas you used
    - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact recent-lessons digest automatically from the written durable artifact
    - on the first retro after a legacy hand-curated `recent-lessons.md` (file exists, `output_dir` has no prior `*.md` artifacts), the persistence helper preserves the existing summary instead of replacing it with an empty-stub digest. Pass `--force-empty-summary` only after confirming the legacy content is safe to drop.
    - otherwise still give the user a concise retro in chat
@@ -120,13 +116,12 @@ Adapter policy:
 
 The result should usually include:
 
-- `Mode`
 - `Context`
-- `Window` for `weekly`
-- `Evidence Summary` for `weekly`
+- `Window`
+- `Evidence Summary`
 - `Waste`
 - `Critical Decisions`
-- `Trends vs Last Retro` for `weekly` when prior evidence exists
+- `Trends vs Last Retro` when prior evidence exists
 - `Expert Counterfactuals`
 - `Next Improvements`
 - `Sibling Search` when a transferable waste pattern is named (opt-in;
@@ -167,26 +162,26 @@ sub-agents, otherwise write the counterfactuals inline.
 - Do not fabricate metrics when the adapter does not provide a real source.
 - Do not label broad exploration as waste solely because it was broad; identify
   phase intent and the triage lock first.
-- Weekly retros may stay narrative without metrics, but must say so explicitly.
-- If no prior weekly retro exists, say so explicitly instead of implying a trend line.
+- A retro may stay narrative without metrics, but must say so explicitly.
+- If no prior retro exists, say so instead of implying a trend line.
 - Capability suggestions exist to reduce future waste, not to show tool awareness.
 - Do not let the retro turn into a generic postmortem when the user asked for a
   short session review.
 - Do not claim persistence implicitly; name the durable path or the reason it
   remained chat-only.
-- Do not invent hidden machine formats. Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`.
+- Do not invent hidden machine formats or write hidden telemetry; the retro only
+  reads the stream the closeout emitter already wrote.
 - If no improvement is proposed, explain why the current workflow should remain
   unchanged.
 
 ## References
 
 - `references/adapter-contract.md`
-- `references/mode-guide.md`
 - `references/section-guide.md`
 - `references/phase-aware-efficiency.md`
 - `references/expert-lens.md`
 - `references/trigger-and-persistence.md`
-- `references/weekly-trends.md`
+- `references/closeout-telemetry.md`
 - `references/waste-sibling-scan.md`
 - `references/prepare-packet.md`
 - `../../shared/references/retro-issue-destination-split.md`

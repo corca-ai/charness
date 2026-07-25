@@ -122,14 +122,16 @@ def test_ordinary_and_docs_work_classes(tmp_path: Path) -> None:
     assert unknown["work_class"] == "unknown"
 
 
-def test_weekly_mode_adds_weekly_trends_read(tmp_path: Path) -> None:
+def test_every_retro_routes_closeout_telemetry(tmp_path: Path) -> None:
+    """Gate-runtime waste is invisible to a passing gate and only shows up as
+    recurrence across runs. It used to be reachable only from `weekly` — a mode
+    invoked once in three months — so the stream accumulated records nothing read.
+    Every retro must now route it, whatever wording the user used."""
     repo = tmp_path / "repo"
     write_adapter(repo)
 
-    payload = run_plan(repo, invocation_text="weekly retro for this week", changed_paths=["src/app.py"])
-
-    assert payload["mode"] == "weekly"
-    assert "references/weekly-trends.md" in required_paths(payload)
+    payload = run_plan(repo, changed_paths=["src/app.py"])
+    assert "references/closeout-telemetry.md" in required_paths(payload)
 
 
 def test_clean_valid_adapter_does_not_add_adapter_contract(tmp_path: Path) -> None:
@@ -162,14 +164,16 @@ def test_continue_existing_when_today_artifact_present(tmp_path: Path) -> None:
     assert str(artifact_rel) in required_paths(payload)
 
 
-def test_retro_plan_session_wording_selects_session_mode(tmp_path: Path) -> None:
+def test_retro_plan_has_no_mode_concept(tmp_path: Path) -> None:
+    """`weekly` was removed and `session` went with it: with one shape, a mode field
+    that always holds the same value is noise, not information. Nothing read it."""
     repo = tmp_path / "repo"
     write_adapter(repo)
 
-    payload = run_plan(repo, invocation_text="what just happened this session", changed_paths=["src/app.py"])
+    payload = run_plan(repo, changed_paths=["src/app.py"])
 
-    assert payload["mode"] == "session"
-    assert payload["mode_reason"] == "session wording in invocation"
+    assert "mode" not in payload
+    assert "mode_reason" not in payload
 
 
 def test_retro_plan_missing_adapter_adds_adapter_contract_read(tmp_path: Path) -> None:
@@ -182,16 +186,15 @@ def test_retro_plan_missing_adapter_adds_adapter_contract_read(tmp_path: Path) -
     assert "references/adapter-contract.md" in required_paths(payload)
 
 
-def test_retro_plan_weekly_reads_summary_when_present(tmp_path: Path) -> None:
+def test_retro_plan_reads_summary_when_present(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)
     summary = repo / "charness-artifacts" / "retro" / "recent-lessons.md"
     summary.parent.mkdir(parents=True, exist_ok=True)
     summary.write_text("# Recent Lessons\n", encoding="utf-8")
 
-    payload = run_plan(repo, invocation_text="weekly retro for this week", changed_paths=["src/app.py"])
+    payload = run_plan(repo, changed_paths=["src/app.py"])
 
-    assert payload["mode"] == "weekly"
     assert "charness-artifacts/retro/recent-lessons.md" in required_paths(payload)
 
 
@@ -293,3 +296,36 @@ def test_retro_plan_bootstrap_reports_missing_runtime(monkeypatch: pytest.Monkey
     monkeypatch.setattr(module, "Path", FakePath)
     with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
         module._load_skill_runtime_bootstrap()
+
+
+def test_retired_weekly_keys_pass_through_without_error(tmp_path: Path) -> None:
+    """Upgrade safety for the `weekly` deletion: a consumer adapter still carrying
+    `default_mode` / `weekly_window_days` / `snapshot_path` must resolve clean. The
+    resolver validates only known fields, so unknown keys are ignored rather than
+    rejected — without this named test the only proof is an incidental fixture line."""
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/retro",
+                "default_mode: weekly",
+                "weekly_window_days: 7",
+                "snapshot_path: .charness/retro/weekly-latest.json",
+                "summary_path: charness-artifacts/retro/recent-lessons.md",
+                "evidence_paths: []",
+                "metrics_commands: []",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo, changed_paths=["src/app.py"])
+
+    adapter_packet = next(p for p in payload["gate_packets"] if p["id"] == "adapter-readiness")
+    assert adapter_packet["errors"] == []
+    assert adapter_packet["status"] == "pass"

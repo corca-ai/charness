@@ -45,8 +45,6 @@ ALWAYS_STRUCTURED_COMMANDS = (
         "skills/public/retro/scripts/plan_retro_run.py",
         "--repo-root",
         ".",
-        "--invocation-text",
-        "contract probe",
     ),
 )
 

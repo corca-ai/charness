@@ -1,75 +1,70 @@
 {
-  "_comment": "Claim-fidelity spec for the retro skill: does a real `/charness:retro` run honor its central claim — route to its references at the point of need? retro now ships plan_retro_run.py (2026-06-29); RCF is planner-anchored (lens 1): the planner emits expert-lens.md as an UNCONDITIONAL required_read, so the floor is real rather than derived from prose. The prior RCF of four was over-broad; three of the four dissolve under lens 7 because deterministic surfaces (SKILL.md body + scaffold_retro_artifact.py + resolve_adapter.py) brief the judge: mode-guide.md (SKILL.md step 1 inlines the session/weekly selection rule and the Auto Selection order, step 2 inlines the per-mode evidence bias) is engage-always but not a floor (claimRole skill-inlined-context); section-guide.md (the core section list is inlined in SKILL.md step 3 + Output Shape AND emitted by scaffold_retro_artifact.py's template; the doc's unique depth — claim-strength tags, gate-baseline-runtime rule — is conditional within a retro) is engage-always but not a floor (claimRole skill-and-scaffold-inlined-context); adapter-contract.md is resolved by the mandatory resolve_adapter.py bootstrap and the explainer is read only on adapter repair, so it is on-demand (conditional). trigger-and-persistence.md stays engage-always-not-RCF (persist_retro_artifact.py owns the persistence mechanism and SKILL.md step 5 inlines the mandatory Persisted: yes/no rule; the trigger taxonomy is the doc's conditional remainder). The single engage-always floor is expert-lens.md: the Expert Counterfactual Rule mandates 'every retro includes at least one counterfactual lens' and routes 'the lens patterns, named-expert examples, and sub-agent flow live in references/expert-lens.md' at the point of need; the scaffold emits only a '## Expert Counterfactuals — TODO a lens' stub, so to fill the mandatory section the run is forced to open expert-lens.md for the default pattern (one domain lens + one decision-quality lens), the named-expert examples, and the sub-agent flow — content neither the scaffold nor the SKILL.md body inlines. The prompt is pinned to a representative session retro of concrete recent work (bare /charness:retro can self-activate on recent git/handoff state, but a fixture needs a deterministic, executable work unit — lens 2 + lens 8) so the run reaches the mandatory counterfactual where expert-lens.md is forced; it names neither the reference file nor the lens patterns (ungameable). retro persists its artifact in-repo via persist_retro_artifact.py (sandboxed in a capture), not an external write, so no lens-5 external non-claim applies. Skill fix (lens 9): the first live capture proved expert-lens.md was NOT routed (a passive prose pointer the run skipped, missing the Engelbart system-improving lens) — a real planner-absence defect; plan_retro_run.py (167cad5c) makes it a planner-anchored floor, proven failed->passed by the 2026-06-29 re-capture. The other docs stay appropriately inlined/scaffolded/script-resolved. declaredReferences is the full skill-local set (coverage); shared refs (bootstrap-resolution.md, retro-issue-destination-split.md, rca-ledger-append.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds.max_duration_ms set to 420000 from the 193700ms passing re-capture baseline (~2x headroom).",
-  "skillId": "retro",
-  "skillDisplayName": "retro",
-  "evaluationId": "execution-retro-claim-fidelity",
-  "targetKind": "public_skill",
-  "targetId": "retro",
-  "prompt": "/charness:retro 방금 끝낸 claim-fidelity 픽스처 보정 작업을 session retro로 review해줘 — Context·Waste·Critical Decisions를 정리하고, 다음 세션을 바꿀 counterfactual lens(named expert 또는 direct) 최소 하나와 workflow/capability/memory별 Next Improvements를 도출한 뒤, durable home이 있으면 persist해줘.",
-  "requiredCommandFragments": [
-    "expert-lens.md"
-  ],
-  "requiredSummaryFragments": [],
-  "thresholds": {
-    "max_duration_ms": 420000
+ "_comment": "Claim-fidelity spec for the retro skill: does a real `/charness:retro` run honor its central claim — route to its references at the point of need? retro now ships plan_retro_run.py (2026-06-29); RCF is planner-anchored (lens 1): the planner emits expert-lens.md as an UNCONDITIONAL required_read, so the floor is real rather than derived from prose. The prior RCF of four was over-broad; three of the four dissolve under lens 7 because deterministic surfaces (SKILL.md body + scaffold_retro_artifact.py + resolve_adapter.py) brief the judge: mode-guide.md (SKILL.md step 1 inlines the session/weekly selection rule and the Auto Selection order, step 2 inlines the per-mode evidence bias) is engage-always but not a floor (claimRole skill-inlined-context); section-guide.md (the core section list is inlined in SKILL.md step 3 + Output Shape AND emitted by scaffold_retro_artifact.py's template; the doc's unique depth — claim-strength tags, gate-baseline-runtime rule — is conditional within a retro) is engage-always but not a floor (claimRole skill-and-scaffold-inlined-context); adapter-contract.md is resolved by the mandatory resolve_adapter.py bootstrap and the explainer is read only on adapter repair, so it is on-demand (conditional). trigger-and-persistence.md stays engage-always-not-RCF (persist_retro_artifact.py owns the persistence mechanism and SKILL.md step 5 inlines the mandatory Persisted: yes/no rule; the trigger taxonomy is the doc's conditional remainder). The single engage-always floor is expert-lens.md: the Expert Counterfactual Rule mandates 'every retro includes at least one counterfactual lens' and routes 'the lens patterns, named-expert examples, and sub-agent flow live in references/expert-lens.md' at the point of need; the scaffold emits only a '## Expert Counterfactuals — TODO a lens' stub, so to fill the mandatory section the run is forced to open expert-lens.md for the default pattern (one domain lens + one decision-quality lens), the named-expert examples, and the sub-agent flow — content neither the scaffold nor the SKILL.md body inlines. The prompt is pinned to a representative session retro of concrete recent work (bare /charness:retro can self-activate on recent git/handoff state, but a fixture needs a deterministic, executable work unit — lens 2 + lens 8) so the run reaches the mandatory counterfactual where expert-lens.md is forced; it names neither the reference file nor the lens patterns (ungameable). retro persists its artifact in-repo via persist_retro_artifact.py (sandboxed in a capture), not an external write, so no lens-5 external non-claim applies. Skill fix (lens 9): the first live capture proved expert-lens.md was NOT routed (a passive prose pointer the run skipped, missing the Engelbart system-improving lens) — a real planner-absence defect; plan_retro_run.py (167cad5c) makes it a planner-anchored floor, proven failed->passed by the 2026-06-29 re-capture. The other docs stay appropriately inlined/scaffolded/script-resolved. declaredReferences is the full skill-local set (coverage); shared refs (bootstrap-resolution.md, retro-issue-destination-split.md, rca-ledger-append.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract. thresholds.max_duration_ms set to 420000 from the 193700ms passing re-capture baseline (~2x headroom).",
+ "skillId": "retro",
+ "skillDisplayName": "retro",
+ "evaluationId": "execution-retro-claim-fidelity",
+ "targetKind": "public_skill",
+ "targetId": "retro",
+ "prompt": "/charness:retro 방금 끝낸 claim-fidelity 픽스처 보정 작업을 session retro로 review해줘 — Context·Waste·Critical Decisions를 정리하고, 다음 세션을 바꿀 counterfactual lens(named expert 또는 direct) 최소 하나와 workflow/capability/memory별 Next Improvements를 도출한 뒤, durable home이 있으면 persist해줘.",
+ "requiredCommandFragments": [
+  "expert-lens.md"
+ ],
+ "requiredSummaryFragments": [],
+ "thresholds": {
+  "max_duration_ms": 420000
+ },
+ "declaredReferences": [
+  "adapter-contract.md",
+  "expert-lens.md",
+  "phase-aware-efficiency.md",
+  "prepare-packet.md",
+  "section-guide.md",
+  "trigger-and-persistence.md",
+  "waste-sibling-scan.md",
+  "closeout-telemetry.md"
+ ],
+ "referenceEngagement": {
+  "adapter-contract.md": {
+   "engagement": "on-demand",
+   "rationale": "resolve_adapter.py resolves the adapter on every bootstrap, but the explainer doc is read only 'if the adapter is invalid, repair it using references/adapter-contract.md' — a representative session retro against a valid adapter never opens it, so the prior engage-always-RCF tag was a lens-1/3 over-classification.",
+   "trigger": "When the adapter is invalid and must be repaired, or a metrics-heavy retro needs adapter-defined evidence/metrics fields."
   },
-  "declaredReferences": [
-    "adapter-contract.md",
-    "expert-lens.md",
-    "mode-guide.md",
-    "phase-aware-efficiency.md",
-    "prepare-packet.md",
-    "section-guide.md",
-    "trigger-and-persistence.md",
-    "waste-sibling-scan.md",
-    "weekly-trends.md"
-  ],
-  "referenceEngagement": {
-    "adapter-contract.md": {
-      "engagement": "on-demand",
-      "rationale": "resolve_adapter.py resolves the adapter on every bootstrap, but the explainer doc is read only 'if the adapter is invalid, repair it using references/adapter-contract.md' — a representative session retro against a valid adapter never opens it, so the prior engage-always-RCF tag was a lens-1/3 over-classification.",
-      "trigger": "When the adapter is invalid and must be repaired, or a weekly/metrics-heavy retro needs adapter-defined evidence/metrics fields."
-    },
-    "expert-lens.md": {
-      "engagement": "engage-always",
-      "rationale": "The single engage-always floor. The Expert Counterfactual Rule mandates 'every retro includes at least one counterfactual lens' and routes 'the lens patterns, named-expert examples, and sub-agent flow live in references/expert-lens.md' at the point of need; the scaffold emits only a '## Expert Counterfactuals — TODO a lens' stub, so to fill the mandatory section the run is forced to open this doc for content neither the scaffold nor SKILL.md inlines.",
-      "claimRole": "counterfactual-rubric"
-    },
-    "mode-guide.md": {
-      "engagement": "engage-always",
-      "rationale": "Every run selects a mode (step 1), but SKILL.md step 1 inlines the session/weekly selection rule and the Auto Selection order and step 2 inlines the per-mode evidence bias — the run engages mode selection from the workflow, not by opening this doc: engage-always yet not an RCF floor (lens 7, skill-inlined).",
-      "claimRole": "skill-inlined-context",
-      "classTag": "DUP"
-    },
-    "phase-aware-efficiency.md": {
-      "engagement": "on-demand",
-      "rationale": "Step 3 conditionally routes here only 'for token, tool-call, broad exploration, or efficiency claims'; it applies the phase check to avoid mislabeling broad exploration as waste, but is not needed in retros with no such claims.",
-      "trigger": "When a retro discusses token pressure, tool-call volume, repeated file reads, broad exploration, or efficiency claims during waste analysis."
-    },
-    "prepare-packet.md": {
-      "engagement": "on-demand",
-      "rationale": "Step 2 routes here only 'if the adapter declares packet_sections', preventing rediscovery of changed surfaces after work has moved on; repos without packet_sections do not read this.",
-      "trigger": "When the retro-adapter declares packet_sections and the retro needs context on changed surfaces or deferred work before turning a slice into lessons."
-    },
-    "section-guide.md": {
-      "engagement": "engage-always",
-      "rationale": "Every run writes the core sections, but the section list is inlined in SKILL.md step 3 + Output Shape AND emitted by scaffold_retro_artifact.py's template; the doc's unique depth (claim-strength tags strong/moderate/weak/contested, the gate-baseline-runtime rule, per-decision fields) is conditional within a retro, so the run engages the section structure from the workflow + scaffold rather than being forced to open this doc: engage-always yet not an RCF floor (lens 7, skill-and-scaffold-inlined).",
-      "claimRole": "skill-and-scaffold-inlined-context"
-    },
-    "trigger-and-persistence.md": {
-      "engagement": "engage-always",
-      "rationale": "persist_retro_artifact.py owns the persistence mechanism and SKILL.md step 5 inlines the mandatory 'Persisted: yes: <path> / Persisted: no: <reason>' rule; the doc's auto-trigger/skip taxonomy is its conditional remainder, so the run satisfies the persistence claim from the script + inlined rule, not by opening this doc: engage-always yet not an RCF floor.",
-      "claimRole": "persistence"
-    },
-    "waste-sibling-scan.md": {
-      "engagement": "on-demand",
-      "rationale": "Step 4 conditionally routes here when 'a lesson names a transferable waste pattern', adding an opt-in Sibling Search section; narrowly local waste uses the short-circuit instead.",
-      "trigger": "When a lesson names a transferable waste pattern in step 4 (the four-axis scan and section-gated validator)."
-    },
-    "weekly-trends.md": {
-      "engagement": "on-demand",
-      "rationale": "Applicable only in weekly mode for the Trends vs Last Retro section and closeout-telemetry mining; session retros do not consult this reference.",
-      "trigger": "When the mode is weekly and the retro needs to compare against the last durable weekly retro or mine closeout-telemetry trends."
-    }
+  "expert-lens.md": {
+   "engagement": "engage-always",
+   "rationale": "The single engage-always floor. The Expert Counterfactual Rule mandates 'every retro includes at least one counterfactual lens' and routes 'the lens patterns, named-expert examples, and sub-agent flow live in references/expert-lens.md' at the point of need; the scaffold emits only a '## Expert Counterfactuals — TODO a lens' stub, so to fill the mandatory section the run is forced to open this doc for content neither the scaffold nor SKILL.md inlines.",
+   "claimRole": "counterfactual-rubric"
+  },
+  "phase-aware-efficiency.md": {
+   "engagement": "on-demand",
+   "rationale": "Step 3 conditionally routes here only 'for token, tool-call, broad exploration, or efficiency claims'; it applies the phase check to avoid mislabeling broad exploration as waste, but is not needed in retros with no such claims.",
+   "trigger": "When a retro discusses token pressure, tool-call volume, repeated file reads, broad exploration, or efficiency claims during waste analysis."
+  },
+  "prepare-packet.md": {
+   "engagement": "on-demand",
+   "rationale": "Step 2 routes here only 'if the adapter declares packet_sections', preventing rediscovery of changed surfaces after work has moved on; repos without packet_sections do not read this.",
+   "trigger": "When the retro-adapter declares packet_sections and the retro needs context on changed surfaces or deferred work before turning a slice into lessons."
+  },
+  "section-guide.md": {
+   "engagement": "engage-always",
+   "rationale": "Every run writes the core sections, but the section list is inlined in SKILL.md step 3 + Output Shape AND emitted by scaffold_retro_artifact.py's template; the doc's unique depth (claim-strength tags strong/moderate/weak/contested, the gate-baseline-runtime rule, per-decision fields) is conditional within a retro, so the run engages the section structure from the workflow + scaffold rather than being forced to open this doc: engage-always yet not an RCF floor (lens 7, skill-and-scaffold-inlined).",
+   "claimRole": "skill-and-scaffold-inlined-context"
+  },
+  "trigger-and-persistence.md": {
+   "engagement": "engage-always",
+   "rationale": "persist_retro_artifact.py owns the persistence mechanism and SKILL.md step 5 inlines the mandatory 'Persisted: yes: <path> / Persisted: no: <reason>' rule; the doc's auto-trigger/skip taxonomy is its conditional remainder, so the run satisfies the persistence claim from the script + inlined rule, not by opening this doc: engage-always yet not an RCF floor.",
+   "claimRole": "persistence"
+  },
+  "waste-sibling-scan.md": {
+   "engagement": "on-demand",
+   "rationale": "Step 4 conditionally routes here when 'a lesson names a transferable waste pattern', adding an opt-in Sibling Search section; narrowly local waste uses the short-circuit instead.",
+   "trigger": "When a lesson names a transferable waste pattern in step 4 (the four-axis scan and section-gated validator)."
+  },
+  "closeout-telemetry.md": {
+   "engagement": "engage-always",
+   "rationale": "The planner routes it on every run: recurring gate-runtime and artifact-only-commit waste is invisible to a passing gate and only shows as recurrence across runs, so no single session can observe it. Previously reachable only from the removed `weekly` mode.",
+   "trigger": "Every retro; the planner emits it as a required_read unconditionally.",
+   "claimRole": "waste evidence",
+   "classTag": "DEPTH"
   }
+ }
 }

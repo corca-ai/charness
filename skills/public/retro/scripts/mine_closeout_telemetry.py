@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Mine the local closeout-telemetry stream for recurring operational waste.
 
-Direction E2a of spec achieve-efficiency-improvements. The weekly ``retro`` reads
+Direction E2a of spec achieve-efficiency-improvements. ``retro`` reads
 the per-repo closeout-telemetry stream written by E1
 (``scripts/slice_closeout_telemetry.py``) and surfaces the objective waste that
 RECURS across runs: gates that pass but are repeatedly over budget, and repeated

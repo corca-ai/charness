@@ -29,8 +29,6 @@ run_init_adapter = _scripts_adapter_init_lib_module.run_init_adapter
 def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
     return [
         *base_adapter_items(repo_name, "charness-artifacts/retro"),
-        ("default_mode", "session"),
-        ("weekly_window_days", 7),
         ("evidence_paths", []),
         ("metrics_commands", []),
     ]

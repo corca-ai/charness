@@ -41,8 +41,6 @@ STRING_FIELDS = (
     "preset_id",
     "preset_version",
     "customized_from",
-    "default_mode",
-    "snapshot_path",
     "summary_path",
 )
 STRING_LIST_FIELDS = (
@@ -59,8 +57,6 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "charness-artifacts/retro",
-        "default_mode": "session",
-        "weekly_window_days": 7,
         "summary_path": "charness-artifacts/retro/recent-lessons.md",
         "evidence_paths": [],
         "metrics_commands": [],
@@ -102,21 +98,15 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         errors.extend(packet_errors)
         validated["packet_sections"] = packet_data.get("packet_sections", [])
 
-    window = data.get("weekly_window_days")
-    if window is not None:
-        if isinstance(window, int) and window > 0:
-            validated["weekly_window_days"] = window
-        else:
-            errors.append("weekly_window_days must be a positive integer")
-
-    if validated["default_mode"] not in ("session", "weekly", "auto"):
-        errors.append("default_mode must be one of: session, weekly, auto")
+    # `weekly_window_days`, `default_mode`, and `snapshot_path` were retired with the
+    # weekly mode. A consumer adapter that still carries them is not an error: unknown
+    # keys pass through ignored, so an upgrade never breaks a stale adapter.
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
 
     if not validated.get("metrics_commands"):
-        warnings.append("No metrics_commands configured; weekly retros may stay narrative-only")
+        warnings.append("No metrics_commands configured; the retro may stay narrative-only")
 
     return validated, errors, warnings
 
@@ -132,8 +122,8 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         infer_defaults=infer_repo_defaults,
         validate_adapter_data=validate_adapter_data,
         missing_warnings=(
-            "No retro adapter found. Session mode can proceed with inferred defaults.",
-            "Create .agents/retro-adapter.yaml for weekly metrics or durable artifact policy.",
+            "No retro adapter found. The retro can proceed with inferred defaults.",
+            "Create .agents/retro-adapter.yaml for metrics or durable artifact policy.",
         ),
         extra_payload=lambda _data, raw_data, _found: {
             "field_state": {

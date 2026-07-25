@@ -138,7 +138,7 @@ def build_closeout_telemetry_record(repo_root: Path, payload: dict[str, object])
     """The durable telemetry record for one closeout. ``gate_runtime`` and
     ``over_slice`` reuse C's and B's existing computations so the stream cannot
     drift from what the advisories reported; ``slice_churn`` is the new signal.
-    Fields are always present (empty/zero, never absent) so the weekly miner can
+    Fields are always present (empty/zero, never absent) so the miner can
     aggregate without per-record key guards."""
     advisories = import_repo_module(__file__, "scripts.slice_closeout_advisories")
     gate_runtime = payload.get("gate_runtime_advisory") or {"budget_seconds": None, "over_budget": []}

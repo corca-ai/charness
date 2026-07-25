@@ -51,17 +51,16 @@ For each important decision:
 
 This section explains the past. It is not the place for tool shopping.
 
-## Weekly Additions
+## Window, Evidence, And Trends
 
-For `weekly`, add three bounded sections when they are supported by real
-evidence:
+Add these three bounded sections when they are supported by real evidence:
 
-- `Window`: the time span being reviewed
+- `Window`: the span of work being reviewed
 - `Evidence Summary`: which artifacts or commands were actually used
-- `Trends vs Last Retro`: current delta versus the last durable weekly retro
+- `Trends vs Last Retro`: current delta versus the last durable retro
 
-If there is no prior weekly retro, say so plainly and skip the comparison
-section instead of inventing trend data.
+If there is no prior retro, say so plainly and skip the comparison section
+instead of inventing trend data.
 
 ## Expert Counterfactuals
 
@@ -86,14 +85,8 @@ Every retro needs concrete future changes. Group them by type:
 This is where self-growing and self-healing live. Capability recommendations
 belong here because they are future improvements, not past decisions.
 
-## Snapshot
+## No Hidden Snapshot
 
-If the adapter defines `snapshot_path`, persist a compact machine-readable
-snapshot for weekly mode. Keep it small:
-
-- mode
-- window
-- evidence sources used
-- real metrics or deltas actually cited
-
-Do not invent a hidden snapshot format when no explicit path was configured.
+Do not invent a hidden machine-readable snapshot format. The retro's durable
+output is the artifact under `output_dir`; the closeout-telemetry stream it may
+read is written by the closeout emitter, never by the retro.

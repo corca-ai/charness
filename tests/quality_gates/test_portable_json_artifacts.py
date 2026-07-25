@@ -446,51 +446,6 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path, monke
     assert json.loads(passed.stdout)["status"] == "pass"
 
 
-def test_retro_snapshot_sanitizes_path_fields(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    snapshot_file = repo / "snapshot.json"
-    snapshot_file.write_text(json.dumps({"source_path": str(repo / "docs" / "notes.md")}), encoding="utf-8")
-    markdown_file = repo / "retro.md"
-    markdown_file.write_text("# Retro\n", encoding="utf-8")
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "snapshot_path: .charness/retro/latest.json",
-                "evidence_paths: []",
-                "metrics_commands: []",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    result = run_loaded_script(
-        monkeypatch,
-        capsys,
-        "persist_retro_artifact.py",
-        RETRO_PERSIST_ARTIFACT,
-        "--repo-root",
-        str(repo),
-        "--artifact-name",
-        "session.md",
-        "--markdown-file",
-        str(markdown_file),
-        "--snapshot-file",
-        str(snapshot_file),
-    )
-
-    assert result.returncode == 0, result.stderr
-    snapshot = json.loads((repo / ".charness" / "retro" / "latest.json").read_text(encoding="utf-8"))
-    assert snapshot["source_path"] == "docs/notes.md"
-    _assert_no_repo_absolute_path(snapshot, repo)
-
-
 def test_cautilus_summaries_sanitize_diagnostics_and_external_worktree_paths(tmp_path: Path) -> None:
     build_cautilus_scenario_summary = _load_script_module("eval_cautilus_scenarios").build_summary
     build_chatbot_proposals_summary = _load_script_module("eval_cautilus_chatbot_proposals").build_summary

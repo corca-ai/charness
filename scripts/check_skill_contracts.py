@@ -228,8 +228,12 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "A refusal leaves the release mutation unstarted.",
     ),
     "skills/public/retro/SKILL.md": (
-        "`Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists",
-        "Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`",
+        # Both prior pins were `weekly`-scoped and were BROADENED, not deleted, when
+        # that mode went. The trend comparison was never weekly-specific. The snapshot
+        # guard was — `snapshot_path` was a weekly-only adapter field — and its
+        # successor is the stronger unconditional no-hidden-write rule.
+        "`Trends vs Last Retro`: compare against the last durable retro when one exists",
+        "Do not invent hidden machine formats or write hidden telemetry",
     ),
 }
 

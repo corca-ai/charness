@@ -2,7 +2,7 @@
 """Plan a retro run before gathering evidence and writing the artifact.
 
 Owns the classify/brief decisions that used to live only in SKILL.md prose plus
-the generic scaffold stub: select the mode (session/weekly), classify the work
+the generic scaffold stub: classify the work
 under review, and emit the fitting counterfactual lens brief as a deterministic
 `required_read` so the run reaches `references/expert-lens.md` at the point of
 need instead of relying on prose discipline. The scaffold stays the pure
@@ -37,10 +37,8 @@ SYSTEM_IMPROVING_PREFIXES = (
     "CLAUDE.md",
 )
 MAX_RECENT_COMMITS = 5
-WEEKLY_HINTS = ("weekly", "this week", "sprint", "recent pattern", "주간", "이번 주", "한 주")
 
 ON_DEMAND_REFERENCE_READS = (
-    ("references/mode-guide.md", "for the full session/weekly selection and per-mode evidence bias beyond the inlined rule"),
     ("references/section-guide.md", "for claim-strength tags, the gate-baseline-runtime rule, and per-decision fields"),
     ("references/phase-aware-efficiency.md", "before token, tool-call, broad-exploration, or efficiency waste claims"),
     ("references/waste-sibling-scan.md", "when a lesson names a transferable waste pattern (opt-in Sibling Search)"),
@@ -155,16 +153,6 @@ def _lens_brief(work_class: str) -> dict[str, str]:
     return {"work_class": work_class, "fitting_lens": fitting, "why": why}
 
 
-def _select_mode(adapter: dict[str, Any], invocation_text: str) -> tuple[str, str]:
-    default_mode = str(adapter["data"].get("default_mode", "session"))
-    text = invocation_text.lower()
-    if any(hint in text for hint in WEEKLY_HINTS):
-        return "weekly", "weekly wording in invocation"
-    if any(token in text for token in ("this session", "this task", "what just happened", "방금", "이번 세션")):
-        return "session", "session wording in invocation"
-    return default_mode, "adapter default_mode"
-
-
 def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, Any]:
     write_rel = str(scaffold["write_artifact_path"])
     write_path = repo_root / write_rel
@@ -184,7 +172,6 @@ def _required_reads(
     repo_root: Path,
     adapter: dict[str, Any],
     artifact: dict[str, Any],
-    mode: str,
     lens_brief: dict[str, str],
 ) -> list[dict[str, str]]:
     reads: list[dict[str, str]] = []
@@ -203,11 +190,14 @@ def _required_reads(
     if not adapter.get("found") or not adapter.get("valid") or adapter.get("errors"):
         reads.append(_read("references/adapter-contract.md", "reference", "adapter is missing or invalid; repair before relying on adapter paths", base="skill"))
 
-    if mode == "weekly":
-        reads.append(_read("references/weekly-trends.md", "reference", "weekly Trends vs Last Retro and closeout-telemetry mining", base="skill"))
-        summary_path = str(adapter["data"].get("summary_path") or "")
-        if summary_path and (repo_root / summary_path).is_file():
-            reads.append(_read(summary_path, "artifact", "recent-lessons digest to compare the weekly window against", base="repo"))
+    # Gate-runtime waste is invisible to a passing gate by construction, and its
+    # signal is recurrence across runs — which no single session can observe. It was
+    # previously reachable only from `weekly`, a mode invoked once in three months,
+    # so the stream accumulated 985 records that nothing read. Routed for every retro.
+    reads.append(_read("references/closeout-telemetry.md", "reference", "recurring gate-runtime and artifact-only-commit waste the closeout stream already recorded", base="skill"))
+    summary_path = str(adapter["data"].get("summary_path") or "")
+    if summary_path and (repo_root / summary_path).is_file():
+        reads.append(_read(summary_path, "artifact", "recent-lessons digest to compare this retro's window against", base="repo"))
     return reads
 
 
@@ -249,7 +239,7 @@ def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
     if artifact["exists"]:
         return {
             "kind": "continue-existing-retro",
-            "instruction": "read today's retro artifact, then continue from the planned mode and lens brief",
+            "instruction": "read today's retro artifact, then continue from the planned lens brief",
             "artifact_path": artifact["path"],
         }
     return {
@@ -263,27 +253,23 @@ def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
 def build_plan(
     repo_root: Path,
     *,
-    invocation_text: str = "",
     changed_paths: list[str] | None = None,
 ) -> dict[str, Any]:
     adapter = resolve_adapter.load_adapter(repo_root)
     scaffold = scaffold_retro_artifact.payload_for(repo_root, title=None)
     artifact = _artifact_summary(repo_root, scaffold)
-    mode, mode_reason = _select_mode(adapter, invocation_text)
     work_paths, work_paths_source = _work_paths(repo_root, changed_paths)
     work_class = _classify_work_class(work_paths)
     lens_brief = _lens_brief(work_class)
     return ENVELOPE.build_envelope(
         schema_version="retro.run_plan.v1",
         required_reads=_required_reads(
-            repo_root=repo_root, adapter=adapter, artifact=artifact, mode=mode, lens_brief=lens_brief
+            repo_root=repo_root, adapter=adapter, artifact=artifact, lens_brief=lens_brief
         ),
         next_action=_next_action(artifact),
         gate_packets=_gate_packets(repo_root, adapter, scaffold),
         ok=bool(adapter.get("valid")),
         repo_root=str(repo_root),
-        mode=mode,
-        mode_reason=mode_reason,
         work_class=work_class,
         work_paths_source=work_paths_source,
         lens_brief=lens_brief,
@@ -306,14 +292,12 @@ def main() -> int:
         default=Path.cwd(),
         help="Repository root used to resolve adapter state, artifacts, and changed paths.",
     )
-    parser.add_argument("--invocation-text", default="", help="The user's retro request, used to select session vs weekly mode")
     parser.add_argument("--changed-paths", nargs="*", help="Explicit paths for work-class classification (defaults to working tree, then recent commits)")
     parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     payload = build_plan(
         args.repo_root.resolve(),
-        invocation_text=args.invocation_text,
-        changed_paths=args.changed_paths,
+                changed_paths=args.changed_paths,
     )
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))

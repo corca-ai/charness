@@ -1,6 +1,6 @@
 """Weekly closeout-telemetry mining (spec achieve-efficiency-improvements, E2a).
 
-The weekly retro mines the local closeout-telemetry stream and routes RECURRING
+The retro mines the local closeout-telemetry stream and routes RECURRING
 waste to a filed issue — NOT the decaying recent-lessons digest (critique R1b).
 The fixture asserts recurring waste is named AND dispositioned to the issue
 branch; a digest-only disposition fails the test. The cross-repo non-claim must

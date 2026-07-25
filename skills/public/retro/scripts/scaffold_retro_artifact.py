@@ -40,7 +40,6 @@ def _slug(title: str) -> str:
 
 def render_template(*, title: str, date_text: str) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
-    lines.extend(["## Mode", "", "session", ""])
     lines.extend(["## Context", "", "TODO what happened and why this retro.", ""])
     lines.extend(["## Evidence Summary", "", "- TODO concrete evidence (paths, line counts, command output).", ""])
     lines.extend(["## Waste", "", "TODO what created rework or wasted effort.", ""])

@@ -35,7 +35,6 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
                 "repo: demo",
                 "language: en",
                 "output_dir: charness-artifacts/retro",
-                "snapshot_path: .charness/retro/weekly-latest.json",
                 "summary_path: charness-artifacts/retro/recent-lessons.md",
                 "evidence_paths: []",
                 "metrics_commands: []",
@@ -66,12 +65,6 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
         + "\n",
         encoding="utf-8",
     )
-    snapshot_file = repo / "snapshot.json"
-    snapshot_file.write_text(
-        json.dumps({"mode": "weekly", "window": {"start": "2026-04-07", "end": "2026-04-14"}}),
-        encoding="utf-8",
-    )
-
     result = run_persist(
         monkeypatch,
         capsys,
@@ -81,13 +74,10 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
         "weekly-2026-04-14.md",
         "--markdown-file",
         str(markdown_file),
-        "--snapshot-file",
-        str(snapshot_file),
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
-    assert payload["snapshot_path"] == ".charness/retro/weekly-latest.json"
     assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
     assert payload["summary_refreshed"] is True

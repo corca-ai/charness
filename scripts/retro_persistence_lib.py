@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import json
 import re
 import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.portable_artifact_lib import sanitize_artifact_json
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
 from scripts.t_events_emit_lib import emit_retro_lesson_cites
 
@@ -38,12 +36,6 @@ def _write_text(path: Path, text: str) -> None:
     path.write_text(text.rstrip() + "\n", encoding="utf-8")
 
 
-def _write_snapshot(path: Path, snapshot_data: dict[str, Any], *, repo_root: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    payload = sanitize_artifact_json(snapshot_data, repo_root=repo_root)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
 def normalize_artifact_name(artifact_name: str) -> tuple[str, bool]:
     """Append `.md` when missing so glob('*.md') downstream readers find the file."""
     if artifact_name.endswith(".md"):
@@ -67,8 +59,6 @@ def persist_retro_artifact(
     artifact_name: str,
     markdown_text: str,
     summary_path: Path | None,
-    snapshot_path: Path | None = None,
-    snapshot_data: dict[str, Any] | None = None,
     force_empty_summary: bool = False,
 ) -> dict[str, Any]:
     normalized_name, was_normalized = normalize_artifact_name(artifact_name)
@@ -100,10 +90,6 @@ def persist_retro_artifact(
     )
     if emit_summary["cite_count"] or emit_summary["emitted_count"]:
         result["t_events"] = emit_summary
-
-    if snapshot_path is not None and snapshot_data is not None:
-        _write_snapshot(snapshot_path, snapshot_data, repo_root=repo_root)
-        result["snapshot_path"] = str(snapshot_path.relative_to(repo_root))
 
     if summary_path is not None and artifact_path.resolve() != summary_path.resolve():
         digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)

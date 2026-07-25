@@ -15,7 +15,7 @@ parallel templates.
   name probe semantics without collapsing health, readiness, and
   discoverability into one command
 - if the repo wants durable retrospective pickup, is there one stable retro
-  memory seam instead of scattered weekly/session notes
+  memory seam instead of scattered ad hoc notes
 - do `<repo-root>/AGENTS.md` and `CLAUDE.md` express one clear host-facing contract
 - when the repo requires bounded fresh-eye or critique-style subagent review,
   does `<repo-root>/AGENTS.md` say that this stop gate is already delegated and that

@@ -10,18 +10,18 @@
 
 ## Current State
 
-- **v2.5.0 is PUBLISHED** (tag `v2.5.0 -> 666fc42f`; unauthenticated HTTPS observer
-  200 on the public release page, installed readback `charness version -> 2.5.0`).
-  Scope: two north-star slices from an adversarially verified drift audit, plus the
-  pre-publish corrections the release review forced. Critiques in References.
-  v2.4.3's standing baton-reconcile obligation is discharged by this line.
-- **The mutation workflow no longer closes GitHub issues.** A scheduled green now
-  comments a recovery *candidate* (run URL, sha, mode, sample manifest), labels it
-  `mutation-recovered-candidate`, and stops; the close is a human's call. Both paths
-  select on the workflow's own marker. **Runtime-unproven until a failure files a
-  marked issue AND a later scheduled green runs** — the next cycle alone proves
-  nothing (empty issue set) and no local gate runs `actions/github-script`.
-  Installed consumer workflows are never re-rendered; adoption is a manual copy.
+- **v2.5.0 is PUBLISHED** (tag `v2.5.0 -> 666fc42f`; HTTPS observer 200, installed
+  readback `charness version -> 2.5.0`). v2.4.3's baton obligation is discharged here.
+  The `retro` weekly deletion below landed AFTER the tag and ships in the next cut.
+- `retro`'s `weekly` mode is DELETED (one shape now). Its one real asset — the
+  closeout-telemetry miner, 985 records and a recurring 475s gate — moved to
+  `references/closeout-telemetry.md` and now runs on EVERY retro. Retired adapter keys
+  (`default_mode`, `weekly_window_days`, `snapshot_path`) pass through ignored.
+- **The mutation workflow no longer closes GitHub issues.** A scheduled green
+  comments a recovery *candidate*, labels it, and stops; the close is a human's call.
+  **Runtime-unproven until a failure files a marked issue AND a later green runs** —
+  no local gate runs `actions/github-script`. Installed consumer workflows are never
+  re-rendered; adoption is a manual copy.
 - `check_runtime_budget` now emits a **budget slack advisory** naming budgets whose
   worst recent run is far under the bar, so they cannot silently re-inflate.
 - No open issues as of this session (re-check `gh issue list --state open` fresh);
@@ -29,19 +29,19 @@
 
 ## Next Session
 
-1. **`retro` weekly-concept split** is the ready next slice, deferred not rejected:
-   `weekly` is a second concept woven through six sections of a 155/160 body that
-   `references/mode-guide.md` and `references/weekly-trends.md` already own. Needs:
-   emit BOTH `mode-guide.md` and `section-guide.md` as weekly `required_reads`; port
-   SKILL.md:39-40's adapter prescription (stronger than mode-guide.md:41's) before
-   deleting it; two `PACKAGE_CONTRACTS` pins satisfied by SKILL.md:79 and :177 must
-   land verbatim in the receiving reference.
-2. Residuals recorded, not closed: `issue_close_comment_floor.py` still omits
-   `evaluate_ai_provenance` and the ledger-field / close-keyword checks (its own
-   slice); every quality run rewrites the tracked specdown report because
-   [specdown.json](../specdown.json)'s reporters hardcode `outFile` — restore it by
-   hand before staging; and the plugin-copy fresh-install render path is untested,
-   which now matters because it is the ONLY delivery path for the workflow change.
+1. **Sweep for other built-with-intent-but-unused modes and options** (operator
+   request). `retro`'s `weekly` was the first instance: a deliberately designed mode
+   whose entire behavioral delta was two extra `required_reads`, invoked once in
+   3.5 months, with a configured snapshot nothing ever read. Look for the same shape
+   elsewhere — adapter enum fields, planner branches, `--mode`/`--part` style flags,
+   preset variants. The tell is a branch whose two arms produce nearly the same plan.
+   `inventory_skill_ergonomics.py`'s `mode_option_pressure` rule is a starting
+   detector, not the answer; usage evidence (artifact counts, git history) decides.
+2. Residuals, not closed: `issue_close_comment_floor.py` omits
+   `evaluate_ai_provenance` and the ledger-field / close-keyword checks; every quality
+   run rewrites the tracked specdown report because [specdown.json](../specdown.json)
+   hardcodes `outFile` — restore by hand before staging; the plugin-copy fresh-install
+   render path is untested, the ONLY delivery path for the workflow change.
 3. Budgets were retuned for `local-linux-x86_64-36cpu` only; aarch64 and the
    unprofiled defaults were left alone. Act on `SLACK` lines from
    `check_runtime_budget.py --runtime-profile <profile>`.
