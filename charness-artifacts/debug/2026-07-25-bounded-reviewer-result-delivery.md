@@ -56,6 +56,35 @@ Controlled differential, identical prompt / `subagent_type: bounded-reviewer` /
 | A | yes | spawn metadata only; findings stranded in mailbox |
 | B | no | findings returned synchronously in the tool result (`duration_ms: 6691`) |
 
+## Upstream Lineage
+
+The mechanism is a **known, still-open upstream Claude Code defect**, surfaced by
+the operator from another session after this fix was drafted:
+anthropics/claude-code#71723, *"Agent tool name parameter silently switches to
+teammate protocol, losing background agent results"* — filed 2026-06-27, last
+updated 2026-07-13, open. Passing `name` silently routes the spawn onto the
+teammate protocol instead of the background-agent path, so completion emits an
+`idle_notification` to the team inbox rather than a task notification, and the
+parent never receives the result. Documented workarounds are exactly the two this
+repo converged on independently: omit `name`, or run synchronously.
+
+This upgrades two things in the analysis above:
+
+- The A/B differential is no longer the only evidence. An independent upstream
+  report of the same mechanism removes the `n=1`-per-arm worry about whether the
+  differential was a local artifact, though the per-host scope caveats below
+  still stand for hosts other than Claude Code.
+- It reframes the charness rule as a **workaround for a live upstream defect**,
+  not a permanent fact about how spawning works. It also explains the 2026-07-16
+  vs 07-17 retro disagreement without either being wrong: both sessions observed
+  real behavior, they just differed in whether that session's spawns carried a
+  name.
+
+Revisit condition: when the upstream issue closes, re-run the A/B differential.
+If named spawns deliver, the unnamed-shape rule can relax to a preference — but
+the `Delivery state` floor and the "spawn acceptance is not delivery" invariant
+should stay regardless, since they are what made this diagnosable at all.
+
 ## Candidate Causes
 
 - **Spawn call shape selects the delivery channel; a named spawn routes to a

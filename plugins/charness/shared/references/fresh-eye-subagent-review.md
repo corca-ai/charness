@@ -211,10 +211,20 @@ recorded failure, and it recurred because the correct spawn shape was known
 only as a rolling retro lesson that decayed before it reached any contract —
 which is why the rule lives here.
 
+On at least one host this is a known, still-open upstream defect rather than
+intended behavior: the name parameter silently switches the spawn onto a
+teammate protocol, so completion emits an idle notification to a team inbox
+instead of returning the result. Treat the unnamed-shape rule as a workaround
+for a live host bug, not a permanent fact about spawning — when the upstream
+defect closes, re-probe and the rule may relax to a preference. The invariant
+above ("a spawned reviewer is not a received review") does not relax; it is what
+makes the failure diagnosable at all.
+
 Delivery is a per-host live claim, proven by the step-1 probe below and never
 assumed — the same standing as envelope binding in rail 2. The channel-selection
-differential above is recorded on one host at one version, `n=1` per arm; the
-scope record and non-claims live in
+differential above is recorded on one host at one version, `n=1` per arm, and
+corroborated by the upstream report; the scope record, upstream lineage, and
+non-claims live in
 `<repo-root>/charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md`.
 On a host whose spawn surface exposes no addressing or team parameter, or where
 the named shape is the delivering one, the unnamed-shape rule is a no-op and
