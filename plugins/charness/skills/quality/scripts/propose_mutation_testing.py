@@ -25,14 +25,19 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.quality_adapter_lib"
 )
 load_quality_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter
 
-TEMPLATE_RELATIVE_PATH = Path("skills/public/quality/scripts/templates/mutation-tests.yml")
+# Resolved against this script's own directory, NOT against a repo-root-relative
+# source path. `templates/` sits beside the script in both layouts, but the source
+# tree puts the script under `skills/public/quality/scripts/` and the installed
+# plugin copy puts it under `skills/quality/scripts/` -- so a repo-root-relative
+# constant resolves to a path that does not exist in the plugin copy, which is the
+# ONLY way this script is ever delivered to a consumer repo.
+TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "mutation-tests.yml"
 ADAPTER_CANONICAL_PATH = Path(".agents/quality-adapter.yaml")
 FENCE_START = "# >>> mutation_testing (charness propose) >>>"
 FENCE_END = "# <<< mutation_testing (charness propose) <<<"
@@ -98,7 +103,7 @@ def _install_actions(repo_root: Path, adapter_path: str | None, block: dict) -> 
         },
         {
             "kind": "install_workflow_template",
-            "source": str(REPO_ROOT / TEMPLATE_RELATIVE_PATH),
+            "source": str(TEMPLATE_PATH),
             "target": str(workflow_path),
         },
     ]
@@ -138,6 +143,13 @@ def _execute_install(repo_root: Path, adapter_path: str | None, block: dict) -> 
         target_adapter = (repo_root / target_adapter).resolve()
     if not target_adapter.is_file():
         raise SystemExit(f"Adapter resolved to {target_adapter} but the file is missing.")
+    # Checked BEFORE the adapter is appended to. This install has two writes and no
+    # rollback, so discovering a missing template afterwards leaves a fresh repo with
+    # a scaffolded adapter and no workflow -- and `--execute` only runs while the
+    # block is `missing`, so the recovery path is a hand edit.
+    template_source = TEMPLATE_PATH
+    if not template_source.is_file():
+        raise FileNotFoundError(f"workflow template not found at {template_source}")
     existing = target_adapter.read_text(encoding="utf-8")
     if FENCE_START in existing:
         applied.append(f"adapter scaffold already present: {target_adapter}")
@@ -148,9 +160,6 @@ def _execute_install(repo_root: Path, adapter_path: str | None, block: dict) -> 
         applied.append(f"appended mutation_testing scaffold to {target_adapter}")
     workflow_target = repo_root / (block.get("workflow_path") or ".github/workflows/mutation-tests.yml")
     workflow_target.parent.mkdir(parents=True, exist_ok=True)
-    template_source = REPO_ROOT / TEMPLATE_RELATIVE_PATH
-    if not template_source.is_file():
-        raise FileNotFoundError(f"workflow template not found at {template_source}")
     if workflow_target.exists():
         applied.append(f"workflow already present, not overwritten: {workflow_target}")
     else:

@@ -11,10 +11,11 @@ runs the activation command.
 
 - Current disposition: real draft awaiting activation — shaped and plan-critiqued
   2026-07-25, consequential discussion resolved with the operator, not stale.
-- Current slice: slices 1-4 done. Slice 5 is next.
-- Next action: slice 5 — test the fresh-install render path
-  (`propose_mutation_testing.py --execute` rendering `templates/mutation-tests.yml`
-  from a plugin copy into a temp repo).
+- Current slice: slices 1-5 done. Slice 6 (the unused-mode sweep) is next.
+- Next action: slice 6 — sweep all four surface families (adapter enum fields,
+  planner branches, `--mode`/`--part` flags, preset variants) for
+  built-with-intent-but-unused options; emit the candidate inventory with usage
+  evidence to `charness-artifacts/audit/`. Zero deletions: operator signs off.
 - Standing hazard (slice 2): never restore a mutation-test target with
   `git checkout -- <path>` while the slice is uncommitted; it reverts to HEAD and
   silently discards the work being proven. Use a pristine `cp` copy and assert a
@@ -371,7 +372,7 @@ Test-duplication pressure:
 | 2 | [done] Kill the 7 survived `probe_host_logs.py` `main()` mutants (the `--format markdown` branch at :60 and the `json.dumps` kwargs at :63) | Score hygiene in the same file set — **not** part of #453's blocking signal, and does not gate the closeout comment | Test asserting raw output for both formats; survived count 0 for that file | planned |
 | 3 | [done] Wire `evaluate_ai_provenance` into `issue_close_comment_floor.py`; record close-keyword and ledger-field as intentionally not wired, with reasons, and close the residual | Operator decision 2026-07-25: only the provenance check is a genuine gap for the close-with-comment carrier. Close-keyword needs a repo slug `evaluate_close_comment_floor` never receives and is inert inside a comment; ledger fields would need a new public wrapper for unclear benefit | Test that fails with the provenance check removed; the two not-wired rationales recorded in the floor's own docstring/reference so the residual does not return a third time; quality read-only green | planned |
 | 4 | [done, reproduced and fixed] Reproduce the tracked-specdown-report churn first, then act | Both the runner (`scripts/run-quality.sh:523`) and the owning surface already write to a temp dir, and `-quiet -no-report` was removed on 2026-07-22 because specdown rejects them — the residual may already be closed | Step 0: full quality gate, then `git status --short .charness/specdown/`. If clean: record "already fixed by the 2026-07-22 change" with the evidence and **stop — do not backfill the slot** (operator decision 2026-07-25; no regression guard, no substitute work). Only debug further if it reproduces | planned |
-| 5 | Test the fresh-install render path: from a plugin copy, `propose_mutation_testing.py --execute` renders `templates/mutation-tests.yml` into `workflow_path` | Sole delivery path — the workflow is written once at first install, never re-rendered, and `--execute` refuses to overwrite | Test over a fresh temp repo asserting rendered workflow content including `schedule_cron` substitution | planned |
+| 5 | [done, found a shipped bug] Test the fresh-install render path: from a plugin copy, `propose_mutation_testing.py --execute` renders `templates/mutation-tests.yml` into `workflow_path` | Sole delivery path — the workflow is written once at first install, never re-rendered, and `--execute` refuses to overwrite | Test over a fresh temp repo asserting rendered workflow content including `schedule_cron` substitution | planned |
 | 6 | Sweep all four surface families for built-with-intent-but-unused modes/options; emit a candidate inventory with usage evidence | Standing operator request; safest once the gate is trustworthy. Scope confirmed 2026-07-25: (a) adapter enum fields, (b) planner branches, (c) `--mode`/`--part` style flags, (d) preset variants — not flags-only, because the `retro` `weekly` instance lived in a planner branch | Audit artifact under `charness-artifacts/audit/` listing each candidate with its usage evidence (artifact counts, git history) and the branch-arms-produce-the-same-plan test result; zero deletions | planned |
 
 Critique plan: a bounded `bounded-reviewer` fresh-eye pass on this plan before
@@ -401,6 +402,18 @@ packet named in the Active Operating Frame.
   and act on the `SLACK` lines there
 - Revisit trigger: next session on aarch64 hardware, or CI publishing per-profile
   runtime signals
+
+- Decision: whether to cut a patch release carrying the plugin-copy render fix
+- Owner: operator
+- Why deferred: releasing is an irreversible external boundary and outside this
+  goal's Non-Goals ("Not a release: no plugin version bump expected"). The fix is
+  committed; shipping it is a separate call.
+- Unblock action: cut a patch release, or decide the fix rides the next cut. Note
+  the affected population is fresh installs on any tag back to at least v2.2.1 —
+  `--execute` raises FileNotFoundError after half-scaffolding their adapter, and
+  recovery is a hand edit of `.agents/quality-adapter.yaml`.
+- Revisit trigger: the correction recorded in
+  charness-artifacts/release/2026-07-25-v2.5.0-notes.md
 
 - Decision: which swept unused modes/options to delete
 - Owner: operator
@@ -465,6 +478,20 @@ packet named in the Active Operating Frame.
 - Critique: Bounded fresh-eye bounded-reviewer (agent a989215320a0751fb); boundary verify run IMMEDIATELY on return this time (the slice 3 lesson) — ok, no drift. R1 applied: the rewritten test asserted '-config' as a bare substring, so passing the repo's OWN specdown.json would keep all six assertions green and restore the churn — the same assert-the-proxy hole one level up. Now binds the flag to $specdown_config. R2 applied: added an end-to-end test that observes the property directly (no rewritten report, no leftover config, and the config specdown was actually handed points its reporters outside the repo), using a new argv-recording specdown stub. R3 applied: the seeded-harness drift guard could not see repo scripts invoked from a bash -c gate — exactly why this slice's seeding had to be remembered by hand; widened, then narrowed to repo-root scripts after it over-matched skill-package gates. R4 applied: a reporter with no outFile now fails with a stated policy instead of a KeyError. R5 applied: presets/specdown-quality.md recommended 'specdown run -quiet' — a flag specdown rejects, removed from this repo on 2026-07-22 — and a bare invocation that would dirty a consumer repo's tracked report the same way. R8 applied: || exit 1 parity in the surfaces.json verify command. R6/R7 (repo-root config placement, nested trap quoting) reviewed and confirmed correct; no action.
 - Off-goal findings: none this slice
 - Lessons carried forward: The residual was real and the prior debug artifact's 'maybe already fixed' framing would have closed it wrongly — reproducing first was worth the full gate run. The deeper lesson is the one the reviewer kept finding: a test named for an outcome that asserts a flag string will pass while the outcome is false. The replaced test had been green for months WHILE dirtying the worktree it was named after, and my first replacement had the same shape one level up.
+- Metrics:
+
+### Slice 5: Slice 5 — fresh-install render path (found a shipped bug)
+
+- Objective: Test the plugin-copy fresh-install render path, the ONLY delivery path for the mutation workflow. Testing it found it was not merely untested but BROKEN, in every tag back to at least v2.2.1.
+- Why this approach: propose_mutation_testing.py resolved its template as REPO_ROOT / 'skills/public/quality/scripts/templates/mutation-tests.yml'. Plugin export collapses skills/public/<skill>/ to skills/<skill>/, so in the only copy a consumer installs that path does not exist: --execute raised FileNotFoundError AFTER appending the adapter scaffold, and --execute only runs while the block is missing, so recovery is a hand edit. Fixed by resolving the template beside the script (the idiom all nine other live template consumers already use) and checking it before the adapter is written.
+- Commits:
+- What changed: skills/public/quality/scripts/propose_mutation_testing.py (+ mirror), scripts/check_export_safe_imports.py, four dead REPO_ROOT/skills/public constants deleted across retro and release scripts, tests/quality_gates/test_mutation_workflow_install.py (new, 5 tests), charness-artifacts/release/2026-07-25-v2.5.0-notes.md (correction), charness-artifacts/quality/dup-review.json
+- Alternatives rejected: Rejected leaving REPO_ROOT in propose_mutation_testing.py once unused: verified against check_skill_bootstrap_vars.py, check_bootstrap_shim_consistency.py and check_skill_contracts.py that no gate requires it, and leaving a live REPO_ROOT in the one file just burned by it is an invitation to the same mistake. Rejected extracting the now-duplicate bootstrap preamble: it is per-package portability boilerplate the export copies verbatim; classified intentional in dup-review.json.
+- Targeted verification: 5 new tests pass; 74 across the three related files; full ./scripts/run-quality.sh --read-only 81 passed 0 failed. Adversarial: reintroducing the REPO_ROOT-relative constant fails 2 of the delivery tests; moving the template check back after the adapter write fails both ordering tests. The bug itself was reproduced by hand against a temp repo before any fix. check_export_safe_imports now validates 585 files clean and, before the four deletions, fired on exactly them.
+- Test duplication pressure: check_dup_ratchet went hard-block on a new family created BY the dead-constant deletion (two bootstrap preambles became byte-identical); classified intentional with a note rather than extracted. Now clean, 0 new code families. 5 tests added in a new cohesive module rather than growing test_quality_mutation_testing.py, which sits at 768/800.
+- Critique: Bounded fresh-eye bounded-reviewer (agent aaaf6310fb2670780); boundary verify run immediately on return — ok, no drift. F1 (blocker, release surface): confirmed by git — v2.2.1 through v2.5.0 all ship the broken constant, and the v2.5.0 notes' 'Why minor' rationale says the change reaches 'only fresh installs', which is exactly the population that cannot complete. Recorded a Correction section in those notes, fixed the hand-copy path they gave (it named the authoring path, which does not exist in an install), and queued the patch-release decision for the operator since releasing is outside this goal's Non-Goals. F6 (the durable fix) applied: check_export_safe_imports.py already encoded this exact insight for imports and stopped one syntax short of filesystem paths; extended it to reject REPO_ROOT-rooted skills/public paths, with an exemption for deliberate dual-layout probes like resolve_artifact_path.py. F5 applied: four dead constants of the same shape deleted. F2/F3/F4/F9 applied: dead kwarg removed; the render test now anchors to the shipped template instead of only 'a cron is present' (the reviewer noted the identical-renders test would pass if BOTH were wrong); a dry-run test asserts the reported source path exists; and a cheap in-process ordering test carries the partial-write invariant in standing runs, since the layout-faithful one is necessarily release_only.
+- Off-goal findings: F1's patch-release decision is queued for the operator rather than acted on — releasing is an irreversible boundary and this goal's Non-Goals exclude it.
+- Lessons carried forward: The handoff said 'untested'; it was broken, and had been through eight releases. 'Untested' on a sole delivery path should be read as 'unknown', not 'probably fine'. The durable win was not the three tests — it was noticing that an existing gate already encoded the insight for imports and stopped one syntax short of the filesystem, where the same collapse fails silently instead of raising ModuleNotFoundError.
 - Metrics:
 
 ## Context Sources
