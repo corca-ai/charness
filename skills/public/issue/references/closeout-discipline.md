@@ -92,6 +92,13 @@ insufficient, then run `issue_tool.py verify-closeout` with
 `--carrier manual-fallback`, `--manual-fallback-reason <reason>`, and
 `--expect-state CLOSED`. The helper and verifier must re-read GitHub state after comment plus close; they fail unless the final state is `CLOSED`. command success alone is not closeout, and carrier text alone is not closeout.
 
+Render the required shape BEFORE drafting the carrier, not after the validator
+rejects it: `describe_closeout_draft_shape.py --stub` prints a starter carrier,
+and without `--stub` it prints the full enforced shape — every classification's
+ledger fields, carrier rules, and manual-fallback reasons, rendered from the
+live verifier constants so it cannot drift from the gate. Discovering this shape
+by failing the validator is the documented waste this line exists to stop.
+
 Before a PR body, direct commit body, or manual close comment is published, run
 `issue_tool.py validate-closeout-draft` against the exact draft body. For a
 direct-to-default commit, rehearse the proposed commit message with

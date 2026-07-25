@@ -61,6 +61,7 @@ ALLOWED_HOST_EXPOSURE_STATES = (
 # skills/shared/references/fresh-eye-subagent-review.md.
 ALLOWED_DELIVERY_STATES = (
     "findings-received",
+    "findings-recovered-from-transcript",
     "spawn-accepted-no-delivery",
     "pending-parent-spawn",
 )
@@ -86,7 +87,7 @@ def allowed_enums() -> dict[str, object]:
         "couplings": [
             "action: file-issue requires a parseable follow-up: (issue URL or 'deferred <handoff-anchor>')",
             "Host exposure state: applied requires Application state: host-confirmed: <signal>",
-            "Delivery state: spawn-accepted-no-delivery requires a trailing channel or host signal",
+            "Delivery state: spawn-accepted-no-delivery and findings-recovered-from-transcript each require a trailing channel or host signal",
         ],
     }
 

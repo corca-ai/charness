@@ -746,3 +746,38 @@ def test_goal_closeout_prescribed_lib_loader_fails_closed(monkeypatch) -> None:
     monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
     with pytest.raises(ImportError, match="check_prescribed_skill_executed_lib"):
         desc._load_repo_script("check_prescribed_skill_executed_lib")
+
+
+def test_every_shape_producer_is_reachable_from_its_owning_skill() -> None:
+    """A registered producer is not a discoverable producer.
+
+    #456's producer was registered here, and pinned by a test, and STILL cost the
+    reporter 13 tool calls — because registration is not reachability. An agent
+    discovers a shape through the surfaces it actually runs: the skill body, the
+    planner payload, or a reference the planner routes it to. If the producer is
+    named in none of those, the only remaining path is failing the validator and
+    reading its source, which is the recurrence class this pins shut.
+
+    Registry-only naming would pass a check over REGISTRY itself, so this asserts
+    the other direction: the producer's basename must appear somewhere inside its
+    owning skill package.
+    """
+    for surface in preflight.REGISTRY:
+        if not surface.shape_command:
+            continue
+        producer = Path(surface.shape_command[0])
+        skill_dir = ROOT / producer.parent.parent  # skills/public/<skill>/
+        assert skill_dir.is_dir(), f"{surface.artifact_type}: cannot locate owning skill for {producer}"
+        reachable = [
+            path
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+            and path.suffix in {".md", ".py"}
+            and path.name != producer.name
+            and producer.name in path.read_text(encoding="utf-8", errors="ignore")
+        ]
+        assert reachable, (
+            f"{surface.artifact_type}: `{producer.name}` is registered but named nowhere in "
+            f"{skill_dir.relative_to(ROOT)} — an agent can only reach it by failing the validator. "
+            "Name it in the planner payload, the SKILL body, or a reference the planner routes to."
+        )

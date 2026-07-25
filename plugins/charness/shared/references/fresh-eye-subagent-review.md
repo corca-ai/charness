@@ -254,6 +254,16 @@ the contract path: it is host-specific, it is not available on every host, and
 a review recovered that way should be recorded with the delivery failure that
 made it necessary.
 
+Do that diagnostic with
+`python3 "$SKILL_DIR/../../shared/scripts/reviewer_result.py" get --agent <name-or-id> --repo-root <repo-root>`
+(`list` enumerates the session's reviewers) rather than improvising a transcript
+reader. It returns only the final assistant text block under a size cap, with a
+typed `found` / `partial` / `still-running` / `not-found` / `ambiguous` status,
+and reports `layout-not-found` on a host whose transcript layout it cannot
+resolve instead of guessing. Read it once: a `still-running` result is not an
+invitation to poll, and using it at all still means recording a delivery
+failure.
+
 ## Required Before Declaring The Canonical Path Blocked
 
 1. Attempt the bounded setup the skill calls for.

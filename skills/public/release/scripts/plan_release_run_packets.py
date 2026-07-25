@@ -205,9 +205,13 @@ def next_action(
             "No target selector was provided; review current release state and choose publish-current/part/set-version.",
         )
     if not (args.critique_artifact or args.critique_blocked):
-        return action(
+        # Name the PRODUCER, not only the `--critique-artifact` validator flag:
+        # the required artifact shape is otherwise discoverable only by failing
+        # `validate_critique_artifacts.py`.
+        return _ENVELOPE.next_action(
             "needs_critique",
-            "Task-completing release mutation requires a critique artifact or honest blocked-host signal.",
+            reason="Task-completing release mutation requires a critique artifact or honest blocked-host signal.",
+            scaffold_command='python3 "$SKILL_DIR/../critique/scripts/scaffold_critique_artifact.py" --repo-root .',
         )
     return action(
         "publish_dry_run",

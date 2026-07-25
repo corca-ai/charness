@@ -55,11 +55,23 @@ REVIEWER_TIER_HOST_STATES = frozenset(
 # an in-file constant, not mtime.
 DELIVERY_STATE_RULE_DATE = date(2026, 7, 26)
 DELIVERY_STATE_FIELD = "delivery state"
-DELIVERY_STATE_VALUES = ("findings-received", "spawn-accepted-no-delivery", "pending-parent-spawn")
+DELIVERY_STATE_VALUES = (
+    "findings-received",
+    "findings-recovered-from-transcript",
+    "spawn-accepted-no-delivery",
+    "pending-parent-spawn",
+)
 DELIVERY_STATE_VALUES_SUMMARY = (
-    "`findings-received` / `spawn-accepted-no-delivery <signal>` / `pending-parent-spawn`"
+    "`findings-received` / `findings-recovered-from-transcript <signal>` / "
+    "`spawn-accepted-no-delivery <signal>` / `pending-parent-spawn`"
 )
 _NO_DELIVERY = "spawn-accepted-no-delivery"
+# Transcript recovery is a delivery FAILURE that happened to be salvageable, not a
+# clean delivery. Without its own value it would be recorded as `findings-received`
+# and the diagnostic path would quietly become the normal one — enforcement rather
+# than framing, which is what the reviewer-result helper needs to not erode the
+# spawn-shape discipline. Signal-bearing like its sibling: name what dropped it.
+_RECOVERED = "findings-recovered-from-transcript"
 # Mirrors `validate_critique_artifacts._LEADING_MARKUP_RE` so the typed check and
 # the signal check normalize identically; see the comment at the use site.
 _LEADING_MARKUP_RE = re.compile(r"^[\s`*_\"'>\-]+")
@@ -134,9 +146,10 @@ def validate_delivery_state(
     # satisfy the typed check and then skip the signal requirement entirely —
     # ceremony with no recorded cause, which is what this floor exists to stop.
     token = _LEADING_MARKUP_RE.sub("", lowered).strip()
-    if token.startswith(_NO_DELIVERY) and not token[len(_NO_DELIVERY) :].strip(" :-*_`"):
-        raise ValidationError(
-            f"{path}: `{_NO_DELIVERY}` must name the concrete channel or host signal that "
-            "dropped the findings, so the next session inherits the cause instead of "
-            "re-deriving it."
-        )
+    for typed in (_NO_DELIVERY, _RECOVERED):
+        if token.startswith(typed) and not token[len(typed) :].strip(" :-*_`"):
+            raise ValidationError(
+                f"{path}: `{typed}` must name the concrete channel or host signal that "
+                "dropped the findings, so the next session inherits the cause instead of "
+                "re-deriving it."
+            )

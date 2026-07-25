@@ -14,19 +14,6 @@
     "terminal_payload"
   ],
   "files": {
-    "skills/public/handoff/scripts/chunked_routing_issue_source.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "local_noop_not_closeout"
-      ],
-      "evidence_terms": [
-        "enabled",
-        "doc-only fallback"
-      ],
-      "rationale": "When the handoff adapter's issue_source is disabled (or no tracker resolves), build_issue_entries returns [] and the chunker falls back to doc-only chunking. This is a deliberate runtime no-op (the pickup still produces a valid handoff-only ranking), not a quality/release closeout signal; the parse payload surfaces issue_entry_count=0 so the doc-only fallback is visible."
-    },
     "scripts/announcement_verification_lib.py": {
       "states": [
         "skipped"
@@ -51,76 +38,6 @@
         "skipped_artifacts"
       ],
       "rationale": "Skipped debug artifacts are listed in the index payload with reasons and are not treated as clean seam-risk proof."
-    },
-    "skills/public/quality/scripts/changed_line_coverage_gate_lib.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary"
-      ],
-      "evidence_terms": [
-        "gate skipped (non-blocking)"
-      ],
-      "rationale": "Helper that builds the portable changed-line coverage gate's non-blocking skip reasons (no base SHA, no eligible change, no coverage report, or a stale fingerprint). Each skip carries an explicit `reason` surfaced by check_changed_line_coverage.py, so a missing/stale coverage source cannot read as a clean blocking-clear pass; teeth only fire on fresh coverage."
-    },
-    "skills/public/quality/scripts/check_changed_line_coverage.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "reason"
-      ],
-      "rationale": "The portable changed-line coverage gate emits explicit non-blocking skips (exit 0) in the JSON/plain `reason` when there is no base SHA, no eligible change, no coverage report, or a stale fingerprint. The skip is surfaced in the terminal payload so a missing/old coverage source cannot read as a clean pass; an invalid adapter fails closed (exit 1)."
-    },
-    "skills/public/quality/scripts/check_standing_doc_provenance.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "hard_failure_or_blocker",
-        "operator_summary"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "inert"
-      ],
-      "rationale": "The only `skipped` string is the adapter-invalid stderr message, which exits 1 (a hard failure/blocker, not an exit-0 pass). The command's genuine exit-0 attention state is `inert` (opt-out: empty standing_doc_provenance.standing_docs), surfaced verbatim in the plain summary and the JSON `inert` field, so an opted-out repo cannot read as a silent clean pass."
-    },
-    "skills/public/quality/scripts/check_dup_ratchet.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "enabled",
-        "inert",
-        "advisory",
-        "degraded"
-      ],
-      "rationale": "The boy-scout duplicate ratchet's exit-0 attention states are `inert` (opt-out: dup_ratchet absent or enabled:false) and `degraded` (overlay/baseline missing or nose unavailable). Both are surfaced verbatim in the plain `messages` and the JSON `status`/`degraded_reasons` fields, and the degraded path prepends `ADVISORY:` so the run-quality phase prints it for attention — a disabled or degraded gate cannot read as a silent clean pass. An invalid adapter exits 1 (fails closed). The live fingerprint/scan collection (and its `skipped` state when nose is unavailable) moved to `dup_ratchet_scan.py`, declared separately."
-    },
-    "skills/public/quality/scripts/dup_ratchet_scan.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "degraded"
-      ],
-      "rationale": "The dup-ratchet fingerprint/drift-signature collection helper (split out of `check_dup_ratchet.py`). Its exit-0 attention state is a `skipped` code scan (nose binary absent) or a `degraded` reason (unreadable member span, doc inventory degraded). It never terminates the run itself — it returns the reason to the `check_dup_ratchet` gate caller, which folds it into the whole-gate `degraded` ADVISORY path (prepends `ADVISORY:`, printed by the run-quality phase), so a skipped or degraded scan cannot read as a silent clean pass."
     },
     "scripts/cautilus_adapter_lib.py": {
       "states": [
@@ -202,20 +119,6 @@
       ],
       "rationale": "Coverage library preserves disabled tool state and skipped healthcheck state through shared lifecycle payloads."
     },
-    "scripts/check_seed_fixture_budget.py": {
-      "states": [
-        "advisory-only"
-      ],
-      "visibility": [
-        "stdout_attention",
-        "structured_warning"
-      ],
-      "evidence_terms": [
-        "advisory_only_no_pytest_temp_yet",
-        "scope_classification"
-      ],
-      "rationale": "Seed fixture budget gate reports advisory-only when no pytest tmp directory has been materialized yet; payload exposes the classification."
-    },
     "scripts/check_mutation_score.py": {
       "states": [
         "skipped"
@@ -242,6 +145,52 @@
       ],
       "rationale": "Mutation skipped workers are rendered in the printed score summary."
     },
+    "scripts/check_prescribed_skill_executed.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "host-blocked-subagent",
+        "host-log-not-exposed",
+        "evaluator-unavailable"
+      ],
+      "rationale": "Shared closeout helper CLI surfaces each skipped required evidence name with an enum-bounded reason; absence of a recognized reason fails the gate."
+    },
+    "scripts/check_prescribed_skill_executed_lib.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "host-blocked-subagent",
+        "host-log-not-exposed",
+        "evaluator-unavailable"
+      ],
+      "rationale": "Shared closeout helper library carries the same enum-bounded skip semantics into structured ok/blockers payloads consumed by achieve/issue/release closeout gates."
+    },
+    "scripts/check_seed_fixture_budget.py": {
+      "states": [
+        "advisory-only"
+      ],
+      "visibility": [
+        "stdout_attention",
+        "structured_warning"
+      ],
+      "evidence_terms": [
+        "advisory_only_no_pytest_temp_yet",
+        "scope_classification"
+      ],
+      "rationale": "Seed fixture budget gate reports advisory-only when no pytest tmp directory has been materialized yet; payload exposes the classification."
+    },
     "scripts/check_upstream_support_drift.py": {
       "states": [
         "skipped"
@@ -253,6 +202,18 @@
         "skipped ("
       ],
       "rationale": "Skipped upstream checks are surfaced as per-record errors in the drift report."
+    },
+    "scripts/classify_t_signal.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped_reason"
+      ],
+      "rationale": "T-signal classifier exposes skipped reasons (no_parent, shallow_clone, diff_unavailable) in its structured result so callers can attach classification_skipped to the durable episode record instead of silently emitting t_status none."
     },
     "scripts/control_plane_lifecycle_lib.py": {
       "states": [
@@ -298,34 +259,6 @@
       ],
       "rationale": "Doctor library exposes disabled and skipped healthcheck states with next steps."
     },
-    "scripts/grade_skill_outcome.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "judge not run",
-        "skipped"
-      ],
-      "rationale": "The outcome grader marks a judge-kind assertion `skipped` when no live judge ran (no --judge-cmd; the live LLM judge is an ask-before-run token spend). The skip carries explicit `judge not run` evidence, is excluded from the weighted pass_rate denominator, and is counted separately in the report payload (`skipped N`), so a deferred subjective assertion cannot read as a clean outcome pass; deterministic checks still grade and an invalid grader fails the self-test gate (exit 1)."
-    },
-    "scripts/skill_outcome_wiring.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "judge skipped",
-        "skipped"
-      ],
-      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json — skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
-    },
     "scripts/filter_cosmic_ray_mutants.py": {
       "states": [
         "skipped"
@@ -352,18 +285,19 @@
       ],
       "rationale": "Skipped workflow steps are parsed as source facts for downstream gates, not closeout proof."
     },
-    "scripts/host_hook_session_routing.py": {
+    "scripts/grade_skill_outcome.py": {
       "states": [
-        "disabled"
+        "skipped"
       ],
       "visibility": [
+        "explicit_skip_summary",
         "terminal_payload"
       ],
       "evidence_terms": [
-        "intent",
-        "disabled"
+        "judge not run",
+        "skipped"
       ],
-      "rationale": "Session-routing hook install/uninstall library exposes the per-host session_routing intent (enabled/disabled) in the reconcile payload under actions['session_routing']; a disabled (opt-in default) intent uninstalls/no-ops and cannot read as a silent install."
+      "rationale": "The outcome grader marks a judge-kind assertion `skipped` when no live judge ran (no --judge-cmd; the live LLM judge is an ask-before-run token spend). The skip carries explicit `judge not run` evidence, is excluded from the weighted pass_rate denominator, and is counted separately in the report payload (`skipped N`), so a deferred subjective assertion cannot read as a clean outcome pass; deterministic checks still grade and an invalid grader fails the self-test gate (exit 1)."
     },
     "scripts/host_hook_install_lib.py": {
       "states": [
@@ -377,6 +311,19 @@
         "disabled"
       ],
       "rationale": "Host-hook install/uninstall library exposes per-host intent (enabled/disabled) in reconcile and status payloads so adapter-driven no-op runs cannot read as silent install."
+    },
+    "scripts/host_hook_session_routing.py": {
+      "states": [
+        "disabled"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "intent",
+        "disabled"
+      ],
+      "rationale": "Session-routing hook install/uninstall library exposes the per-host session_routing intent (enabled/disabled) in the reconcile payload under actions['session_routing']; a disabled (opt-in default) intent uninstalls/no-ops and cannot read as a silent install."
     },
     "scripts/host_hook_skill_anchor_guard.py": {
       "states": [
@@ -433,34 +380,6 @@
       ],
       "rationale": "Verified issue/release lifecycle capture returns missing or disabled usage-adapter state as a structured best-effort telemetry disposition. Issue close JSON carries the nested lifecycle_capture payload and release closeout renders it in the durable Lifecycle Usage Capture artifact section; neither disposition means telemetry was appended or lifecycle closeout succeeded."
     },
-    "skills/public/quality/scripts/inventory_nose_clones.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "stdout_attention",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "ADVISORY: nose missing",
-        "clone-family inventory skipped"
-      ],
-      "rationale": "The `nose` clone-family inventory is advisory. When the binary is absent it prints an explicit advisory skip and exits zero, while document near-copy detection remains covered by the standing hard gate."
-    },
-    "skills/public/quality/scripts/inventory_doc_duplicates.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "stdout_attention",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "ADVISORY: nose missing",
-        "doc near-duplicate inventory skipped"
-      ],
-      "rationale": "The nose Markdown doc near-duplicate inventory is advisory. Without --require-nose it prints an explicit advisory skip and exits zero when the binary is absent; the run-quality `doc-duplicates` phase passes --require-nose so a missing or pre-0.13.0 nose fails closed (the required tool) rather than silently skipping."
-    },
     "scripts/plan_cautilus_proof.py": {
       "states": [
         "disabled"
@@ -501,6 +420,42 @@
       ],
       "rationale": "Feedback recording requires an enabled usage_feedback adapter event. Missing or disabled configuration exits 2 and renders a structured status/errors payload (or the same terminal status in plain output), so the command blocks without appending and cannot read as successful feedback capture."
     },
+    "scripts/report_usage_episodes.py": {
+      "states": [
+        "disabled",
+        "no_adapter",
+        "no_records",
+        "skipped"
+      ],
+      "visibility": [
+        "structured_warning",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "WARNING:",
+        "usage_episodes_adapter_missing",
+        "usage_episodes_no_records",
+        "Non-claims:"
+      ],
+      "rationale": "Usage episode report absence, disabled state, and empty capture remain non-failing but visible, with explicit non-claims so summaries are not mistaken for product-success proof."
+    },
+    "scripts/report_usage_product_review.py": {
+      "states": [
+        "disabled",
+        "no_adapter",
+        "no_records"
+      ],
+      "visibility": [
+        "structured_warning",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "usage_episodes_adapter_missing",
+        "usage_episodes_no_records",
+        "product-review report unavailable"
+      ],
+      "rationale": "The product-review reporter reuses usage-episode adapter readiness states and renders them as explicit warnings or unavailable status instead of treating missing capture as last-seen product-review proof."
+    },
     "scripts/retro_persistence_lib.py": {
       "states": [
         "skipped"
@@ -526,6 +481,20 @@
       ],
       "rationale": "When no TOML parser (tomllib/tomli) is available the runner cannot read module-path, so the defensive restore is disabled and degrades to a no-op while the mutation run itself proceeds unaffected. A runtime no-op, not a quality/release closeout signal; the message is written to stdout so the disabled safety net is visible rather than silent."
     },
+    "scripts/skill_outcome_wiring.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "explicit_skip_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "judge skipped",
+        "skipped"
+      ],
+      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json — skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
+    },
     "scripts/slice_closeout_broad_gate.py": {
       "states": [
         "skipped"
@@ -539,18 +508,6 @@
         "verification_lock_required"
       ],
       "rationale": "Pre-lock slice closeout can explicitly skip broad pytest while preserving deterministic checks; the payload names skipped_broad_pytest_commands and the lock-required state so skipped broad proof cannot read as full closeout proof."
-    },
-    "scripts/classify_t_signal.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "skipped_reason"
-      ],
-      "rationale": "T-signal classifier exposes skipped reasons (no_parent, shallow_clone, diff_unavailable) in its structured result so callers can attach classification_skipped to the durable episode record instead of silently emitting t_status none."
     },
     "scripts/slice_closeout_telemetry.py": {
       "states": [
@@ -623,6 +580,18 @@
         "disabled"
       ],
       "rationale": "Tool update reports disabled adapter state as structured skipped output."
+    },
+    "scripts/usage_episode_product_review.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "classification_skipped"
+      ],
+      "rationale": "Missed-detection candidate reporting treats `classification_skipped` as evidence in a reporter payload, not as a silent clean state."
     },
     "scripts/usage_episode_session_start.py": {
       "states": [
@@ -709,54 +678,6 @@
       ],
       "rationale": "Usage episode opt-in absence and disabled state remain non-failing but visible in JSON and normal output."
     },
-    "scripts/report_usage_episodes.py": {
-      "states": [
-        "disabled",
-        "no_adapter",
-        "no_records",
-        "skipped"
-      ],
-      "visibility": [
-        "structured_warning",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "WARNING:",
-        "usage_episodes_adapter_missing",
-        "usage_episodes_no_records",
-        "Non-claims:"
-      ],
-      "rationale": "Usage episode report absence, disabled state, and empty capture remain non-failing but visible, with explicit non-claims so summaries are not mistaken for product-success proof."
-    },
-    "scripts/report_usage_product_review.py": {
-      "states": [
-        "disabled",
-        "no_adapter",
-        "no_records"
-      ],
-      "visibility": [
-        "structured_warning",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "usage_episodes_adapter_missing",
-        "usage_episodes_no_records",
-        "product-review report unavailable"
-      ],
-      "rationale": "The product-review reporter reuses usage-episode adapter readiness states and renders them as explicit warnings or unavailable status instead of treating missing capture as last-seen product-review proof."
-    },
-    "scripts/usage_episode_product_review.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "classification_skipped"
-      ],
-      "rationale": "Missed-detection candidate reporting treats `classification_skipped` as evidence in a reporter payload, not as a silent clean state."
-    },
     "scripts/worktree_audit_lib.py": {
       "states": [
         "skipped"
@@ -808,6 +729,85 @@
       ],
       "rationale": "The state module defines the canonical skipped value consumed by worktree doctor renderers."
     },
+    "skills/public/achieve/scripts/describe_goal_closeout_shape.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "skipped: <reason>: <detail>",
+        "skipped: <allowed-reason>"
+      ],
+      "rationale": "Author-time shape SOURCE for the goal-closeout preflight: it prints the enforced `skipped: <enum>: <detail>` author syntax (the exact form `check_goal_artifact.py` accepts) to stdout so an author learns it before the flip. The `skipped` token is documentation of the author syntax surfaced verbatim to the operator, never a runtime exit-zero status of this script."
+    },
+    "skills/public/achieve/scripts/goal_artifact_closeout_delegation.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "artifact_visible",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "skipped: <reason>",
+        "verified",
+        "issue #N"
+      ],
+      "rationale": "Orchestrator/sub-goal closeout-delegation gate: an orchestrator's delegated-proof checklist item resolves as verified, `skipped: <reason>`, or an issue reference; an unresolved item blocks the complete flip and the reason stays artifact-visible in the goal's `## Closeout Delegation` section."
+    },
+    "skills/public/achieve/scripts/goal_artifact_closeout_evidence.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "artifact_visible"
+      ],
+      "evidence_terms": [
+        "skipped"
+      ],
+      "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
+    },
+    "skills/public/achieve/scripts/goal_artifact_discussion.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "artifact_visible"
+      ],
+      "evidence_terms": [
+        "Discuss before activation",
+        "discussion_summary_present"
+      ],
+      "rationale": "Before-phase discussion readiness treats n/a/none summaries as absent when consequential activation decisions are present; a real summary must be visible in the goal artifact before pursue-ready passes."
+    },
+    "skills/public/achieve/scripts/goal_artifact_early_close_report.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "artifact_visible",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "early-close reports cannot be skipped"
+      ],
+      "rationale": "Early-close report evidence is required when the goal records an early-close reason; a skipped report line is converted into an invalid skip so the complete gate blocks instead of silently accepting missing user-facing rationale."
+    },
+    "skills/public/achieve/scripts/goal_artifact_lib.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "artifact_visible"
+      ],
+      "evidence_terms": [
+        "skipped:",
+        "skipped: <enum>"
+      ],
+      "rationale": "Achieve After-phase closeout writes per-evidence-name `skipped: <enum>: <detail>` lines into the goal artifact so the persisted reason stays operator-visible."
+    },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
       "states": [
         "skipped"
@@ -834,6 +834,60 @@
       ],
       "rationale": "Skipped acquisition stages are represented in the public URL gather attempt trace."
     },
+    "skills/public/handoff/scripts/chunked_routing_issue_source.py": {
+      "states": [
+        "disabled"
+      ],
+      "visibility": [
+        "local_noop_not_closeout"
+      ],
+      "evidence_terms": [
+        "enabled",
+        "doc-only fallback"
+      ],
+      "rationale": "When the handoff adapter's issue_source is disabled (or no tracker resolves), build_issue_entries returns [] and the chunker falls back to doc-only chunking. This is a deliberate runtime no-op (the pickup still produces a valid handoff-only ranking), not a quality/release closeout signal; the parse payload surfaces issue_entry_count=0 so the doc-only fallback is visible."
+    },
+    "skills/public/issue/scripts/issue_create.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "readback_skipped",
+        "issue created; post-create readback skipped by caller",
+        "body_verified"
+      ],
+      "rationale": "issue create emits a terminal payload with readback_skipped and body_verified null when --skip-readback is requested; an unverified write is surfaced to the operator, never silently treated as a confirmed write."
+    },
+    "skills/public/issue/scripts/issue_resolution_critique.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "skipped_classification",
+        "host-blocked-subagent"
+      ],
+      "rationale": "Issue closeout verifier reports an explicit skipped_classification payload and refuses closure when a required resolution-critique skip lacks a recognized host-blocked reason."
+    },
+    "skills/public/issue/scripts/issue_verify_closeout_body.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "skipped_classification"
+      ],
+      "rationale": "The rung-1 behavioral-verdict and AI-provenance floors return an explicit skipped_classification payload for question/decision-needed carriers (exempt: no user-facing behavior to confirm), so an exempt closeout reads as a typed non-claim rather than a clean behavior-confirmed pass."
+    },
     "skills/public/quality/references/find_inline_prompt_bulk.py": {
       "states": [
         "advisory-only"
@@ -848,19 +902,61 @@
       ],
       "rationale": "Inline-prompt bulk helper marks default-glob scans as advisory-only when no canonical prompt_asset_roots are supplied; classification is in stdout and JSON payload."
     },
-    "skills/public/quality/scripts/inventory_cli_ergonomics.py": {
+    "skills/public/quality/scripts/changed_line_coverage_gate_lib.py": {
       "states": [
-        "advisory-only"
+        "skipped"
       ],
       "visibility": [
-        "stdout_attention",
-        "structured_warning"
+        "explicit_skip_summary"
       ],
       "evidence_terms": [
-        "advisory-only",
-        "scope_classification"
+        "gate skipped (non-blocking)"
       ],
-      "rationale": "CLI ergonomics inventory prints an advisory-only scope_classification (carried from cli_ergonomics_lib) so green output cannot be read as enforcement."
+      "rationale": "Helper that builds the portable changed-line coverage gate's non-blocking skip reasons (no base SHA, no eligible change, no coverage report, or a stale fingerprint). Each skip carries an explicit `reason` surfaced by check_changed_line_coverage.py, so a missing/stale coverage source cannot read as a clean blocking-clear pass; teeth only fire on fresh coverage."
+    },
+    "skills/public/quality/scripts/check_changed_line_coverage.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "explicit_skip_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "reason"
+      ],
+      "rationale": "The portable changed-line coverage gate emits explicit non-blocking skips (exit 0) in the JSON/plain `reason` when there is no base SHA, no eligible change, no coverage report, or a stale fingerprint. The skip is surfaced in the terminal payload so a missing/old coverage source cannot read as a clean pass; an invalid adapter fails closed (exit 1)."
+    },
+    "skills/public/quality/scripts/check_dup_ratchet.py": {
+      "states": [
+        "disabled"
+      ],
+      "visibility": [
+        "explicit_skip_summary",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "enabled",
+        "inert",
+        "advisory",
+        "degraded"
+      ],
+      "rationale": "The boy-scout duplicate ratchet's exit-0 attention states are `inert` (opt-out: dup_ratchet absent or enabled:false) and `degraded` (overlay/baseline missing or nose unavailable). Both are surfaced verbatim in the plain `messages` and the JSON `status`/`degraded_reasons` fields, and the degraded path prepends `ADVISORY:` so the run-quality phase prints it for attention — a disabled or degraded gate cannot read as a silent clean pass. An invalid adapter exits 1 (fails closed). The live fingerprint/scan collection (and its `skipped` state when nose is unavailable) moved to `dup_ratchet_scan.py`, declared separately."
+    },
+    "skills/public/quality/scripts/check_standing_doc_provenance.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "hard_failure_or_blocker",
+        "operator_summary"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "inert"
+      ],
+      "rationale": "The only `skipped` string is the adapter-invalid stderr message, which exits 1 (a hard failure/blocker, not an exit-0 pass). The command's genuine exit-0 attention state is `inert` (opt-out: empty standing_doc_provenance.standing_docs), surfaced verbatim in the plain summary and the JSON `inert` field, so an opted-out repo cannot read as a silent clean pass."
     },
     "skills/public/quality/scripts/ci_recoverable_gates_lib.py": {
       "states": [
@@ -876,18 +972,61 @@
       ],
       "rationale": "The CI-recoverability triage lens is advisory-only and always exit-zero (carried into inventory_ci_recoverable_gates.py): it classifies cost-ranked local gates into move-off-local candidates and keep-local. The keep-local list and the interpretation question are surfaced in the operator summary so a green run is never read as 'safe to move every gate off local' — moving a gate CI does not re-run is exactly what the lens refuses to recommend."
     },
-    "skills/public/quality/scripts/skill_ergonomics_lib.py": {
+    "skills/public/quality/scripts/dup_ratchet_scan.py": {
       "states": [
-        "prose_review_status"
+        "skipped"
       ],
       "visibility": [
+        "explicit_skip_summary",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "degraded"
+      ],
+      "rationale": "The dup-ratchet fingerprint/drift-signature collection helper (split out of `check_dup_ratchet.py`). Its exit-0 attention state is a `skipped` code scan (nose binary absent) or a `degraded` reason (unreadable member span, doc inventory degraded). It never terminates the run itself — it returns the reason to the `check_dup_ratchet` gate caller, which folds it into the whole-gate `degraded` ADVISORY path (prepends `ADVISORY:`, printed by the run-quality phase), so a skipped or degraded scan cannot read as a silent clean pass."
+    },
+    "skills/public/quality/scripts/inventory_cli_ergonomics.py": {
+      "states": [
+        "advisory-only"
+      ],
+      "visibility": [
+        "stdout_attention",
         "structured_warning"
       ],
       "evidence_terms": [
-        "prose_review_status",
-        "advisories"
+        "advisory-only",
+        "scope_classification"
       ],
-      "rationale": "Skill ergonomics prose-review-required states produce advisory payloads consumed by quality artifacts."
+      "rationale": "CLI ergonomics inventory prints an advisory-only scope_classification (carried from cli_ergonomics_lib) so green output cannot be read as enforcement."
+    },
+    "skills/public/quality/scripts/inventory_doc_duplicates.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "stdout_attention",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "ADVISORY: nose missing",
+        "doc near-duplicate inventory skipped"
+      ],
+      "rationale": "The nose Markdown doc near-duplicate inventory is advisory. Without --require-nose it prints an explicit advisory skip and exits zero when the binary is absent; the run-quality `doc-duplicates` phase passes --require-nose so a missing or pre-0.13.0 nose fails closed (the required tool) rather than silently skipping."
+    },
+    "skills/public/quality/scripts/inventory_nose_clones.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "stdout_attention",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "ADVISORY: nose missing",
+        "clone-family inventory skipped"
+      ],
+      "rationale": "The `nose` clone-family inventory is advisory. When the binary is absent it prints an explicit advisory skip and exits zero, while document near-copy detection remains covered by the standing hard gate."
     },
     "skills/public/quality/scripts/inventory_skill_ergonomics.py": {
       "states": [
@@ -901,6 +1040,19 @@
         "advisories"
       ],
       "rationale": "The compact skill ergonomics summary carries prose-review-required state and the advisory list so reviewers do not need the full per-skill payload to see the non-blocking attention state."
+    },
+    "skills/public/quality/scripts/skill_ergonomics_lib.py": {
+      "states": [
+        "prose_review_status"
+      ],
+      "visibility": [
+        "structured_warning"
+      ],
+      "evidence_terms": [
+        "prose_review_status",
+        "advisories"
+      ],
+      "rationale": "Skill ergonomics prose-review-required states produce advisory payloads consumed by quality artifacts."
     },
     "skills/public/quality/scripts/validate_skill_ergonomics.py": {
       "states": [
@@ -958,6 +1110,20 @@
       ],
       "rationale": "Generated release adapter patterns include explicit skipped-review phrases for gate parsing."
     },
+    "skills/public/release/scripts/publish_release_adapter_preflight.py": {
+      "states": [
+        "not_configured",
+        "not_evaluable"
+      ],
+      "visibility": [
+        "artifact_visible"
+      ],
+      "evidence_terms": [
+        "not_configured",
+        "not_evaluable"
+      ],
+      "rationale": "Release adapter focused preflight records not_configured/not_evaluable as release-artifact-visible non-claims when a changed adapter cannot run focused commands or lacks a previous tag for field diff."
+    },
     "skills/public/release/scripts/publish_release_artifact_sections.py": {
       "states": [
         "not_configured"
@@ -1003,6 +1169,19 @@
         "reason"
       ],
       "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass — the gap is legible, not green."
+    },
+    "skills/public/release/scripts/publish_release_preflight.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "host-blocked-subagent",
+        "honestly skipped"
+      ],
+      "rationale": "Release publish preflight refuses without an explicit `--critique-artifact` or `--critique-blocked <host-signal>`; the blocked path is recorded as a skipped standalone-critique reason in the shared closeout payload and never silently reads as release proof."
     },
     "skills/public/release/scripts/publish_release_retro.py": {
       "states": [
@@ -1057,6 +1236,18 @@
       ],
       "rationale": "Seeded T-events adapter starts disabled in checked-in config text so the opt-in state is visible."
     },
+    "skills/public/shared/scripts/reviewer_result.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped_oversized_records"
+      ],
+      "rationale": "The transcript reader caps per-record size so a pathological reviewer message cannot overflow the caller's context, and counts the records it skipped for that reason. The count is emitted as `skipped_oversized_records` in the returned payload whenever it is non-zero, so a truncated read is visible to the caller rather than silently thinner than the transcript. This is a diagnostic helper's read budget, not a quality or release closeout signal: the helper is explicitly the diagnostic floor for a stranded reviewer result, and every payload carries diagnostic_only=true plus the contract sentence saying so."
+    },
     "skills/support/markdown-preview/scripts/render_markdown_preview.py": {
       "states": [
         "disabled"
@@ -1081,185 +1272,6 @@
         "status=\"skipped\""
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
-    },
-    "scripts/check_prescribed_skill_executed.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "host-blocked-subagent",
-        "host-log-not-exposed",
-        "evaluator-unavailable"
-      ],
-      "rationale": "Shared closeout helper CLI surfaces each skipped required evidence name with an enum-bounded reason; absence of a recognized reason fails the gate."
-    },
-    "scripts/check_prescribed_skill_executed_lib.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "host-blocked-subagent",
-        "host-log-not-exposed",
-        "evaluator-unavailable"
-      ],
-      "rationale": "Shared closeout helper library carries the same enum-bounded skip semantics into structured ok/blockers payloads consumed by achieve/issue/release closeout gates."
-    },
-    "skills/public/achieve/scripts/goal_artifact_lib.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "artifact_visible"
-      ],
-      "evidence_terms": [
-        "skipped:",
-        "skipped: <enum>"
-      ],
-      "rationale": "Achieve After-phase closeout writes per-evidence-name `skipped: <enum>: <detail>` lines into the goal artifact so the persisted reason stays operator-visible."
-    },
-    "skills/public/achieve/scripts/goal_artifact_closeout_evidence.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "artifact_visible"
-      ],
-      "evidence_terms": [
-        "skipped"
-      ],
-      "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
-    },
-    "skills/public/achieve/scripts/goal_artifact_closeout_delegation.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "artifact_visible",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "skipped: <reason>",
-        "verified",
-        "issue #N"
-      ],
-      "rationale": "Orchestrator/sub-goal closeout-delegation gate: an orchestrator's delegated-proof checklist item resolves as verified, `skipped: <reason>`, or an issue reference; an unresolved item blocks the complete flip and the reason stays artifact-visible in the goal's `## Closeout Delegation` section."
-    },
-    "skills/public/achieve/scripts/goal_artifact_early_close_report.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "artifact_visible",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "early-close reports cannot be skipped"
-      ],
-      "rationale": "Early-close report evidence is required when the goal records an early-close reason; a skipped report line is converted into an invalid skip so the complete gate blocks instead of silently accepting missing user-facing rationale."
-    },
-    "skills/public/achieve/scripts/goal_artifact_discussion.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "artifact_visible"
-      ],
-      "evidence_terms": [
-        "Discuss before activation",
-        "discussion_summary_present"
-      ],
-      "rationale": "Before-phase discussion readiness treats n/a/none summaries as absent when consequential activation decisions are present; a real summary must be visible in the goal artifact before pursue-ready passes."
-    },
-    "skills/public/achieve/scripts/describe_goal_closeout_shape.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "skipped: <reason>: <detail>",
-        "skipped: <allowed-reason>"
-      ],
-      "rationale": "Author-time shape SOURCE for the goal-closeout preflight: it prints the enforced `skipped: <enum>: <detail>` author syntax (the exact form `check_goal_artifact.py` accepts) to stdout so an author learns it before the flip. The `skipped` token is documentation of the author syntax surfaced verbatim to the operator, never a runtime exit-zero status of this script."
-    },
-    "skills/public/issue/scripts/issue_create.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "readback_skipped",
-        "issue created; post-create readback skipped by caller",
-        "body_verified"
-      ],
-      "rationale": "issue create emits a terminal payload with readback_skipped and body_verified null when --skip-readback is requested; an unverified write is surfaced to the operator, never silently treated as a confirmed write."
-    },
-    "skills/public/issue/scripts/issue_resolution_critique.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "skipped_classification",
-        "host-blocked-subagent"
-      ],
-      "rationale": "Issue closeout verifier reports an explicit skipped_classification payload and refuses closure when a required resolution-critique skip lacks a recognized host-blocked reason."
-    },
-    "skills/public/issue/scripts/issue_verify_closeout_body.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "skipped_classification"
-      ],
-      "rationale": "The rung-1 behavioral-verdict and AI-provenance floors return an explicit skipped_classification payload for question/decision-needed carriers (exempt: no user-facing behavior to confirm), so an exempt closeout reads as a typed non-claim rather than a clean behavior-confirmed pass."
-    },
-    "skills/public/release/scripts/publish_release_preflight.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "host-blocked-subagent",
-        "honestly skipped"
-      ],
-      "rationale": "Release publish preflight refuses without an explicit `--critique-artifact` or `--critique-blocked <host-signal>`; the blocked path is recorded as a skipped standalone-critique reason in the shared closeout payload and never silently reads as release proof."
-    },
-    "skills/public/release/scripts/publish_release_adapter_preflight.py": {
-      "states": [
-        "not_configured",
-        "not_evaluable"
-      ],
-      "visibility": [
-        "artifact_visible"
-      ],
-      "evidence_terms": [
-        "not_configured",
-        "not_evaluable"
-      ],
-      "rationale": "Release adapter focused preflight records not_configured/not_evaluable as release-artifact-visible non-claims when a changed adapter cannot run focused commands or lacks a previous tag for field diff."
     }
   }
 }

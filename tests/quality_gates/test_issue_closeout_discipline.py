@@ -127,6 +127,21 @@ def test_issue_closeout_draft_validation_runs_before_mutation(tmp_path: Path) ->
     assert "fails before any GitHub mutation" in closeout
 
 
+def test_issue_closeout_draft_gate_names_the_stub_producer_not_only_the_validator(tmp_path: Path) -> None:
+    """The closeout shape must be HANDED to the author at the gate, not discovered
+    by failing the validator. The `closeout-draft` packet names its validator; it
+    must also name `describe_closeout_draft_shape.py` (+ `--stub`), the producer
+    that renders the enforced shape live from the verifier constants."""
+    plan = _issue_plan(tmp_path, "--intent", "resolve", "--", "42")
+
+    packet = next(gate for gate in plan["gate_packets"] if gate["id"] == "closeout-draft")
+    assert "describe_closeout_draft_shape.py" in packet["shape_command"]
+    assert packet["stub_command"].endswith("--stub")
+    assert "describe_closeout_draft_shape.py" in packet["stub_command"]
+    assert "before drafting" in packet["shape_run_when"]
+    assert (ROOT / "skills/public/issue/scripts/describe_closeout_draft_shape.py").is_file()
+
+
 def test_issue_closeout_covers_release_helper_issue_verification() -> None:
     closeout = _read(CLOSEOUT)
     resolve_flow = _read(RESOLVE_FLOW)

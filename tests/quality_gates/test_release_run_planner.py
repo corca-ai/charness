@@ -190,6 +190,10 @@ def test_release_run_planner_requires_critique_before_publish(tmp_path: Path) ->
     payload = yaml.safe_load(result.stdout)
     assert payload["target"]["target_version"] == "0.0.1"
     assert payload["next_action"]["kind"] == "needs_critique"
+    # The planner must name the critique PRODUCER, not only the
+    # `--critique-artifact` validator flag, so the required artifact shape is not
+    # discoverable solely by failing `validate_critique_artifacts.py`.
+    assert "scaffold_critique_artifact.py" in payload["next_action"]["scaffold_command"]
     assert payload["publish_packets"] == []
 
 

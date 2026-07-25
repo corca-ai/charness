@@ -155,3 +155,31 @@ def test_markup_cannot_smuggle_a_no_delivery_record_past_the_signal_requirement(
 def test_marked_up_no_delivery_with_a_real_signal_still_passes() -> None:
     """The normalization must not over-reach into rejecting a real record."""
     _check("**spawn-accepted-no-delivery** mailbox channel, no reader tool", observed_date=POST_CUTOFF)
+
+
+def test_transcript_recovery_is_not_recordable_as_a_clean_delivery() -> None:
+    """Recovery is a delivery FAILURE that happened to be salvageable.
+
+    The reviewer-result helper makes transcript recovery easy, which is exactly
+    why it needs its own typed value: folded into `findings-received`, the
+    diagnostic path becomes indistinguishable from a clean inline delivery and
+    the spawn-shape discipline erodes with nothing to catch it.
+    """
+    with pytest.raises(ValidationError) as excinfo:
+        _check("findings-recovered-from-transcript", observed_date=POST_CUTOFF)
+
+    assert "must name the concrete channel or host signal" in str(excinfo.value)
+
+
+def test_transcript_recovery_with_a_named_signal_is_accepted() -> None:
+    _check(
+        "findings-recovered-from-transcript named spawn routed to an unreadable mailbox",
+        observed_date=POST_CUTOFF,
+    )
+
+
+def test_recovered_is_not_swallowed_by_the_received_prefix() -> None:
+    """`findings-received` must not shadow `findings-recovered-from-transcript`."""
+    with pytest.raises(ValidationError):
+        _check("findings-recovered-from-transcript", observed_date=POST_CUTOFF)
+    _check("findings-received", observed_date=POST_CUTOFF)

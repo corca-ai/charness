@@ -9,6 +9,10 @@ _ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
 
+# Author-time shape source for the closeout-draft surface (the stub producer the
+# `closeout-draft` gate packet pairs with its validator).
+SHAPE_COMMAND = 'python3 "$SKILL_DIR/scripts/describe_closeout_draft_shape.py" --repo-root .'
+
 REFERENCE_SUMMARY = {
     "references/resolve-flow.md": "resolve sequencing, GitHub source-of-truth selection, and read-before-design",
     "references/issue-shaping.md": "problem-first issue creation and external-source preservation",
@@ -130,6 +134,15 @@ def build_resolve_plan(
                 "presence/form gate; does not prove behavior or final GitHub state",
                 command="issue_tool.py validate-closeout-draft ...",
                 parallel_group="carrier-checks",
+                # The gate is discoverable only by failing it unless the packet also
+                # names the PRODUCER. `describe_closeout_draft_shape.py` renders the
+                # enforced shape live from the verifier constants (per-classification
+                # ledger fields, the bug `Siblings:` decision+proof rule, the
+                # in-body manual-fallback reason) and `--stub` hands back a starter
+                # body. Run it BEFORE writing any carrier prose.
+                shape_command=SHAPE_COMMAND,
+                stub_command=f"{SHAPE_COMMAND} --stub",
+                shape_run_when="before drafting the carrier body, not after the validator fails",
             ),
             _ENVELOPE.gate_packet(
                 "closeout-verify",
