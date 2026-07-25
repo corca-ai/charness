@@ -19,6 +19,14 @@ def _attention_terms() -> tuple[str, ...]:
     return module.ATTENTION_TERMS
 
 
+def _assert_points_at_runnable_script(text: str, script_name: str) -> None:
+    # Binds the documented name to the affordance behind it. Asserting only the
+    # substring is a proxy: the reference keeps naming a script the repo deleted
+    # and the guard stays green while the documented command is unrunnable.
+    assert script_name in text, f"authoring-preflight.md no longer names {script_name}"
+    assert (ROOT / "scripts" / script_name).is_file(), f"scripts/{script_name} does not exist"
+
+
 def test_authoring_preflight_reference_exists_and_is_discoverable() -> None:
     # #308: the authoring-preflight reference exists and is reachable from the
     # read-before-authoring path (implementation-discipline.md).
@@ -46,7 +54,7 @@ def test_authoring_preflight_names_skill_core_headroom_buffer() -> None:
     # omit the trap that the new ratchet now enforces.
     text = PREFLIGHT_DOC.read_text(encoding="utf-8")
     assert "SKILL.md core headroom" in text
-    assert "check_skill_surface_preflight.py" in text
+    _assert_points_at_runnable_script(text, "check_skill_surface_preflight.py")
 
 
 def test_authoring_preflight_points_at_one_shot_preflight_and_prose_pin() -> None:
@@ -55,7 +63,7 @@ def test_authoring_preflight_points_at_one_shot_preflight_and_prose_pin() -> Non
     # the path of least resistance instead of a remembered ritual.
     text = PREFLIGHT_DOC.read_text(encoding="utf-8")
     assert "--run-checks" in text
-    assert "check_prose_pin.py" in text
+    _assert_points_at_runnable_script(text, "check_prose_pin.py")
     assert "prose and path pins" in text.lower()
 
 
@@ -64,7 +72,7 @@ def test_authoring_preflight_names_skill_cut_safety() -> None:
     # check, so a skill-body cut verifies pins + reference homes up front instead
     # of discovering a broken contract/test pin at the broad gate.
     text = PREFLIGHT_DOC.read_text(encoding="utf-8")
-    assert "check_skill_cut_safety.py" in text
+    _assert_points_at_runnable_script(text, "check_skill_cut_safety.py")
     assert "lossless" in text.lower()
 
 
@@ -75,5 +83,5 @@ def test_authoring_preflight_names_general_doc_preflight() -> None:
     # doc-link / length gates one at a time.
     preflight_text = PREFLIGHT_DOC.read_text(encoding="utf-8")
     discipline_text = DISCIPLINE_DOC.read_text(encoding="utf-8")
-    assert "check_doc_authoring_preflight.py" in preflight_text
-    assert "check_doc_authoring_preflight.py" in discipline_text
+    _assert_points_at_runnable_script(preflight_text, "check_doc_authoring_preflight.py")
+    _assert_points_at_runnable_script(discipline_text, "check_doc_authoring_preflight.py")

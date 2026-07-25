@@ -154,7 +154,11 @@ markdownlint rules (the `MD004` list-marker style, a wrapped inline-code span,
 trailing space), the
 [check_doc_links.py](../../scripts/check_doc_links.py) pathy-ref / link form,
 and the surface length cap (the handoff line cap) one commit-gate failure at a
-time. Forecast them all in one pass:
+time. `check_doc_links` also resolves the repo-owned script a documented command
+names — in a fenced block or an inline span — so a `python3 scripts/…` example
+cannot outlive the script it names. See
+[Documented commands](#documented-commands) for the escape. Forecast them all in
+one pass:
 
 ```bash
 python3 scripts/check_doc_authoring_preflight.py --path docs/handoff.md
@@ -169,6 +173,27 @@ not a gate: a doc still commits without it, the existing gates stay the
 enforcement, and
 [run_slice_closeout.py](../../scripts/run_slice_closeout.py) prints an
 `ADVISORY:` pointer when a slice edits a `docs/*.md` surface.
+
+## Documented commands
+
+Every markdown surface the gate covers — the repo readme, AGENTS.md, `docs/*.md`,
+presets, profiles, and portable skill packages — has its documented commands
+resolved against the repo's own git file listing. A fenced or inline command
+naming a repo-owned script (a `python3`, `bash`, `sh`, or dot-slash invocation)
+must name a script that exists, so a rename or deletion cannot leave a command
+example that only looks runnable.
+
+Two escapes, for the case where a command deliberately names something this repo
+does not own — most often a portable skill documenting the *consuming* repo's
+command:
+
+- a `<repo-root>/`, `<plugin-dir>/`, or `<skill-dir>/` prefix;
+- any `<…>` placeholder inside the path, e.g. `scripts/<name>.py`.
+
+A command documented inside a portable skill package resolves against the package
+root as well as the repo root, so a skill's own `scripts/` helper is found from
+its SKILL.md and references without spelling out the full `skills/<kind>/<name>/`
+prefix.
 
 ## Portable skill packages
 

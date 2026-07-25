@@ -299,6 +299,159 @@ def test_check_doc_links_rejects_relative_link_that_escapes_repo_root(
     assert "../../other-repo/README.md" in result.stderr
 
 
+def test_check_doc_links_rejects_fenced_command_naming_a_missing_script(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "README.md").write_text(
+        "\n".join(["# Demo", "", "```bash", "python3 scripts/check_prose_pin.py --repo-root .", "```", ""]),
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "fenced command target" in result.stderr
+    assert "scripts/check_prose_pin.py" in result.stderr
+
+
+def test_check_doc_links_accepts_fenced_command_naming_an_existing_script(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "check_prose_pin.py").write_text("print('hi')\n", encoding="utf-8")
+    (repo / "README.md").write_text(
+        "\n".join(["# Demo", "", "```bash", "python3 scripts/check_prose_pin.py --repo-root .", "```", ""]),
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_doc_links_ignores_fenced_commands_outside_repo_owned_paths(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    # A documented bootstrap writes and runs a temp-path script; only repo-owned
+    # targets are the gate's business.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text(
+        "\n".join(["# Demo", "", "```bash", "bash /tmp/charness-init.sh", "```", ""]),
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_doc_links_allows_placeholder_bearing_fenced_command_target(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "# Demo",
+                "",
+                "```bash",
+                "python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md",
+                "python3 <repo-root>/scripts/local_only.py",
+                "```",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "scripts").mkdir()
+    (repo / "scripts" / "check_skill_surface_preflight.py").write_text("print('hi')\n", encoding="utf-8")
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_doc_links_resolves_fenced_command_target_inside_its_skill_package(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    (skill_dir / "scripts").mkdir(parents=True)
+    (skill_dir / "scripts" / "prepare_packet.py").write_text("print('hi')\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(["# Demo", "", "```bash", "python3 scripts/prepare_packet.py --repo-root .", "```", ""]),
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_doc_links_rejects_inline_command_naming_a_missing_script(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    # The backtick checker waves through any span containing whitespace, so an
+    # inline command with a flag rots exactly as invisibly as the fenced form.
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "README.md").write_text(
+        "Run `python3 scripts/check_prose_pin.py --repo-root .` before authoring.\n",
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "fenced command target" in result.stderr
+    assert "scripts/check_prose_pin.py" in result.stderr
+
+
+def test_check_doc_links_resolves_command_targets_against_the_git_listing(
+    tmp_path: Path,
+) -> None:
+    # Fail-open guard: a gitignored target exists on this machine and does not
+    # exist on the CI checkout, so resolving by `.exists()` would pass locally
+    # and fail there. Every sibling check already resolves via the git listing.
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / ".gitignore").write_text("scripts/local_only.py\n", encoding="utf-8")
+    (repo / "README.md").write_text(
+        "\n".join(["# Demo", "", "```bash", "python3 scripts/local_only.py", "```", ""]),
+        encoding="utf-8",
+    )
+    (repo / "scripts" / "local_only.py").write_text("print('hi')\n", encoding="utf-8")
+    init_git_repo(repo, ".gitignore", "README.md")
+
+    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
+
+    assert result.returncode == 1
+    assert "scripts/local_only.py" in result.stderr
+
+
+def test_check_doc_links_ignores_command_shaped_text_outside_a_fence(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    # Prose and inline code are the backticked-reference checker's territory; the
+    # fenced-command check must not double-report them.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text(
+        "# Demo\n\nThe bootstrap runs python3 scripts/missing.py during setup.\n",
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     docs_dir = repo / "docs"

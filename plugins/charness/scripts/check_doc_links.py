@@ -18,6 +18,8 @@ iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_
 iter_repo_files = _scripts_repo_file_listing_module.iter_repo_files
 _quality_adapter_module = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter = _quality_adapter_module.load_quality_adapter
+_markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 
 DOC_GLOBS = (
     "README.md",
@@ -32,7 +34,13 @@ DOC_GLOBS = (
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
-FENCE_RE = re.compile(r"^\s*(```|~~~)")
+# Command-shaped references: `python3 scripts/x.py`, `bash scripts/x.sh`,
+# `./scripts/x.sh`. The link checker skips fences and the backtick checker waves
+# through any span containing whitespace, so a documented command is the syntax
+# where a rename rots unseen -- in a fence and in an inline span alike.
+COMMAND_TARGET_RE = re.compile(
+    r"(?:^|[\s|(\"'=&;])(?:python3?\s+|bash\s+|sh\s+|\./)([A-Za-z0-9._<>/-]+\.(?:py|sh))"
+)
 PATH_TOKEN_RE = re.compile(r"\b(?:README\.md|(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.md)(?:#[A-Za-z0-9._-]+)?\b")
 BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
@@ -182,21 +190,7 @@ def iter_bare_internal_doc_refs(
     canonical_markdown_surfaces: set[str],
 ) -> list[str]:
     matches: list[str] = []
-    in_fence = False
-    in_html_comment = False
-    for line in doc.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if in_html_comment:
-            if "-->" in stripped:
-                in_html_comment = False
-            continue
-        if stripped.startswith("<!--"):
-            if "-->" not in stripped:
-                in_html_comment = True
-            continue
-        if FENCE_RE.match(line):
-            in_fence = not in_fence
-            continue
+    for _lineno, line, in_fence in iter_doc_lines(doc):
         if in_fence:
             continue
         scrubbed = strip_inline_markup(line)
@@ -268,22 +262,8 @@ def iter_backticked_file_refs(
     canonical_markdown_surfaces: set[str],
 ) -> list[tuple[int, str, str]]:
     matches: list[tuple[int, str, str]] = []
-    in_fence = False
-    in_html_comment = False
     portable_package_root = portable_skill_package_root(root, doc)
-    for lineno, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), start=1):
-        stripped = line.strip()
-        if in_html_comment:
-            if "-->" in stripped:
-                in_html_comment = False
-            continue
-        if stripped.startswith("<!--"):
-            if "-->" not in stripped:
-                in_html_comment = True
-            continue
-        if FENCE_RE.match(line):
-            in_fence = not in_fence
-            continue
+    for lineno, line, in_fence in iter_doc_lines(doc):
         if in_fence:
             continue
         scrubbed = strip_markdown_links(line)
@@ -299,6 +279,51 @@ def iter_backticked_file_refs(
             )
             if reason is not None:
                 matches.append((lineno, candidate, reason))
+    return matches
+
+
+def iter_unresolved_command_targets(
+    root: Path,
+    doc: Path,
+    known_repo_paths: set[str] | None = None,
+) -> list[tuple[int, str]]:
+    """Repo-owned script targets named by documented commands that do not exist.
+
+    Asserts the property the surrounding prose claims -- that a documented
+    command names a runnable affordance -- rather than the proxy that the doc
+    merely mentions a filename. Both carriers count: a fenced block and an
+    inline-code span rot identically, and the backtick checker waves any span
+    containing whitespace through, so `python3 scripts/x.py --flag` is invisible
+    to it. Placeholder-bearing targets (`<repo-root>/...`, `scripts/<name>.py`)
+    are the escape for commands that only resolve in a consuming repo.
+
+    ``known_repo_paths`` keeps the resolution on the same file listing the rest of
+    the gate uses; without it an untracked target passes locally and fails CI.
+    """
+    matches: list[tuple[int, str]] = []
+    package_root = portable_skill_package_root(root, doc)
+
+    def resolves(rel_posix: str) -> bool:
+        if known_repo_paths is not None:
+            return rel_posix in known_repo_paths
+        return (root / rel_posix).exists()
+
+    for lineno, line, in_fence in iter_doc_lines(doc):
+        carriers = [line] if in_fence else [span.group(1) for span in BACKTICK_CONTENT_RE.finditer(line)]
+        for carrier in carriers:
+            for match in COMMAND_TARGET_RE.finditer(carrier):
+                candidate = match.group(1)
+                if "<" in candidate or ">" in candidate:
+                    continue
+                if not looks_like_repo_reference(candidate):
+                    continue
+                if resolves(candidate):
+                    continue
+                if package_root is not None:
+                    packaged = (package_root / candidate).relative_to(root).as_posix()
+                    if resolves(packaged):
+                        continue
+                matches.append((lineno, candidate))
     return matches
 
 
@@ -383,6 +408,16 @@ def main() -> int:
                 refs += ", ..."
             raise ValidationError(
                 f"{doc}: backticked file reference(s) {refs}; use markdown links so renames do not rot"
+            )
+        unresolved = iter_unresolved_command_targets(root, doc, known_repo_paths)
+        if unresolved:
+            refs = ", ".join(f"`{cand}` (line {ln})" for ln, cand in unresolved[:3])
+            if len(unresolved) > 3:
+                refs += ", ..."
+            raise ValidationError(
+                f"{doc}: fenced command target(s) {refs} do not exist; a documented command must "
+                "name a runnable script, or use a `<repo-root>/...` placeholder when it only "
+                "resolves in a consuming repo"
             )
     print("Validated markdown links.")
     return 0

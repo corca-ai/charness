@@ -10,7 +10,8 @@ commit gate at a time:
   - wrapped inline-code spans (a single-backtick span that breaks across a
     newline), via ``check_markdown_inline_code``;
   - doc-link / pathy-ref form (relative-link form, bare internal markdown refs,
-    backticked file references), via ``check_doc_links``;
+    backticked file references, fenced commands naming a missing script), via
+    ``check_doc_links``;
   - the surface length cap (e.g. the handoff artifact's line cap), read live
     from the owning validator's constant.
 
@@ -206,6 +207,15 @@ def collect_doc_links(repo_root: Path, doc: Path) -> list[dict[str, Any]]:
         findings.append(
             {"kind": "backticked-ref", "line": lineno, "detail": candidate, "reason": reason}
         )
+    for lineno, candidate in _doc_links.iter_unresolved_command_targets(root, doc, known_repo):
+        findings.append(
+            {
+                "kind": "unresolved-command-target",
+                "line": lineno,
+                "detail": candidate,
+                "reason": "missing-script",
+            }
+        )
     return findings
 
 
@@ -328,6 +338,12 @@ def format_human(report: Report) -> str:
                 lines.append(f"  - backticked file ref `{row['detail']}` (line {row['line']}, {row['reason']})")
             elif row["kind"] == "bare-internal-ref":
                 lines.append(f"  - bare internal markdown ref `{row['detail']}`")
+            elif row["kind"] == "unresolved-command-target":
+                lines.append(
+                    f"  - documented command names a missing script `{row['detail']}` "
+                    f"(line {row['line']}); create it, fix the path, or use a "
+                    "`<repo-root>/...` placeholder when it only resolves in a consuming repo"
+                )
             else:
                 lines.append(f"  - {row['detail']}")
     else:

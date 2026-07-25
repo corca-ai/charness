@@ -14,6 +14,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
+_markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 
 DOC_GLOBS = (
     "charness-artifacts/spec/**/*.md",
@@ -26,7 +28,6 @@ DOC_GLOBS = (
 )
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
-FENCE_RE = re.compile(r"^\s*(```|~~~)")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.[A-Za-z0-9._-]+$")
 REPRODUCTION_MARKER_RE = re.compile(r"<!--\s*reproduction-source\s*-->", re.IGNORECASE)
 MARKDOWN_BLOCK_START_RE = re.compile(r"(?:[-*+] |\d+[.)] |>|```|~~~|#)")
@@ -120,21 +121,8 @@ def git_check_ignore(root: Path, paths: list[Path]) -> set[Path] | None:
 def iter_citation_lines(doc: Path) -> list[tuple[int, str, list[str]]]:
     """Return (lineno, raw_line, candidate_paths) for each non-fence line."""
     out: list[tuple[int, str, list[str]]] = []
-    in_fence = False
-    in_html_comment = False
     lines = doc.read_text(encoding="utf-8").splitlines()
-    for lineno, line in enumerate(lines, start=1):
-        stripped = line.strip()
-        if in_html_comment:
-            if "-->" in stripped:
-                in_html_comment = False
-            continue
-        if stripped.startswith("<!--") and "-->" not in stripped:
-            in_html_comment = True
-            continue
-        if FENCE_RE.match(line):
-            in_fence = not in_fence
-            continue
+    for lineno, line, in_fence in iter_doc_lines(doc):
         if in_fence:
             continue
         candidates: list[str] = []
