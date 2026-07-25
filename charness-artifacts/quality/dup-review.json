@@ -450,6 +450,13 @@
     },
     {
       "class": "intentional",
+      "id": "74fdf03457be94c9",
+      "note": "three-term `bool(a or b or c)` predicate shared by the cautilus-plan visible-work check and the skill-ergonomics failure check; the families are unrelated domains whose key sets evolve independently, so a generic any-truthy-key helper would couple them behind a name that describes neither. Surfaced only after a dead `required` term was deleted from the cautilus predicate",
+      "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "76dbe167ecaf4a81",
       "note": "distinct-channel and lifecycle release-artifact sections share four generic Markdown list-building lines, but their gating, evidence fields, and truth/non-claim semantics differ; a generic renderer would couple proof meanings without centralizing stable behavior",
       "reviewed_at": "2026-07-14",
@@ -726,6 +733,13 @@
       "id": "ceed7d71b2d8985f",
       "note": "zero-shared-line fingerprint spanning eleven local UTC timestamp helpers; these tiny helpers preserve direct execution and domain-local naming",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cf032addf13ed08c",
+      "note": "argparse `main()` preamble across five independently runnable CLI entrypoints (cautilus plan, risk interrupt, release review gate, fresh-checkout probes, skill-routing render); each owns a different flag set and output contract, and a shared runner would add an indirection with no domain owner. Same class as the already-accepted import-preamble family 7fe0804ab17f93c9",
+      "reviewed_at": "2026-07-25",
       "surface": "code"
     },
     {

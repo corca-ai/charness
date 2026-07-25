@@ -146,7 +146,6 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
     truth_surface_paths = _matched_paths(normalized_paths, truth_surface_patterns)
     cross_repo_paths = _matched_paths(normalized_paths, data.get("cross_repo_issue_patterns", []))
     artifact_changed = ARTIFACT_PATH in normalized_paths
-    required = False
     proof_kinds: list[str] = []
     if artifact_changed:
         proof_kinds.append("regression")
@@ -197,7 +196,6 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         )
 
     return {
-        "required": required,
         "status": status,
         "artifact_path": ARTIFACT_PATH,
         "artifact_changed": artifact_changed,
@@ -248,10 +246,6 @@ def main() -> int:
         emit_yaml(plan)
     else:
         print(f"status: {plan['status']}")
-        if plan["required"]:
-            print(f"run_mode: {plan['run_mode']}")
-            print(f"proof_kinds: {', '.join(plan['proof_kinds'])}")
-            print(f"next_action: {plan['next_action']}")
     return 0
 
 

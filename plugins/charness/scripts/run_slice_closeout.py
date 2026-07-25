@@ -122,27 +122,19 @@ def _maybe_block_on_cautilus(
 ) -> int | None:
     cautilus_plan = plan_cautilus_proof(repo_root, payload["changed_paths"])
     payload["cautilus_plan"] = cautilus_plan
-    missing_required_proof = (
-        cautilus_plan["required"]
-        and not cautilus_plan["artifact_changed"]
-        and cautilus_plan["run_mode"] != "disabled"
-    )
-    if not missing_required_proof:
-        if cautilus_plan["skill_validation_recommendations"] and not ack_skill_review:
-            payload["status"] = "blocked"
-            payload["error"] = (
-                "public-skill validation review is required for this slice; inspect the dogfood/scenario "
-                "follow-ups in `cautilus_plan` and rerun with --ack-cautilus-skill-review after recording "
-                "the decision"
-            )
-            return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
-        return None
-    payload["status"] = "blocked"
-    payload["error"] = (
-        f"cautilus proof is required for this slice; next_action=`{cautilus_plan['next_action']}` "
-        f"and `{cautilus_plan['artifact_path']}` is not refreshed yet"
-    )
-    return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
+    # Cautilus is eval-only and ask-before-run, so the planner never declares a
+    # slice's proof mandatory; the public-skill review below is the only arm that
+    # blocks. A `required` flag used to sit here, hardcoded False since 66c7a729,
+    # with a whole blocking branch behind it that could not execute.
+    if cautilus_plan["skill_validation_recommendations"] and not ack_skill_review:
+        payload["status"] = "blocked"
+        payload["error"] = (
+            "public-skill validation review is required for this slice; inspect the dogfood/scenario "
+            "follow-ups in `cautilus_plan` and rerun with --ack-cautilus-skill-review after recording "
+            "the decision"
+        )
+        return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
+    return None
 
 
 def _maybe_block_on_risk_interrupt(

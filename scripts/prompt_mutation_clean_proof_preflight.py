@@ -53,7 +53,7 @@ def _load_json(path: Path) -> Any:
         raise RuntimeError(f"{path}: invalid JSON: {exc}") from exc
 
 
-def _iter_strings(value: Any, *, path: str = "$", scan_comments: bool = False):
+def _iter_strings(value: Any, *, path: str = "$"):
     stack = [(path, value)]
     while stack:
         current_path, current = stack.pop()
@@ -64,21 +64,19 @@ def _iter_strings(value: Any, *, path: str = "$", scan_comments: bool = False):
                 stack.append((f"{current_path}[{index}]", current[index]))
         elif isinstance(current, dict):
             for key, item in reversed(list(current.items())):
-                if scan_comments or not str(key).startswith("_"):
+                # `_`-prefixed keys are author comments: not shown to the captured
+                # run, so scanning them would report on text the agent cannot see.
+                if not str(key).startswith("_"):
                     stack.append((f"{current_path}.{key}", item))
 
 
-def _scenario_visible_payload(data: Any, *, scan_comments: bool) -> list[tuple[str, str]]:
+def _scenario_visible_payload(data: Any) -> list[tuple[str, str]]:
     if not isinstance(data, dict):
-        return list(_iter_strings(data, scan_comments=scan_comments))
+        return list(_iter_strings(data))
     selected: list[tuple[str, str]] = []
     for key in sorted(SCENARIO_VISIBLE_KEYS):
         if key in data:
-            selected.extend(_iter_strings(data[key], path=f"$.{key}", scan_comments=scan_comments))
-    if scan_comments:
-        for key, value in data.items():
-            if str(key).startswith("_"):
-                selected.extend(_iter_strings(value, path=f"$.{key}", scan_comments=True))
+            selected.extend(_iter_strings(data[key], path=f"$.{key}"))
     return selected
 
 
@@ -110,10 +108,10 @@ def _scan_text(source: str, field: str, text: str) -> list[dict[str, Any]]:
     return findings
 
 
-def scan_scenario(path: Path, *, scan_comments: bool = False) -> list[dict[str, Any]]:
+def scan_scenario(path: Path) -> list[dict[str, Any]]:
     data = _load_json(path)
     findings: list[dict[str, Any]] = []
-    for field, text in _scenario_visible_payload(data, scan_comments=scan_comments):
+    for field, text in _scenario_visible_payload(data):
         findings.extend(_scan_text(str(path), field, text))
     return findings
 
@@ -130,7 +128,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
     scan_inputs = [*(args.scenario_spec or []), *(args.transcript or []), *(args.text or [])]
     for path in args.scenario_spec or []:
-        findings.extend(scan_scenario(path, scan_comments=args.scan_comments))
+        findings.extend(scan_scenario(path))
     for path in (args.transcript or []) + (args.text or []):
         findings.extend(scan_text_file(path))
     blockers = [finding for finding in findings if finding["severity"] == "clean-proof-blocker"]
@@ -173,7 +171,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--scenario-spec", type=Path, action="append", help="Scenario spec JSON to scan.")
     parser.add_argument("--transcript", type=Path, action="append", help="Captured transcript text to scan.")
     parser.add_argument("--text", type=Path, action="append", help="Additional text file to scan.")
-    parser.add_argument("--scan-comments", action="store_true", help="Also scan JSON keys starting with '_'.")
     parser.add_argument("--json", action="store_true")
     return parser.parse_args(argv)
 

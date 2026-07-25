@@ -16,10 +16,22 @@ preflight = load_script_module(
 )
 
 
-def test_scenario_scan_ignores_comments_by_default(tmp_path: Path) -> None:
+def test_scenario_scan_ignores_author_comments(tmp_path: Path) -> None:
+    """`_`-prefixed keys are author comments: the captured run never sees them, so
+    scanning them would report a blinding risk on text the agent cannot read. The
+    comment is nested INSIDE a visible key here -- a top-level `_comment` is dropped
+    by the visible-key filter anyway, so it would pass whether or not this skip
+    exists."""
     spec = tmp_path / "spec.json"
     spec.write_text(
-        json.dumps({"_comment": "historical git show note", "prompt": "run refresh"}),
+        json.dumps(
+            {
+                "declaredReferences": [
+                    {"_note": "historical git show note", "ref": "docs/x.md"}
+                ],
+                "prompt": "run refresh",
+            }
+        ),
         encoding="utf-8",
     )
 

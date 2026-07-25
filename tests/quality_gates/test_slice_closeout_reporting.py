@@ -19,7 +19,6 @@ def _full_payload() -> dict:
         "cautilus_plan": {
             "run_mode": "evaluate",
             "next_action": "evaluate skill-experiment",
-            "required": True,
             "proof_kinds": ["skill-experiment"],
             "changed_public_skills": ["quality"],
             "scenario_registry_review_required": True,

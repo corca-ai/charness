@@ -5,14 +5,22 @@ Profiles define default bundles. They are not separate skills.
 ## Files
 
 - `profile.schema.json`: canonical schema for profile metadata
-- `<profile-id>.json`: future profile instances
+- `<profile-id>.json`: profile instances
 
-## Current Profiles
+## Status
 
-- `constitutional`: default core workflow bundle
-- `collaboration`: announcement and HITL overlay
-- `engineering-quality`: quality-review overlay
-- `meta-builder`: maintainer overlay for authoring/discovery/quality work
+**No profile instances are checked in.** The schema and this contract are kept;
+the instances are not, because nothing consumes them. No runtime reads a profile
+to activate a bundle — `validate_profiles.py` only checks that referenced files
+exist, so four instances (`constitutional`, `collaboration`,
+`engineering-quality`, `meta-builder`) shipped a declarative promise no code
+kept, while six public skills belonged to no profile and nothing noticed.
+
+They were removed on 2026-07-25 after an operator sweep. The inventory lives in the
+charness source repo (it is not shipped with the plugin):
+[unused-mode-option sweep](https://github.com/corca-ai/charness/blob/main/charness-artifacts/audit/2026-07-25-unused-mode-option-sweep.md).
+Write instances again when a runtime actually resolves them; the schema below is
+the contract they must meet, and `git log -- profiles/` recovers the originals.
 
 ## Contract Notes
 

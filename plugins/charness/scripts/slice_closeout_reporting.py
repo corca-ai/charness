@@ -28,8 +28,7 @@ def _print_list(label: str, values: list[str]) -> None:
 
 def _cautilus_plan_has_visible_work(cautilus_plan: dict[str, object]) -> bool:
     return bool(
-        cautilus_plan.get("required")
-        or cautilus_plan.get("scenario_registry_review_required")
+        cautilus_plan.get("scenario_registry_review_required")
         or cautilus_plan.get("skill_validation_recommendations")
         or cautilus_plan.get("recommended_followups")
     )

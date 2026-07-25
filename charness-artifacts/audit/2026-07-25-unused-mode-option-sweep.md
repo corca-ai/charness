@@ -2,8 +2,10 @@
 
 Date: 2026-07-25
 Goal: [2026-07-25-ranked-chunks-1-3](../goals/2026-07-25-ranked-chunks-1-3.md) slice 6
-Operator decision: report-first. **Zero deletions were made.** Each candidate below
-waits on operator sign-off.
+Operator decision at sweep time: report-first, zero deletions. **Sign-off has since
+been given — see `## Operator Disposition` below for what was acted on.** The
+inventory itself is unchanged from the sweep; the disposition is appended rather
+than edited in, so the evidence and the decision stay separable.
 
 Method: a 17-agent fan-out — four parallel scouts (one per surface family), then an
 adversarial refutation pass per candidate whose default was that the candidate is
@@ -116,3 +118,54 @@ These looked like the target shape and are not. Recording them so the next sweep
 - **Agent-selected options are invisible to caller-greps.** The `reviewer_tiers.medium` refutation is the cautionary case: the absence of a `--tier` CLI flag looked like proof of no caller, but the selector is prose in a shared reference that agents read. Any option whose "caller" is an instruction in a SKILL.md or reference doc can be missed by a flag grep alone. `plugins/` and `mutants/` were excluded from greps as generated/derived trees; if a generated surface diverges from its source, this sweep would not see it.
 - **Not swept at all:** hooks, `integrations/` manifests, `.github/workflows` inputs, environment-variable switches, `charness` CLI subcommand options, adapter fields in the non-quality skills beyond the enums listed, and dead code that is not option-shaped (unreachable functions, unused imports, orphaned references).
 - **The sweep is a point-in-time read** against a worktree that had at least one uncommitted local edit (`.agents/cautilus-adapter.yaml`), noted above.
+
+---
+
+## Operator Disposition (2026-07-25)
+
+Signed off after the report was read. Acted on in the same session; the deletions
+landed together in one slice.
+
+**Deleted (4):**
+
+- #8 `--scan-comments` — removed with its threaded `scan_comments` parameter. The
+  `_`-prefixed-key skip is now unconditional, and its test was rewritten to nest the
+  comment inside a visible key so it actually exercises the skip (the old fixture
+  used a top-level `_comment`, which the visible-key filter drops regardless).
+- #5 `required = False` and its three dead consumer arms — including the
+  `missing_required_proof` block in `run_slice_closeout.py`, which could not execute.
+  `next_action` was deliberately left alone, as the sweep warned.
+- #7 `--replace-file` — flag only. The guard it relaxed became a hard refusal, keeping
+  the "a helper does not clobber a file it did not create" property.
+- #9 `profiles/*.json` instances — the four instance files. `profile.schema.json`,
+  `README.md`, and the directory stay (packaging requires `profiles_dir`), and the
+  README now states plainly that no instances are checked in and why.
+
+**Kept (5), with reasons:**
+
+- #1 hitl `default_scope`, #2 achieve `closeout_publication.default_mode`, #3 cautilus
+  `profile_default`, #4 cautilus `run_mode: auto` — all published portable contracts.
+  Deleting them narrows a contract downstream repos may already set and this repo
+  structurally cannot observe. Cost to keep is near zero.
+- #6 `--granularity` — kept and **scheduled for extension rather than removal**. It is
+  not accidental: the pilot goal artifact records granularity as a real design axis
+  (sentence / paragraph / section / whole-file) with only `section` implemented, and
+  the library-level guard is reachable via `build_split_manifest`. Going finer than
+  `section` is what would distinguish load-bearing prose from decoration inside a
+  section.
+
+**Newly surfaced during the deletion, not yet dispositioned:**
+
+- `recommended_commands` in `plan_cautilus_proof.py` is the same shape as #5 — a dead
+  literal from the same commit (`66c7a729`), emitted as a payload key and pinned only
+  by a constant-asserting test. It was left in place because it was not part of the
+  sign-off, not because it was judged different. It needs the same decision.
+
+**Side effects worth knowing:** the deletions shrank code until three previously
+distinct spans matched, hard-blocking the dup ratchet. One was genuine intra-file
+duplication in `refresh_current_pointer.py` and was extracted into a shared helper;
+the other two (a three-term boolean predicate, the argparse `main()` preamble across
+five CLIs) were classified `intentional` with reasons in `dup-review.json`. Removing
+the `required` branch also took `run_slice_closeout.py`'s only `disabled` string with
+it, so that file's attention-state declaration entry — which had been asserting a
+visibility that lived inside unreachable code — was retired.

@@ -11,10 +11,13 @@ runs the activation command.
 
 - Current disposition: real draft awaiting activation — shaped and plan-critiqued
   2026-07-25, consequential discussion resolved with the operator, not stale.
-- Current disposition: complete. All six slices landed and were gated; closeout
-  retro, dispositions, and non-claims are recorded below.
-- Next action: none for this goal. Three operator decisions remain queued (patch
-  release, #453 close, sweep deletions) — see `## Operator Decision Queue`.
+- Current disposition: reopened for operator sign-off, then complete again.
+  Slices 1-6 closed the goal as shaped; slice 7 acted on the sweep sign-off the
+  operator gave afterwards, and slice 8 starts the `--granularity` extension they
+  scheduled in place of deleting it.
+- Next action: slice 8 — implement paragraph-level granularity in the prompt
+  mutation splitter. Two operator decisions remain queued (patch release,
+  #453 close); the sweep-deletion decision is now discharged.
 - Standing hazard (slice 2): never restore a mutation-test target with
   `git checkout -- <path>` while the slice is uncommitted; it reverts to HEAD and
   silently discards the work being proven. Use a pristine `cp` copy and assert a
@@ -414,7 +417,9 @@ packet named in the Active Operating Frame.
 - Revisit trigger: the correction recorded in
   charness-artifacts/release/2026-07-25-v2.5.0-notes.md
 
-- Decision: which swept unused modes/options to delete
+- Decision: [DISCHARGED 2026-07-25] which swept unused modes/options to delete —
+  4 deleted, 5 kept, `--granularity` scheduled for extension instead. One newly
+  surfaced twin (`recommended_commands`) still needs the same call.
 - Owner: operator
 - Why deferred: the operator chose report-first; deletions at repo scale are the
   change class most likely to be wrong without a human read
@@ -509,6 +514,20 @@ packet named in the Active Operating Frame.
 - Critique: No separate fresh-eye pass: the workflow's own refutation stage IS the adversarial review, run by 12 independent agents whose instructed default was to refute. It overturned 3 candidates — reviewer_tiers.medium (two real consumers the scout missed, one of them prose in a shared reference that a flag-grep cannot see), release-adapter requested_review_policy (the arms genuinely differ and the delta is published in every release artifact), and presets/*.md bodies (deliberate markdown-first contract recorded in deferred-decisions D9/D13, and commit 3b0750a6 from this very session wrote a lesson into one of them).
 - Off-goal findings: The sweep flagged two adjacent issues it declined to act on, both recorded in the artifact: a packet tier-propagation inconsistency (critique packets hardcode high-leverage while agents record 'Requested tier: medium'), and presets/specdown-quality.md duplicating DEFAULT_SPECDOWN_SMOKE_PATTERNS with no drift gate.
 - Lessons carried forward: My workflow agents were not constrained to read-only and one edited .agents/cautilus-adapter.yaml (run_mode ask -> auto) to A/B a branch, leaving it dirty. Caught by git status and restored, but the parent-side lesson is that a discovery fan-out should spawn read-only reviewers — the repo has a bounded-reviewer type for exactly this and I did not use it for workflow agents. Second lesson, from the refutations: 'no CLI caller' is not evidence of no caller in this repo, because agent-selected options are chosen by prose in SKILL.md and shared references.
+- Metrics:
+
+### Slice 7: Slice 7 — operator sign-off on the sweep deletions
+
+- Objective: Act on the operator's sign-off from the slice-6 sweep: delete 4 of the 9 confirmed candidates, keep 5 with reasons recorded.
+- Why this approach: Deleted: --scan-comments (zero callers, zero measured effect), required=False plus its three dead consumer arms (an unreachable cautilus-blocking closeout branch), --replace-file (flag only; the guard it relaxed became a hard refusal), and the four profiles/*.json instances (zero runtime effect; schema/README/directory kept because packaging requires profiles_dir). Kept: the four published portable contracts, plus --granularity which the operator scheduled for extension rather than removal.
+- Commits:
+- What changed: scripts/prompt_mutation_clean_proof_preflight.py, scripts/plan_cautilus_proof.py, scripts/run_slice_closeout.py, scripts/slice_closeout_reporting.py, scripts/refresh_current_pointer.py, profiles/ (4 instances deleted, README rewritten), skills/public/quality/references/attention-state-visibility.json, charness-artifacts/quality/dup-review.json, the sweep artifact's new Operator Disposition section, 3 test files, plus plugin mirrors
+- Alternatives rejected: Rejected deleting recommended_commands, the twin dead literal from the same commit: it was not part of the sign-off, so it is recorded in the audit disposition as needing the same decision rather than taken silently. Rejected classifying away the refresh_current_pointer duplication the deletion exposed — the two strategies genuinely shared a tail, so it was extracted; only the two boilerplate families (a three-term bool predicate, the argparse main() preamble across five CLIs) were classified intentional.
+- Targeted verification: Broad pytest 5042 passed; full run-quality --read-only 81 passed / 0 failed; run_slice_closeout completed; dup ratchet clean. The rewritten comment-skip test was adversarially verified — making the skip unconditional kills it, which the previous fixture could not do.
+- Test duplication pressure: No net test growth: two constant-pinning assertions deleted with the constants they pinned, one fixture key removed, one test rewritten to actually exercise its subject. Dup ratchet went hard-block on three families created BY the deletions; one extracted, two classified with reasons.
+- Critique: Bounded fresh-eye bounded-reviewer (agent aeb903ff0b184e317); boundary verified immediately on return, no drift. It cleared the change I most distrusted — removing an attention-state declaration to satisfy a validator — by showing the entry had been asserting a visibility that lived inside unreachable code, and that every genuine surface of the cautilus disabled state is untouched. Applied: F4 (recorded the recommended_commands twin instead of silently leaving it), F6 (dropped an unused repo_root parameter), F8 (the profiles README link dangled once mirrored into the plugin tree, where charness-artifacts is not shipped — now an absolute URL), F9 (the sweep artifact still said 'zero deletions were made', which was now false — appended an Operator Disposition section), F10 (the comment-skip test used a top-level _comment that the visible-key filter drops anyway, so it passed with or without the skip), F11 (stale fixture key). F1/F2/F3/F5 confirmed behaviour-preserving with line evidence.
+- Off-goal findings: recommended_commands in plan_cautilus_proof.py is the same dead-literal shape as the deleted required and needs the same operator decision; recorded in the sweep artifact's disposition section.
+- Lessons carried forward: Deleting dead code shrinks files until they match other files — the dup ratchet hard-blocked three times on families the deletions created. Two were boilerplate, but one was genuine duplication the dead parameter had been masking, so the ratchet earned its block. Also: an artifact that records a decision ('zero deletions were made') becomes a lie the moment the decision changes, and it is the standing inventory the next reader consults.
 - Metrics:
 
 ## Context Sources

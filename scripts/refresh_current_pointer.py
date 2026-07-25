@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -28,11 +29,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--record-artifact-path", type=Path, required=True)
     parser.add_argument("--strategy", choices=("auto", "copy", "symlink"), default="auto")
     parser.add_argument("--execute", action="store_true", help="Apply the pointer refresh. Defaults to dry-run.")
-    parser.add_argument(
-        "--replace-file",
-        action="store_true",
-        help="Allow symlink strategy to replace an existing regular current pointer file.",
-    )
     return parser.parse_args()
 
 
@@ -82,9 +78,33 @@ def _same_symlink_target(current_path: Path, record_path: Path) -> bool:
         return False
 
 
+def _finish_pointer_update(
+    *,
+    current_path: Path,
+    payload: dict[str, object],
+    execute: bool,
+    write: Callable[[], None],
+) -> int:
+    """Shared tail of both pointer strategies: mark the intended update, apply it
+    only under `--execute`, and emit the same payload shape either way.
+
+    The two strategies differ in their guards, their no-op test, and the write
+    itself; everything after "we are going to update" is identical, and keeping one
+    copy is what makes dry-run and execute provably agree for both.
+    """
+    payload["would_update"] = True
+    if execute:
+        current_path.parent.mkdir(parents=True, exist_ok=True)
+        write()
+        payload["status"] = "updated"
+    else:
+        payload["status"] = "planned"
+    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
 def _copy_pointer(
     *,
-    repo_root: Path,
     current_path: Path,
     record_path: Path,
     execute: bool,
@@ -99,15 +119,12 @@ def _copy_pointer(
         payload["reason"] = "current pointer content already matches the record artifact"
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
-    payload["would_update"] = True
-    if execute:
-        current_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(record_path, current_path)
-        payload["status"] = "updated"
-    else:
-        payload["status"] = "planned"
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    return 0
+    return _finish_pointer_update(
+        current_path=current_path,
+        payload=payload,
+        execute=execute,
+        write=lambda: shutil.copyfile(record_path, current_path),
+    )
 
 
 def _symlink_pointer(
@@ -115,11 +132,16 @@ def _symlink_pointer(
     current_path: Path,
     record_path: Path,
     execute: bool,
-    replace_file: bool,
     payload: dict[str, object],
 ) -> int:
-    if current_path.exists() and not current_path.is_symlink() and not replace_file:
-        return _blocked(payload, "symlink strategy would replace an existing file; pass --replace-file")
+    # Hard refusal, not an overridable one. The escape hatch that used to relax this
+    # (`--replace-file`) was unreachable: `main` resolves `auto -> symlink` only when
+    # the pointer is ALREADY a symlink, so this precondition could never hold on the
+    # default path. Keeping the guard preserves the shared writer-surface property
+    # that a helper does not clobber a file it did not create; a copy -> symlink
+    # migration (never yet performed) would need a deliberate new affordance.
+    if current_path.exists() and not current_path.is_symlink():
+        return _blocked(payload, "symlink strategy would replace an existing regular file")
     if current_path.exists() and current_path.is_dir():
         return _blocked(payload, "current pointer path is a directory")
     if _same_symlink_target(current_path, record_path):
@@ -129,17 +151,18 @@ def _symlink_pointer(
         return 0
     relative_target = os.path.relpath(record_path, start=current_path.parent)
     payload["current_pointer_target_path"] = Path(relative_target).as_posix()
-    payload["would_update"] = True
-    if execute:
-        current_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _write_symlink() -> None:
         if current_path.exists() or current_path.is_symlink():
             current_path.unlink()
         current_path.symlink_to(relative_target)
-        payload["status"] = "updated"
-    else:
-        payload["status"] = "planned"
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    return 0
+
+    return _finish_pointer_update(
+        current_path=current_path,
+        payload=payload,
+        execute=execute,
+        write=_write_symlink,
+    )
 
 
 def main() -> int:
@@ -185,7 +208,6 @@ def main() -> int:
 
     if strategy == "copy":
         return _copy_pointer(
-            repo_root=repo_root,
             current_path=current_path,
             record_path=record_path,
             execute=args.execute,
@@ -195,7 +217,6 @@ def main() -> int:
         current_path=current_path,
         record_path=record_path,
         execute=args.execute,
-        replace_file=args.replace_file,
         payload=payload,
     )
 
