@@ -184,6 +184,7 @@ DONE: update complete`
 - The baton's routing sections claim no release version.
 - RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `2.8.0`, or record an explicit n/a disposition in the release record, before ending the session.
 - This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
+- DISPOSITION (2026-07-26): reconciled. `docs/handoff.md` `## Current State` now names `2.8.0` as a quoted value, which the reconcile scan counts as a claim while the prose asserts no decaying fact. This release's critique (F1) found that the reconcile obligation and the handoff `Regenerable Facts` rule contradicted each other; the carve-out that resolves them is now documented in `state-selection.md` and `publication-boundary.md` and pinned by a test.
 
 ## Release Observer Record
 
