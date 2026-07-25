@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-07-25",
-  "source_artifact_count": 386,
-  "candidate_count": 1565,
+  "source_artifact_count": 387,
+  "candidate_count": 1575,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:a4fd08fcd3e9",
@@ -1185,6 +1185,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:507b3daf498a",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for the `ranked-chunks-1-3` goal: six slices closing #453's blocking signal, three named residuals, and the operator's unused-mode sweep.",
+      "normalized_key": "closeout retro for the ranked chunks 1 3 goal six slices closing 453 s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:7ef6204a3471",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v2.5.0`.",
@@ -1205,182 +1225,162 @@
       ]
     },
     {
-      "candidate_id": "current_focus:c299abdb396f",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.4.3`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 4 3",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-22-v2-4-3-release-auto-retro.md",
-      "latest_source_date": "2026-07-22",
-      "age_days": 3,
-      "recency_weight": 0.862,
-      "alpha": 0.07,
-      "selection_weight": 0.862,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-22-v2-4-3-release-auto-retro.md",
-          "date": "2026-07-22",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:2fb49fb006c5",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.4.2`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 4 2",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md",
-      "latest_source_date": "2026-07-21",
-      "age_days": 4,
-      "recency_weight": 0.8203,
-      "alpha": 0.07,
-      "selection_weight": 0.8203,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md",
-          "date": "2026-07-21",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:c6ed9793c1b6",
-      "kind": "current_focus",
-      "lesson": "Handoff OPEN SMELL (flaky/nondeterministic suite under parallel/`--release` load) was routed through `debug` → `impl` → follow-up resolution → `release`.",
-      "normalized_key": "handoff open smell flaky nondeterministic suite under parallel release load was routed through debug",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
-      "latest_source_date": "2026-07-20",
-      "age_days": 5,
-      "recency_weight": 0.7807,
-      "alpha": 0.07,
-      "selection_weight": 0.7807,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
-          "date": "2026-07-20",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:25e71d628c76",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.3.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 3 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-20",
-      "age_days": 5,
-      "recency_weight": 0.7807,
-      "alpha": 0.07,
-      "selection_weight": 0.7807,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:7c37b06e531d",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.3.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 3 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md",
-      "latest_source_date": "2026-07-20",
-      "age_days": 5,
-      "recency_weight": 0.7807,
-      "alpha": 0.07,
-      "selection_weight": 0.7807,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:5d4962de5da0",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.4.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 4 0",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-20-v2-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-07-20",
-      "age_days": 5,
-      "recency_weight": 0.7807,
-      "alpha": 0.07,
-      "selection_weight": 0.7807,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-4-0-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:fd6c1b955b8a",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v2.4.1`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v2 4 1",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-20-v2-4-1-release-auto-retro.md",
-      "latest_source_date": "2026-07-20",
-      "age_days": 5,
-      "recency_weight": 0.7807,
-      "alpha": 0.07,
-      "selection_weight": 0.7807,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-4-1-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:30951601939f",
+      "candidate_id": "next_improvement:8865b27b9fe0",
       "kind": "next_improvement",
-      "lesson": "before renaming a widely-referenced constant, grep for its name-based consumers (`startswith`/`==`/regex) across scripts, skills, tests, and mirrors, and batch the assertion updates with the rename.",
-      "normalized_key": "before renaming a widely referenced constant grep for its name based consumers startswith regex",
+      "lesson": "spawn workflow/discovery agents as `bounded-reviewer` (or otherwise read-only) when the task is discovery. This session's sweep agents mutated a tracked adapter; the repo already has the type and the boundary-fingerprint helper for it.",
+      "normalized_key": "spawn workflow discovery agents as bounded reviewer or otherwise read only when the task",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
-      "latest_source_date": "2026-07-20",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
-          "date": "2026-07-20",
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
           "section": "Next Improvements"
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:a2893bfc39fe",
+      "candidate_id": "next_improvement:b713e7ad871d",
       "kind": "next_improvement",
-      "lesson": "before writing \"not reproduced\" / \"does not happen\" for a flake, scope-match the disconfirmer to the failure's trigger conditions (load, concurrency, scale) and reproduce under the FULL environment; an isolated subset passing is not a valid absence proof.",
-      "normalized_key": "before writing not reproduced does not happen for a flake scope match the disconfirmer",
+      "lesson": "two hazards recorded in the goal artifact's Active Operating Frame and carried to the handoff — never restore a mutation target with `git checkout --` while the slice is uncommitted, and run `reviewer_boundary_fingerprint.py verify` immediately on reviewer return, before applying any of its fixes.",
+      "normalized_key": "two hazards recorded in the goal artifact s active operating frame and carried to",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
-      "latest_source_date": "2026-07-20",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-session-retro.md",
-          "date": "2026-07-20",
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:44f4c8950689",
+      "kind": "next_improvement",
+      "lesson": "write the violation before writing the guard. Every new gate, validator, or source-guard test gets its failing case demonstrated first, not as a later verification step. Adopted reactively this session; make it the opening move.",
+      "normalized_key": "write the violation before writing the guard every new gate validator or source guard",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:995af09c9d81",
+      "kind": "repeat_trap",
+      "lesson": "**`git checkout -- <path>` used to restore a mutation-test target while the slice was uncommitted.** It reverted to HEAD and silently discarded the slice-2 refactor. Worse, it poisoned the evidence: the reverted tree made one test raise `AttributeError`, so every subsequent mutant reported KILLED regardless of the mutation. Four \"verified\" results were meaningless. Cost: one full re-do plus a reviewer round-trip.",
+      "normalized_key": "git checkout path used to restore a mutation test target while the slice was",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:457586a54cbb",
+      "kind": "repeat_trap",
+      "lesson": "**Reviewer boundary verify run after applying fixes** (slice 3), making that review's boundary proof inconclusive — the drift set was the parent's own edits.",
+      "normalized_key": "reviewer boundary verify run after applying fixes slice 3 making that review s boundary",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6dff7397b1d6",
+      "kind": "repeat_trap",
+      "lesson": "Smaller: the 800-line gate fired mid-slice forcing an unplanned split; two failed attempts at the specdown ephemeral config before discovering specdown resolves `entry` against the config file's directory; a widened drift-guard regex that over-matched skill-package gates on first try.",
+      "normalized_key": "smaller the 800 line gate fired mid slice forcing an unplanned split two failed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9b8a5fd4464e",
+      "kind": "repeat_trap",
+      "lesson": "**Sweep agents were not read-only.** One edited `.agents/cautilus-adapter.yaml` (`run_mode: ask` → `auto`) to A/B a planner branch and left it dirty. Caught by `git status` and restored, but the repo has a `bounded-reviewer` type for exactly this and it was not used for workflow agents.",
+      "normalized_key": "sweep agents were not read only one edited agents cautilus adapter yaml run mode",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d485a31e4994",
+      "kind": "repeat_trap",
+      "lesson": "**The first replacement test reproduced the defect it was replacing** (slice 4): it asserted `-config` was present rather than binding it to the generated path, so passing the repo's own `specdown.json` would have kept it green and restored the churn.",
+      "normalized_key": "the first replacement test reproduced the defect it was replacing slice 4 it asserted",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
         }
       ]
     }
@@ -2557,6 +2557,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:507b3daf498a",
+      "kind": "current_focus",
+      "lesson": "Closeout retro for the `ranked-chunks-1-3` goal: six slices closing #453's blocking signal, three named residuals, and the operator's unused-mode sweep.",
+      "normalized_key": "closeout retro for the ranked chunks 1 3 goal six slices closing 453 s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:7ef6204a3471",
       "kind": "current_focus",
       "lesson": "Release publish triggered a configured automatic session retro for `v2.5.0`.",
@@ -2573,6 +2593,186 @@
           "artifact_path": "charness-artifacts/retro/2026-07-25-v2-5-0-release-auto-retro.md",
           "date": "2026-07-25",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8865b27b9fe0",
+      "kind": "next_improvement",
+      "lesson": "spawn workflow/discovery agents as `bounded-reviewer` (or otherwise read-only) when the task is discovery. This session's sweep agents mutated a tracked adapter; the repo already has the type and the boundary-fingerprint helper for it.",
+      "normalized_key": "spawn workflow discovery agents as bounded reviewer or otherwise read only when the task",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b713e7ad871d",
+      "kind": "next_improvement",
+      "lesson": "two hazards recorded in the goal artifact's Active Operating Frame and carried to the handoff — never restore a mutation target with `git checkout --` while the slice is uncommitted, and run `reviewer_boundary_fingerprint.py verify` immediately on reviewer return, before applying any of its fixes.",
+      "normalized_key": "two hazards recorded in the goal artifact s active operating frame and carried to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:44f4c8950689",
+      "kind": "next_improvement",
+      "lesson": "write the violation before writing the guard. Every new gate, validator, or source-guard test gets its failing case demonstrated first, not as a later verification step. Adopted reactively this session; make it the opening move.",
+      "normalized_key": "write the violation before writing the guard every new gate validator or source guard",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:995af09c9d81",
+      "kind": "repeat_trap",
+      "lesson": "**`git checkout -- <path>` used to restore a mutation-test target while the slice was uncommitted.** It reverted to HEAD and silently discarded the slice-2 refactor. Worse, it poisoned the evidence: the reverted tree made one test raise `AttributeError`, so every subsequent mutant reported KILLED regardless of the mutation. Four \"verified\" results were meaningless. Cost: one full re-do plus a reviewer round-trip.",
+      "normalized_key": "git checkout path used to restore a mutation test target while the slice was",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:457586a54cbb",
+      "kind": "repeat_trap",
+      "lesson": "**Reviewer boundary verify run after applying fixes** (slice 3), making that review's boundary proof inconclusive — the drift set was the parent's own edits.",
+      "normalized_key": "reviewer boundary verify run after applying fixes slice 3 making that review s boundary",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6dff7397b1d6",
+      "kind": "repeat_trap",
+      "lesson": "Smaller: the 800-line gate fired mid-slice forcing an unplanned split; two failed attempts at the specdown ephemeral config before discovering specdown resolves `entry` against the config file's directory; a widened drift-guard regex that over-matched skill-package gates on first try.",
+      "normalized_key": "smaller the 800 line gate fired mid slice forcing an unplanned split two failed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9b8a5fd4464e",
+      "kind": "repeat_trap",
+      "lesson": "**Sweep agents were not read-only.** One edited `.agents/cautilus-adapter.yaml` (`run_mode: ask` → `auto`) to A/B a planner branch and left it dirty. Caught by `git status` and restored, but the repo has a `bounded-reviewer` type for exactly this and it was not used for workflow agents.",
+      "normalized_key": "sweep agents were not read only one edited agents cautilus adapter yaml run mode",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d485a31e4994",
+      "kind": "repeat_trap",
+      "lesson": "**The first replacement test reproduced the defect it was replacing** (slice 4): it asserted `-config` was present rather than binding it to the generated path, so passing the repo's own `specdown.json` would have kept it green and restored the churn.",
+      "normalized_key": "the first replacement test reproduced the defect it was replacing slice 4 it asserted",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:db355bc8ae28",
+      "kind": "repeat_trap",
+      "lesson": "**Two wrong justifications written into a docstring** (slice 3): ledger fields framed as \"rung-2 content judgment\" when they are presence-only checks that `verify-closeout` applies to this same carrier, and close-keyword rejected for a signature limitation that does not exist. Both contradicted by files one directory away. A docstring that exists to stop the next reader re-filing a gap is worse than absent when it is wrong.",
+      "normalized_key": "two wrong justifications written into a docstring slice 3 ledger fields framed as rung",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+      "latest_source_date": "2026-07-25",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-session-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste"
         }
       ]
     },

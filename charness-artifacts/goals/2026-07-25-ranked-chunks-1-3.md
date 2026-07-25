@@ -1,6 +1,6 @@
 # Achieve Goal: Run ranked chunks 1-3 in sequence: (1) close #453 by covering the uncovered changed lines in quality_policy_defaults.py and runtime_budget_lib.py and killing the probe_host_logs.py survived mutants, plus act on the aarch64/unprofiled budget SLACK advisories; (2) close the named residuals - issue_close_comment_floor.py omitted checks, specdown.json hardcoded outFile churn, untested plugin-copy fresh-install render path; (3) sweep for other built-with-intent-but-unused modes and options and delete or justify each on usage evidence.
 
-Status: active
+Status: complete
 Created: 2026-07-25
 Activation: `/goal @charness-artifacts/goals/2026-07-25-ranked-chunks-1-3.md`
 
@@ -11,9 +11,10 @@ runs the activation command.
 
 - Current disposition: real draft awaiting activation — shaped and plan-critiqued
   2026-07-25, consequential discussion resolved with the operator, not stale.
-- Current slice: all six slices done. Closeout is next.
-- Next action: closeout — retro, handoff rewrite (three residuals closed, one
-  shipped bug found), then flip this goal to `complete`.
+- Current disposition: complete. All six slices landed and were gated; closeout
+  retro, dispositions, and non-claims are recorded below.
+- Next action: none for this goal. Three operator decisions remain queued (patch
+  release, #453 close, sweep deletions) — see `## Operator Decision Queue`.
 - Standing hazard (slice 2): never restore a mutation-test target with
   `git checkout -- <path>` while the slice is uncommitted; it reverts to HEAD and
   silently discards the work being proven. Use a pristine `cp` copy and assert a
@@ -679,8 +680,86 @@ Over-worry raised but not folded (counterweight pass):
 
 ## Off-Goal Findings
 
+- **A shipped bug, found by slice 5 and fixed in it:** `propose_mutation_testing.py`
+  could not reach its workflow template from the plugin copy, in every tag back to at
+  least `v2.2.1`. Fixed here; the *release* decision is queued for the operator.
+- **From the sweep, not acted on** (recorded in
+  [the sweep artifact](../audit/2026-07-25-unused-mode-option-sweep.md)): critique
+  packets hardcode `high-leverage` while agents record `Requested tier: medium`, making
+  those artifacts self-contradictory; and `presets/specdown-quality.md` duplicates
+  `DEFAULT_SPECDOWN_SMOKE_PATTERNS` verbatim with no drift gate.
+- **Nine confirmed unused options** awaiting operator sign-off; zero deleted.
+
+## Coordination Cues
+
+Routing: impl + prove — selected from installed skill metadata for the six slices;
+each slice ran mutate -> sync -> verify with `run_slice_closeout.py` as the pre-commit
+aggregate. `critique` owned the five bounded fresh-eye reviews, `debug`-class root-cause
+work ran inline inside slices 4 and 5, `quality` gates ran via the closeout aggregate,
+`retro` owned the closeout review, and `handoff` chunked routing produced this goal.
+
+Gather: n/a — no external URL or published source became working context for this
+goal; every input was repo-local or a GitHub issue already in the backlog.
+
+Release: n/a — this goal's Non-Goals exclude a release and none was cut. Slice 5 found
+a bug present in published tags and recorded a correction in the v2.5.0 notes; whether
+to ship a patch release is queued as an operator decision rather than taken here.
+
+Issue closeout: n/a — #453 is deliberately left open for the operator's own close per
+their Before-phase decision; this run posted evidence only and used no close keyword.
+
 ## Final Verification
+
+- Six commits, each gated: `c846dc26`, `5a31ca81`, `7b710a85`, `3b0750a6`, `c92e9561`,
+  `90d197d2`. Full `./scripts/run-quality.sh --read-only` green (81 passed, 0 failed)
+  after slices 4 and 5, with `.charness/specdown/` clean afterwards — the fix's own
+  acceptance criterion.
+- #453's four changed-line targets verified COVERED via the gate's own coverage harness,
+  each individually mutated and confirmed killed.
+- Every new guard this session was adversarially verified by reintroducing the exact
+  defect it guards against and confirming failure.
+Retro: charness-artifacts/retro/2026-07-25-session-retro.md
+
+Host log probe: charness-artifacts/retro/2026-07-25-session-retro.md
+
+Disposition review: charness-artifacts/retro/2026-07-25-session-retro.md
+
+**Non-claims.** No CI mutation run was executed for the #453 fix; confirmation requires
+the next *scheduled* run (a `workflow_dispatch` re-run cannot prove a changed-line fix).
+No consumer-repo install was exercised against a real published plugin — slice 5's proof
+runs the checked-in plugin copy, which is the same artifact but not a fetched release.
+The sweep is static: it cannot see runtime usage of the published portable contracts it
+names. The aarch64 and unprofiled runtime budgets were not touched; this machine has no
+samples for them.
 
 ## User Verification Instructions
 
+1. `git log --oneline -6` — the six slice commits.
+2. `./scripts/run-quality.sh --read-only` then `git status --short .charness/specdown/`
+   — expect 81 passed / 0 failed and an empty status. Before this run the second command
+   printed `M .charness/specdown/report.json` every time.
+3. `python3 -m pytest -q tests/quality_gates/test_mutation_workflow_install.py` — the
+   fresh-install render path that was broken since v2.2.1.
+4. Read [the sweep inventory](../audit/2026-07-25-unused-mode-option-sweep.md) and decide
+   which of the nine confirmed candidates to delete.
+5. Decide the two queued boundaries: the patch release, and closing #453 after the next
+   scheduled mutation run.
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-07-25-session-retro.md
+
+Retro dispositions: applied: mutation-verification loops restore from a pristine copy and assert a green baseline before each mutation, replacing `git checkout --`, which reverts uncommitted work to HEAD and makes every mutant look killed
+
+Retro dispositions: applied: `scripts/check_export_safe_imports.py` extended from import syntax to filesystem paths, closing the class that shipped the plugin-copy bug; it immediately found four more dead constants of the same shape, now deleted
+
+Retro dispositions: applied: the seeded-harness drift guard now sees repo scripts invoked from `bash -c` gates, the blind spot that let slice 4's harness seeding be forgotten
+
+Retro dispositions: applied: two source-guard tests rewritten to observe the property they are named after rather than a proxy string, both adversarially verified against a reintroduced defect
+
+Retro dispositions: out-of-scope: the two sweep-adjacent findings (critique packet tier propagation, specdown preset duplication) belong to their own surfaces rather than this goal; both are recorded in the sweep artifact and carried to the handoff
+
+Structural follow-up: repo-local guard: charness-artifacts/retro/2026-07-25-session-retro.md
+(the `## Sibling Search` section records the per-axis decisions; the one
+`valid follow-up outside the slice` axis — a per-test read of the remaining
+repo-file-grepping tests — is anchored to the handoff rather than left unowned).

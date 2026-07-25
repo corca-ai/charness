@@ -10,61 +10,56 @@
 
 ## Current State
 
-- **v2.5.0 is PUBLISHED** (tag `v2.5.0 -> 666fc42f`; HTTPS observer 200, installed
-  readback `charness version -> 2.5.0`). v2.4.3's baton obligation is discharged here.
-  The `retro` weekly deletion below landed AFTER the tag and ships in the next cut.
-- `retro`'s `weekly` mode is DELETED (one shape now). Its one real asset — the
-  closeout-telemetry miner, 985 records and a recurring 475s gate — moved to
-  `references/closeout-telemetry.md` and now runs on EVERY retro. Retired adapter keys
-  (`default_mode`, `weekly_window_days`, `snapshot_path`) pass through ignored.
-- **The mutation workflow no longer closes GitHub issues.** A scheduled green
-  comments a recovery *candidate*, labels it, and stops; the close is a human's call.
-  **Runtime-unproven until a failure files a marked issue AND a later green runs** —
-  no local gate runs `actions/github-script`. Installed consumer workflows are never
-  re-rendered; adoption is a manual copy.
-- `check_runtime_budget` now emits a **budget slack advisory** naming budgets whose
-  worst recent run is far under the bar, so they cannot silently re-inflate.
-- No open issues as of this session (re-check `gh issue list --state open` fresh);
-  sibling scan closed through Tier 2, Tier 3 (E-J) stays boy-scout only.
+- **v2.5.0 is PUBLISHED and ships a real bug.** `propose_mutation_testing.py` could
+  not reach its workflow template from the plugin copy — the only copy a consumer
+  installs — in every tag back to at least `v2.2.1`; `--execute` failed *after*
+  writing the adapter scaffold, so a fresh install ends half-scaffolded. **Fixed
+  after the tag** (`c92e9561`); correction in the
+  [v2.5.0 notes](../charness-artifacts/release/2026-07-25-v2.5.0-notes.md).
+- Three named residuals CLOSED: `issue_close_comment_floor` checks AI-provenance
+  (the other two omissions are recorded as intentionally not wired); the specdown
+  report no longer churns; the fresh-install render path is tested.
+  `check_export_safe_imports.py` now rejects `skills/public` *filesystem paths*,
+  the class that shipped the bug above.
+- #453's blocking signal is fixed and evidence-commented; it is deliberately still
+  OPEN for a human close. No other open issues (re-check `gh issue list --state open`).
 
 ## Next Session
 
-1. **Sweep for other built-with-intent-but-unused modes and options** (operator
-   request). `retro`'s `weekly` was the first instance: a deliberately designed mode
-   whose entire behavioral delta was two extra `required_reads`, invoked once in
-   3.5 months, with a configured snapshot nothing ever read. Look for the same shape
-   elsewhere — adapter enum fields, planner branches, `--mode`/`--part` style flags,
-   preset variants. The tell is a branch whose two arms produce nearly the same plan.
-   `inventory_skill_ergonomics.py`'s `mode_option_pressure` rule is a starting
-   detector, not the answer; usage evidence (artifact counts, git history) decides.
-2. Residuals, not closed: `issue_close_comment_floor.py` omits
-   `evaluate_ai_provenance` and the ledger-field / close-keyword checks; every quality
-   run rewrites the tracked specdown report because [specdown.json](../specdown.json)
-   hardcodes `outFile` — restore by hand before staging; the plugin-copy fresh-install
-   render path is untested, the ONLY delivery path for the workflow change.
-3. Budgets were retuned for `local-linux-x86_64-36cpu` only; aarch64 and the
-   unprofiled defaults were left alone. Act on `SLACK` lines from
-   `check_runtime_budget.py --runtime-profile <profile>`.
-4. Still deferred, unchanged: inline `.rglob`/`ls-files` pathspec discovery,
+1. **Three operator decisions**, all in the completed goal's
+   `## Operator Decision Queue`: (a) patch release for the plugin-copy fix, or let it
+   ride the next cut; (b) close #453 — needs the next **scheduled** mutation run
+   verified with `check_mutation_run_proof.py --claim changed-line`, since a
+   dispatch re-run cannot prove it; (c) which of the 9 unused options to delete.
+2. **The sweep is done, awaiting sign-off — do not re-run it.** 9 confirmed / 3
+   refuted, zero deletions, blast radius per candidate; four confirmed items are
+   published portable contracts whose downstream use this repo cannot observe.
+3. Three unowned follow-ups, each with its evidence in the artifacts below: the
+   critique packet tier mismatch and the specdown preset duplication (sweep
+   artifact), and a proxy-assertion review of ~9 source-grepping tests (retro
+   sibling scan).
+4. Budgets are retuned for `local-linux-x86_64-36cpu` only; aarch64 and the
+   unprofiled defaults have **no samples here**, so nothing is actionable from this
+   machine. Run the budget check on that hardware.
+5. Still deferred, unchanged: inline `.rglob`/`ls-files` pathspec discovery,
    `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory, D18,
-   stale `charness-run-*` basetemp reaping, and #451's two unacted siblings (~20
-   `init_adapter.py` thin-assertion scaffolds; the identifier-literal blind spot at
-   `announcement_adapter_lib.py:125` — read its critique first). #449 was declined
-   over its CI write-permission surface; do not re-propose without new information.
+   stale `charness-run-*` basetemp reaping, #451's two unacted siblings. #449 was
+   declined over its CI write-permission surface.
 
 ## Discuss
 
-- Do not re-litigate two refuted audit findings: removing the dup-ratchet hard arm
-  or the boundary-bypass ratchet as "teeth on reversible work". The boy-scout arm
-  runs at `floor_F: 0` and has never blocked in production; every cited
-  boundary-bypass false block already has a landed fix.
-- #448 scoped-accept deferred items (its critique): overlay-missing advisory in
-  scoped mode, refused-early-return advisories, explicit `--accept-family` of an
-  intentional id test — only with the next dup-ratchet slice.
+- Three hazards learned 2026-07-25, detail in
+  [recent lessons](../charness-artifacts/retro/recent-lessons.md): never restore a
+  mutation target with `git checkout --` while the slice is uncommitted (reverts to
+  HEAD, and a red baseline makes every mutant look killed); run
+  `reviewer_boundary_fingerprint.py verify` the moment a reviewer returns; spawn
+  discovery/workflow agents read-only — one edited a tracked adapter and left it dirty.
+- Do not re-litigate the two refuted audit findings (removing the dup-ratchet hard
+  arm or the boundary-bypass ratchet). #448 scoped-accept items wait for the next
+  dup-ratchet slice.
 
 ## References
 
-- [v2.5.0 release critique](../charness-artifacts/critique/2026-07-25-v2-5-0-release-critique.md) · [notes](../charness-artifacts/release/2026-07-25-v2.5.0-notes.md)
-- [boundary-hardening critique](../charness-artifacts/critique/2026-07-25-irreversible-boundary-terminal-trust-critique.md) · [staleness critique](../charness-artifacts/critique/2026-07-25-stale-proof-and-duplicated-prose-critique.md)
-- [v2.4.3 release critique](../charness-artifacts/critique/2026-07-23-v2-4-3-release-critique.md) · [#449 brief](../charness-artifacts/issue/2026-07-23-issue-449-brief.md) · [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md) · [retention RCA](../charness-artifacts/debug/2026-07-20-debug-review.md) · [basetemp deletion-race RCA](../charness-artifacts/debug/2026-07-20-standing-pytest-basetemp-deletion-race.md)
+- [ranked-chunks-1-3 goal](../charness-artifacts/goals/2026-07-25-ranked-chunks-1-3.md) · [session retro](../charness-artifacts/retro/2026-07-25-session-retro.md) · [unused-option sweep](../charness-artifacts/audit/2026-07-25-unused-mode-option-sweep.md)
+- [v2.5.0 release critique](../charness-artifacts/critique/2026-07-25-v2-5-0-release-critique.md) · [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)
 - [release state](../charness-artifacts/release/latest.md) · [quality review](../charness-artifacts/quality/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
