@@ -15,16 +15,16 @@ already holds its evidence.
 
 ## Current State
 
-- **Released through v2.7.0** (#454, #455, #456 all resolved and shipped). The
-  standing operator direction is bug fixes, friction/rework reduction, and
-  test/code speed.
+- **#454, #455 and #456 are resolved and shipped** — version via
+  `git describe --tags --abbrev=0`, scope in the
+  [release state](../charness-artifacts/release/latest.md). Standing operator
+  direction: bug fixes, friction/rework reduction, test/code speed.
 - **Documented commands now resolve.** `check_doc_links` was one syntax short, so
-  a `python3 scripts/<name>.py` example outlived the script it named — measured,
-  not assumed: all six tests in
-  [test_authoring_preflight_reference.py](../tests/test_authoring_preflight_reference.py)
-  passed with `check_prose_pin.py` deleted. The shared fence/HTML-comment walk now
-  has one home, [markdown_doc_scan.py](../scripts/markdown_doc_scan.py), which
-  fixed two bugs the three drifted copies hid (see the
+  a `python3 scripts/<name>.py` example outlived the script it named — measured by
+  deleting `check_prose_pin.py` and watching every drift guard stay green. The
+  shared fence/HTML-comment walk now has one home,
+  [markdown_doc_scan.py](../scripts/markdown_doc_scan.py), which fixed two bugs
+  the drifted copies hid (see the
   [critique](../charness-artifacts/critique/2026-07-25-documented-command-resolution-gate.md)).
 - **#453 stays deliberately OPEN** for a human close; its fixes are pushed.
 

@@ -48,6 +48,36 @@ REQUIRED_SECTIONS = (
 # pretending to be a baton, so presence implies content.
 OPTIONAL_SECTIONS = ("## Continuation Capability",)
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
+# Link TARGETS are addresses, not claims: an artifact path may legitimately carry a
+# version, and the doc-link gate already keeps it resolvable. Link TEXT stays in
+# scope, because that is prose the reader believes.
+LINK_TARGET_RE = re.compile(r"(?<=\])\([^)]*\)")
+# Facts a command regenerates decay in place; the handoff carries the command
+# instead. Issue ids are deliberately absent -- an id is a stable identifier, not a
+# snapshot, and the artifact already tells the reader to re-check its state.
+REGENERABLE_PATTERNS = (
+    (
+        re.compile(r"\bv?\d+\.\d+\.\d+\b"),
+        "a release or tool version",
+        "`git describe --tags --abbrev=0`, or link the release artifact",
+    ),
+    (
+        # Hex-only, 7-40 chars, carrying BOTH a digit and an a-f letter, so English
+        # words that happen to be hex (`defaced`, `acceded`) do not fire.
+        re.compile(r"\b(?=[0-9a-f]{7,40}\b)(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b"),
+        "a commit sha",
+        "`git log --oneline -1`, or name the change instead of its hash",
+    ),
+    (
+        # `(?<![#\w])` keeps an issue id out of the count rule: `#371 issue
+        # disposition` names a stable identifier, not a measurement.
+        re.compile(
+            r"(?<![#\w])\d+\s+(?:tests?|files?|docs?|lines?|commits?|issues?|skills?|scripts?|cases?|artifacts?)\b"
+        ),
+        "an as-of count",
+        "the command that recounts it, or the owning artifact that holds the measurement",
+    ),
+)
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -63,6 +93,25 @@ def ordered_present_sections(lines: list[str]) -> tuple[str, ...]:
     """
     canonical = set(REQUIRED_SECTIONS) | set(OPTIONAL_SECTIONS)
     return tuple(line.strip() for line in lines if line.strip() in canonical)
+
+
+def validate_no_regenerable_facts(lines: list[str]) -> None:
+    """Reject facts the reader could regenerate, because they decay in place.
+
+    The handoff is a continuation pointer. A transcribed version, sha, or count is
+    true only on the day it is written, and a stale one is worse than an absent
+    one: the next operator acts on it instead of checking.
+    """
+    for raw in lines:
+        scrubbed = LINK_TARGET_RE.sub("", raw)
+        for pattern, label, replacement in REGENERABLE_PATTERNS:
+            match = pattern.search(scrubbed)
+            if match is None:
+                continue
+            raise ValidationError(
+                f"handoff artifact transcribes {label} (`{match.group(0).strip()}`); a fact a command "
+                f"can regenerate goes stale in place. Carry the command instead: {replacement}."
+            )
 
 
 def validate_references(lines: list[str]) -> None:
@@ -94,6 +143,7 @@ def validate_handoff_artifact(path: Path) -> None:
     validate_exact_h2_sections(lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS)
     validate_nonempty_sections(lines, ordered_present_sections(lines))
     validate_references(lines)
+    validate_no_regenerable_facts(lines)
     validate_subagent_blocker_reasoning(lines)
 
 
