@@ -547,3 +547,68 @@ def test_probe_to_render_prefers_fresh_claude_over_stale_codex(tmp_path: Path) -
 
     assert "### Measured (thread-wide, claude session scope)" in block
     assert "- session: " in block
+
+
+def test_host_log_probe_json_output_is_stable_readable_text(tmp_path: Path, monkeypatch, capsys) -> None:
+    """`json.loads(stdout)` is blind to every serialization choice this probe makes.
+    The probe's output is read by humans in a closeout artifact and diffed between
+    runs, so the indentation, the key ordering that keeps those diffs minimal, and
+    the non-ASCII passthrough that keeps a Korean/Japanese repo path legible are all
+    load-bearing. Assert the raw text, which a round-trip cannot do."""
+    home = tmp_path / "home"
+    home.mkdir()
+    repo_root = tmp_path / "리포"
+    repo_root.mkdir()
+
+    result = run_probe_host_logs(
+        monkeypatch, capsys, "--home", str(home), "--repo-root", str(repo_root)
+    )
+    assert result.returncode == 0, result.stderr
+
+    # Non-ASCII survives rather than being escaped to \uXXXX.
+    assert "리포" in result.stdout
+    assert "\\u" not in result.stdout
+    # Two-space indent, not compact and not some other width.
+    assert '\n  "hosts": {' in result.stdout
+    assert '\n   "hosts"' not in result.stdout
+    # Keys sorted, so run-to-run diffs show real changes only.
+    top_level = [
+        line[2:].split('"')[1]
+        for line in result.stdout.splitlines()
+        if line.startswith('  "')
+    ]
+    assert top_level == sorted(top_level), top_level
+    # Exactly one trailing newline from print().
+    assert result.stdout.endswith("}\n")
+    assert not result.stdout.endswith("}\n\n")
+
+
+def test_host_log_probe_markdown_format_renders_the_metrics_block(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The `--format markdown` branch is the whole reason the flag exists: it emits
+    the provider-safe closeout block that gets pasted into a goal artifact. Prove the
+    two formats actually diverge, and that markdown is not double-spaced by a stray
+    print newline on top of the block's own trailing one."""
+    home = tmp_path / "home"
+    home.mkdir()
+
+    markdown = run_probe_host_logs(monkeypatch, capsys, "--home", str(home), "--format", "markdown")
+    assert markdown.returncode == 0, markdown.stderr
+    assert markdown.stdout.startswith("## Goal Closeout Metrics\n")
+    assert not markdown.stdout.lstrip().startswith("{")
+    assert not markdown.stdout.endswith("\n\n")
+
+    default = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
+    assert default.stdout.lstrip().startswith("{")
+    assert default.stdout != markdown.stdout
+
+
+def test_host_log_probe_renders_every_format_it_accepts() -> None:
+    """`--format` and the renderer table are two lists that must not drift: a choice
+    argparse accepts with no renderer behind it is a KeyError at the end of a probe
+    run, after the expensive work is already done."""
+    for choice in _probe_host_logs.FORMAT_CHOICES:
+        rendered = _probe_host_logs.render_output({"hosts": {}}, choice)
+        assert rendered.endswith("\n"), choice
+        assert rendered.strip(), choice

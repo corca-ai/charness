@@ -11,9 +11,14 @@ runs the activation command.
 
 - Current disposition: real draft awaiting activation — shaped and plan-critiqued
   2026-07-25, consequential discussion resolved with the operator, not stale.
-- Current slice: slice 1 done (#453 changed-line coverage). Slice 2 is next.
-- Next action: post the #453 closeout evidence comment (operator closes, not the
-  agent), then slice 2 — kill the 7 `probe_host_logs.py` survived mutants.
+- Current slice: slices 1-2 done. Slice 3 is next.
+- Next action: slice 3 — wire `evaluate_ai_provenance` into
+  `issue_close_comment_floor.py`, record close-keyword and ledger-field as
+  intentionally not wired with reasons.
+- Standing hazard (learned in slice 2): never restore a mutation-test target with
+  `git checkout -- <path>` while the slice is uncommitted; it reverts to HEAD and
+  silently discards the work being proven. Use a pristine `cp` copy and assert a
+  green baseline before each mutation.
 - Verification cadence: cheap deterministic checks at each commit boundary
   (`ruff`, targeted `pytest`, plugin-mirror sync, then the owning surface's
   validators); slice-boundary proof is `check_changed_line_mutation_coverage.py`
@@ -360,7 +365,7 @@ Test-duplication pressure:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | [done] Cover the four uncovered changed lines in `quality_policy_defaults.py` and `runtime_budget_lib.py` | The blocking signal of #453; nothing else can be proven green under a red gate | New tests failing without the covered lines; `check_changed_line_mutation_coverage.py` clean over `base..head`. #453's closeout comment can be posted at the end of this slice | planned |
-| 2 | Kill the 7 survived `probe_host_logs.py` `main()` mutants (the `--format markdown` branch at :60 and the `json.dumps` kwargs at :63) | Score hygiene in the same file set — **not** part of #453's blocking signal, and does not gate the closeout comment | Test asserting raw output for both formats; survived count 0 for that file | planned |
+| 2 | [done] Kill the 7 survived `probe_host_logs.py` `main()` mutants (the `--format markdown` branch at :60 and the `json.dumps` kwargs at :63) | Score hygiene in the same file set — **not** part of #453's blocking signal, and does not gate the closeout comment | Test asserting raw output for both formats; survived count 0 for that file | planned |
 | 3 | Wire `evaluate_ai_provenance` into `issue_close_comment_floor.py`; record close-keyword and ledger-field as intentionally not wired, with reasons, and close the residual | Operator decision 2026-07-25: only the provenance check is a genuine gap for the close-with-comment carrier. Close-keyword needs a repo slug `evaluate_close_comment_floor` never receives and is inert inside a comment; ledger fields would need a new public wrapper for unclear benefit | Test that fails with the provenance check removed; the two not-wired rationales recorded in the floor's own docstring/reference so the residual does not return a third time; quality read-only green | planned |
 | 4 | Reproduce the tracked-specdown-report churn first, then act | Both the runner (`scripts/run-quality.sh:523`) and the owning surface already write to a temp dir, and `-quiet -no-report` was removed on 2026-07-22 because specdown rejects them — the residual may already be closed | Step 0: full quality gate, then `git status --short .charness/specdown/`. If clean: record "already fixed by the 2026-07-22 change" with the evidence and **stop — do not backfill the slot** (operator decision 2026-07-25; no regression guard, no substitute work). Only debug further if it reproduces | planned |
 | 5 | Test the fresh-install render path: from a plugin copy, `propose_mutation_testing.py --execute` renders `templates/mutation-tests.yml` into `workflow_path` | Sole delivery path — the workflow is written once at first install, never re-rendered, and `--execute` refuses to overwrite | Test over a fresh temp repo asserting rendered workflow content including `schedule_cron` substitution | planned |
@@ -415,6 +420,20 @@ packet named in the Active Operating Frame.
 - Critique: Bounded fresh-eye bounded-reviewer (agent ad3f32bb6e9f0efe5); boundary fingerprint verified ok/no-drift. Applied: F1 dead render-script loader left in the gate module after the move (5 dead lines in the file that had just failed the cap); F2 a vacuous assertion — the auto_issue fixture never set 'enabled', so the negative assertion could not fail under any mutation; fixture now sets it and asserts the boolean error, covering the enabled branch too. F3 added an in-process _render_slack witness so the line cannot silently lose coverage if that run_script call ever gets an explicit env= dict. F5 corrected an overstated seeder docstring. F6 reused the imported ROOT. Reviewer judged the file split honest against D33 (two scripts, two contracts) and found nothing lost in the move.
 - Off-goal findings: none this slice
 - Lessons carried forward: The mutation gate's changed-line blocker and its score are two different signals with two different instruments; the handoff's wording ('killing the survived mutants') conflated them and would have sent this slice at the wrong proof. Also: adding a test to a file already at 809/800 forces a split decision mid-slice — worth checking the length headroom before choosing where a new test lands.
+- Metrics:
+
+### Slice 2: Slice 2 — probe_host_logs survived mutants
+
+- Objective: Close the 7 mutants that survived in skills/public/retro/scripts/probe_host_logs.py main(). Score hygiene, not #453's blocker — the closeout comment for #453 went out after slice 1 and did not wait on this.
+- Why this approach: Four of the seven (sort_keys, ensure_ascii, two indent replacements) are killable by asserting the raw serialized text; a json.loads round-trip is indentation- and order-agnostic and cannot see them. The three on 'if args.format == "markdown"' could not all be killed by a test: with exactly two argparse choices, '==' and '>=' are behaviourally identical, so Eq->GtE is an equivalent mutant. Replaced the comparison with a dict dispatch keyed by the same FORMAT_CHOICES tuple argparse validates against, removing the surface rather than chasing it. Byte-identical output proven for --format json, --format markdown, and the default.
+- Commits:
+- What changed: skills/public/retro/scripts/probe_host_logs.py (FORMAT_CHOICES + render_output dispatch), its plugin mirror, tests/quality_gates/test_retro_host_log_probe.py (3 new tests)
+- Alternatives rejected: Rejected a subprocess-based test to kill the Eq->Is mutant: it is killable that way (real argv strings are not interned, unlike the in-process harness's literals), but the dict dispatch removes the comparison entirely, so the extra process-spawn cost buys nothing. Rejected leaving Eq->GtE as a permanent survivor.
+- Targeted verification: 20 tests pass. All 4 json.dumps mutants re-verified KILLED after the refactor, plus a dispatch-pinned-to-json mutant KILLED. Byte-identity vs HEAD confirmed for all three invocations. run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review: completed, plugin mirror in sync.
+- Test duplication pressure: 3 tests added to test_retro_host_log_probe.py; file is well under the 800-line cap and check_dup_ratchet stayed clean at the previous slice boundary.
+- Critique: Bounded fresh-eye bounded-reviewer (agent a33ff8985b32e656e); boundary fingerprint ok/no-drift. F1 BLOCKER, confirmed and fixed: the refactor was present only in the generated plugin mirror — the canonical source had been reverted to HEAD, one test was erroring, and the recorded proof did not match the tree. Cause identified: this slice's own mutant-verification loop ended each iteration with 'git checkout -- <source>', which reverts to HEAD, and the refactor was uncommitted. That also invalidated the post-refactor mutant results (the AttributeError made pytest fail every iteration, so each spuriously reported KILLED). Refactor restored from the mirror, re-synced, and all mutants re-verified with a pristine-copy restore plus a green-baseline assertion. F2 applied: the docstring's claim that 'is' is unkillable was wrong — it survived only because the in-process harness passes interned literals; reworded to the '>=' equivalence, which the reviewer independently verified. F3 (KeyError instead of silent JSON fallback for an unknown format) accepted as the better behaviour.
+- Off-goal findings: none this slice
+- Lessons carried forward: 'git checkout -- <path>' as a mutation-test restore silently reverts uncommitted work to HEAD. Use a pristine copy (cp) and assert a green baseline before each mutation, otherwise a failing baseline makes every mutant look killed. This is the #258 shape from the inside: the recorded proof was true when taken and false by the time it was written down.
 - Metrics:
 
 ## Context Sources

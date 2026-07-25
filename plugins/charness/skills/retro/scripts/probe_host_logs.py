@@ -30,6 +30,11 @@ _goal_metrics_render_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_scri
 render_goal_metrics_block = _goal_metrics_render_lib_module.render_goal_metrics_block
 
 
+# argparse and `render_output` read the same tuple, so a new format cannot be
+# accepted on the command line without a renderer behind it (or vice versa).
+FORMAT_CHOICES = ("json", "markdown")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--home", type=Path, default=Path.home(), help="User home directory to probe for host CLI log locations")
@@ -42,11 +47,28 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--format",
-        choices=("json", "markdown"),
+        choices=FORMAT_CHOICES,
         default="json",
         help="json (default) for the raw payload, or markdown for the standardized provider-safe goal-closeout metrics block",
     )
     return parser.parse_args()
+
+
+def render_output(payload: dict, output_format: str) -> str:
+    """Render the probe payload for one `--format` choice, trailing newline included.
+
+    A lookup rather than an `output_format == "markdown"` branch. With exactly two
+    choices, `==` and `>=` are behaviourally identical ("json" sorts before
+    "markdown"), so that comparison carries a branch no test can pin — the mutation
+    gate reported exactly that as a survivor. A mapping keyed by the same tuple
+    argparse validates against has no such blind spot, and adding a third format
+    cannot silently reintroduce one.
+    """
+    renderers = {
+        "json": lambda: json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        "markdown": lambda: render_goal_metrics_block(payload),
+    }
+    return renderers[output_format]()
 
 
 def main() -> int:
@@ -57,10 +79,7 @@ def main() -> int:
         goal_path=args.goal_path,
         claude_session_file=args.claude_session_file.expanduser() if args.claude_session_file else None,
     )
-    if args.format == "markdown":
-        print(render_goal_metrics_block(payload), end="")
-    else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    print(render_output(payload, args.format), end="")
     return 0
 
 
