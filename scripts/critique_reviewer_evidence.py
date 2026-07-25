@@ -23,6 +23,7 @@ skills/shared/references/fresh-eye-subagent-review.md.
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from pathlib import Path
 
@@ -59,6 +60,9 @@ DELIVERY_STATE_VALUES_SUMMARY = (
     "`findings-received` / `spawn-accepted-no-delivery <signal>` / `pending-parent-spawn`"
 )
 _NO_DELIVERY = "spawn-accepted-no-delivery"
+# Mirrors `validate_critique_artifacts._LEADING_MARKUP_RE` so the typed check and
+# the signal check normalize identically; see the comment at the use site.
+_LEADING_MARKUP_RE = re.compile(r"^[\s`*_\"'>\-]+")
 
 
 def validate_reviewer_tier_evidence(
@@ -125,7 +129,12 @@ def validate_delivery_state(
             f"{DELIVERY_STATE_VALUES_SUMMARY}, or still carries an unedited `todo` after the "
             "typed value — either way it is not a real record."
         )
-    if lowered.startswith(_NO_DELIVERY) and not value[len(_NO_DELIVERY) :].strip(" :-"):
+    # Normalize ONCE for both checks. `opens_with_typed_value` strips leading
+    # markup, so testing the raw string here would let `**spawn-accepted-no-delivery**`
+    # satisfy the typed check and then skip the signal requirement entirely —
+    # ceremony with no recorded cause, which is what this floor exists to stop.
+    token = _LEADING_MARKUP_RE.sub("", lowered).strip()
+    if token.startswith(_NO_DELIVERY) and not token[len(_NO_DELIVERY) :].strip(" :-*_`"):
         raise ValidationError(
             f"{path}: `{_NO_DELIVERY}` must name the concrete channel or host signal that "
             "dropped the findings, so the next session inherits the cause instead of "

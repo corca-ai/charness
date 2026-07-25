@@ -128,3 +128,30 @@ def test_undatable_artifact_is_not_fail_open() -> None:
 def test_named_legacy_undatable_artifact_is_grandfathered() -> None:
     legacy = sorted(BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS)[0]
     _check(None, observed_date=None, name=legacy)
+
+
+@pytest.mark.parametrize(
+    "delivery",
+    [
+        "**spawn-accepted-no-delivery**",
+        "`spawn-accepted-no-delivery`",
+        "  spawn-accepted-no-delivery  ",
+        "- spawn-accepted-no-delivery",
+    ],
+)
+def test_markup_cannot_smuggle_a_no_delivery_record_past_the_signal_requirement(delivery: str) -> None:
+    """Release-critique finding: the typed check strips leading markup, so testing
+    the raw string for the signal requirement let a bolded or backticked value
+    satisfy the type and then skip the "name the channel" rule entirely — a typed
+    delivery failure with no recorded cause, which is the ceremony this floor
+    exists to prevent. Both checks must normalize identically.
+    """
+    with pytest.raises(ValidationError) as excinfo:
+        _check(delivery, observed_date=POST_CUTOFF)
+
+    assert "must name the concrete channel or host signal" in str(excinfo.value)
+
+
+def test_marked_up_no_delivery_with_a_real_signal_still_passes() -> None:
+    """The normalization must not over-reach into rejecting a real record."""
+    _check("**spawn-accepted-no-delivery** mailbox channel, no reader tool", observed_date=POST_CUTOFF)
