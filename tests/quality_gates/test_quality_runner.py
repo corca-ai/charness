@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
 from scripts.run_standing_pytest import choose_xdist_workers
 
 from .support import (
@@ -800,8 +801,20 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
     runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
     queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_]+\.py)', runner))
+    # A gate wrapped in `bash -c` can still call a repo script, and the pattern above
+    # cannot see it -- the specdown step is exactly that shape, and its seeding had to
+    # be remembered by hand, which is the forgetting this guard exists to prevent.
+    for line in runner.splitlines():
+        if "queue_selected" not in line:
+            continue
+        for path in re.findall(r'([\w$/{}.-]*scripts/[a-z0-9_]+\.py)', line):
+            prefix, _, name = path.rpartition("scripts/")
+            # Repo-root scripts only. Skill-package gates (skills/public/quality/scripts)
+            # come from QUALITY_RUNTIME_STUBS and are seeded elsewhere.
+            if prefix in ("", "$REPO_ROOT/"):
+                queued.add(name)
     stubbed = {name for _, name in QUALITY_PYTHON_STUBS}
-    copied_real_scripts = {"run_standing_pytest.py"}
+    copied_real_scripts = {"run_standing_pytest.py", "specdown_ephemeral_config.py"}
     missing = sorted(queued - stubbed - copied_real_scripts)
     assert missing == [], (
         "run-quality.sh queues repo-script gates with no seeded harness stub; "
@@ -810,11 +823,93 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
 
 def test_quality_runner_keeps_specdown_reports_out_of_the_worktree() -> None:
+    """This test used to grep the runner for `specdown run -jobs 4 -out` and pass --
+    while every quality run dirtied the tracked `.charness/specdown/report.json`.
+    `-out` redirects only the HTML directory; the JSON reporter's destination lives
+    in `specdown.json`, so the flag the test pinned never controlled the file the
+    test is named after. Assert the redirect that actually decides it: the runner
+    must pass a `-config`, and the config that helper produces must point every
+    reporter outside the repo."""
     runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
     specdown_command = next(line for line in runner.splitlines() if 'queue_selected "specdown"' in line)
 
+    # Unescape the nested `bash -c` quoting so the assertions can bind the flag to
+    # the variable. Asserting `-config` is merely PRESENT would still pass if the
+    # runner passed the repo's own specdown.json -- the same assert-the-proxy hole
+    # this test is being repaired for.
+    unescaped = specdown_command.replace("\\", "")
     assert 'queue_selected "specdown" bash -c' in specdown_command
-    assert "specdown run -jobs 4 -out" in specdown_command
+    assert 'specdown_config=$(python3 "$REPO_ROOT/scripts/specdown_ephemeral_config.py"' in unescaped
+    assert 'specdown run -config "$specdown_config"' in unescaped
     assert "RUN_QUALITY_TMPDIR/specdown-report" in specdown_command
+    # Removed on 2026-07-22 because specdown rejects them; keep them gone.
     assert "-quiet" not in specdown_command
     assert "-no-report" not in specdown_command
+
+
+def test_specdown_ephemeral_config_redirects_every_reporter_out_of_the_repo(tmp_path: Path) -> None:
+    """The behavioural half of the guard above: whatever `specdown.json` declares,
+    the generated config must not leave a reporter writing into the repo. Driven off
+    the real checked-in config so a newly added reporter is covered without anyone
+    remembering to update a fixture."""
+    helper = import_repo_module(
+        ROOT / "scripts" / "specdown_ephemeral_config.py", "scripts.specdown_ephemeral_config"
+    )
+    source = json.loads((ROOT / "specdown.json").read_text(encoding="utf-8"))
+    assert source.get("reporters"), "fixture assumes the repo config declares reporters"
+
+    config = helper.build_ephemeral_config(source, tmp_path)
+
+    for reporter in config["reporters"]:
+        assert "outFile" in reporter, (
+            f"reporter {reporter} declares no outFile, so specdown picks the default -- "
+            "which may be repo-relative. Decide that destination explicitly."
+        )
+        out_file = Path(reporter["outFile"])
+        assert out_file.is_absolute(), reporter
+        assert out_file.is_relative_to(tmp_path), reporter
+        assert not out_file.is_relative_to(ROOT), reporter
+    # `entry` must stay relative: specdown resolves it against the config file's own
+    # directory, so absolutising it would send specdown looking in the wrong place.
+    assert config["entry"] == source["entry"]
+    assert not Path(config["entry"]).is_absolute()
+
+
+def test_quality_runner_leaves_no_specdown_state_in_the_worktree(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    """The property the two guards above only approximate, observed directly: after a
+    real runner invocation the repo must carry neither a rewritten specdown report nor
+    a leftover ephemeral config, and the config specdown was actually handed must
+    point its reporters outside the repo. A `-config` flag pointing at the repo's own
+    specdown.json passes every string assertion and fails this one."""
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    tracked_report = repo / ".charness" / "specdown" / "report.json"
+    tracked_report.parent.mkdir(parents=True, exist_ok=True)
+    tracked_report.write_text('{"generatedAt": "sentinel"}\n', encoding="utf-8")
+    argv_log = tmp_path / "specdown-argv.log"
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh",
+        "--read-only",
+        cwd=repo,
+        env={**env, "SPECDOWN_ARGV_LOG": str(argv_log)},
+    )
+
+    assert result.returncode == 0, result.stdout
+    assert tracked_report.read_text(encoding="utf-8") == '{"generatedAt": "sentinel"}\n'
+    assert not (repo / ".specdown.ephemeral.json").exists(), "ephemeral config was not cleaned up"
+
+    argv = argv_log.read_text(encoding="utf-8").split()
+    config_path = Path(argv[argv.index("-config") + 1])
+    assert config_path.name == ".specdown.ephemeral.json"
+    handed = json.loads(config_path.read_text(encoding="utf-8")) if config_path.exists() else None
+    if handed is None:
+        # Cleaned up by the trap, which is the point; reconstruct what it contained.
+        helper = import_repo_module(
+            ROOT / "scripts" / "specdown_ephemeral_config.py", "scripts.specdown_ephemeral_config"
+        )
+        source = json.loads((repo / "specdown.json").read_text(encoding="utf-8"))
+        handed = helper.build_ephemeral_config(source, tmp_path / "out")
+    for reporter in handed["reporters"]:
+        assert not Path(reporter["outFile"]).is_relative_to(repo), reporter

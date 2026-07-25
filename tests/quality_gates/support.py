@@ -301,6 +301,26 @@ def seed_quality_shell_stubs(target_dir: Path) -> None:
 def seed_quality_bin_stubs(target_dir: Path) -> None:
     for label in QUALITY_BIN_STUBS:
         write_executable(target_dir / label, quality_shell_stub(label))
+    # The specdown stub additionally records its argv, so a test can prove the runner
+    # handed it a redirected `-config` rather than only that the step exited 0.
+    write_executable(
+        target_dir / "specdown",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [[ -n "${SPECDOWN_ARGV_LOG:-}" ]]; then',
+                '  printf \'%s\\n\' "$*" >>"$SPECDOWN_ARGV_LOG"',
+                "fi",
+                'if [[ "${QUALITY_FAIL_LABEL:-}" == "specdown" ]]; then',
+                '  echo "quality failure output from specdown"',
+                "  exit 1",
+                "fi",
+                'echo "quality success output from specdown"',
+                "",
+            ]
+        ),
+    )
 
 
 def seed_quality_python_binary_stub(target_dir: Path) -> None:
@@ -406,6 +426,23 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         scripts_dir / "run_standing_pytest.py",
     )
     (scripts_dir / "run_standing_pytest.py").chmod(0o755)
+    # Copied rather than stubbed: the runner's specdown step calls it for real, and a
+    # stub would let the runner keep passing if the redirect it produces ever broke.
+    shutil.copy2(
+        ROOT / "scripts" / "specdown_ephemeral_config.py",
+        scripts_dir / "specdown_ephemeral_config.py",
+    )
+    (scripts_dir / "specdown_ephemeral_config.py").chmod(0o755)
+    (repo / "specdown.json").write_text(
+        json.dumps(
+            {
+                "entry": "specs/index.spec.md",
+                "reporters": [{"builtin": "json", "outFile": ".charness/specdown/report.json"}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     seed_quality_python_stubs(scripts_dir, QUALITY_PYTHON_STUBS)
     seed_quality_python_stubs(quality_scripts_dir, QUALITY_RUNTIME_STUBS)
     seed_quality_runtime_recorder(scripts_dir)

@@ -37,3 +37,7 @@ charness-artifacts/efficiency/**/preserved/**/stream.jsonl
 
 # Personal Claude Code overrides (local sandbox permissions, etc.)
 .claude/settings.local.json
+
+# Ephemeral specdown config written by scripts/specdown_ephemeral_config.py so an
+# automated gate does not rewrite the tracked .charness/specdown/ report.
+.specdown.ephemeral.json

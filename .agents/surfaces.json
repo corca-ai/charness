@@ -692,11 +692,11 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "specdown_report_dir=$(mktemp -d); trap 'rm -rf \"$specdown_report_dir\"' EXIT; specdown run -jobs 4 -out \"$specdown_report_dir\""
+        "specdown_report_dir=$(mktemp -d); specdown_config=$(python3 scripts/specdown_ephemeral_config.py --repo-root . --out-dir \"$specdown_report_dir\") || exit 1; trap 'rm -rf \"$specdown_report_dir\" \"$specdown_config\"' EXIT; specdown run -config \"$specdown_config\" -jobs 4 -out \"$specdown_report_dir\""
       ],
       "notes": [
         "Keep executable specs focused on stable operator-facing behavior; avoid adding adapters until setup or JSON extraction repeats.",
-        "The checked-in .charness/specdown/ report is derived state; refresh it manually with `specdown run` when specs change (not a sync command: each run rewrites timing metadata, so it can never no-op)."
+        "The checked-in .charness/specdown/ report is derived state; refresh it manually with `specdown run` when specs change (not a sync command: a direct run rewrites the generatedAt timestamp, so it can never no-op). Automated gates run against an ephemeral config from scripts/specdown_ephemeral_config.py so they do not dirty it."
       ]
     },
     {

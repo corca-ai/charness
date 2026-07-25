@@ -31,7 +31,11 @@ letting them absorb unit-test detail.
 
 ## Suggested Gate Vocabulary
 
-- executable-spec smoke: `specdown run -quiet` or repo-native filtered smoke
+- executable-spec smoke: `specdown run` or repo-native filtered smoke. Note that
+  specdown has no `-quiet` flag, and `-out` redirects only the HTML directory:
+  a reporter's `outFile` in the specdown config is repo-relative, so an automated
+  gate rewrites that checked-in report on every run. Point the gate at a
+  redirected config if the report is tracked.
 - overlap control: repo-owned duplicate-command or overlap checker for spec
   commands
 - boundary checks: keep only acceptance-criteria examples in executable specs
