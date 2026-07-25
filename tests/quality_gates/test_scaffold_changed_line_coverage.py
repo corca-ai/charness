@@ -78,6 +78,11 @@ def test_scaffold_changed_lines_read_covered_through_gate_probe(tmp_path: Path) 
         REPO_ROOT,
         "python3 -m pytest tests/test_scaffold_inprocess_coverage.py -q",
         coverage_json,
+        # This test reads executed/missing lines only, never per-test contexts.
+        # `dynamic_context` is the axis the producer already drops as lever A --
+        # it is what inflates the export to ~1.34 GB -- so paying for it here buys
+        # nothing. Same reasoning as check_changed_line_mutation_coverage.py.
+        dynamic_context=False,
     )
     statement_lines = load_file_statement_lines(REPO_ROOT, coverage_json)
 

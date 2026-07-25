@@ -495,10 +495,20 @@ queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts 
 flush_phase || OVERALL_RC=$?
 
 PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
+# Standing and release-only pytest are different workloads (the release set adds
+# minutes of subprocess-heavy tests). Recording both under one label made the
+# budget unable to catch a standing regression: it was sized from the release
+# mode's max, so a 2x standing slowdown still landed under the bar. Same
+# `-release` suffix convention as the aggregate label above.
+# Both arms spell the label literally on purpose: the timing-completeness and
+# gate-verbosity inventories parse this file for queued gate labels and cannot
+# resolve a shell variable, so a computed label reads as an untimed gate.
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
   PYTEST_FLAGS+=(--include-release-only)
+  queue_selected "pytest-release" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
+else
+  queue_selected "pytest" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 fi
-queue_selected "pytest" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi

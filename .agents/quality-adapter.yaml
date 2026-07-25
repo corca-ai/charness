@@ -158,6 +158,26 @@ runtime_budget_profiles:
       # a genuine 2x regression trips. `check_runtime_budget`'s new slack advisory
       # now reports this class so it cannot silently re-inflate.
       pytest: 90000
+      # 2026-07-25: the release-path variants were the slowest observed labels on
+      # this profile and the only unbudgeted ones, so a 2x regression on the gate
+      # that actually precedes a release would not have tripped anything. Same
+      # ~1.4x-worst-recent-run policy as the retune above.
+      # `run-quality-read-only-release` has only 2 samples, so a 1.4x bar would be
+      # drawn from noise. A DELIBERATELY LOOSE bar is not a flaky bar though: 150000
+      # is 1.7x the worse of the two samples (cannot flake) and still under 2x the
+      # median (trips a real regression). Leaving it unbudgeted was the state this
+      # very comment calls the bug. Tighten when the window fills.
+      run-quality-read-only-release: 150000
+      run-quality-full-release: 125000
+      # 9 samples, not 20 -- looser evidence than the labels above, tight enough to
+      # trip 2x (median 67172).
+      run-quality-full: 100000
+      # `pytest` now records standing-mode runs only (release-only pytest moved to
+      # its own `pytest-release` label). This 90000 was sized from the CONFLATED
+      # window and is loose for standing mode alone; the slack advisory will report
+      # it once the split window fills, and it should be retightened then rather
+      # than guessed at now from contaminated samples.
+      pytest-release: 125000
       check-coverage: 12000
       doc-duplicates: 6000
       check-markdown: 8000

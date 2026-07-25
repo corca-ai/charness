@@ -222,6 +222,55 @@ def test_validate_handoff_artifact_allows_a_version_inside_a_link_target(tmp_pat
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_handoff_artifact_does_not_read_a_date_as_a_count(tmp_path: Path) -> None:
+    # `25 docs` from an ISO date: the lookbehind excluded `#` and word chars but
+    # not `-`, and a dated reference is the commonest shape in handoff prose.
+    result = run_on_state(tmp_path, "- The 2026-07-25 docs sweep is signed off; nothing pending.")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_does_not_scan_inline_code(tmp_path: Path) -> None:
+    # The rule tells the author to carry a command; it must not then reject the
+    # command. `-n 16 tests/...` is idiomatic for this repo's pytest runner.
+    result = run_on_state(tmp_path, "- Reproduce with `python3 -m pytest -n 16 tests/quality_gates`.")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_does_not_scan_fenced_blocks(tmp_path: Path) -> None:
+    result = run_on_state(
+        tmp_path,
+        "- Reproduce with:",
+        "",
+        "```bash",
+        "git checkout v2.7.0 && python3 -m pytest -n 16 tests/",
+        "```",
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_does_not_read_a_bare_url_as_a_version(tmp_path: Path) -> None:
+    # A link address is not a claim, whichever of the three markdown link
+    # syntaxes carries it.
+    result = run_on_state(
+        tmp_path,
+        "- Compare: https://github.com/corca-ai/charness/compare/v0.18.0...v0.19.0",
+        "- Autolink: <https://example.com/releases/v1.0.4>",
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_rejects_a_two_component_version(tmp_path: Path) -> None:
+    result = run_on_state(tmp_path, "- Shipped in v1.2; the backlog is clear.")
+    assert result.returncode == 1
+    assert "v1.2" in result.stderr
+
+
+def test_validate_handoff_artifact_rejects_an_uppercase_sha(tmp_path: Path) -> None:
+    result = run_on_state(tmp_path, "- The rule landed in 6DB86CD5 and has not moved.")
+    assert result.returncode == 1
+    assert "6DB86CD5" in result.stderr
+
+
 def test_validate_handoff_artifact_does_not_read_an_issue_id_as_a_count(tmp_path: Path) -> None:
     # Found by running the count rule across the other current-pointer artifacts:
     # `#371 issue disposition` is an identifier followed by a noun, not "371 issues".
