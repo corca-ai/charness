@@ -37,8 +37,8 @@ The only open issue is #453; every move below names an owning artifact.
 1. **Close #453** once the next **scheduled** mutation run is verified with
    `check_mutation_run_proof.py --claim changed-line --run-id <id>`. A dispatch
    re-run cannot prove it (no `base_sha`).
-2. **Re-measure `local-linux-aarch64-4cpu`.** Four bars are `(contended,
-   derived)` — raised by this box's contention factor, not measured.
+2. **Re-measure `local-linux-aarch64-4cpu`.** Four bars are marked
+   `contended-derived` — raised by this box's contention factor, not measured.
 3. **`du_timeout` blocks and is not a capability gap.** Only direct invocation is
    exposed (this repo's runner keys the temp root per repo). Also unprobed: the
    BusyBox/BSD `du` usage-error tokens, backed by no real Alpine or macOS run.

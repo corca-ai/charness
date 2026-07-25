@@ -115,7 +115,15 @@ def test_check_markdown_keeps_markdownlint_failure_blocking(
     assert "docs/bad.md:4:1 error MD999/test lint failure" in result.stdout
     assert "lint stderr detail" in result.stderr
     assert "lint stderr detail" not in result.stdout
-    assert "WARN:" not in result.stdout + result.stderr
+    # This case deliberately does NOT assert `"WARN:" not in stdout+stderr`.
+    # The seeded repo is a clone of this one, so that assertion held only while
+    # every checked-in Markdown file happened to be advisory-clean: one wrapped
+    # inline code span in docs/handoff.md failed a test about whether
+    # markdownlint's exit code stays blocking, at release time, because this case
+    # is release_only. It also contradicted its own sibling below, which asserts a
+    # WARN advisory MAY precede a blocking lint failure -- so the blanket carried
+    # no invariant of its own, only a coupling to repo-wide doc cleanliness.
+    # Advisory-versus-blocking ordering is owned by that sibling.
 
 
 @pytest.mark.release_only
