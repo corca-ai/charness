@@ -75,3 +75,12 @@ recorded as unproven-for-boundary, and this critique is the boundary-clean one.
 - Consumer: an agent reaching a validator-gated closeout, which either receives the shape or discovers it by failing the gate.
 - Owning surface: `scripts/check_artifact_surface_preflight.py` for registration, the owning skill's planner and required-reads for reachability.
 - Verdict: owned-correctly — registration and reachability are genuinely different properties owned by different surfaces, and the new guard binds them without collapsing one into the other.
+
+## Release Note (v2.7.0 scope)
+
+This critique also covers the v2.7.0 release surface: the same reviewer's
+findings were applied before the tag, and the bump is `minor` because
+`reviewer_result.py` is a new additive capability and the new
+`findings-recovered-from-transcript` delivery state is an additive enum value
+(existing artifacts and the scaffold are unaffected; the floor's date grandfather
+is unchanged).
