@@ -19,6 +19,7 @@ stderr-protocol contract, so it does not need a delivery-boundary crossing.
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,6 +30,8 @@ from scripts.specdown_ephemeral_config import (
     build_ephemeral_config,
     main,
 )
+
+from .support import ROOT
 
 SOURCE_CONFIG = {
     "entry": "specs/index.spec.md",
@@ -235,3 +238,44 @@ def test_main_requires_an_out_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
         _run_main(monkeypatch, "--repo-root", str(tmp_path / "repo"))
 
     assert excinfo.value.code != 0
+
+
+def test_cli_entrypoint_dispatches_through_main_and_exits_zero(tmp_path: Path) -> None:
+    """One real CLI smoke, deliberately at the process boundary.
+
+    Everything above runs in-process. This one case exists because the
+    `if __name__ == "__main__": raise SystemExit(main())` dispatch is only
+    reachable by actually starting the script, and `run-quality.sh` consumes this
+    helper exactly that way -- it reads the written path off stdout and branches on
+    the exit code. An in-process call cannot prove the script starts, resolves its
+    imports, or propagates `main()`'s return code as an exit status.
+    """
+    repo = tmp_path / "repo"
+    _write_source(repo)
+    out_dir = tmp_path / "out"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "specdown_ephemeral_config.py"),
+            "--repo-root",
+            str(repo),
+            "--out-dir",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    written = Path(result.stdout.strip())
+    assert written == repo / EPHEMERAL_CONFIG_NAME
+    assert written.is_file()
+    # The redirected reporter really landed outside the source tree.
+    config = json.loads(written.read_text(encoding="utf-8"))
+    assert all(
+        Path(reporter["outFile"]).parent == out_dir
+        for reporter in config["reporters"]
+        if reporter.get("outFile")
+    )
