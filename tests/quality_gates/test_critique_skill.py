@@ -208,6 +208,7 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
         "- **Requested tier**: `high-leverage`",
         "- **Requested spawn fields**: `model=gpt-5.6-terra`",
         "- **Host exposure state**: `requested_fields_sent`",
+        "- **Delivery state**: `findings-received`",
         "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
         "",
         "The runtime still has blocked JSON endpoints; this is domain content, not a subagent blocker.",
@@ -321,6 +322,7 @@ def test_critique_artifact_validator_accepts_reviewer_tier_evidence(tmp_path: Pa
         "- **Requested tier**: `high-leverage`",
         "- **Requested spawn fields**: `model=gpt-5.6-terra, reasoning_effort=medium, service_tier=priority`",
         "- **Host exposure state**: `requested_fields_sent`",
+        "- **Delivery state**: `findings-received`",
         "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
         "",
         *_BOUNDARY_OWNERSHIP,
@@ -350,6 +352,7 @@ def test_critique_artifact_validator_rejects_applied_without_host_confirmation(
         "- **Requested tier**: `high-leverage`",
         "- **Requested spawn fields**: `model=gpt-5.6-terra`",
         "- **Host exposure state**: `applied`",
+        "- **Delivery state**: `findings-received`",
         "- **Application state**: `fields were sent`",
         "",
         *_BOUNDARY_OWNERSHIP,
@@ -487,6 +490,7 @@ _STRUCTURED_PRELUDE = (
     "- **Requested tier**: `high-leverage`\n"
     "- **Requested spawn fields**: `model=gpt-5.6-terra`\n"
     "- **Host exposure state**: `requested_fields_sent`\n"
+    "- **Delivery state**: `findings-received`\n"
     "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`\n"
     "\n"
     "## Boundary Ownership\n"

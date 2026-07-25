@@ -145,6 +145,7 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
     assert set(enums["reviewer_tier_host_exposure_state"]) == set(
         validator.REVIEWER_TIER_HOST_STATES
     )
+    assert set(enums["reviewer_delivery_state"]) == set(validator.DELIVERY_STATE_VALUES)
     assert set(enums["boundary_ownership"]["verdict"]) == set(validator.BOUNDARY_VERDICT_VALUES)
 
 

@@ -405,6 +405,36 @@ Reopen trigger:
 - Impact surfaces: [capture-skill-run.sh](../scripts/agent-runtime/capture-skill-run.sh) (canary), [build-skill-execution-observation.mjs](../scripts/agent-runtime/build-skill-execution-observation.mjs), [run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py), [test_skill_efficiency_ab.py](../tests/test_skill_efficiency_ab.py) (behavioral test).
 - Reopen trigger: a capture is observed reasoning from its eval identity DESPITE the neutral run base (canary fires or transcript shows it), or the scoring path is reworked for another reason.
 
+### D38. Promotion gate for decaying retro lessons
+
+- Question: should a correct retro lesson that never reaches a durable contract be
+  detectable, rather than depending on the same rolling digest that let it decay?
+- Current choice: DEFER the class; the single instance is fixed. The reviewer
+  result-delivery rule now lives in [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md)
+  `## Result Delivery`, pinned by [test_reviewer_result_delivery.py](../tests/quality_gates/test_reviewer_result_delivery.py)
+  and enforced at closeout by the `Delivery state` floor in [validate_critique_artifacts.py](../scripts/validate_critique_artifacts.py).
+  What is NOT addressed is the mechanism: nothing detects a retro
+  "Next Improvement" that never became a contract.
+- Why now: the lineage is concrete rather than hypothetical. The correct spawn
+  shape was recorded in [2026-06-20-north-star-phase4-boundary-non-terminality.md](../charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md)
+  (`:36-41`, `:89-91`), aged out of [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
+  (generated from [lesson-selection-index.json](../charness-artifacts/retro/lesson-selection-index.json) under a 14-day recency
+  half-life), and two later sessions re-derived a wrong attribution
+  ("host-runtime behavior, not repo fixable") instead of running the cheap
+  falsifier. Cost: five weeks and a blocked spec. Full lineage in
+  [the debug artifact](../charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md).
+- Why deferral is right at the time: a promotion gate needs a contract for what
+  "promoted" means and a way to tell a lesson that *should* decay from one that
+  should not; guessing that taxonomy while fixing one instance is the
+  validator-post-hoc-churn reflex. The decay mechanism stays live for every
+  other current Next Improvement, which is the accepted residual.
+- Impact surfaces: [build_retro_lesson_selection_index.py](../scripts/build_retro_lesson_selection_index.py),
+  [lesson-selection-index.json](../charness-artifacts/retro/lesson-selection-index.json),
+  [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md), the `retro` skill.
+- Reopen trigger: a third recurrence of any lesson previously recorded in a retro
+  and since decayed, or a session that re-derives a wrong attribution the repo
+  already refuted.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

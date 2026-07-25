@@ -26,6 +26,14 @@ file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_pre
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
 _boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
 _reviewed_input_binding = import_repo_module(__file__, "scripts.critique_reviewed_input_binding")
+_reviewer_evidence = import_repo_module(__file__, "scripts.critique_reviewer_evidence")
+REVIEWER_TIER_HEADING = _reviewer_evidence.REVIEWER_TIER_HEADING
+REVIEWER_TIER_REQUIRED_FIELDS = _reviewer_evidence.REVIEWER_TIER_REQUIRED_FIELDS
+REVIEWER_TIER_HOST_STATES = _reviewer_evidence.REVIEWER_TIER_HOST_STATES
+DELIVERY_STATE_RULE_DATE = _reviewer_evidence.DELIVERY_STATE_RULE_DATE
+DELIVERY_STATE_FIELD = _reviewer_evidence.DELIVERY_STATE_FIELD
+DELIVERY_STATE_VALUES = _reviewer_evidence.DELIVERY_STATE_VALUES
+DELIVERY_STATE_VALUES_SUMMARY = _reviewer_evidence.DELIVERY_STATE_VALUES_SUMMARY
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 CRITIQUE_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Critique Prepare Packet(?:\s+—\s+\S.*)?$")
@@ -41,9 +49,6 @@ STRUCTURED_FINDING_FORM = (
     "- <id> | bin: <bin> | evidence: <evidence> | ref: <path-or-line> | "
     "action: <action> | note: <one-line rationale>"
 )
-REVIEWER_TIER_HEADING = "## Reviewer Tier Evidence"
-REVIEWER_TIER_REQUIRED_FIELDS = ("requested tier", "requested spawn fields", "host exposure state", "application state")
-REVIEWER_TIER_HOST_STATES = frozenset({"pending-parent-spawn", "requested_fields_sent", "metadata-hidden", "host-defaulted", "unsupported", "applied"})
 PACKET_CONSUMED_RE = re.compile(r"(?im)^\s*packet consumed\s*:\s*(?P<path>\S+)")
 CRITIQUE_PREPARE_PACKET_KIND = "charness.critique_prepare_packet"
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
@@ -367,23 +372,12 @@ def _opens_with_typed_value(value: str, allowed: tuple[str, ...]) -> bool:
 
 
 def validate_reviewer_tier_evidence(path: Path, text: str) -> None:
-    fields = _section_field_map(text, REVIEWER_TIER_HEADING)
-    missing = [field for field in REVIEWER_TIER_REQUIRED_FIELDS if not fields.get(field)]
-    if missing:
-        raise ValidationError(f"{path}: reviewer tier evidence missing fields: {missing}")
-    state = fields["host exposure state"]
-    if state not in REVIEWER_TIER_HOST_STATES:
-        raise ValidationError(
-            f"{path}: reviewer tier host exposure state `{state}` must be one of "
-            f"{sorted(REVIEWER_TIER_HOST_STATES)}"
-        )
-    if state == "applied" and not fields["application state"].lower().startswith("host-confirmed:"):
-        raise ValidationError(
-            f"{path}: reviewer tier evidence may use `applied` only with "
-            "`Application state: host-confirmed: <signal>`"
-        )
+    _reviewer_evidence.validate_reviewer_tier_evidence(
+        path, text, section_field_map=_section_field_map
+    )
 
 
+validate_delivery_state = _reviewer_evidence.validate_delivery_state
 validate_reviewed_input_binding = _reviewed_input_binding.validate_reviewed_input_binding
 
 
@@ -490,6 +484,14 @@ def validate_critique_artifact(
         )
         if requires_tier_evidence or _section_field_map(text, REVIEWER_TIER_HEADING):
             validate_reviewer_tier_evidence(path, text)
+            _reviewer_evidence.validate_delivery_state(
+                path,
+                text,
+                observed_date,
+                section_field_map=_section_field_map,
+                opens_with_typed_value=_opens_with_typed_value,
+                legacy_undatable=BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS,
+            )
 
     checks = (
         _check_fresh_eye_typed_presence,

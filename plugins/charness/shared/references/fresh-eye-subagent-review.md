@@ -97,7 +97,9 @@ When a caller spawns more than one bounded fresh-eye reviewer over the same
 artifact, assign each reviewer a **distinct, explicitly-named lens** (for
 example encoding/i18n, injection/escaping, portability, or one of the `quality`
 Behavior lenses such as verification-channel fitness and guard-propagation
-across seams) rather than N generic "review this change" reviewers.
+across seams) rather than N generic "review this change" reviewers. Name the
+lens in the packet prose, never in the spawn's host addressing or team field —
+that field selects a delivery channel, not a label (see *Result Delivery*).
 
 A generic reviewer tends to inherit the author's framing blind spot. In the
 incident that motivated this note, the generic reviewer caught a bracket/escaping
@@ -191,12 +193,67 @@ without the envelope a writing reviewer could rewrite the default snapshot
 file itself, so pass `--out` to keep the snapshot outside the
 reviewer-reachable tree when that matters.
 
+## Result Delivery
+
+A spawned reviewer is not a received review. The parent holds the review only
+when the reviewer's findings text is in the parent's own context. Spawn
+acceptance, a clean rail-1 fingerprint, and an idle or completion notification
+are each individually compatible with findings that never arrived — the
+reviewer can run correctly, keep its boundary clean, write a complete final
+message, and still deliver nothing the parent can read.
+
+Some hosts deliver a reviewer's final message on more than one channel, and
+there the **spawn call shape selects the channel**. A spawn that carries a host
+addressing or team name is routed to a mailbox-style channel whose only
+retrieval path is that host's message-sending tool; a parent to which the host
+does not expose that tool never receives the findings at all. This is a
+recorded failure, and it recurred because the correct spawn shape was known
+only as a rolling retro lesson that decayed before it reached any contract —
+which is why the rule lives here.
+
+Delivery is a per-host live claim, proven by the step-1 probe below and never
+assumed — the same standing as envelope binding in rail 2. The channel-selection
+differential above is recorded on one host at one version, `n=1` per arm; the
+scope record and non-claims live in
+`<repo-root>/charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md`.
+On a host whose spawn surface exposes no addressing or team parameter, or where
+the named shape is the delivering one, the unnamed-shape rule is a no-op and
+only the "findings text in your context" test carries. The current Codex
+`explorer` path is not inspected.
+
+- Spawn one-shot bounded reviewers **without** a host addressing or team name.
+  Reserve named spawns for agents the parent will address repeatedly, and only
+  when the host exposes the matching retrieval tool in that same session.
+- A tool named in host documentation is not a tool available in the session.
+  Resolve it the way the host exposes tools before depending on it, the same
+  way availability uncertainty is resolved below.
+- Findings that never arrive are a **delivery failure to report**, never a
+  reviewer that returned nothing and never grounds for a same-agent
+  substitute. Re-spawn once under the unnamed shape before concluding
+  anything about the host.
+- Record delivery state in the closeout artifact next to the reviewer-tier
+  evidence, as a field distinct from boundary state: `findings-received`, or
+  `spawn-accepted-no-delivery <concrete channel or host signal>`. Boundary
+  clean and findings received are independent claims; neither implies the
+  other, and rail 1 proves only the first.
+
+Where a host persists subagent transcripts on disk, reading a stranded
+reviewer's final message from its transcript is a legitimate **diagnostic** for
+telling "reviewer produced nothing" apart from "delivery dropped it". It is not
+the contract path: it is host-specific, it is not available on every host, and
+a review recovered that way should be recorded with the delivery failure that
+made it necessary.
+
 ## Required Before Declaring The Canonical Path Blocked
 
 1. Attempt the bounded setup the skill calls for.
    - Try to open one fresh-eye or critique subagent with a tight scope and
      time box. A single probe is enough; you are not required to spawn the full
      reviewer set just to prove availability.
+   - The probe passes only when the reviewer's **findings text reaches you**.
+     A spawn the host accepted but whose result never arrived is a failed
+     probe, not a passed one; re-probe under the unnamed spawn shape from
+     *Result Delivery* before reporting anything as blocked.
    - If you are already a bounded fresh-eye subagent spawned by a parent, do not
      run this probe again unless your assignment explicitly requires nested
      delegation. This includes assigned angle and counterweight reviewers.
@@ -242,6 +299,13 @@ failed.
   path.
 - Do not name the blocker as "canonical path unavailable" without the concrete
   signal that made it unavailable.
+- Do not treat a spawn the host accepted, a clean boundary fingerprint, or an
+  idle notification as proof that findings were received. Only findings text in
+  your own context proves that.
+- Where the host makes the name optional, do not attach a host addressing or
+  team name to a one-shot bounded reviewer spawn unless the host exposes the
+  matching retrieval tool in that same session; that selects a mailbox channel
+  the parent may have no tool to read.
 - Do not report "the user did not explicitly allow subagents" when repo
   `Subagent Delegation` instructions already delegated bounded fresh-eye review
   scopes.

@@ -52,6 +52,18 @@ ALLOWED_HOST_EXPOSURE_STATES = (
     "unsupported",
     "applied",
 )
+# Delivery-state enum the validator enforces once an artifact is dated on/after
+# its enforce-from date. A reviewer that ran cleanly is not a reviewer whose
+# findings arrived; the spawn call shape selects the delivery channel, and the
+# losing one strands a complete review where the parent cannot read it. MUST
+# stay equal to the validator's DELIVERY_STATE_VALUES (drift test pins the
+# equality). See the `Result Delivery` section of
+# skills/shared/references/fresh-eye-subagent-review.md.
+ALLOWED_DELIVERY_STATES = (
+    "findings-received",
+    "spawn-accepted-no-delivery",
+    "pending-parent-spawn",
+)
 # Boundary-ownership verdict enum the validator's presence floor enforces once an
 # artifact is dated on/after its enforce-from date. MUST stay equal to the
 # validator's BOUNDARY_VERDICT_VALUES (drift test pins the equality). See
@@ -69,10 +81,12 @@ def allowed_enums() -> dict[str, object]:
             "action": list(ALLOWED_ACTIONS),
         },
         "reviewer_tier_host_exposure_state": list(ALLOWED_HOST_EXPOSURE_STATES),
+        "reviewer_delivery_state": list(ALLOWED_DELIVERY_STATES),
         "boundary_ownership": {"verdict": list(ALLOWED_BOUNDARY_VERDICTS)},
         "couplings": [
             "action: file-issue requires a parseable follow-up: (issue URL or 'deferred <handoff-anchor>')",
             "Host exposure state: applied requires Application state: host-confirmed: <signal>",
+            "Delivery state: spawn-accepted-no-delivery requires a trailing channel or host signal",
         ],
     }
 
@@ -95,6 +109,7 @@ def render_template(*, title: str, date_text: str) -> str:
     evidence_legend = " | ".join(ALLOWED_EVIDENCE)
     actions_legend = " | ".join(ALLOWED_ACTIONS)
     host_states_legend = " | ".join(ALLOWED_HOST_EXPOSURE_STATES)
+    delivery_states_legend = " | ".join(ALLOWED_DELIVERY_STATES)
     lines.extend(
         [
             "## Structured Findings",
@@ -122,6 +137,9 @@ def render_template(*, title: str, date_text: str) -> str:
             "- Requested spawn fields: TODO the fields sent to the host spawn surface.",
             "- Host exposure state: pending-parent-spawn",
             "- Application state: TODO the host signal once the reviewer runs.",
+            f"<!-- allowed Delivery state: {delivery_states_legend}. Boundary "
+            "cleanliness is a separate claim and does not imply delivery. -->",
+            "- Delivery state: pending-parent-spawn",
             "",
         ]
     )

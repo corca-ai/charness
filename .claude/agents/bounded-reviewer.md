@@ -21,6 +21,14 @@ If you can still see Bash, Edit, Write, or Agent tools, the envelope did not
 bind for this spawn — state `envelope-unbound` in your returned result and
 follow the read-only restrictions above as hard instructions anyway.
 
+Your findings reach the parent only through the channel its spawn shape chose,
+and that delivery is proven live per host exactly like envelope binding, never
+assumed: a recorded failure (#454) had reviewers write complete final messages
+that the parent could not read at all, because a named spawn routed them to a
+mailbox the parent had no tool to open. Put the findings in your final
+assistant message and nowhere else — but the parent, not you, owns proving they
+arrived. See the *Result Delivery* section of the shared fresh-eye reference.
+
 If your assigned lens genuinely needs command output (a test run, a lint
 pass) or a prior-version read that only `git show <ref>:<path>` can give you,
 do not try to work around the missing tool. Report the concrete need back to

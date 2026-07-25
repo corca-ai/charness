@@ -1,1 +1,1 @@
-2026-07-22-debug-review-followup.md
+2026-07-25-bounded-reviewer-result-delivery.md
