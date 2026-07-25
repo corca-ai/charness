@@ -558,6 +558,45 @@ def test_refresh_current_pointer_blocks_external_record_path(tmp_path: Path) -> 
     assert payload["reason"] == "record artifact path is outside repo_root"
 
 
+def test_refresh_current_pointer_symlink_strategy_refuses_to_clobber_regular_file(
+    tmp_path: Path,
+) -> None:
+    """`auto` never picks symlink for a regular-file pointer, but `--strategy symlink`
+    is an explicit public affordance that reaches this guard. The helper must not
+    replace a file it did not create: the existing content survives untouched and the
+    run is blocked rather than silently migrating copy -> symlink."""
+    repo = tmp_path / "repo"
+    write_minimal_resolver(repo, "quality", "charness-artifacts/quality")
+    artifact_dir = repo / "charness-artifacts" / "quality"
+    artifact_dir.mkdir(parents=True)
+    record = artifact_dir / "2026-04-15-quality-review.md"
+    record.write_text("# Quality Review\n\nFresh.\n", encoding="utf-8")
+    current = artifact_dir / "latest.md"
+    current.write_text("# Quality Review\n\nHand-written.\n", encoding="utf-8")
+
+    result = run_loaded_script_main(
+        "refresh_current_pointer.py",
+        refresh_current_pointer_module,
+        "--repo-root",
+        str(repo),
+        "--skill-id",
+        "quality",
+        "--record-artifact-path",
+        "charness-artifacts/quality/2026-04-15-quality-review.md",
+        "--strategy",
+        "symlink",
+        "--execute",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert payload["reason"] == "symlink strategy would replace an existing regular file"
+    assert payload["would_update"] is False
+    assert current.is_symlink() is False
+    assert current.read_text(encoding="utf-8") == "# Quality Review\n\nHand-written.\n"
+
+
 def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path: Path) -> None:
     export_root = tmp_path / "export"
     export_result = run_loaded_script_main(

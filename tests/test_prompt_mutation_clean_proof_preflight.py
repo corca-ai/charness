@@ -41,6 +41,21 @@ def test_scenario_scan_ignores_author_comments(tmp_path: Path) -> None:
     assert report["findings"] == []
 
 
+def test_non_object_scenario_spec_is_scanned_whole(tmp_path: Path) -> None:
+    """The visible-key filter only applies to object-shaped specs. A spec whose
+    top level is a list has no keys to select from, so skipping it would silently
+    make a probe-carrying spec look clean; every string in it is scanned instead."""
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps(["warm up", "then run git log --oneline"]), encoding="utf-8")
+
+    report = preflight.run(preflight.parse_args(["--scenario-spec", str(spec)]))
+
+    assert report["clean_proof_claim"] is False
+    assert report["clean_proof_blocker_count"] == 1
+    assert report["findings"][0]["rule"] == "git-log"
+    assert report["findings"][0]["field"] == "$[1]"
+
+
 def test_scenario_scan_blocks_visible_prompt_probe(tmp_path: Path) -> None:
     spec = tmp_path / "spec.json"
     spec.write_text(json.dumps({"prompt": "run git diff main HEAD"}), encoding="utf-8")
