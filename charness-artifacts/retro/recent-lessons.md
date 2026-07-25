@@ -7,14 +7,14 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-25-v2-8-0-release-auto-retro.md`; sources: 117)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-25-v2-9-0-release-auto-retro.md`; sources: 118)
 - **`git checkout -- <path>` used to restore a mutation-test target while the slice was uncommitted.** It reverted to HEAD and silently discarded the slice-2 refactor. Worse, it poisoned the evidence: the reverted tree made one test raise `AttributeError`, so every subsequent mutant reported KILLED regardless of the mutation. Four "verified" results were meaningless. Cost: one full re-do plus a reviewer round-trip. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
 - **Reviewer boundary verify run after applying fixes** (slice 3), making that review's boundary proof inconclusive — the drift set was the parent's own edits. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
 - Smaller: the 800-line gate fired mid-slice forcing an unplanned split; two failed attempts at the specdown ephemeral config before discovering specdown resolves `entry` against the config file's directory; a widened drift-guard regex that over-matched skill-package gates on first try. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-25-v2-8-0-release-auto-retro.md`; sources: 117)
+- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-25-v2-9-0-release-auto-retro.md`; sources: 118)
 - spawn workflow/discovery agents as `bounded-reviewer` (or otherwise read-only) when the task is discovery. This session's sweep agents mutated a tracked adapter; the repo already has the type and the boundary-fingerprint helper for it. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
 - two hazards recorded in the goal artifact's Active Operating Frame and carried to the handoff — never restore a mutation target with `git checkout --` while the slice is uncommitted, and run `reviewer_boundary_fingerprint.py verify` immediately on reviewer return, before applying any of its fixes. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
 - write the violation before writing the guard. Every new gate, validator, or source-guard test gets its failing case demonstrated first, not as a later verification step. Adopted reactively this session; make it the opening move. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
@@ -145,3 +145,4 @@
 - `charness-artifacts/retro/2026-07-25-v2-6-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-25-v2-7-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-25-v2-8-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-25-v2-9-0-release-auto-retro.md`
