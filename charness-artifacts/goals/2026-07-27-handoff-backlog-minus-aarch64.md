@@ -9,19 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 4 of 6 — cut the standing pytest gate's subprocess-startup cost.
-  Slices 1-3 are committed at `ab56e15f`, `ba3b7091`, `75dd5357`.
-- Current slice intent: reduce process spawns in the standing suite. Recorded
-  baseline: ~25s wall at 16 workers, ~263s in-test CPU, 6959 spawns/run (4880
-  `git`, ~1840 `python`) at a ~31ms interpreter floor each. Two named levers:
-  per-test git seeding and in-process `run_script` conversion via
-  `tests/script_main.py` (`run_loaded_script_main` at :29 is the working runner).
-  NOT fixture caching, and NOT the deferrals already pinned by
-  `tests/quality_gates/test_hot_path_import_weight.py`.
-- Next action: RE-MEASURE before optimizing. The handoff's "~390 per-test git
-  seedings at ~24.5ms" figure is unverified — slice 2's reviewer explicitly declined
-  to confirm it read-only. Spawn count is the primary acceptance metric because
-  wall-clock at 16 workers is noise-dominated.
+- Current slice: 6 of 6 — push, let CI run the mutation gate, close #457 on green
+  (#458 auto-closes via its `Resolves` keyword). Slices 1-5 plus the added #458
+  work are committed: `ab56e15f`, `ba3b7091`, `75dd5357`, `12bb4ab6`, `de389fae`,
+  `63eda235`.
+- Current slice intent: the only proof that closes #457. Its blocking signal is
+  computed by the CI mutation workflow against the pushed diff, so no local check
+  substitutes. Push, watch the run, and close #457 only on green.
+- Next action: push to origin, then poll the mutation workflow. If it stays red,
+  #457 stays open and the residual is reported — not narrated as fixed.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost and fresh-eye proof at slice boundaries; broad pytest plus the live
   CI mutation run at closeout.
@@ -231,8 +227,8 @@ Then push, let CI run the mutation gate, and close #457 and #458 on a green run.
 | 1 | Wire handoff/ideation/retro validators into the already-shipped one-pass path and scaffold hint, default-on, plus an artifact-path argument | Operator-directed first; every later slice in this run is authored by a session that inherits the improved validator behavior | Triple-violating draft yields one message with three violations plus the scaffold command, run against a temp root; regression test pins the one-pass contract | done (`ab56e15f`) |
 | 2 | Give lessons a concept identity: recurrence-class tag on retro bullets, re-derived alpha and half-life, back-test over the live corpus | The count is useless while the weighting cannot act on it; both halves ship together or neither binds | Back-test over the live corpus pinned to the re-derived constants; multiplier distribution moves off 1.0; `build_retro_lesson_selection_index.py --check` regenerated and green | done (`ba3b7091`); multiplier distribution unchanged until retros carry tags — recorded as an honest limit |
 | 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | done (`75dd5357`) — 36 tests; all 6 mutants hand-verified killed; local coverage PROVISIONAL until slice 6's CI run |
-| 4 | Cut pytest subprocess-startup cost via the two measured levers | Lands after the red is cleared so the before/after delta is attributable to the lever, not a pre-existing failure | Before/after wall-clock and spawn counts at the same worker count; suite still green | pending |
-| 5 | Rebaseline the nose scanner with `--write-baseline --confirm-baseline-delta` | Last, because slices 1-4 change files the dup scanner reads; baselining earlier invites a second rewrite | Dup gate runs clean with no version-skew warning; delta reviewed as reductions plus skew only | pending |
+| 4 | Cut pytest subprocess-startup cost via the two measured levers | Lands after the red is cleared so the before/after delta is attributable to the lever, not a pre-existing failure | done (`12bb4ab6`) — 12527 -> 11756 spawns measured; wall-clock NOT claimed (ranges overlap); fixture proven load-bearing |
+| 5 | Rebaseline the nose scanner with `--write-baseline --confirm-baseline-delta` | Last, because slices 1-4 change files the dup scanner reads; baselining earlier invites a second rewrite | done (`de389fae`) — gate reports OK with zero advisories; baseline restamped to nose 0.20.0 |
 | 6 | Push, run CI mutation, close #457 and #458 on green | The only proof that closes the issue; bundle boundary | Green workflow run linked on the closing commit and both issues | pending |
 
 **Per-slice proof cost and test-duplication pressure.** Slices 1-3 add tests and
@@ -368,6 +364,20 @@ aarch64 profile is dropped by explicit operator decision, not by agent judgment.
 - Alternatives rejected:
 - Targeted verification: Measured 12527 -> 11756 spawns (git config 764 -> 116) with a sitecustomize Popen probe covering every xdist worker; 5651 tests pass; fixture proven load-bearing (10 failures with identity removed, isolation on); run_slice_closeout completed; 8 pre-commit gates pass at 12bb4ab6. Wall clock NOT claimed - 109/112s after vs 121/107s before, ranges overlap.
 - Test duplication pressure: No new tests; 170 lines of redundant git config spawns removed across 38 files via an AST pass; dup ratchet clean
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 5: Resolve #458: bind the spawn-shape rule for every spawn
+
+- Objective: Move the name-spawn rule from the review-scoped reference onto the always-loaded contract for EVERY spawn, and propagate it to managed repos so the filer's repo actually inherits it
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 5655 tests pass; 4 new pinning tests in test_reviewer_result_delivery.py; run_slice_closeout completed; 23 pre-commit gates plus the issue-closeout commit-msg carrier gate pass at 63eda235; critique artifact validated and bound
+- Test duplication pressure: 4 new tests; 3 existing setup-inspect fixtures updated for the new required snippet; dup ratchet clean
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:
