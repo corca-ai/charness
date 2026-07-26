@@ -181,11 +181,12 @@ runtime_budget_profiles:
       # xdist's pre-assigned initial batch, and `pytest` — which IS essentially this
       # aggregate's wall — went 52.1s -> 35.4s contended. 76500 was 1.9x the new
       # median, at the "cannot trip a 2x regression" line this block exists to hold.
-      # 1.4x the 41623ms max of the post-change window (n=13 of 20, samples at or
-      # after 2026-07-26T06:16). Two of those 13 are `fail` runs (35994, 37750) and a
-      # failing aggregate EXITS EARLY, so its wall is truncated, not measured — the
-      # caveat this file states for the 4cpu profile applies here too. The derivation
-      # is unaffected: the max it is drawn from is a passing run.
+      # 1.4x the 41623ms max of the window, which was run to 20/20 post-change before
+      # this number was set (see the ENFORCEMENT NOTE under `pytest`), so no pre-flag
+      # sample remains in the basis. Median 37531, i.e. the bar is 1.41x worst and
+      # 1.56x median. Two early samples in the turnover were `fail` runs and a failing
+      # aggregate EXITS EARLY — a truncated wall, not a measurement — but the max this
+      # is drawn from is a passing run and those samples have since aged out.
       run-quality-read-only: 58500
       # 2026-07-25 retune. A runtime budget only ever moved one way here: a
       # violation forced a raise and nothing reported when the raise stopped being
@@ -207,8 +208,10 @@ runtime_budget_profiles:
       # `choose_sched_chunk` in scripts/run_standing_pytest.py) took this gate from
       # 52.1s to 35.4s contended, which put 73000 at 2.04x the new median — the same
       # ratio the affinity-holes critique failed a bar for. 1.4x the 41702ms max of
-      # the window, which is now 20/20 post-change (all at or after
-      # 2026-07-26T06:16, all passing, median 35732).
+      # the window at the time it was set; the window is 20/20 post-change and has
+      # since settled to max 38030 / median 34176, leaving the bar at 1.54x worst and
+      # 1.71x median — headroom this label deliberately keeps, because it is the one
+      # that survives a suppressed flag (the ~52s pre-flag regime stays under it).
       #
       # ENFORCEMENT NOTE, and the reason the window was deliberately turned over
       # before this number was set: `runtime_budget_lib._checked_entry` compares the
@@ -254,11 +257,18 @@ runtime_budget_profiles:
       # trip 2x (median 67172).
       #
       # 2026-07-26 (b): resized with its read-only sibling for the `--maxschedchunk 1`
-      # regime. 100000 was 2.55x the new median. 1.4x the 44183ms max of the
-      # post-change window (n=13 of 20, all at or after 2026-07-26T06:16, all
-      # passing, median 38260); 2x that median is 76520, so this stays able to fail.
-      # The 44183 max is a genuine contended observation from consecutive gate runs,
-      # not an outlier to discount — which is why this bar is the loosest of the three.
+      # regime. 100000 was 2.6x the new median. 1.4x the 44183ms max of the window,
+      # run to 20/20 post-change before this number was set; median 38208, so the bar
+      # is 1.40x worst and 1.62x median. The 44183 max is a genuine contended
+      # observation from consecutive gate runs, not an outlier to discount — which is
+      # why this bar is the loosest of the three.
+      #
+      # This label is the one most exposed to a SUPPRESSED flag: 62000 sits below the
+      # 67172ms pre-flag median recorded above, so if `--maxschedchunk 1` stops being
+      # applied this bar reds with nothing regressed. Two of the three suppression
+      # paths are involuntary (xdist < 3.2, an unrelated PYTEST_ADDOPTS tuning), so
+      # `choose_sched_chunk` returns a reason and the runner prints it to stderr
+      # rather than leaving that red pointing nowhere.
       run-quality-full: 62000
       # `pytest` now records standing-mode runs only (release-only pytest moved to
       # its own `pytest-release` label). This 90000 was sized from the CONFLATED

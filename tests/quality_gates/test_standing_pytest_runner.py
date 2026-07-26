@@ -204,30 +204,40 @@ def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
 
 
 def test_standing_pytest_sched_chunk_defaults_to_one_and_honors_overrides(monkeypatch) -> None:
-    """`--dist load` pre-assigns len(tests)//4 round-robin before any timing feedback.
+    """`--dist load` pre-assigns each worker a CONSECUTIVE chunk before any timing.
 
     Pinned as literals, not as a restatement of `choose_sched_chunk`'s own expression:
     "1" is what an operator's command line actually carries, and the suppression
     branches are the ones that keep an unknown flag from aborting the run.
+
+    Every suppression case also pins the REASON string, because a suppressed flag puts
+    the suite back on the slow path where this repo's runtime bars go red having
+    regressed nothing -- the reason is the only thing that makes that red diagnosable.
     """
     from scripts import run_standing_pytest as runner
 
     monkeypatch.setattr(runner, "xdist_version", lambda: (3, 8, 0))
 
-    assert runner.choose_sched_chunk({}) == "1"
-    assert runner.choose_sched_chunk({"CHARNESS_PYTEST_SCHED_CHUNK": "4"}) == "4"
-    assert runner.choose_sched_chunk({"CHARNESS_PYTEST_SCHED_CHUNK": "off"}) is None
+    assert runner.choose_sched_chunk({}) == ("1", None)
+    assert runner.choose_sched_chunk({"CHARNESS_PYTEST_SCHED_CHUNK": "4"}) == ("4", None)
+    assert runner.choose_sched_chunk({"CHARNESS_PYTEST_SCHED_CHUNK": "off"}) == (
+        None,
+        "CHARNESS_PYTEST_SCHED_CHUNK=off",
+    )
     # An operator who already tuned it wins; ours would land later and silently beat it.
-    assert runner.choose_sched_chunk({"PYTEST_ADDOPTS": "--maxschedchunk=10"}) is None
+    assert runner.choose_sched_chunk({"PYTEST_ADDOPTS": "--maxschedchunk=10"}) == (
+        None,
+        "PYTEST_ADDOPTS already sets --maxschedchunk",
+    )
     # The deference must DISCRIMINATE, not just fire. Without this line, widening the
     # check to `if env.get("PYTEST_ADDOPTS")` still passes -- and PYTEST_ADDOPTS is
     # routinely set for unrelated reasons (CI reporters, `-p no:cacheprovider`), so
     # that mutant would silently revert this optimization on exactly those hosts.
-    assert runner.choose_sched_chunk({"PYTEST_ADDOPTS": "-p no:cacheprovider"}) == "1"
+    assert runner.choose_sched_chunk({"PYTEST_ADDOPTS": "-p no:cacheprovider"}) == ("1", None)
     # Explicit override beats the addopts deference; the two are checked in that order.
     assert runner.choose_sched_chunk(
         {"CHARNESS_PYTEST_SCHED_CHUNK": "2", "PYTEST_ADDOPTS": "--maxschedchunk=10"}
-    ) == "2"
+    ) == ("2", None)
 
     for bad, expected in (("0", "must be >= 1"), ("some", "positive integer")):
         try:
@@ -252,14 +262,58 @@ def test_standing_pytest_sched_chunk_suppressed_below_xdist_floor(monkeypatch) -
     from scripts import run_standing_pytest as runner
 
     monkeypatch.setattr(runner, "xdist_version", lambda: (3, 1, 0))
-    assert runner.choose_sched_chunk({}) is None
+    assert runner.choose_sched_chunk({}) == (None, "pytest-xdist 3.1.0 is below 3.2")
 
     # Unknown version reads as "cannot tell", which must suppress rather than assume.
     monkeypatch.setattr(runner, "xdist_version", lambda: ())
-    assert runner.choose_sched_chunk({}) is None
+    assert runner.choose_sched_chunk({}) == (None, "pytest-xdist unknown is below 3.2")
 
     monkeypatch.setattr(runner, "xdist_version", lambda: (3, 2))
-    assert runner.choose_sched_chunk({}) == "1"
+    assert runner.choose_sched_chunk({}) == ("1", None)
+
+
+def test_standing_pytest_warns_on_stderr_when_scheduling_is_suppressed(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """A suppressed flag is not a neutral fallback -- it reds runtime bars.
+
+    `run-quality-full`'s bar is sized for the scheduled regime and sits BELOW this
+    repo's own recorded pre-flag basis, so an involuntary suppression (old xdist, an
+    unrelated PYTEST_ADDOPTS tuning) surfaces to the operator as "exceeded its budget"
+    with nothing regressed. Without this warning there is no pointer from that red back
+    to its cause, which is why the `has_xdist` branch already prints the analogue.
+    """
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
+    monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(36)))
+    monkeypatch.setattr(runner, "xdist_version", lambda: (3, 1, 0))
+
+    command = runner.build_pytest_command(
+        tmp_path,
+        basetemp=tmp_path / "base",
+        include_release_only=False,
+        pytest_targets=["tests/focused.py"],
+        env={},
+    )
+
+    assert "--maxschedchunk" not in command
+    stderr = capsys.readouterr().err
+    assert "pytest-xdist 3.1.0 is below 3.2" in stderr
+    assert "runtime budgets" in stderr
+
+    # The applied path must stay quiet; a warning on every normal run is noise that
+    # trains the operator to ignore the one run where it matters.
+    monkeypatch.setattr(runner, "xdist_version", lambda: (3, 8, 0))
+    runner.build_pytest_command(
+        tmp_path,
+        basetemp=tmp_path / "base",
+        include_release_only=False,
+        pytest_targets=["tests/focused.py"],
+        env={},
+    )
+    assert capsys.readouterr().err == ""
 
 
 def test_standing_pytest_xdist_version_parses_without_packaging_shadow(monkeypatch) -> None:

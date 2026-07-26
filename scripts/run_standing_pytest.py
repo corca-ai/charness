@@ -199,8 +199,17 @@ def xdist_version() -> tuple[int, ...]:
     return tuple(parts)
 
 
-def choose_sched_chunk(env: dict[str, str] | None = None) -> str | None:
-    """Per-test scheduling granularity for `--dist load`, or None to leave it default.
+def choose_sched_chunk(env: dict[str, str] | None = None) -> tuple[str | None, str | None]:
+    """`(chunk, suppression_reason)` for `--dist load`; chunk None means leave default.
+
+    Returns the REASON alongside the value because suppression is not a neutral
+    fallback here: this repo's `pytest` and `run-quality-*` runtime bars are sized for
+    the scheduled-on-demand regime, and a suppressed flag puts the gate back on the
+    ~52s path where those bars go red having regressed nothing. Three of the four
+    suppression paths are involuntary (old xdist, an unrelated `PYTEST_ADDOPTS`
+    tuning), so without a reason the operator sees only "run-quality-full exceeded its
+    budget" with no pointer to the cause. `build_pytest_command` prints it, mirroring
+    the stderr warning the `has_xdist` branch already prints for the same reason.
 
     `--dist load` does NOT hand tests out one at a time. `LoadScheduling.schedule`
     first gives every worker a CONSECUTIVE chunk of `len(collection) // nworkers // 4`
@@ -241,7 +250,7 @@ def choose_sched_chunk(env: dict[str, str] | None = None) -> str | None:
     override = env.get("CHARNESS_PYTEST_SCHED_CHUNK", "").strip()
     if override:
         if override == "off":
-            return None
+            return None, "CHARNESS_PYTEST_SCHED_CHUNK=off"
         try:
             chunk = int(override)
         except ValueError as exc:
@@ -250,7 +259,7 @@ def choose_sched_chunk(env: dict[str, str] | None = None) -> str | None:
             ) from exc
         if chunk < 1:
             raise SystemExit("standing-pytest: CHARNESS_PYTEST_SCHED_CHUNK must be >= 1")
-        return str(chunk)
+        return str(chunk), None
     # An operator who already tuned this in PYTEST_ADDOPTS wins: our command-line flag
     # would silently beat theirs, because pytest PREPENDS both PYTEST_ADDOPTS and ini
     # `addopts` to argv, so the later (ours) wins argparse's last-one-wins. Scoped to
@@ -258,10 +267,12 @@ def choose_sched_chunk(env: dict[str, str] | None = None) -> str | None:
     # a real gap for a downstream repo using this runner, and no gap for this one --
     # `pyproject.toml` sets no `addopts`.
     if "--maxschedchunk" in env.get("PYTEST_ADDOPTS", ""):
-        return None
-    if xdist_version() < MIN_XDIST_FOR_SCHED_CHUNK:
-        return None
-    return "1"
+        return None, "PYTEST_ADDOPTS already sets --maxschedchunk"
+    installed = xdist_version()
+    if installed < MIN_XDIST_FOR_SCHED_CHUNK:
+        shown = ".".join(str(part) for part in installed) if installed else "unknown"
+        return None, f"pytest-xdist {shown} is below {'.'.join(str(p) for p in MIN_XDIST_FOR_SCHED_CHUNK)}"
+    return "1", None
 
 
 def expand_targets(repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_TARGETS) -> list[str]:
@@ -301,9 +312,16 @@ def build_pytest_command(
     command.extend(["--basetemp", str(basetemp)])
     if has_xdist(command[:3], env):
         command.extend(["-n", choose_xdist_workers(env)])
-        sched_chunk = choose_sched_chunk(env)
+        sched_chunk, suppression_reason = choose_sched_chunk(env)
         if sched_chunk is not None:
             command.extend(["--maxschedchunk", sched_chunk])
+        else:
+            print(
+                f"standing-pytest: per-test scheduling is off ({suppression_reason}); xdist will "
+                "pre-assign contiguous test blocks and the suite will run substantially slower, "
+                "which can exceed runtime budgets sized for the scheduled regime",
+                file=sys.stderr,
+            )
     else:
         print(
             "standing-pytest: pytest-xdist is not active; pytest will run serially "
