@@ -19,6 +19,12 @@ git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 run_changed_artifact_validator = _scripts_artifact_validator_module.run_changed_artifact_validator
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
+# Colon-anchored so prose discussing the concept is not mistaken for a tag; the
+# capture is deliberately permissive (anything up to whitespace/punctuation) because
+# this scanner must SEE the malformed slugs that the strict parser rejects.
+_RECURRENCE_CLASS_TAG = re.compile(r"(?i)\brecurrence-class[ \t]*:[ \t]*(?P<value>[^\s)\]]*)")
+# The shape the index's parser accepts, anchored as a FULL match by the caller.
+_STRICT_SLUG = re.compile(r"(?i)[a-z0-9][a-z0-9-]*")
 file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Shared single source of the disposition-form grammar (#329); imported same-root
@@ -194,6 +200,40 @@ def validate_recurrence_lineage(lines: list[str], observed_date: date | None) ->
     )
 
 
+def validate_recurrence_class_slugs(lines: list[str]) -> None:
+    """Fail a `recurrence-class:` tag whose slug the index cannot parse.
+
+    The tag is the machine identity that lets a re-worded lesson keep its recurrence
+    count, so a typo must be loud rather than silent: an unparseable slug simply does
+    not match `RECURRENCE_CLASS_RE`, and the lesson would fall back to surface-text
+    grouping -- the exact defect the tag exists to remove, but now invisible because
+    the author believes they tagged it.
+
+    Anchored on the token FOLLOWED BY A COLON, so prose that merely discusses
+    "a recurrence-class that has bitten K times" is not a tag and is not scanned.
+    Slug shape only; whether two bullets really share a concept stays the author's
+    and reviewer's judgment.
+    """
+    offenders: list[str] = []
+    for raw in lines:
+        for match in _RECURRENCE_CLASS_TAG.finditer(raw):
+            # Full-match the whole authored value, not just "does the parser find
+            # something". `recurrence-class: Bad_Slug!` parses to the class `bad`
+            # because the strict pattern happily matches a PREFIX -- so a typo would
+            # silently create a wrong class instead of failing, which is worse than
+            # no tag at all.
+            if not _STRICT_SLUG.fullmatch(match.group("value")):
+                offenders.append(match.group(0).strip())
+    if not offenders:
+        return
+    joined = "; ".join(f"`{offender}`" for offender in offenders)
+    raise ValidationError(
+        f"{len(offenders)} malformed `recurrence-class:` tag(s) (offenders: {joined}); the slug must "
+        "be lowercase alphanumeric with internal hyphens (e.g. `recurrence-class: derived-surface-batching`) "
+        "or the lesson-selection index silently falls back to surface-text grouping and the tag buys nothing"
+    )
+
+
 def validate_persisted_form(lines: list[str], observed_date: date | None) -> None:
     """Fail future retros whose persisted status is not machine-readable.
 
@@ -237,6 +277,7 @@ def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
         lambda: validate_disposition_forms(lines, observed_date),
         lambda: validate_recurrence_lineage(lines, observed_date),
         lambda: validate_persisted_form(lines, observed_date),
+        lambda: validate_recurrence_class_slugs(lines),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a
     # multi-rule retro draft is fixed in one edit instead of one rule per gate

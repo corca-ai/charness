@@ -12,9 +12,30 @@ from typing import Any
 DATE_IN_NAME = re.compile(r"(\d{4}-\d{2}-\d{2})")
 DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 LESSON_INDEX_FILENAME = "lesson-selection-index.json"
-LESSON_SELECTION_ALPHA_BASE = 0.35
+# Re-derived 2026-07-27 against the live corpus, from the measured failure that a
+# concept holding 7+ rows across 6 dates (2026-05-30 .. 07-26, a 57-day span) never
+# won a digest slot. The old pair (alpha 0.35, half-life 14) could not express
+# recurrence at all: at 14 days a 50-day-old observation carries weight 0.084, so a
+# correctly-counted 5x class scored 0.20 against 1.00 for any same-day one-off --
+# recurrence lost 5:1 no matter how many times it bit.
+#
+# Chosen so a class recurring 5x over 50 days OUTRANKS a 0-day one-off (1.574 vs
+# 1.000, a 57% margin rather than the 11% that alpha 0.35 would have left; a thin
+# margin silently flips as the corpus moves). The half-life is set to cover the
+# observed 57-day recurrence span instead of expiring inside it. Recency still
+# decays: the same 5x class falls to 0.21 by 180 days, so a concept that stopped
+# recurring drops out rather than holding a slot forever.
+#
+# The invariant is stated at n=5, which is exactly WARMUP_N -- where alpha saturates,
+# so it is the cheapest point at which the invariant can hold. The sub-warmup ladder
+# was checked and is deliberately weaker, because twice-seen is not yet evidence of a
+# recurring class: at 30 days n=2 scores 0.78 and still loses to a fresh one-off,
+# while n=3 reaches 1.08 and just wins. Recurrence earns a slot over roughly three
+# independent observations, not two.
+# `tests/test_recent_lessons_recurrence.py` pins both ends against these constants.
+LESSON_SELECTION_ALPHA_BASE = 0.6
 LESSON_SELECTION_WARMUP_N = 5
-LESSON_SELECTION_HALF_LIFE_DAYS = 14
+LESSON_SELECTION_HALF_LIFE_DAYS = 45
 LESSON_DIGEST_SLOTS = {
     "current_focus": 2,
     "repeat_trap": 4,
@@ -131,6 +152,34 @@ def _parse_date(value: str | None) -> date | None:
         return None
 
 
+# Concept identity for a lesson, authored explicitly. `_normalize_lesson_key` keys on
+# the first 14 words of the bullet's SURFACE TEXT, so re-wording a lesson resets its
+# recurrence count to 1 -- measured, 1594 of 1596 candidates sat at
+# `independent_source_count == 1` while one concept held 7+ rows across 6 dates and
+# never won a digest slot. A tag is the only identity a re-wording cannot break,
+# because a content classifier would rot exactly like the surface text it replaces.
+RECURRENCE_CLASS_RE = re.compile(r"(?i)\brecurrence-class[ \t]*:[ \t]*([a-z0-9][a-z0-9-]*)")
+_RECURRENCE_CLASS_STRIP_RE = re.compile(
+    r"(?i)[\s(\[]*\brecurrence-class[ \t]*:[ \t]*[a-z0-9][a-z0-9-]*[)\]]*"
+)
+
+
+def recurrence_class(text: str) -> str | None:
+    """The authored `recurrence-class: <slug>` of a lesson bullet, else None.
+
+    Presence and slug shape only. Whether two bullets REALLY share a concept stays
+    the author's and reviewer's judgment, never this function's -- the repo's
+    deterministic-floor rule keeps content classification out of gates.
+    """
+    match = RECURRENCE_CLASS_RE.search(text)
+    return match.group(1).lower() if match else None
+
+
+def strip_recurrence_class(text: str) -> str:
+    """The lesson text without its class marker, for display in the digest."""
+    return _RECURRENCE_CLASS_STRIP_RE.sub("", text).strip(" \t-–—;,").strip()
+
+
 def _normalize_lesson_key(text: str) -> str:
     words = re.findall(r"[a-z0-9가-힣]+", text.lower())
     return " ".join(words[:14]) if words else text.strip().lower()
@@ -241,14 +290,25 @@ def _collect_lesson_candidates(repo_root: Path, parsed_artifacts: list[dict[str,
                 lesson = _clean_next_improvement(raw_item) if section_name == "Next Improvements" else raw_item
                 if not lesson:
                     continue
+                lesson_class = recurrence_class(lesson)
+                if lesson_class is not None:
+                    lesson = strip_recurrence_class(lesson)
+                if not lesson:
+                    continue
                 normalized_key = _normalize_lesson_key(lesson)
-                key = (kind, normalized_key)
+                # A tagged lesson groups on its CLASS across every section and date, so
+                # the same concept observed in `Waste` here and `Next Improvements`
+                # there is one recurring class rather than two one-offs. Untagged
+                # lessons keep the historical surface-text key, which is what leaves
+                # the 371 already-frozen retros scored exactly as before.
+                key = ("class", lesson_class) if lesson_class else (kind, normalized_key)
                 entry = candidates.setdefault(
                     key,
                     {
                         "kind": kind,
                         "lesson": lesson,
                         "normalized_key": normalized_key,
+                        "recurrence_class": lesson_class,
                         "sources": [],
                     },
                 )
@@ -258,12 +318,17 @@ def _collect_lesson_candidates(repo_root: Path, parsed_artifacts: list[dict[str,
                         "date": source_date_text,
                         "section": section_name,
                         "generator": artifact.get("generator"),
+                        # Per-source kind and wording, so a class spanning several
+                        # sections resolves its display from the NEWEST observation
+                        # rather than from whichever filename sorted first.
+                        "kind": kind,
+                        "lesson": lesson,
                     }
                 )
     return candidates
 
 
-def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_of: date | None) -> dict[str, Any]:
+def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_of: date | None) -> dict[str, Any]:  # noqa: PLR0914
     source_dates = [_parse_date(source.get("date")) for source in entry["sources"]]
     latest_date = max((value for value in source_dates if value is not None), default=None)
     latest_date_text = latest_date.isoformat() if latest_date else None
@@ -276,15 +341,39 @@ def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_o
     alpha = adaptive_lesson_alpha(independent_count)
     recurrence_multiplier = 1 + alpha * max(0, independent_count - 1)
     selection_weight = recency_weight * recurrence_multiplier
-    latest_source_path = max(
+    newest_source = max(
         entry["sources"],
         key=lambda source: (source.get("date") or "", source["artifact_path"]),
-    )["artifact_path"]
+    )
+    latest_source_path = newest_source["artifact_path"]
+    lesson_class = entry.get("recurrence_class")
+    if lesson_class:
+        # Resolve the class's section and wording from its NEWEST observation. Two
+        # reasons: artifact order is `sorted(glob(...))`, i.e. lexicographic by
+        # filename rather than chronological, so "first seen" was not even the
+        # earliest; and the digest cites `latest_source_path`, so showing the oldest
+        # wording attributed to the newest retro is a small lie. The section a class
+        # renders in follows its latest observation, which is the one the next
+        # session is acting on.
+        kind = newest_source["kind"]
+        lesson_text = newest_source["lesson"]
+        # Key the id on the CLASS, not on (kind, first-14-words): a tagged class
+        # whose first wording shares its opening words and kind with an untagged
+        # bullet elsewhere -- the expected authoring slip of forgetting the tag on
+        # one copy -- would otherwise emit two candidates with the same id.
+        candidate_id = _candidate_id("class", lesson_class)
+    else:
+        lesson_text = entry["lesson"]
+        candidate_id = _candidate_id(kind, normalized_key)
     return {
-        "candidate_id": _candidate_id(kind, normalized_key),
+        "candidate_id": candidate_id,
         "kind": kind,
-        "lesson": entry["lesson"],
+        "lesson": lesson_text,
         "normalized_key": normalized_key,
+        # None for the untagged historical corpus; a slug once an author declares the
+        # concept. Emitted so the index is auditable: a reader can see WHY two rows
+        # merged without re-deriving the grouping.
+        "recurrence_class": entry.get("recurrence_class"),
         "source_count": source_count,
         "independent_source_count": independent_count,
         # 1 when every source is a template emission, so ordering can prefer a human
@@ -302,7 +391,11 @@ def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_o
 
 def _ranked_candidate_entries(candidates: dict[tuple[str, str], dict[str, Any]], as_of: date | None) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
-    for (kind, normalized_key), entry in candidates.items():
+    for (key_head, key_tail), entry in candidates.items():
+        # For a class-keyed candidate the tuple head is the literal "class", not a
+        # lesson kind; the entry carries the real kind from its first observation.
+        kind = entry["kind"] if key_head == "class" else key_head
+        normalized_key = entry["normalized_key"] if key_head == "class" else key_tail
         entries.append(_candidate_entry(kind, normalized_key, entry, as_of))
     entries.sort(
         key=lambda entry: (

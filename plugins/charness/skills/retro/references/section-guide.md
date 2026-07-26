@@ -85,6 +85,41 @@ Every retro needs concrete future changes. Group them by type:
 This is where self-growing and self-healing live. Capability recommendations
 belong here because they are future improvements, not past decisions.
 
+## Recurrence Class
+
+A `Waste` or `Next Improvements` bullet may carry an explicit concept identity:
+
+```markdown
+- re-ran the sync helper after every edit (recurrence-class: derived-surface-batching)
+```
+
+Why it exists: the lesson-selection index groups candidates by the first 14 words
+of the bullet's surface text, so **re-wording a lesson silently resets its
+recurrence count to 1**. Measured on this repo's corpus, 1594 of 1596 candidates
+sat at one independent observation, making the recurrence multiplier exactly 1.0
+and digest selection pure recency — while one concept held 7+ rows across 6 dates
+and never won a slot. The tag is the only identity a re-wording cannot break.
+
+How to use it:
+
+- Reuse an existing slug when this is the same concept biting again, even if you
+  describe it in completely different words. That is the entire point; a fresh
+  slug for a re-observed trap is the defect, not the fix.
+- Coin a new lowercase-hyphenated slug only for a genuinely new concept.
+- The tag is stripped from the digest text, so write the bullet to read naturally
+  without it.
+- It groups across sections and dates: the same class seen as `Waste` in one retro
+  and a `Next Improvements` item in another is one recurring class, not two
+  one-offs.
+- A malformed slug is a gate failure, not a silent fallback — a prefix-matching
+  typo like `Bad_Slug!` would otherwise create the wrong class `bad`.
+
+The tag is presence-and-shape only. Whether two bullets really share a concept is
+the author's and reviewer's judgment; no gate classifies content.
+
+Untagged bullets keep the historical surface-text grouping, so this is additive —
+nothing already written changes meaning.
+
 ## No Hidden Snapshot
 
 Do not invent a hidden machine-readable snapshot format. The retro's durable

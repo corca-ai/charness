@@ -227,3 +227,40 @@ def test_retro_fail_fast_stops_at_the_first_failing_artifact(tmp_path: Path) -> 
     # Retro rule messages never embed the path, so an unlabeled re-raise would
     # report a violation with no file to open.
     assert "2026-06-25-first.md" in result.stderr
+
+
+def test_retro_rejects_a_malformed_recurrence_class_slug(tmp_path: Path) -> None:
+    """A typo'd tag must be loud, not silently truncated to a different class.
+
+    `recurrence-class: Bad_Slug!` parses to the class `bad` under a prefix match,
+    so an unvalidated typo would create a WRONG concept identity -- worse than an
+    untagged lesson, because the author believes the grouping is working.
+    """
+    repo = tmp_path / "repo"
+    _seed(
+        repo,
+        "# Session Retro: Demo\nDate: 2026-07-27\nMode: session\n\n"
+        "## Waste\n\n- something (recurrence-class: Bad_Slug!)\n\n"
+        "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-07-27-demo.md\n",
+        name="2026-07-27-demo.md",
+    )
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "malformed `recurrence-class:` tag(s)" in result.stderr
+    assert "Bad_Slug!" in result.stderr
+
+
+def test_retro_accepts_a_well_formed_recurrence_class_and_ignores_prose(tmp_path: Path) -> None:
+    """Prose ABOUT recurrence classes is not a tag; only `token:` is scanned."""
+    repo = tmp_path / "repo"
+    _seed(
+        repo,
+        "# Session Retro: Demo\nDate: 2026-07-27\nMode: session\n\n"
+        "## Waste\n\n"
+        "- a recurrence-class that has bitten K times must carry a mechanism\n"
+        "- batch the edits (recurrence-class: derived-surface-batching)\n\n"
+        "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-07-27-demo.md\n",
+        name="2026-07-27-demo.md",
+    )
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 0, result.stderr

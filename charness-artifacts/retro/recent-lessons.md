@@ -23,7 +23,7 @@
 
 - Source: `charness-artifacts/retro/lesson-selection-index.json`
 - Slots: current_focus=2, repeat_trap=4, next_improvement=4
-- Policy: advisory recency half-life 14 days plus recurrence boost with adaptive alpha.
+- Policy: advisory recency half-life 45 days plus recurrence boost with adaptive alpha.
 
 ## Sources
 

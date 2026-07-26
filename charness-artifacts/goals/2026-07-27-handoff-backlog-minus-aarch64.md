@@ -463,6 +463,20 @@ confirm it. Slice 4 must re-measure it before relying on it as a lever.
 
 ## Off-Goal Findings
 
+- **A recurrence-class slug registry would make slug abuse reviewable.** Slice 2's
+  fresh-eye reviewer noted the tag is structurally ungameable in both directions:
+  reusing a slug for a DIFFERENT concept inflates that class and hijacks a digest
+  slot, while coining a fresh slug every time silently buys nothing. Nothing
+  validates semantic sameness, deliberately — a content classifier would rot like
+  the surface text it replaced. The proposed cheap guard is an existence check, not
+  a classifier: declare each slug once with a one-line definition and have
+  `validate_recurrence_class_slugs` fail unregistered slugs, which turns
+  slug-churn into a visible diff and reuse into a reviewable change. Not built in
+  slice 2 because it adds an authoring surface that should be designed with the
+  operator rather than bolted on mid-slice. A cheaper partial: surface
+  `independent_source_count` on the digest line so a hijacked slot is visible where
+  it is spent.
+
 - **54 files hand-roll a `spec_from_file_location` sibling-module loader** across
   `skills/` and `scripts/`, while `skills/public/quality/scripts/` alone has 19
   scripts using the shared `SKILL_RUNTIME.load_local_skill_module` and
