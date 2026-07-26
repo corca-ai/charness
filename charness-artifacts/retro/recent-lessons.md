@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- One session under the standing operator direction (bug fixes, friction/rework, test/code speed) that closed the handoff's blocker 1 — two holes in the runtime-profile affinity switch — and published `v2.11.0`. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
 - Release publish triggered a configured automatic session retro for `v2.10.0`. (source: `charness-artifacts/retro/2026-07-26-v2-10-0-release-auto-retro.md`)
-- Release publish triggered a configured automatic session retro for `v2.11.0`. (source: `charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md`; sources: 120)
-- spawn workflow/discovery agents as `bounded-reviewer` (or otherwise read-only) when the task is discovery. This session's sweep agents mutated a tracked adapter; the repo already has the type and the boundary-fingerprint helper for it. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
-- two hazards recorded in the goal artifact's Active Operating Frame and carried to the handoff — never restore a mutation target with `git checkout --` while the slice is uncommitted, and run `reviewer_boundary_fingerprint.py verify` immediately on reviewer return, before applying any of its fixes. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
-- write the violation before writing the guard. Every new gate, validator, or source-guard test gets its failing case demonstrated first, not as a later verification step. Adopted reactively this session; make it the opening move. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
+- a counted limit (line caps, size budgets) is a planning input, not a retry loop. Read the reported deficit and make one edit. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
+- the standing direction's third clause — **test/code speed** — went unaddressed. Budget bars are regression *detection*, not speed; nothing this session made a gate or a test faster. Recorded as a handoff item so the gap is a tracked choice rather than a silent omission. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
+- when a comment cites a precedent's rule, recompute the rule against the new number in the same edit. The citation is the claim; the arithmetic is the evidence, and this session shipped the citation without the evidence. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
 
 ## Selection Policy
 
@@ -146,5 +146,6 @@
 - `charness-artifacts/retro/2026-07-25-v2-7-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-25-v2-8-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-25-v2-9-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-26-session-retro.md`
 - `charness-artifacts/retro/2026-07-26-v2-10-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md`

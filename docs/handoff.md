@@ -16,12 +16,10 @@ No open issues; every move below names an owning artifact.
 - Standing operator direction: bug fixes, friction/rework, test/code speed. Last
   release tagged `"v2.11.0"`; [release state](../charness-artifacts/release/latest.md)
   is current truth, not that string.
-- **A bar sized from another profile's samples cannot be honest.** A 2x-loose
-  aarch64 aggregate cited a precedent whose own rule it failed (2.07x median) and no
-  advisory would have caught it; the hole stays open, one command wide. Same slice:
-  "sizing lives in one place" was false when written — only the constant moved, so
-  the slack advisory proposed 10969 where `--suggest-budgets` said 11000.
-  [affinity-holes critique](../charness-artifacts/critique/2026-07-26-runtime-profile-affinity-holes.md)
+- **A bar sized from another profile's samples cannot be honest.** A 2x-loose aarch64
+  aggregate failed the very rule its cited precedent set (2.07x median) and no
+  advisory would have caught it. Same slice: "sizing lives in one place" was false
+  when written. [affinity-holes critique](../charness-artifacts/critique/2026-07-26-runtime-profile-affinity-holes.md)
 - **A gate's discriminator is its output, not its exit status** (`du`), and a runtime
   profile keys on affinity, not `os.cpu_count()` — measure under a CPU limit.
 - **A line-cap split is a seam decision, not a line count.** And a new exported flag
@@ -30,39 +28,41 @@ No open issues; every move below names an owning artifact.
 
 ## Next Session
 
-1. **`local-linux-aarch64-4cpu` has never been run.** Its bars are x86_64-derived
-   FLOORS with no aggregate (a 2x-loose one was drafted and reverted for failing its
-   own cited rule). On the first run there, `check_runtime_budget.py
-   --runtime-profile local-linux-aarch64-4cpu --suggest-budgets` replaces the block
-   from that machine's samples; do that instead of re-deriving from x86_64. Resolve
-   its `check-coverage: 60000` then too — the 4-core block refuses to invent it.
+1. **`local-linux-aarch64-4cpu` has never been run.** Bars are x86_64-derived FLOORS
+   with no aggregate (a 2x-loose one was drafted and reverted). On the first run
+   there, `check_runtime_budget.py --runtime-profile local-linux-aarch64-4cpu
+   --suggest-budgets` replaces the block; resolve its `check-coverage: 60000` too.
 2. **Two thin windows.** 4-core x86_64 is n=3 with a red run in it;
    `check-duplicates`/`dead-code-advisory` stay unbudgeted on 36-core (samples
    predate the barrier removal). Re-derive both when the windows fill.
-3. **The BSD/macOS `du` `illegal option` wording is unprobed** — BusyBox and GNU are
+3. **Test/code speed is the untouched third of the standing direction.** The lever is
+   named: `pytest` median 51.4s inside a 54.4s `run-quality-read-only`, so it IS the
+   wall and every other gate is free. Profile the suite before optimizing elsewhere.
+4. **The BSD/macOS `du` `illegal option` wording is unprobed** — BusyBox and GNU are
    measured against real binaries; that third wording is not.
-4. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned, not
+5. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned, not
    fixed: `REPO_ROOT.resolve() / "skills" / "public"` escapes the export-safety
    predicate ([decision point](../tests/quality_gates/test_export_safe_asset_paths.py)).
-5. Unowned (signed off): critique packet tier mismatch, specdown preset
-   duplication, `recommended_commands` in `plan_cautilus_proof.py`. Deferred: inline
+6. Unowned (signed off): critique packet tier mismatch, specdown preset duplication,
+   `recommended_commands` in `plan_cautilus_proof.py`. Deferred: inline
    `.rglob`/`ls-files` pathspec discovery, D18, D38, `CODE_LANGUAGE_FAMILIES`
    expansion, zero/near-zero test-surface advisory, stale basetemps, #451's two
-   unacted siblings. #453's sweep is closed with per-line coverage; its mutation
-   strength waits on a scheduled run.
+   unacted siblings. #453's sweep is closed; its mutation strength awaits a run.
 
 ## Discuss
 
-- Write the violation before writing the guard; reproduce a reviewer's finding
-  before fixing it. A gate blocking mid-slice is a design signal, not an obstacle.
+- Write the violation before the guard; reproduce a reviewer's finding before fixing
+  it. A gate blocking mid-slice is a design signal. Run an artifact's owning
+  `scaffold_*.py` before writing a line, and treat a counted limit as a planning
+  input, not a retry loop — read the reported deficit and make one edit.
 - A test restating production's own expression pins the plumbing and none of the
-  numbers; pin literals where an operator acts on the value. Scope a budget block by
-  observed cost on THAT profile — sibling parity skips what only this hardware finds
-  expensive, and an aggregate cannot backstop it when one gate is the critical path.
-- Check the payload shape before citing a green run: "not in blocking_targets" was
-  an ABSENCE OF ANALYSIS. Ask what the measurement measured.
-- Do not re-litigate the two refuted audit findings (removing the dup-ratchet hard
-  arm or the boundary-bypass ratchet). #448 items wait for the next slice.
+  numbers; pin literals where an operator acts. Scope a budget block by observed cost
+  on THAT profile — an aggregate cannot backstop it when one gate is the wall.
+- When a comment cites a precedent's rule, recompute that rule against the new
+  number in the same edit; the citation is the claim, the arithmetic is the evidence.
+  "Not in blocking_targets" was an ABSENCE OF ANALYSIS, not a verdict.
+- Do not re-litigate the two refuted audit findings (dup-ratchet hard arm,
+  boundary-bypass ratchet). #448 items wait for the next slice.
 
 ## References
 
