@@ -23,8 +23,9 @@ No open issues; every move below names an owning artifact.
 - **`os.cpu_count()` was the wrong question in three places** — profile id, xdist
   worker width, eval jobs — and a gate's discriminator is its output, not its exit
   status (`du`).
-- **A line-cap split is a seam decision, not a line count**, and a new exported flag
-  plus module sets a MINOR bump — three releases running. [release critique](../charness-artifacts/critique/2026-07-26-v2-10-0-release-critique.md)
+- **A line-cap split is a seam decision, not a line count.** A new public MODULE plus a
+  new CLI FLAG on an exported gate script sets MINOR — but that precedent does not
+  reach an env var on a repo-root dev runner, which is PATCH. [bump-precedent critique](../charness-artifacts/critique/2026-07-26-v2-11-1-release-critique.md)
 
 ## Next Session
 
@@ -34,10 +35,11 @@ No open issues; every move below names an owning artifact.
    --suggest-budgets` replaces the block; resolve `check-coverage: 60000` too. Two
    thin windows also owe a re-derive: 4-core x86_64 is n=3 with a red run in it, and
    `check-duplicates`/`dead-code-advisory` predate the 36-core barrier removal.
-2. **Speed: worker width is fixed, the suite itself is not.** xdist no longer
-   oversubscribes under a CPU limit (94.2s -> 64.1s on 4 cores), but unrestricted
-   `pytest` is still 51.4s of a 54.4s run and the width was already right there.
-   Profile the suite; every other gate combined is ~3s.
+2. **Speed: the scheduler was the bottleneck, and the suite still is.** Profiling
+   found xdist pre-assigning contiguous blocks; `--maxschedchunk 1` took the standing
+   gate 45.5s -> 26.9s. What remains is the suite: `pytest` is ~35s of a ~38s
+   `run-quality` run, and the longest single chains (`tests/charness_cli/` lifecycle
+   tests) now set the floor. Next: seed-cache-back `seeded_quality_runner_repo`.
 3. **The generated-retro signature keys on the emitted title.** Reword it and lesson
    scoring silently counts every emission as an independent recurrence again; an
    invariant test over `*-release-auto-retro.md` would catch that.
@@ -59,8 +61,6 @@ No open issues; every move below names an owning artifact.
   same edit: the citation is the claim, the arithmetic is the evidence. Likewise a
   test restating production's own expression pins the plumbing and none of the
   numbers — pin literals where an operator acts.
-- Fix the cause: a symptom fix that rewrites a whole corpus means you have not found
-  it. Drafted one this session; the real cause was one sort key.
 - Do not re-litigate the two refuted audit findings (dup-ratchet hard arm,
   boundary-bypass ratchet). #448 items wait for the next slice.
 
