@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
-- Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance. (source: `charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md`; sources: 120)
 - a counted limit (line caps, size budgets) is a planning input, not a retry loop. Read the reported deficit and make one edit. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
 - the standing direction's third clause — **test/code speed** — went unaddressed. Budget bars are regression *detection*, not speed; nothing this session made a gate or a test faster. Recorded as a handoff item so the gap is a tracked choice rather than a silent omission. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
 - when a comment cites a precedent's rule, recompute the rule against the new number in the same edit. The citation is the claim; the arithmetic is the evidence, and this session shipped the citation without the evidence. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
+- when an artifact has an owning `scaffold_*.py`, run it before writing a line. Two artifacts this session, hand-authored: 3 validator rounds. One scaffolded: 0. The validator prints the scaffold command in its first failure. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
 
 ## Selection Policy
 

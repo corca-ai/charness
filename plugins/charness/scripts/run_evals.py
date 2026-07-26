@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -15,6 +14,10 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
+# Process width has one owner in this repo: the standing pytest runner, which decides
+# xdist worker count from affinity. Consumed here rather than re-derived so a third
+# copy of the affinity question cannot drift from the other two.
+usable_cpu_count = import_repo_module(__file__, "scripts.run_standing_pytest").usable_cpu_count
 _scripts_subprocess_guard_module = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _scripts_subprocess_guard_module.run_process
 _scripts_eval_setup_module = import_repo_module(__file__, "scripts.eval_setup")
@@ -311,7 +314,10 @@ def main() -> int:
     if not selected or any(scenario.scenario_id not in NO_FIXTURE_SCENARIOS for scenario in selected):
         ensure_fixtures_present(root)
 
-    run_selected_scenarios(root, selected, args.jobs or min(4, len(selected), os.cpu_count() or 1))
+    # Affinity, not the box's total: under `taskset`/a cpuset this otherwise picks 4
+    # jobs for 1 usable CPU. Capped at 4 either way, so the blast radius is far
+    # smaller than the pytest runner's 16 -- but it is the same wrong question.
+    run_selected_scenarios(root, selected, args.jobs or min(4, len(selected), usable_cpu_count()))
     print(f"Ran {len(selected)} eval scenario(s).")
     return 0
 

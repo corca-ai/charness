@@ -22,6 +22,27 @@ STANDING_PYTEST_TARGETS = (
 DEFAULT_XDIST_WORKER_CAP = 16
 
 
+def usable_cpu_count() -> int:
+    """CPUs this process may actually run on. The repo's owner for PROCESS WIDTH.
+
+    Deliberately not routed through the quality skill's `runtime_profile_lib`, which
+    owns the same stdlib read for a different question. That one is a writer/reader
+    CONTRACT -- the recorder stamps a profile id the budget gate looks budgets up
+    under, so two derivations there mean two machines. Worker width is a local
+    performance choice with no cross-process consumer, and importing a skill module
+    for it proved actively worse: this runner is re-entered as a bare child process
+    (coverage-instrumented, sys.path[0] elsewhere), where the import raised
+    `ModuleNotFoundError` and took the whole gate down over a tuning number.
+
+    Same `OSError` handling as that lib, for the same reason: affinity can be refused
+    by a seccomp/LSM policy, and worker width must never be why the suite cannot start.
+    """
+    try:
+        return len(os.sched_getaffinity(0)) or 1
+    except (AttributeError, OSError):
+        return os.cpu_count() or 1
+
+
 def repo_tmp_key(repo_root: Path) -> str:
     return hashlib.sha256(str(repo_root).encode()).hexdigest()[:12]
 
@@ -119,7 +140,17 @@ def choose_xdist_workers(env: dict[str, str] | None = None) -> str:
             raise SystemExit("standing-pytest: CHARNESS_PYTEST_WORKERS must be >= 1")
         return str(workers)
 
-    cpu_count = os.cpu_count() or DEFAULT_XDIST_WORKER_CAP
+    # Affinity, not the box's total. `os.cpu_count()` answers "how many CPUs does
+    # this machine have", never "how many may this process use", so a run under
+    # `taskset`, a cpuset, or a container CPU limit spawned 16 workers onto 4 usable
+    # CPUs. Measured on this suite: 94.2s at 16 workers vs 64.1s at 4 on the same 4
+    # cores -- oversubscription cost 32% of wall and ~76s of CPU. See
+    # `usable_cpu_count` above for why this repo keeps a second affinity reader.
+    #
+    # No `or CAP` fallback: `usable_cpu_count` cannot return falsy, and a fallback to
+    # the CAP would mean "we could not tell, so assume the maximum" -- reinstating the
+    # exact oversubscription this fix removed, from the branch meant to be safe.
+    cpu_count = usable_cpu_count()
     return str(min(cpu_count, DEFAULT_XDIST_WORKER_CAP))
 
 

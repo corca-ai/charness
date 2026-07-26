@@ -117,3 +117,52 @@ def test_publish_release_retro_trigger_includes_helper_generated_release_paths(t
     artifact_text = artifact_path.read_text(encoding="utf-8")
     assert "Release publish triggered a configured automatic session retro" in artifact_text
     assert f"Persisted: yes: {retro_payload['closeout']['artifact_path']}" in artifact_text
+
+
+def _trigger_markdown() -> str:
+    import importlib.util
+    from pathlib import Path as _Path
+
+    from .support import ROOT
+
+    path = ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_retro.py"
+    spec = importlib.util.spec_from_file_location("publish_release_retro_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert isinstance(_Path(str(path)), _Path)
+    return module._retro_trigger_markdown(
+        tag_name="v9.9.9",
+        payload={"triggered": True, "surface_hits": ["checked-in-plugin-export"], "path_hits": [], "changed_paths": ["a", "b"]},
+        artifact_path="charness-artifacts/retro/2026-01-01-v9-9-9-release-auto-retro.md",
+    )
+
+
+def test_release_auto_retro_does_not_declare_the_session_retro_done() -> None:
+    """A bounded trigger closeout must force the session-retro question, not close it.
+
+    This artifact only ever inspects the release DELTA's surface hits. It never sees
+    what the session did — the rework, the decisions, the counterfactuals. But it was
+    written with `Mode: session` and a `## Next Improvements` line reading "no
+    additional follow-up is needed for this trigger instance", and
+    `refresh_recent_lessons.py` promotes that line verbatim into the next session's
+    `## Next-Time Checklist`. So the next operator opens a session, reads "no
+    additional follow-up is needed", and the session-level retro never happens.
+
+    That is a gate declaring completion, which P5 forbids: teeth may force a
+    question, never declare it answered. Observed for real — the session that added
+    this test found its own waste unrecorded until the operator asked, with this exact
+    line in `recent-lessons.md` at session open.
+    """
+    text = _trigger_markdown()
+
+    # It must not claim to BE the session retro.
+    assert "Mode: session" not in text, "a release-delta closeout is not a session retro"
+    # It must not close the follow-up question.
+    assert "no additional follow-up is needed" not in text
+    # It must name what it cannot see, so the omission is visible rather than implied.
+    assert "does not cover" in text.lower()
+    for owed in ("waste", "decision"):
+        assert owed in text.lower()
+    # The scope it DOES cover stays stated, so the artifact is still evidence.
+    assert "checked-in-plugin-export" in text

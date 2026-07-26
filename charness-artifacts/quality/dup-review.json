@@ -282,6 +282,13 @@
     },
     {
       "class": "intentional",
+      "id": "45be1941acd3d97e",
+      "note": "per-script import/alias preamble (scripts/run_evals.py, check_staged_mirror_drift.py, eval_cautilus_chatbot_compare.py); same class the existing 02923daf7e01c82e entry accepts, surfaced here only because removing an unused `import os` shifted run_evals' preamble into alignment with the others. Extracting a shared preamble replaces explicit imports with indirection and is the nose advisory's own named blind spot.",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "473a89ab5cfc84e5",
       "note": "same-file parallel text renderers in worktree_doctor_lib.py (render_doctor_text vs render_prepare_text tails): deliberately parallel per-command human renderers sharing the status/NEXT tail shape; surfaced as 'new' by scan rotation after the next_step/NEXT: convergence, both members untouched spans (#441 rotation class)",
       "reviewed_at": "2026-07-17",
@@ -572,6 +579,13 @@
       "id": "82b2e7b16bc79773",
       "note": "issue and release keep thin skill-local post-boundary lifecycle loaders so source and installed-plugin layouts retain standalone failure containment; lifecycle IDs, schemas, append behavior, and conflicts are already owned by the shared lifecycle capture implementation",
       "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "86638e4edc955d3f",
+      "note": "two owners for two different questions, not one concept copied. skills/public/quality/scripts/runtime_profile_lib.py owns the affinity read as a writer/reader CONTRACT (the recorder stamps a profile id the budget gate looks budgets up under, so two derivations there mean two machines, guarded by test_recorder_does_not_define_a_second_profile_derivation). scripts/run_standing_pytest.py owns it as PROCESS WIDTH, a local tuning number with no cross-process consumer. Routing the runner through the skill lib was tried and is actively worse: the runner is re-entered as a bare coverage-instrumented child process where the import raised ModuleNotFoundError and took the whole gate down over a worker count. What is shared is a 3-line stdlib call plus its OSError fallback, not a policy. Bound by test_affinity_readers_stay_in_parity_across_their_two_owners (tests/quality_gates/test_standing_pytest_runner.py): both readers must agree under the same patched affinity and both must survive an OSError-raising sched_getaffinity, so semantic drift fails a test instead of diverging silently -- the same binding the 89d83f450e19e19b precedent is accepted for.",
+      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {

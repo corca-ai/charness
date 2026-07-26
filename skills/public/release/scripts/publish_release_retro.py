@@ -68,12 +68,21 @@ def _retro_trigger_markdown(
     lines = [
         f"# Retro: Release Auto-Retro Trigger {tag_name}",
         f"Date: {datetime.now(timezone.utc).date().isoformat()}",
-        "Mode: session",
+        # NOT `Mode: session`. This artifact only ever inspects the release delta's
+        # surface hits; it cannot see what the session did. Claiming the session mode
+        # made a bounded detector record read as a completed session retro (P5: a gate
+        # may force a question, it may not declare completion).
+        "Mode: release-trigger",
         "",
         "## Context",
         "",
         f"Release publish triggered a configured automatic session retro for `{tag_name}`.",
         "The release helper persisted this bounded retro before committing the release artifacts so clean-tree post-publish state cannot erase the trigger evidence.",
+        "",
+        "**Scope: this artifact does not cover the session.** It is derived only from",
+        "the release delta's surface hits, so it records nothing about the session's own",
+        "waste, decisions, or counterfactuals. If the session did substantive work, a",
+        "session retro is still owed and this record is not a substitute for it.",
         "",
         "## Evidence Summary",
         "",
@@ -85,6 +94,7 @@ def _retro_trigger_markdown(
         "## Waste",
         "",
         "- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
+        "- NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
         "",
         "## Critical Decisions",
         "",
@@ -92,11 +102,16 @@ def _retro_trigger_markdown(
         "",
         "## Expert Counterfactuals",
         "",
-        "- Jef Raskin would make the system mode visible: a triggered detector must show whether it wrote the follow-up artifact or intentionally skipped it.",
+        "- Jef Raskin would make the system mode visible: a triggered detector must show whether it wrote the follow-up artifact or intentionally skipped it -- and must not let a bounded record look like the unbounded one.",
         "",
         "## Next Improvements",
         "",
-        "- workflow: Release helper auto-persisted this bounded retro trigger closeout; no additional follow-up is needed for this trigger instance.",
+        # This line is promoted verbatim by `refresh_recent_lessons.py` into the next
+        # session's `## Next-Time Checklist`, which is opening context. It previously
+        # read "no additional follow-up is needed for this trigger instance" -- so the
+        # next operator's first instruction was that nothing was owed, and a real
+        # session's waste went unrecorded behind it. It now forces the question.
+        "- workflow: the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
         "",
         "## Sibling Search",
         "",

@@ -20,6 +20,10 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
+    # Affinity is what the worker width reads, so a host-derived assertion must pin
+    # BOTH: under `taskset -c 0-3` an affinity-blind patch left the real 4 showing
+    # through and this test failed on a restricted run only (#446 in a new place).
+    monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(36)))
 
     command = runner.build_pytest_command(
         tmp_path,
@@ -67,6 +71,10 @@ def test_standing_pytest_command_replaces_targets_without_losing_xdist(
     # min(cpu_count, 16), so an unpatched cpu_count makes this assertion pass
     # only on >=16-core hosts (the 4-core CI runner computed "-n 4", #446).
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
+    # Affinity is what the worker width reads, so a host-derived assertion must pin
+    # BOTH: under `taskset -c 0-3` an affinity-blind patch left the real 4 showing
+    # through and this test failed on a restricted run only (#446 in a new place).
+    monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(36)))
 
     command = runner.build_pytest_command(
         tmp_path,
@@ -152,6 +160,10 @@ def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
     from scripts import run_standing_pytest as runner
 
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 64)
+    # Affinity is what the worker width reads, so a host-derived assertion must pin
+    # BOTH: under `taskset -c 0-3` an affinity-blind patch left the real 4 showing
+    # through and this test failed on a restricted run only (#446 in a new place).
+    monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(64)))
 
     assert runner.choose_xdist_workers({}) == "16"
     assert runner.choose_xdist_workers({"CHARNESS_PYTEST_WORKERS": "8"}) == "8"
@@ -430,3 +442,77 @@ def test_default_basetemp_survives_nested_pytest_cleanup(tmp_path: Path) -> None
 
     assert basetemp.exists()
     assert (basetemp / "popen-gw0").exists()
+
+
+def test_xdist_worker_width_keys_on_affinity_not_total_cpus(monkeypatch) -> None:
+    """Oversubscription is a measured, not theoretical, speed loss.
+
+    `choose_xdist_workers` used `os.cpu_count()`, so a run under `taskset -c 0-3`,
+    a cpuset, or a container CPU limit on a 36-core box spawned 16 workers onto 4
+    usable CPUs. Measured on this repo's suite: 94.2s at 16 workers vs 64.1s at 4 —
+    the oversubscription cost 32% of wall time and ~76s of CPU.
+
+    This is the same root cause as the runtime-profile bug fixed alongside it, in a
+    second caller: `os.cpu_count()` answers "how many CPUs does the box have", never
+    "how many may this process use".
+    """
+    from scripts import run_standing_pytest as runner
+
+    # cpu_count says 36 and affinity says 4: the divergence IS the test.
+    monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
+    monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(4)))
+
+    assert runner.choose_xdist_workers({}) == "4"
+
+    # An unrestricted run on the same box still uses the cap, so the fix costs
+    # nothing where affinity is not narrowed.
+    monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(36)))
+    assert runner.choose_xdist_workers({}) == "16"
+
+    # An explicit operator override still wins over either derivation.
+    assert runner.choose_xdist_workers({"CHARNESS_PYTEST_WORKERS": "8"}) == "8"
+
+
+def test_affinity_readers_stay_in_parity_across_their_two_owners(monkeypatch) -> None:
+    """The dup-review entry that accepts this duplication needs a binding, not a promise.
+
+    `run_standing_pytest.usable_cpu_count` and the quality skill's
+    `runtime_profile_lib.usable_cpu_count` are deliberately separate (a process-width
+    tuning number vs a writer/reader profile-id contract; routing the runner through
+    the skill broke a coverage-instrumented child with ModuleNotFoundError). The repo
+    accepts that copy as `intentional` in dup-review.json id 86638e4edc955d3f — and the
+    precedent it follows (89d83f450e19e19b) is accepted BECAUSE a test binds the copies
+    so semantic drift fails instead of diverging silently. This is that test.
+
+    The `OSError` arm matters most: it was a shipped v2.10.0 known limitation, fixed in
+    v2.11.0, and re-introduced here as a second untested copy. Narrowing it back to
+    `AttributeError` would take the whole standing pytest gate down on a seccomp host.
+    """
+    import importlib.util
+    from pathlib import Path as _Path
+
+    from scripts import run_standing_pytest as runner
+
+    lib_path = _Path(runner.__file__).resolve().parent.parent / "skills" / "public" / "quality" / "scripts" / "runtime_profile_lib.py"
+    spec = importlib.util.spec_from_file_location("parity_runtime_profile_lib", lib_path)
+    assert spec is not None and spec.loader is not None
+    profile_lib = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(profile_lib)
+
+    monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
+    monkeypatch.setattr(profile_lib.os, "cpu_count", lambda: 36)
+
+    for affinity in (1, 4, 36):
+        monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid, n=affinity: set(range(n)))
+        assert runner.usable_cpu_count() == profile_lib.usable_cpu_count() == affinity
+
+    def refuse(_pid: int) -> set[int]:
+        raise OSError(1, "Operation not permitted")
+
+    monkeypatch.setattr(runner.os, "sched_getaffinity", refuse)
+    assert runner.usable_cpu_count() == profile_lib.usable_cpu_count() == 36
+
+    # Neither reader may return a width that would make xdist spawn nothing.
+    monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set())
+    assert runner.usable_cpu_count() == profile_lib.usable_cpu_count() == 1
+    assert int(runner.choose_xdist_workers({})) >= 1
