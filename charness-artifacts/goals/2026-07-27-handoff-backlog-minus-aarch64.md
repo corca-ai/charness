@@ -9,17 +9,21 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 of 6 — wire handoff/ideation/retro validators into the shipped
-  one-pass reporting path.
-- Current slice intent: bind the lesson at the point of use. Make
-  `validate_handoff_artifact.py`, `validate_ideation_artifact.py`, and
-  `validate_retro_artifact.py` report every violation in one pass (default-on, per
-  the `validate_quality_artifact.py` precedent), emit the owning scaffold hint via
-  `report_validation_failure`, and accept an artifact-path argument so the
-  acceptance check runs without overwriting the real `docs/handoff.md`. Reuses
-  `artifact_validator.run_validation_checks` — no new mechanism.
-- Next action: read the wired precedent (`validate_debug_artifact.py` /
-  `validate_quality_artifact.py`), then convert the three stragglers.
+- Current slice: 2 of 6 — give lessons a concept identity (recurrence-class tag,
+  re-derived alpha/half-life, back-test over the live 1596-candidate corpus).
+  Slice 1 is committed at `ab56e15f`.
+- Current slice intent: make lesson recurrence measurable. `_normalize_lesson_key`
+  at `scripts/recent_lessons_lib.py:136` keys identity on the first 14 normalized
+  words, so re-wording resets the count and 1594/1596 candidates sit at
+  `independent_source_count == 1`. Add an explicit recurrence-class tag to retro
+  Waste/Next-Improvement bullets, then re-derive `LESSON_SELECTION_ALPHA_BASE`
+  (0.35 at :15) and `LESSON_SELECTION_HALF_LIFE_DAYS` (14 at :17) against the live
+  corpus, with a back-test pinned to the shipped constants asserting a class
+  recurring 5x over 50 days outranks a 0-day one-off.
+- Next action: regenerate `charness-artifacts/retro/lesson-selection-index.json`
+  in the SAME slice — `scripts/run-quality.sh:492` gates it with
+  `build_retro_lesson_selection_index.py --check`, so an identity change without
+  the regenerated index fails at its own commit boundary.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost and fresh-eye proof at slice boundaries; broad pytest plus the live
   CI mutation run at closeout.
@@ -219,7 +223,7 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Wire handoff/ideation/retro validators into the already-shipped one-pass path and scaffold hint, default-on, plus an artifact-path argument | Operator-directed first; every later slice in this run is authored by a session that inherits the improved validator behavior | Triple-violating draft yields one message with three violations plus the scaffold command, run against a temp root; regression test pins the one-pass contract | pending |
+| 1 | Wire handoff/ideation/retro validators into the already-shipped one-pass path and scaffold hint, default-on, plus an artifact-path argument | Operator-directed first; every later slice in this run is authored by a session that inherits the improved validator behavior | Triple-violating draft yields one message with three violations plus the scaffold command, run against a temp root; regression test pins the one-pass contract | done (`ab56e15f`) |
 | 2 | Give lessons a concept identity: recurrence-class tag on retro bullets, re-derived alpha and half-life, back-test over the live corpus | The count is useless while the weighting cannot act on it; both halves ship together or neither binds | Back-test over the live corpus pinned to the re-derived constants; multiplier distribution moves off 1.0; `build_retro_lesson_selection_index.py --check` regenerated and green | pending |
 | 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | New tests for the 6 named files; `check_changed_line_mutation_coverage.py` clean on this branch's diff (PROVISIONAL — slice 4 rewrites these tests, so slice 6's CI run is the real proof); `plugins/` mirrors synced | pending |
 | 4 | Cut pytest subprocess-startup cost via the two measured levers | Lands after the red is cleared so the before/after delta is attributable to the lever, not a pre-existing failure | Before/after wall-clock and spawn counts at the same worker count; suite still green | pending |
@@ -307,6 +311,20 @@ for the order is recorded in Interview Decisions. (4) *Scope exclusion:* the
 aarch64 profile is dropped by explicit operator decision, not by agent judgment.
 
 ## Slice Log
+
+### Slice 1: Wire the one-pass validator contract into handoff/retro/ideation
+
+- Objective: Bind the repeatedly-violated lesson at the point of use: report every artifact-validator violation in one pass, name the owning scaffold, and let a candidate handoff draft be checked without overwriting the live one
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 89 targeted tests pass; run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review completed; 21 pre-commit gates pass at ab56e15f
+- Test duplication pressure: 3 new dup families introduced by the new tests and refactored into shared helpers (validate_each_artifact, run_changed_artifact_validator); 1 residual pre-existing loader family accepted via --accept-family; dup gate now OK with fixable_ceiling=0
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
 
 ## Context Sources
 
