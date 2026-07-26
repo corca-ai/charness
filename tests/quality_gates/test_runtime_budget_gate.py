@@ -111,7 +111,10 @@ def test_machine_runtime_profile_uses_detected_system(monkeypatch) -> None:
     # (runtime_profile_lib.py:18) survivor ReplaceOrWithAnd.
     monkeypatch.setattr(runtime_profile_lib.platform, "system", lambda: "TestOS")
     monkeypatch.setattr(runtime_profile_lib.platform, "machine", lambda: "TestArch")
-    monkeypatch.setattr(runtime_profile_lib.os, "cpu_count", lambda: 4)
+    # The CPU term reads affinity, not the host's total: a run under `taskset`/cpuset
+    # must not file its (slower) samples into the unrestricted profile.
+    monkeypatch.setattr(runtime_profile_lib.os, "sched_getaffinity", lambda _pid: set(range(4)))
+    monkeypatch.setattr(runtime_profile_lib.os, "cpu_count", lambda: 36)
     assert runtime_profile_lib.machine_runtime_profile() == "local-testos-testarch-4cpu"
 
 
@@ -665,3 +668,50 @@ def test_budget_slack_advisory_never_changes_exit_code(tmp_path: Path) -> None:
     slack = payload["budget_slack_findings"]
     assert [f["label"] for f in slack] == ["pytest"]
     assert payload["violations"] == []
+
+
+def test_runtime_profile_keys_on_affinity_not_total_cpus(monkeypatch) -> None:
+    """A throttled run must not file its samples into the unrestricted profile.
+
+    `os.cpu_count()` ignores affinity, so a `taskset -c 0-3` run on a 36-core box
+    reported 36 and merged its (much slower) samples into `local-...-36cpu`. That is
+    silent cross-contamination in the direction that matters: the budget failure rule
+    is median-based, so slow samples drag a fast profile's median toward its bar and
+    manufacture a blocking false red where nothing regressed.
+    """
+    monkeypatch.setattr(runtime_profile_lib.os, "cpu_count", lambda: 36)
+    monkeypatch.setattr(runtime_profile_lib.os, "sched_getaffinity", lambda _pid: set(range(4)))
+    monkeypatch.setattr(runtime_profile_lib.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(runtime_profile_lib.platform, "machine", lambda: "x86_64")
+
+    assert runtime_profile_lib.usable_cpu_count() == 4
+    assert runtime_profile_lib.machine_runtime_profile() == "local-linux-x86_64-4cpu"
+
+
+def test_runtime_profile_falls_back_to_cpu_count_without_affinity(monkeypatch) -> None:
+    """`sched_getaffinity` is Linux-only; a macOS/Windows host keeps the old answer."""
+    monkeypatch.setattr(runtime_profile_lib.os, "cpu_count", lambda: 8)
+    monkeypatch.delattr(runtime_profile_lib.os, "sched_getaffinity", raising=False)
+    monkeypatch.setattr(runtime_profile_lib.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(runtime_profile_lib.platform, "machine", lambda: "arm64")
+
+    assert runtime_profile_lib.usable_cpu_count() == 8
+    assert runtime_profile_lib.machine_runtime_profile() == "local-darwin-arm64-8cpu"
+
+
+def test_recorder_does_not_define_a_second_profile_derivation() -> None:
+    """The profile id is a contract between writer and reader: whatever the recorder
+    stamps is what the budget gate looks budgets up under. A second copy could drift
+    and silently point them at different machines -- which is exactly what happened
+    when the affinity fix had to be applied twice, in lockstep, to stay consistent.
+    """
+    import inspect
+
+    from scripts import record_quality_runtime
+
+    source = Path(inspect.getsourcefile(record_quality_runtime.machine_runtime_profile) or "")
+    assert source.name == "runtime_profile_lib.py", (
+        "record_quality_runtime must consume the quality skill's profile derivation, "
+        f"not define its own (resolved to {source})"
+    )
+    assert "def machine_runtime_profile" not in Path(record_quality_runtime.__file__).read_text(encoding="utf-8")

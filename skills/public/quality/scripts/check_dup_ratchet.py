@@ -268,7 +268,28 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         summary_help="Emit compact YAML duplicate-ratchet status and actionable findings",
         detail_help="Emit the full duplicate-ratchet report as YAML",
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    # `run()` dispatches to the first matching mode, so two mode flags meant one was
+    # silently dropped. The sharp case: `--restamp-tool-version --accept-family X`
+    # ignored the accept, then refused with a message telling the operator to pass
+    # `--accept-family` -- a dead-end loop for anyone following the gate's own
+    # remediation. argparse cannot express this via add_mutually_exclusive_group
+    # because two of the three arms are `append` options that may repeat.
+    modes = [
+        name
+        for name, selected in (
+            ("--restamp-tool-version", args.restamp_tool_version),
+            ("--accept-rotation/--accept-family", bool(args.accept_rotation or args.accept_family)),
+            ("--write-baseline", args.write_baseline),
+        )
+        if selected
+    ]
+    if len(modes) > 1:
+        parser.error(
+            f"choose one baseline-mutation mode, not {len(modes)} ({', '.join(modes)}); "
+            "each writes the baseline a different way and only the first would apply."
+        )
+    return args
 
 
 def summarize(report: dict, *, sample_limit: int = 5) -> dict:

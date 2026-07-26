@@ -521,20 +521,40 @@ def test_temp_root_source_reports_who_owns_the_scanned_tree(
     assert lib.pytest_temp_root_source() == expected
 
 
+def _du_accepts_block_size() -> bool:
+    """Whether THIS host's `du` accepts `-B`, which is what the scan actually needs.
+
+    `shutil.which("du")` is the wrong predicate: BusyBox ships a `du` that is present
+    and rejects `-B`, which is precisely the host the sibling test below exists to
+    prove. Probing the capability rather than the name keeps each test skipping on
+    the condition it actually depends on.
+    """
+    if shutil.which("du") is None:
+        return False
+    try:
+        return subprocess.run(
+            ["du", "-B1", "-s", "."], capture_output=True, text=True, timeout=30
+        ).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 @pytest.mark.skipif(shutil.which("busybox") is None, reason="busybox not installed on this host")
 def test_real_busybox_du_is_detected_as_a_capability_gap(monkeypatch, tmp_path: Path) -> None:
     """Probed, not inferred. `DU_USAGE_ERROR_TOKENS` claims BusyBox `du` rejects `-B`,
     and the whole capability-gap carve-out rests on that claim being true of a real
     binary rather than of its documentation. This drives the production scan against
-    the actual `busybox du` by putting a shim first on PATH."""
+    the actual `busybox du` by putting it first on PATH."""
     lib = _lib()
     root = tmp_path / "pytest-of-someone"
     (root / "pytest-1" / "charness-repo-seed0").mkdir(parents=True)
     shim_dir = tmp_path / "bin"
     shim_dir.mkdir()
-    shim = shim_dir / "du"
-    shim.write_text(f'#!/usr/bin/env bash\nexec {shutil.which("busybox")} du "$@"\n', encoding="utf-8")
-    shim.chmod(0o755)
+    # A symlink, not a shell wrapper: BusyBox dispatches on argv[0], so this needs no
+    # interpreter. A `#!/usr/bin/env bash` shim would fail on a busybox-without-bash
+    # host -- exactly the minimal image this test targets -- and would surface as a
+    # misleading `du_missing` rather than as "no bash".
+    os.symlink(shutil.which("busybox"), shim_dir / "du")
     monkeypatch.setenv("PATH", f"{shim_dir}:{os.environ['PATH']}")
     monkeypatch.setattr(lib, "pytest_temp_root", lambda: root)
 
@@ -547,7 +567,11 @@ def test_real_busybox_du_is_detected_as_a_capability_gap(monkeypatch, tmp_path: 
     assert footprint["attempts"] == 1
 
 
-@pytest.mark.skipif(shutil.which("du") is None, reason="du not installed on this host")
+@pytest.mark.skipif(not _du_accepts_block_size(), reason="this host's du does not accept -B")
+@pytest.mark.skipif(
+    hasattr(os, "geteuid") and os.geteuid() == 0,
+    reason="chmod 000 does not deny root, so the unreadable-subdir setup cannot hold",
+)
 def test_real_du_still_totals_after_an_unreadable_subdir(monkeypatch, tmp_path: Path) -> None:
     """The load-bearing premise of this whole design, against the real binary: `du`
     exits nonzero when it cannot read an entry, yet keeps walking and still prints the

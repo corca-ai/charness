@@ -14,10 +14,27 @@ def normalize_runtime_profile(value: str | None) -> str:
     return profile or DEFAULT_RUNTIME_PROFILE
 
 
+def usable_cpu_count() -> int:
+    """CPUs this process may actually run on, not the CPUs the box has.
+
+    `os.cpu_count()` ignores affinity, so a run under `taskset`, a cpuset, or a
+    container CPU limit reported the host's full count and filed its samples into
+    the unrestricted profile. That is silent cross-contamination in the direction
+    that matters: throttled runs are SLOW, so they inflate a fast profile's window
+    and drag its median toward the bar, manufacturing a blocking false red on a
+    machine where nothing regressed. Affinity is what the timings actually reflect,
+    so it is what the profile keys on.
+    """
+    try:
+        return len(os.sched_getaffinity(0)) or 1
+    except AttributeError:  # not Linux
+        return os.cpu_count() or 1
+
+
 def machine_runtime_profile() -> str:
     system = platform.system().lower() or "unknown-os"
     machine = platform.machine().lower() or "unknown-arch"
-    cpu_count = os.cpu_count() or 1
+    cpu_count = usable_cpu_count()
     raw = f"local-{system}-{machine}-{cpu_count}cpu"
     return RUNTIME_PROFILE_ID_RE.sub("-", raw).strip("-") or f"local-{cpu_count}cpu"
 

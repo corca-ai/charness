@@ -203,9 +203,10 @@ def main() -> int:
         print(
             f"scope_classification={classification}: the pytest tmp scan failed "
             f"({footprint.get('reason')}) against {footprint.get('root')}, which is the "
-            "shared system temp dir rather than a repo-scoped root, so the failure is not "
-            "this repo's to block on. Set PYTEST_DEBUG_TEMPROOT to a repo-owned path to "
-            "make this measurement -- and its failures -- yours."
+            "shared system temp dir rather than a chosen root, so the failure is not this "
+            "repo's to block on. Point PYTEST_DEBUG_TEMPROOT at a path this repo owns to "
+            "make this measurement -- and its failures -- yours. `run-quality.sh` already "
+            "does; a bare invocation of this gate does not."
         )
         return 0
     if classification == "advisory_only_scan_failure_waived":

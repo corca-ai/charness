@@ -248,28 +248,35 @@ runtime_budget_profiles:
     #
     # RE-DERIVED 2026-07-26 FROM A REAL 4-CORE MEASUREMENT, not from a contention
     # factor. Three `taskset -c 0-3 ./scripts/run-quality.sh --read-only` runs on
-    # x86_64 measured every gate below under genuine 4-core contention, and EIGHT
-    # of the eighteen bars were already exceeded — including five never marked
-    # `(contended, derived)` at all, and `check-secrets` at 76.6s against a 20s
-    # bar. The failure rule is median-based and wired into the pre-push path, so
-    # each of those was a BLOCKING false red waiting for a maintainer on a small
-    # box where nothing had regressed.
+    # x86_64 measured every gate below except `check-coverage` (which does not run
+    # in `--read-only`) under genuine 4-core contention. EIGHT of the eighteen bars
+    # were already exceeded — including five never marked `(contended, derived)` at
+    # all, and `check-secrets` at 76.6s against a 20s bar. The failure rule is
+    # median-based and wired into the pre-push path, so each of those was a
+    # BLOCKING false red waiting for a maintainer on a small box where nothing had
+    # regressed. Those samples live under the `local-linux-x86_64-4cpu` profile in
+    # `.charness/quality/runtime-signals.json`, which is where the floors below can
+    # be re-read.
     #
-    # These are FLOORS, not the real aarch64 bars. x86_64 at 4 cores is FASTER
-    # than aarch64 at 4 cores, so a measurement here bounds the aarch64 profile
-    # from below: a bar under one of these numbers is definitively too tight,
-    # while a bar above it is still unproven. Each raised value is ~1.4x its
-    # measured 4-core max, matching the contended-relevel convention used by the
-    # x86_64 profile. What remains unmeasured is the ARCHITECTURE term only; the
-    # core-count term is no longer an inference.
+    # MEASURED: the core-count term. Each floor is the observed 4-core max, and
+    # each bar is ~1.4x it, matching the contended-relevel convention the x86_64
+    # profile uses.
     #
-    # Still owed: a run on the actual aarch64 box to replace these floors with
-    # measurements. `check-coverage` is absent from `--read-only` and so was not
-    # measured here at all.
+    # ASSUMED, NOT MEASURED: that aarch64 at 4 cores is SLOWER than x86_64 at 4
+    # cores, which is the only reason these read as floors rather than ceilings.
+    # The assumption is not safe in general — Graviton and Apple M-series cores
+    # beat many x86_64 cores single-threaded — so if this profile's box is one of
+    # those, these bars are merely loose rather than too tight. That fails in the
+    # tolerable direction (a weakened gate, not a false red), which is why it ships
+    # as an assumption instead of blocking on hardware nobody here has.
+    #
+    # Still owed: a run on the actual aarch64 box. Note this block has no aggregate
+    # bar (`run-quality-read-only`, `pytest-release`) the way the x86_64 profile
+    # does, so nothing backstops what these eight looser per-gate bars let through.
     budgets:
       charness-version: 1000
-      # 4-core floor 20300ms (was 15000, a false red)
-      check-cli-skill-surface: 28000
+      # 4-core floor 20399ms (was 15000, a false red)
+      check-cli-skill-surface: 29000
       check-inventory-declaration-coverage: 1500
       check-references-link-inventory: 2500
       check-seed-fixture-budget: 5000
@@ -280,7 +287,7 @@ runtime_budget_profiles:
       inventory-ubiquitous-language: 2500
       # 4-core floor 130800ms (was 110000, a false red)
       pytest: 185000
-      # NOT measured: check-coverage does not run in --read-only
+      # NOT measured at 4 cores: check-coverage does not run in --read-only
       check-coverage: 60000
       # 4-core floor 36100ms; bar already above it, left alone
       doc-duplicates: 60000
@@ -288,8 +295,8 @@ runtime_budget_profiles:
       check-markdown: 55000
       # 4-core floor 76600ms (was 20000, a false red at 3.8x)
       check-secrets: 110000
-      # 4-core floor 9400ms (was 8000, a false red)
-      run-evals: 13000
+      # 4-core floor 9512ms (was 8000, a false red)
+      run-evals: 14000
       # 4-core floor 22500ms (was 13000, a false red)
       specdown: 32000
       validate-cautilus-call-provenance: 1500

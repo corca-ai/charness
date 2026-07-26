@@ -404,3 +404,28 @@ def test_inproc_restamp_propagates_a_failed_live_scan(tmp_path: Path) -> None:
 
     assert report["ok"] is False and report["status"] == "restamp-failed"
     assert any("cannot compute live fingerprints" in m for m in report["messages"])
+
+
+def test_inproc_restamp_refuses_a_pure_removal(tmp_path: Path) -> None:
+    """The refusal claims both directions; addition is pinned above, removal here."""
+    repo = _stamped_repo(tmp_path, ("keep", "gone"), "0.19.0")
+    code_json = _stamped_inventory(tmp_path / "code.json", ["keep"], "0.20.0")
+
+    report = _run_inproc(repo, "--code-inventory", str(code_json), "--restamp-tool-version")
+
+    assert report["ok"] is False and report["status"] == "restamp-refused"
+    assert report["added"] == [] and report["removed"] == ["gone"]
+
+
+def test_parse_args_refuses_two_baseline_mutation_modes() -> None:
+    """`run()` dispatches to the first matching mode, so a second flag was silently
+    dropped. Worst case: `--restamp-tool-version --accept-family X` ignored the accept
+    and then refused with a message telling the operator to use --accept-family."""
+    import pytest
+
+    for extra in (["--write-baseline"], ["--accept-family", "NEWFAM"], ["--accept-rotation", "a=b"]):
+        with pytest.raises(SystemExit):
+            check.parse_args(["--repo-root", ".", "--restamp-tool-version", *extra])
+    # One mode at a time still parses.
+    assert check.parse_args(["--repo-root", ".", "--restamp-tool-version"]).restamp_tool_version is True
+    assert check.parse_args(["--repo-root", ".", "--write-baseline"]).write_baseline is True

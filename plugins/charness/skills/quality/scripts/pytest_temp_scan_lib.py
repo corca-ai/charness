@@ -46,9 +46,13 @@ DU_CAPABILITY_GAP_REASONS = frozenset({"du_missing", "du_not_executable", "du_un
 # the BSD/macOS getopt wording, which remains the one unprobed entry here.
 DU_USAGE_ERROR_TOKENS = ("unrecognized option", "invalid option", "illegal option", "unknown option", "usage:")
 
-#: The temp root is only this repo's to grade when the repo pointed at it. Without
+#: Whether anything pointed the scan at a specific root. Without
 #: `PYTEST_DEBUG_TEMPROOT` the scan falls back to the shared system temp dir, where
-#: any other project's pytest tree lands.
+#: any other project's pytest tree lands. Note this distinguishes "someone chose a
+#: root" from "nobody did" -- it does NOT verify the chosen root is repo-owned, so
+#: `PYTEST_DEBUG_TEMPROOT=/tmp` reads as configured and its failures block. That
+#: errs closed, which is the safe direction, but do not read `configured` as proof
+#: the tree belongs to this repo.
 TEMP_ROOT_SOURCE_CONFIGURED = "configured"
 TEMP_ROOT_SOURCE_SHARED_FALLBACK = "shared_fallback"
 

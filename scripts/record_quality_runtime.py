@@ -6,7 +6,6 @@ import argparse
 import copy
 import json
 import os
-import platform
 import re
 import sys
 from datetime import datetime, timezone
@@ -19,19 +18,32 @@ from runtime_bootstrap import load_path_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 
-def _resolver_path(repo_root: Path) -> Path:
+def _quality_script_path(repo_root: Path, filename: str) -> Path:
     candidates = (
-        repo_root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py",
-        repo_root / "skills" / "quality" / "scripts" / "resolve_adapter.py",
+        repo_root / "skills" / "public" / "quality" / "scripts" / filename,
+        repo_root / "skills" / "quality" / "scripts" / filename,
     )
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    raise FileNotFoundError("quality resolve_adapter.py not found")
+    raise FileNotFoundError(f"quality {filename} not found")
 
 
-_quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver_path(REPO_ROOT))
+_quality_resolve_adapter = load_path_module(
+    "quality_resolve_adapter", _quality_script_path(REPO_ROOT, "resolve_adapter.py")
+)
 load_adapter = _quality_resolve_adapter.load_adapter
+
+# The profile id is a CONTRACT between this recorder and `check_runtime_budget`:
+# whatever id gets written here is the id the budget gate later looks budgets up
+# under. Two copies of that derivation is one copy too many -- the affinity fix
+# had to be made twice, in lockstep, or the writer and the reader would disagree
+# about which machine a sample came from. The skill lib owns it; this consumes it.
+_runtime_profile_lib = load_path_module(
+    "quality_runtime_profile_lib", _quality_script_path(REPO_ROOT, "runtime_profile_lib.py")
+)
+usable_cpu_count = _runtime_profile_lib.usable_cpu_count
+machine_runtime_profile = _runtime_profile_lib.machine_runtime_profile
 
 SUMMARY_FILENAME = "runtime-signals.json"
 SMOOTHING_FILENAME = "runtime-smoothing.json"
@@ -130,14 +142,6 @@ def normalize_runtime_profile(value: str | None) -> str:
     if not profile:
         raise ValueError("runtime profile must be a non-empty string")
     return profile
-
-
-def machine_runtime_profile() -> str:
-    system = platform.system().lower() or "unknown-os"
-    machine = platform.machine().lower() or "unknown-arch"
-    cpu_count = os.cpu_count() or 1
-    raw = f"local-{system}-{machine}-{cpu_count}cpu"
-    return RUNTIME_PROFILE_ID_RE.sub("-", raw).strip("-") or f"local-{cpu_count}cpu"
 
 
 def parse_timestamp(value: str | None) -> datetime:
