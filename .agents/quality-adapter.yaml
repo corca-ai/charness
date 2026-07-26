@@ -176,7 +176,17 @@ runtime_budget_profiles:
       # Tightened from 90000: the barrier removal made the whole read-only run
       # faster, and this aggregate is the bar that still has to trip on a real
       # slowdown. 1.4x the 54535ms max of the post-change window.
-      run-quality-read-only: 76500
+      #
+      # 2026-07-26 (b): retightened again from 76500. `--maxschedchunk 1` removed
+      # xdist's pre-assigned initial batch, and `pytest` — which IS essentially this
+      # aggregate's wall — went 52.1s -> 35.4s contended. 76500 was 1.9x the new
+      # median, at the "cannot trip a 2x regression" line this block exists to hold.
+      # 1.4x the 41623ms max of the post-change window (n=13 of 20, samples at or
+      # after 2026-07-26T06:16). Two of those 13 are `fail` runs (35994, 37750) and a
+      # failing aggregate EXITS EARLY, so its wall is truncated, not measured — the
+      # caveat this file states for the 4cpu profile applies here too. The derivation
+      # is unaffected: the max it is drawn from is a passing run.
+      run-quality-read-only: 58500
       # 2026-07-25 retune. A runtime budget only ever moved one way here: a
       # violation forced a raise and nothing reported when the raise stopped being
       # needed, so several budgets had drifted to 6-10x their worst observed run
@@ -192,7 +202,24 @@ runtime_budget_profiles:
       # comment below records. The conflated-window objection no longer applies —
       # this window is standing-mode only AND post-barrier-removal, so 1.4x its
       # 52138ms max is drawn from the regime the gate now runs in.
-      pytest: 73000
+      #
+      # 2026-07-26 (b): 73000 lasted one day. `--maxschedchunk 1` (see
+      # `choose_sched_chunk` in scripts/run_standing_pytest.py) took this gate from
+      # 52.1s to 35.4s contended, which put 73000 at 2.04x the new median — the same
+      # ratio the affinity-holes critique failed a bar for. 1.4x the 41702ms max of
+      # the window, which is now 20/20 post-change (all at or after
+      # 2026-07-26T06:16, all passing, median 35732).
+      #
+      # ENFORCEMENT NOTE, and the reason the window was deliberately turned over
+      # before this number was set: `runtime_budget_lib._checked_entry` compares the
+      # bar against `median_recent_elapsed_ms` — the WHOLE 20-sample window — not
+      # against the post-change slice a retune is sized from. Immediately after a
+      # regime change those two disagree, and a slice-sized bar can sit a few percent
+      # above the enforcement basis while every comment reads correct. A first pass at
+      # 51000 did exactly that on the two aggregates below (1.02x and 1.03x of basis).
+      # Sizing from a slice while enforcing on a window is only safe once the window
+      # has turned over, so it was, by running the gate to convergence.
+      pytest: 58500
       # 2026-07-25: the release-path variants were the slowest observed labels on
       # this profile and the only unbudgeted ones, so a 2x regression on the gate
       # that actually precedes a release would not have tripped anything. Same
@@ -208,13 +235,31 @@ runtime_budget_profiles:
       # 150000 is ABOVE 2x median — the bar can no longer trip the 2x regression its
       # own comment promises, which is exactly the anti-pattern this block was
       # written to fix. The barrier removal cut this path further (66175ms observed),
-      # so 110000 stays above 1.4x the worst sample in the window (86353) while
-      # coming back under 2x median. Still deliberately loose; still able to fail.
+      # so 110000 comes back under 2x median. Still deliberately loose; still able to
+      # fail.
+      #
+      # 2026-07-26 (b): the sentence above originally also claimed 110000 "stays above
+      # 1.4x the worst sample in the window (86353)". That is false and is corrected
+      # here rather than carried: 1.4 * 86353 = 120894, so 110000 is 1.27x that
+      # sample. The number is left alone because 86353 is a 2026-07-20 run predating
+      # BOTH the barrier removal and `--maxschedchunk 1`, and against the only
+      # current-regime evidence this label has (60198ms, the newest passing run)
+      # 110000 is 1.83x — no flake risk in practice. What it does not have is a single
+      # sample under `--maxschedchunk 1`; unlike its siblings nothing revalidated it,
+      # so it is owed a re-derive on its next release-path run, not a number invented
+      # now from a regime that no longer exists.
       run-quality-read-only-release: 110000
       run-quality-full-release: 125000
       # 9 samples, not 20 -- looser evidence than the labels above, tight enough to
       # trip 2x (median 67172).
-      run-quality-full: 100000
+      #
+      # 2026-07-26 (b): resized with its read-only sibling for the `--maxschedchunk 1`
+      # regime. 100000 was 2.55x the new median. 1.4x the 44183ms max of the
+      # post-change window (n=13 of 20, all at or after 2026-07-26T06:16, all
+      # passing, median 38260); 2x that median is 76520, so this stays able to fail.
+      # The 44183 max is a genuine contended observation from consecutive gate runs,
+      # not an outlier to discount — which is why this bar is the loosest of the three.
+      run-quality-full: 62000
       # `pytest` now records standing-mode runs only (release-only pytest moved to
       # its own `pytest-release` label). This 90000 was sized from the CONFLATED
       # window and is loose for standing mode alone. Note the slack advisory will
@@ -227,7 +272,21 @@ runtime_budget_profiles:
       # release critique: that is 1.4x the max of the whole `run-quality-full-release`
       # bundle CONTAINING this gate, so no possible run could trip it. A bar that
       # cannot fail is the exact anti-pattern the retune above was written to fix.
-      pytest-release: 87000
+      #
+      # 2026-07-26 (b): RAISED, against this block's usual direction, because the
+      # substitute evidence above turned out to under-size it. `pytest-release` now
+      # has its own 10-sample window (55.4-74.8s) and 87000 is 1.16x its worst
+      # observed run — the `check-coverage` failure mode two entries down, not the
+      # loose-bar one: it would have gone red on variance with nothing regressed.
+      # 105000 is 1.4x that 74828ms max and still 1.63x median, under the 129062ms
+      # 2x-median line. Unlike its read-only siblings this label did NOT move with
+      # `--maxschedchunk 1` (median 64531 -> 66745 on an n=3 post-change slice, which
+      # also contains the window maximum): the release-only lifecycle tests are the
+      # longest single chains in the suite, so removing scheduler imbalance cannot
+      # shorten them. Sized from the whole window rather than a post-change slice for
+      # exactly that reason — and n=3 is stated because a slice that thin and a
+      # 20-sample window read identically once committed.
+      pytest-release: 105000
       # (contended) was 12000, which sat 259ms above an already-observed contended
       # run (11741) — it would have gone red on its own, weeks later, with nothing
       # regressed. This gate is queued conditionally, so its window turns over

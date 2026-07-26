@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import importlib.util
 import os
 import shlex
@@ -20,6 +21,16 @@ STANDING_PYTEST_TARGETS = (
     "tests/charness_cli",
 )
 DEFAULT_XDIST_WORKER_CAP = 16
+# `--maxschedchunk` first shipped as a command-line option in pytest-xdist 3.2.0
+# (changelog #855, 2023-02-07). Below that the flag is an unknown option and pytest
+# exits 4 before collecting anything, so the floor follows the same rule as
+# `usable_cpu_count`: a scheduling tweak must never be why the suite cannot start.
+#
+# This floor is load-bearing, not theoretical. `packaging/mutation-requirements.txt`
+# pins `pytest-xdist>=3,<4`, so 3.0 and 3.1 are both inside the repo's own supported
+# range and both predate the flag. A first draft of this constant guessed 2.3 and
+# would have passed the flag to exactly those two versions.
+MIN_XDIST_FOR_SCHED_CHUNK = (3, 2)
 
 
 def usable_cpu_count() -> int:
@@ -154,6 +165,105 @@ def choose_xdist_workers(env: dict[str, str] | None = None) -> str:
     return str(min(cpu_count, DEFAULT_XDIST_WORKER_CAP))
 
 
+def xdist_version() -> tuple[int, ...]:
+    """This interpreter's pytest-xdist version as a tuple, or `()` when unknown.
+
+    Takes no `env`, deliberately: the lookup reads THIS process's installed metadata,
+    so the answer is scoped to the runner's interpreter, not to the one
+    `CHARNESS_STANDING_PYTEST_PYTHON` may name. An `env` parameter here would advertise
+    a targeting this cannot do. `has_xdist` already carries the same same-interpreter
+    assumption and handles the mismatch by refusing xdist entirely, which also
+    suppresses this flag.
+
+    Deliberately not `packaging.version`: `pyproject.toml` puts the repo root on the
+    test-session `sys.path`, and this repo HAS a root `packaging/` directory with no
+    `__init__.py`. Importing `packaging` here would resolve to that namespace package
+    on any in-repo run and raise on the `.version` attribute -- the exact
+    script-basename shadowing the pytest config block warns about, one directory up.
+    A leading-digit split is enough for a two-component floor.
+    """
+    try:
+        raw = importlib.metadata.version("pytest-xdist")
+    except importlib.metadata.PackageNotFoundError:
+        return ()
+    parts: list[int] = []
+    for chunk in raw.split(".")[:3]:
+        digits = ""
+        for char in chunk:
+            if not char.isdigit():
+                break
+            digits += char
+        if not digits:
+            break
+        parts.append(int(digits))
+    return tuple(parts)
+
+
+def choose_sched_chunk(env: dict[str, str] | None = None) -> str | None:
+    """Per-test scheduling granularity for `--dist load`, or None to leave it default.
+
+    `--dist load` does NOT hand tests out one at a time. `LoadScheduling.schedule`
+    first gives every worker a CONSECUTIVE chunk of `len(collection) // nworkers // 4`
+    -- 85 of this suite's 5445 tests per worker, 1360 pre-assigned -- before any worker
+    has reported a single timing, and only the remainder is scheduled on demand.
+
+    Consecutive is the part that hurts, and it is deliberate upstream: contiguous
+    chunks preserve pytest's fixture-locality ordering. But this suite's slow tests are
+    not scattered, they are ADJACENT -- `tests/charness_cli/` holds the subprocess-heavy
+    install/update lifecycle tests and sorts first -- so the pre-assignment reliably
+    hands one or two workers a block that is minutes long while the rest get seconds.
+    Nothing rebalances it, because those tests were never in the on-demand pool.
+
+    Measured on this suite (36 usable CPUs, 16 workers): 14 of 16 workers finished at
+    t=23s and one ran alone to t=109s; the run spent 78s of a 110s wall at one or two
+    concurrent tests. `--maxschedchunk 1` floors the initial chunk at 2 per worker and
+    schedules the rest on demand; the standing gate went 45.5s -> 26.9s (4.2x -> 11.3x
+    effective parallelism).
+
+    Returns "1" rather than a width-derived number because the imbalance this removes
+    is not width-dependent: a 4-worker run pre-assigns 340 tests each, which is worse
+    per worker, not better. Measured neutral there (64.8s -> 64.5s under `taskset -c
+    0-3`) only because 4 workers on 4 CPUs are already saturated -- so there is no
+    low-core case to special-case, just no win to claim.
+
+    Scattering does give up some of the fixture locality upstream's chunking buys, and
+    the trade is favourable rather than free. The dominant shared state -- the
+    `seeded_charness_repo` / `seeded_managed_home` family -- is safe, because it lives
+    in `tests/seed_cache.py`'s source-hash-keyed FILESYSTEM cache that every worker
+    shares. What does get rebuilt per worker is module-scoped `tmp_path_factory` state
+    that never went through that cache, chiefly `seeded_quality_runner_repo` in
+    `tests/quality_gates/support.py` (~80 consumers): under contiguous chunks it was
+    built once or twice, now up to once per worker. The measured 45.5s -> 26.9s is NET
+    of that duplicated setup, so the trade pays -- but seed-cache-backing that fixture
+    is the next win here, not a claim that nothing was given up.
+    """
+    env = os.environ if env is None else env
+    override = env.get("CHARNESS_PYTEST_SCHED_CHUNK", "").strip()
+    if override:
+        if override == "off":
+            return None
+        try:
+            chunk = int(override)
+        except ValueError as exc:
+            raise SystemExit(
+                "standing-pytest: CHARNESS_PYTEST_SCHED_CHUNK must be a positive integer or 'off'"
+            ) from exc
+        if chunk < 1:
+            raise SystemExit("standing-pytest: CHARNESS_PYTEST_SCHED_CHUNK must be >= 1")
+        return str(chunk)
+    # An operator who already tuned this in PYTEST_ADDOPTS wins: our command-line flag
+    # would silently beat theirs, because pytest PREPENDS both PYTEST_ADDOPTS and ini
+    # `addopts` to argv, so the later (ours) wins argparse's last-one-wins. Scoped to
+    # the env var only: an ini `addopts` tuning is still overridden silently. That is
+    # a real gap for a downstream repo using this runner, and no gap for this one --
+    # `pyproject.toml` sets no `addopts`.
+    if "--maxschedchunk" in env.get("PYTEST_ADDOPTS", ""):
+        return None
+    if xdist_version() < MIN_XDIST_FOR_SCHED_CHUNK:
+        return None
+    return "1"
+
+
 def expand_targets(repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_TARGETS) -> list[str]:
     expanded: list[str] = []
     for target in targets:
@@ -191,6 +301,9 @@ def build_pytest_command(
     command.extend(["--basetemp", str(basetemp)])
     if has_xdist(command[:3], env):
         command.extend(["-n", choose_xdist_workers(env)])
+        sched_chunk = choose_sched_chunk(env)
+        if sched_chunk is not None:
+            command.extend(["--maxschedchunk", sched_chunk])
     else:
         print(
             "standing-pytest: pytest-xdist is not active; pytest will run serially "

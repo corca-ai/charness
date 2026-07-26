@@ -24,6 +24,9 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     # BOTH: under `taskset -c 0-3` an affinity-blind patch left the real 4 showing
     # through and this test failed on a restricted run only (#446 in a new place).
     monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(36)))
+    # Same rule for the scheduling chunk: it is suppressed below xdist 3.2, so an
+    # unpinned assertion would pass here and fail on an older-xdist host only.
+    monkeypatch.setattr(runner, "xdist_version", lambda: (3, 8, 0))
 
     command = runner.build_pytest_command(
         tmp_path,
@@ -35,6 +38,7 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     assert command[:6] == [sys.executable, "-m", "pytest", "-q", "-m", "not release_only"]
     assert "-n" in command
     assert "16" in command
+    assert ["--maxschedchunk", "1"] == command[command.index("--maxschedchunk") : command.index("--maxschedchunk") + 2]
     assert "tests/test_alpha.py" in command
     assert "tests/test_*.py" not in command
     assert "tests/charness_cli" in command
@@ -75,6 +79,9 @@ def test_standing_pytest_command_replaces_targets_without_losing_xdist(
     # BOTH: under `taskset -c 0-3` an affinity-blind patch left the real 4 showing
     # through and this test failed on a restricted run only (#446 in a new place).
     monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(36)))
+    # Same rule for the scheduling chunk: it is suppressed below xdist 3.2, so an
+    # unpinned assertion would pass here and fail on an older-xdist host only.
+    monkeypatch.setattr(runner, "xdist_version", lambda: (3, 8, 0))
 
     command = runner.build_pytest_command(
         tmp_path,
@@ -84,7 +91,14 @@ def test_standing_pytest_command_replaces_targets_without_losing_xdist(
         env={},
     )
 
-    assert command[-4:] == ["-n", "16", "tests/focused.py::test_one", "tests/other.py"]
+    assert command[-6:] == [
+        "-n",
+        "16",
+        "--maxschedchunk",
+        "1",
+        "tests/focused.py::test_one",
+        "tests/other.py",
+    ]
     assert "tests/quality_gates" not in command
 
 
@@ -153,6 +167,11 @@ def test_standing_pytest_command_probes_and_serial_fallback(
 
     assert command[:3] == ["pytest", "-q", "--basetemp"]
     assert "-m" not in command
+    # The serial path must not carry the xdist-only flag: `--maxschedchunk` is
+    # registered by the xdist plugin, so a plain pytest exits 4 on it before
+    # collecting. This is the exact outcome the version floor and the `has_xdist`
+    # nesting exist to prevent, and it had no assertion anywhere until now.
+    assert "--maxschedchunk" not in command
     assert "pytest-xdist is not active" in capsys.readouterr().err
 
 
@@ -182,6 +201,82 @@ def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
         assert "positive integer" in str(exc)
     else:
         raise AssertionError("expected SystemExit for non-numeric worker count")
+
+
+def test_standing_pytest_sched_chunk_defaults_to_one_and_honors_overrides(monkeypatch) -> None:
+    """`--dist load` pre-assigns len(tests)//4 round-robin before any timing feedback.
+
+    Pinned as literals, not as a restatement of `choose_sched_chunk`'s own expression:
+    "1" is what an operator's command line actually carries, and the suppression
+    branches are the ones that keep an unknown flag from aborting the run.
+    """
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(runner, "xdist_version", lambda: (3, 8, 0))
+
+    assert runner.choose_sched_chunk({}) == "1"
+    assert runner.choose_sched_chunk({"CHARNESS_PYTEST_SCHED_CHUNK": "4"}) == "4"
+    assert runner.choose_sched_chunk({"CHARNESS_PYTEST_SCHED_CHUNK": "off"}) is None
+    # An operator who already tuned it wins; ours would land later and silently beat it.
+    assert runner.choose_sched_chunk({"PYTEST_ADDOPTS": "--maxschedchunk=10"}) is None
+    # The deference must DISCRIMINATE, not just fire. Without this line, widening the
+    # check to `if env.get("PYTEST_ADDOPTS")` still passes -- and PYTEST_ADDOPTS is
+    # routinely set for unrelated reasons (CI reporters, `-p no:cacheprovider`), so
+    # that mutant would silently revert this optimization on exactly those hosts.
+    assert runner.choose_sched_chunk({"PYTEST_ADDOPTS": "-p no:cacheprovider"}) == "1"
+    # Explicit override beats the addopts deference; the two are checked in that order.
+    assert runner.choose_sched_chunk(
+        {"CHARNESS_PYTEST_SCHED_CHUNK": "2", "PYTEST_ADDOPTS": "--maxschedchunk=10"}
+    ) == "2"
+
+    for bad, expected in (("0", "must be >= 1"), ("some", "positive integer")):
+        try:
+            runner.choose_sched_chunk({"CHARNESS_PYTEST_SCHED_CHUNK": bad})
+        except SystemExit as exc:
+            assert expected in str(exc)
+        else:
+            raise AssertionError(f"expected SystemExit for sched chunk {bad!r}")
+
+
+def test_standing_pytest_sched_chunk_suppressed_below_xdist_floor(monkeypatch) -> None:
+    """Below xdist 3.2 `--maxschedchunk` is an unknown option and pytest exits 4.
+
+    A scheduling tweak must never be why the suite cannot start -- the same rule
+    `usable_cpu_count` follows for affinity refusal.
+
+    3.1 is pinned as a literal because it is REACHABLE, not decorative:
+    `packaging/mutation-requirements.txt` allows `pytest-xdist>=3,<4`, so a supported
+    environment can hold a version that predates the flag. The floor was first written
+    as 2.3 from a guess and would have passed the flag to 3.0 and 3.1.
+    """
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(runner, "xdist_version", lambda: (3, 1, 0))
+    assert runner.choose_sched_chunk({}) is None
+
+    # Unknown version reads as "cannot tell", which must suppress rather than assume.
+    monkeypatch.setattr(runner, "xdist_version", lambda: ())
+    assert runner.choose_sched_chunk({}) is None
+
+    monkeypatch.setattr(runner, "xdist_version", lambda: (3, 2))
+    assert runner.choose_sched_chunk({}) == "1"
+
+
+def test_standing_pytest_xdist_version_parses_without_packaging_shadow(monkeypatch) -> None:
+    """`pythonpath = ["."]` puts the repo's own `packaging/` dir ahead of the library."""
+    from scripts import run_standing_pytest as runner
+
+    monkeypatch.setattr(runner.importlib.metadata, "version", lambda name: "3.8.0")
+    assert runner.xdist_version() == (3, 8, 0)
+
+    monkeypatch.setattr(runner.importlib.metadata, "version", lambda name: "3.9.0rc1")
+    assert runner.xdist_version() == (3, 9, 0)
+
+    def missing(name: str) -> str:
+        raise runner.importlib.metadata.PackageNotFoundError(name)
+
+    monkeypatch.setattr(runner.importlib.metadata, "version", missing)
+    assert runner.xdist_version() == ()
 
 
 def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
