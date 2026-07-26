@@ -352,6 +352,20 @@ aarch64 profile is dropped by explicit operator decision, not by agent judgment.
 - Lessons carried forward:
 - Metrics:
 
+### Slice 4: Git identity from the environment plus global-config isolation
+
+- Objective: Cut subprocess-startup cost in the standing suite by removing per-repo git config spawns, after measuring the real spawn census rather than trusting the handoff figure
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: Measured 12527 -> 11756 spawns (git config 764 -> 116) with a sitecustomize Popen probe covering every xdist worker; 5651 tests pass; fixture proven load-bearing (10 failures with identity removed, isolation on); run_slice_closeout completed; 8 pre-commit gates pass at 12bb4ab6. Wall clock NOT claimed - 109/112s after vs 121/107s before, ranges overlap.
+- Test duplication pressure: No new tests; 170 lines of redundant git config spawns removed across 38 files via an AST pass; dup ratchet clean
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
 ## Context Sources
 
 Follow in this order to reconstruct the originating context:
