@@ -9,62 +9,62 @@
 
 ## Continuation Capability
 
-No open issues; every move below names an owning artifact.
+No open issues; the previous five-item list is closed. Every claim below names its source.
 
 ## Current State
 
 - Standing operator direction: bug fixes, friction/rework, test/code speed.
   [release state](../charness-artifacts/release/latest.md) is current truth; get the
   tag from `git describe --tags --abbrev=0`, never from a transcribed string.
-- **When the repo IS the tool, run the repo's copy.** Four publish attempts died to the
-  release helper invoked from the INSTALLED plugin: its `recent_lessons_lib` predated
-  this repo's `independent_source_count` change, so it wrote an old-schema lesson index
-  the repo's own gate rejected. [bootstrap-resolution](../skills/shared/references/bootstrap-resolution.md)
-  already says `SKILL_DIR=skills/public/<id>` inside the source tree.
-- **A runtime bar is SIZED from a slice but ENFORCED on the 20-sample window median**,
-  so during a regime change a correctly-derived bar can still sit ~2% from a blocking
-  red. Converge the window first. [bars critique](../charness-artifacts/critique/2026-07-26-xdist-scheduler-chunking-and-the-budget-bars-it-invalidated.md)
-- **A new public MODULE plus a new CLI FLAG on an exported gate script sets MINOR** —
-  that precedent does not reach an env var on a repo-root dev runner, which is PATCH.
-  [bump-precedent critique](../charness-artifacts/critique/2026-07-26-v2-11-1-release-critique.md)
+- **The stale-lib publish trap is enforced now, not documented.**
+  [helper_provenance_lib](../scripts/helper_provenance_lib.py) refuses a helper from one
+  charness tree pointed at a different charness SOURCE tree whose copy has drifted, naming
+  the repo-local command rather than a remediation that loops. Guards sit at WRITE
+  boundaries: the release helper reaches those directly, and a guard on a CLI that
+  hand-writes the same bytes proves nothing — watched a drifted copy write the index.
+- **Two handoff items were premises, not debt.** `check-duplicates` was renamed to
+  `check-doc-near-duplicates` in the "Clarify document near-duplicate gate" commit
+  (`git log --oneline -S check-duplicates -- scripts/run-quality.sh`), so no run could
+  re-derive its window; the named speed fix was worth 2.7ms while the `charness_cli` chains
+  that "set the floor" are `release_only`, excluded from the standing gate. Check a label
+  still has a producer, and measure, before treating a handoff line as work.
 
 ## Next Session
 
-1. **Make the installed helper refuse to write through stale libs.** The gate caught
-   the drift above, but its message ("index is stale; run `--write`") names a fix that
-   CANNOT work — `--write` emits the new schema and the next publish overwrites it.
-   Warn or refuse when `--repo-root` is the charness source tree and versions differ.
-   Same-shaped siblings: `persist_retro_artifact`, `write_current_artifact`,
-   `build_debug_seam_risk_index`.
-2. **`local-linux-aarch64-4cpu` has never been run.** Bars are x86_64-derived FLOORS
-   with no aggregate. On the first run there, `check_runtime_budget.py
-   --runtime-profile local-linux-aarch64-4cpu --suggest-budgets` replaces the block;
-   resolve `check-coverage: 60000`. Thin windows owing a re-derive: 4-core x86_64 (n=4,
-   one red), `check-duplicates`, `dead-code-advisory`.
-3. **Speed: the scheduler is fixed, the suite is not.** `pytest` is now ~35s of a ~38s
-   `run-quality` run and `tests/charness_cli/` lifecycle chains set the floor. Next:
-   seed-cache-back `seeded_quality_runner_repo` (module-scoped, ~80 consumers, now
-   rebuilt per worker instead of once or twice).
-4. **The generated-retro signature keys on the emitted title.** Reword it and lesson
-   scoring counts every emission as an independent recurrence again; an invariant test
-   over `*-release-auto-retro.md` would catch it.
-5. Unprobed/pinned-not-fixed: BSD/macOS `du` `illegal option` wording; the flag gate
-   cannot see argument ORDER (F7/F8 — `REPO_ROOT.resolve() / "skills" / "public"`
-   escapes the [export-safety predicate](../tests/quality_gates/test_export_safe_asset_paths.py)).
-6. Unowned/deferred (signed off): see the [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)
-   and #448/#451 siblings; #453's sweep is closed, its mutation strength awaits a run.
+1. **The standing pytest gate is subprocess-startup-bound; that is where speed is.**
+   Measured: ~25s wall at 16 workers, ~263s in-test CPU, 6959 spawns/run (4880 `git`,
+   ~1840 `python`), ~31ms interpreter floor each. Two import deferrals landed (`charness`
+   114→101ms, `run_slice_closeout` 133→86ms — the pre-commit gate), pinned by
+   [test_hot_path_import_weight.py](../tests/quality_gates/test_hot_path_import_weight.py).
+   Next measured levers: ~390 per-test git seedings at ~24.5ms, and in-process
+   `run_script` conversion via [script_main](../tests/script_main.py). Not fixture caching.
+2. **`local-linux-aarch64-4cpu` has still never run on aarch64 hardware.** Its
+   `check-coverage` is measured now, not invented (two full `taskset -c 0-3` runs,
+   28.0s/28.2s -> 39500 at 1.4x, n=2). Owed: the real box, where `check_runtime_budget.py
+   --runtime-profile local-linux-aarch64-4cpu --suggest-budgets` replaces the block —
+   which still has NO aggregate bar behind its eight looser per-gate bars. The 4-core
+   x86_64 read-only window also still holds its one red (`pytest` n=6, median 111025):
+   a window turns over by age, not by being outvoted, so three more runs retire it.
+3. **The nose baseline is one scanner version behind** (the dup gate names both versions
+   on every run; `nose --version` for the live one). `--restamp-tool-version` refuses
+   while the live family set differs, and five families were classified this turn, so
+   `--write-baseline --confirm-baseline-delta` on the current scanner is the standing fix.
+4. Unowned/deferred (signed off): the [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md) and #448/#451 siblings; #453's sweep is closed, its mutation strength awaits a run.
 
 ## Discuss
 
-- A version floor, an upstream mechanism, and a precedent's scope are CLAIMS ABOUT THE
-  WORLD — check each against its source in the same edit that writes it. This session
-  shipped one of each from inference and a reviewer caught all three.
-- Run an artifact's owning `scaffold_*.py` first; treat a counted limit as a planning
-  input, not a retry loop. Pin literals where an operator acts.
+- **The bounded fresh-eye critique for the five-item slice did NOT run:** host
+  instructions prohibited spawning subagents, which the repo contract treats as a
+  higher-priority override. No same-agent pass was substituted, so the slice ships
+  gate-verified (83/83) and review-unproven.
+- A mechanism is a CLAIM ABOUT THE WORLD — run it in the same edit that writes it. Twice
+  this turn: argparse ordering (`demo resolve --top x` exits 2, so the flag gate's union
+  was unsound both ways) and BusyBox `du -k`. A gate at its length cap also turns a
+  one-line addition into a split decision (`publish_release_cli.py`, 360/360).
 - Do not re-litigate the two refuted audit findings (dup-ratchet hard arm,
   boundary-bypass ratchet).
 
 ## References
 
-- [session retro](../charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md) · [affinity-holes critique](../charness-artifacts/critique/2026-07-26-runtime-profile-affinity-holes.md) · [flag-gate critique](../charness-artifacts/critique/2026-07-26-documented-command-flag-gate.md)
+- [session retro](../charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md) · [affinity-holes critique](../charness-artifacts/critique/2026-07-26-runtime-profile-affinity-holes.md) · [flag-gate critique](../charness-artifacts/critique/2026-07-26-documented-command-flag-gate.md) · [five-item critique](../charness-artifacts/critique/2026-07-26-handoff-backlog-five-items.md)
 - [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)

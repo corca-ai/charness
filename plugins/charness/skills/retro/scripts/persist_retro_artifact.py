@@ -50,6 +50,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
+    SKILL_RUNTIME.require_repo_local_helper(__file__, repo_root)
     adapter = load_adapter(repo_root)
     output_dir = repo_root / adapter["data"]["output_dir"]
     summary_rel = adapter["data"].get("summary_path")

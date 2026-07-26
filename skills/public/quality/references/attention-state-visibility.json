@@ -27,6 +27,18 @@
       ],
       "rationale": "resolve_manual_disposition returns a TYPED, RECORDED `skipped` disposition -- the fallback path when no adapter `post_delivery_readback_probe` is declared for `human-backend` announcement delivery. record_announcement.py writes it into the delivery record's `verification` field in `.charness/announcement/announcements.jsonl`. This satisfies the rung-1 presence floor (a confirmation or a typed non-`verified` disposition pass equally, mirroring the release skill's WS-1 rung-1/rung-2 split) but is never a silent clean pass -- the disposition and its `reason` are legible in the persisted ledger record that announcement closeout renders from."
     },
+    "scripts/argparse_surface_lib.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "operator_summary"
+      ],
+      "evidence_terms": [
+        "skipped"
+      ],
+      "rationale": "Split out of check_documented_command_flags.py, which owns this state and its declaration above. This module contains the term only in prose explaining why an unnormalized flag token must not be dropped silently -- it produces no attention state of its own and has no command surface. The skipped count it explains is still counted by reason and rendered by that gate's render_report on the PASS output as well as the fail output, and rides in its --json payload, so the visibility contract is satisfied at the same single place it always was."
+    },
     "scripts/build_debug_seam_risk_index.py": {
       "states": [
         "skipped"

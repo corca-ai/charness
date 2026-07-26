@@ -322,12 +322,26 @@ runtime_budget_profiles:
       # inside `pytest`, and trip nothing. Same 1.4x-of-worst-recent convention as the
       # relevel above, and all three windows are n=20 entirely post-barrier-removal, so
       # these are contended numbers without needing the `(contended)` caveat.
-      # `check-duplicates` and `dead-code-advisory` are deliberately still unbudgeted:
-      # their windows hold NO post-barrier-removal samples, so a bar would be sized
-      # from the regime this profile no longer runs in.
       check-export-safe-imports: 12000
       check-plugin-import-smoke: 9000
       check-documented-command-flags: 9000
+      # 2026-07-26 (b): the two labels the previous pass left unbudgeted for want of
+      # post-barrier-removal samples, resolved in opposite directions.
+      #
+      # `check-duplicates` is owed NOTHING and never was: it was renamed to
+      # `check-doc-near-duplicates` on 2026-07-04 (f838ebf6), so nothing has emitted
+      # that label in over a month and no run can ever re-derive it. Its stale window
+      # is a dead alias in the machine-local signals file, not a measurement gap. The
+      # live gate under the new name is ~1.2s and stays unbudgeted on cost grounds,
+      # like every other sub-second label here. Recorded because "window owing a
+      # re-derive" was carried into the handoff as debt for two sessions.
+      #
+      # `dead-code-advisory` is real and now measured: three runs this turn took its
+      # window to n=7, entirely post-barrier-removal (7787-8747ms, median 8067).
+      # 12500 is 1.4x that 8747ms max. It is opt-in (`CHARNESS_QUALITY_DEAD_CODE=1` or
+      # an explicit label selection), so this bar only binds on a run that asked for
+      # the gate -- which is precisely why it could sit unbudgeted so long.
+      dead-code-advisory: 12500
   local-linux-x86_64-4cpu:
     # This profile HAD samples and no budgets, which is the one combination the gate
     # treats as a hard configuration error -- so `taskset -c 0-3 ./scripts/run-quality.sh`
@@ -338,9 +352,17 @@ runtime_budget_profiles:
     # WINDOW CAVEAT: the middle of those three runs FAILED (`pytest` 126440ms status
     # `fail`, and therefore `run-quality-read-only` 130279ms status `fail`). The bars
     # below are still arithmetically as claimed because they are drawn from
-    # `max_recent`, which is a passing run in both cases -- but the window is n=3
+    # `max_recent`, which is a passing run in both cases -- but the window was n=3
     # containing one red, not three clean measurements. A failing run can exit early
     # and read FAST, so a median drawn from this window would be optimistic.
+    #
+    # 2026-07-26 (b): partly resolved, and the residue named. Two FULL 4-core runs this
+    # turn (both 83/83 clean) took `pytest` to n=6 median 111025 and added the first
+    # `run-quality-full`/`check-coverage` samples this profile has ever had. The red is
+    # still IN the `pytest` and `run-quality-read-only` windows -- a window turns over
+    # by age, not by being outvoted -- so a median read from either remains optimistic
+    # until three more read-only runs land. The read-only bars below are deliberately
+    # NOT retuned from the full-mode runs: different label, different queue.
     #
     # MEASURED, not derived from a contention factor: every value is 1.4x that
     # window's worst run for the label, rounded up to 500ms, as emitted by
@@ -396,6 +418,14 @@ runtime_budget_profiles:
       check-shell: 19000
       # The aggregate the per-gate bars above are backstopped by; observed max 134796.
       run-quality-read-only: 189000
+      # 2026-07-26 (b): this profile's first FULL-mode runs, taken to give the aarch64
+      # block's `check-coverage` a measured 4-core floor (it does not run in
+      # `--read-only`). Both clean at 99.5s/99.8s -- faster than the 134796ms read-only
+      # max above, which predates `--maxschedchunk 1`; that older bar is left alone
+      # rather than retuned from a window this run did not turn over. 1.4x the 99828ms
+      # max, n=2 and stated as such.
+      check-coverage: 39500
+      run-quality-full: 140000
   local-linux-aarch64-4cpu:
     # Budgets set above this machine's measured median_recent/max_recent so the
     # gate is honest for the slower 4-CPU aarch64 box (same key scope as the
@@ -463,8 +493,15 @@ runtime_budget_profiles:
       inventory-ubiquitous-language: 2500
       # 4-core floor 130800ms (was 110000, a false red)
       pytest: 185000
-      # NOT measured at 4 cores: check-coverage does not run in --read-only
-      check-coverage: 60000
+      # 2026-07-26 (b): MEASURED at 4 cores at last, and retightened from 60000. This
+      # was the one label in this block with no 4-core evidence of any kind, because
+      # the three throttled runs it was derived beside were `--read-only` and this gate
+      # does not run there. Two FULL `taskset -c 0-3 ./scripts/run-quality.sh` runs
+      # (both clean, 83/83) put it at 28.0s/28.2s, so 39500 is 1.4x the 28160ms max --
+      # the same convention every sibling bar in this block uses, replacing a number
+      # that was invented. n=2 is thin, and stated: this is a floor from two samples,
+      # not a converged window.
+      check-coverage: 39500
       # 4-core floor 36100ms; bar already above it, left alone
       doc-duplicates: 60000
       # 4-core floor 39300ms (was 35000, a false red)

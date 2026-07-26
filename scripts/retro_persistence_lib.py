@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scripts.helper_provenance_lib import require_repo_local_helper
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
 from scripts.t_events_emit_lib import emit_retro_lesson_cites
 
@@ -61,6 +62,11 @@ def persist_retro_artifact(
     summary_path: Path | None,
     force_empty_summary: bool = False,
 ) -> dict[str, Any]:
+    # Guarded here, at the WRITE boundary, rather than only in the CLIs above it:
+    # `publish_release` reaches this function directly, and the four failed publishes
+    # this check exists for wrote an old-schema lesson index through exactly this
+    # path from an installed plugin copy. See scripts/helper_provenance_lib.py.
+    require_repo_local_helper(__file__, repo_root)
     normalized_name, was_normalized = normalize_artifact_name(artifact_name)
     if was_normalized:
         print(

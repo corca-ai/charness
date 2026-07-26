@@ -365,6 +365,14 @@ def lesson_selection_index_text(payload: dict[str, Any]) -> str:
 
 
 def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path) -> Path:
+    # The write boundary of the index the four failed publishes corrupted: an
+    # installed-plugin copy of this module emitted the pre-`independent_source_count`
+    # schema into a source tree whose own gate then rejected it. Guarding the writer
+    # rather than each CLI above it covers every caller, including the release helper.
+    # See scripts/helper_provenance_lib.py.
+    from scripts.helper_provenance_lib import require_repo_local_helper
+
+    require_repo_local_helper(__file__, repo_root)
     payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     index_path = lesson_selection_index_path(output_dir)
     index_path.write_text(lesson_selection_index_text(payload), encoding="utf-8")
@@ -383,7 +391,9 @@ def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
     if index_path.read_text(encoding="utf-8") != expected:
         raise ValueError(
             f"retro lesson selection index `{index_path.relative_to(repo_root)}` is stale; "
-            "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`"
+            "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write` "
+            "from this repo root. Use this repo's own copy of the script: a copy from an "
+            "installed plugin can write an older schema, which re-triggers this same failure."
         )
     expected_digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     if not summary_path.is_file():

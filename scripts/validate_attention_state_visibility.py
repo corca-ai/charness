@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_DECLARATION_PATH = "skills/public/quality/references/attention-state-visibility.json"
-DEFAULT_SCAN_ROOTS = ("scripts", "skills/public", "skills/support")
+DEFAULT_SCAN_ROOTS = ("scripts", "skills/public", "skills/shared", "skills/support")
 PLUGIN_DECLARATION_PATH = "skills/quality/references/attention-state-visibility.json"
 ATTENTION_TERMS = (
     "no_adapter",
@@ -111,6 +111,13 @@ def default_scan_roots(repo_root: Path) -> list[ScanRoot]:
             _scan_root(repo_root, Path("skills/public")),
             _scan_root(repo_root, Path("skills/support")),
         ])
+        if (repo_root / "skills" / "shared").is_dir():
+            # `skills/shared` carries repo-owned helpers with real attention states --
+            # the reviewer-result diagnostic floor counts `skipped_oversized_records`
+            # -- and sat outside every source-layout scan root, so its declaration
+            # could never be satisfied and read as a stale entry instead of a covered
+            # one. The export layout already scanned it via the `skills` branch below.
+            roots.append(_scan_root(repo_root, Path("skills/shared")))
     elif (repo_root / "skills").is_dir():
         roots.append(_scan_root(repo_root, Path("skills")))
         sibling_support = _sibling_support_root(repo_root)

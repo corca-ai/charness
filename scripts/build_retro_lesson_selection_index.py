@@ -16,6 +16,7 @@ build_lesson_selection_index = _recent_lessons_module.build_lesson_selection_ind
 check_lesson_selection_index = _recent_lessons_module.check_lesson_selection_index
 lesson_selection_index_path = _recent_lessons_module.lesson_selection_index_path
 lesson_selection_index_text = _recent_lessons_module.lesson_selection_index_text
+write_lesson_selection_index = _recent_lessons_module.write_lesson_selection_index
 
 
 def _resolver_path(repo_root: Path) -> Path:
@@ -75,7 +76,10 @@ def main() -> int:
     index_path = lesson_selection_index_path(output_dir)
 
     if args.write:
-        index_path.write_text(lesson_selection_index_text(payload), encoding="utf-8")
+        # Through the library writer, not a local `write_text`: that writer owns the
+        # helper-provenance refusal, and hand-writing the same bytes here bypassed it
+        # (verified: a drifted installed copy wrote the index anyway).
+        write_lesson_selection_index(repo_root, output_dir, summary_path)
         result = {
             "index_path": _relative(repo_root, index_path),
             "source_artifact_count": payload["source_artifact_count"],

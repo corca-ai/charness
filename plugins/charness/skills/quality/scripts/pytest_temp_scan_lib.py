@@ -38,13 +38,39 @@ PYTEST_TEMP_SCAN_TOTAL_TIMEOUT_SECONDS = 30.0
 #: Reasons a retry cannot clear and that mean the box cannot run this measurement
 #: at all, rather than that the measurement failed. Consumers keep these advisory.
 DU_CAPABILITY_GAP_REASONS = frozenset({"du_missing", "du_not_executable", "du_unsupported_options"})
-# Measured, not inferred. BusyBox v1.30.1 `du -d 4 -B1` emits, on stderr, exit 1:
+# Diagnostic only, and deliberately so. BusyBox v1.30.1 `du -d 4 -B1` emits, on
+# stderr, exit 1:
 #     du: invalid option -- 'B'
 #     Usage: du [-aHLdclsxhmk] [FILE]...
-# GNU coreutils `du` emits `du: invalid option -- 'Q'` for a bad short option and
-# `du: unrecognized option '--bogus'` for a bad long one. `illegal option` covers
-# the BSD/macOS getopt wording, which remains the one unprobed entry here.
+# GNU coreutils emits `du: invalid option -- 'Q'` for a bad short option and
+# `du: unrecognized option '--bogus'` for a bad long one. `illegal option` is the
+# BSD/macOS getopt wording and is the one entry no run here has ever observed.
+#
+# Nothing BRANCHES on this list any more: `_scan_with_retry` falls through to the
+# next `DU_SCAN_VARIANTS` entry whenever a walk produced no root total, whatever
+# stderr said. A wording this list gets wrong therefore costs a less precise
+# `reason` string, not a lost measurement -- which is the only honest place to
+# leave an inference that cannot be probed from the hosts available.
 DU_USAGE_ERROR_TOKENS = ("unrecognized option", "invalid option", "illegal option", "unknown option", "usage:")
+
+#: Ordered `du` invocations to try, with the multiplier that turns their sizes into
+#: bytes. `-B1` reports exact bytes and is GNU-only; `-k` is in POSIX, BusyBox
+#: (`[-aHLdclsxhmk]`), and BSD/macOS, at the cost of 1KiB granularity. A host whose
+#: `du` rejects `-B1` therefore gets a coarser real measurement instead of an
+#: advisory capability gap.
+DU_SCAN_VARIANTS: tuple[tuple[str, tuple[str, ...], int], ...] = (
+    ("bytes", ("-B1",), 1),
+    ("kib", ("-k",), 1024),
+)
+#: Failures where a different option set could plausibly be the difference, so the
+#: next variant is worth one spawn. Everything else -- an absent or unrunnable `du`,
+#: a timeout, an OS error -- means the binary never produced output, and no option
+#: set changes that; those keep the original across-attempts retry instead.
+#:
+#: `du_exit_nonzero` is in here on purpose: it is the reason an unfamiliar `du`
+#: reports a rejected `-B1` in wording `DU_USAGE_ERROR_TOKENS` does not know, which
+#: is the whole point of not branching on that wording.
+DU_VARIANT_RETRY_REASONS = frozenset({"du_unsupported_options", "du_exit_nonzero"})
 
 #: Whether anything pointed the scan at a specific root. Without
 #: `PYTEST_DEBUG_TEMPROOT` the scan falls back to the shared system temp dir, where
@@ -76,17 +102,24 @@ def _du_usage_error(stderr: str) -> bool:
     return any(token in lowered for token in DU_USAGE_ERROR_TOKENS)
 
 
-def du_scan_once(root: Path, timeout: float) -> tuple[subprocess.CompletedProcess[str] | None, str]:
+def du_scan_once(
+    root: Path,
+    timeout: float,
+    options: tuple[str, ...] = DU_SCAN_VARIANTS[0][1],
+) -> tuple[subprocess.CompletedProcess[str] | None, str]:
     """Run the quick `du` walk once, naming which way it failed.
 
     `check=True` is deliberately NOT used. `du` exits nonzero merely because some
     entry vanished mid-walk, yet it keeps walking and still prints the totals for
     everything it did see -- so a nonzero exit is not by itself a failed
     measurement. The caller decides that from the output, not from the status.
+
+    ``options`` carries the size-unit flags of one `DU_SCAN_VARIANTS` entry; it
+    defaults to the GNU byte-exact form so existing callers are unchanged.
     """
     try:
         result = subprocess.run(
-            ["du", "-d", "4", "-B1", str(root)],
+            ["du", "-d", "4", *options, str(root)],
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -132,33 +165,49 @@ def du_reported_root_total(stdout: str, root: Path) -> bool:
 
 def _scan_with_retry(
     root: Path, attempts: int, total_timeout: float
-) -> tuple[subprocess.CompletedProcess[str] | None, str, int]:
-    """Scan until a usable walk lands, the attempts run out, or the clock does."""
+) -> tuple[subprocess.CompletedProcess[str] | None, str, int, int]:
+    """Scan until a usable walk lands, the attempts run out, or the clock does.
+
+    Each attempt walks `DU_SCAN_VARIANTS` in order and stops at the first variant
+    that prints the root's own total. Falling through on ANY unusable walk -- not
+    only on one whose stderr matched a known usage wording -- is what keeps
+    `DU_USAGE_ERROR_TOKENS` out of the control flow: an unfamiliar `du` that
+    rejects `-B1` in words nobody here has seen still gets measured by `-k`.
+
+    Returns the bytes multiplier of the variant that succeeded alongside the walk.
+    """
     budget = max(1, attempts)
     deadline = time.monotonic() + total_timeout
     attempt = 0
     reason = ""
     while attempt < budget:
         attempt += 1
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            return None, reason or "du_timeout", attempt
-        result, reason = du_scan_once(root, min(PYTEST_TEMP_SCAN_ATTEMPT_TIMEOUT_SECONDS, remaining))
-        if result is not None and du_reported_root_total(result.stdout, root):
-            # `du` printed the root's own total, so it finished its accounting. A
-            # nonzero exit here only means some entry vanished under it; the
-            # numbers it did print are the ones the caller grades.
-            return result, reason, attempt
+        for _label, options, multiplier in DU_SCAN_VARIANTS:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return None, reason or "du_timeout", attempt, 1
+            result, reason = du_scan_once(
+                root, min(PYTEST_TEMP_SCAN_ATTEMPT_TIMEOUT_SECONDS, remaining), options
+            )
+            if result is not None and du_reported_root_total(result.stdout, root):
+                # `du` printed the root's own total, so it finished its accounting. A
+                # nonzero exit here only means some entry vanished under it; the
+                # numbers it did print are the ones the caller grades.
+                return result, reason, attempt, multiplier
+            if reason not in DU_VARIANT_RETRY_REASONS:
+                break
         if reason in DU_CAPABILITY_GAP_REASONS:
-            return None, reason, attempt
+            # Every variant hit a usage error, so this box cannot run the walk at all
+            # and a retry would report the same thing.
+            return None, reason, attempt, 1
         if attempt < budget:
             # Let the losing race finish before looking again. Only the failure
             # path pays this, and only on a run that would otherwise prove nothing.
             time.sleep(PYTEST_TEMP_SCAN_RETRY_SECONDS)
-    return None, reason, attempt
+    return None, reason, attempt, 1
 
 
-def _parse_du_footprint(stdout: str, root: Path) -> dict[str, Any]:
+def _parse_du_footprint(stdout: str, root: Path, multiplier: int = 1) -> dict[str, Any]:
     seed_totals: dict[str, dict[str, int]] = {
         prefix: {"count": 0, "disk_bytes": 0} for prefix in PYTEST_SEED_PREFIXES
     }
@@ -168,7 +217,7 @@ def _parse_du_footprint(stdout: str, root: Path) -> dict[str, Any]:
     for line in stdout.splitlines():
         try:
             size_str, raw_path = line.split("\t", 1)
-            size = int(size_str)
+            size = int(size_str) * multiplier
         except ValueError:
             continue
         path = Path(raw_path)
@@ -204,7 +253,7 @@ def pytest_temp_footprint_quick(
     root_source = pytest_temp_root_source()
     if not root.exists():
         return {"status": "missing", "root": str(root), "root_source": root_source}
-    result, reason, attempt = _scan_with_retry(root, attempts, total_timeout)
+    result, reason, attempt, multiplier = _scan_with_retry(root, attempts, total_timeout)
     if result is None:
         return {
             "status": "unavailable",
@@ -218,7 +267,11 @@ def pytest_temp_footprint_quick(
         "status": "available",
         "root": str(root),
         "root_source": root_source,
-        **_parse_du_footprint(result.stdout, root),
+        **_parse_du_footprint(result.stdout, root, multiplier),
+        # 1 when `du -B1` reported exact bytes, 1024 when the portable `-k` fallback
+        # measured in KiB blocks. Reported so a consumer can tell a byte-exact total
+        # from a rounded-up one instead of assuming precision the walk did not have.
+        "size_granularity_bytes": multiplier,
         # Kept on the SUCCESS path too: a scan that failed once and succeeded on
         # the retry is the exact flaky state the retry exists to absorb, and
         # reporting it only on failure would erase the evidence that it happened.

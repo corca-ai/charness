@@ -77,6 +77,24 @@ def _binop_base(node: ast.AST) -> ast.AST:
     return node
 
 
+def _chain_root_name(node: ast.AST) -> ast.AST:
+    """Strip attribute access and calls off a chain base to reach the name it starts at.
+
+    `REPO_ROOT.resolve()`, `REPO_ROOT.parent`, and `REPO_ROOT.resolve().parent` are
+    all the module's own root, and all three used to escape the detector: unwrapping
+    one `Call` layer to its `func` leaves an `ast.Attribute`, not the `ast.Name` the
+    check demanded. `Path(x)` still stops at `Path`, so wrapping an operator-supplied
+    root stays out of scope.
+    """
+    while True:
+        if isinstance(node, ast.Call):
+            node = node.func
+        elif isinstance(node, ast.Attribute):
+            node = node.value
+        else:
+            return node
+
+
 def _is_export_rooted(node: ast.AST) -> bool:
     """True when a `/` chain is rooted at the module's own REPO_ROOT.
 
@@ -86,9 +104,7 @@ def _is_export_rooted(node: ast.AST) -> bool:
     scans whatever repo the caller named, and maintainer tools legitimately walk
     `skills/public/` there. Only the first form is a delivery bug.
     """
-    base = _binop_base(node)
-    if isinstance(base, ast.Call):
-        base = base.func
+    base = _chain_root_name(_binop_base(node))
     return isinstance(base, ast.Name) and base.id == "REPO_ROOT"
 
 

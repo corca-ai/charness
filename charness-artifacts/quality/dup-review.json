@@ -177,6 +177,13 @@
     },
     {
       "class": "intentional",
+      "id": "2f8e4eee7183a670",
+      "note": "two independent JSONL validators sharing the read-lines/skip-blank/json.loads/jsonschema.validate loop shape (usage_episode_records.read_schema_valid_records, rca_ledger_lib.validate_ledger); they return different error record shapes (list[str] with path-qualified messages vs list[dict] keyed by line) and apply different timestamp rules, so a shared helper would need a per-caller formatter callback and would couple the usage-episode and RCA-ledger schemas without centralizing any behavior. Surfaced as new when a deferred `import jsonschema` was added to the first (41ms of run_slice_closeout.py startup), matching the lazy import rca_ledger_lib already had",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "309a387c4c61cfd6",
       "note": "critique and retro final packet reports deliberately differ: critique emits immutable reviewed-input binding while retro must not inherit it; a generic status renderer would hide that evidence boundary",
       "reviewed_at": "2026-07-19",
@@ -667,6 +674,13 @@
     },
     {
       "class": "intentional",
+      "id": "9a5d2a32988cd4c7",
+      "note": "runtime_bootstrap import/alias preamble shared by four unrelated repo-root scripts (build_debug_seam_risk_index.py, check_skill_cut_safety.py, post_edit_skill_anchor_guard.py, validate_cautilus_diagnostics.py); same class as 02923daf7e01c82e -- the per-script portability preamble the nose advisory names as its own known blind spot. Re-fingerprinted when the seam-index builder added require_repo_local_helper to that import, which ruff's isort arm then wraps to the multi-line form: the shape is tool-mandated, not chosen",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "9aa84744a72dd6ab",
       "note": "five-line main-flow tail shared when validator and reporter print a terminal payload and return around missing or invalid records; each command owns a distinct payload builder, so a shared control-flow wrapper would obscure command semantics",
       "reviewed_at": "2026-07-10",
@@ -677,6 +691,13 @@
       "id": "9fba34eb678c4ff9",
       "note": "critique and retro expose parallel packet-scope CLI arguments but remain independently executable portable skill commands with different reviewed-input, timeout, and output contracts; a partial shared parser experiment increased live clone families from 12 to 14 and was reverted",
       "reviewed_at": "2026-07-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a0e35d08243887cc",
+      "note": "scan rotation, not new duplication: all four members (check_command_docs.py, check_cli_skill_surface.py, check_skill_surface_preflight.py, validate_quality_reference_catalog.py) are untouched this session, and the family is the same repo-root import/alias preamble class as 02923daf7e01c82e. Surfaced by the nose 0.19.0 -> 0.20.0 regroup the gate's own scanner-version warning names (#441 rotation class)",
+      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {
@@ -870,6 +891,13 @@
     },
     {
       "class": "intentional",
+      "id": "d5de82d94e2b9a73",
+      "note": "runtime_bootstrap import/alias preamble shared by four unrelated repo-root scripts (build_debug_seam_risk_index.py, check_skill_cut_safety.py, post_edit_skill_anchor_guard.py, validate_cautilus_diagnostics.py); same class as 02923daf7e01c82e -- the per-script portability preamble the nose advisory names as its own known blind spot. Re-fingerprinted when the seam-index builder added require_repo_local_helper to that import line",
+      "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d72f39d16963ed25",
       "note": "the small changed-ref alias/default-label decision is deliberately visible in both portable runners; partial extraction added helper/call-shape duplication without owning their distinct packet semantics",
       "reviewed_at": "2026-07-19",
@@ -1027,6 +1055,13 @@
       "id": "ee2f2b3e036c78a7",
       "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution — intentional, not extractable",
       "reviewed_at": "2026-07-02",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f47a6c0ed140b9fb",
+      "note": "the parallel argparse main() of the repo's two index builders (build_retro_lesson_selection_index.py, build_debug_seam_risk_index.py): both expose the same deliberate --write/--check/--json operator contract over different payloads, and that contract IS the shared surface a reader relies on. Extraction would need a generic index-CLI framework parameterized by builder, checker, renderer, and result keys -- more indirection than the ~25 duplicated lines it removes, for two callers. Re-fingerprinted when the retro builder's write branch was routed through the library writer that owns the helper-provenance refusal",
+      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {

@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import jsonschema
 import yaml
 from usage_episode_feedback import semantic_feedback_errors
 
@@ -42,6 +41,12 @@ def load_validated_adapter(
 ) -> tuple[dict[str, Any] | None, Exception | None]:
     """Load and validate one usage-episodes adapter, preserving its exception."""
 
+    # `jsonschema` (with `referencing`) measured 41ms of `run_slice_closeout.py`'s
+    # 133ms startup, and that pre-commit gate imports this module for its record
+    # types without necessarily validating anything. Both validating entry points
+    # pay the import; importers that only parse no longer do.
+    import jsonschema
+
     try:
         adapter = yaml.safe_load(adapter_path.read_text(encoding="utf-8"))
         if not isinstance(adapter, dict):
@@ -64,6 +69,8 @@ def read_schema_valid_records(
     record_schema: dict[str, Any],
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """Return parsed schema-valid rows without cross-row reconciliation."""
+    import jsonschema
+
     if not path.is_file():
         return [], []
     records: list[dict[str, Any]] = []

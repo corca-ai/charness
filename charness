@@ -11,8 +11,6 @@ import shutil
 import subprocess
 import sys
 import time
-import urllib.error
-import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
@@ -873,6 +871,13 @@ def normalize_release_payload(repo: str, payload: dict[str, object]) -> dict[str
 
 
 def probe_self_release() -> dict[str, object]:
+    # Imported here, not at module scope: `urllib.request` pulls in `http.client`,
+    # `ssl`, and `email.parser`, which measured 17ms of this CLI's ~114ms startup —
+    # paid by every `charness` invocation, while the one network path that needs it
+    # is this function, past the fixture short-circuit.
+    import urllib.error
+    import urllib.request
+
     repo = self_release_repo()
     fixture = fixture_release(repo)
     if fixture is not None:

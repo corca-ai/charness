@@ -39,3 +39,14 @@ def arm_cli_timeout(
 ):
     module = import_repo_module(__file__, "scripts.script_timeout")
     return module.arm_cli_timeout(label=label, default_seconds=default_seconds)
+
+
+def require_repo_local_helper(script_file: str | Path, repo_root: str | Path, **kwargs) -> dict:
+    """Refuse a write helper that belongs to a different, drifted charness tree.
+
+    Lazily loaded from the running script's own tree, like ``arm_cli_timeout``, so
+    the guard is always the copy that shipped with the helper being guarded.
+    """
+
+    module = import_repo_module(__file__, "scripts.helper_provenance_lib")
+    return module.require_repo_local_helper(script_file, repo_root, **kwargs)

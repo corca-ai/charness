@@ -141,14 +141,39 @@ def test_call_rooted_chain_is_judged_by_the_called_name() -> None:
     assert _is_export_rooted(_expr('REPO_ROOT() / "skills" / "public"')) is True
 
 
-def test_attribute_call_root_is_outside_the_unwrap() -> None:
-    """Known limitation, pinned so a change here is a decision and not a drift.
+@pytest.mark.parametrize(
+    "source",
+    [
+        'REPO_ROOT.resolve() / "skills" / "public"',
+        'REPO_ROOT.parent / "skills" / "public"',
+        'REPO_ROOT.resolve().parent / "skills/public/quality"',
+        'REPO_ROOT.resolve() / "skills/public"',
+    ],
+)
+def test_attribute_and_method_chains_off_repo_root_are_export_rooted(source: str) -> None:
+    """Previously the gate's live escape hatch, now closed.
 
-    `REPO_ROOT.resolve()` unwraps to an `ast.Attribute`, not an `ast.Name`, so the
-    predicate says False and the spelling `REPO_ROOT.resolve() / "skills" / "public"`
-    goes undetected. Nothing in the repo writes it that way today.
+    `REPO_ROOT.resolve()` unwraps to an `ast.Attribute`, not an `ast.Name`, so a
+    single-layer unwrap said False and every one of these spellings shipped the
+    delivery bug undetected. They are all the module's own location-derived root
+    with a method or attribute in front, so they all follow the script into the
+    plugin tree where `skills/public/` does not exist.
     """
-    assert _is_export_rooted(_expr('REPO_ROOT.resolve() / "skills" / "public"')) is False
+    assert _is_export_rooted(_expr(source)) is True
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        'args.repo_root.resolve() / "skills" / "public"',
+        'self.root.parent / "skills" / "public"',
+        'Path(root).resolve() / "skills" / "public"',
+    ],
+)
+def test_attribute_chains_off_an_operator_supplied_root_stay_allowed(source: str) -> None:
+    """The widened unwrap must not swallow the distinction the gate turns on: a
+    maintainer tool walking the tree it was pointed at is not a delivery bug."""
+    assert _is_export_rooted(_expr(source)) is False
 
 
 # --- _forbidden_path_literal -------------------------------------------------

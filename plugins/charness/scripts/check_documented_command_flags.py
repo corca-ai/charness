@@ -40,7 +40,6 @@ from __future__ import annotations
 import argparse
 import os
 import re
-import shlex
 from collections import Counter
 from collections.abc import Iterator
 from pathlib import Path
@@ -49,6 +48,15 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
+# The argparse side of this check -- what a parser declares, which options consume a
+# value, and which parser a flag written at a given position would reach.
+_argparse_surface = import_repo_module(__file__, "scripts.argparse_surface_lib")
+accepted_options = _argparse_surface.accepted_options
+options_with_values = _argparse_surface.options_with_values
+split_arguments = _argparse_surface.split_arguments
+resolve_subcommands = _argparse_surface.resolve_subcommands
+active_depth = _argparse_surface.active_depth
+MAX_SUBCOMMAND_DEPTH = _argparse_surface.MAX_SUBCOMMAND_DEPTH
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 iter_docs = _check_doc_links.iter_docs
 iter_known_repo_paths = _check_doc_links.iter_known_repo_paths
@@ -76,52 +84,12 @@ INVOCATION_RE = re.compile(
     r"|(?P<bare>[A-Za-z0-9_-]+\.py))"
     r"[\"']?(?=\s|$)"
 )
-FLAG_RE = re.compile(r"(?<![\w<-])--[A-Za-z0-9][A-Za-z0-9-]*")
-# argparse guarantees two structural homes for a real option name: the `usage:`
-# block, and the left column of an option row. Everything else in `--help` is
-# prose -- `description=__doc__`, `epilog`, and every `help=` string. Scanning the
-# whole render put `--cached`, `--run-checks`, `--body-file`, `--min-confidence`
-# and `--mutation-coverage-command` into the accepted sets of parsers that reject
-# them: a false green in exactly the direction this gate exists to close.
-OPTION_ROW_RE = re.compile(r"^ {1,4}(-[^\s].*)$")
-HELP_COLUMN_GAP_RE = re.compile(r"\s{2,}")
 # Generated copies of a canonical script; a doc never means these.
 MIRROR_PREFIXES = ("plugins/", "mutants/")
-SUBCOMMAND_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 # argparse renders a subparser's choices as `{a,b,c}` in its usage line. Reading
 # them back is what lets a flag be attributed to the parser that owns it.
 CHOICES_RE = re.compile(r"\{([a-z0-9-]+(?:,[a-z0-9-]+)*)\}")
-# A documented pipeline's later stage is a different command; its flags are not
-# this script's to accept. Matched against whole shell tokens, never against raw
-# text -- `--test-pressure "... 23.2% vs 22% gate; +2 tests"` carries a literal
-# `;` inside a quoted value, and cutting there strands the quote.
-SHELL_OPERATORS = {"|", "||", ";", "&&", "&", ">", ">>", "<"}
 HELP_COLUMNS = "200"
-MAX_SUBCOMMAND_DEPTH = 4
-
-
-def accepted_options(help_text: str) -> set[str]:
-    """Option names argparse actually declares, read from structure not prose.
-
-    Two sources, both structural: the `usage:` block (every optional appears
-    there) and the invocation column of each option row (which is where `--help`
-    itself lives, since usage renders it as `[-h]`). The help column is cut at the
-    two-space gap argparse puts between an option and its description.
-    """
-    accepted: set[str] = set()
-    in_usage = False
-    for line in help_text.splitlines():
-        if line.startswith("usage:"):
-            in_usage = True
-        elif in_usage and not line.strip():
-            in_usage = False
-        if in_usage:
-            accepted.update(FLAG_RE.findall(line))
-            continue
-        row = OPTION_ROW_RE.match(line)
-        if row:
-            accepted.update(FLAG_RE.findall(HELP_COLUMN_GAP_RE.split(row.group(1))[0]))
-    return accepted
 
 
 def build_canonical_basename_index(known_repo_paths: set[str]) -> dict[str, str]:
@@ -139,18 +107,6 @@ def build_canonical_basename_index(known_repo_paths: set[str]) -> dict[str, str]
 
 def _is_canonical_script(rel_path: str) -> bool:
     return rel_path.endswith(".py") and not rel_path.startswith(MIRROR_PREFIXES)
-
-
-def normalize_argument_token(token: str) -> str:
-    """Strip the doc notation around a flag so a real documented flag is checked.
-
-    `[--converted --durable-kind <kind>]` optional-brackets and `--engine=tokei`
-    inline values are both live in this repo. Left unnormalized they fail
-    `FLAG_RE.fullmatch`, get dropped, and -- worse than a miss -- the surrounding
-    invocation still counts as validated, so the run over-claims coverage without
-    even landing in the skipped tail.
-    """
-    return token.strip("[](),").split("=", 1)[0]
 
 
 def iter_command_carriers(doc: Path) -> Iterator[tuple[int, str]]:
@@ -189,67 +145,6 @@ def iter_command_carriers(doc: Path) -> Iterator[tuple[int, str]]:
         pending_lineno = None
     if pending_lineno is not None:
         yield pending_lineno, pending_text
-
-
-def split_arguments(tail: str) -> tuple[list[str], list[str]]:
-    """Return ``(bare_words, flags)`` documented for one invocation.
-
-    Tokenized with `shlex` rather than scanned with a regex because a quoted
-    argument value legitimately contains flag-shaped text: `--verification "git
-    diff --stat ..."` documents `--verification`, not `--stat`, and reading the
-    latter as this script's flag is a false positive.
-
-    Bare words are returned unclassified -- which of them is a subcommand and
-    which is a flag's value cannot be known until argparse says what subcommands
-    exist. `resolve_subcommands` answers that from the probed usage line.
-    """
-    tokens = _tokenize(tail)
-    for index, token in enumerate(tokens):
-        if token in SHELL_OPERATORS:
-            tokens = tokens[:index]
-            break
-    normalized = [normalize_argument_token(token) for token in tokens]
-    bare = [token for token in normalized if SUBCOMMAND_RE.match(token)]
-    flags = [token for token in normalized if FLAG_RE.fullmatch(token)]
-    return bare, list(dict.fromkeys(flags))
-
-
-def _tokenize(tail: str) -> list[str]:
-    """`shlex` tokens, degrading to a whitespace split rather than crashing.
-
-    `comments=True` drops a trailing `# ...` note, which this repo writes beside
-    fenced commands -- otherwise its words become arguments, and a comment word
-    that happens to name a subcommand re-routes the whole probe.
-
-    `shlex` raises on an unclosed quote AND on a dangling backslash. Only the
-    first has a quote-stripping repair, so the fallback chain ends at a plain
-    split: a doc typo must not turn a blocking gate into a stack trace.
-    """
-    for candidate in (tail, tail.replace('"', " ").replace("'", " ")):
-        try:
-            return shlex.split(candidate, comments=True)
-        except ValueError:
-            continue
-    return tail.split()
-
-
-def resolve_subcommands(bare: list[str], choices_for) -> tuple[str, ...]:
-    """Walk the documented bare words down the subparser tree.
-
-    Order-independent by design: `resolve_adapter.py --repo-root . resolve-destination
-    --current X` puts a top-level flag before the subcommand, so a "leading words
-    only" read attributes `--current` to the parser that never declares it.
-    """
-    path: list[str] = []
-    remaining = list(bare)
-    for _ in range(MAX_SUBCOMMAND_DEPTH):
-        choices = choices_for(tuple(path))
-        nxt = next((word for word in remaining if word in choices), None)
-        if nxt is None:
-            break
-        path.append(nxt)
-        remaining = remaining[remaining.index(nxt) + 1 :]
-    return tuple(path)
 
 
 def _repo_relative(root: Path, path: Path) -> str | None:
@@ -356,13 +251,13 @@ def iter_documented_invocations(
             # correct doc, since `,` is not a shell operator to cut on.
             end = matches[index + 1].start() if index + 1 < len(matches) else len(carrier)
             script, reason = resolve_script(root, doc, match, known_repo_paths, basename_index)
-            bare, flags = split_arguments(carrier[match.end() : end])
+            tokens, flags = split_arguments(carrier[match.end() : end])
             if not flags:
                 continue
             if script is None:
                 skipped.append(reason)
                 continue
-            found.append((lineno, script, tuple(bare), tuple(flags)))
+            found.append((lineno, script, tokens, tuple(flags)))
     return found, skipped
 
 
@@ -391,6 +286,10 @@ class HelpProbe:
     def result(self, script: str, path: tuple[str, ...]):
         return self._results[(script, path)]
 
+    def result_or_none(self, script: str, path: tuple[str, ...]):
+        """For readers that run mid-resolution, before this depth has been primed."""
+        return self._results.get((script, path))
+
     def text(self, script: str, path: tuple[str, ...]) -> str:
         result = self.result(script, path)
         return result.stdout + result.stderr
@@ -411,14 +310,26 @@ class HelpProbe:
         return len(self._results)
 
 
+def _probed_options_with_values(probe: HelpProbe, script: str, path: tuple[str, ...]) -> set[str]:
+    """Value-taking options at one depth, or none when that depth has not probed clean."""
+    result = probe.result_or_none(script, path)
+    if result is None or result.returncode != 0:
+        return set()
+    return options_with_values(probe.text(script, path))
+
+
 def _resolve_paths(probe: HelpProbe, invocations: list[tuple]) -> list[tuple[str, ...]]:
     """Walk every invocation down the subparser tree, one probe round per depth."""
     paths = [() for _ in invocations]
     for _ in range(MAX_SUBCOMMAND_DEPTH):
         probe.prime({(script, paths[index]) for index, (_, _, script, _, _) in enumerate(invocations)})
         changed = False
-        for index, (_, _, script, bare, _) in enumerate(invocations):
-            resolved = resolve_subcommands(list(bare), lambda path, s=script: probe.choices(s, path))
+        for index, (_, _, script, tokens, _) in enumerate(invocations):
+            resolved = resolve_subcommands(
+                tokens,
+                lambda path, s=script: probe.choices(s, path),
+                lambda path, s=script: _probed_options_with_values(probe, s, path),
+            )
             if resolved != paths[index]:
                 paths[index] = resolved
                 changed = True
@@ -449,7 +360,7 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
     paths = _resolve_paths(probe, invocations)
 
     findings: list[str] = []
-    for index, (doc, lineno, script, _bare, flags) in enumerate(invocations):
+    for index, (doc, lineno, script, tokens, flags) in enumerate(invocations):
         path = paths[index]
         where = f"{doc.relative_to(root).as_posix()}:{lineno}"
         documented = " ".join([script, *path])
@@ -457,14 +368,24 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
         if result.returncode != 0:
             findings.append(f"{where}: `{documented} --help` exits {result.returncode}; the documented command is not runnable")
             continue
-        # Union along the resolved path: a top-level flag documented after the
-        # subcommand is still accepted by the top-level parser.
-        accepted = {
-            flag
-            for depth in range(len(path) + 1)
-            for flag in accepted_options(probe.text(script, path[:depth]))
-        }
-        missing = [flag for flag in flags if flag not in accepted]
+        # Scoped by POSITION, not unioned along the path. Measured on a two-level
+        # parser: argparse hands everything after a subcommand token to that
+        # subparser and nothing before it, so `demo resolve --top x` and
+        # `demo --current y resolve` both exit 2 while a union call them fine.
+        # A flag is checked against the parser active where it is documented, plus
+        # that parser's ancestors -- an ancestor's option really is accepted at
+        # depth 0..n when the subparser was built with `parents=`, since it then
+        # appears in that depth's own `--help`.
+        accepted_by_depth = [
+            accepted_options(probe.text(script, path[:depth])) for depth in range(len(path) + 1)
+        ]
+        missing: list[str] = []
+        for flag_index, (kind, token) in enumerate(tokens):
+            if kind != "flag" or token in missing:
+                continue
+            depth = active_depth(tokens, path, flag_index)
+            if token not in accepted_by_depth[depth]:
+                missing.append(token)
         if missing:
             findings.append(f"{where}: `{documented}` does not accept documented flag(s) {', '.join(f'`{flag}`' for flag in missing)}")
 

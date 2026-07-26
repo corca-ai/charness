@@ -8,7 +8,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
+from runtime_bootstrap import (
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+    require_repo_local_helper,
+)
 
 REPO_ROOT = repo_root_from_script(__file__)
 INDEX_FILENAME = "seam-risk-index.json"
@@ -122,6 +127,10 @@ def _json_text(payload: dict[str, Any]) -> str:
 
 
 def write_index(repo_root: Path, payload: dict[str, Any]) -> Path:
+    # Same write-boundary placement as the retro lesson index: a drifted copy of this
+    # module run against the charness source tree writes a schema that tree's own gate
+    # rejects, and re-running the same copy overwrites the fix.
+    require_repo_local_helper(__file__, repo_root)
     output_dir = _load_debug_output_dir(repo_root)
     output_dir.mkdir(parents=True, exist_ok=True)
     index_path = output_dir / INDEX_FILENAME

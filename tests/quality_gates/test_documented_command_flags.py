@@ -171,6 +171,105 @@ def test_subcommand_flag_resolves_when_the_subcommand_follows_a_top_level_flag(g
     assert _findings(gate, root) == []
 
 
+def test_subparser_flag_documented_before_its_subcommand_is_reported(gate, tmp_path: Path) -> None:
+    """F7, direction 1. Measured on this parser shape: argparse exits 2 with
+    `argument command: invalid choice: 'org/repo'` because the top-level parser
+    reaches the subcommand positional before the subparser ever sees `--current`.
+    A set unioned across the resolved path calls this correct."""
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/adapter.py": SUBCOMMAND_SCRIPT},
+        doc=(
+            "```bash\n"
+            "python3 scripts/adapter.py --current org/repo resolve-destination\n"
+            "```\n"
+        ),
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "`--current`" in findings[0]
+
+
+def test_top_level_flag_documented_after_the_subcommand_is_reported(gate, tmp_path: Path) -> None:
+    """F7, direction 2, and the correction of a comment this gate used to carry.
+
+    It read "a top-level flag documented after the subcommand is still accepted by
+    the top-level parser". Measured: `demo resolve --current y --top x` exits 2 with
+    `unrecognized arguments: --top x`. argparse hands everything after the
+    subcommand token to the subparser."""
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/adapter.py": SUBCOMMAND_SCRIPT},
+        doc=(
+            "```bash\n"
+            "python3 scripts/adapter.py resolve-destination --current x --repo-root .\n"
+            "```\n"
+        ),
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "`--repo-root`" in findings[0]
+
+
+VALUE_COLLIDES_WITH_SUBCOMMAND_SCRIPT = """
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--repo-root")
+parser.add_argument("--accept-family")
+parser.add_argument("--restamp-tool-version", action="store_true")
+subparsers = parser.add_subparsers(dest="command")
+record = subparsers.add_parser("record")
+record.add_argument("--label")
+parser.parse_args()
+"""
+
+
+def test_flag_value_equal_to_a_subcommand_name_does_not_reroute_the_probe(gate, tmp_path: Path) -> None:
+    """F8. `--accept-family record` is a top-level flag with a value that happens to
+    spell a subcommand. Reading the first bare word in the choices set regardless of
+    position routes the whole probe into the `record` subparser, which declares none
+    of the top-level flags -- a blocking false red on a correct doc."""
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/ratchet.py": VALUE_COLLIDES_WITH_SUBCOMMAND_SCRIPT},
+        doc=(
+            "```bash\n"
+            "python3 scripts/ratchet.py --repo-root . --accept-family record --restamp-tool-version\n"
+            "```\n"
+        ),
+    )
+    assert _findings(gate, root) == []
+
+
+def test_a_real_subcommand_still_resolves_when_a_value_precedes_it(gate, tmp_path: Path) -> None:
+    """The other side of F8: value consumption must not swallow a genuine subcommand."""
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/ratchet.py": VALUE_COLLIDES_WITH_SUBCOMMAND_SCRIPT},
+        doc=(
+            "```bash\n"
+            "python3 scripts/ratchet.py --repo-root . record --label x\n"
+            "```\n"
+        ),
+    )
+    assert _findings(gate, root) == []
+
+
+def test_store_true_option_does_not_consume_the_following_subcommand(gate, tmp_path: Path) -> None:
+    """A flag with no metavar takes no value, so the next word is still a subcommand."""
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/ratchet.py": VALUE_COLLIDES_WITH_SUBCOMMAND_SCRIPT},
+        doc=(
+            "```bash\n"
+            "python3 scripts/ratchet.py --restamp-tool-version record --label x\n"
+            "```\n"
+        ),
+    )
+    assert _findings(gate, root) == []
+
+
 def test_backslash_continuation_reports_the_line_the_invocation_starts_on(gate, tmp_path: Path) -> None:
     root = _repo(
         tmp_path,

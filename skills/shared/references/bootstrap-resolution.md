@@ -88,6 +88,26 @@ charness catalog resolve-skill-path --repo-root . \
   --skill-id <id> --marketplace <m> --plugin <p> --reported-path <stale>
 ```
 
+## Enforced for write helpers inside the charness source tree
+
+The "use the repo's own copy" rule above is now enforced, not just documented.
+Write helpers that persist repo state — `refresh_recent_lessons.py`,
+`persist_retro_artifact.py`, `publish_release.py`,
+`build_retro_lesson_selection_index.py`, `build_debug_seam_risk_index.py` — call
+`require_repo_local_helper` from
+[scripts/helper_provenance_lib.py](../../../scripts/helper_provenance_lib.py)
+before doing any work.
+
+It refuses (exit status 2) only when all of these hold: the running script
+belongs to a different charness tree than `--repo-root`, that `--repo-root` is a
+charness **source** checkout, it carries its own copy of the same helper, and the
+two copies differ by declared version or by the content of any library the helper
+loads. The refusal names the target repo's own copy, because that is the only
+remediation that terminates — re-running the drifted copy overwrites the fix.
+Runs against an ordinary consuming repo are untouched, since a consuming repo owns
+no competing copy. `CHARNESS_ALLOW_FOREIGN_HELPER=1` downgrades the refusal to a
+warning when the copies are known to be compatible.
+
 ## Resolve `$CHARNESS_SUPPORT_DIR` (split monorepo only)
 
 The support tree (`capability.schema.json` and associated support skill

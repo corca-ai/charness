@@ -357,24 +357,63 @@ def test_quick_scan_accepts_a_walk_that_lost_a_file_but_still_totalled(
 
 
 def test_quick_scan_retries_a_walk_that_died_before_totalling(monkeypatch, tmp_path: Path) -> None:
-    """No root total means `du` died early and there is nothing to grade."""
+    """No root total means `du` died early and there is nothing to grade.
+
+    One attempt now spends one spawn per `DU_SCAN_VARIANTS` entry, so an unusable
+    walk must fail every variant before the attempt counter advances. Scripting a
+    full round of misses keeps this a test of the across-attempts retry rather than
+    of the within-attempt variant fallback (covered separately below).
+    """
     lib = _lib()
     root = tmp_path / "pytest-of-someone"
     (root / "pytest-1" / "charness-repo-seed0").mkdir(parents=True)
+    variants = len(lib.DU_SCAN_VARIANTS)
     scripted = _Scripted(
-        [
-            _completed(_du_output(root, include_root_total=False), returncode=1),
-            _completed(_du_output(root, include_root_total=True)),
-        ]
+        [_completed(_du_output(root, include_root_total=False), returncode=1)] * variants
+        + [_completed(_du_output(root, include_root_total=True))]
     )
     _stub_root(monkeypatch, lib, root, scripted)
 
     footprint = lib.pytest_temp_footprint_quick()
 
-    assert scripted.calls == 2
+    assert scripted.calls == variants + 1
     assert footprint["status"] == "available"
     assert footprint["attempts"] == 2
     assert footprint["partial"] is False
+
+
+def test_quick_scan_falls_back_to_the_portable_unit_within_one_attempt(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """A `du` that rejects `-B1` gets measured by `-k`, in KiB scaled back to bytes.
+
+    Crucially the fallback is driven by "this walk produced no root total", NOT by
+    matching stderr against `DU_USAGE_ERROR_TOKENS`: the scripted rejection below
+    uses a wording that list does not contain, which is the BSD/macOS case no host
+    here can probe.
+    """
+    lib = _lib()
+    root = tmp_path / "pytest-of-someone"
+    (root / "pytest-1" / "charness-repo-seed0").mkdir(parents=True)
+    seen: list[tuple[str, ...]] = []
+    kib_output = "\n".join([f"1\t{root / 'pytest-1' / 'charness-repo-seed0'}", f"4\t{root}"]) + "\n"
+
+    def fake_run(command, **kwargs):
+        seen.append(tuple(command[1:-1]))
+        if "-B1" in command:
+            return _completed("", returncode=1, stderr="du: du: option requires an argument -- B")
+        return _completed(kib_output)
+
+    _stub_root(monkeypatch, lib, root, fake_run)
+
+    footprint = lib.pytest_temp_footprint_quick()
+
+    assert seen == [("-d", "4", "-B1"), ("-d", "4", "-k")]
+    assert footprint["status"] == "available"
+    assert footprint["attempts"] == 1
+    assert footprint["size_granularity_bytes"] == 1024
+    assert footprint["total_disk_bytes"] == 4096
+    assert footprint["seed_totals"]["charness-repo-seed"] == {"count": 1, "disk_bytes": 1024}
 
 
 def test_quick_scan_records_attempts_on_a_first_try_success(monkeypatch, tmp_path: Path) -> None:
@@ -398,7 +437,7 @@ def test_quick_scan_gives_up_after_the_attempt_budget(monkeypatch, tmp_path: Pat
 
     footprint = lib.pytest_temp_footprint_quick()
 
-    assert scripted.calls == lib.PYTEST_TEMP_SCAN_ATTEMPTS
+    assert scripted.calls == lib.PYTEST_TEMP_SCAN_ATTEMPTS * len(lib.DU_SCAN_VARIANTS)
     assert footprint == {
         "status": "unavailable",
         "root": str(root),
@@ -447,21 +486,39 @@ def test_quick_scan_caps_total_time_across_attempts(monkeypatch, tmp_path: Path)
     assert footprint["reason"] == "du_timeout"
 
 
+# `spawns` is a callable of the lib so each row states its own spend in terms of the
+# two constants that govern it -- attempts, and how many option variants exist -- and
+# no row silently inherits the wrong one when either changes.
 @pytest.mark.parametrize(
-    ("outcome", "expected", "capability_gap"),
+    ("outcome", "expected", "capability_gap", "spawns"),
     [
-        (FileNotFoundError("du"), "du_missing", True),
-        (PermissionError("nope"), "du_not_executable", True),
-        (_completed("", returncode=1, stderr="du: unrecognized option '-B'"), "du_unsupported_options", True),
-        (_completed("", returncode=1, stderr="BusyBox\nUsage: du [-aHLdclsxhmk]"), "du_unsupported_options", True),
-        (subprocess.TimeoutExpired(["du"], 30), "du_timeout", False),
-        (OSError("odd"), "du_oserror", False),
-        (subprocess.SubprocessError("odd"), "du_subprocess_error", False),
+        (FileNotFoundError("du"), "du_missing", True, lambda lib: 1),
+        (PermissionError("nope"), "du_not_executable", True, lambda lib: 1),
+        (
+            _completed("", returncode=1, stderr="du: unrecognized option '-B'"),
+            "du_unsupported_options",
+            True,
+            lambda lib: len(lib.DU_SCAN_VARIANTS),
+        ),
+        (
+            _completed("", returncode=1, stderr="BusyBox\nUsage: du [-aHLdclsxhmk]"),
+            "du_unsupported_options",
+            True,
+            lambda lib: len(lib.DU_SCAN_VARIANTS),
+        ),
+        (subprocess.TimeoutExpired(["du"], 30), "du_timeout", False, lambda lib: lib.PYTEST_TEMP_SCAN_ATTEMPTS),
+        (OSError("odd"), "du_oserror", False, lambda lib: lib.PYTEST_TEMP_SCAN_ATTEMPTS),
+        (
+            subprocess.SubprocessError("odd"),
+            "du_subprocess_error",
+            False,
+            lambda lib: lib.PYTEST_TEMP_SCAN_ATTEMPTS,
+        ),
     ],
     ids=["missing", "not-executable", "gnu-bad-option", "busybox-usage", "timeout", "oserror", "subprocess"],
 )
 def test_quick_scan_names_each_failure_mode(
-    monkeypatch, tmp_path: Path, outcome: object, expected: str, capability_gap: bool
+    monkeypatch, tmp_path: Path, outcome: object, expected: str, capability_gap: bool, spawns
 ) -> None:
     lib = _lib()
     root = tmp_path / "pytest-of-someone"
@@ -474,7 +531,10 @@ def test_quick_scan_names_each_failure_mode(
     assert footprint["reason"] == expected
     assert footprint["capability_gap"] is capability_gap
     # A capability gap is identical on every retry; spending attempts on it is waste.
-    assert scripted.calls == (1 if capability_gap else lib.PYTEST_TEMP_SCAN_ATTEMPTS)
+    # An option-rejection gap still costs one spawn per variant, because proving the
+    # box cannot do it means having tried the portable form too. A `du` that never
+    # ran gets no variant spend at all, and a transient failure keeps its attempts.
+    assert scripted.calls == spawns(lib)
 
 
 def test_quick_scan_degrades_to_one_attempt_rather_than_looping_forever(
@@ -487,7 +547,7 @@ def test_quick_scan_degrades_to_one_attempt_rather_than_looping_forever(
     _stub_root(monkeypatch, lib, root, scripted)
 
     assert lib.pytest_temp_footprint_quick(attempts=0)["attempts"] == 1
-    assert scripted.calls == 1
+    assert scripted.calls == len(lib.DU_SCAN_VARIANTS)
 
 
 def test_quick_scan_reports_a_missing_root_without_running_du(monkeypatch, tmp_path: Path) -> None:
@@ -540,11 +600,14 @@ def _du_accepts_block_size() -> bool:
 
 
 @pytest.mark.skipif(shutil.which("busybox") is None, reason="busybox not installed on this host")
-def test_real_busybox_du_is_detected_as_a_capability_gap(monkeypatch, tmp_path: Path) -> None:
-    """Probed, not inferred. `DU_USAGE_ERROR_TOKENS` claims BusyBox `du` rejects `-B`,
-    and the whole capability-gap carve-out rests on that claim being true of a real
-    binary rather than of its documentation. This drives the production scan against
-    the actual `busybox du` by putting it first on PATH."""
+def test_real_busybox_du_is_measured_through_the_portable_fallback(monkeypatch, tmp_path: Path) -> None:
+    """Probed, not inferred, and now a measurement rather than a gap.
+
+    BusyBox `du` rejects `-B`, which used to make this whole host advisory-only. The
+    `-k` variant is in BusyBox's own usage string (`[-aHLdclsxhmk]`), so the scan
+    gets a real -- if KiB-granular -- footprint instead. This drives the production
+    scan against the actual `busybox du` by putting it first on PATH, so the claim
+    rests on the binary and not on its documentation."""
     lib = _lib()
     root = tmp_path / "pytest-of-someone"
     (root / "pytest-1" / "charness-repo-seed0").mkdir(parents=True)
@@ -560,10 +623,12 @@ def test_real_busybox_du_is_detected_as_a_capability_gap(monkeypatch, tmp_path: 
 
     footprint = lib.pytest_temp_footprint_quick()
 
-    assert footprint["status"] == "unavailable"
-    assert footprint["reason"] == "du_unsupported_options"
-    assert footprint["capability_gap"] is True
-    # A capability gap is identical on every retry, so it must not burn attempts.
+    assert footprint["status"] == "available"
+    # The `-B1` rejection is real, so the usable walk came from the `-k` variant.
+    assert footprint["size_granularity_bytes"] == 1024
+    assert footprint["total_disk_bytes"] > 0
+    assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
+    # Resolved inside one attempt: the variant fallback is not a retry.
     assert footprint["attempts"] == 1
 
 
