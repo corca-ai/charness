@@ -355,6 +355,100 @@ def validate_sibling_followups(
         )
 
 
+def run_changed_artifact_validator(
+    *,
+    default_repo_root: Path,
+    all_help: str,
+    artifact_label: str,
+    changed_paths_fn: Callable[[Path], list[str]],
+    candidate_paths_fn: Callable[..., list[Path]],
+    validate_factory: Callable[[bool], Callable[[Path], None]],
+    fail_fast_help: str,
+    error_cls: type[Exception] = ValidationError,
+) -> int:
+    """The whole `main()` for a changed-path artifact validator, in one place.
+
+    Every such validator parses the same three selection args plus `--fail-fast`,
+    resolves the same artifact set, validates each one collecting failures, and
+    prints the same count line. Forking that shape per validator is what let the
+    one-pass contract land in some validators and not others; sharing it means a
+    new artifact family cannot be born already inconsistent.
+
+    `validate_factory` receives the resolved `collect_all` so a validator whose
+    per-artifact checks also collect (retro) and one whose single rule cannot
+    (ideation) both fit without a second entry point.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    add_changed_artifact_args(parser, default_repo_root=default_repo_root, all_help=all_help)
+    parser.add_argument("--fail-fast", action="store_true", help=fail_fast_help)
+    args = parser.parse_args()
+
+    repo_root = args.repo_root.resolve()
+    artifacts = selected_artifact_paths(
+        args,
+        repo_root,
+        changed_paths_fn=changed_paths_fn,
+        candidate_paths_fn=candidate_paths_fn,
+    )
+    collect_all = not args.fail_fast
+    validate_each_artifact(
+        artifacts,
+        validate_factory(collect_all),
+        collect_all=collect_all,
+        artifact_label=artifact_label,
+        repo_root=repo_root,
+        error_cls=error_cls,
+    )
+    print(f"Validated {len(artifacts)} {artifact_label}(s).")
+    return 0
+
+
+def validate_each_artifact(
+    artifacts: Sequence[Path],
+    validate: Callable[[Path], None],
+    *,
+    collect_all: bool,
+    artifact_label: str,
+    repo_root: Path | None = None,
+    error_cls: type[Exception] = ValidationError,
+) -> None:
+    """Validate a batch, reporting every FAILING ARTIFACT instead of only the first.
+
+    `run_validation_checks` collects across rules within one artifact; this
+    collects across the artifacts themselves. Both axes matter for the same
+    reason: a batch that stops at the first failure makes the author pay one gate
+    run per problem, which is the retry loop the one-pass contract removes.
+
+    Callers that want the old stop-at-first behavior pass `collect_all=False`.
+    That path still names the offending artifact: several rule messages (retro's,
+    for one) never embed the path, so a bare re-raise would report a violation
+    without saying which file to open.
+    """
+    errors: list[str] = []
+    for artifact in artifacts:
+        try:
+            validate(artifact)
+        except error_cls as exc:
+            labeled = f"Invalid {artifact_label} {_artifact_label(artifact, repo_root)}: {exc}"
+            if not collect_all:
+                raise error_cls(labeled) from exc
+            errors.append(labeled)
+    if errors:
+        raise error_cls("\n".join(errors))
+
+
+def _artifact_label(artifact: Path, repo_root: Path | None) -> str:
+    """Repo-relative when resolvable, else the path as given."""
+    if repo_root is not None:
+        try:
+            return artifact.resolve().relative_to(repo_root.resolve()).as_posix()
+        except ValueError:
+            pass
+    return str(artifact)
+
+
 def run_validation_checks(
     checks: Sequence[Callable[[], None]],
     *,

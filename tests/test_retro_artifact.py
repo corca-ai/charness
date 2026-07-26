@@ -160,3 +160,70 @@ def test_retro_validator_uses_changed_path_discovery(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert "Validated 1 retro artifact(s)." in result.stdout
+
+
+def test_retro_reports_every_rule_violation_in_one_pass(tmp_path: Path) -> None:
+    """A retro breaking two DISTINCT rules names both, not just the first.
+
+    validate_retro_artifact chains four independent checks; before the one-pass
+    wiring, a two-rule draft cost two gate runs to discover.
+    """
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-06-25\nMode: session\n\n"
+        "## Waste\n\n- something\n\n"
+        # invalid disposition form (prose, not one of the accepted forms) AND a
+        # malformed Persisted line -- two DISTINCT rules, so the count is 2.
+        "## Next Improvements\n\n- workflow: do better\n  - Disposition: prose only\n\n"
+        "## Persisted\n\nPersisted: yes\n"
+    )
+    _seed(repo, body, name="2026-06-25-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    # Pin the COUNT, not just the phrase: "rule violation(s):" is emitted for a
+    # count of 1 too, so a bare substring assert passes vacuously the moment one
+    # of the two rules stops firing.
+    assert "2 retro artifact rule violation(s):" in result.stderr
+    assert "disposition line(s) in an invalid form" in result.stderr
+    assert "Persisted:" in result.stderr
+
+
+def test_retro_reports_every_failing_artifact_in_one_pass(tmp_path: Path) -> None:
+    """Two bad artifacts in one batch both get named, not just the first.
+
+    Aborting on the first bad artifact hid the rest of a multi-artifact batch
+    behind one edit -- the same one-per-run tax at the batch level.
+    """
+    repo = tmp_path / "repo"
+    bad = (
+        "# Session Retro: Demo\nDate: 2026-06-25\nMode: session\n\n"
+        "## Waste\n\n- something\n\n"
+        "## Persisted\n\nPersisted: yes\n"
+    )
+    _seed(repo, bad, name="2026-06-25-first.md")
+    _seed(repo, bad.replace("2026-06-25", "2026-06-26"), name="2026-06-26-second.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "2026-06-25-first.md" in result.stderr
+    assert "2026-06-26-second.md" in result.stderr
+    assert "scaffold_retro_artifact.py" in result.stderr
+
+
+def test_retro_fail_fast_stops_at_the_first_failing_artifact(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    bad = (
+        "# Session Retro: Demo\nDate: 2026-06-25\nMode: session\n\n"
+        "## Waste\n\n- something\n\n"
+        "## Persisted\n\nPersisted: yes\n"
+    )
+    _seed(repo, bad, name="2026-06-25-first.md")
+    _seed(repo, bad.replace("2026-06-25", "2026-06-26"), name="2026-06-26-second.md")
+    result = run_script(
+        "scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all", "--fail-fast"
+    )
+    assert result.returncode == 1
+    assert "2026-06-26-second.md" not in result.stderr
+    # Absence alone is not enough: fail-fast must still say WHICH retro failed.
+    # Retro rule messages never embed the path, so an unlabeled re-raise would
+    # report a violation with no file to open.
+    assert "2026-06-25-first.md" in result.stderr

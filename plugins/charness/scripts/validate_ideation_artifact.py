@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -12,9 +11,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
-add_changed_artifact_args = _artifact_validator.add_changed_artifact_args
+run_changed_artifact_validator = _artifact_validator.run_changed_artifact_validator
 git_changed_paths = _artifact_validator.git_changed_paths
-selected_artifact_paths = _artifact_validator.selected_artifact_paths
 
 IDEATION_ARTIFACT_PREFIX = "charness-artifacts/ideation/"
 STRUCTURED_QUESTIONS_HEADING = "## Structured Questions"
@@ -110,25 +108,20 @@ def validate_ideation_artifact(path: Path) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    add_changed_artifact_args(
-        parser,
+    # `validate_ideation_artifact` runs a single rule, so one-pass here means
+    # across ARTIFACTS: aborting on the first bad one hides the rest of a
+    # multi-artifact batch behind one edit.
+    return run_changed_artifact_validator(
         default_repo_root=REPO_ROOT,
         all_help="Validate every checked ideation artifact.",
-    )
-    args = parser.parse_args()
-
-    repo_root = args.repo_root.resolve()
-    artifacts = selected_artifact_paths(
-        args,
-        repo_root,
+        artifact_label="ideation artifact",
         changed_paths_fn=changed_paths,
         candidate_paths_fn=candidate_paths,
+        validate_factory=lambda _collect_all: validate_ideation_artifact,
+        fail_fast_help=(
+            "Stop at the first failing artifact instead of reporting every failure in one pass."
+        ),
     )
-    for artifact in artifacts:
-        validate_ideation_artifact(artifact)
-    print(f"Validated {len(artifacts)} ideation artifact(s).")
-    return 0
 
 
 if __name__ == "__main__":

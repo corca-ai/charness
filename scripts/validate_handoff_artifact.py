@@ -31,6 +31,8 @@ _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artif
 ValidationError = _scripts_artifact_validator_module.ValidationError
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
+report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
+run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
 validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
@@ -162,31 +164,76 @@ def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
                 )
 
 
-def validate_handoff_artifact(path: Path) -> None:
+def _display_path(path: Path, repo_root: Path) -> str:
+    """Repo-relative when the artifact is inside the repo, absolute otherwise.
+
+    `--artifact-path` accepts a draft outside the tree (a temp dir), so an
+    unconditional `relative_to` would raise on the success path.
+    """
+    try:
+        return path.resolve().relative_to(repo_root).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = read_lines(path)
-    validate_title(
-        lines,
-        title_predicate=lambda line: line.startswith("# ") and "handoff" in line.lower(),
-        error_message="handoff artifact must start with a `# ... Handoff` heading",
+    checks = (
+        lambda: validate_title(
+            lines,
+            title_predicate=lambda line: line.startswith("# ") and "handoff" in line.lower(),
+            error_message="handoff artifact must start with a `# ... Handoff` heading",
+        ),
+        lambda: validate_max_lines(
+            lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="handoff artifact"
+        ),
+        lambda: validate_exact_h2_sections(
+            lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS
+        ),
+        lambda: validate_nonempty_sections(lines, ordered_present_sections(lines)),
+        lambda: validate_references(lines),
+        lambda: validate_no_regenerable_facts(path),
+        lambda: validate_subagent_blocker_reasoning(lines),
     )
-    validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="handoff artifact")
-    validate_exact_h2_sections(lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS)
-    validate_nonempty_sections(lines, ordered_present_sections(lines))
-    validate_references(lines)
-    validate_no_regenerable_facts(path)
-    validate_subagent_blocker_reasoning(lines)
+    # collect_all surfaces every violation in one pass (the CLI default) so a
+    # multi-rule draft is fixed in one edit instead of one rule per gate run --
+    # a counted limit is a planning input, not a retry loop. --fail-fast opts
+    # back into stopping at the first violation.
+    run_validation_checks(checks, collect_all=collect_all, artifact_label="handoff artifact")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--artifact-path",
+        type=Path,
+        default=None,
+        help=(
+            "Validate this artifact instead of the adapter-resolved one. Lets a caller "
+            "check a candidate draft without overwriting the live handoff."
+        ),
+    )
+    parser.add_argument(
+        "--fail-fast",
+        action="store_true",
+        help="Stop at the first rule violation instead of reporting every violation in one pass.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    adapter = load_adapter(repo_root)
-    artifact_path = repo_root / adapter["artifact_path"]
-    validate_handoff_artifact(artifact_path)
-    print(f"Validated handoff artifact {artifact_path.relative_to(repo_root)}.")
+    if args.artifact_path is not None:
+        artifact_path = args.artifact_path
+        if not artifact_path.is_absolute():
+            artifact_path = repo_root / artifact_path
+        if not artifact_path.is_file():
+            print(f"No handoff artifact at {artifact_path}.", file=sys.stderr)
+            return 1
+    else:
+        adapter = load_adapter(repo_root)
+        artifact_path = repo_root / adapter["artifact_path"]
+    validate_handoff_artifact(artifact_path, collect_all=not args.fail_fast)
+    print(f"Validated handoff artifact {_display_path(artifact_path, repo_root)}.")
     return 0
 
 
@@ -194,5 +241,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except ValidationError as exc:
-        print(str(exc), file=sys.stderr)
+        sys.exit(report_validation_failure(str(exc), artifact_type="handoff"))
         sys.exit(1)

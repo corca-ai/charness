@@ -198,6 +198,13 @@
       ]
     },
     {
+      "fingerprint": "0c3b7ccb345f8c97",
+      "member_hashes": [
+        "08414198570e8144",
+        "a41bee374262e3e0"
+      ]
+    },
+    {
       "fingerprint": "0c7fa7db70a7c1c6",
       "member_hashes": [
         "201c5a995f0b9d1d",
@@ -5179,5 +5186,5 @@
   "fingerprint_algo_version": "2",
   "note": "Accepted code clone content fingerprints for the boy-scout dup ratchet (item 5, slice 4+D). A code family fingerprint present now but absent here (and not 'intentional' in dup-review.json) is a NEW fixable-eligible family and hard-blocks. Keyed by a gate-computed, offset/path-INDEPENDENT content fingerprint (sha256 over the sorted, duplicate-preserving normalized member spans; see nose_fingerprint_lib) from a FULL `nose query` over the scope — NOT nose's offset/path-folding family_id (slice 4 re-key, resolving deferred decision D30). Schema v3 stores each accepted family as {fingerprint, member_hashes} (`code_families`, sorted list) rather than a bare fingerprint list: the per-family member hashes let the CLI classify a membership REDUCTION (a vanished family's member multiset properly containing a candidate-new family's) as advisory, not a hard block, before evaluate() ever sees it. CHURN CAVEAT: the fingerprint is STABLE across pure line-shifts (inserting lines above an unchanged span no longer rotates it) and, under algo v2, across an in-place comment or internal-whitespace edit inside a Python span (falls back to v1 rstrip-only per member on any tokenize failure); incidental member-file edits do not force a re-baseline. Re-baseline deliberately on: a reviewed new/changed family, a genuine membership change NOT classified as a reduction, a nose-version bump that regroups families, OR a fingerprint_algo_version bump. The baseline stamps the producing nose tool_version AND fingerprint_algo_version; the gate WARNS (never degrades) on either skew, so a silent bump's drift reads as re-baseline, not new dup. Docs key on the doc-nose-baseline signature.",
   "schemaVersion": "charness.quality.dup_ratchet_baseline.v3",
-  "tool_version": "0.19.0"
+  "tool_version": "0.20.0"
 }

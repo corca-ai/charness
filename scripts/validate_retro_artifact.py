@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import re
 from datetime import date
 from pathlib import Path
@@ -16,9 +15,9 @@ _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_pa
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
-add_changed_artifact_args = _scripts_artifact_validator_module.add_changed_artifact_args
 git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
-selected_artifact_paths = _scripts_artifact_validator_module.selected_artifact_paths
+run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
+run_changed_artifact_validator = _scripts_artifact_validator_module.run_changed_artifact_validator
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
 file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
@@ -226,39 +225,42 @@ def validate_persisted_form(lines: list[str], observed_date: date | None) -> Non
         )
 
 
-def validate_retro_artifact(path: Path) -> None:
+def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
-    validate_sibling_followups(
-        lines,
-        boundary_headings=SIBLING_BOUNDARY_HEADINGS,
-        source_reference=SIBLING_SOURCE_REFERENCE,
-    )
     observed_date = _retro_observed_date(path, lines)
-    validate_disposition_forms(lines, observed_date)
-    validate_recurrence_lineage(lines, observed_date)
-    validate_persisted_form(lines, observed_date)
+    checks = (
+        lambda: validate_sibling_followups(
+            lines,
+            boundary_headings=SIBLING_BOUNDARY_HEADINGS,
+            source_reference=SIBLING_SOURCE_REFERENCE,
+        ),
+        lambda: validate_disposition_forms(lines, observed_date),
+        lambda: validate_recurrence_lineage(lines, observed_date),
+        lambda: validate_persisted_form(lines, observed_date),
+    )
+    # collect_all surfaces every violation in one pass (the CLI default) so a
+    # multi-rule retro draft is fixed in one edit instead of one rule per gate
+    # run. --fail-fast opts back into stopping at the first violation.
+    run_validation_checks(checks, collect_all=collect_all, artifact_label="retro artifact")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    add_changed_artifact_args(
-        parser,
+    # Collect on BOTH axes: every rule inside one retro, and every failing retro
+    # in the batch. Stopping at the first of either makes the author pay one gate
+    # run per problem.
+    return run_changed_artifact_validator(
         default_repo_root=REPO_ROOT,
         all_help="Validate every checked retro session artifact.",
-    )
-    args = parser.parse_args()
-
-    repo_root = args.repo_root.resolve()
-    artifacts = selected_artifact_paths(
-        args,
-        repo_root,
+        artifact_label="retro artifact",
         changed_paths_fn=changed_paths,
         candidate_paths_fn=candidate_paths,
+        validate_factory=lambda collect_all: (
+            lambda artifact: validate_retro_artifact(artifact, collect_all=collect_all)
+        ),
+        fail_fast_help=(
+            "Stop at the first rule violation instead of reporting every violation in one pass."
+        ),
     )
-    for artifact in artifacts:
-        validate_retro_artifact(artifact)
-    print(f"Validated {len(artifacts)} retro artifact(s).")
-    return 0
 
 
 if __name__ == "__main__":

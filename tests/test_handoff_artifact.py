@@ -414,3 +414,129 @@ def test_validate_handoff_artifact_rejects_explicit_allowance_as_subagent_blocke
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must not treat missing explicit subagent allowance" in result.stderr
+
+
+def _triple_violating_body() -> str:
+    """Draft violating three DISTINCT rules: title, empty section, missing link.
+
+    One rule per gate run is what turned a 3-violation draft into 8 validator
+    rounds on one artifact; these tests pin the one-pass contract so the
+    regression cannot return silently.
+    """
+    return (
+        "\n".join(
+            [
+                "# Demo Baton",  # no "Handoff" in the title
+                "",
+                "## Workflow Trigger",
+                "",  # empty section
+                "## Current State",
+                "",
+                "- state",
+                "",
+                "## Next Session",
+                "",
+                "- next",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- no markdown link here",
+                "",
+            ]
+        )
+        + "\n"
+    )
+
+
+def test_validate_handoff_artifact_reports_every_violation_in_one_pass(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _triple_violating_body())
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "3 handoff artifact rule violation(s):" in result.stderr
+    assert "must start with a `# ... Handoff` heading" in result.stderr
+    assert "`## Workflow Trigger` must not be empty" in result.stderr
+    assert "`## References` must contain at least one markdown link" in result.stderr
+
+
+def test_validate_handoff_artifact_names_the_owning_scaffold_on_failure(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _triple_violating_body())
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    # The hint is what makes the lesson bind at the point of use: the author is
+    # told the scaffold command instead of rediscovering it one failure at a time.
+    assert "scaffold_handoff_artifact.py" in result.stderr
+    assert "hint:" in result.stderr
+
+
+def test_validate_handoff_artifact_fail_fast_stops_at_the_first_violation(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _triple_violating_body())
+    result = run_script(
+        "scripts/validate_handoff_artifact.py", "--repo-root", str(repo), "--fail-fast"
+    )
+    assert result.returncode == 1
+    assert "rule violation(s):" not in result.stderr
+    assert "must start with a `# ... Handoff` heading" in result.stderr
+
+
+def test_validate_handoff_artifact_path_argument_bypasses_the_adapter(tmp_path: Path) -> None:
+    """Acceptance needs a candidate draft checked WITHOUT overwriting the live handoff."""
+    repo = seed_repo(tmp_path, _triple_violating_body())
+    good = tmp_path / "candidate.md"
+    good.write_text(
+        "\n".join(
+            [
+                "# Candidate Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- run the thing",
+                "",
+                "## Current State",
+                "",
+                "- state",
+                "",
+                "## Next Session",
+                "",
+                "- next",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script(
+        "scripts/validate_handoff_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-path",
+        str(good),
+    )
+    # The adapter-resolved artifact is invalid; the explicit path is not. Passing
+    # proves the argument overrode the adapter rather than being ignored.
+    assert result.returncode == 0, result.stderr
+    assert "candidate.md" in result.stdout
+
+
+def test_validate_handoff_artifact_path_argument_reports_a_missing_file(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _triple_violating_body())
+    result = run_script(
+        "scripts/validate_handoff_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-path",
+        str(tmp_path / "absent.md"),
+    )
+    assert result.returncode == 1
+    assert "No handoff artifact at" in result.stderr

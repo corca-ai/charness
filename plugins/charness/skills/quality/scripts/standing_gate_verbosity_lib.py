@@ -1,25 +1,21 @@
 from __future__ import annotations
 
-import importlib.util
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
+# Sibling-module import via sys.path, the established in-tree pattern (see
+# check_runtime_budget.py's `summary_output_lib` import). The hand-rolled
+# spec_from_file_location loader this replaces was a clone of the one in
+# skills/support/markdown-preview, and nothing here needs a private module name.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from standing_gate_discovery_lib import (  # noqa: E402
+    RUNNER_REF_RE,
+    discover_surfaces,
+    iter_snippets,
+)
 
-def _load_discovery_lib() -> Any:
-    module_path = Path(__file__).resolve().with_name("standing_gate_discovery_lib.py")
-    spec = importlib.util.spec_from_file_location("standing_gate_discovery_lib", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-_DISCOVERY = _load_discovery_lib()
-RUNNER_REF_RE = _DISCOVERY.RUNNER_REF_RE
-discover_surfaces = _DISCOVERY.discover_surfaces
-iter_snippets = _DISCOVERY.iter_snippets
 VERBOSE_VAR_RE = re.compile(r"\b[A-Z0-9_]*VERBOSE[A-Z0-9_]*\b")
 QUIET_SPECDOWN_RE = re.compile(r"\bspecdown\b(?=[^\n]*(?:-q|-quiet|--quiet))", re.IGNORECASE)
 QUIET_PYTEST_RE = re.compile(r"\bpytest\b(?=[^\n]*(?:-q|--quiet))", re.IGNORECASE)

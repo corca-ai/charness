@@ -422,6 +422,13 @@
     },
     {
       "class": "intentional",
+      "id": "590c04aa922d2a76",
+      "note": "the repo's standard import-bootstrap preamble (from __future__ / stdlib imports / runtime_bootstrap import / REPO_ROOT / import_repo_module calls) across scripts/resolve_artifact_path.py:9-16, scripts/validate_critique_artifacts.py:7-14, scripts/validate_retro_artifact.py:6-13; the bootstrap cannot be extracted into a shared module because it IS the mechanism that makes shared-module import possible. Two of three members untouched this session; surfaced by scan regrouping after an unused-import removal shifted the block (#441 rotation class)",
+      "reviewed_at": "2026-07-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "59db8a7cccfd59c2",
       "note": "`if __name__ == \"__main__\"` entrypoint arms of validate_ideation_artifact.py and validate_retro_artifact.py, now identical except the `artifact_type=` argument because both delegate to the shared report_validation_failure helper; Python cannot extract a module's own __main__ block, so this is the irreducible floor of sharing that helper",
       "reviewed_at": "2026-07-25",

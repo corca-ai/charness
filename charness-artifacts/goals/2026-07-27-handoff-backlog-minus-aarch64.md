@@ -1,6 +1,6 @@
 # Achieve Goal: Close the live handoff backlog except the hardware-blocked aarch64 runtime profile: lesson BIND path, mutation regression #457, pytest subprocess-startup speed, and the nose scanner rebaseline
 
-Status: draft
+Status: active
 Created: 2026-07-27
 Activation: `/goal @charness-artifacts/goals/2026-07-27-handoff-backlog-minus-aarch64.md`
 
@@ -9,14 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft awaiting activation.
-- Current slice intent: real draft awaiting activation; reshape before activating
-  if the acceptance boundary has changed. Once active, this names the
-  reviewable-intent unit in progress and the commits it spans; critique and broad
-  proof do not re-fire within one unchanged intent.
-- Next action: activate with
-  `/goal @charness-artifacts/goals/2026-07-27-handoff-backlog-minus-aarch64.md`
-  after confirming the draft is still intended.
+- Current slice: 1 of 6 — wire handoff/ideation/retro validators into the shipped
+  one-pass reporting path.
+- Current slice intent: bind the lesson at the point of use. Make
+  `validate_handoff_artifact.py`, `validate_ideation_artifact.py`, and
+  `validate_retro_artifact.py` report every violation in one pass (default-on, per
+  the `validate_quality_artifact.py` precedent), emit the owning scaffold hint via
+  `report_validation_failure`, and accept an artifact-path argument so the
+  acceptance check runs without overwriting the real `docs/handoff.md`. Reuses
+  `artifact_validator.run_validation_checks` — no new mechanism.
+- Next action: read the wired precedent (`validate_debug_artifact.py` /
+  `validate_quality_artifact.py`), then convert the three stragglers.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost and fresh-eye proof at slice boundaries; broad pytest plus the live
   CI mutation run at closeout.
@@ -234,6 +237,21 @@ new-slice-local versus accumulated suite debt before touching the threshold.
 
 ## Operator Decision Queue
 
+- Decision: should `validate_debug_artifact.py` and `validate_critique_artifacts.py`
+  flip to one-pass-by-default, matching handoff/retro/ideation after slice 1?
+- Owner: operator.
+- Why deferred: their current stop-at-first default is an EXPLICIT operator
+  narrowing recorded in commit `a930cc5f` ("narrowed per operator decision:
+  report-all pays off on the two 14-rule validators"). Slice 1's fresh-eye
+  reviewer named flipping them as its highest-value change, and the family is now
+  split on both default AND flag polarity (`--fail-fast` opt-out vs `--report-all`
+  opt-in) — a real trap. But reversing a recorded operator decision is not an
+  agent's call, and slice 1's measured evidence covers handoff, not critique/debug.
+- Unblock action: say whether to flip both to default-on (making `--report-all` a
+  deprecated no-op as in `validate_quality_artifact.py`), or to keep the split.
+- Revisit trigger: the next multi-run rework observed on a critique or debug
+  artifact; also tracked as the reopen trigger on D28.
+
 - Decision: whether sibling-scan Tier 2 finding D (tests snapshotting the live
   `.charness/usage-episodes/` tree) becomes its own slice after this goal.
 - Owner: operator.
@@ -258,6 +276,24 @@ Routing chosen from installed skill metadata and model judgment:
 - `retro` at closeout.
 - `Routing:` / `Gather:` / `Release:` / `Issue closeout:` evidence recorded here
   at completion.
+
+**Public-skill validation review (slice 1, `quality`): no consumer-contract
+change.** Slice 1 touched one `quality` skill file,
+`skills/public/quality/scripts/standing_gate_verbosity_lib.py`, and the change is
+a pure import-mechanism swap (a hand-rolled `spec_from_file_location` loader
+replaced by the in-tree `sys.path` sibling import). Evidence it is behavior-neutral:
+the 9 checked-in `test_quality_standing_gate_verbosity.py` tests pass unchanged,
+`inventory_standing_gate_verbosity.py` still runs clean, and
+`standing_gate_discovery_lib.py` declares only compiled regexes at module level
+with no `global` mutation anywhere, so the module now being shared via `sys.modules`
+instead of freshly loaded per call cannot change results. The skill's prompt,
+routing, adapter requirement, and `charness-artifacts/quality/latest.md` artifact
+contract are untouched, so the checked-in `quality` dogfood case in
+`docs/public-skill-dogfood.json` still describes current behavior and needs no
+re-freeze. Cautilus stayed unrun per repo ask-before-run policy;
+`plan_cautilus_proof` reported `run_mode: ask`, `proof_kinds: none`,
+`next_action: none`, so no evaluator proof was owed. Acked with
+`--ack-cautilus-skill-review`.
 
 Discuss before activation: RESOLVED this session. Four consequential defaults
 were surfaced and answered by the operator before saving. (1) *External side
@@ -409,6 +445,19 @@ confirm it. Slice 4 must re-measure it before relying on it as a lever.
 
 ## Off-Goal Findings
 
+- **54 files hand-roll a `spec_from_file_location` sibling-module loader** across
+  `skills/` and `scripts/`, while `skills/public/quality/scripts/` alone has 19
+  scripts using the shared `SKILL_RUNTIME.load_local_skill_module` and
+  `check_runtime_budget.py:11-12` shows a simpler `sys.path` pattern for libs.
+  Surfaced when slice 1's diff regrouped the clone graph and the dup ratchet
+  reported the loader as new duplication; the family rotated to a different
+  member each time one was fixed. Slice 1 fixed one instance
+  (`standing_gate_verbosity_lib.py`, where the reviewer proved my
+  "self-containment" justification factually wrong) and accepted the family into
+  the gate baseline with `--accept-family 0c3b7ccb345f8c97` rather than convert 54
+  files inside an unrelated slice. Owed: an `issue` filing for the repo-wide
+  conversion. Not fixed, not classified intentional — deliberately baselined and
+  named here.
 - `goal_artifact_discussion.py:13` matches the resolution token with
   `^(?:resolved|confirmed|approved)`, anchored at the literal start of the summary
   text. A summary written as `Discuss before activation: **RESOLVED** ...` — bold,

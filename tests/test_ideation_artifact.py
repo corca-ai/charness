@@ -121,3 +121,45 @@ def test_validate_ideation_artifact_uses_changed_path_discovery(tmp_path: Path) 
 
     assert result.returncode == 0, result.stderr
     assert "Validated 1 ideation artifact(s)." in result.stdout
+
+
+def test_validate_ideation_reports_every_failing_artifact_in_one_pass(tmp_path: Path) -> None:
+    """Two bad artifacts in one batch both get named, not just the first.
+
+    validate_ideation_artifact runs a single rule, so one-pass here is a
+    cross-ARTIFACT property: aborting on the first bad file hid the rest of the
+    batch behind one edit.
+    """
+    repo = tmp_path / "repo"
+    bad = (
+        _PRELUDE
+        + "## Structured Questions\n\n"
+        + "- Q1 | urgency: nonsense | depends-on: null | action: spec | note: bad urgency\n\n"
+    )
+    for name in ("first.md", "second.md"):
+        artifact = repo / "charness-artifacts" / "ideation" / name
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text(bad, encoding="utf-8")
+    result = run_script("scripts/validate_ideation_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "first.md" in result.stderr
+    assert "second.md" in result.stderr
+    assert "scaffold_ideation_artifact.py" in result.stderr
+
+
+def test_validate_ideation_fail_fast_stops_at_the_first_failing_artifact(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    bad = (
+        _PRELUDE
+        + "## Structured Questions\n\n"
+        + "- Q1 | urgency: nonsense | depends-on: null | action: spec | note: bad urgency\n\n"
+    )
+    for name in ("first.md", "second.md"):
+        artifact = repo / "charness-artifacts" / "ideation" / name
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text(bad, encoding="utf-8")
+    result = run_script(
+        "scripts/validate_ideation_artifact.py", "--repo-root", str(repo), "--all", "--fail-fast"
+    )
+    assert result.returncode == 1
+    assert "second.md" not in result.stderr
