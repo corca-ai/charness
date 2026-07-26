@@ -9,21 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 of 6 — give lessons a concept identity (recurrence-class tag,
-  re-derived alpha/half-life, back-test over the live 1596-candidate corpus).
-  Slice 1 is committed at `ab56e15f`.
-- Current slice intent: make lesson recurrence measurable. `_normalize_lesson_key`
-  at `scripts/recent_lessons_lib.py:136` keys identity on the first 14 normalized
-  words, so re-wording resets the count and 1594/1596 candidates sit at
-  `independent_source_count == 1`. Add an explicit recurrence-class tag to retro
-  Waste/Next-Improvement bullets, then re-derive `LESSON_SELECTION_ALPHA_BASE`
-  (0.35 at :15) and `LESSON_SELECTION_HALF_LIFE_DAYS` (14 at :17) against the live
-  corpus, with a back-test pinned to the shipped constants asserting a class
-  recurring 5x over 50 days outranks a 0-day one-off.
-- Next action: regenerate `charness-artifacts/retro/lesson-selection-index.json`
-  in the SAME slice — `scripts/run-quality.sh:492` gates it with
-  `build_retro_lesson_selection_index.py --check`, so an identity change without
-  the regenerated index fails at its own commit boundary.
+- Current slice: 3 of 6 — cover #457's 14 changed-line proof targets and kill the
+  surviving `gate_report_emit` mutants. Slices 1-2 are committed at `ab56e15f` and
+  `ba3b7091`.
+- Current slice intent: close the #457 blocking signal. Its mutation score already
+  passes (94.7% vs 80%); what fails is that six changed files went test-uncovered
+  before mutation. Add tests for the 14 named `file:line` proof targets in
+  `artifact_validator.py`, `check_changed_line_mutation_coverage.py`,
+  `check_doc_authoring_preflight.py`, `check_doc_links.py`,
+  `record_quality_runtime.py`, and `validate_debug_artifact.py`, plus the 5
+  surviving `gate_report_emit` mutants and 1 in `scaffold_critique_artifact.py`.
+- Next action: run `check_changed_line_mutation_coverage.py` against this branch's
+  own diff first — the goal is that the fix generalizes to new changed lines, not
+  that the 14 listed targets are retro-fitted. Slice 3's local green is PROVISIONAL:
+  slice 4 rewrites test internals, so slice 6's CI run is the real proof.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost and fresh-eye proof at slice boundaries; broad pytest plus the live
   CI mutation run at closeout.
@@ -224,7 +223,7 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Wire handoff/ideation/retro validators into the already-shipped one-pass path and scaffold hint, default-on, plus an artifact-path argument | Operator-directed first; every later slice in this run is authored by a session that inherits the improved validator behavior | Triple-violating draft yields one message with three violations plus the scaffold command, run against a temp root; regression test pins the one-pass contract | done (`ab56e15f`) |
-| 2 | Give lessons a concept identity: recurrence-class tag on retro bullets, re-derived alpha and half-life, back-test over the live corpus | The count is useless while the weighting cannot act on it; both halves ship together or neither binds | Back-test over the live corpus pinned to the re-derived constants; multiplier distribution moves off 1.0; `build_retro_lesson_selection_index.py --check` regenerated and green | pending |
+| 2 | Give lessons a concept identity: recurrence-class tag on retro bullets, re-derived alpha and half-life, back-test over the live corpus | The count is useless while the weighting cannot act on it; both halves ship together or neither binds | Back-test over the live corpus pinned to the re-derived constants; multiplier distribution moves off 1.0; `build_retro_lesson_selection_index.py --check` regenerated and green | done (`ba3b7091`); multiplier distribution unchanged until retros carry tags — recorded as an honest limit |
 | 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | New tests for the 6 named files; `check_changed_line_mutation_coverage.py` clean on this branch's diff (PROVISIONAL — slice 4 rewrites these tests, so slice 6's CI run is the real proof); `plugins/` mirrors synced | pending |
 | 4 | Cut pytest subprocess-startup cost via the two measured levers | Lands after the red is cleared so the before/after delta is attributable to the lever, not a pre-existing failure | Before/after wall-clock and spawn counts at the same worker count; suite still green | pending |
 | 5 | Rebaseline the nose scanner with `--write-baseline --confirm-baseline-delta` | Last, because slices 1-4 change files the dup scanner reads; baselining earlier invites a second rewrite | Dup gate runs clean with no version-skew warning; delta reviewed as reductions plus skew only | pending |
@@ -321,6 +320,20 @@ aarch64 profile is dropped by explicit operator decision, not by agent judgment.
 - Alternatives rejected:
 - Targeted verification: 89 targeted tests pass; run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review completed; 21 pre-commit gates pass at ab56e15f
 - Test duplication pressure: 3 new dup families introduced by the new tests and refactored into shared helpers (validate_each_artifact, run_changed_artifact_validator); 1 residual pre-existing loader family accepted via --accept-family; dup gate now OK with fixable_ceiling=0
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 2: Concept identity for lessons plus the re-derived weighting
+
+- Objective: Make recurrence measurable (authored recurrence-class tag grouping across sections and dates) and make the weighting able to act on it (alpha 0.35->0.6, half-life 14->45), with a back-test pinned to the shipped constants
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 604 tests pass in the lesson/retro/handoff/ideation/artifact_validator selection; proven non-vacuous by reverting the constants (2 tests fail with the arithmetic); selection index regenerated and --check green; run_slice_closeout completed; 21 pre-commit gates pass at ba3b7091
+- Test duplication pressure: 10 new tests in test_recent_lessons_recurrence.py plus 2 in test_retro_artifact.py; dup ratchet clean, no new families this slice
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:
