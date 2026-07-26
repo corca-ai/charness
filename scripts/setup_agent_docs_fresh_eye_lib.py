@@ -22,6 +22,11 @@ FRESH_EYE_COMPACT_REQUIRED_SNIPPETS = (
     # before this rule landed lacks the adapter reviewer-tier language, so the
     # inspector flags it as stale rather than silently accepting the older body.
     "reviewer tier and concrete spawn fields",
+    # Spawn-shape/delivery rule (#458). Without this snippet a managed repo's
+    # AGENTS.md predating the rule reads as conformant while every non-review
+    # spawn there can still strand its result silently — the same scope mismatch
+    # #458 names, one level out.
+    "spawn shape",
 )
 FRESH_EYE_COMPACT_SAME_AGENT_FORBIDDEN_SNIPPETS = (
     "same-agent substitutes are forbidden",

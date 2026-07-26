@@ -88,3 +88,84 @@ def test_envelope_points_reviewers_at_the_delivery_owner() -> None:
         "the reviewer envelope must cite the delivery owner rather than restating it"
     )
     assert "final assistant message" in text
+
+
+# --- #458: the rule must bind for EVERY spawn, not only the review path -------
+
+AGENTS_DOC = REPO_ROOT / "AGENTS.md"
+AGENT_DOCS_POLICY = (
+    REPO_ROOT / "skills" / "public" / "setup" / "references" / "agent-docs-policy.md"
+)
+
+
+def test_always_loaded_contract_states_the_spawn_shape_rule() -> None:
+    """#458: the rule lived only on a review-scoped reference, so it never bound.
+
+    A parent spawning for a non-review reason never opens the fresh-eye reference,
+    and the defect's signature is that the spawn SUCCEEDS — so there is no blocked
+    signal to send it looking. The rule therefore has to sit on a surface already
+    loaded before any spawn. This test is the pin: the #458 fix is otherwise pure
+    prose placement, and its own root cause is a rule decaying out of reach.
+    """
+    text = _unwrapped(AGENTS_DOC)
+    assert "Spawn shape" in text, "AGENTS.md must state the spawn-shape rule"
+    assert "EVERY spawn" in text, (
+        "the rule must be scoped to every spawn; scoping it to reviews is exactly "
+        "the #458 defect"
+    )
+    # Phrase stops before "name" because AGENTS.md renders it as inline code and
+    # `_unwrapped` deliberately does not strip backticks.
+    assert "without a host addressing or team" in text
+    assert "idle notification" in text, (
+        "an idle notification reading like success is the signal that misleads a parent"
+    )
+
+
+def test_always_loaded_contract_forbids_a_same_agent_substitute_for_lost_findings() -> None:
+    """Lost findings are a delivery failure, never a subagent that returned nothing."""
+    text = _unwrapped(AGENTS_DOC)
+    assert "delivery failure" in text
+    assert "never grounds for a same-agent substitute" in text
+
+
+def test_consuming_repo_template_carries_the_spawn_shape_rule() -> None:
+    """#458 was filed FROM a consuming repo, so charness's own AGENTS.md is not enough.
+
+    `setup` seeds a managed repo's `## Subagent Delegation` from the copy-verbatim
+    template here. Without the rule in the template, every setup-normalized repo
+    keeps stranding non-review spawns while `setup` reports its AGENTS.md
+    conformant — the same scope mismatch #458 names, one level out.
+    """
+    text = _unwrapped(AGENT_DOCS_POLICY)
+    assert "Spawn shape, for every spawn" in text
+    assert "without a host addressing or team name" in text  # template has no backticks
+    assert "A spawned agent is not a received result" in text
+
+
+def test_compact_contract_inspector_requires_the_spawn_shape_snippet() -> None:
+    """A pre-#458 compact AGENTS.md must read as STALE, not as conformant.
+
+    Without this the inspector silently accepts an older body, which is how the
+    rule fails to reach the repos that need it.
+    """
+    import sys
+
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    import setup_agent_docs_fresh_eye_lib as lib
+
+    conformant = (
+        "## Subagent Delegation\n\n"
+        "- standing delegation request for the canonical scopes; a host block is "
+        "reported, and no same-agent substitutes are forbidden path is taken\n"
+        "- reviewer tier and concrete spawn fields are applied\n"
+        "- spawn shape: spawn one-shot subagents without a host addressing or team name\n"
+    )
+    assert lib.fresh_eye_compact_contract_present(conformant)
+
+    stale = conformant.replace(
+        "- spawn shape: spawn one-shot subagents without a host addressing or team name\n",
+        "",
+    )
+    assert not lib.fresh_eye_compact_contract_present(stale), (
+        "a compact contract missing the spawn-shape rule must be flagged stale"
+    )

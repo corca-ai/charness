@@ -34,7 +34,27 @@ per-worker `tmp_path`, #225 git-ceiling confine, content-addressed seed cache).
 What remains are low-severity "odd-one-out" inconsistencies and latent/conditional
 flakes.
 
-## Tier 1 — cheap, clear, worth fixing first
+## Tier 1 — FIXED 2026-07-27 (commit `092ab996`), retained for lineage
+
+**Do not re-plan these as work.** All three landed with the audit's own rationale
+written into the comments, `plugins/` mirrors synced, and regression tests:
+
+- **A** — `scripts/record_quality_runtime.py` `rotate_archives` carries
+  `oldest.unlink(missing_ok=True)`; proved by
+  `tests/quality_gates/test_quality_runtime_recorder.py::test_rotate_archives_tolerates_concurrently_deleted_oldest`.
+- **B** — `scripts/mutation_baseline_abort_lib.py` dropped the exists-then-unlink
+  TOCTOU; proved by `tests/quality_gates/test_mutation_baseline_abort.py`
+  (missing-marker unlink must not raise).
+- **C** — `scripts/check_mutation_score.py` `_marker_is_stale` compares with `>`;
+  proved by
+  `tests/quality_gates/test_mutation_baseline_abort.py::test_marker_is_stale_false_on_mtime_tie_keeps_marker_authoritative`.
+
+This block is stale-state history, kept because a 2026-07-27 goal run planned a
+slice against it before checking the tree, and the line numbers below no longer
+resolve. Verifying a named finding against the source before treating it as debt
+is the standing rule; this heading exists so the next reader does not need it.
+
+## Tier 1 as originally recorded (line numbers no longer resolve)
 
 - **A. `scripts/record_quality_runtime.py:102-106` (P2).** `rotate_archives` does
   `sorted(glob(...))` then `oldest.unlink()` with NO `missing_ok`. Its two structural
@@ -127,7 +147,6 @@ flakes.
 
 ## Next-session pickup
 
-Fix order: Tier 1 (A, B, C) first — each is 1-2 lines, safe, and A/B restore
-consistency with already-guarded siblings; sync the `plugins/` mirrors, add/adjust
-regression coverage where cheap, run the fresh-eye critique, commit. Then decide on
-Tier 2 (D) as its own small slice. Tier 3 is opportunistic / boy-scout only.
+Tier 1 (A, B, C) is **done** — see the Tier 1 heading above; do not re-plan it.
+Remaining: decide on Tier 2 (D) as its own small slice (it needs design, not a
+1-2 line fix). Tier 3 is opportunistic / boy-scout only.

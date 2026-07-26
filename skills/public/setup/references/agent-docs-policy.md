@@ -24,7 +24,9 @@
   consent event before spawning
 - compact AGENTS contracts are valid when the section carries the irreducible
   host-read-time invariant: a `standing delegation request`, `canonical scopes`,
-  concrete host block reporting, and no `same-agent` substitute. The expanded
+  concrete host block reporting, no `same-agent` substitute, and the
+  `spawn shape` rule (a named spawn can strand its result silently, so the rule
+  has to bind before any spawn, not only on the review path). The expanded
   template below remains the safest copy-paste default, but validators should
   not force every consumer repo to keep the full rationale in root AGENTS.
 - when `<repo-root>/AGENTS.md` carries Charness goal/skill routing (a
@@ -117,6 +119,16 @@ or renames bounded reviewer scopes):
 - **Do not substitute a same-agent pass.** Fresh-eye review means a different
   agent context; if that context cannot be obtained, leave the review
   unproven.
+- **Spawn shape, for every spawn — not only reviews.** Spawn one-shot subagents
+  **without** a host addressing or team name. On at least one host a name
+  silently routes the spawn to a mailbox channel: the spawn succeeds, the agent
+  runs correctly, and completion emits an idle notification instead of returning
+  the result, with no retrieval tool exposed to read it. Reserve a name for an
+  agent you will address repeatedly, and only after confirming the retrieval tool
+  exists in this session. A spawned agent is not a received result; an idle
+  notification reads like success and is not one. Missing findings are a delivery
+  failure to report and to retry once unnamed, never a subagent that returned
+  nothing and never grounds for a same-agent pass.
 - For Codex spawning, apply `gpt-5.6-terra` with `medium` reasoning effort to
   every coding, review, and dynamic-workflow subagent when the host exposes
   those controls. With caller-provided model/reasoning overrides, use
@@ -140,6 +152,11 @@ Compact form is accepted when a repo deliberately keeps root AGENTS short:
   request. Canonical scopes: task-completing `setup`, `quality`, `critique`,
   `release`, and GitHub `issue` resolution/closeout review runs. Report a host
   block explicitly; same-agent substitutes are forbidden.
+- Spawn shape, for every spawn: spawn one-shot subagents without a host
+  addressing or team name. A name can route the spawn to a mailbox channel with
+  no reader, so the spawn succeeds and the findings never arrive; an idle
+  notification is not delivery. Missing findings are a delivery failure to
+  report and retry once unnamed.
 - For Codex spawning, apply `gpt-5.6-terra` with `medium` reasoning effort to
   every coding, review, and dynamic-workflow subagent when the host exposes
   those controls. Use `fork_turns: "none"` for caller-provided

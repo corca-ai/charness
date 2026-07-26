@@ -83,7 +83,14 @@ each one lowers risk for the next:
    the live family set differs, so `--write-baseline --confirm-baseline-delta` on
    the current scanner is the standing fix.
 
-Then push, let CI run the mutation gate, and close #457 on a green run.
+5. **Issue #458** (added mid-run by operator request, 2026-07-27). The
+   `name`-parameter spawn rule from #454 was promoted into the *reviewer* contract,
+   while the mechanic it governs is scoped to every `Agent` spawn — so a non-review
+   spawn still strands its results with no error. This session reproduced it
+   first-hand: a named `bounded-reviewer` spawn stranded ~8 minutes of work and one
+   complete review packet, and retrieval was confirmed impossible on this host.
+
+Then push, let CI run the mutation gate, and close #457 and #458 on a green run.
 
 ## Non-Goals
 
@@ -226,7 +233,7 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
 | 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | done (`75dd5357`) — 36 tests; all 6 mutants hand-verified killed; local coverage PROVISIONAL until slice 6's CI run |
 | 4 | Cut pytest subprocess-startup cost via the two measured levers | Lands after the red is cleared so the before/after delta is attributable to the lever, not a pre-existing failure | Before/after wall-clock and spawn counts at the same worker count; suite still green | pending |
 | 5 | Rebaseline the nose scanner with `--write-baseline --confirm-baseline-delta` | Last, because slices 1-4 change files the dup scanner reads; baselining earlier invites a second rewrite | Dup gate runs clean with no version-skew warning; delta reviewed as reductions plus skew only | pending |
-| 6 | Push, run CI mutation, close #457 on green | The only proof that closes the issue; bundle boundary | Green workflow run linked on the closing commit and the issue | pending |
+| 6 | Push, run CI mutation, close #457 and #458 on green | The only proof that closes the issue; bundle boundary | Green workflow run linked on the closing commit and both issues | pending |
 
 **Per-slice proof cost and test-duplication pressure.** Slices 1-3 add tests and
 are the ones that could push the broad duplicate/length gate toward threshold —

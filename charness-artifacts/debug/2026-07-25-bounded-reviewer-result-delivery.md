@@ -88,7 +88,7 @@ attribution instead.
 - Producer Proof: Probe A's on-disk transcript holds a complete, correct final assistant message the parent never received.
 - Final-Consumer Proof: Probe B returned findings in the parent's tool result, and four real reviewers delivered the same way during this resolution.
 - Interface-Shape Sibling Scan: reviewer-tier evidence modeled `requested_fields_sent` vs `applied` but had no spawned-vs-delivered sibling; `Delivery state` closes that asymmetry.
-- Non-Claims: Codex/`explorer` delivery not inspected; background spawns and multi-reviewer concurrency not inspected; envelope binding on the unnamed path proven for this host only; tier application there is `metadata-hidden`, not `applied`.
+- Non-Claims: Codex/`explorer` delivery not inspected; envelope binding on the unnamed path proven for this host only; tier application there is `metadata-hidden`, not `applied`. Explicit `run_in_background: true` and multi-reviewer concurrency remain uninspected — **restated, not discharged**, with new corroboration under *Recurrence Corroboration* below (#458).
 
 ## Detection Gap
 
@@ -151,9 +151,9 @@ decay, the rule sits in the contract, not in `recent-lessons.md`.
 ### Non-claims
 
 - Codex / `explorer` delivery not inspected (the Claude envelope rail is already
-  `unsupported` there); background spawns and multi-reviewer concurrency not
-  inspected. Envelope binding on the unnamed path is proven for this host only,
-  and tier application there is `metadata-hidden`, not `applied`.
+  `unsupported` there). Envelope binding on the unnamed path is proven for this
+  host only, and tier application there is `metadata-hidden`, not `applied`.
+- #458: explicit `run_in_background: true` and concurrency stay uninspected; the named arm recurred 2026-07-27 (`n=2`) in `charness-artifacts/debug/2026-07-27-named-spawn-recurrence.md`.
 - The `.claude/agents/bounded-reviewer.md` paragraph is **release-gated and not
   proven live**: reviewers this session ran the installed plugin cache copy, which
   predates the change. The rule therefore rides the parent-side spawn packet,

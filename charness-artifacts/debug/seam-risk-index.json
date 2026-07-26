@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 103,
-  "indexed_artifact_count": 91,
+  "source_artifact_count": 104,
+  "indexed_artifact_count": 92,
   "risk_class_counts": {
     "contract-freeze-risk": 29,
-    "external-seam": 7,
+    "external-seam": 8,
     "host-disproves-local": 2,
     "none": 30,
     "operator-visible-recovery": 22,
-    "repeated-symptom": 3
+    "repeated-symptom": 4
   },
   "generalization_pressure_counts": {
     "factor-now": 4,
-    "monitor": 77,
+    "monitor": 78,
     "none": 10
   },
   "entries": [
@@ -1274,6 +1274,21 @@
         "repeated-symptom"
       ],
       "seam": "parent-to-reviewer result delivery, owned by host runtime and selected by a caller-supplied spawn parameter; no repo code owns it.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-25-reviewer-delivery-seam.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-07-27-named-spawn-recurrence.md",
+      "is_current_pointer": false,
+      "interrupt_id": "named-spawn-recurrence-2026-07-27",
+      "risk_classes": [
+        "external-seam",
+        "repeated-symptom"
+      ],
+      "seam": "parent-to-subagent result delivery, owned by the host runtime and selected",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "spec",

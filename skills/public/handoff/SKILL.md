@@ -84,8 +84,9 @@ Assume a competent next operator can follow one good link.
    - call `critique` for material workflow or ownership changes
    - focuses: wrong next action, workflow trigger ambiguity, ownership/boundary
      misread, and examples that could be over-literalized
-   - use `../../shared/references/fresh-eye-subagent-review.md` before reporting
-     the reviewer path as blocked
+   - read `../../shared/references/fresh-eye-subagent-review.md` BEFORE spawning,
+     not only before reporting the reviewer path as blocked: it owns the spawn
+     shape, and a wrongly-shaped spawn succeeds while its findings never arrive
    - incorporate only concrete clarity fixes, not speculative churn
 7. Finish with a clean baton pass.
    - the next operator should know what to do first without interpretation

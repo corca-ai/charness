@@ -222,18 +222,24 @@ makes the failure diagnosable at all.
 
 Delivery is a per-host live claim, proven by the step-1 probe below and never
 assumed — the same standing as envelope binding in rail 2. The channel-selection
-differential above is recorded on one host at one version, `n=1` per arm, and
-corroborated by the upstream report; the scope record, upstream lineage, and
-non-claims live in
-`<repo-root>/charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md`.
+differential above is recorded on one host at one version and corroborated by the
+upstream report. The named arm has since been observed in a second session
+(`n=2`); explicit background spawns and multi-reviewer concurrency remain
+uninspected. The scope record, upstream lineage, and non-claims live in
+`<repo-root>/charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md`
+and its recurrence record
+`<repo-root>/charness-artifacts/debug/2026-07-27-named-spawn-recurrence.md`.
 On a host whose spawn surface exposes no addressing or team parameter, or where
 the named shape is the delivering one, the unnamed-shape rule is a no-op and
 only the "findings text in your context" test carries. The current Codex
 `explorer` path is not inspected.
 
-- Spawn one-shot bounded reviewers **without** a host addressing or team name.
-  Reserve named spawns for agents the parent will address repeatedly, and only
-  when the host exposes the matching retrieval tool in that same session.
+- Spawn one-shot subagents **without** a host addressing or team name. This
+  applies to EVERY spawn, not only bounded reviewers: the always-loaded contract in
+  `<repo-root>/AGENTS.md` states the same rule for any spawn, because scoping the
+  rule to review is what let it fail to bind at all. Reserve named spawns for agents the
+  parent will address repeatedly, and only when the host exposes the matching
+  retrieval tool in that same session.
 - A tool named in host documentation is not a tool available in the session.
   Resolve it the way the host exposes tools before depending on it, the same
   way availability uncertainty is resolved below.

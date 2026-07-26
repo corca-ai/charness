@@ -343,6 +343,14 @@ _COMPACT_ADAPTER_FIRST_RULE = (
     "- When a skill or repo adapter owns a subagent review, follow that adapter's reviewer tier "
     "and concrete spawn fields instead of inheriting the parent turn's host defaults."
 )
+# #458: the compact invariant now also requires the spawn-shape rule, because a
+# named spawn strands its result silently on at least one host and the old rule
+# bound only on the review path.
+_COMPACT_SPAWN_SHAPE_RULE = (
+    "- Spawn shape, for every spawn: spawn one-shot subagents without a host addressing or "
+    "team name; a named spawn can route to a mailbox with no reader, so missing findings are "
+    "a delivery failure to report and retry once unnamed."
+)
 
 
 def _compact_agents(*bullets: str) -> str:
@@ -351,7 +359,12 @@ def _compact_agents(*bullets: str) -> str:
 
 def test_setup_inspect_accepts_compact_subagent_delegation_section(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    _seed_normalize_repo(repo, _compact_agents(_COMPACT_PRE_303_BLOCK, _COMPACT_ADAPTER_FIRST_RULE))
+    _seed_normalize_repo(
+        repo,
+        _compact_agents(
+            _COMPACT_PRE_303_BLOCK, _COMPACT_ADAPTER_FIRST_RULE, _COMPACT_SPAWN_SHAPE_RULE
+        ),
+    )
 
     payload = _run_inspect(repo)
 
@@ -397,7 +410,12 @@ def test_setup_inspect_accepts_compact_delegation_with_adapter_first_reviewer_ru
     # rule added, must NOT falsely flag. This pins that the staleness gate keys on
     # the adapter rule specifically and does not regress an up-to-date body.
     repo = tmp_path / "repo"
-    _seed_normalize_repo(repo, _compact_agents(_COMPACT_PRE_303_BLOCK, _COMPACT_ADAPTER_FIRST_RULE))
+    _seed_normalize_repo(
+        repo,
+        _compact_agents(
+            _COMPACT_PRE_303_BLOCK, _COMPACT_ADAPTER_FIRST_RULE, _COMPACT_SPAWN_SHAPE_RULE
+        ),
+    )
 
     payload = _run_inspect(repo)
 
@@ -497,7 +515,12 @@ def test_setup_inspect_rejects_compact_delegation_that_allows_same_agent_substit
         "same-agent substitutes are forbidden.", "same-agent substitutes are allowed."
     )
     repo = tmp_path / "repo"
-    _seed_normalize_repo(repo, _compact_agents(allows_same_agent, _COMPACT_ADAPTER_FIRST_RULE))
+    _seed_normalize_repo(
+        repo,
+        _compact_agents(
+            allows_same_agent, _COMPACT_ADAPTER_FIRST_RULE, _COMPACT_SPAWN_SHAPE_RULE
+        ),
+    )
 
     payload = _run_inspect(repo)
 

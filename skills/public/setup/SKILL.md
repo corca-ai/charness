@@ -131,8 +131,10 @@ Then load only the references needed for the detected state:
      (`vulture` for Python, `knip` for JavaScript/TypeScript)
    - for task-completing normalization, spawn `high-leverage` bounded reviewers
      for host policy, adapter fit, operator takeover, and any broad new gate surface
-   - apply host-exposed `reviewer_tiers.high-leverage` fields and use
-     `../../shared/references/fresh-eye-subagent-review.md` before reporting blocked
+   - apply host-exposed `reviewer_tiers.high-leverage` fields, and read
+     `../../shared/references/fresh-eye-subagent-review.md` BEFORE spawning rather
+     than only before reporting blocked: it owns the spawn shape, and a
+     wrongly-shaped spawn succeeds while its findings never arrive
    - use deterministic inspection as reviewer evidence and emit queued
      `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`

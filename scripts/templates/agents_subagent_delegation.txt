@@ -4,6 +4,14 @@
   request. Canonical scopes: task-completing `setup`, `quality`, `critique`,
   `release`, and GitHub `issue` resolution/closeout review runs. Report a host
   block explicitly; same-agent substitutes are forbidden.
+- Spawn shape, for every spawn and not only reviews: spawn one-shot subagents
+  without a host addressing or team name. On at least one host a name silently
+  routes the spawn to a mailbox channel with no reader, so the spawn succeeds,
+  the agent runs correctly, and its findings never arrive; an idle notification
+  reads like success and is not delivery. Reserve a name for an agent you will
+  address repeatedly, and only when the host exposes the matching retrieval
+  tool. Missing findings are a delivery failure to report and retry once
+  unnamed, never grounds for a same-agent pass.
 - When a skill or repo adapter owns a subagent review, follow that adapter's
   reviewer tier and concrete spawn fields instead of inheriting the parent
   turn's host defaults or improvising a generic reviewer. For Codex critique
@@ -29,3 +37,6 @@
 - A higher-priority system, developer, or host instruction may prohibit a
   workflow; the repo request cannot override it. Scale to the task instead of
   using orchestration for trivial work.
+- The spawn-shape rule above applies to orchestration spawns too: a named
+  agent's result can strand silently, so an orchestration parent proves delivery
+  the same way — findings in context, or a recorded delivery failure.
