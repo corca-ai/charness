@@ -277,8 +277,6 @@ def _build_fixture_repo(tmp_path: Path, *, public_section_a_body: str = "Content
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
     plugin_dir = repo / "plugins" / "charness" / "skills" / "x"
     plugin_dir.mkdir(parents=True)
     (plugin_dir / "SKILL.md").write_text(_skill_md("Content A.\n"), encoding="utf-8")
@@ -352,8 +350,6 @@ def test_collect_baseline_units_refuses_duplicate_unit_ids(tmp_path: Path) -> No
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
     plugin_dir = repo / "plugins" / "charness" / "skills" / "x"
     plugin_dir.mkdir(parents=True)
     (plugin_dir / "SKILL.md").write_text(

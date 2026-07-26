@@ -147,8 +147,6 @@ def _seed_repo(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@t.t")
-    _git(repo, "config", "user.name", "t")
     (repo / "README.md").write_text("base\n", encoding="utf-8")
     _git(repo, "add", "README.md")
     _git(repo, "commit", "-q", "-m", "base")

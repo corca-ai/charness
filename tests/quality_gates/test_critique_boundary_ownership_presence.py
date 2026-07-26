@@ -402,7 +402,9 @@ def test_changed_ref_range_fires_tooth_end_to_end(tmp_path: Path) -> None:
     def g(*a: str) -> str:
         return subprocess.run(["git", "-C", str(repo), *a], check=True, capture_output=True, text=True).stdout
 
-    for cmd in (["init"], ["config", "user.email", "t@t"], ["config", "user.name", "t"], ["add", "-A"], ["commit", "-qm", "base"]):
+    # Identity comes from GIT_AUTHOR_*/GIT_COMMITTER_* in the session fixture, so
+    # this seeding does not spawn `git config`.
+    for cmd in (["init"], ["add", "-A"], ["commit", "-qm", "base"]):
         g(*cmd)
     base = g("rev-parse", "HEAD").strip()
 

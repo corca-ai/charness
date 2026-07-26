@@ -77,8 +77,6 @@ def test_advisory_end_to_end_fires_in_seeded_repo(tmp_path: Path, capsys) -> Non
         subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
 
     git("init", "-b", "main")
-    git("config", "user.email", "test@example.com")
-    git("config", "user.name", "Test User")
     (tmp_path / "base.txt").write_text("base\n", encoding="utf-8")
     git("add", "base.txt")
     git("commit", "-m", "base")

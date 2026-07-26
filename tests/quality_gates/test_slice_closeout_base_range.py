@@ -42,8 +42,6 @@ def _seed_repo(tmp_path: Path) -> Path:
     """A repo whose HEAD is one commit ahead of a local `origin/main` branch
     (a stand-in for the remote-tracking anchor the auto-detect resolves)."""
     _git(tmp_path, "init", "-b", "main")
-    _git(tmp_path, "config", "user.email", "test@example.com")
-    _git(tmp_path, "config", "user.name", "Test User")
     (tmp_path / "base.txt").write_text("base\n", encoding="utf-8")
     _git(tmp_path, "add", "base.txt")
     _git(tmp_path, "commit", "-m", "base")

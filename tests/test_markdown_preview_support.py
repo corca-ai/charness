@@ -395,8 +395,6 @@ def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path
     (repo / "README.md").write_text("# Root\n", encoding="utf-8")
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
     (repo / "docs" / "guide.md").write_text("# Guide\n\nChanged\n", encoding="utf-8")

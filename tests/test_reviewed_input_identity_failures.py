@@ -16,8 +16,6 @@ def _git(repo: Path, *args: str) -> None:
 
 def _init_repo(repo: Path) -> None:
     _git(repo, "init")
-    _git(repo, "config", "user.email", "tests@example.com")
-    _git(repo, "config", "user.name", "Tests")
     (repo / "reviewed.txt").write_text("one\n", encoding="utf-8")
     _git(repo, "add", "reviewed.txt")
     _git(repo, "commit", "-m", "first")

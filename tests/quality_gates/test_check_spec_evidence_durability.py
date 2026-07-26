@@ -12,8 +12,6 @@ def _bootstrap_repo(tmp_path: Path) -> Path:
     spec_dir.mkdir(parents=True)
     (repo / ".gitignore").write_text("artifacts/\n", encoding="utf-8")
     init_git_repo(repo, ".gitignore")
-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True)
     subprocess.run(["git", "commit", "-m", "init"], cwd=repo, check=True, capture_output=True)
     (repo / "artifacts").mkdir()
     (repo / "artifacts" / "eval-summary.json").write_text("{}\n", encoding="utf-8")

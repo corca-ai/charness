@@ -251,8 +251,6 @@ def test_release_real_host_range_supports_sha256_repositories(tmp_path: Path) ->
     )
     if init.returncode != 0:
         pytest.skip("installed Git does not support SHA-256 repositories")
-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True)
     (repo / "README.md").write_text("base\n", encoding="utf-8")
     subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
     subprocess.run(["git", "commit", "-m", "Base"], cwd=repo, check=True)

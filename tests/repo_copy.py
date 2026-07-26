@@ -43,20 +43,6 @@ def _clone_tree(source: Path, destination: Path) -> None:
 
 def _git_init_and_commit(repo: Path) -> None:
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.name", "Codex Test"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(
         ["git", "commit", "-m", "seed repo copy"],

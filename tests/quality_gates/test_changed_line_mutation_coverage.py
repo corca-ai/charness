@@ -37,8 +37,6 @@ def _seed_repo_with_changed_pool_file(tmp_path: Path) -> tuple[Path, str, str]:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
     foo = repo / "scripts" / "foo.py"
     foo.write_text("def a():\n    return 1\n", encoding="utf-8")
     _git(repo, "add", "-A")
@@ -167,8 +165,6 @@ def test_passes_when_no_eligible_pool_file_changed(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
     (repo / "docs" / "note.md").write_text("base\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "base")

@@ -375,8 +375,6 @@ output_dir: charness-artifacts/retro
 
 def test_retro_prepare_packet_changed_ref_reaches_default_surface_producer(tmp_path: Path) -> None:
     _run_git(tmp_path, "init")
-    _run_git(tmp_path, "config", "user.email", "test@example.com")
-    _run_git(tmp_path, "config", "user.name", "Test User")
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(

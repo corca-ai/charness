@@ -240,8 +240,6 @@ packet_sections:
 
 def test_collect_changed_paths_for_ref_reads_committed_diff(tmp_path: Path) -> None:
     _run_git(tmp_path, "init")
-    _run_git(tmp_path, "config", "user.email", "test@example.com")
-    _run_git(tmp_path, "config", "user.name", "Test User")
     (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
     _run_git(tmp_path, "add", "README.md")
     _run_git(tmp_path, "commit", "-m", "initial")
@@ -379,8 +377,6 @@ packet_sections:
 
 def _init_identity_repo(repo: Path) -> None:
     _run_git(repo, "init")
-    _run_git(repo, "config", "user.email", "test@example.com")
-    _run_git(repo, "config", "user.name", "Test User")
     (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
     (repo / "unrelated.txt").write_text("base\n", encoding="utf-8")
     _run_git(repo, "add", ".")
@@ -763,8 +759,6 @@ def test_prepare_packet_markdown_kind_accepts_sequence_lines_only_for_matching_t
 
 def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Path) -> None:
     _run_git(tmp_path, "init")
-    _run_git(tmp_path, "config", "user.email", "test@example.com")
-    _run_git(tmp_path, "config", "user.name", "Test User")
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -833,8 +827,6 @@ packet_sections:
 
 def test_runner_cli_commit_alias_sets_changed_ref_and_prepared_for(tmp_path: Path) -> None:
     _run_git(tmp_path, "init")
-    _run_git(tmp_path, "config", "user.email", "test@example.com")
-    _run_git(tmp_path, "config", "user.name", "Test User")
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(

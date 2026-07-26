@@ -134,8 +134,6 @@ def _write_fake_distinct_channel_probe(bin_dir: Path) -> None:
 
 def _setup_git(repo: Path, remote: Path) -> None:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.email", "codex-test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=repo, check=True, capture_output=True, text=True)

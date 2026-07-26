@@ -302,7 +302,7 @@ def test_publish_blocks_when_update_instructions_are_stale(tmp_path: Path) -> No
 # --- #432: lingering `.invalid` git identity guard ----------------------------
 
 
-def test_invalid_git_identity_blocker_logic(tmp_path: Path) -> None:
+def test_invalid_git_identity_blocker_logic(tmp_path: Path, no_ambient_git_identity) -> None:
     preflight = _load_preflight()
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -322,11 +322,18 @@ def test_invalid_git_identity_blocker_logic(tmp_path: Path) -> None:
     assert "author" in blocker
 
 
-def test_publish_blocks_when_git_identity_is_invalid(tmp_path: Path) -> None:
+def test_publish_blocks_when_git_identity_is_invalid(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     # Simulate the #432 shape: a proof flow left a synthetic `.invalid` identity
     # in the repo-local config and it was never restored.
     _git(repo, "config", "user.email", "hotl-proof@example.invalid")
+    # Drop the session identity only AFTER seeding: git prefers GIT_AUTHOR_* over
+    # `user.email`, so leaving it set would mask the `.invalid` config this guard
+    # exists to catch -- but clearing it before seeding would break the seed commit.
+    for name in ("GIT_AUTHOR_EMAIL", "GIT_COMMITTER_EMAIL"):
+        monkeypatch.delenv(name, raising=False)
     env = _release_env(tmp_path, bin_dir)
 
     result = _run_publish(repo, env, "--part", "patch", "--critique-blocked", CRITIQUE_BLOCKED)

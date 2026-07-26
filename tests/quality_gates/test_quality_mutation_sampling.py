@@ -410,8 +410,6 @@ def test_changed_line_numbers_parses_added_lines_over_range(tmp_path: Path) -> N
         subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True, text=True)
 
     git("init")
-    git("config", "user.email", "t@example.com")
-    git("config", "user.name", "t")
     target = tmp_path / "mod.py"
     target.write_text("a = 1\nb = 2\nc = 3\n", encoding="utf-8")
     git("add", "mod.py")

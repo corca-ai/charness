@@ -42,8 +42,6 @@ def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
     repo = tmp_path / "repo"
     (repo / "pkg").mkdir(parents=True)
     _git(repo, "init")
-    _git(repo, "config", "user.email", "t@t")
-    _git(repo, "config", "user.name", "t")
     (repo / "pkg" / "foo.py").write_text("a = 1\nb = 2\nc = 3\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-m", "base")

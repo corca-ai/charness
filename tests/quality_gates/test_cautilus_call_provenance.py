@@ -16,8 +16,6 @@ SCRIPT = ROOT / "scripts" / "validate_cautilus_call_provenance.py"
 
 def _init_git(repo: Path, *, commit_subject: str | None = None) -> None:
     subprocess.run(["git", "init", "-q", str(repo)], check=True)
-    subprocess.run(["git", "-C", str(repo), "config", "user.email", "test@example.com"], check=True)
-    subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], check=True)
     (repo / "README.md").write_text("seed\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
     subprocess.run(

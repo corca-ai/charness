@@ -22,8 +22,6 @@ def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
     (repo / "scripts").mkdir(parents=True)
     (repo / "tests" / "quality_gates").mkdir(parents=True)
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
     (repo / "scripts" / "foo.py").write_text("def value():\n    return 1\n", encoding="utf-8")
     (repo / "scripts" / "bar.py").write_text("def other():\n    return 1\n", encoding="utf-8")
     (repo / "tests" / "quality_gates" / "test_foo.py").write_text(

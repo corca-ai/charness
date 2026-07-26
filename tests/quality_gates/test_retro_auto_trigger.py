@@ -153,14 +153,6 @@ def test_retro_auto_trigger_commit_range_survives_clean_tree(tmp_path: Path) -> 
     helper_path.parent.mkdir(parents=True)
     helper_path.write_text("print('before')\n", encoding="utf-8")
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
     helper_path.write_text("print('after')\n", encoding="utf-8")

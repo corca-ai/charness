@@ -122,8 +122,6 @@ def test_staged_worktree_consistency_blocks_edit_after_stage(tmp_path: Path, mon
         subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
     git("init")
-    git("config", "user.email", "t@example.com")
-    git("config", "user.name", "t")
     target = repo / "f.txt"
     target.write_text("v1\n", encoding="utf-8")
     git("add", "f.txt")

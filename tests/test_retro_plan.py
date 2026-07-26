@@ -19,8 +19,6 @@ def _git(repo: Path, *args: str) -> None:
 def _init_git_repo_with_commit(repo: Path) -> None:
     repo.mkdir(parents=True, exist_ok=True)
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@t")
-    _git(repo, "config", "user.name", "t")
     (repo / "tracked.py").write_text("x = 1\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "snapshot")

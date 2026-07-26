@@ -17,8 +17,6 @@ def _make_primary(tmp_path: Path) -> Path:
     repo = tmp_path / "primary"
     repo.mkdir()
     _git("init", "--initial-branch=main", cwd=repo)
-    _git("config", "user.email", "wt-test@example.com", cwd=repo)
-    _git("config", "user.name", "Worktree Test", cwd=repo)
     (repo / "README.md").write_text("seed\n", encoding="utf-8")
     _git("add", "README.md", cwd=repo)
     _git("commit", "-m", "seed", cwd=repo)

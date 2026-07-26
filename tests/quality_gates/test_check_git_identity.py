@@ -49,7 +49,7 @@ def _repo(tmp_path: Path) -> Path:
     return repo
 
 
-def test_local_invalid_email_is_flagged(tmp_path: Path) -> None:
+def test_local_invalid_email_is_flagged(tmp_path: Path, no_ambient_git_identity) -> None:
     repo = _repo(tmp_path)
     _git(repo, "config", "user.email", "x@example.invalid")
     _git(repo, "config", "user.name", "hotl proof")
@@ -103,7 +103,7 @@ def test_git_var_failure_does_not_block(monkeypatch) -> None:
     assert cgi.main(["--repo-root", "."]) == 0
 
 
-def test_cli_blocks_local_invalid_config(tmp_path: Path) -> None:
+def test_cli_blocks_local_invalid_config(tmp_path: Path, no_ambient_git_identity) -> None:
     repo = _repo(tmp_path)
     _git(repo, "config", "user.email", "x@example.invalid")
     _git(repo, "config", "user.name", "hotl proof")
@@ -135,7 +135,9 @@ def test_cli_passes_clean_identity(tmp_path: Path) -> None:
         ("synthetic@internal.test", False),
     ],
 )
-def test_release_preflight_parity(tmp_path: Path, email: str, expect_blocked: bool) -> None:
+def test_release_preflight_parity(
+    tmp_path: Path, email: str, expect_blocked: bool, no_ambient_git_identity
+) -> None:
     # The release preflight duplicates the resolve+check logic because the
     # plugin ships standalone and cannot import repo-root scripts. This parity
     # matrix binds the two copies: a semantic divergence in either detector

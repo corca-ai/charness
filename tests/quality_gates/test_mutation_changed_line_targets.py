@@ -95,8 +95,6 @@ def test_changed_line_targets_read_source_from_head_not_dirty_worktree(tmp_path:
 
     (tmp_path / "scripts").mkdir()
     git("init", "-q")
-    git("config", "user.email", "t@example.com")
-    git("config", "user.name", "t")
     target = tmp_path / "scripts" / "demo.py"
     target.write_text("def value():\n    return 1\n", encoding="utf-8")
     git("add", "-A")

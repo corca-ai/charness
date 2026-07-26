@@ -105,8 +105,6 @@ def test_validate_ideation_artifact_uses_changed_path_discovery(tmp_path: Path) 
     repo = tmp_path / "repo"
     repo.mkdir()
     _run_git(repo, "init")
-    _run_git(repo, "config", "user.email", "test@example.com")
-    _run_git(repo, "config", "user.name", "Test User")
     (repo / "README.md").write_text("seed\n", encoding="utf-8")
     _run_git(repo, "add", "README.md")
     _run_git(repo, "commit", "-m", "seed")

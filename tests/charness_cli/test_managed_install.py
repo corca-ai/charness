@@ -111,14 +111,6 @@ def test_git_has_tracked_changes_blocks_tracked_edits_without_blocking_untracked
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     tracked = repo / "tracked.txt"
     tracked.write_text("tracked\n", encoding="utf-8")
     subprocess.run(["git", "add", "tracked.txt"], cwd=repo, check=True, capture_output=True, text=True)
@@ -540,14 +532,6 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, 
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     managed_checkout = home_root / ".agents" / "src" / "charness"
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=managed_checkout, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=managed_checkout,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     managed_readme = managed_checkout / "README.md"
     managed_readme.write_text(managed_readme.read_text(encoding="utf-8") + "\nlocal managed checkout note\n", encoding="utf-8")
     subprocess.run(["git", "add", "README.md"], cwd=managed_checkout, check=True, capture_output=True, text=True)

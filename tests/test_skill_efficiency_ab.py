@@ -145,8 +145,6 @@ def _init_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "wt"
     repo.mkdir()
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
     return repo
 
 
@@ -314,8 +312,6 @@ def test_capture_script_behavioral_no_identity_in_run_view(tmp_path: Path) -> No
     repo = tmp_path / "srcrepo"
     repo.mkdir()
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.email", "t@example.com")
-    _git(repo, "config", "user.name", "t")
     (repo / "seed.txt").write_text("s\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "base")

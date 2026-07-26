@@ -18,14 +18,6 @@ def load_verify_module():
 
 def seed_commit(repo: Path, body: str) -> None:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     (repo / "README.md").write_text("# Test\n", encoding="utf-8")
     subprocess.run(["git", "add", "README.md"], cwd=repo, check=True, capture_output=True, text=True)
     command = ["git", "commit", "-m", "Resolve issue"]

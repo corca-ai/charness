@@ -39,7 +39,25 @@ def run_loaded_script_main(
     saved_env = os.environ.copy()
     sys.argv = [script_name, *args]
     if env is not None:
+        # A caller-supplied env REPLACES the environment, which would drop the
+        # session-wide git identity and config isolation that seeded repos rely on
+        # (and the #225 discovery ceiling). Carry those through unless the caller
+        # deliberately set them, so an in-process main behaves like a subprocess one.
+        carried = {
+            name: os.environ[name]
+            for name in (
+                "GIT_AUTHOR_NAME",
+                "GIT_AUTHOR_EMAIL",
+                "GIT_COMMITTER_NAME",
+                "GIT_COMMITTER_EMAIL",
+                "GIT_CONFIG_GLOBAL",
+                "GIT_CONFIG_NOSYSTEM",
+                "GIT_CEILING_DIRECTORIES",
+            )
+            if name in os.environ and name not in env
+        }
         os.environ.clear()
+        os.environ.update(carried)
         os.environ.update(env)
     os.environ.setdefault("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     returncode = 0

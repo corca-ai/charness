@@ -8,20 +8,6 @@ from .support import clone_quality_runner_repo, init_git_repo, run_shell_script,
 
 def _commit_quality_runner_repo(repo: Path, *tracked_paths: str) -> None:
     init_git_repo(repo, *tracked_paths)
-    subprocess.run(
-        ["git", "config", "user.name", "Codex Test"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
 

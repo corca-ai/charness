@@ -34,6 +34,77 @@ def _confine_git_discovery_to_pytest_temp(
             os.environ["GIT_CEILING_DIRECTORIES"] = previous
 
 
+GIT_IDENTITY_ENV = {
+    "GIT_AUTHOR_NAME": "Charness Test",
+    "GIT_AUTHOR_EMAIL": "tests@example.com",
+    "GIT_COMMITTER_NAME": "Charness Test",
+    "GIT_COMMITTER_EMAIL": "tests@example.com",
+}
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _git_identity_from_the_environment(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Iterator[None]:
+    """Give every test-seeded repo a commit identity WITHOUT spawning `git config`.
+
+    Measured on this suite: `git` is 8552 of 12527 subprocess spawns, and 764 of
+    those were `git config` calls existing only so `git commit` would work in a
+    throwaway repo. Git reads the same identity from GIT_AUTHOR_* / GIT_COMMITTER_*,
+    so setting it once per session removes a process launch from every seeded repo.
+    The repos are still built per test -- this is not the fixture caching the
+    standing measurement ruled out.
+
+    `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_NOSYSTEM` are the load-bearing half. Without
+    them the suite silently reads the developer's real `~/.gitconfig`, which means a
+    seeded `git commit` passes on a machine that happens to have a global identity
+    and fails on one that does not -- exactly the ambient dependency that hid a
+    missing version of this fixture during review. Pointing global config at an
+    empty temp file makes the identity above the only source, so a green run here
+    means a green run on a bare CI box.
+
+    A test that exercises missing or invalid identity manages this itself;
+    `tests/quality_gates/test_check_git_identity.py` and the `.invalid`-placeholder
+    guards in `tests/quality_gates/test_release_publish_resilience.py` keep their
+    explicit `git config` spawns for that reason.
+    """
+    # Not empty: pin the settings the suite would otherwise inherit from whatever
+    # the developer happens to have. `init.defaultBranch` is load-bearing --
+    # isolating global config revealed that tests asserting on `origin/main` were
+    # silently relying on the developer's own default, and got `master` without it.
+    empty_global = tmp_path_factory.getbasetemp() / "test-gitconfig"
+    empty_global.write_text("[init]\n\tdefaultBranch = main\n", encoding="utf-8")
+    overrides = {
+        **GIT_IDENTITY_ENV,
+        "GIT_CONFIG_GLOBAL": str(empty_global),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    previous = {name: os.environ.get(name) for name in overrides}
+    os.environ.update(overrides)
+    try:
+        yield
+    finally:
+        for name, value in previous.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
+
+
+@pytest.fixture
+def no_ambient_git_identity(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Opt out of the session git identity, for tests that assert ON identity.
+
+    Git resolves author/committer from GIT_AUTHOR_*/GIT_COMMITTER_* BEFORE
+    `user.name`/`user.email` config, so the session default would mask an identity a
+    test deliberately configured -- e.g. a lingering `.invalid` placeholder a guard
+    is supposed to catch. Request this fixture in any test that sets identity via
+    `git config` and expects the tool to see it.
+    """
+    for name in GIT_IDENTITY_ENV:
+        monkeypatch.delenv(name, raising=False)
+
+
 @pytest.fixture(autouse=True)
 def _disable_plugin_fallback_manifests(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")

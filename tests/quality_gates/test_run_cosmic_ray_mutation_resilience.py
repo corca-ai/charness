@@ -175,8 +175,6 @@ def test_restore_module_paths_reverts_mutated_file(tmp_path: Path) -> None:
     """The core #262 reproduction: a module-path file left mutated mid-run is
     reverted to its committed content by the defensive restore."""
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
-    subprocess.run(["git", "config", "user.email", "t@t"], cwd=tmp_path, check=True)
-    subprocess.run(["git", "config", "user.name", "t"], cwd=tmp_path, check=True)
     target = tmp_path / "scripts" / "mod.py"
     target.parent.mkdir(parents=True)
     target.write_text("x = 1\n", encoding="utf-8")

@@ -21,8 +21,6 @@ def git(repo: Path, *args: str) -> str:
 
 def init_repo(repo: Path) -> None:
     git(repo, "init", "-b", "main")
-    git(repo, "config", "user.name", "Codex Test")
-    git(repo, "config", "user.email", "codex-test@example.com")
 
 
 def run_collect(repo: Path, *args: str) -> dict[str, object]:

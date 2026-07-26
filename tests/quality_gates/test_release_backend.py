@@ -153,14 +153,6 @@ def test_release_adapter_preflight_maps_real_host_changes_to_focused_test(
         encoding="utf-8",
     )
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "tag", "v0.1.0"], cwd=repo, check=True, capture_output=True, text=True)

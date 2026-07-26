@@ -231,14 +231,6 @@ def test_release_generated_final_message_passes_commit_msg_gate(tmp_path: Path) 
     release_closeout = _load_release_closeout_module()
     commit_msg_checker = _load_commit_msg_checker()
     subprocess.run(["git", "init", "-b", "main"], cwd=tmp_path, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=tmp_path, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=tmp_path,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     payload = _release_payload(
         classification="feature",
         carrier_body=_feature_closeout_body(
