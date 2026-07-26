@@ -92,7 +92,9 @@ def main() -> int:
         if not suggestions:
             print(
                 f"runtime profile `{profile}` has no recorded samples to derive budgets from; "
-                "run the gates once on this machine first",
+                f"run the gates once on a machine that records under `{profile}` first "
+                "(running them here files samples under THIS machine's profile, which "
+                "produces nothing for a profile you named explicitly)",
                 file=sys.stderr,
             )
             return 1

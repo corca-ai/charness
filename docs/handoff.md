@@ -13,8 +13,9 @@ No open issues; every move below names an owning artifact.
 
 ## Current State
 
-- Standing operator direction: bug fixes, friction/rework, test/code speed.
-  Release state: [release state](../charness-artifacts/release/latest.md).
+- Standing operator direction: bug fixes, friction/rework, test/code speed. Last
+  release tagged `"v2.11.0"`; [release state](../charness-artifacts/release/latest.md)
+  is current truth, not that string.
 - **A bar sized from another profile's samples cannot be honest.** A 2x-loose
   aarch64 aggregate cited a precedent whose own rule it failed (2.07x median) and no
   advisory would have caught it; the hole stays open, one command wide. Same slice:
@@ -23,9 +24,8 @@ No open issues; every move below names an owning artifact.
   [affinity-holes critique](../charness-artifacts/critique/2026-07-26-runtime-profile-affinity-holes.md)
 - **A gate's discriminator is its output, not its exit status** (`du`), and a runtime
   profile keys on affinity, not `os.cpu_count()` — measure under a CPU limit.
-- **A line-cap split is a seam decision, not a line count.** And the last release
-  went out minor, not the planned patch: a new exported flag plus a new exported
-  module set the bump, twice running.
+- **A line-cap split is a seam decision, not a line count.** And a new exported flag
+  plus a new exported module sets a MINOR bump — three releases running now.
   [release critique](../charness-artifacts/critique/2026-07-26-v2-10-0-release-critique.md)
 
 ## Next Session
@@ -36,9 +36,9 @@ No open issues; every move below names an owning artifact.
    --runtime-profile local-linux-aarch64-4cpu --suggest-budgets` replaces the block
    from that machine's samples; do that instead of re-deriving from x86_64. Resolve
    its `check-coverage: 60000` then too — the 4-core block refuses to invent it.
-2. **Two thin windows.** The 4-core x86_64 one is n=3 with a red run in it;
-   `check-duplicates`/`dead-code-advisory` stay unbudgeted on 36-core because their
-   samples predate the barrier removal. Re-derive both when the windows fill.
+2. **Two thin windows.** 4-core x86_64 is n=3 with a red run in it;
+   `check-duplicates`/`dead-code-advisory` stay unbudgeted on 36-core (samples
+   predate the barrier removal). Re-derive both when the windows fill.
 3. **The BSD/macOS `du` `illegal option` wording is unprobed** — BusyBox and GNU are
    measured against real binaries; that third wording is not.
 4. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned, not

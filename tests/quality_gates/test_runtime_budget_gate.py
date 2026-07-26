@@ -827,6 +827,25 @@ def test_suggest_budgets_emits_paste_ready_block_for_unconfigured_profile(tmp_pa
     assert "from 3 label(s) in runtime-signals.json" in suggested.stdout
 
 
+def test_suggest_budgets_source_is_a_token_matching_the_enforcement_report() -> None:
+    """The two halves of the sizing/enforcement seam must not name the same fact in
+    two vocabularies. `evaluate` already reports a `commands_source` token, so sizing
+    returns the same tokens and keeps the sentence fragment in the renderer — a caller
+    that wants to refuse a timing-log-derived block compares a token, not prose."""
+    sizing = check_runtime_budget.runtime_budget_sizing_lib
+    enforcement_tokens = {"runtime_signals", "command_timing_log", "none"}
+
+    assert set(sizing.COMMANDS_SOURCE_LABELS) == enforcement_tokens
+    rendered = sizing.format_budget_suggestion(
+        "local-test",
+        {"pytest": {"budget_ms": 1000, "worst_observed_ms": 700, "samples": 4}},
+        commands_source="command_timing_log",
+    )
+    assert "in the repo-declared command_timing_log at" in rendered
+    # The raw token never reaches the operator-facing header.
+    assert "command_timing_log at" not in rendered.replace("the repo-declared command_timing_log at", "")
+
+
 def test_suggest_budgets_refuses_machine_readable_output_modes(tmp_path: Path) -> None:
     """The fragment is commented YAML. `--json` would either drop the comments that
     carry evidence depth or hand YAML to a caller that parses JSON, so the

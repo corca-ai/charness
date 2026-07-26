@@ -198,7 +198,10 @@ review's boundary proof is contaminated by the parent's own edits.
 - **`--suggest-budgets` output is unproven as *good* bars.** It is proven to be
   derivable, paste-parseable, depth-annotated, and refusal-on-no-samples. Whether
   1.4x-of-worst is the right policy for a given repo is the operator's judgment,
-  which is why the mode is advisory and exits 0.
+  which is why the mode never edits an adapter. It exits 0 on a derived block and
+  **1** when the profile has no samples — the release critique caught this paragraph
+  claiming "exits 0" flatly, which is the checked-in-text class the previous
+  release's own central finding came from.
 - **The mutation strength of the new tests is not measured.** They are proven to
   fail against the pre-fix code for the two reproduced violations; the sizing
   module has not been through a mutation run.

@@ -21,6 +21,13 @@ SLACK_SUGGESTION_HEADROOM = 1.4
 # Proposed bars round up to this step so a checked-in budgets block reads as a
 # decision rather than as a transcribed measurement.
 SUGGESTION_ROUNDING_MS = 500
+# Machine token -> operator-facing label. Tokens match `runtime_budget_lib.evaluate`'s
+# `commands_source`, so a caller compares tokens and only the render differs.
+COMMANDS_SOURCE_LABELS = {
+    "runtime_signals": "runtime-signals.json",
+    "command_timing_log": "the repo-declared command_timing_log",
+    "none": "no sample source",
+}
 
 
 def suggested_bar_ms(entry: dict[str, Any]) -> int | None:
@@ -93,14 +100,16 @@ def format_budget_suggestion(
 ) -> str:
     """Render a paste-ready `runtime_budget_profiles` fragment for the adapter.
 
-    `commands_source` is stated because the header otherwise reads as if the profile
-    id were the measurement's provenance. It is not: a repo-declared
-    `command_timing_log` with no `profile` field matches every profile, so bars
-    labelled for one machine can be measured on another.
+    `commands_source` is a machine token from `COMMANDS_SOURCE_LABELS` and is stated
+    because the header otherwise reads as if the profile id were the measurement's
+    provenance. It is not: a repo-declared `command_timing_log` with no `profile`
+    field matches every profile, so bars labelled for one machine can be measured on
+    another.
     """
     thin = sorted(label for label, item in suggestions.items() if item["samples"] < 3)
+    source_label = COMMANDS_SOURCE_LABELS.get(commands_source, commands_source)
     lines = [
-        f"# Derived for `{runtime_profile}` from {len(suggestions)} label(s) in {commands_source} at",
+        f"# Derived for `{runtime_profile}` from {len(suggestions)} label(s) in {source_label} at",
         f"# {SLACK_SUGGESTION_HEADROOM}x each label's worst observed run, rounded up to {SUGGESTION_ROUNDING_MS}ms.",
         "# Review every value before committing: this is a starting point, not a verdict.",
         "# `n=` is the evidence depth behind each bar. A bar drawn from one or two samples",
@@ -135,14 +144,19 @@ def suggest_budgets(
     sizing half of the seam: enforcement owns where samples live. The source is
     returned, not just used, because a derived bar is only as trustworthy as the log
     it came from.
+
+    The source is one of `COMMANDS_SOURCE_LABELS`' machine tokens, matching the
+    `commands_source` token `runtime_budget_lib.evaluate` already reports. A caller
+    that wants to refuse a timing-log-derived block compares a token; the prose is a
+    render concern, so the two halves of this seam do not name the same fact twice.
     """
     adapter_data = load_adapter(repo_root)["data"]
     selected_profile = selected_runtime_profile(adapter_data, runtime_profile)
     signals = load_signals(repo_root)
     commands = profile_commands(signals, selected_profile) if isinstance(signals, dict) else {}
-    commands_source = "runtime-signals.json" if commands else "none"
+    commands_source = "runtime_signals" if commands else "none"
     if not commands:
         commands = evaluate_timing_log(repo_root, adapter_data, selected_profile)["commands"]
         if commands:
-            commands_source = "the repo-declared command_timing_log"
+            commands_source = "command_timing_log"
     return selected_profile, suggest_profile_budgets(commands), commands_source

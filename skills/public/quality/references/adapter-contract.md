@@ -201,6 +201,10 @@ afterwards. When a label has a single sample and no recorded window, that one
 sample is the basis. Exits non-zero when the profile has no samples at all,
 because an invented bar is worse than a missing one.
 
+The output is commented YAML, so the mode refuses `--json`, `--summary`, and
+`--detail` as a usage error rather than dropping the comments that carry the
+evidence depth or handing YAML to a caller that parses JSON.
+
 The header names the sample SOURCE, not just the profile. Suggestions fall back to
 a declared `command_timing_log` when `runtime-signals.json` has nothing for the
 profile, and such a log with no `profile` field matches every profile — so a block
