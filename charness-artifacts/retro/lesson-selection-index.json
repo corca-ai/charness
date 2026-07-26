@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-07-26",
-  "source_artifact_count": 396,
-  "candidate_count": 1596,
+  "source_artifact_count": 397,
+  "candidate_count": 1601,
   "top_candidates": [
     {
       "candidate_id": "current_focus:4e694b0747b3",
@@ -38,6 +38,29 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
+          "date": "2026-07-26",
+          "section": "Context",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:43e941003100",
+      "kind": "current_focus",
+      "lesson": "The operator closed the five-item handoff slice, read the waste list, and asked the question the waste list could not answer: *\"비슷한 얘기를 계속 듣고 있고, 전수를 잘 고친 줄 알았는데.",
+      "normalized_key": "the operator closed the five item handoff slice read the waste list and asked",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
           "date": "2026-07-26",
           "section": "Context",
           "generator": null
@@ -84,6 +107,75 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ddb4175be153",
+      "kind": "next_improvement",
+      "lesson": "**capability:** a recurrence-class that has bitten K times must carry a mechanism or an explicit refusal. The data to enforce it will exist once the concept identity does; the north star's own frame says the harness *briefs* a capable judge, and a briefing that selects 4 of 1596 lessons by recency is a defective briefing, not a disciplined reader's failure.",
+      "normalized_key": "capability a recurrence class that has bitten k times must carry a mechanism or",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7f7dba4fc18e",
+      "kind": "next_improvement",
+      "lesson": "**capability:** give lessons a concept identity. `normalized_key` is surface text, so recurrence is unmeasurable; add an explicit recurrence-class tag to retro Waste/Next-Improvement bullets (authored, validated, and grouped by the index) so `independent_source_count` counts what its name claims. Then re-derive `LESSON_SELECTION_ALPHA_BASE` and the 14-day half-life against the live 1596-candidate corpus, with a back-test asserting that a class recurring 5x over 50 days outranks a 0-day one-off. Both halves are needed: the count is useless while the weighting cannot act on it, and vice versa.",
+      "normalized_key": "capability give lessons a concept identity normalized key is surface text so recurrence is",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:59ac1e26f934",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the loop's write path is healthy and its bind path is absent. A lesson that ships as prose only has not shipped; ask \"what tool output will say this at the moment it applies?\" before recording any `memory:` improvement.",
+      "normalized_key": "memory the loop s write path is healthy and its bind path is absent",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
           "date": "2026-07-26",
           "section": "Next Improvements",
           "generator": null
@@ -201,98 +293,6 @@
           "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
           "date": "2026-07-26",
           "section": "Next Improvements",
-          "generator": null
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:910fbea95294",
-      "kind": "repeat_trap",
-      "lesson": "Diagnosing it cost three of those attempts because the gate's message — \"index is stale; run `--write`\" — points at a fix that CANNOT work here: `--write` emits the new schema, and the next publish overwrites it with the old one again.",
-      "normalized_key": "diagnosing it cost three of those attempts because the gate s message index is",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-      "latest_source_date": "2026-07-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
-          "generator": null
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:eed142b7b5dd",
-      "kind": "repeat_trap",
-      "lesson": "**Four failed publish attempts** (~20 min) to one root cause: I ran the release helper from the INSTALLED plugin (`~/.agents/src/charness/plugins/...`) instead of the repo's own `skills/public/release/scripts/`. Installed charness was 2.11.0, whose `recent_lessons_lib` predates this repo's `independent_source_count` change, so the helper wrote an old-schema lesson index that the repo's own gate then rejected as stale. `bootstrap-resolution.md` already says to use the repo copy inside the source tree; I did not read it before reaching for a path I already had.",
-      "normalized_key": "four failed publish attempts 20 min to one root cause i ran the release",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-      "latest_source_date": "2026-07-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
-          "generator": null
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f2540d28c507",
-      "kind": "repeat_trap",
-      "lesson": "Two rounds of budget-bar rewriting: I sized bars from the post-change slice, then learned from review that enforcement reads the full-window median, then had to run the windows to convergence and rewrite every number and comment a second time.",
-      "normalized_key": "two rounds of budget bar rewriting i sized bars from the post change slice",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-      "latest_source_date": "2026-07-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
-          "generator": null
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:06fdb6e252da",
-      "kind": "repeat_trap",
-      "lesson": "Wrote a version floor (`MIN_XDIST_FOR_SCHED_CHUNK = (2, 3)`) from inference and shipped it into a commit before checking; the real answer is 3.2.0.",
-      "normalized_key": "wrote a version floor min xdist for sched chunk 2 3 from inference and",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-      "latest_source_date": "2026-07-26",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
           "generator": null
         }
       ]
@@ -329,6 +329,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:43e941003100",
+      "kind": "current_focus",
+      "lesson": "The operator closed the five-item handoff slice, read the waste list, and asked the question the waste list could not answer: *\"비슷한 얘기를 계속 듣고 있고, 전수를 잘 고친 줄 알았는데.",
+      "normalized_key": "the operator closed the five item handoff slice read the waste list and asked",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+          "date": "2026-07-26",
+          "section": "Context",
+          "generator": null
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:ef1bb48a9e20",
       "kind": "next_improvement",
       "lesson": "a counted limit (line caps, size budgets) is a planning input, not a retry loop. Read the reported deficit and make one edit.",
@@ -368,6 +391,75 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ddb4175be153",
+      "kind": "next_improvement",
+      "lesson": "**capability:** a recurrence-class that has bitten K times must carry a mechanism or an explicit refusal. The data to enforce it will exist once the concept identity does; the north star's own frame says the harness *briefs* a capable judge, and a briefing that selects 4 of 1596 lessons by recency is a defective briefing, not a disciplined reader's failure.",
+      "normalized_key": "capability a recurrence class that has bitten k times must carry a mechanism or",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7f7dba4fc18e",
+      "kind": "next_improvement",
+      "lesson": "**capability:** give lessons a concept identity. `normalized_key` is surface text, so recurrence is unmeasurable; add an explicit recurrence-class tag to retro Waste/Next-Improvement bullets (authored, validated, and grouped by the index) so `independent_source_count` counts what its name claims. Then re-derive `LESSON_SELECTION_ALPHA_BASE` and the 14-day half-life against the live 1596-candidate corpus, with a back-test asserting that a class recurring 5x over 50 days outranks a 0-day one-off. Both halves are needed: the count is useless while the weighting cannot act on it, and vice versa.",
+      "normalized_key": "capability give lessons a concept identity normalized key is surface text so recurrence is",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:59ac1e26f934",
+      "kind": "next_improvement",
+      "lesson": "**memory:** the loop's write path is healthy and its bind path is absent. A lesson that ships as prose only has not shipped; ask \"what tool output will say this at the moment it applies?\" before recording any `memory:` improvement.",
+      "normalized_key": "memory the loop s write path is healthy and its bind path is absent",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
           "date": "2026-07-26",
           "section": "Next Improvements",
           "generator": null
@@ -483,6 +575,29 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7731b0b0c00b",
+      "kind": "next_improvement",
+      "lesson": "**workflow:** put the lesson in the tool output at the point of use, not only in the session-open digest. Concretely, next session: make `validate_handoff_artifact.py` (and the shared `artifact_validator` path it uses) report ALL violations in one pass, and name the owning `scaffold_*.py` in the first failure of any artifact validator that has one. Acceptance: a deliberately triple-violating handoff draft yields one message listing three violations plus the scaffold command.",
+      "normalized_key": "workflow put the lesson in the tool output at the point of use not",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
+      "latest_source_date": "2026-07-26",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md",
           "date": "2026-07-26",
           "section": "Next Improvements",
           "generator": null

@@ -3,7 +3,7 @@
 ## Current Focus
 
 - One session under the standing operator direction (bug fixes, friction/rework, test/code speed) that closed the handoff's blocker 1 — two holes in the runtime-profile affinity switch — and published `v2.11.0`. (source: `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`; sources: 2)
-- Release publish triggered a configured automatic session retro for `v2.10.0`. (source: `charness-artifacts/retro/2026-07-26-v2-10-0-release-auto-retro.md`)
+- The operator closed the five-item handoff slice, read the waste list, and asked the question the waste list could not answer: *"비슷한 얘기를 계속 듣고 있고, 전수를 잘 고친 줄 알았는데. (source: `charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md`)
 
 ## Repeat Traps
 
@@ -16,8 +16,8 @@
 
 - a counted limit (line caps, size budgets) is a planning input, not a retry loop. Read the reported deficit and make one edit. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
 - a version floor, an upstream mechanism, and a precedent's scope are all CLAIMS ABOUT THE WORLD. Check each against its source in the same edit that writes it; this session shipped one of each from inference and a reviewer caught all three. (source: `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`)
-- the installed helper should refuse, or loudly warn, when `--repo-root` resolves to the charness source tree and the installed version differs from the repo's — the gate caught this, but its message misdirects toward a fix that cannot work. (source: `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`)
-- the standing direction's third clause — **test/code speed** — went unaddressed. Budget bars are regression *detection*, not speed; nothing this session made a gate or a test faster. Recorded as a handoff item so the gap is a tracked choice rather than a silent omission. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
+- **capability:** a recurrence-class that has bitten K times must carry a mechanism or an explicit refusal. The data to enforce it will exist once the concept identity does; the north star's own frame says the harness *briefs* a capable judge, and a briefing that selects 4 of 1596 lessons by recency is a defective briefing, not a disciplined reader's failure. (source: `charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md`)
+- **capability:** give lessons a concept identity. `normalized_key` is surface text, so recurrence is unmeasurable; add an explicit recurrence-class tag to retro Waste/Next-Improvement bullets (authored, validated, and grouped by the index) so `independent_source_count` counts what its name claims. Then re-derive `LESSON_SELECTION_ALPHA_BASE` and the 14-day half-life against the live 1596-candidate corpus, with a back-test asserting that a class recurring 5x over 50 days outranks a 0-day one-off. Both halves are needed: the count is useless while the weighting cannot act on it, and vice versa. (source: `charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md`)
 
 ## Selection Policy
 
@@ -27,6 +27,6 @@
 
 ## Sources
 
+- `charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md`
 - `charness-artifacts/retro/2026-07-26-session-retro.md`
-- `charness-artifacts/retro/2026-07-26-v2-10-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`
