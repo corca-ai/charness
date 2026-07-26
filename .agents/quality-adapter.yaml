@@ -157,7 +157,12 @@ runtime_budget_profiles:
       check-cli-skill-surface: 8500
       check-inventory-declaration-coverage: 500
       check-references-link-inventory: 800
-      check-seed-fixture-budget: 2000
+      # 2026-07-26: was 2000, which the slack advisory reported at 3.5x its 572ms worst
+      # recent run -- i.e. it could no longer fail. Acting on the advisory rather than
+      # leaving it to re-report: n=20, all passing, range 520-572ms, so this window is
+      # unusually tight and 1000 (1.4x worst, the standard derivation) still absorbs
+      # nearly 2x the observed spread.
+      check-seed-fixture-budget: 1000
       # The 2.5s limit was set in May; a 5s bar replaced it because the release
       # gate observed a 4404ms peak. That 5s bar predates the barrier removal.
       # (contended) was 5000; post-change max 6980
@@ -241,6 +246,87 @@ runtime_budget_profiles:
       validate-cautilus-call-provenance: 500
       # (contended) was 6000; post-change max 10906
       validate-inventory-consumption-declaration: 15500
+      # 2026-07-26: the three largest UNBUDGETED gates on this profile. They were
+      # missed because this block's label set predates the question "what is expensive
+      # here" -- and the aggregate does not cover them, since `pytest` at 52.1s is
+      # essentially the 54.5s wall, so any of these could regress several-fold, finish
+      # inside `pytest`, and trip nothing. Same 1.4x-of-worst-recent convention as the
+      # relevel above, and all three windows are n=20 entirely post-barrier-removal, so
+      # these are contended numbers without needing the `(contended)` caveat.
+      # `check-duplicates` and `dead-code-advisory` are deliberately still unbudgeted:
+      # their windows hold NO post-barrier-removal samples, so a bar would be sized
+      # from the regime this profile no longer runs in.
+      check-export-safe-imports: 12000
+      check-plugin-import-smoke: 9000
+      check-documented-command-flags: 9000
+  local-linux-x86_64-4cpu:
+    # This profile HAD samples and no budgets, which is the one combination the gate
+    # treats as a hard configuration error -- so `taskset -c 0-3 ./scripts/run-quality.sh`
+    # exited 1 on this box for reasons that had nothing to do with runtime. The
+    # samples were already recorded (three `taskset -c 0-3 --read-only` runs,
+    # 2026-07-25T23:39-23:47); only the block was missing.
+    #
+    # WINDOW CAVEAT: the middle of those three runs FAILED (`pytest` 126440ms status
+    # `fail`, and therefore `run-quality-read-only` 130279ms status `fail`). The bars
+    # below are still arithmetically as claimed because they are drawn from
+    # `max_recent`, which is a passing run in both cases -- but the window is n=3
+    # containing one red, not three clean measurements. A failing run can exit early
+    # and read FAST, so a median drawn from this window would be optimistic.
+    #
+    # MEASURED, not derived from a contention factor: every value is 1.4x that
+    # window's worst run for the label, rounded up to 500ms, as emitted by
+    # `check_runtime_budget.py --runtime-profile local-linux-x86_64-4cpu --suggest-budgets`.
+    #
+    # Label scope is by OBSERVED COST on this profile, not by parity with the sibling
+    # blocks. Parity was the first cut and it left `check-export-safe-imports` (27.3s,
+    # the largest unbudgeted gate on this machine, unbudgeted on all three profiles)
+    # with no bar at all, while spending bars on 600ms inventory gates. The aggregate
+    # does not backstop that: `pytest` at 130.8s IS the 134.8s wall, so a standing gate
+    # could go 27s -> 110s, finish inside `pytest`, and move no bar in this file. Every
+    # label whose observed max is >=13s now has a bar; the sub-second sibling-parity
+    # labels are kept because they are cheap and already proven elsewhere.
+    #
+    # Not all 84 recorded labels: a bar drawn from n=3 is weak evidence, and spraying
+    # it across every gate buys breadth with noise.
+    #
+    # `check-coverage` is absent on purpose: it does not run in `--read-only`, so this
+    # window contains no sample for it and any number here would be invented.
+    budgets:
+      charness-version: 1000
+      check-cli-skill-surface: 29000
+      check-inventory-declaration-coverage: 1000
+      check-references-link-inventory: 2500
+      check-seed-fixture-budget: 2000
+      check-spec-evidence-durability: 26000
+      inventory-ci-local-gate-parity: 500
+      inventory-sloc: 1000
+      inventory-ubiquitous-language: 3000
+      pytest: 183500
+      doc-duplicates: 51000
+      check-markdown: 55500
+      check-secrets: 107500
+      run-evals: 13500
+      specdown: 32000
+      validate-cautilus-call-provenance: 1000
+      validate-inventory-consumption-declaration: 55000
+      # Cost centers above 13s that sibling-parity scoping missed. Same 1.4x-of-max
+      # derivation; `check-export-safe-imports` is the largest unbudgeted gate on this
+      # machine and had no bar on any profile.
+      check-export-safe-imports: 38500
+      validate-skill-ergonomics: 30000
+      validate-inference-interpretation: 28000
+      check-plugin-import-smoke: 27500
+      validate-attention-state-visibility: 27000
+      check-documented-command-flags: 27000
+      check-python-runtime-inheritance: 26500
+      validate-packaging-committed: 24000
+      validate-adapters: 23000
+      validate-usage-episodes: 22500
+      report-usage-episodes: 22000
+      check-boundary-bypass-ratchet: 21000
+      check-shell: 19000
+      # The aggregate the per-gate bars above are backstopped by; observed max 134796.
+      run-quality-read-only: 189000
   local-linux-aarch64-4cpu:
     # Budgets set above this machine's measured median_recent/max_recent so the
     # gate is honest for the slower 4-CPU aarch64 box (same key scope as the
@@ -270,9 +356,30 @@ runtime_budget_profiles:
     # tolerable direction (a weakened gate, not a false red), which is why it ships
     # as an assumption instead of blocking on hardware nobody here has.
     #
-    # Still owed: a run on the actual aarch64 box. Note this block has no aggregate
-    # bar (`run-quality-read-only`, `pytest-release`) the way the x86_64 profile
-    # does, so nothing backstops what these eight looser per-gate bars let through.
+    # Still owed: a run on the actual aarch64 box. This block has NO aggregate bar
+    # (`run-quality-read-only`, `pytest-release`) the way the x86_64 profiles do, so
+    # nothing backstops what these eight looser per-gate bars let through.
+    #
+    # That hole stays open ON PURPOSE, and the attempt to close it is worth recording
+    # because it looked correct. A 270000 aggregate was drafted as "2x the measured
+    # 4-core wall, the same precedent `run-quality-read-only-release` set". It failed
+    # that precedent's own arithmetic: the rule written at that bar is `bar < 2x
+    # MEDIAN` of its window, and 270000/130279 = 2.07x median -- above 2x, so the bar
+    # could not trip the 2x regression its own comment promised. The precedent bar was
+    # also sized from the profile it enforces; this one would be sized from a DIFFERENT
+    # profile's samples. Worse, the two failure directions here are mutually exclusive:
+    # if the block's slowdown assumption is wrong the bar cannot fail, and if it holds
+    # strongly (2x slower -> ~260000 median) the bar cannot pass, which is a guaranteed
+    # blocking pre-push false red. No single number is honest for a profile with zero
+    # recorded samples, and nothing would have surfaced the mistake -- every label here
+    # reports `no-sample` until this box runs, and `BUDGET_SLACK_FACTOR` is 3.0, so a
+    # 2.0x bar is invisible to the one advisory built to catch bars that cannot fail.
+    #
+    # The hole is now one command wide, which is why leaving it open is cheap: on the
+    # first run on a real aarch64 box, `check_runtime_budget.py --runtime-profile
+    # local-linux-aarch64-4cpu --suggest-budgets` emits this whole block from that
+    # machine's own samples, per-label `n=` depth included. Replace these floors with
+    # that output rather than deriving a second set from x86_64.
     budgets:
       charness-version: 1000
       # 4-core floor 20399ms (was 15000, a false red)

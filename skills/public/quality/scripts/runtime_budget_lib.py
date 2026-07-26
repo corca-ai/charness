@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+from runtime_budget_sizing_lib import suggested_bar_ms
 from runtime_profile_lib import profile_budgets, profile_commands, selected_runtime_profile
 from runtime_timing_log_lib import evaluate_timing_log
 from runtime_visibility_lib import runtime_visibility_findings
@@ -23,9 +24,9 @@ STALE_HOTSPOT_SAMPLE_DAYS = 14
 BUDGET_SLACK_FACTOR = 3.0
 # Below this, ordinary scheduling jitter dominates and a slack ratio is noise.
 MIN_SLACK_ADVISORY_BUDGET_MS = 1000
-# Headroom retained when suggesting a retune: 1.4x the worst observed run still
-# absorbs normal variance while letting a genuine 2x regression trip.
-SLACK_SUGGESTION_HEADROOM = 1.4
+# How a bar is sized lives in one place (`runtime_budget_sizing_lib`); the slack
+# advisory below proposes a retune, so it calls that sizing rather than re-deriving a
+# number that could drift from the one `--suggest-budgets` emits.
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -35,6 +36,15 @@ def _load_json(path: Path) -> dict[str, Any]:
         return json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return {}
+
+
+def load_signals(repo_root: Path) -> dict[str, Any]:
+    """Read the recorded runtime samples for a repo.
+
+    Public because the sizing half of the seam needs the same samples enforcement
+    reads, and a second path constant there could point at a different file.
+    """
+    return _load_json(repo_root / SIGNALS_PATH)
 
 
 def _advisory_ewma(entry: dict[str, Any]) -> tuple[float | None, float | None, int | None]:
@@ -172,6 +182,12 @@ def budget_slack_findings(checked: list[dict[str, Any]]) -> list[dict[str, Any]]
     Presence/report only — it never changes an exit code. The point is that a
     budget which cannot fail is not evidence of health, and without this the only
     signal a budget ever emits is "raise me".
+
+    The number it proposes comes from `suggested_bar_ms`, the same function
+    `--suggest-budgets` uses. Computing it here instead produced a DIFFERENT bar for
+    the same input (unrounded 10969 vs 11000) on the one path an operator is told to
+    act on, which is how the "sizing lives in one place" seam gets defeated while both
+    halves still look right in isolation.
     """
     findings: list[dict[str, Any]] = []
     for entry in checked:
@@ -190,7 +206,7 @@ def budget_slack_findings(checked: list[dict[str, Any]]) -> list[dict[str, Any]]
                 "budget_ms": budget,
                 "max_recent_elapsed_ms": worst,
                 "slack_ratio": round(ratio, 1),
-                "suggested_budget_ms": int(worst * SLACK_SUGGESTION_HEADROOM),
+                "suggested_budget_ms": suggested_bar_ms({"max_recent_elapsed_ms": worst}),
             }
         )
     return sorted(findings, key=lambda item: item["slack_ratio"], reverse=True)
@@ -209,7 +225,7 @@ def evaluate(
     budgets, profile_config_errors = profile_budgets(adapter_data, selected_profile)
     signals_path = repo_root / SIGNALS_PATH
     smoothing_path = repo_root / SMOOTHING_PATH
-    signals = _load_json(signals_path)
+    signals = load_signals(repo_root)
     smoothing = _load_json(smoothing_path)
     commands = profile_commands(signals, selected_profile) if isinstance(signals, dict) else {}
     smoothing_commands = profile_commands(smoothing, selected_profile) if isinstance(smoothing, dict) else {}

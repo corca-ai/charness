@@ -24,10 +24,16 @@ def usable_cpu_count() -> int:
     and drag its median toward the bar, manufacturing a blocking false red on a
     machine where nothing regressed. Affinity is what the timings actually reflect,
     so it is what the profile keys on.
+
+    `OSError` is caught alongside the missing-attribute case because affinity is the
+    one input here that can be REFUSED, not merely absent: `os.cpu_count()` returns
+    `None` at worst, while `sched_getaffinity` raises under a seccomp/LSM policy that
+    blocks the syscall. Letting that escape would crash every gate that derives a
+    profile over a detection detail -- strictly worse than what it replaced.
     """
     try:
         return len(os.sched_getaffinity(0)) or 1
-    except AttributeError:  # not Linux
+    except (AttributeError, OSError):  # not Linux, or the kernel refused the query
         return os.cpu_count() or 1
 
 
@@ -77,7 +83,18 @@ def profile_budgets(adapter_data: dict[str, Any], runtime_profile: str) -> tuple
         budgets = adapter_data.get("runtime_budgets", {}) or {}
         return budgets if isinstance(budgets, dict) else {}, []
     if isinstance(profiles, dict) and profiles:
-        return {}, [f"runtime profile `{runtime_profile}` is not configured in runtime_budget_profiles"]
+        # The message carries the way out: this error blocks the pre-push path, and
+        # the fix is a budgets block the gate can derive from the samples already
+        # recorded for this profile. `--runtime-profile` is interpolated, not left to
+        # the operator: without it the suggest path re-derives the profile from the
+        # MACHINE, so pasting the command verbatim while investigating another
+        # profile's failure yields a block sized from the wrong hardware and filed
+        # under the right heading -- the false-red class this message exists to end.
+        return {}, [
+            f"runtime profile `{runtime_profile}` is not configured in runtime_budget_profiles"
+            " (derive a starting block with `check_runtime_budget.py"
+            f" --runtime-profile {runtime_profile} --suggest-budgets`)"
+        ]
     if adapter_data.get("runtime_budgets"):
         budgets = adapter_data.get("runtime_budgets", {}) or {}
         return budgets if isinstance(budgets, dict) else {}, []

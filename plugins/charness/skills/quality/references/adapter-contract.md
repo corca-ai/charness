@@ -183,6 +183,36 @@ Do not derive hard pass/fail budgets from automatic CPU fingerprints by
 default. Hardware facts can be useful diagnostic metadata, but named profiles
 keep budget history from fragmenting across incidental runner details.
 
+A profile that has recorded samples but no `budgets` block is the one combination
+that hard-blocks the gate, and writing that block by hand is where bars get
+mis-transcribed below already-observed runs. Derive a starting block instead:
+
+```bash
+python3 <quality-scripts>/check_runtime_budget.py --repo-root . \
+  --runtime-profile local-linux-x86_64-4cpu --suggest-budgets
+```
+
+Every value is 1.4x that label's worst observed run, rounded up — a starting point
+to edit and commit, not a verdict. Each line carries `n=`, the number of samples
+behind it, and labels with `n<3` are listed separately as thin evidence: a bar
+sized from one run and a bar sized from twenty read identically once committed,
+and the slack advisory only fires at 3x, so it will never tell them apart
+afterwards. When a label has a single sample and no recorded window, that one
+sample is the basis. Exits non-zero when the profile has no samples at all,
+because an invented bar is worse than a missing one.
+
+The header names the sample SOURCE, not just the profile. Suggestions fall back to
+a declared `command_timing_log` when `runtime-signals.json` has nothing for the
+profile, and such a log with no `profile` field matches every profile — so a block
+headed for one machine can be measured on another. Check the source line before
+committing.
+
+Scope bars by observed cost on the profile being budgeted, not by parity with a
+sibling profile's label list. Parity is the tempting cut and it silently skips
+whatever is expensive only on this hardware. An aggregate bar does not backstop a
+per-gate hole when the run's critical path is one dominant gate: a second gate can
+regress several-fold, still finish inside the dominant one, and move no bar.
+
 `command_timing_log` optionally declares a repo's existing structured
 per-command timing log as a runtime sample source, so the gate hot-spot ranking
 (`render_runtime_summary.py`, `check_runtime_budget.py`, and the

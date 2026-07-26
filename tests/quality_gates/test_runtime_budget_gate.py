@@ -425,6 +425,8 @@ def test_runtime_budget_gate_fails_unknown_explicit_profile(tmp_path: Path) -> N
     payload = json.loads(result.stdout)
     assert payload["profile_config_errors"] == [
         "runtime profile `ci-slow` is not configured in runtime_budget_profiles"
+        " (derive a starting block with `check_runtime_budget.py"
+        " --runtime-profile ci-slow --suggest-budgets`)"
     ]
 
 
@@ -614,7 +616,12 @@ def test_budget_slack_findings_names_budgets_that_can_no_longer_fail() -> None:
     findings = lib.budget_slack_findings(checked)
     assert [f["label"] for f in findings] == ["check-coverage"]
     assert findings[0]["slack_ratio"] == 7.0
-    assert findings[0]["suggested_budget_ms"] == int(7835 * lib.SLACK_SUGGESTION_HEADROOM)
+    # Pinned as a LITERAL, not as `int(7835 * HEADROOM)`. Restating production's own
+    # expression asserts only that the plumbing runs: it passes for any headroom value
+    # and for any change to the arithmetic, and it is why the advisory silently
+    # proposed 10969 while `--suggest-budgets` proposed 11000 for the same input.
+    # 1.4 * 7835 = 10969, rounded up to the 500ms step the sizing module owns.
+    assert findings[0]["suggested_budget_ms"] == 11000
 
 
 def test_budget_slack_advisory_renders_every_number_needed_to_act(tmp_path: Path) -> None:
@@ -647,7 +654,9 @@ def test_budget_slack_advisory_renders_every_number_needed_to_act(tmp_path: Path
     assert "worst recent 7835ms" in line
     assert "(7.0x)" in line
     lib = check_runtime_budget.runtime_budget_lib
-    assert f"consider {int(7835 * lib.SLACK_SUGGESTION_HEADROOM)}ms" in line
+    # Literal, for the same reason as above: the operator acts on this exact number,
+    # and it must be the one `--suggest-budgets` would emit for the same sample.
+    assert "consider 11000ms" in line
 
     # In-process witness for the same renderer. The subprocess assertions above only
     # reach `_render_slack` while the coverage harness's `COVERAGE_PROCESS_START` is
@@ -660,7 +669,7 @@ def test_budget_slack_advisory_renders_every_number_needed_to_act(tmp_path: Path
             "budget_ms": 55000,
             "max_recent_elapsed_ms": 7835,
             "slack_ratio": 7.0,
-            "suggested_budget_ms": int(7835 * lib.SLACK_SUGGESTION_HEADROOM),
+            "suggested_budget_ms": 11000,
         }
     ) == line
 
@@ -727,6 +736,117 @@ def test_runtime_profile_falls_back_to_cpu_count_without_affinity(monkeypatch) -
 
     assert runtime_profile_lib.usable_cpu_count() == 8
     assert runtime_profile_lib.machine_runtime_profile() == "local-darwin-arm64-8cpu"
+
+
+def test_runtime_profile_survives_sched_getaffinity_oserror(monkeypatch) -> None:
+    """`sched_getaffinity` can raise, not just be absent.
+
+    The affinity switch replaced a call that CANNOT fail (`os.cpu_count()` returns
+    `None` at worst) with one that can: `sched_getaffinity` raises `OSError` when the
+    kernel refuses the query (EPERM under a restrictive seccomp/LSM policy, ESRCH if
+    pid 0 resolution is blocked in an exotic sandbox). Catching only `AttributeError`
+    turned a profile-detection detail into a crash of every gate that derives a
+    profile -- strictly worse than the behavior the switch replaced.
+    """
+    monkeypatch.setattr(runtime_profile_lib.os, "cpu_count", lambda: 12)
+
+    def refuse(_pid: int) -> set[int]:
+        raise OSError(1, "Operation not permitted")
+
+    monkeypatch.setattr(runtime_profile_lib.os, "sched_getaffinity", refuse)
+    monkeypatch.setattr(runtime_profile_lib.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(runtime_profile_lib.platform, "machine", lambda: "x86_64")
+
+    assert runtime_profile_lib.usable_cpu_count() == 12
+    assert runtime_profile_lib.machine_runtime_profile() == "local-linux-x86_64-12cpu"
+
+
+def test_suggest_budgets_emits_paste_ready_block_for_unconfigured_profile(tmp_path: Path) -> None:
+    """The way out of a `not configured in runtime_budget_profiles` block is derivable.
+
+    A profile with samples but no budgets hard-blocks the gate, and the only fix is a
+    budgets block whose every value has to be read out of runtime-signals.json by
+    hand -- ~18 labels, which is how the aarch64 profile came to ship eight bars
+    below already-observed runs. The samples that block the gate are the same samples
+    a bar should be drawn from, so the gate derives the block instead of describing it.
+    """
+    repo = seed_runtime_budget_repo(
+        tmp_path,
+        budgets=None,
+        budget_profiles={"ci": {"budgets": {"pytest": 500}}},
+        signals={
+            "profiles": {
+                "local-linux-x86_64-4cpu": {
+                    "commands": {
+                        "pytest": {
+                            "samples": 3,
+                            "latest": {"elapsed_ms": 9000},
+                            "max_recent_elapsed_ms": 10000,
+                        },
+                        "ruff": {"samples": 3, "latest": {"elapsed_ms": 300}, "max_recent_elapsed_ms": 320},
+                        # Recorded exactly once, so `max_recent_elapsed_ms` never got
+                        # written. Without the `latest` fallback this label silently
+                        # drops out of the block instead of getting a bar.
+                        "specdown": {"latest": {"elapsed_ms": 5000}},
+                        "never-ran": {"max_recent_elapsed_ms": None},
+                    }
+                }
+            }
+        },
+    )
+
+    blocked = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "local-linux-x86_64-4cpu")
+    assert blocked.returncode == 1
+    # The pointer names the profile that just failed. Without it, an operator paste
+    # re-derives from the MACHINE and files a wrong-hardware block under this heading.
+    assert "--runtime-profile local-linux-x86_64-4cpu --suggest-budgets" in blocked.stderr
+
+    suggested = run_script(
+        SCRIPT, "--repo-root", str(repo), "--runtime-profile", "local-linux-x86_64-4cpu", "--suggest-budgets"
+    )
+    assert suggested.returncode == 0, suggested.stderr
+    block = yaml.safe_load(suggested.stdout)
+    # 1.4x the worst observed run, rounded up to a legible step: a bar that absorbs
+    # variance and still trips a 2x regression. `specdown` is present only because the
+    # single-sample fallback fired (1.4 * 5000 = 7000).
+    assert block == {
+        "runtime_budget_profiles": {
+            "local-linux-x86_64-4cpu": {"budgets": {"pytest": 14000, "ruff": 500, "specdown": 7000}},
+        }
+    }
+    # A label with no usable sample gets no bar: an invented number is worse than none.
+    assert "never-ran" not in suggested.stdout
+    # Evidence DEPTH travels with each number. A bar from one sample and a bar from
+    # twenty read identically once committed, and the 3x slack advisory can never
+    # tell them apart afterwards.
+    assert "pytest: 14000  # n=3, worst 10000ms" in suggested.stdout
+    assert "specdown: 7000  # n=1, worst 5000ms" in suggested.stdout
+    assert "THIN EVIDENCE (n<3), size these by judgment: specdown" in suggested.stdout
+    # Provenance is the source, not the profile id: a `command_timing_log` with no
+    # `profile` field matches every profile, so the heading alone can mislead.
+    assert "from 3 label(s) in runtime-signals.json" in suggested.stdout
+
+
+def test_suggest_budgets_refuses_machine_readable_output_modes(tmp_path: Path) -> None:
+    """The fragment is commented YAML. `--json` would either drop the comments that
+    carry evidence depth or hand YAML to a caller that parses JSON, so the
+    combination is a usage error instead of a silently wrong shape."""
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 1000}, signals=None)
+
+    for mode in ("--json", "--summary", "--detail"):
+        result = run_script(SCRIPT, "--repo-root", str(repo), "--suggest-budgets", mode)
+        assert result.returncode == 2, f"{mode}: {result.stdout}"
+        assert "cannot be combined" in result.stderr
+
+
+def test_suggest_budgets_reports_when_the_profile_has_no_samples(tmp_path: Path) -> None:
+    """No samples means no derivation. Say so instead of emitting an empty block."""
+    repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "ci", "--suggest-budgets")
+
+    assert result.returncode == 1
+    assert "no recorded samples" in result.stderr
 
 
 def test_recorder_does_not_define_a_second_profile_derivation() -> None:

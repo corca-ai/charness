@@ -23,6 +23,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
 runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_lib")
+runtime_budget_sizing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_sizing_lib")
 
 
 def summarize(report: dict) -> dict:
@@ -63,12 +64,40 @@ def main() -> int:
         help="Named machine/runner profile to enforce. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
     )
     parser.add_argument(
+        "--suggest-budgets",
+        action="store_true",
+        help="Print a paste-ready runtime_budget_profiles block derived from this profile's recorded samples, then exit.",
+    )
+    parser.add_argument(
         "--top-runtime-count",
         type=int,
         default=runtime_budget_lib.DEFAULT_TOP_RUNTIME_COUNT,
         help="Number of recent runtime hot spots to include in the report.",
     )
     args = parser.parse_args()
+
+    if args.suggest_budgets:
+        # The output is a YAML fragment with comments carrying the evidence depth.
+        # Honoring `--json`/`--summary` here would either drop those comments or emit
+        # YAML to a caller that parses JSON, so the combination is a usage error
+        # rather than a silently wrong shape.
+        if args.json or args.summary or args.detail:
+            parser.error("--suggest-budgets emits a YAML fragment; it cannot be combined with --json/--summary/--detail")
+        profile, suggestions, commands_source = runtime_budget_sizing_lib.suggest_budgets(
+            args.repo_root.resolve(),
+            load_adapter,
+            runtime_budget_lib.load_signals,
+            runtime_profile=args.runtime_profile,
+        )
+        if not suggestions:
+            print(
+                f"runtime profile `{profile}` has no recorded samples to derive budgets from; "
+                "run the gates once on this machine first",
+                file=sys.stderr,
+            )
+            return 1
+        print(runtime_budget_sizing_lib.format_budget_suggestion(profile, suggestions, commands_source=commands_source))
+        return 0
 
     report = runtime_budget_lib.evaluate(
         args.repo_root.resolve(),
