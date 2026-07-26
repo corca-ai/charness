@@ -32,28 +32,27 @@ No open issues; every move below names an owning artifact.
 - **A direct push to main now gets the changed-line signal.** The CI mirror was
   PR-only while pre-push defuses itself off the coverage-producer path, so seven
   auto-filed issues came from one gap. [#453 critique](../charness-artifacts/critique/2026-07-26-issue-453-resolution.md)
+- **A line-cap split is a seam decision, not a line count.** Clearing
+  `check-python-lengths` reactively left one helper's two branches proven in two
+  files — #453's own root cause, inside the sweep closing it.
+  [sweep critique](../charness-artifacts/critique/2026-07-26-453-sibling-sweep.md)
 
 ## Next Session
 
-1. **Sweep the ~14 named same-class siblings** of #453: unasserted rejection and
-   renderer lines in `quality_policy_defaults.py` (`:442`, `:447`, `:483`, `:488`,
-   `:438`, `:479`, `:503`, `:319`, `:307`, `:328`, `:335`) and
-   `runtime_budget_lib.py` (`_render_hotspot`, the `format_human` WARN suffix).
-   Start with `:442`/`:447` vs `:483`/`:488` — two near-identical blocks whose
-   eventual consolidation reproduces #453's exact seam.
-2. **`local-linux-aarch64-4cpu` bars are FLOORS, not measurements.** The
+1. **`local-linux-aarch64-4cpu` bars are FLOORS, not measurements.** The
    core-count term is measured; the architecture term is an explicit assumption.
    A run on the real box replaces them. That block also has no aggregate bar.
-3. **The BSD/macOS `du` `illegal option` wording is unprobed.** BusyBox and GNU
+2. **The BSD/macOS `du` `illegal option` wording is unprobed.** BusyBox and GNU
    are now measured against real binaries; that third wording is not.
-4. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned,
+3. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned,
    not fixed: `REPO_ROOT.resolve() / "skills" / "public"` escapes the
    export-safety predicate ([decision point](../tests/quality_gates/test_export_safe_asset_paths.py)).
-5. Unowned (sweep signed off): critique packet tier mismatch, specdown preset
+4. Unowned (sweep signed off): critique packet tier mismatch, specdown preset
    duplication, `recommended_commands` in `plan_cautilus_proof.py`. Still
    deferred: inline `.rglob`/`ls-files` pathspec discovery, D18, D38,
    `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory,
-   stale basetemps, #451's two unacted siblings.
+   stale basetemps, #451's two unacted siblings. The #453 sibling sweep is closed
+   with per-line coverage; its mutation strength waits on a scheduled run.
 
 ## Discuss
 
@@ -66,5 +65,5 @@ No open issues; every move below names an owning artifact.
 
 ## References
 
-- [fail-open critique](../charness-artifacts/critique/2026-07-26-seed-fixture-budget-fail-open.md) · [release critique](../charness-artifacts/critique/2026-07-26-v2-9-0-release-critique.md) · [flag-gate critique](../charness-artifacts/critique/2026-07-26-documented-command-flag-gate.md)
+- [fail-open critique](../charness-artifacts/critique/2026-07-26-seed-fixture-budget-fail-open.md) · [release critique](../charness-artifacts/critique/2026-07-26-v2-9-0-release-critique.md) · [flag-gate critique](../charness-artifacts/critique/2026-07-26-documented-command-flag-gate.md) · [sweep critique](../charness-artifacts/critique/2026-07-26-453-sibling-sweep.md)
 - [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)

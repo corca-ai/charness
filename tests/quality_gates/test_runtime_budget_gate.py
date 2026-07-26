@@ -492,6 +492,36 @@ def test_runtime_budget_gate_reports_top_runtime_hotspots(tmp_path: Path) -> Non
     assert "check-cli-skill-surface" in plain_result.stdout
     assert "unbudgeted" in plain_result.stdout
 
+    # The human hot-spot line is the only place the numbers behind the JSON reach an
+    # operator reading a terminal, and the two budget shapes are a branch inside the
+    # renderer. Asserting membership of a substring leaves both the numbers and the
+    # branch unpinned — the #453 class. Pin the whole lines.
+    hotspot_lines = [
+        line for line in plain_result.stdout.splitlines() if line.startswith("HOTSPOT")
+    ]
+    assert hotspot_lines == [
+        "HOTSPOT      pytest: latest 15000ms, median 14000ms (budget 22000ms)",
+        "HOTSPOT      check-cli-skill-surface: latest 9000ms, median 8000ms (unbudgeted)",
+    ], plain_result.stdout
+
+
+def test_runtime_budget_gate_missing_sample_human_line_names_the_budget(
+    tmp_path: Path,
+) -> None:
+    """A budget with no sample is the one entry that can never fail, so the WARN line
+    is the only signal that the budget exists but is unmeasured. Its `--json` twin is
+    asserted elsewhere; the human line carries the budget value an operator needs to
+    decide whether the missing sample matters, and nothing pinned that text."""
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals={"commands": {}})
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
+    assert result.returncode == 0, result.stderr
+
+    warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN")]
+    assert warn_lines == ["WARN  pytest: no sample yet (budget 22000ms)"], result.stdout
+    # The no-sample entry short-circuits before the measured-entry renderer, so it
+    # must not also emit a status line with placeholder numbers.
+    assert "latest None" not in result.stdout
+
 
 def test_runtime_budget_gate_excludes_stale_runtime_hotspots(tmp_path: Path) -> None:
     signals = {

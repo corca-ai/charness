@@ -184,23 +184,6 @@ def test_a1_unknown_subkey_warns_does_not_error(tmp_path: Path) -> None:
     assert payload["data"]["mutation_testing"]["commands"]["full"] == "npm run test:mutation"
 
 
-def test_a2_score_break_wrong_type_rejected(tmp_path: Path) -> None:
-    repo = tmp_path / "r"
-    repo.mkdir()
-    _write_adapter(
-        repo,
-        _ADAPTER_HEADER + dedent(
-            """\
-            mutation_testing:
-              score_break: "high"
-            """
-        ),
-    )
-    payload = _resolve(repo)
-    assert not payload["valid"]
-    assert any("score_break must be an integer" in e for e in payload["errors"])
-
-
 def test_a2_unknown_commands_subkey_warns(tmp_path: Path) -> None:
     repo = tmp_path / "r"
     repo.mkdir()
@@ -218,24 +201,6 @@ def test_a2_unknown_commands_subkey_warns(tmp_path: Path) -> None:
     payload = _resolve(repo)
     assert payload["valid"], payload["errors"]
     assert any("unknown mutation_testing.commands sub-key: bogus" == w for w in payload["warnings"])
-
-
-def test_a2_auto_issue_enabled_wrong_type_rejected(tmp_path: Path) -> None:
-    repo = tmp_path / "r"
-    repo.mkdir()
-    _write_adapter(
-        repo,
-        _ADAPTER_HEADER + dedent(
-            """\
-            mutation_testing:
-              auto_issue:
-                enabled: "yes"
-            """
-        ),
-    )
-    payload = _resolve(repo)
-    assert not payload["valid"]
-    assert any("auto_issue.enabled must be a boolean" in e for e in payload["errors"])
 
 
 # ---------------------------------------------------------------------------
@@ -400,89 +365,6 @@ def test_auto_issue_label_with_comma_is_refused() -> None:
     _validate_mutation_auto_issue({"label": "mutation test"}, validated, errors, [])
     assert errors == []
     assert validated["auto_issue"]["label"] == "mutation test"
-
-
-def test_a2_command_slot_non_string_is_rejected_by_name(tmp_path: Path) -> None:
-    """Every `mutation_testing` command slot is interpolated into the workflow as a
-    shell command. A non-string slot (a YAML bare number, or a list from a stray
-    `-`) would render as its Python repr and fail at runtime inside CI, far from the
-    config that caused it. The rejection must name the offending section AND key, so
-    the operator does not have to bisect the block."""
-    repo = tmp_path / "r"
-    repo.mkdir()
-    _write_adapter(
-        repo,
-        _ADAPTER_HEADER + dedent(
-            """\
-            mutation_testing:
-              commands:
-                full: 5
-            """
-        ),
-    )
-    payload = _resolve(repo)
-    assert not payload["valid"]
-    assert "mutation_testing.commands.full must be a string" in payload["errors"]
-    # The rejected value never reaches the merged config.
-    assert (
-        payload["data"]["mutation_testing"]["commands"]["full"]
-        == DEFAULT_MUTATION_TESTING["commands"]["full"]
-    )
-
-
-def test_a2_auto_issue_string_slot_non_string_is_rejected(tmp_path: Path) -> None:
-    """`auto_issue` runs its own value check (the comma-in-label rule), so it does
-    not inherit the shared string check for free — it has to delegate to it. A
-    non-string `label` here would be attached to a real GitHub issue, so the
-    delegation is load-bearing rather than cosmetic."""
-    repo = tmp_path / "r"
-    repo.mkdir()
-    _write_adapter(
-        repo,
-        _ADAPTER_HEADER + dedent(
-            """\
-            mutation_testing:
-              auto_issue:
-                label: 42
-                enabled: "yes"
-            """
-        ),
-    )
-    payload = _resolve(repo)
-    assert not payload["valid"]
-    assert "mutation_testing.auto_issue.label must be a string" in payload["errors"]
-    assert (
-        payload["data"]["mutation_testing"]["auto_issue"]["label"]
-        == DEFAULT_MUTATION_TESTING["auto_issue"]["label"]
-    )
-    # `enabled` keeps its own boolean check rather than falling through to the
-    # string one, so the two paths do not collapse into each other.
-    assert "mutation_testing.auto_issue.enabled must be a boolean" in payload["errors"]
-    assert "mutation_testing.auto_issue.enabled must be a string" not in payload["errors"]
-
-
-@pytest.mark.parametrize("section", ["commands", "auto_issue", "report_paths"])
-def test_a2_mapping_section_given_a_scalar_is_rejected(tmp_path: Path, section: str) -> None:
-    """A scalar where a sub-mapping belongs is the shape a hand-edited adapter
-    produces (`commands: npm run test:mutation` instead of the nested form). Without
-    this check the loop over `raw.items()` would raise AttributeError and surface as
-    a crash instead of a config error, so each section must refuse it by name."""
-    repo = tmp_path / "r"
-    repo.mkdir()
-    _write_adapter(
-        repo,
-        _ADAPTER_HEADER + dedent(
-            f"""\
-            mutation_testing:
-              {section}: "not a mapping"
-            """
-        ),
-    )
-    payload = _resolve(repo)
-    assert not payload["valid"]
-    assert f"mutation_testing.{section} must be a mapping" in payload["errors"]
-    # Refusal leaves the defaults intact rather than a half-merged section.
-    assert payload["data"]["mutation_testing"][section] == DEFAULT_MUTATION_TESTING[section]
 
 
 def test_mutation_workflows_never_change_issue_state() -> None:
