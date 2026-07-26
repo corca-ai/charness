@@ -9,20 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 of 6 — cover #457's 14 changed-line proof targets and kill the
-  surviving `gate_report_emit` mutants. Slices 1-2 are committed at `ab56e15f` and
-  `ba3b7091`.
-- Current slice intent: close the #457 blocking signal. Its mutation score already
-  passes (94.7% vs 80%); what fails is that six changed files went test-uncovered
-  before mutation. Add tests for the 14 named `file:line` proof targets in
-  `artifact_validator.py`, `check_changed_line_mutation_coverage.py`,
-  `check_doc_authoring_preflight.py`, `check_doc_links.py`,
-  `record_quality_runtime.py`, and `validate_debug_artifact.py`, plus the 5
-  surviving `gate_report_emit` mutants and 1 in `scaffold_critique_artifact.py`.
-- Next action: run `check_changed_line_mutation_coverage.py` against this branch's
-  own diff first — the goal is that the fix generalizes to new changed lines, not
-  that the 14 listed targets are retro-fitted. Slice 3's local green is PROVISIONAL:
-  slice 4 rewrites test internals, so slice 6's CI run is the real proof.
+- Current slice: 4 of 6 — cut the standing pytest gate's subprocess-startup cost.
+  Slices 1-3 are committed at `ab56e15f`, `ba3b7091`, `75dd5357`.
+- Current slice intent: reduce process spawns in the standing suite. Recorded
+  baseline: ~25s wall at 16 workers, ~263s in-test CPU, 6959 spawns/run (4880
+  `git`, ~1840 `python`) at a ~31ms interpreter floor each. Two named levers:
+  per-test git seeding and in-process `run_script` conversion via
+  `tests/script_main.py` (`run_loaded_script_main` at :29 is the working runner).
+  NOT fixture caching, and NOT the deferrals already pinned by
+  `tests/quality_gates/test_hot_path_import_weight.py`.
+- Next action: RE-MEASURE before optimizing. The handoff's "~390 per-test git
+  seedings at ~24.5ms" figure is unverified — slice 2's reviewer explicitly declined
+  to confirm it read-only. Spawn count is the primary acceptance metric because
+  wall-clock at 16 workers is noise-dominated.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost and fresh-eye proof at slice boundaries; broad pytest plus the live
   CI mutation run at closeout.
@@ -224,7 +223,7 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
 | --- | --- | --- | --- | --- |
 | 1 | Wire handoff/ideation/retro validators into the already-shipped one-pass path and scaffold hint, default-on, plus an artifact-path argument | Operator-directed first; every later slice in this run is authored by a session that inherits the improved validator behavior | Triple-violating draft yields one message with three violations plus the scaffold command, run against a temp root; regression test pins the one-pass contract | done (`ab56e15f`) |
 | 2 | Give lessons a concept identity: recurrence-class tag on retro bullets, re-derived alpha and half-life, back-test over the live corpus | The count is useless while the weighting cannot act on it; both halves ship together or neither binds | Back-test over the live corpus pinned to the re-derived constants; multiplier distribution moves off 1.0; `build_retro_lesson_selection_index.py --check` regenerated and green | done (`ba3b7091`); multiplier distribution unchanged until retros carry tags — recorded as an honest limit |
-| 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | New tests for the 6 named files; `check_changed_line_mutation_coverage.py` clean on this branch's diff (PROVISIONAL — slice 4 rewrites these tests, so slice 6's CI run is the real proof); `plugins/` mirrors synced | pending |
+| 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | done (`75dd5357`) — 36 tests; all 6 mutants hand-verified killed; local coverage PROVISIONAL until slice 6's CI run |
 | 4 | Cut pytest subprocess-startup cost via the two measured levers | Lands after the red is cleared so the before/after delta is attributable to the lever, not a pre-existing failure | Before/after wall-clock and spawn counts at the same worker count; suite still green | pending |
 | 5 | Rebaseline the nose scanner with `--write-baseline --confirm-baseline-delta` | Last, because slices 1-4 change files the dup scanner reads; baselining earlier invites a second rewrite | Dup gate runs clean with no version-skew warning; delta reviewed as reductions plus skew only | pending |
 | 6 | Push, run CI mutation, close #457 on green | The only proof that closes the issue; bundle boundary | Green workflow run linked on the closing commit and the issue | pending |
@@ -334,6 +333,20 @@ aarch64 profile is dropped by explicit operator decision, not by agent judgment.
 - Alternatives rejected:
 - Targeted verification: 604 tests pass in the lesson/retro/handoff/ideation/artifact_validator selection; proven non-vacuous by reverting the constants (2 tests fail with the arithmetic); selection index regenerated and --check green; run_slice_closeout completed; 21 pre-commit gates pass at ba3b7091
 - Test duplication pressure: 10 new tests in test_recent_lessons_recurrence.py plus 2 in test_retro_artifact.py; dup ratchet clean, no new families this slice
+- Critique:
+- Off-goal findings:
+- Lessons carried forward:
+- Metrics:
+
+### Slice 3: Cover #457's rarely-taken branches and kill the surviving mutants
+
+- Objective: Close the #457 blocking signal at the class level: give every rarely-taken changed-line branch a named behavioral contract, and kill all six surviving mutants
+- Why this approach:
+- Commits:
+- What changed:
+- Alternatives rejected:
+- Targeted verification: 28 targeted tests pass; every mutation hand-applied and confirmed killed (ensure_ascii, sort_keys, indent x2, stream swap, keyword-only marker, plus 3 truncation mutants); run_slice_closeout completed; 8 pre-commit gates pass at 75dd5357
+- Test duplication pressure: 36 new tests across 3 files (14 degradation-branch, 9 gate_report_emit, 1 critique scaffold, plus rewrites); dup ratchet clean, no new families
 - Critique:
 - Off-goal findings:
 - Lessons carried forward:
