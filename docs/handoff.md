@@ -20,11 +20,6 @@ No open issues; every move below names an owning artifact.
   failed `du` scan used to exit 0. The discriminator is `du`'s output, not its
   exit status; capability gaps stay advisory, everything else blocks.
   [fail-open critique](../charness-artifacts/critique/2026-07-26-seed-fixture-budget-fail-open.md)
-- **A gate's escape hatch must be reachable from where the gate fires.**
-  `CHARNESS_QUALITY_LABELS` is an allowlist, so a flag the runner does not pass
-  leaves only `--no-verify`. [release critique](../charness-artifacts/critique/2026-07-26-v2-9-0-release-critique.md)
-- **The handoff may not transcribe a fact a command regenerates**; a commit-time
-  gate enforces it. A quoted value is an address, not a claim.
 - **A runtime profile keys on affinity, not `os.cpu_count()`.** A `taskset` run
   used to file its slow samples into the unrestricted profile and drag that
   profile's median toward its bar. Measure under a CPU limit and check which
@@ -36,18 +31,24 @@ No open issues; every move below names an owning artifact.
   `check-python-lengths` reactively left one helper's two branches proven in two
   files — #453's own root cause, inside the sweep closing it.
   [sweep critique](../charness-artifacts/critique/2026-07-26-453-sibling-sweep.md)
+- **The last release went out minor, not the patch that was planned.** A new
+  exported flag plus a new exported module set the bump — the same call this repo
+  made one release earlier. [release critique](../charness-artifacts/critique/2026-07-26-v2-10-0-release-critique.md)
 
 ## Next Session
 
-1. **`local-linux-aarch64-4cpu` bars are FLOORS, not measurements.** The
-   core-count term is measured; the architecture term is an explicit assumption.
-   A run on the real box replaces them. That block also has no aggregate bar.
-2. **The BSD/macOS `du` `illegal option` wording is unprobed.** BusyBox and GNU
+1. **Two open holes in the affinity profile switch.** `runtime_profile_lib.py`
+   catches only `AttributeError` around `sched_getaffinity`, so an `OSError` host
+   crashes where `os.cpu_count()` could not fail; and `local-linux-x86_64-4cpu`
+   has samples but no budgets block, so `taskset -c 0-3` exits 1 here today.
+2. **`local-linux-aarch64-4cpu` bars are FLOORS, not measurements.** The
+   architecture term is an assumption; that block has no aggregate bar either.
+3. **The BSD/macOS `du` `illegal option` wording is unprobed.** BusyBox and GNU
    are now measured against real binaries; that third wording is not.
-3. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned,
+4. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned,
    not fixed: `REPO_ROOT.resolve() / "skills" / "public"` escapes the
    export-safety predicate ([decision point](../tests/quality_gates/test_export_safe_asset_paths.py)).
-4. Unowned (sweep signed off): critique packet tier mismatch, specdown preset
+5. Unowned (sweep signed off): critique packet tier mismatch, specdown preset
    duplication, `recommended_commands` in `plan_cautilus_proof.py`. Still
    deferred: inline `.rglob`/`ls-files` pathspec discovery, D18, D38,
    `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory,
