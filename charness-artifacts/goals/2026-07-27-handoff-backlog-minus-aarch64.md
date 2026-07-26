@@ -34,14 +34,24 @@ runs the activation command.
 Close four of the five live handoff backlog items end-to-end, in an order where
 each one lowers risk for the next:
 
-1. **Lesson BIND path** (handoff #1, operator-directed "fix this first"). The
+1. **Lesson BIND path** (handoff entry 1, operator-directed "fix this first"). The
    memory loop's write path is healthy and its bind path is absent. Two halves,
    both in scope:
-   - **T-fix (bind at point of use):** artifact validators report ALL violations
-     in one pass instead of one rule per run, and any validator with an owning
-     `scaffold_*.py` names that command in its first failure. Acceptance: a
-     deliberately triple-violating handoff draft yields one message listing three
-     violations plus the scaffold command.
+   - **T-fix (bind at point of use) — a WIRING job, not a build.** Fresh-eye review
+     refuted the original framing: the shared one-pass path already ships
+     (`scripts/artifact_validator.py:358` `run_validation_checks(collect_all=…)`,
+     `:44` `scaffold_hint`, `:63` `report_validation_failure`), the scaffold
+     registry already maps handoff to its owning
+     `skills/public/handoff/scripts/scaffold_handoff_artifact.py`
+     (`scripts/check_artifact_surface_preflight.py:176-182`), and
+     `scripts/validate_quality_artifact.py:351` already records `--report-all` as
+     a deprecated no-op because one-pass is the default there. The real gap is
+     three unwired stragglers: `validate_handoff_artifact.py:165-177` still chains
+     raising validators and `:196-198` prints the bare exception with no scaffold
+     hint, and `scripts/run-quality.sh` passes `--report-all` at `:490`/`:493`/`:513`
+     but not at `:489` (handoff), `:514` (ideation), or `:515` (retro). Wire those
+     three through the existing path, default-on per the quality precedent, and add
+     the artifact-path argument the acceptance check needs.
    - **Concept identity (make recurrence measurable):** `recent_lessons_lib.normalized_key`
      keys lesson identity on normalized surface text, so re-wording resets the
      count — measured, 1594 of 1596 candidates sit at `independent_source_count == 1`
@@ -51,17 +61,18 @@ each one lowers risk for the next:
      half-life against the live 1596-candidate corpus, with a back-test asserting
      a class recurring 5x over 50 days outranks a 0-day one-off.
 
-2. **Mutation regression #457** (handoff #6). #457's mutation score already passes
+2. **Mutation regression #457** (the open issue, unioned into the backlog by the
+   chunker — not a `## Next Session` entry). #457's mutation score already passes
    (94.7% vs 80%); the blocking signal is that six changed files went
    test-uncovered before mutation, with 14 named `file:line` proof targets.
 
-3. **Pytest subprocess-startup speed** (handoff #2). Measured: ~25s wall at 16
+3. **Pytest subprocess-startup speed** (handoff entry 2). Measured: ~25s wall at 16
    workers, ~263s in-test CPU, 6959 spawns/run (4880 `git`, ~1840 `python`) at a
    ~31ms interpreter floor each. The two named levers are ~390 per-test git
    seedings at ~24.5ms and in-process `run_script` conversion via
    `tests/script_main.py`.
 
-4. **Nose scanner rebaseline** (handoff #4). Confirmed live this session: the dup
+4. **Nose scanner rebaseline** (handoff entry 4). Confirmed live this session: the dup
    gate warns `baseline written under nose 0.19.0, now scanning with nose 0.20.0`
    and lists 4 advisory family reductions. `--restamp-tool-version` refuses while
    the live family set differs, so `--write-baseline --confirm-baseline-delta` on
@@ -104,9 +115,16 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
   `LESSON_SELECTION_ALPHA_BASE = 0.35` at :15, `LESSON_SELECTION_HALF_LIFE_DAYS = 14`
   at :17, and `_normalize_lesson_key` truncating to the first 14 words at :136 is
   the surface-text identity to replace), `charness-artifacts/retro/lesson-selection-index.json`,
-  `scripts/validate_handoff_artifact.py`, `scripts/artifact_validator.py`, the
-  sibling `validate_*_artifact.py` family, `scripts/refresh_recent_lessons.py`,
-  retro authoring/validation surfaces, and their tests.
+  `scripts/validate_handoff_artifact.py`, `scripts/artifact_validator.py`,
+  `scripts/validate_ideation_artifact.py`, `scripts/validate_retro_artifact.py`,
+  `scripts/run-quality.sh` (the `--report-all` invocation lines),
+  `scripts/refresh_recent_lessons.py`, retro authoring/validation surfaces, and
+  their tests.
+- **In scope, and easy to miss:** `scripts/build_retro_lesson_selection_index.py`.
+  Slice 2 changes lesson identity, which invalidates the checked-in
+  `lesson-selection-index.json`, and `scripts/run-quality.sh:492` runs that script
+  with `--check` as a gate. Regenerate the index in the same slice or slice 2 fails
+  at its own commit boundary.
 - In scope, #457: `scripts/artifact_validator.py`,
   `scripts/check_changed_line_mutation_coverage.py`,
   `scripts/check_doc_authoring_preflight.py`, `scripts/check_doc_links.py`,
@@ -114,8 +132,11 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
   `scripts/gate_report_emit.py`,
   `skills/public/critique/scripts/scaffold_critique_artifact.py`,
   `scripts/agent-runtime/contract-versions.mjs`, plus the tests that cover them.
-- In scope, speed: `tests/script_main.py`, per-test git-seeding fixtures, and
-  `tests/conftest.py`. Explicitly NOT fixture caching, and NOT the deferrals
+- In scope, speed: `tests/script_main.py` (`run_loaded_script_main` at :29 is the
+  working in-process runner), per-test git-seeding fixtures, `tests/conftest.py`,
+  and `scripts/boundary-bypass-exemptions.txt` — that file pins which tests may
+  exercise CLI entrypoints, so converting subprocess calls to in-process ones
+  touches its contract. Explicitly NOT fixture caching, and NOT the deferrals
   already pinned by `tests/quality_gates/test_hot_path_import_weight.py`.
 - In scope, baseline: `charness-artifacts/quality/dup-review.json`,
   `skills/public/quality/scripts/check_dup_ratchet.py`,
@@ -136,17 +157,24 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
 
 - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root .`
   no longer prints the `nose version skew` warning.
-- A deliberately triple-violating handoff draft, run through
-  `python3 scripts/validate_handoff_artifact.py --repo-root .`, prints all three
-  violations in one message and names the owning scaffold command — not one rule
-  per run.
-- `python3 -m pytest -q` wall-clock is measurably lower than the recorded ~25s
-  baseline at the same worker count, with before/after numbers and spawn counts
-  in the Slice Log.
+- A deliberately triple-violating handoff draft yields ONE message listing all
+  three violations plus the owning scaffold command. Runnable without overwriting
+  the real `docs/handoff.md`: today `validate_handoff_artifact.py:180-190` accepts
+  only `--repo-root` and resolves the path through the adapter, so slice 1 must
+  either add an artifact-path argument or the check runs against a temp repo-root.
+  Naming the mechanism is part of the acceptance, not an implementation detail.
+- **Spawn count is the primary assertion; wall-clock is secondary.** `pytest`
+  wall-clock at 16 workers is noise-dominated, so "measurably lower than ~25s" is
+  not falsifiable on its own. Acceptance: total subprocess spawns per run drops
+  from the recorded 6959 by a stated amount, deterministically, with before/after
+  wall-clock reported alongside it in the Slice Log.
 - Issue #457 is closed on GitHub, with the green mutation workflow run linked as
   the closing evidence.
-- A back-test in the suite asserts that a lesson class recurring 5x over 50 days
-  outranks a 0-day one-off.
+- The recurrence back-test runs against the live 1596-candidate corpus and is
+  pinned to the re-derived constants, so a synthetic test that fixes its own alpha
+  cannot satisfy it while the re-derivation stays untouched: a class recurring 5x
+  over 50 days must outrank a 0-day one-off under the shipped
+  `LESSON_SELECTION_ALPHA_BASE` and half-life values.
 
 ## Agent Verification Plan
 
@@ -188,9 +216,9 @@ Then push, let CI run the mutation gate, and close #457 on a green run.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Bind lessons at the point of use: one-pass violation reporting across the artifact-validator family, and the owning `scaffold_*.py` named in the first failure | Operator-directed first; every later slice in this run is authored by a session that inherits the improved validator behavior | Triple-violating draft yields one message with three violations plus the scaffold command; regression test pins the one-pass contract | pending |
-| 2 | Give lessons a concept identity: recurrence-class tag on retro bullets, re-derived alpha and half-life, back-test over the live corpus | The count is useless while the weighting cannot act on it; both halves ship together or neither binds | Back-test asserting a 5x/50-day class outranks a 0-day one-off; measured multiplier distribution moves off 1.0 | pending |
-| 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | New tests for the 6 named files; `check_changed_line_mutation_coverage.py` clean on this branch's diff; `plugins/` mirrors synced | pending |
+| 1 | Wire handoff/ideation/retro validators into the already-shipped one-pass path and scaffold hint, default-on, plus an artifact-path argument | Operator-directed first; every later slice in this run is authored by a session that inherits the improved validator behavior | Triple-violating draft yields one message with three violations plus the scaffold command, run against a temp root; regression test pins the one-pass contract | pending |
+| 2 | Give lessons a concept identity: recurrence-class tag on retro bullets, re-derived alpha and half-life, back-test over the live corpus | The count is useless while the weighting cannot act on it; both halves ship together or neither binds | Back-test over the live corpus pinned to the re-derived constants; multiplier distribution moves off 1.0; `build_retro_lesson_selection_index.py --check` regenerated and green | pending |
+| 3 | Cover #457's 14 changed-line proof targets and kill the surviving `gate_report_emit` mutants | Clears the red before the speed slice changes the suite, so slice 4's delta is attributable | New tests for the 6 named files; `check_changed_line_mutation_coverage.py` clean on this branch's diff (PROVISIONAL — slice 4 rewrites these tests, so slice 6's CI run is the real proof); `plugins/` mirrors synced | pending |
 | 4 | Cut pytest subprocess-startup cost via the two measured levers | Lands after the red is cleared so the before/after delta is attributable to the lever, not a pre-existing failure | Before/after wall-clock and spawn counts at the same worker count; suite still green | pending |
 | 5 | Rebaseline the nose scanner with `--write-baseline --confirm-baseline-delta` | Last, because slices 1-4 change files the dup scanner reads; baselining earlier invites a second rewrite | Dup gate runs clean with no version-skew warning; delta reviewed as reductions plus skew only | pending |
 | 6 | Push, run CI mutation, close #457 on green | The only proof that closes the issue; bundle boundary | Green workflow run linked on the closing commit and the issue | pending |
@@ -249,7 +277,10 @@ aarch64 profile is dropped by explicit operator decision, not by agent judgment.
 Follow in this order to reconstruct the originating context:
 
 - [docs/handoff.md](../../docs/handoff.md) `## Next Session` — the backlog this
-  goal was chunked from; entries #1, #2, #4, #5 are in scope and #3 is excluded.
+  goal was chunked from. Of its five `## Next Session` entries, 1, 2, and 4 are in
+  scope; 3 (aarch64) is excluded by operator decision and 5 (sibling scan) was
+  refuted as already-fixed. Issue #457 is not a `## Next Session` entry — the
+  chunker unioned it in from the live open-issue backlog.
 - [charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md](../retro/2026-07-26-lesson-recurrence-mechanism.md)
   — owns both halves of the lesson BIND finding, the measured multiplier
   distribution, and the Engelbart/Klein counterfactuals behind the T-fix framing.
@@ -323,13 +354,58 @@ rather than debt.
 - **Confirmed, item 5's issue references are stale:** #448, #451, and #453 are all
   CLOSED on GitHub; #457 is the only open issue.
 
-**Bounded fresh-eye reviewer: NOT PROVEN.** A `bounded-reviewer` subagent was
-spawned for the five plan-critique angles (wrong-target risk, slice-order
-soundness, acceptance testability, over-anchoring/scope, over-worry counterweight)
-and had not returned a report when this draft was saved. The premise checks above
-are the parent's own work and do not substitute for fresh-eye review. Before
-activation, either collect that report and fold it here, or record the review as
-unrun — do not treat this section as complete on the parent's checks alone.
+**Bounded fresh-eye review: RAN, 8 findings, all dispositioned.** Reviewer
+provenance: `bounded-reviewer` typed subagent (read-only: Read/Grep/Glob only, no
+Bash/Edit/Write/Agent), five angles — wrong-target risk, slice-order soundness,
+acceptance testability, scope/over-anchoring, over-worry counterweight. A first
+spawn went idle without delivering a report and its task id no longer resolved, so
+the review was re-run against the revised artifact rather than left unproven; the
+lost run contributed nothing to this section.
+
+Blockers folded:
+
+- **F1 (wrong-target, BLOCKER) — slice 1 was planning work that mostly exists.**
+  The parent independently confirmed the reviewer's evidence: `run_validation_checks(collect_all=)`
+  and `scaffold_hint`/`report_validation_failure` already ship in
+  `artifact_validator.py`, `validate_quality_artifact.py:351` calls `--report-all` a
+  deprecated no-op, and `run-quality.sh` passes it at `:490`/`:493`/`:513` but not
+  at `:489`/`:514`/`:515`. Slice 1 was rewritten from a family-wide build to wiring
+  the three stragglers. **This is the third premise-vs-debt instance in two
+  sessions** — a signal about the handoff/audit surfaces, not about these three
+  items.
+- **F5 (acceptance, BLOCKER) — acceptance #2 was unrunnable.**
+  `validate_handoff_artifact.py:180-190` takes only `--repo-root`, so the
+  triple-violating-draft check would have required overwriting the real
+  `docs/handoff.md`. The artifact-path argument is now part of slice 1 and named in
+  the acceptance line.
+- **F6 (acceptance, BLOCKER) — two acceptance items passed without the fix.** The
+  recurrence back-test is now pinned to the live corpus AND the re-derived
+  constants (a synthetic test fixing its own alpha no longer satisfies it), and the
+  speed claim now leads with deterministic spawn count instead of noise-dominated
+  wall-clock.
+
+Non-blockers folded:
+
+- **F3** — `build_retro_lesson_selection_index.py` is gated at `run-quality.sh:492`
+  with `--check` and slice 2 invalidates the index; added to Boundaries as
+  easy-to-miss, and to slice 2's expected evidence.
+- **F4** — slice 3's local coverage green is provisional because slice 4 rewrites
+  those tests; slice 3's evidence cell now says so.
+- **F7** — item numbering was internally inconsistent ("handoff #6" does not
+  exist; #457 came from the issue union, not `## Next Session`). Corrected
+  throughout.
+- **F8** — `scripts/boundary-bypass-exemptions.txt` pins which tests may exercise
+  CLI entrypoints, which slice 4's conversion touches; added to speed Boundaries.
+
+Over-worry raised and deliberately NOT folded (do not churn on these): slice 5
+last is correct and its stop condition already covers a genuine new-duplication
+family; acceptance naming GitHub is fine because #457 lives there and the adapter
+seam is preserved in Interview Decisions; the `goal_artifact_discussion.py:13`
+finding is correctly routed to Off-Goal rather than fixed inline.
+
+Reviewer non-claim carried forward: the handoff's "~390 per-test git seedings"
+figure is **not verifiable read-only** and the reviewer explicitly declined to
+confirm it. Slice 4 must re-measure it before relying on it as a lever.
 
 ## Off-Goal Findings
 
