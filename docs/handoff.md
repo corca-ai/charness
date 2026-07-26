@@ -10,7 +10,7 @@
 
 ## Continuation Capability
 
-The only open issue is #453; every move below names an owning artifact.
+No open issues; every move below names an owning artifact.
 
 ## Current State
 
@@ -22,34 +22,34 @@ The only open issue is #453; every move below names an owning artifact.
   [fail-open critique](../charness-artifacts/critique/2026-07-26-seed-fixture-budget-fail-open.md)
 - **A gate's escape hatch must be reachable from where the gate fires.**
   `CHARNESS_QUALITY_LABELS` is an allowlist, so a flag the runner does not pass
-  leaves only `--no-verify`. Found by release review, after the remediation text
-  already promised the flag. [release critique](../charness-artifacts/critique/2026-07-26-v2-9-0-release-critique.md)
-- **The handoff may not transcribe a fact a command regenerates** (versions, shas,
-  as-of counts); a commit-time gate enforces it. A quoted value is an address,
-  not a claim — that carve-out is load-bearing and must not be closed.
-- **A gate's measured time is co-scheduled**, so per-gate wall budgets partly
-  measure contention; nine `(contended)` bars must be re-derived on any
-  parallelism or core-count change. [runner critique](../charness-artifacts/critique/2026-07-26-quality-runner-barrier-removal.md)
-- **#453 stays deliberately OPEN** for a human close; its fixes are pushed.
+  leaves only `--no-verify`. [release critique](../charness-artifacts/critique/2026-07-26-v2-9-0-release-critique.md)
+- **The handoff may not transcribe a fact a command regenerates**; a commit-time
+  gate enforces it. A quoted value is an address, not a claim.
+- **A runtime profile keys on affinity, not `os.cpu_count()`.** A `taskset` run
+  used to file its slow samples into the unrestricted profile and drag that
+  profile's median toward its bar. Measure under a CPU limit and check which
+  profile the samples land in. [five-item critique](../charness-artifacts/critique/2026-07-26-handoff-backlog-five-items.md)
+- **A direct push to main now gets the changed-line signal.** The CI mirror was
+  PR-only while pre-push defuses itself off the coverage-producer path, so seven
+  auto-filed issues came from one gap. [#453 critique](../charness-artifacts/critique/2026-07-26-issue-453-resolution.md)
 
 ## Next Session
 
-1. **Close #453** once the next **scheduled** mutation run is verified with
-   `check_mutation_run_proof.py --claim changed-line --run-id <id>`. A dispatch
-   re-run cannot prove it (no `base_sha`).
-2. **Re-measure `local-linux-aarch64-4cpu`.** Four bars are marked
-   `contended-derived` — raised by this box's contention factor, not measured.
-3. **`du_timeout` blocks and is not a capability gap.** Only direct invocation is
-   exposed (this repo's runner keys the temp root per repo). Also unprobed: the
-   BusyBox/BSD `du` usage-error tokens, backed by no real Alpine or macOS run.
-4. **Add a `--restamp-tool-version` path to `check_dup_ratchet.py`.** `run()`
-   reaches the restamping `_scoped_rebaseline` only when an id is named, so the
-   nose skew warning has no fix that does not absorb the parked #448 items.
-5. **The flag gate cannot see argument ORDER** — F7/F8 of its critique; both need
-   per-token positions threaded through `split_arguments`. Pinned, not fixed:
-   `REPO_ROOT.resolve() / "skills" / "public"` escapes the export-safety
-   predicate ([decision point](../tests/quality_gates/test_export_safe_asset_paths.py)).
-6. Unowned (sweep signed off): critique packet tier mismatch, specdown preset
+1. **Sweep the ~14 named same-class siblings** of #453: unasserted rejection and
+   renderer lines in `quality_policy_defaults.py` (`:442`, `:447`, `:483`, `:488`,
+   `:438`, `:479`, `:503`, `:319`, `:307`, `:328`, `:335`) and
+   `runtime_budget_lib.py` (`_render_hotspot`, the `format_human` WARN suffix).
+   Start with `:442`/`:447` vs `:483`/`:488` — two near-identical blocks whose
+   eventual consolidation reproduces #453's exact seam.
+2. **`local-linux-aarch64-4cpu` bars are FLOORS, not measurements.** The
+   core-count term is measured; the architecture term is an explicit assumption.
+   A run on the real box replaces them. That block also has no aggregate bar.
+3. **The BSD/macOS `du` `illegal option` wording is unprobed.** BusyBox and GNU
+   are now measured against real binaries; that third wording is not.
+4. **The flag gate cannot see argument ORDER** — F7/F8 of its critique. Pinned,
+   not fixed: `REPO_ROOT.resolve() / "skills" / "public"` escapes the
+   export-safety predicate ([decision point](../tests/quality_gates/test_export_safe_asset_paths.py)).
+5. Unowned (sweep signed off): critique packet tier mismatch, specdown preset
    duplication, `recommended_commands` in `plan_cautilus_proof.py`. Still
    deferred: inline `.rglob`/`ls-files` pathspec discovery, D18, D38,
    `CODE_LANGUAGE_FAMILIES` expansion, zero/near-zero test-surface advisory,
@@ -59,8 +59,8 @@ The only open issue is #453; every move below names an owning artifact.
 
 - Write the violation before writing the guard; reproduce a reviewer's finding
   before fixing it. A gate blocking mid-slice is a design signal, not an obstacle.
-- Ask where the operator is standing when the gate fires. Twice now a correct
-  remediation was unreachable from the path that produced it.
+- Check the payload shape before citing a green run: "not in blocking_targets" was
+  an ABSENCE OF ANALYSIS, not a verdict. Ask what the measurement measured.
 - Do not re-litigate the two refuted audit findings (removing the dup-ratchet
   hard arm or the boundary-bypass ratchet). #448 items wait for the next slice.
 
