@@ -1,0 +1,45 @@
+# Retro: Release Auto-Retro Trigger v2.11.1
+Date: 2026-07-26
+Mode: release-trigger
+
+## Context
+
+Release publish triggered a configured automatic session retro for `v2.11.1`.
+The release helper persisted this bounded retro before committing the release artifacts so clean-tree post-publish state cannot erase the trigger evidence.
+
+**Scope: this artifact does not cover the session.** It is derived only from
+the release delta's surface hits, so it records nothing about the session's own
+waste, decisions, or counterfactuals. If the session did substantive work, a
+session retro is still owed and this record is not a substitute for it.
+
+## Evidence Summary
+
+- Triggered: `True`.
+- Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
+- Path hits: `skills/public/release/scripts/publish_release_retro.py`.
+- Evaluated changed paths: 27.
+
+## Waste
+
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.
+- NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.
+
+## Critical Decisions
+
+- The release helper treats a configured trigger hit as a bounded session-retro obligation and writes the artifact in the release commit instead of leaving a chat-only reminder.
+
+## Expert Counterfactuals
+
+- Jef Raskin would make the system mode visible: a triggered detector must show whether it wrote the follow-up artifact or intentionally skipped it -- and must not let a bounded record look like the unbounded one.
+
+## Next Improvements
+
+- workflow: the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.
+
+## Sibling Search
+
+- Checked the release helper clean-tree path and the retro trigger detector path; this artifact covers the release-publish sibling where helper-generated changed paths would otherwise be lost.
+
+## Persisted
+
+Persisted: yes: charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md

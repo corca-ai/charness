@@ -7,10 +7,10 @@
 
 ## Repeat Traps
 
-- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md`; sources: 120)
+- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact. (source: `charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md`; sources: 121)
+- NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can. (source: `charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md`)
 - **`git checkout -- <path>` used to restore a mutation-test target while the slice was uncommitted.** It reverted to HEAD and silently discarded the slice-2 refactor. Worse, it poisoned the evidence: the reverted tree made one test raise `AttributeError`, so every subsequent mutant reported KILLED regardless of the mutation. Four "verified" results were meaningless. Cost: one full re-do plus a reviewer round-trip. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
 - **Reviewer boundary verify run after applying fixes** (slice 3), making that review's boundary proof inconclusive — the drift set was the parent's own edits. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
-- Smaller: the 800-line gate fired mid-slice forcing an unplanned split; two failed attempts at the specdown ephemeral config before discovering specdown resolves `entry` against the config file's directory; a widened drift-guard regex that over-matched skill-package gates on first try. (source: `charness-artifacts/retro/2026-07-25-session-retro.md`)
 
 ## Next-Time Checklist
 
@@ -149,3 +149,4 @@
 - `charness-artifacts/retro/2026-07-26-session-retro.md`
 - `charness-artifacts/retro/2026-07-26-v2-10-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md`
