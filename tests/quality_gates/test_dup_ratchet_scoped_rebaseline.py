@@ -372,3 +372,35 @@ def test_inproc_restamp_fails_without_a_readable_baseline(tmp_path: Path) -> Non
 
     assert report["ok"] is False and report["status"] == "restamp-failed"
     assert any("--write-baseline" in m for m in report["messages"])
+
+
+def test_rebaseline_module_bootstrap_guard_raises_without_an_ancestor_shim(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Cover the portability shim's not-found guard (same forcing technique as
+    tests/test_adapter_shim_inprocess_coverage.py). The happy path always finds
+    skill_runtime_bootstrap.py walking up from THIS repo, so the branch only runs
+    with __file__ pointed at an isolated tree."""
+    import pytest
+
+    rebaseline = _load("dup_ratchet_rebaseline")
+    isolated = tmp_path / "deep" / "nest" / "dup_ratchet_rebaseline.py"
+    isolated.parent.mkdir(parents=True)
+    monkeypatch.setattr(rebaseline, "__file__", str(isolated))
+
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
+        rebaseline._load_skill_runtime_bootstrap()
+
+
+def test_inproc_restamp_propagates_a_failed_live_scan(tmp_path: Path) -> None:
+    """The scan-failed early return: an unreadable inventory must surface the typed
+    scan failure, not fall through to compare against an empty family set (which
+    would read as "everything was removed") ."""
+    repo = _stamped_repo(tmp_path, ("keep",), "0.19.0")
+
+    report = _run_inproc(
+        repo, "--code-inventory", str(tmp_path / "absent.json"), "--restamp-tool-version",
+    )
+
+    assert report["ok"] is False and report["status"] == "restamp-failed"
+    assert any("cannot compute live fingerprints" in m for m in report["messages"])
