@@ -195,3 +195,31 @@ def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tm
     )
     assert validation.returncode == 0, validation.stderr
     assert "Validated 1 critique artifact" in validation.stdout
+
+
+def test_payload_for_requires_the_title_to_be_named(tmp_path: Path) -> None:
+    """`payload_for(repo_root, *, title=...)` — the `*` is a real contract.
+
+    A surviving mutant in the #457 run turned that `*` into `/`, which still lets
+    `title` be passed by keyword and so changed nothing at any current call site.
+    What `/` DOES allow is a positional title: `payload_for(repo, None)` would
+    silently become a title argument. Asserting the keyword-only boundary is what
+    distinguishes the two, and it is the reason the marker was written.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("_critique_scaffold", ROOT / SCAFFOLD)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    # Keyword form is the supported call and must work.
+    assert module.payload_for(repo, title=None)["write_artifact_path"]
+    # Positional title must be rejected rather than silently accepted.
+    try:
+        module.payload_for(repo, "Some Title")
+    except TypeError as exc:
+        assert "positional" in str(exc)
+    else:
+        raise AssertionError("payload_for must not accept a positional title")
