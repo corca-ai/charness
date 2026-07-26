@@ -85,12 +85,28 @@ jobs:
 
   changed-line-mutation-mirror:
     # The same blocking signal as the local pre-push teeth
-    # (check_changed_line_mutation_coverage), run over the PR range with the
-    # gate's own coverage probe — the env recipe matches mutation-tests.yml,
-    # which already runs this suite in CI. Head defaults to HEAD (the checked
-    # out PR merge commit), so the verdict covers the change as it would land.
-    name: Changed-line mutation coverage (PR mirror)
-    if: github.event_name == 'pull_request'
+    # (check_changed_line_mutation_coverage), run with the gate's own coverage
+    # probe — the env recipe matches mutation-tests.yml, which already runs this
+    # suite in CI. Head defaults to HEAD, so the verdict covers the change as it
+    # lands.
+    #
+    # Runs on direct pushes to main as well as PRs, and the push arm is the point.
+    # This file's own header says it exists to "catch a bypass (a direct push
+    # without the local hooks)", but while this job was PR-only it did not: the
+    # local pre-push gate defuses itself on the direct-push path
+    # (--skip-if-no-coverage / --require-fresh-coverage / --allow-dirty all exit 0
+    # when the author has not first paid for the ~10min coverage producer), so a
+    # direct push to main had NO blocking changed-line signal anywhere. The
+    # scheduled cron caught it up to 3 hours later and auto-filed an issue — which
+    # is #219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453, seven instances of
+    # one class. This closes it at the first remote gate instead of the cron.
+    name: Changed-line mutation coverage (push/PR mirror)
+    # A push with no usable base (branch creation, or a force-push whose `before`
+    # is unreachable) has no range to analyze; the cron still covers those.
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' &&
+       github.event.before != '0000000000000000000000000000000000000000')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -130,7 +146,19 @@ jobs:
         # the changed-line verdict only needs executed-vs-missing lines, and
         # the per-test-context export is the documented multi-GB blow-up. The
         # fingerprint marker it writes is ephemeral in CI.
+        env:
+          # PR: the merge target. Push: the commit main was at before this push,
+          # so the analyzed range is exactly what the push added.
+          CHANGED_LINE_BASE_SHA: >-
+            ${{ github.event_name == 'pull_request'
+                && github.event.pull_request.base.sha
+                || github.event.before }}
         run: |
+          if ! git cat-file -e "$CHANGED_LINE_BASE_SHA^{commit}" 2>/dev/null; then
+            echo "base $CHANGED_LINE_BASE_SHA is unreachable (force-push or truncated history);" \
+                 "no range to analyze, leaving this to the scheduled mutation run." >&2
+            exit 0
+          fi
           python3 scripts/check_changed_line_mutation_coverage.py --repo-root . \
-            --base-sha "${{ github.event.pull_request.base.sha }}" \
+            --base-sha "$CHANGED_LINE_BASE_SHA" \
             --write-fresh-marker
