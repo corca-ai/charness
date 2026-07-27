@@ -9,15 +9,14 @@
 
 ## Continuation Capability
 
-Pushed the prior run (closing #459), closed F9, published `2.11.2`, ran the
-session retro, and closed the foreign-copy question. Three issues are open and
-the chunker unions them with the entries below: **#460** (critique packet binding
-sweeps the artifact it describes), **#461** (fingerprint verify has no review
-window), **#463** (only one foreign-writable artifact is recompute-validated).
-No decisions pending — the foreign-copy
-[spec](../charness-artifacts/spec/2026-07-27-foreign-copy-write-enforcement.md)
-is decided: target-side rejected, message fixed, entrypoint guard landed with its
-claim reduced.
+Closed #460/#461/#463 in one commit (unpushed), then ran an evidence-surface bug
+hunt that reproduced **30 defects** across the repo's proof surfaces. All are
+tracked in the
+[bug hunt record](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
+with per-item status, file:line, and confirmed repro. Nothing is fixed yet; the
+operator's standing decision is **no push and no release until they are fixed**,
+so `HEAD` stays local until the fix sessions land. No GitHub issues are open
+(the three close on push). No decisions pending.
 
 ## Current State
 
@@ -35,19 +34,26 @@ claim reduced.
 
 ## Next Session
 
-1. **The drafter cannot see whether a staleness check ran.** The parser's
+1. **Fix the bug-hunt backlog, in the order the record proposes.** Start with
+   A1+A2 (the provenance guard exempts the repo's own `plugins/` install source,
+   which is the 2026-07-27 incident's actual mechanism), then A3-A5 (the commit
+   boundary: a deletion-only commit schedules zero gates today), then B1-B3 (the
+   issue-close carrier, where a false PASS closes a real issue). Decide the
+   cross-cutting move first: one shared typed scope field (evaluated / empty /
+   not-configured) would close A4, A7, C5, D7, E2, E5 as a family.
+2. **The drafter cannot see whether a staleness check ran.** The parser's
    top-level `staleness` block dies at `materialize_chunk_proposal_response`
    and the ranker packet — `ChunkCandidate` has no field for it. So the
    auto-draft marks positively-reported staleness (F9, now closed) but cannot
    distinguish "issue states checked, none closed" from "never asked". The
    path check always runs; the residual is issue citations only, because the
    issue check is gated behind `--with-issues`.
-2. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards). Fill
+3. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards). Fill
    guards want an observed n-fold rework instance before landing.
-3. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774,
+4. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774,
    `add` 672). In-process `run_script` is the unmeasured lever; spawn count is
    the honest metric, 16-worker wall-clock is noise.
-4. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
+5. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
    real shared `.charness/usage-episodes/` tree and assert byte-identity after a CLI
    subprocess, so a live SessionStart hook or concurrent `run-quality.sh` fails them
    for unrelated reasons. Needs design; detail in the
@@ -55,11 +61,6 @@ claim reduced.
 
 ## Discuss
 
-- A critique packet's default working-tree binding sweeps the critique artifact
-  and the packet files themselves, so writing the artifact stales its own
-  binding. Scope it with `--reviewed-path` to the surfaces actually reviewed.
-  Same shape for the reviewer-boundary fingerprint: `verify` before applying
-  act-before-ship fixes, or the drift it reports is your own.
 - Run release/skill helpers from `skills/public/.../scripts/`, NOT the installed
   copy. An installed copy carrying an older lesson-index schema gets rejected by
   this repo's own gate mid-publish. The provenance guard now also runs at the
