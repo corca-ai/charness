@@ -15,16 +15,16 @@ E2 partial), the containment family (A1, A2; A9 partial), A3 partial, and the
 issue-close carrier family (B3; B2 narrowed, B1 partial) are fixed. Every item,
 fixed or open, carries status, file:line, and a confirmed repro in the
 [bug hunt record](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
-— read it before planning any of them. **20 remain.** The operator lifted the
-no-push hold after B1-B3 and directed a release. No decisions pending.
+— read it before planning any of them. **20 remain.** The no-push hold is lifted:
+all work is pushed and **`2.11.3` is published** (tag `v2.11.3`, installed
+readback compared, not just observed). No decisions pending.
 
 ## Current State
 
-- **The chunker reports staleness facts before ranking, and the auto-draft
-  renders them.** Markers come from non-empty facts only, so an unmarked
-  citation is never a freshness claim. Shipped in `2.11.2`.
 - **CI is the only judge of the changed-line mutation gate here.** Its local run
   outruns a usable timeout and returns `untrusted` when HEAD moves mid-run.
+- **`2.11.3` shipped three gate tightenings that can turn a consuming repo red.**
+  Remedies and the patch-not-major argument are in the notes.
 
 ## Next Session
 
@@ -49,8 +49,8 @@ no-push hold after B1-B3 and directed a release. No decisions pending.
    `staleness` block dies before `ChunkCandidate`, so the auto-draft cannot tell
    "checked, none closed" from "never asked". Issue citations only; detail in the
    F9 critique below.
-5. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards); fill
-   guards want an observed n-fold rework instance first.
+5. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards; the fill
+   guards want an observed n-fold rework instance first).
 6. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774).
    In-process `run_script` is the unmeasured lever; spawn count is the honest
    metric, 16-worker wall-clock is noise.
