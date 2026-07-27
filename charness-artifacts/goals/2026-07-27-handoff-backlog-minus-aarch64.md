@@ -1,6 +1,6 @@
 # Achieve Goal: Close the live handoff backlog except the hardware-blocked aarch64 runtime profile: lesson BIND path, mutation regression #457, pytest subprocess-startup speed, and the nose scanner rebaseline
 
-Status: active
+Status: complete
 Created: 2026-07-27
 Activation: `/goal @charness-artifacts/goals/2026-07-27-handoff-backlog-minus-aarch64.md`
 
@@ -245,26 +245,24 @@ new-slice-local versus accumulated suite debt before touching the threshold.
 - Decision: should `validate_debug_artifact.py` and `validate_critique_artifacts.py`
   flip to one-pass-by-default, matching handoff/retro/ideation after slice 1?
 - Owner: operator.
-- Why deferred: their current stop-at-first default is an EXPLICIT operator
-  narrowing recorded in commit `a930cc5f` ("narrowed per operator decision:
-  report-all pays off on the two 14-rule validators"). Slice 1's fresh-eye
-  reviewer named flipping them as its highest-value change, and the family is now
-  split on both default AND flag polarity (`--fail-fast` opt-out vs `--report-all`
-  opt-in) — a real trap. But reversing a recorded operator decision is not an
-  agent's call, and slice 1's measured evidence covers handoff, not critique/debug.
+- Why deferred: their stop-at-first default is an EXPLICIT operator narrowing
+  recorded in commit `a930cc5f`. Slice 1's reviewer named flipping them as its
+  highest-value change, and the family is now split on both default AND flag
+  polarity (`--fail-fast` opt-out vs `--report-all` opt-in) — a real trap. But
+  reversing a recorded operator decision is not an agent's call, and slice 1's
+  measured evidence covers handoff, not critique/debug.
 - Unblock action: say whether to flip both to default-on (making `--report-all` a
-  deprecated no-op as in `validate_quality_artifact.py`), or to keep the split.
-- Revisit trigger: the next multi-run rework observed on a critique or debug
-  artifact; also tracked as the reopen trigger on D28.
+  deprecated no-op as in `validate_quality_artifact.py`), or keep the split.
+- Revisit trigger: the next multi-run rework on a critique or debug artifact; also
+  tracked as D28's reopen trigger.
 
-- Decision: whether sibling-scan Tier 2 finding D (tests snapshotting the live
-  `.charness/usage-episodes/` tree) becomes its own slice after this goal.
+- Decision: does sibling-scan Tier 2 finding D (tests snapshotting the live
+  `.charness/usage-episodes/` tree) become its own slice?
 - Owner: operator.
-- Why deferred: it is a latent conditional flake needing design, not a 1-2 line
-  fix, and nothing in this goal blocks on it.
-- Unblock action: say whether to schedule it next, or leave it in the sibling-scan
-  backlog.
-- Revisit trigger: the first time that test fails in CI, or this goal's closeout.
+- Why deferred: a latent conditional flake needing design, not a 1-2 line fix;
+  nothing in this goal blocked on it.
+- Unblock action: schedule it next, or leave it in the sibling-scan backlog.
+- Revisit trigger: the first time that test fails in CI.
 
 ## Coordination Cues
 
@@ -279,8 +277,17 @@ Routing chosen from installed skill metadata and model judgment:
   off-goal finding surfaced mid-run.
 - `critique` for slice-boundary fresh-eye review and the #457 resolution critique.
 - `retro` at closeout.
-- `Routing:` / `Gather:` / `Release:` / `Issue closeout:` evidence recorded here
-  at completion.
+- Routing: impl + prove per slice, selected from installed skill metadata for the
+  goal lifecycle; `debug` for the bug-class causal step, `quality` for dup-ratchet
+  posture, `critique` at every slice boundary, `issue` for closeout and the
+  off-goal filing, `retro` at completion.
+- Gather: n/a — no external source became working context; every input was
+  repo-local or the GitHub issue backend.
+- Release: n/a — no version bump, plugin release, or install-surface publication
+  was in scope for this goal.
+- Issue closeout: #457 closed with the green-run evidence comment
+  (issues/457#issuecomment-5086234583); #458 auto-closed via the `Resolves`
+  keyword on `63eda235`; #459 filed as the retro disposition.
 
 **Public-skill validation review (slice 1, `quality`): no consumer-contract
 change.** Slice 1 touched one `quality` skill file,
@@ -558,6 +565,45 @@ confirm it. Slice 4 must re-measure it before relying on it as a lever.
 
 ## Final Verification
 
+Retro: charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md
+Host log probe: skipped: host-log-not-exposed: this Claude Code session exposes no per-turn token or tool-call log surface to the agent, so no measured efficiency block is rendered rather than fabricating one.
+Disposition review: charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md
+- **Broad proof:** 5663 tests pass locally at 16 workers; `run_slice_closeout.py`
+  completed on every slice; 82 pre-push gates passed on both pushes.
+- **Live proof (the one that mattered):** Quality Core `success` on `f4444cd8`
+  (run 30226909558) and Mutation Tests `success` on the same settled tree
+  (run 30226915217) — mutation score 100.0%, 108/108 executed against an 80%
+  threshold, no blocking changed-line signal, no new regression issue filed.
+- **What CI caught that local runs did not:** the first push failed Quality Core
+  on the very class #457 is about — seven files with uncovered changed lines, this
+  time from my own diff. The local reproduction of that gate outruns a usable
+  timeout on this machine and reported `untrusted` when HEAD moved mid-run, so it
+  never produced a verdict. Recorded as a standing limit: this gate is CI-first here.
+- **Issues:** #457 closed on the green run with evidence; #458 auto-closed via its
+  `Resolves` keyword; #459 filed as the retro's tracked disposition.
+
 ## User Verification Instructions
 
+- `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root .` —
+  expect `OK` with no version-skew warning and no advisories.
+- Write a handoff draft that breaks three rules, then
+  `python3 scripts/validate_handoff_artifact.py --repo-root . --artifact-path <draft>`
+  — expect ONE message listing all three plus the scaffold command, and the real
+  `docs/handoff.md` untouched.
+- `gh issue list --state open` — expect only #459, the follow-up filed here.
+- `gh run list --workflow=mutation-tests.yml --limit 1` — expect `success` on
+  `f4444cd8`.
+- Honest limit to check me on: the lesson concept-identity work cannot change the
+  digest until retros carry `recurrence-class:` tags. The retro written this
+  session is the first; `charness-artifacts/retro/recent-lessons.md` is otherwise
+  unchanged apart from its policy line.
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md
+
+- Retro dispositions: applied: the spawn-shape rule moved to always-loaded `AGENTS.md`, propagated to setup's consuming-repo template and compact-contract inspector snippet, and pinned by four tests in `tests/quality_gates/test_reviewer_result_delivery.py`
+- Retro dispositions: applied: `recurrence-class:` tags on this session's retro Waste bullets, grouped by `scripts/recent_lessons_lib.py`, which starts the corpus the concept-identity work needs
+- Retro dispositions: issue #459 (novel: no existing entry covers chunker-side backlog staleness; the nearest, D28, is about validator defaults)
+- Structural follow-up: applied: `scripts/artifact_validator.py` gained `validate_each_artifact` and `run_changed_artifact_validator` so a new artifact family cannot be born with the one-rule-per-run default, and the compact-contract inspector now rejects a pre-rule managed-repo AGENTS.md as stale rather than conformant
+
