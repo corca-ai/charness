@@ -1,7 +1,8 @@
 # Evidence-Surface Bug Hunt — Verdicts Over Unestablished Scope
 Date: 2026-07-27
-Status: 30 defects reproduced by execution; none fixed yet. This file is the
-tracking record — update the Status column as items land.
+Status: 30 defects reproduced by execution. A4, A7, C5 fixed and E2 partially
+fixed on 2026-07-27 as the empty-scope family; the rest are OPEN. This file is
+the tracking record — update the Status column as items land.
 
 ## Why this exists
 
@@ -31,7 +32,8 @@ A proof surface is suspect when it:
 ## Status legend
 
 `OPEN` — reproduced, not fixed. `FIXED` — fixed with a regression test.
-`WONTFIX` — deliberate, with the reason recorded.
+`PARTIAL` — one half fixed, the remainder scoped in the row. `WONTFIX` —
+deliberate, with the reason recorded.
 
 ---
 
@@ -42,22 +44,25 @@ A proof surface is suspect when it:
 | A1 | OPEN | The in-repo install source (the checked-in plugin tree) is exempt from the provenance guard as `same-tree` | `scripts/helper_provenance_lib.py:239` |
 | A2 | OPEN | A non-empty drift list is discarded when the invoked entry script is absent from the target | `scripts/helper_provenance_lib.py:275` |
 | A3 | OPEN | A deletion-only or rename-only staged commit schedules zero commit-boundary gates | `scripts/staged_commit_gate_plan_helpers.py:22`, `scripts/staged_commit_gate_plan.py:244,484` |
-| A4 | OPEN | `validate_packaging` exits 0 on an empty manifest set, and it is the whole engine of the mirror-drift gate | `scripts/validate_packaging.py:425` |
+| A4 | FIXED | `validate_packaging` exits 0 on an empty manifest set, and it is the whole engine of the mirror-drift gate | `scripts/validate_packaging.py:425` |
 | A5 | OPEN | `check_staged_reversion` prints a positive clean verdict whenever git fails | `scripts/check_staged_reversion.py:76` |
 | A6 | OPEN | `check_staged_worktree_consistency` misses staged-then-deleted, and `CHARNESS_ALLOW_PARTIAL_STAGE=0` enables the bypass | `scripts/check_staged_worktree_consistency.py:41,52` |
-| A7 | OPEN | Zero-file scans report a pass (`export-safe imports`, `bootstrap-shim consistency`) | `scripts/check_export_safe_imports.py:209`, `scripts/check_bootstrap_shim_consistency.py:94` |
+| A7 | FIXED | Zero-file scans report a pass (`export-safe imports`, `bootstrap-shim consistency`) | `scripts/check_export_safe_imports.py:209`, `scripts/check_bootstrap_shim_consistency.py:94` |
 | A8 | OPEN | Anchor-guard install/status keyed on a command basename; the matcher is never read back | `scripts/host_hook_install_lib.py:192,449` |
 | A9 | OPEN | `own-root-unknown` is a silent pass; the anchors scan omits `support/` and `shared/` siblings | `scripts/helper_provenance_lib.py:237,156` |
 | A10 | OPEN | `post_edit_skill_anchor_guard` fail-opens when the rule library is missing entirely | `scripts/post_edit_skill_anchor_guard.py:72` |
 
-**A1 is the mechanism behind the 2026-07-27 foreign-copy incident.** The guard
-returns `same-tree` when the running copy is *contained in* the target root, and
-the packaging manifest declares the in-repo plugin tree — a full second
-charness tree inside the repo — as the install source. So the copy that is stale
-during every `mutate -> sync` window is structurally exempt. The RCA
-(`charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md:57`) lists
-this as candidate cause 4, refutes it *for that incident*, and never names the
-in-repo install-source instance. Class (e).
+**A1 is NOT the 2026-07-27 incident's mechanism — it is a second, live escape in
+the same guard.** That incident's cause was the guard being *absent* from the
+copy that ran, verified by `git cat-file`; its copy lived outside the target root
+so the containment branch was never reached. A1 is the branch itself: the guard
+returns `same-tree` for any copy *contained in* the target root, and this repo's
+packaging manifest declares the checked-in plugin tree — a full second charness
+tree inside the repo — as an install source. So an install from that source is
+structurally exempt during every `mutate -> sync` window. Same failure mode,
+different caller. The RCA listed this as candidate cause 4 and refuted it for
+that incident; the refutation has now been scoped in place so it does not read as
+"fixed". Class (e).
 
 Confirmed:
 
@@ -162,7 +167,7 @@ deleting only its `Date:` line flips the verdict to a binding failure. Class (b)
 | C2 | OPEN | A body `Date:` back-dates a new artifact past all four date-gated floors; nothing cross-checks the filename | `scripts/validate_critique_artifacts.py:174` |
 | C3 | OPEN | `- Packet consumed:` (bullet form) does not match the binding trigger, so the binding floor never runs | `scripts/critique_reviewed_input_binding.py:14` |
 | C4 | OPEN | `--all` — the surface's own declared verify command — disables tier evidence, delivery state, and binding currency | `scripts/validate_critique_artifacts.py:549` |
-| C5 | OPEN | `--paths <nonexistent>` reports `Validated 0 critique artifact(s).` and exits 0 | `scripts/validate_critique_artifacts.py:130`, `scripts/artifact_validator.py:458` |
+| C5 | FIXED (narrowed) | `--paths <nonexistent>` reports `Validated 0 critique artifact(s).` and exits 0 | `scripts/validate_critique_artifacts.py:130`, `scripts/artifact_validator.py:458` |
 | C6 | OPEN | The cross-surface probe reads the committed range only, and is silently off when `merge-base origin/main HEAD` fails | `scripts/validate_critique_artifacts.py:514`, `scripts/run-quality.sh:511` |
 
 **C1** — `Requested tier: TODO ...` is truthy, and `pending-parent-spawn` is a
@@ -268,7 +273,7 @@ is never compared → exit 0. `re.search` takes the first match. Class (a)+(d).
 | id | Status | Defect | file:line |
 | --- | --- | --- | --- |
 | E1 | OPEN | The mutation score is a global ratio sold as proof about the change; a changed file whose mutants all survive still PASSes | `scripts/check_mutation_score.py:160` |
-| E2 | OPEN | `check_mutation_run_proof --claim score` returns `provable: true` with no facts at all; manifest mode never establishes the run was green | `scripts/check_mutation_run_proof.py:97,143` |
+| E2 | PARTIAL | score claim with no facts returned `provable: true` — FIXED; the manifest path still cannot establish the run was green, now reported as `conclusion_established: false` rather than refused | `scripts/check_mutation_run_proof.py:86,109` |
 | E3 | OPEN | `--reuse-coverage --write-fresh-marker` stamps the freshness proof onto arbitrary coverage without running any probe | `scripts/check_changed_line_mutation_coverage.py:180` |
 | E4 | OPEN | The freshness fingerprint is blind to `tests/` and to the test command, and degenerates to a per-base constant on an empty pool diff | `scripts/mutation_changed_files_lib.py:235` |
 | E5 | OPEN | `check_coverage` reports 100% when it collected zero observations; files under 30 statements are exempt from the per-file floor | `scripts/check_coverage.py:356,366` |

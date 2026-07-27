@@ -46,8 +46,7 @@ mod.persist_retro_artifact(repo_root=target, ...)
 -> RESULT: WRITE PROCEEDED   (guard did not refuse)
 ```
 
-Module resolution was correct — both `retro_persistence_lib` and
-`recent_lessons_lib` loaded from the installed plugin tree.
+Module resolution was correct — both libs loaded from the installed plugin tree.
 
 ## Candidate Causes
 
@@ -79,6 +78,15 @@ git show 4df0393c:scripts/retro_persistence_lib.py | grep -c require_repo_local_
 
 Causes 1-4 are refuted by the Observed Facts above; each was checked before this
 one was tested.
+
+**Cause 4 is refuted as the mechanism HERE, not as a defect.** The branch was
+unreachable twice over: the guard was absent from the copy that ran, and that
+copy also lived outside the target root. That branch is still a live escape —
+reproduced 2026-07-27, audit id A1 in the
+[bug hunt](../audit/2026-07-27-evidence-surface-bug-hunt.md): a copy *inside* the
+target root is exempted as `same-tree` with zero files compared, and this repo's
+packaging manifest declares the checked-in plugin tree as an install source. Same
+failure, different caller. "Refuted" here does not mean fixed.
 
 ## Root Cause
 
@@ -125,10 +133,11 @@ Enforcement placed in the invoked copy is unenforceable against a stale copy —
 the population that needs it most is exactly the population that lacks it.
 
 - same layer: the four other `require_repo_local_helper` write sites | decision: same waste, diagnostic-only | proof: all live in the invoked copy, so all share the absent-in-stale-copy limit; none is individually wrong
+- same guard, different escape: the containment branch that classifies a copy inside the target root as `same-tree` | decision: valid follow-up outside the slice | proof: reproduced 2026-07-27 — a stale checked-in plugin mirror wrote a wrong-schema lesson index with no refusal and zero files compared, and that tree is a packaging-declared install source | follow-up: audit id A1, [bug hunt record](../audit/2026-07-27-evidence-surface-bug-hunt.md)
 - abstraction up: the entrypoint guard drafted this session (`publish_release.py`, `issue_tool.py`) | decision: same waste, fix now | proof: it lives in the invoked copy too, so it inherits the same limit; its claim must be reduced from "closes this class" to "defense in depth once installed"
 - specialization down: `validate-retro-lesson-index`'s non-terminating remediation string | decision: valid follow-up outside the slice | proof: observed — it sent this investigation to the quality suite first and cost a full gate cycle | follow-up: https://github.com/corca-ai/charness/issues/462
 - mental-model siblings: any target-side gate whose message assumes the operator's tooling matches the repo | decision: diagnostic-only | proof: not enumerated; named so the next occurrence is recognized rather than re-derived
-- cross-file: `scripts/recent_lessons_lib.py`, `scripts/retro_persistence_lib.py`, `scripts/build_debug_seam_risk_index.py`, `skills/public/retro/scripts/persist_retro_artifact.py` — the other four guard sites, none in the subject file
+- cross-file: `recent_lessons_lib.py`, `retro_persistence_lib.py`, `build_debug_seam_risk_index.py`, `persist_retro_artifact.py` — the other four guard sites, none in the subject file
 
 ## Seam Risk
 
@@ -154,14 +163,12 @@ to `impl`, because the enforceable side is the target repo, not the caller.
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-07-27-foreign-copy-write-enforcement.md
 
-Diagnosis complete. The repair question (target-side enforcement vs.
-defense-in-depth caller guard) is a design decision, not a bug fix, and is
-handed to the operator with the staged entrypoint-guard work still uncommitted.
+Diagnosis complete. The repair question is a design decision, not a bug fix.
 
 ## Prevention
 
-- Reduce the staged entrypoint guard's claim: it is defense in depth that becomes
-  effective one `charness update` after it ships, not a closure of this class.
+- The entrypoint guard is defense in depth, effective one `charness update` after
+  it ships — not a closure of this class.
 - Enforceable side is the consumer. A target-side check ("which tree wrote this
   artifact") is the only form that constrains a copy that predates the guard.
 - Fix the misleading `validate-retro-lesson-index` remediation (issue #462).

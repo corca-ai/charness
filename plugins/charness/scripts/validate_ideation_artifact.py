@@ -121,6 +121,7 @@ def main() -> int:
         fail_fast_help=(
             "Stop at the first failing artifact instead of reporting every failure in one pass."
         ),
+        owned_prefix=IDEATION_ARTIFACT_PREFIX,
     )
 
 

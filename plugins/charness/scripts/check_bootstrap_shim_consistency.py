@@ -114,7 +114,10 @@ def main() -> int:
         else:
             drifted.append(rel)
 
-    status = "ok" if not drifted and not unfixable else "drift"
+    # A scan that found no shim copies established no scope: it cannot distinguish
+    # "every copy matches" from "the root is wrong / the listing came back empty".
+    # Report it as its own state so a green line never stands for zero comparisons.
+    status = "empty-scope" if not shim_files else ("ok" if not drifted and not unfixable else "drift")
     if args.json:
         print(
             json.dumps(
@@ -127,6 +130,12 @@ def main() -> int:
                 },
                 indent=2,
             )
+        )
+    elif status == "empty-scope":
+        print(
+            f"no bootstrap shim copies found under {repo_root}; nothing was compared. "
+            "Check --repo-root (and --require-git-file-listing if the listing came back empty).",
+            file=sys.stderr,
         )
     elif status == "ok":
         note = f"; rewrote {len(fixed)}" if fixed else ""

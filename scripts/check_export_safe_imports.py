@@ -207,6 +207,15 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     targets = iter_python_targets(root, require_git=args.require_git_file_listing)
+    if not targets:
+        # Zero files scanned is an unestablished scope, not a clean one: it reads
+        # identically to a full pass while proving nothing about the export surface.
+        print(
+            f"no export-surface Python files found under {root}; nothing was validated. "
+            "Check --repo-root (and --require-git-file-listing if the listing came back empty).",
+            file=sys.stderr,
+        )
+        return 1
     for path in targets:
         try:
             validate_imports(path)

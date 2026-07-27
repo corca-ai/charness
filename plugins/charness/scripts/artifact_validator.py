@@ -4,18 +4,40 @@ from __future__ import annotations
 
 import importlib
 import re
-import subprocess
 import sys
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+
+from runtime_bootstrap import import_repo_module
+
+# The sibling scope module is resolved the same way every other repo script
+# resolves a sibling: a bare `from artifact_run_scope import ...` binds only when
+# `scripts/` happens to be on sys.path, which is true in the repo and false in the
+# exported plugin layout — where it silently degrades a consumer's scaffold.
+_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
+ChangedArtifactRun = _run_scope.ChangedArtifactRun
+ValidationError = _run_scope.ValidationError
+add_changed_artifact_args = _run_scope.add_changed_artifact_args
+add_one_pass_args = _run_scope.add_one_pass_args
+git_changed_paths = _run_scope.git_changed_paths
+selected_changed_paths = _run_scope.selected_changed_paths
+unresolvable_named_paths = _run_scope.unresolvable_named_paths
+
+# Re-exported so every validator keeps importing its selection surface from one
+# place; the split moved where the code lives, not what callers import.
+__all__ = [
+    "ChangedArtifactRun",
+    "ValidationError",
+    "add_changed_artifact_args",
+    "add_one_pass_args",
+    "git_changed_paths",
+    "selected_changed_paths",
+    "unresolvable_named_paths",
+]
 
 H2_RE = re.compile(r"^##\s+.+$")
 
 
-class ValidationError(Exception):
-    pass
 
 
 def _scaffold_rel(artifact_type: str) -> str | None:
@@ -77,63 +99,6 @@ def read_lines(path: Path) -> list[str]:
     if not path.exists():
         raise ValidationError(f"missing artifact `{path}`")
     return path.read_text(encoding="utf-8").splitlines()
-
-
-def _git_paths(repo_root: Path, args: list[str], *, artifact_label: str) -> list[str]:
-    command = ["git", *args]
-    result = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        message = (
-            f"{artifact_label} artifact changed-path discovery failed; "
-            f"command: {' '.join(command)}; exit_code: {result.returncode}"
-        )
-        if detail:
-            message = f"{message}; output: {detail}"
-        raise ValidationError(message)
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
-
-
-def git_changed_paths(repo_root: Path, *, artifact_label: str) -> list[str]:
-    paths = set(_git_paths(repo_root, ["diff", "--name-only", "HEAD", "--"], artifact_label=artifact_label))
-    paths.update(_git_paths(repo_root, ["ls-files", "--others", "--exclude-standard"], artifact_label=artifact_label))
-    return sorted(paths)
-
-
-REPORT_ALL_DEPRECATED_HELP = (
-    "Deprecated no-op: reporting every violation in one pass is now the default. "
-    "Use --fail-fast to stop at the first violation."
-)
-
-
-def add_changed_artifact_args(parser, *, default_repo_root: Path, all_help: str) -> None:
-    parser.add_argument("--repo-root", type=Path, default=default_repo_root)
-    parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
-    parser.add_argument("--all", action="store_true", help=all_help)
-
-
-def add_one_pass_args(parser, *, fail_fast_help: str) -> None:
-    """The one-pass control, declared once for every artifact validator.
-
-    `--fail-fast` is the ONLY knob: one-pass is the default across the family, and
-    `--report-all` stays accepted as a no-op so existing callers, docs, and
-    checked-in artifact commands do not break on the flip. Declaring both here —
-    rather than per validator — is what stops the D28 polarity split (opposite
-    defaults AND opposite flag names across sibling validators) from re-forming:
-    a new artifact family cannot pick its own polarity without editing this.
-    """
-    parser.add_argument("--fail-fast", action="store_true", help=fail_fast_help)
-    parser.add_argument("--report-all", action="store_true", help=REPORT_ALL_DEPRECATED_HELP)
-
-
-def selected_changed_paths(args, repo_root: Path, *, changed_paths_fn: Callable[[Path], list[str]]) -> list[str]:
-    return [] if args.all else args.paths if args.paths is not None else changed_paths_fn(repo_root)
 
 
 def validate_max_lines(
@@ -366,23 +331,6 @@ def validate_sibling_followups(
         )
 
 
-@dataclass(frozen=True)
-class ChangedArtifactRun:
-    """Resolved CLI state for one changed-path artifact validator run.
-
-    Passed to `validate_factory` (and `artifacts_fn`) so a validator that needs
-    more than `collect_all` — critique keys `require_tier_evidence` off which
-    paths were selected and whether they were explicit — can single-source
-    through the shared runner instead of forking its own `main()`.
-    """
-
-    args: Any
-    repo_root: Path
-    collect_all: bool
-    selected_paths: list[str]
-    explicit_paths: bool
-
-
 def run_changed_artifact_validator(
     *,
     default_repo_root: Path,
@@ -396,6 +344,7 @@ def run_changed_artifact_validator(
     extra_args: Callable[..., None] | None = None,
     no_scope_message: str | None = None,
     per_artifact_success: bool = False,
+    owned_prefix: str | None = None,
     error_cls: type[Exception] = ValidationError,
 ) -> int:
     """The whole `main()` for a changed-path artifact validator, in one place.
@@ -409,6 +358,9 @@ def run_changed_artifact_validator(
     The optional hooks exist so the two validators that used to justify their own
     `main()` fit here rather than beside here:
 
+    - `owned_prefix` is the artifact directory this validator owns. It scopes the
+      named-path refusal below: without it, a validator keeps its previous
+      behavior of passing on a named path that resolved to nothing.
     - `extra_args` adds validator-specific flags (critique's `--changed-ref` /
       `--changed-path` cross-surface probe).
     - `artifacts_fn` replaces the default changed-path resolution entirely (debug
@@ -446,6 +398,33 @@ def run_changed_artifact_validator(
         artifacts = candidate_paths_fn(repo_root, selected_paths, all_artifacts=args.all)
     else:
         raise TypeError("run_changed_artifact_validator needs candidate_paths_fn or artifacts_fn")
+    if artifacts is None and not run.explicit_paths:
+        print(no_scope_message or f"No {artifact_label}s in scope.")
+        return 0
+    if run.explicit_paths and not artifacts:
+        unresolvable = unresolvable_named_paths(repo_root, list(args.paths or []), owned_prefix=owned_prefix)
+        if unresolvable:
+            # A DISCOVERED empty set is legitimate (this commit touched no artifact
+            # of this family) and stays the cheap no-op below. A named path that
+            # cannot resolve at all is not: nothing was validated and
+            # `Validated 0 <label>(s).` would report that as a pass.
+            #
+            # The discriminator is deliberately narrow, because `--paths` is fed by
+            # TOOLS as often as by people: the surface preflight and the closeout
+            # sweep pass a slice of the changed set, which legitimately contains
+            # paths a validator's own content filter drops (a generated packet) and
+            # paths that no longer exist (a deletion or an archival move). Failing
+            # those would break normal commits, which is worse than the hole this
+            # closes. Only a path that exists nowhere — not on disk, not as a
+            # deletion git knows about — is a real typo or stale reference.
+            named = ", ".join(unresolvable)
+            print(
+                f"named {artifact_label} path(s) resolve to nothing: {named}; "
+                "nothing was validated. Check the spelling and that the path is (or was) a real "
+                "file in this repo.",
+                file=sys.stderr,
+            )
+            return 1
     if artifacts is None:
         print(no_scope_message or f"No {artifact_label}s in scope.")
         return 0

@@ -1,0 +1,171 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-27T10:05:22Z",
+  "prepared_for": "empty-scope refusal family (A4/A7/C5/E2) + RCA cause-4 scoping",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md\n- charness-artifacts/critique/2026-07-27-empty-scope-family-packet.json\n- charness-artifacts/critique/2026-07-27-empty-scope-family-packet.md\n- charness-artifacts/critique/2026-07-27-empty-scope-family.md\n- charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md\n- plugins/charness/scripts/artifact_run_scope.py\n- plugins/charness/scripts/artifact_validator.py\n- plugins/charness/scripts/check_bootstrap_shim_consistency.py\n- plugins/charness/scripts/check_export_safe_imports.py\n- plugins/charness/scripts/check_mutation_run_proof.py\n- plugins/charness/scripts/validate_critique_artifacts.py\n- plugins/charness/scripts/validate_ideation_artifact.py\n- plugins/charness/scripts/validate_packaging.py\n- plugins/charness/scripts/validate_retro_artifact.py\n- scripts/artifact_run_scope.py\n- scripts/artifact_validator.py\n- scripts/check_bootstrap_shim_consistency.py\n- scripts/check_export_safe_imports.py\n- scripts/check_mutation_run_proof.py\n- scripts/validate_critique_artifacts.py\n- scripts/validate_ideation_artifact.py\n- scripts/validate_packaging.py\n- scripts/validate_retro_artifact.py\n- tests/quality_gates/test_empty_scope_refusals.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/artifact_run_scope.py, scripts/artifact_validator.py, scripts/check_bootstrap_shim_consistency.py, scripts/check_export_safe_imports.py, scripts/check_mutation_run_proof.py, scripts/validate_critique_artifacts.py, scripts/validate_ideation_artifact.py, scripts/validate_packaging.py, scripts/validate_retro_artifact.py\n  derived matches: plugins/charness/scripts/artifact_run_scope.py, plugins/charness/scripts/artifact_validator.py, plugins/charness/scripts/check_bootstrap_shim_consistency.py, plugins/charness/scripts/check_export_safe_imports.py, plugins/charness/scripts/check_mutation_run_proof.py, plugins/charness/scripts/validate_critique_artifacts.py, plugins/charness/scripts/validate_ideation_artifact.py, plugins/charness/scripts/validate_packaging.py, plugins/charness/scripts/validate_retro_artifact.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md, charness-artifacts/critique/2026-07-27-empty-scope-family-packet.md, charness-artifacts/critique/2026-07-27-empty-scope-family.md, charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-27-empty-scope-family-packet.json, charness-artifacts/critique/2026-07-27-empty-scope-family-packet.md, charness-artifacts/critique/2026-07-27-empty-scope-family.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/artifact_run_scope.py, plugins/charness/scripts/artifact_validator.py, plugins/charness/scripts/check_bootstrap_shim_consistency.py, plugins/charness/scripts/check_export_safe_imports.py, plugins/charness/scripts/check_mutation_run_proof.py, plugins/charness/scripts/validate_critique_artifacts.py, plugins/charness/scripts/validate_ideation_artifact.py, plugins/charness/scripts/validate_packaging.py, plugins/charness/scripts/validate_retro_artifact.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/artifact_run_scope.py, scripts/artifact_validator.py, scripts/check_bootstrap_shim_consistency.py, scripts/check_export_safe_imports.py, scripts/check_mutation_run_proof.py, scripts/validate_critique_artifacts.py, scripts/validate_ideation_artifact.py, scripts/validate_packaging.py, scripts/validate_retro_artifact.py, tests/quality_gates/test_empty_scope_refusals.py\n  derived matches: plugins/charness/scripts/artifact_run_scope.py, plugins/charness/scripts/artifact_validator.py, plugins/charness/scripts/check_bootstrap_shim_consistency.py, plugins/charness/scripts/check_export_safe_imports.py, plugins/charness/scripts/check_mutation_run_proof.py, plugins/charness/scripts/validate_critique_artifacts.py, plugins/charness/scripts/validate_ideation_artifact.py, plugins/charness/scripts/validate_packaging.py, plugins/charness/scripts/validate_retro_artifact.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/artifact_run_scope.py, scripts/artifact_validator.py, scripts/check_bootstrap_shim_consistency.py, scripts/check_export_safe_imports.py, scripts/check_mutation_run_proof.py, scripts/validate_critique_artifacts.py, scripts/validate_ideation_artifact.py, scripts/validate_packaging.py, scripts/validate_retro_artifact.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "dff8d9a6d9431954ceebbd77924cc7df695ab3cd",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md",
+      "charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md",
+      "plugins/charness/scripts/artifact_run_scope.py",
+      "plugins/charness/scripts/artifact_validator.py",
+      "plugins/charness/scripts/check_bootstrap_shim_consistency.py",
+      "plugins/charness/scripts/check_export_safe_imports.py",
+      "plugins/charness/scripts/check_mutation_run_proof.py",
+      "plugins/charness/scripts/validate_critique_artifacts.py",
+      "plugins/charness/scripts/validate_ideation_artifact.py",
+      "plugins/charness/scripts/validate_packaging.py",
+      "plugins/charness/scripts/validate_retro_artifact.py",
+      "scripts/artifact_run_scope.py",
+      "scripts/artifact_validator.py",
+      "scripts/check_bootstrap_shim_consistency.py",
+      "scripts/check_export_safe_imports.py",
+      "scripts/check_mutation_run_proof.py",
+      "scripts/validate_critique_artifacts.py",
+      "scripts/validate_ideation_artifact.py",
+      "scripts/validate_packaging.py",
+      "scripts/validate_retro_artifact.py",
+      "tests/quality_gates/test_empty_scope_refusals.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md",
+        "content_sha256": "033d786c39187997af994a9857b3b19ce2a40218ab47f2b9e86ad65e86edc111"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md",
+        "content_sha256": "284dc01463a1ce2061ba6cddb25335b064d6eb6ad2a9f89bfed043fc2dece034"
+      },
+      {
+        "path": "plugins/charness/scripts/artifact_run_scope.py",
+        "content_sha256": "8e2712fd778f76c8c613a1379102ab157a17a39e00275d9584bebeca218caaa0"
+      },
+      {
+        "path": "plugins/charness/scripts/artifact_validator.py",
+        "content_sha256": "c2984ded3b803e52f0c7cc415fc5c51e46e73fd03b8d1b04cb5e79691a9c3d95"
+      },
+      {
+        "path": "plugins/charness/scripts/check_bootstrap_shim_consistency.py",
+        "content_sha256": "750b16b8cafeb2f4f5c125cd32730933a130ea9dfbffb9580cceb6e83d42adb4"
+      },
+      {
+        "path": "plugins/charness/scripts/check_export_safe_imports.py",
+        "content_sha256": "012983127b692c706f7682f569bc0d69bd08b44f7611a87bbbc003dc85e89e5f"
+      },
+      {
+        "path": "plugins/charness/scripts/check_mutation_run_proof.py",
+        "content_sha256": "acb83a5d7d40e0505050b0e7d1258e9b2b939bef4823c3e1f7204b1f69702737"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_critique_artifacts.py",
+        "content_sha256": "13bc9d39c6052be26ef8a4daa14c1010b98640b3b15489e9c92a5d07423f26f5"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_ideation_artifact.py",
+        "content_sha256": "de25b6db189651472125a1ce60a83cd57bdd82252cdc6d81a609b9e863346443"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_packaging.py",
+        "content_sha256": "1349be421c45f321fc7a2ac18dd95093b08df2ae0820fcd2060a554f761a5511"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_retro_artifact.py",
+        "content_sha256": "d424d1399c1bd08c06c5dcc6c0d0b22d2b549457deb6939d8aff8cef376b07bf"
+      },
+      {
+        "path": "scripts/artifact_run_scope.py",
+        "content_sha256": "8e2712fd778f76c8c613a1379102ab157a17a39e00275d9584bebeca218caaa0"
+      },
+      {
+        "path": "scripts/artifact_validator.py",
+        "content_sha256": "c2984ded3b803e52f0c7cc415fc5c51e46e73fd03b8d1b04cb5e79691a9c3d95"
+      },
+      {
+        "path": "scripts/check_bootstrap_shim_consistency.py",
+        "content_sha256": "750b16b8cafeb2f4f5c125cd32730933a130ea9dfbffb9580cceb6e83d42adb4"
+      },
+      {
+        "path": "scripts/check_export_safe_imports.py",
+        "content_sha256": "012983127b692c706f7682f569bc0d69bd08b44f7611a87bbbc003dc85e89e5f"
+      },
+      {
+        "path": "scripts/check_mutation_run_proof.py",
+        "content_sha256": "acb83a5d7d40e0505050b0e7d1258e9b2b939bef4823c3e1f7204b1f69702737"
+      },
+      {
+        "path": "scripts/validate_critique_artifacts.py",
+        "content_sha256": "13bc9d39c6052be26ef8a4daa14c1010b98640b3b15489e9c92a5d07423f26f5"
+      },
+      {
+        "path": "scripts/validate_ideation_artifact.py",
+        "content_sha256": "de25b6db189651472125a1ce60a83cd57bdd82252cdc6d81a609b9e863346443"
+      },
+      {
+        "path": "scripts/validate_packaging.py",
+        "content_sha256": "1349be421c45f321fc7a2ac18dd95093b08df2ae0820fcd2060a554f761a5511"
+      },
+      {
+        "path": "scripts/validate_retro_artifact.py",
+        "content_sha256": "d424d1399c1bd08c06c5dcc6c0d0b22d2b549457deb6939d8aff8cef376b07bf"
+      },
+      {
+        "path": "tests/quality_gates/test_empty_scope_refusals.py",
+        "content_sha256": "8943ec24aeafeea1b3ad70289c9b2f0d25e087102fcf6de978359a5a38c60aa0"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "765e54b0d6b7f766082dc44e767e92e4bf5c204d13213f1a0a81724afb315fc9",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-07-27-empty-scope-family-packet.json",
+      "charness-artifacts/critique/2026-07-27-empty-scope-family-packet.md",
+      "charness-artifacts/critique/2026-07-27-empty-scope-family.md"
+    ],
+    "identity_sha256": "aa03827375b8dd007f4e4496131f96205c07d96599802cfd4e8623e1a553a29d"
+  }
+}

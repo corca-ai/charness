@@ -576,6 +576,7 @@ def main() -> int:
         fail_fast_help=(
             "Stop at the first rule violation instead of reporting every violation in one pass."
         ),
+        owned_prefix=CRITIQUE_ARTIFACT_PREFIX,
     )
 
 

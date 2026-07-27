@@ -424,8 +424,17 @@ def main() -> int:
     root = args.repo_root.resolve()
     files = iter_packaging_files(root)
     if not files:
-        print("No packaging manifests found.")
-        return 0
+        # Not a pass. This validator is the whole engine of the staged mirror-drift
+        # gate, which reads only the return code — so a zero-manifest exit 0 lets an
+        # index with the manifest staged for deletion report "mirror matches".
+        # Zero manifests under a charness root is a broken scope, not a clean one.
+        print(
+            f"no packaging manifests found under {root / 'packaging'}; nothing was validated. "
+            "A charness root carries at least one manifest — check --repo-root, and check "
+            "whether the manifest is staged for deletion.",
+            file=sys.stderr,
+        )
+        return 1
 
     for path in files:
         try:

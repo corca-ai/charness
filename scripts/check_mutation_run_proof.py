@@ -74,6 +74,16 @@ def classify_run_proof(
             verdict["supported_proof_paths"] = SUPPORTED_CHANGED_LINE_PROOF_PATHS
         return verdict
 
+    # Set before any refusal: a consumer must be able to tell "the run was known
+    # red" from "nobody established what the run concluded", and both reach a
+    # refusal by different routes.
+    # A conclusion is NOT required: this classifier's job is what a given trigger's
+    # pipeline can evaluate, and callers legitimately judge that from a downloaded
+    # sample manifest, which carries no conclusion. But `provable` then means "this
+    # trigger could evaluate the claim", never "and the run was green" — a manifest
+    # from a red run reaches here too. Say which of the two was established instead
+    # of letting one word carry both.
+    verdict["conclusion_established"] = conclusion is not None
     if conclusion is not None and conclusion != "success":
         return refuse(f"run concluded {conclusion!r}, not success; a non-green run proves no claim")
     if claim == "changed-line":
@@ -96,6 +106,14 @@ def classify_run_proof(
         return verdict
     if event == "pull_request":
         return refuse("pull_request runs in dry-run mode and produces no mutation verdict at all")
+    if event is None:
+        # The score claim has no other discriminator — unlike changed-line, which is
+        # judged on base_sha and so tolerates an unknown event. Without a trigger,
+        # this branch used to answer `provable` having identified no run at all.
+        return refuse(
+            "no run identified: the score claim is judged from the run's trigger, so pass "
+            "--run-id or --event; with neither, there is nothing to judge"
+        )
     verdict["provable"] = True
     verdict["reason"] = "score/survivor path runs in full mode for schedule and workflow_dispatch events"
     return verdict
