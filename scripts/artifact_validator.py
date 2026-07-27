@@ -7,7 +7,9 @@ import re
 import subprocess
 import sys
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 H2_RE = re.compile(r"^##\s+.+$")
 
@@ -104,25 +106,34 @@ def git_changed_paths(repo_root: Path, *, artifact_label: str) -> list[str]:
     return sorted(paths)
 
 
+REPORT_ALL_DEPRECATED_HELP = (
+    "Deprecated no-op: reporting every violation in one pass is now the default. "
+    "Use --fail-fast to stop at the first violation."
+)
+
+
 def add_changed_artifact_args(parser, *, default_repo_root: Path, all_help: str) -> None:
     parser.add_argument("--repo-root", type=Path, default=default_repo_root)
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
     parser.add_argument("--all", action="store_true", help=all_help)
 
 
+def add_one_pass_args(parser, *, fail_fast_help: str) -> None:
+    """The one-pass control, declared once for every artifact validator.
+
+    `--fail-fast` is the ONLY knob: one-pass is the default across the family, and
+    `--report-all` stays accepted as a no-op so existing callers, docs, and
+    checked-in artifact commands do not break on the flip. Declaring both here —
+    rather than per validator — is what stops the D28 polarity split (opposite
+    defaults AND opposite flag names across sibling validators) from re-forming:
+    a new artifact family cannot pick its own polarity without editing this.
+    """
+    parser.add_argument("--fail-fast", action="store_true", help=fail_fast_help)
+    parser.add_argument("--report-all", action="store_true", help=REPORT_ALL_DEPRECATED_HELP)
+
+
 def selected_changed_paths(args, repo_root: Path, *, changed_paths_fn: Callable[[Path], list[str]]) -> list[str]:
     return [] if args.all else args.paths if args.paths is not None else changed_paths_fn(repo_root)
-
-
-def selected_artifact_paths(
-    args,
-    repo_root: Path,
-    *,
-    changed_paths_fn: Callable[[Path], list[str]],
-    candidate_paths_fn: Callable[..., list[Path]],
-) -> list[Path]:
-    paths = selected_changed_paths(args, repo_root, changed_paths_fn=changed_paths_fn)
-    return candidate_paths_fn(repo_root, paths, all_artifacts=args.all)
 
 
 def validate_max_lines(
@@ -355,53 +366,111 @@ def validate_sibling_followups(
         )
 
 
+@dataclass(frozen=True)
+class ChangedArtifactRun:
+    """Resolved CLI state for one changed-path artifact validator run.
+
+    Passed to `validate_factory` (and `artifacts_fn`) so a validator that needs
+    more than `collect_all` — critique keys `require_tier_evidence` off which
+    paths were selected and whether they were explicit — can single-source
+    through the shared runner instead of forking its own `main()`.
+    """
+
+    args: Any
+    repo_root: Path
+    collect_all: bool
+    selected_paths: list[str]
+    explicit_paths: bool
+
+
 def run_changed_artifact_validator(
     *,
     default_repo_root: Path,
     all_help: str,
     artifact_label: str,
-    changed_paths_fn: Callable[[Path], list[str]],
-    candidate_paths_fn: Callable[..., list[Path]],
-    validate_factory: Callable[[bool], Callable[[Path], None]],
+    validate_factory: Callable[[ChangedArtifactRun], Callable[[Path], None]],
     fail_fast_help: str,
+    changed_paths_fn: Callable[[Path], list[str]] | None = None,
+    candidate_paths_fn: Callable[..., list[Path]] | None = None,
+    artifacts_fn: Callable[[ChangedArtifactRun], list[Path] | None] | None = None,
+    extra_args: Callable[..., None] | None = None,
+    no_scope_message: str | None = None,
+    per_artifact_success: bool = False,
     error_cls: type[Exception] = ValidationError,
 ) -> int:
     """The whole `main()` for a changed-path artifact validator, in one place.
 
-    Every such validator parses the same three selection args plus `--fail-fast`,
-    resolves the same artifact set, validates each one collecting failures, and
-    prints the same count line. Forking that shape per validator is what let the
-    one-pass contract land in some validators and not others; sharing it means a
-    new artifact family cannot be born already inconsistent.
+    Every such validator parses the same three selection args plus the one-pass
+    control, resolves an artifact set, validates each one collecting failures,
+    and reports. Forking that shape per validator is what let the one-pass
+    contract land in some validators and not others (D28); sharing it means a new
+    artifact family cannot be born already inconsistent.
 
-    `validate_factory` receives the resolved `collect_all` so a validator whose
-    per-artifact checks also collect (retro) and one whose single rule cannot
-    (ideation) both fit without a second entry point.
+    The optional hooks exist so the two validators that used to justify their own
+    `main()` fit here rather than beside here:
+
+    - `extra_args` adds validator-specific flags (critique's `--changed-ref` /
+      `--changed-path` cross-surface probe).
+    - `artifacts_fn` replaces the default changed-path resolution entirely (debug
+      resolves its output directory through its own adapter). Returning `None`
+      means "nothing in scope", reported via `no_scope_message` as a success.
+    - `per_artifact_success` prints one line per validated artifact instead of a
+      count. Reporting verbosity only — it changes no verdict and no exit code.
     """
     import argparse
 
     parser = argparse.ArgumentParser()
     add_changed_artifact_args(parser, default_repo_root=default_repo_root, all_help=all_help)
-    parser.add_argument("--fail-fast", action="store_true", help=fail_fast_help)
+    add_one_pass_args(parser, fail_fast_help=fail_fast_help)
+    if extra_args is not None:
+        extra_args(parser)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    artifacts = selected_artifact_paths(
-        args,
-        repo_root,
-        changed_paths_fn=changed_paths_fn,
-        candidate_paths_fn=candidate_paths_fn,
+    selected_paths = (
+        selected_changed_paths(args, repo_root, changed_paths_fn=changed_paths_fn)
+        if changed_paths_fn is not None
+        else list(args.paths or [])
     )
-    collect_all = not args.fail_fast
-    validate_each_artifact(
-        artifacts,
-        validate_factory(collect_all),
-        collect_all=collect_all,
-        artifact_label=artifact_label,
+    run = ChangedArtifactRun(
+        args=args,
         repo_root=repo_root,
-        error_cls=error_cls,
+        collect_all=not args.fail_fast,
+        selected_paths=selected_paths,
+        explicit_paths=args.paths is not None,
     )
-    print(f"Validated {len(artifacts)} {artifact_label}(s).")
+
+    if artifacts_fn is not None:
+        artifacts = artifacts_fn(run)
+    elif candidate_paths_fn is not None:
+        artifacts = candidate_paths_fn(repo_root, selected_paths, all_artifacts=args.all)
+    else:
+        raise TypeError("run_changed_artifact_validator needs candidate_paths_fn or artifacts_fn")
+    if artifacts is None:
+        print(no_scope_message or f"No {artifact_label}s in scope.")
+        return 0
+
+    # `validate_factory` is where a validator resolves per-run inputs, and those
+    # can shell out (critique's cross-surface probe runs `git diff` on a ref). An
+    # EMPTY artifact set must stay the cheap no-op it was before this shared
+    # runner existed: the common commit touches no artifact of a given family,
+    # and a probe failure there would turn a silent pass into a crash.
+    if artifacts:
+        validate_each_artifact(
+            artifacts,
+            validate_factory(run),
+            collect_all=run.collect_all,
+            artifact_label=artifact_label,
+            repo_root=repo_root,
+            error_cls=error_cls,
+            on_success=(
+                (lambda artifact: print(f"Validated {artifact_label} {_artifact_label(artifact, repo_root)}."))
+                if per_artifact_success
+                else None
+            ),
+        )
+    if not per_artifact_success:
+        print(f"Validated {len(artifacts)} {artifact_label}(s).")
     return 0
 
 
@@ -413,6 +482,7 @@ def validate_each_artifact(
     artifact_label: str,
     repo_root: Path | None = None,
     error_cls: type[Exception] = ValidationError,
+    on_success: Callable[[Path], None] | None = None,
 ) -> None:
     """Validate a batch, reporting every FAILING ARTIFACT instead of only the first.
 
@@ -435,6 +505,9 @@ def validate_each_artifact(
             if not collect_all:
                 raise error_cls(labeled) from exc
             errors.append(labeled)
+            continue
+        if on_success is not None:
+            on_success(artifact)
     if errors:
         raise error_cls("\n".join(errors))
 
@@ -458,8 +531,9 @@ def run_validation_checks(
 ) -> None:
     """Run checks fail-fast, or collect every violation when `collect_all` is set.
 
-    Artifact validators expose this as `--report-all` so a multi-rule draft is
-    fixed in one pass instead of one rule per gate run.
+    Artifact validators run this collecting BY DEFAULT so a multi-rule draft is
+    fixed in one pass instead of one rule per gate run; `--fail-fast` is the only
+    control that opts back into stop-at-first (see `add_one_pass_args`).
     """
     if not collect_all:
         for check in checks:

@@ -20,8 +20,9 @@ load_adapter = _resolve_adapter.load_adapter
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 
 # Mirrors REQUIRED_SECTIONS in scripts/validate_handoff_artifact.py. The handoff
-# validator enforces an EXACT H2 set, a `# ... Handoff` title, a <=70 line
-# ceiling, non-empty sections, and a markdown link under `## References`, so the
+# validator enforces an EXACT H2 set, a `# ... Handoff` title, a content-line
+# ceiling (blank lines, the required headings, and `## References` are not
+# counted), non-empty sections, and a markdown link under `## References`, so the
 # scaffold emits a skeleton that passes that validator out of the box.
 SECTIONS = (
     "## Workflow Trigger",

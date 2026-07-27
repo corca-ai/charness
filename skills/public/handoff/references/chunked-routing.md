@@ -80,6 +80,15 @@ step 4 is the active agent.
    that entry**, not double-counted, so the chunker surfaces the open issues
    the hand-written `## Next Session` omitted without duplicating the ones it
    names.
+
+   Each entry also carries **resolvable-ness facts**: `missing_paths` (cited
+   paths that no longer exist) and `closed_issues` (cited issues the tracker
+   reports as not-open), plus a top-level `staleness` summary. These are facts,
+   never verdicts — an entry whose paths moved may still be real work, so
+   nothing drops it, and an unreachable tracker reports the check as NOT RUN
+   rather than as nothing-is-closed. Read them before ranking: staleness found
+   after a slice plan exists costs the plan. The path check is offline; the
+   issue check runs only under `--with-issues`.
 2. **Prepare deterministic hints.** Pipe the parsed entries to
    [`propose_merges.py`](../scripts/propose_merges.py). The proposer
    computes pairwise `boundary_tokens` overlap and emits a

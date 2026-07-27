@@ -64,6 +64,12 @@ class LengthSurface:
     ``module``/``constant`` name the OWNING validator's live cap constant so the
     forecast reads the same number the gate enforces (no hand-copied limit), and
     ``matches`` resolves the surface from a repo-relative path.
+
+    ``count_attr``/``check_attr`` name the validator's own counting and checking
+    functions for a surface that does not charge for raw file length. Reusing
+    them (rather than reimplementing the rule here) is what keeps the forecast
+    from disagreeing with the gate about WHICH lines count, not just how many.
+    Left None, the surface falls back to raw line count + ``validate_max_lines``.
     """
 
     name: str
@@ -71,6 +77,8 @@ class LengthSurface:
     constant: str
     label: str
     matches: Callable[[str], bool]
+    count_attr: str | None = None
+    check_attr: str | None = None
 
 
 def _handoff_rel(repo_root: Path) -> str | None:
@@ -90,9 +98,11 @@ def _length_surfaces(repo_root: Path) -> tuple[LengthSurface, ...]:
             LengthSurface(
                 name="handoff",
                 module="scripts.validate_handoff_artifact",
-                constant="MAX_ARTIFACT_LINES",
+                constant="MAX_CONTENT_LINES",
                 label="handoff artifact",
                 matches=lambda rel, _h=handoff_rel: rel == _h,
+                count_attr="content_lines",
+                check_attr="validate_max_content_lines",
             )
         )
     return tuple(surfaces)
@@ -112,8 +122,11 @@ def _resolve_length_surface(
 
 
 def _surface_cap(repo_root: Path, surface: LengthSurface) -> int:
-    module = import_repo_module(__file__, surface.module)
-    return int(getattr(module, surface.constant))
+    return int(getattr(_surface_module(surface), surface.constant))
+
+
+def _surface_module(surface: LengthSurface):
+    return import_repo_module(__file__, surface.module)
 
 
 # --- per-class collectors (each reuses the owning validator, no fork) --------
@@ -228,17 +241,22 @@ def collect_length(
     surface = _resolve_length_surface(repo_root, rel, as_surface)
     if surface is None:
         return {"surface": None, "cap": None, "current": None, "over": False, "detail": None}
-    cap = _surface_cap(repo_root, surface)
+    module = _surface_module(surface)
+    cap = int(getattr(module, surface.constant))
     lines = doc.read_text(encoding="utf-8").splitlines()
+    counted = getattr(module, surface.count_attr)(lines) if surface.count_attr else lines
     detail: str | None = None
     try:
-        _artifact_validator.validate_max_lines(lines, max_lines=cap, artifact_label=surface.label)
+        if surface.check_attr:
+            getattr(module, surface.check_attr)(lines)
+        else:
+            _artifact_validator.validate_max_lines(lines, max_lines=cap, artifact_label=surface.label)
     except _artifact_validator.ValidationError as exc:
         detail = str(exc)
     return {
         "surface": surface.name,
         "cap": cap,
-        "current": len(lines),
+        "current": len(counted),
         "over": detail is not None,
         "detail": detail,
     }

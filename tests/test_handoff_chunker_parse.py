@@ -204,6 +204,9 @@ def test_parser_cli_emits_valid_json_with_expected_shape(tmp_path):
             "referenced_issues",
             "referenced_skills",
             "boundary_tokens",
+            "missing_paths",
+            "closed_issues",
+            "unresolved_issues",
         }
 
 

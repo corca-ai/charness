@@ -62,21 +62,23 @@ ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
 
-# Single-source the line ceiling and required sections from the validator (the
-# one authority the gate enforces) so planner diagnosis cannot drift from what
-# actually fails the gate; degrade to the same defaults if the validator module
-# cannot load (e.g. a portable install without scripts/) — floor-addition-
-# restraint: this is diagnosis only, never a new blocking floor.
+# The canonical sections and the content-line counting rule are single-sourced
+# from the skill-local budget module, so planner diagnosis cannot disagree with
+# the gate about WHICH lines count. The enforced ceiling still comes from the
+# validator when it is loadable (that is the number the gate actually applies);
+# a portable install without scripts/ degrades to the module default — floor-
+# addition-restraint: this is diagnosis only, never a new blocking floor.
+_budget = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_content_budget")
+content_lines = _budget.content_lines
+REQUIRED_SECTIONS, OPTIONAL_SECTIONS = _budget.REQUIRED_SECTIONS, _budget.OPTIONAL_SECTIONS
 try:
     _handoff_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_handoff_artifact")
-    MAX_ARTIFACT_LINES = int(_handoff_validator.MAX_ARTIFACT_LINES)
-    REQUIRED_SECTIONS = tuple(_handoff_validator.REQUIRED_SECTIONS)
-    OPTIONAL_SECTIONS = tuple(getattr(_handoff_validator, "OPTIONAL_SECTIONS", ()))
+    MAX_CONTENT_LINES = int(_handoff_validator.MAX_CONTENT_LINES)
 except Exception:
-    MAX_ARTIFACT_LINES = 70
-    REQUIRED_SECTIONS = ("## Workflow Trigger", "## Current State", "## Next Session", "## Discuss", "## References")
-    OPTIONAL_SECTIONS = ("## Continuation Capability",)
-NEAR_LIMIT_LINES = MAX_ARTIFACT_LINES - 10
+    MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
+# "near" = within 8 content lines of the ceiling: enough room to add a fact, not
+# enough to add a section, which is the point at which a refresh should prune.
+NEAR_LIMIT_LINES = MAX_CONTENT_LINES - 8
 
 
 def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict[str, Any]:
@@ -111,6 +113,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
             "path": rel_path,
             "exists": False,
             "line_count": 0,
+            "content_line_count": 0,
             "status": "missing",
             "dated_session_sections": 0,
             "missing_sections": list(REQUIRED_SECTIONS),
@@ -129,24 +132,25 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         next_session_entry_count = 0
     h2_sections = [line.strip() for line in lines if line.startswith("## ")]
     missing = [section for section in REQUIRED_SECTIONS if section not in h2_sections]
-    canonical = set(REQUIRED_SECTIONS) | set(OPTIONAL_SECTIONS)
-    extra = [section for section in h2_sections if section not in canonical]
+    extra = [section for section in h2_sections if section not in _budget.CANONICAL_SECTIONS]
     dated_sessions = sum(1 for line in h2_sections if line.startswith("## This Session ("))
-    line_count = len(lines)
-    if line_count > MAX_ARTIFACT_LINES:
+    # Budget counts content, not file length (see handoff_content_budget).
+    content_line_count = len(content_lines(lines))
+    if content_line_count > MAX_CONTENT_LINES:
         status = "over_limit"
     elif dated_sessions:
         status = "diary_smell"
     elif missing or extra:
         status = "shape_issue"
-    elif line_count >= NEAR_LIMIT_LINES:
+    elif content_line_count >= NEAR_LIMIT_LINES:
         status = "near_limit"
     else:
         status = "ok"
     return {
         "path": rel_path,
         "exists": True,
-        "line_count": line_count,
+        "line_count": len(lines),
+        "content_line_count": content_line_count,
         "status": status,
         "dated_session_sections": dated_sessions,
         "missing_sections": missing,

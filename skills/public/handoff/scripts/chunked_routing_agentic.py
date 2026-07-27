@@ -98,6 +98,13 @@ def _source_record(entry: HandoffEntry) -> dict[str, Any]:
         "referenced_issues": list(entry.referenced_issues),
         "referenced_skills": list(entry.referenced_skills),
         "boundary_tokens": list(entry.boundary_tokens),
+        # Facts, not a verdict: a source whose paths moved may still be real
+        # work. Carried into the packet so the proposing agent weighs it before
+        # ranking, which is the whole point — staleness found after a plan exists
+        # costs the plan.
+        "missing_paths": list(entry.missing_paths),
+        "closed_issues": list(entry.closed_issues),
+        "unresolved_issues": list(entry.unresolved_issues),
     }
 
 
@@ -122,11 +129,18 @@ def build_chunk_proposal_packet(
     *,
     merge_proposal: MergeProposal | None = None,
     policy: dict[str, Any] | None = None,
+    staleness: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the packet an agent fills with work-package proposals."""
     effective_policy = policy or default_chunk_policy()
     return {
         "version": CHUNK_PROPOSAL_PACKET_VERSION,
+        # Empty `missing_paths` / `closed_issues` on a source mean "nothing
+        # stale" ONLY when `staleness` says the corresponding check ran. Without
+        # this block the packet asserts a clean bill of health for a check that
+        # may never have executed -- the exact false comfort the facts exist to
+        # prevent. `null` means the producing stage did not report it.
+        "staleness": staleness,
         "sources": [_source_record(entry) for entry in entries],
         "merge_hints": _merge_hints(merge_proposal),
         "policy": {

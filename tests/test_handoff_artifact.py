@@ -145,7 +145,67 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "under 70" in result.stderr
+    assert "content lines (limit 58)" in result.stderr
+
+
+def _handoff_with(state_lines: list[str], reference_lines: list[str]) -> str:
+    return (
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Current State",
+                "",
+                *state_lines,
+                "",
+                "## Next Session",
+                "",
+                "- next",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                *reference_lines,
+                "",
+            ]
+        )
+        + "\n"
+    )
+
+
+def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Path) -> None:
+    # The re-base: a file well OVER the old raw cap of 70 lines passes, because
+    # its length is structure and reference links rather than content the next
+    # operator has to read. 50 state bullets + 4 fixed content lines = 54 <= 58.
+    state = []
+    for index in range(50):
+        state.append(f"- state detail {index}")
+        state.append("")
+    references = [f"- [guide {index}](docs/guide.md)" for index in range(12)]
+    repo = seed_repo(tmp_path, _handoff_with(state, references))
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    raw_line_count = len((repo / "docs" / "handoff.md").read_text(encoding="utf-8").splitlines())
+    assert raw_line_count > 70, "fixture must exceed the retired raw cap to prove the re-base"
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_handoff_budget_still_charges_for_prose_density(tmp_path: Path) -> None:
+    # The other half: padding `## References` buys no room for content. 56 state
+    # bullets + 4 fixed content lines = 60 > 58.
+    state = [f"- state detail {index}" for index in range(56)]
+    repo = seed_repo(tmp_path, _handoff_with(state, ["- [guide](docs/guide.md)"]))
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "60 content lines (limit 58)" in result.stderr
 
 
 def seed_with_current_state(tmp_path: Path, *state_lines: str) -> Path:

@@ -35,6 +35,9 @@ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapt
 chunked_routing_issue_source = SKILL_RUNTIME.load_local_skill_module(
     __file__, "chunked_routing_issue_source"
 )
+chunked_routing_staleness = SKILL_RUNTIME.load_local_skill_module(
+    __file__, "chunked_routing_staleness"
+)
 
 
 def _explicit_handoff_path(args: argparse.Namespace) -> Path | None:
@@ -124,6 +127,7 @@ def main() -> int:
         handoff_count = len(entries)
         issue_count = 0
         issue_source_diagnostic = None
+        open_issue_numbers: set[int] = set()
         if args.with_issues:
             issue_repo_root = _repo_root_for_adapter(args)
             issue_entries = chunked_routing_issue_source.build_issue_entries(
@@ -131,12 +135,49 @@ def main() -> int:
                 start_index=max((e.index for e in entries), default=0) + 1,
             )
             issue_count = len(issue_entries)
+            open_issue_numbers = set(
+                getattr(chunked_routing_issue_source, "LAST_OPEN_ISSUE_NUMBERS", ())
+            )
             issue_source_diagnostic = getattr(
                 chunked_routing_issue_source,
                 "LAST_ISSUE_SOURCE_DIAGNOSTIC",
                 None,
             )
             entries = chunked_routing_issue_source.dedup_and_union(entries, issue_entries)
+
+        # Resolvable-ness facts. The path check is offline and always runs when a
+        # repo root resolved; the issue-state check needs the tracker, so it runs
+        # only under --with-issues (the flag that already sanctions provider
+        # calls) and reuses that listing's open set instead of re-asking.
+        staleness_repo_root = repo_root
+        issue_states = None
+        issue_state_diagnostic = None
+        if args.with_issues:
+            # The open set is threaded through explicitly. Reading it back off
+            # the issue-source module inside the staleness helper would reach a
+            # DIFFERENT module instance (the skill loaders do not cache), so the
+            # reuse would be silently dead and every cited issue -- including the
+            # ~50 that just came back from the open listing -- would cost its own
+            # provider call and blow the CLI timeout.
+            known_open = tuple(open_issue_numbers)
+            cited = [
+                number
+                for entry in entries
+                for number in entry.referenced_issues
+                if number not in open_issue_numbers
+            ]
+            issue_states, issue_state_diagnostic = (
+                chunked_routing_staleness.resolve_states_for_repo(
+                    _repo_root_for_adapter(args), cited, known_open=known_open
+                )
+            )
+            if issue_state_diagnostic is not None:
+                issue_states = None
+            elif issue_states is not None:
+                issue_states.update({number: "OPEN" for number in known_open})
+        entries = chunked_routing_staleness.annotate_entries(
+            entries, repo_root=staleness_repo_root, issue_states=issue_states
+        )
         payload = {
             "ok": True,
             "handoff_path": str(handoff_path),
@@ -145,6 +186,12 @@ def main() -> int:
             "issue_entry_count": issue_count,
             "deduped_issue_count": (issue_count - (len(entries) - handoff_count)) if args.with_issues else 0,
             "entries": [entry.to_dict() for entry in entries],
+            "staleness": chunked_routing_staleness.staleness_summary(
+                entries,
+                paths_checked=staleness_repo_root is not None,
+                issue_states_checked=issue_states is not None,
+                diagnostic=issue_state_diagnostic,
+            ),
         }
         if args.with_issues:
             payload["issue_source_diagnostic"] = issue_source_diagnostic

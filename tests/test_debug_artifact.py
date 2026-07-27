@@ -614,26 +614,39 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_disconfirmer(
 
 def _multi_violation_current_artifact() -> str:
     # Breaks two independent checks at once: only two candidate causes and an
-    # unknown `Risk Class` value. Used to exercise --report-all vs fail-fast.
+    # unknown `Risk Class` value. Used to exercise the one-pass default vs
+    # --fail-fast.
     return valid_current_artifact(risk_class="bogus-class").replace("- three\n", "")
 
 
-def test_validate_debug_artifact_default_mode_fails_fast(tmp_path: Path) -> None:
+def test_validate_debug_artifact_default_mode_lists_every_violation(tmp_path: Path) -> None:
+    # D28 polarity unification: one-pass is now the DEFAULT here, matching the
+    # handoff/retro/ideation/quality siblings.
     repo = seed_repo(tmp_path, _multi_violation_current_artifact())
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "rule violation(s)" in result.stderr
+    assert "at least three plausible causes" in result.stderr
+    assert "`Risk Class` contains unknown values" in result.stderr
+
+
+def test_validate_debug_artifact_fail_fast_stops_at_first_violation(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, _multi_violation_current_artifact())
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--fail-fast")
     assert result.returncode == 1
     assert "at least three plausible causes" in result.stderr
     assert "rule violation(s)" not in result.stderr
     assert "Risk Class" not in result.stderr
 
 
-def test_validate_debug_artifact_report_all_lists_every_violation(tmp_path: Path) -> None:
+def test_validate_debug_artifact_report_all_is_accepted_no_op(tmp_path: Path) -> None:
+    # The deprecated flag must stay accepted so checked-in commands and older
+    # callers do not break on the flip; it changes nothing.
     repo = seed_repo(tmp_path, _multi_violation_current_artifact())
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--report-all")
-    assert result.returncode == 1
-    assert "rule violation(s)" in result.stderr
-    assert "at least three plausible causes" in result.stderr
-    assert "`Risk Class` contains unknown values" in result.stderr
+    default = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    deprecated = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--report-all")
+    assert deprecated.returncode == default.returncode == 1
+    assert deprecated.stderr == default.stderr
 
 
 # --- #366: dated Seam Risk enum parity with the closeout consumer -------------
@@ -694,3 +707,18 @@ def test_validate_debug_artifact_seam_risk_enums_are_single_source_of_truth() ->
     assert module.ALLOWED_RISK_CLASSES is consumer.ALLOWED_RISK_CLASSES
     assert module.ALLOWED_GENERALIZATION_PRESSURE is consumer.ALLOWED_GENERALIZATION_PRESSURE
     assert module.FORCED_RISK_CLASSES is consumer.FORCED_RISK_CLASSES
+
+
+def test_missing_output_directory_reports_no_misleading_scaffold_hint(tmp_path: Path) -> None:
+    """A wrong --repo-root is not an artifact rule violation.
+
+    Routing it through report_validation_failure would append "start from the
+    owning scaffold" -- telling the operator to author a stub when the real fix
+    is to point at the right root.
+    """
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts").mkdir(parents=True)
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "No debug output directory" in result.stderr
+    assert "scaffold" not in result.stderr

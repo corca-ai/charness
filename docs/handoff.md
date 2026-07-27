@@ -9,44 +9,36 @@
 
 ## Continuation Capability
 
-One open issue (#459). The 2026-07-27 goal run closed #457/#458 and four backlog
-items; [its goal artifact](../charness-artifacts/goals/2026-07-27-handoff-backlog-minus-aarch64.md) holds the slice log and non-claims. No decisions pending.
+No open issues. The 2026-07-27 backlog run closed #459 and the three
+operator-decided items; [its critique](../charness-artifacts/critique/2026-07-27-handoff-backlog-1-3-validator-cli-unification-chunker-staleness-facts-content-line-budget.md)
+holds the ten findings and their dispositions. No decisions pending.
 
 ## Current State
 
-- **Verify a backlog line against source before planning it.** Three of five entries
-  last run were stale and a fourth already shipped; the plan was rewritten twice.
-  #459 makes it checkable; until then, open the cited path first.
-- **The lesson loop has a BIND path now.** `recurrence-class:` tags group a concept
-  across wordings and dates; live proof, `premise-not-checked-against-source` sits
-  at n=2, weight 1.24, above every 1.0 one-off. It accrues only from tagged retros.
+- **The chunker now reports staleness facts before ranking.** Each entry carries
+  `missing_paths` / `closed_issues` / `unresolved_issues`, and the packet carries
+  a `staleness` block saying which checks ran. Read the block first: an empty
+  list means "open" only when the matching check is reported as run.
+- **The handoff budget counts CONTENT lines now, not file length.** Blank lines,
+  the required `##` headings, and all of `## References` are free. Trimming
+  formatting or shortening links buys nothing — cut state instead.
 - **CI is the only judge of the changed-line mutation gate here.** Its local run
   outruns a usable timeout and returns `untrusted` when HEAD moves mid-run.
 
 ## Next Session
 
-1. **Unify the artifact-validator CLI — operator-decided, A+B+C.** A: flip
-   debug/critique to one-pass default. B: `--fail-fast` becomes the only control,
-   `--report-all` a deprecated no-op (per `validate_quality_artifact.py`). C:
-   single-source through `artifact_validator.run_changed_artifact_validator` so the
-   split cannot re-form — critique's `--changed-ref` and per-path
-   `require_tier_evidence` are real work the helper does not model. Update D28.
-2. **#459 — chunker-side backlog staleness.** The entry model already parses
-   `referenced_paths` and `referenced_issues`; report which no longer resolve, as
-   facts and never an auto-drop. Direct fix for the waste that cost the most
-   last run.
-3. **Re-base this file's cap on CONTENT lines — operator-decided.** Count only
-   content: exclude blank lines, the validator-required `##` headings, and the
-   `## References` block; recalibrate to an effective ~55-60. Measured basis: 13 of
-   the last 14 committed handoffs landed at 69-70 against a cap of 70 (a pinned
-   distribution), and structure alone eats ~24% of the budget, so long reference
-   links are penalised while a diary of short lines is not. `MAX_ARTIFACT_LINES` in
-   `validate_handoff_artifact.py`; an operating-contract change, so move the skill's
-   stated 30-60 target with it.
-4. **Suite speed beyond the git-identity fix.** Census: 11756 spawns, git still 68%
+1. **Auto-draft renders a known-stale citation without a marker.** `_render_boundaries`
+   lists a missing path as `- In scope:` and `_render_context_sources` lists a
+   closed issue plainly, so the goal artifact asserts a moved path is in scope.
+   The facts are correctly not acted on; they are just dropped at the last
+   operator-facing surface. Deferred from the run's critique as F9.
+2. **`emit_payload_main --write` and scaffold fill guards (D28 remainder).** The
+   report-all half is fully resolved; these two never were. Fill guards want an
+   observed n-fold rework instance for the family in question before landing.
+3. **Suite speed beyond the git-identity fix.** Census: 11756 spawns, git still 68%
    (`rev-parse` 1322, `ls-files` 774, `add` 672). The in-process `run_script` lever
    is unmeasured. Spawn count is the honest metric; 16-worker wall-clock is noise.
-5. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
+4. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
    real shared `.charness/usage-episodes/` tree and assert byte-identity after a CLI
    subprocess, so a live SessionStart hook or concurrent `run-quality.sh` fails them
    for unrelated reasons. Needs design; detail in the
@@ -54,14 +46,13 @@ items; [its goal artifact](../charness-artifacts/goals/2026-07-27-handoff-backlo
 
 ## Discuss
 
-- A named subagent spawn strands its result on this host; the rule now lives in
-  always-loaded `AGENTS.md` for every spawn. If findings never arrive, run
-  `reviewer_result.py get` before reporting them lost — it recovered a full review.
-- Editing structured code with line patterns corrupted files twice, and an
-  unanchored `str.index` on a heading deleted six artifact sections a third time.
-  Use AST or line-anchored matching and re-parse before writing.
+- Skill loaders build a FRESH module object per import, with no `sys.modules`
+  caching. Reading a module global back across a second load silently sees the
+  unmutated copy; thread the value through explicitly instead.
+- Two files sat exactly at their length cap, so small additions forced a split.
+  Check `check_python_lengths.py` before growing a planner or a shared lib.
 
 ## References
 
-- [goal artifact](../charness-artifacts/goals/2026-07-27-handoff-backlog-minus-aarch64.md) · [session retro](../charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md) · [named-spawn recurrence](../charness-artifacts/debug/2026-07-27-named-spawn-recurrence.md)
+- [run critique](../charness-artifacts/critique/2026-07-27-handoff-backlog-1-3-validator-cli-unification-chunker-staleness-facts-content-line-budget.md) · [chunked-routing contract](./handoff-chunked-routing.md) · [deferred decisions](./deferred-decisions.md)
 - [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)

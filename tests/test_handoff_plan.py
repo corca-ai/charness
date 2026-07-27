@@ -240,10 +240,14 @@ def test_handoff_plan_derives_refresh_and_pickup_from_invocation_text(tmp_path: 
 
 
 def test_handoff_plan_constants_single_sourced_from_validator() -> None:
-    # Drift-guard: the planner's MAX_ARTIFACT_LINES/REQUIRED_SECTIONS must never
+    # Drift-guard: the planner's MAX_CONTENT_LINES/REQUIRED_SECTIONS must never
     # silently diverge from what scripts/validate_handoff_artifact.py enforces.
     module = load_plan_module()
-    assert module.MAX_ARTIFACT_LINES == _handoff_validator.MAX_ARTIFACT_LINES
+    assert module.MAX_CONTENT_LINES == _handoff_validator.MAX_CONTENT_LINES
+    # The COUNT must not drift either: a planner that agrees on the ceiling but
+    # counts different lines reports a status the gate contradicts.
+    sample = ["# H", "", "## Current State", "", "- a", "## References", "- [x](y.md)"]
+    assert module.content_lines(sample) == _handoff_validator.content_lines(sample)
     assert module.REQUIRED_SECTIONS == tuple(_handoff_validator.REQUIRED_SECTIONS)
 
 
@@ -264,7 +268,9 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
 
     monkeypatch.setattr(importlib, "import_module", fake_import_module)
     module = load_plan_module()
-    assert module.MAX_ARTIFACT_LINES == 70
+    assert module.MAX_CONTENT_LINES == 58
+    # The local counting fallback must still be used, not left as None.
+    assert module.content_lines(["# H", "", "## Discuss", "- a"]) == ["# H", "- a"]
     assert module.REQUIRED_SECTIONS == (
         "## Workflow Trigger", "## Current State", "## Next Session", "## Discuss", "## References",
     )
@@ -272,10 +278,10 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
 
 def test_handoff_plan_reports_artifact_statuses_that_require_repair(tmp_path: Path) -> None:
     cases = [
-        ("over_limit", handoff_body(current_lines=65)),
+        ("over_limit", handoff_body(current_lines=60)),
         ("diary_smell", handoff_body(dated_session=True)),
         ("shape_issue", handoff_body(omit_references=True)),
-        ("near_limit", handoff_body(current_lines=43)),
+        ("near_limit", handoff_body(current_lines=48)),
     ]
     for status, body in cases:
         repo = seed_repo(tmp_path / status, body)

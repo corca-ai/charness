@@ -295,8 +295,8 @@ def main() -> int:
         artifact_label="retro artifact",
         changed_paths_fn=changed_paths,
         candidate_paths_fn=candidate_paths,
-        validate_factory=lambda collect_all: (
-            lambda artifact: validate_retro_artifact(artifact, collect_all=collect_all)
+        validate_factory=lambda run: (
+            lambda artifact: validate_retro_artifact(artifact, collect_all=run.collect_all)
         ),
         fail_fast_help=(
             "Stop at the first rule violation instead of reporting every violation in one pass."

@@ -28,6 +28,7 @@ load_adapter = _quality_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
+add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
@@ -345,15 +346,9 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument(
-        "--report-all",
-        action="store_true",
-        help="Deprecated no-op: reporting every violation in one pass is now the default.",
-    )
-    parser.add_argument(
-        "--fail-fast",
-        action="store_true",
-        help="Stop at the first rule violation instead of reporting every violation in one pass.",
+    add_one_pass_args(
+        parser,
+        fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",
     )
     args = parser.parse_args()
 

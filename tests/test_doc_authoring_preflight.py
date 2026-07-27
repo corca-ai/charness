@@ -91,7 +91,7 @@ def test_length_cap_is_read_live_from_the_owning_validator(tmp_path: Path) -> No
     # hand-copied number.
     repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
     report = _pf.build_report(repo, "docs/handoff.md", "handoff")
-    assert report.length["cap"] == _handoff.MAX_ARTIFACT_LINES
+    assert report.length["cap"] == _handoff.MAX_CONTENT_LINES
 
 
 def test_clean_fixture_is_silent(tmp_path: Path) -> None:
@@ -159,9 +159,12 @@ def test_no_drift_broken_fixture_matches_real_gate_verdicts(tmp_path: Path) -> N
     ml = _real_gate_markdownlint(repo)
     if ml is not None:
         assert bool(report.markdownlint["findings"]) == (ml != 0)
-    # length forecast fires iff the file exceeds the gate's live cap.
+    # length forecast fires iff the file exceeds the gate's live cap, counted
+    # the way the gate counts it (content lines, not raw file length).
     lines = (repo / "docs" / "handoff.md").read_text(encoding="utf-8").splitlines()
-    assert report.length["over"] == (len(lines) > _handoff.MAX_ARTIFACT_LINES)
+    counted = _handoff.content_lines(lines)
+    assert report.length["current"] == len(counted)
+    assert report.length["over"] == (len(counted) > _handoff.MAX_CONTENT_LINES)
 
 
 def test_no_drift_clean_fixture_passes_every_real_gate(tmp_path: Path) -> None:

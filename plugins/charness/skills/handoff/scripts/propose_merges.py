@@ -37,27 +37,13 @@ chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 
 def _restore_entries(payload):
     """Accept either the full parser payload or just the entries array."""
-    diagnostic = None
-    if isinstance(payload, dict) and "entries" in payload:
-        entry_dicts = payload["entries"]
-        diagnostic = payload.get("issue_source_diagnostic")
-    elif isinstance(payload, list):
-        entry_dicts = payload
-    else:
-        raise SystemExit("input JSON must be either a parser payload or an entries array")
-    entries = [
-        chunked_routing_lib.HandoffEntry(
-            index=int(entry["index"]),
-            title=entry["title"],
-            body=entry["body"],
-            referenced_paths=tuple(entry.get("referenced_paths", [])),
-            referenced_issues=tuple(entry.get("referenced_issues", [])),
-            referenced_skills=tuple(entry.get("referenced_skills", [])),
-            boundary_tokens=tuple(entry.get("boundary_tokens", [])),
-        )
-        for entry in entry_dicts
-    ]
-    return entries, diagnostic
+    is_payload = isinstance(payload, dict)
+    diagnostic = payload.get("issue_source_diagnostic") if is_payload else None
+    staleness = payload.get("staleness") if is_payload else None
+    try:
+        return chunked_routing_lib.entries_from_payload(payload), diagnostic, staleness
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def parse_args() -> argparse.Namespace:
@@ -82,11 +68,16 @@ def main() -> int:
             stage="propose_merges",
             expects="a parse_handoff_entries payload (with entries[]) or an entries array",
         )
-        entries, issue_source_diagnostic = _restore_entries(payload)
+        entries, issue_source_diagnostic, staleness = _restore_entries(payload)
         proposal = chunked_routing_lib.propose_merges(entries)
         output = proposal.to_dict()
         if issue_source_diagnostic is not None:
             output["issue_source_diagnostic"] = issue_source_diagnostic
+        # Forwarded, not recomputed: the checked/not-checked flags must survive
+        # to the stage that builds the agent's packet, or the per-entry facts
+        # arrive stripped of the one thing that makes an empty list readable.
+        if staleness is not None:
+            output["staleness"] = staleness
         sys.stdout.write(json.dumps(output, ensure_ascii=False, indent=2) + "\n")
         return 0
     finally:

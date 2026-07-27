@@ -89,19 +89,8 @@ GOAL_LIB = _load_goal_artifact_lib()
 
 
 def _restore_chunk(payload: dict):
-    def restore_entry(entry_dict):
-        return chunked_routing_lib.HandoffEntry(
-            index=int(entry_dict["index"]),
-            title=entry_dict["title"],
-            body=entry_dict["body"],
-            referenced_paths=tuple(entry_dict.get("referenced_paths", [])),
-            referenced_issues=tuple(entry_dict.get("referenced_issues", [])),
-            referenced_skills=tuple(entry_dict.get("referenced_skills", [])),
-            boundary_tokens=tuple(entry_dict.get("boundary_tokens", [])),
-        )
-
     return chunked_routing_lib.ChunkCandidate(
-        entries=tuple(restore_entry(entry) for entry in payload["entries"]),
+        entries=tuple(chunked_routing_lib.entries_from_payload(payload["entries"])),
         label=payload["label"],
         objective_summary=payload["objective_summary"],
         judgment_summary=payload.get("judgment_summary"),

@@ -48,6 +48,7 @@ _agentic = _load_sibling("chunked_routing_agentic")
 COMMON_NOUN_EXCLUSIONS = _types.COMMON_NOUN_EXCLUSIONS
 is_nontrivial_token = _types.is_nontrivial_token
 HandoffEntry = _types.HandoffEntry
+entries_from_payload = _types.entries_from_payload
 ChunkCandidate = _types.ChunkCandidate
 RankedChunk = _types.RankedChunk
 MergeProposal = _types.MergeProposal

@@ -12,45 +12,56 @@ from runtime_bootstrap import import_repo_module, load_path_module, repo_root_fr
 REPO_ROOT = repo_root_from_script(__file__)
 
 
-def _resolver_path(repo_root: Path) -> Path:
+def _skill_script(repo_root: Path, name: str) -> Path:
     candidates = (
-        repo_root / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py",
-        repo_root / "skills" / "handoff" / "scripts" / "resolve_adapter.py",
+        repo_root / "skills" / "public" / "handoff" / "scripts" / name,
+        repo_root / "skills" / "handoff" / "scripts" / name,
     )
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    raise FileNotFoundError("handoff resolve_adapter.py not found")
+    raise FileNotFoundError(f"handoff {name} not found")
+
+
+def _resolver_path(repo_root: Path) -> Path:
+    return _skill_script(repo_root, "resolve_adapter.py")
 
 
 _handoff_resolve_adapter = load_path_module("handoff_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _handoff_resolve_adapter.load_adapter
+# The canonical sections and the content-line counting rule are ONE decision
+# (which lines the artifact must have -> which lines the budget must not charge
+# for), owned by the skill package so the run planner forecasts with the same
+# count this gate enforces. Only the enforced ceiling stays here.
+_budget = load_path_module(
+    "handoff_content_budget", _skill_script(REPO_ROOT, "handoff_content_budget.py")
+)
+content_lines = _budget.content_lines
+REQUIRED_SECTIONS = _budget.REQUIRED_SECTIONS
+OPTIONAL_SECTIONS = _budget.OPTIONAL_SECTIONS
+CANONICAL_SECTIONS = _budget.CANONICAL_SECTIONS
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
+add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
-validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 validate_title = _scripts_artifact_validator_module.validate_title
 
-MAX_ARTIFACT_LINES = 70
-REQUIRED_SECTIONS = (
-    "## Workflow Trigger",
-    "## Current State",
-    "## Next Session",
-    "## Discuss",
-    "## References",
-)
-# The handoff skill's Output Shape lists this section; rejecting it here would make
-# following the skill a gate failure. It stays optional because the skill says the
-# handoff "should usually contain" it, not always -- but an empty one is a header
-# pretending to be a baton, so presence implies content.
-OPTIONAL_SECTIONS = ("## Continuation Capability",)
+# 58 is the operator-set ~55-60 midpoint for the re-based budget. Measured
+# basis: 13 of the 14 handoffs committed before the re-base landed at 69-70
+# against a raw cap of 70 -- a distribution pinned AT the ceiling, which is what
+# a cap authors write to fill. Those same files carried ~50 CONTENT lines:
+# structure ate ~29% of the budget, so the raw count was measuring formatting,
+# not density, and it penalised long reference links while a diary of short
+# lines cost nothing. Against the ~50 the old cap actually permitted, 58 is real
+# headroom, and the structural penalty is gone rather than merely raised.
+MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 # Addresses are not claims: an artifact path or release URL may legitimately carry
 # a version, and the doc-link gate already keeps repo paths resolvable. All three
@@ -117,8 +128,7 @@ def ordered_present_sections(lines: list[str]) -> tuple[str, ...]:
     so an optional section left out of that list would be silently absorbed into
     the preceding section's content and never checked for emptiness.
     """
-    canonical = set(REQUIRED_SECTIONS) | set(OPTIONAL_SECTIONS)
-    return tuple(line.strip() for line in lines if line.strip() in canonical)
+    return tuple(line.strip() for line in lines if line.strip() in CANONICAL_SECTIONS)
 
 
 def validate_no_regenerable_facts(path: Path) -> None:
@@ -176,6 +186,19 @@ def _display_path(path: Path, repo_root: Path) -> str:
         return str(path)
 
 
+def validate_max_content_lines(lines: list[str]) -> None:
+    counted = content_lines(lines)
+    if len(counted) <= MAX_CONTENT_LINES:
+        return
+    raise ValidationError(
+        f"handoff artifact has {len(counted)} content lines (limit {MAX_CONTENT_LINES}); "
+        f"cut ~{len(counted) - MAX_CONTENT_LINES}. Blank lines, the required `##` headings, "
+        "and the whole `## References` block are NOT counted, so trimming formatting or "
+        "shortening reference links will not help — drop state that does not change the "
+        "next operator's first action, or spill durable detail to its owning artifact."
+    )
+
+
 def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = read_lines(path)
     checks = (
@@ -184,9 +207,7 @@ def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
             title_predicate=lambda line: line.startswith("# ") and "handoff" in line.lower(),
             error_message="handoff artifact must start with a `# ... Handoff` heading",
         ),
-        lambda: validate_max_lines(
-            lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="handoff artifact"
-        ),
+        lambda: validate_max_content_lines(lines),
         lambda: validate_exact_h2_sections(
             lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS
         ),
@@ -214,10 +235,9 @@ def main() -> int:
             "check a candidate draft without overwriting the live handoff."
         ),
     )
-    parser.add_argument(
-        "--fail-fast",
-        action="store_true",
-        help="Stop at the first rule violation instead of reporting every violation in one pass.",
+    add_one_pass_args(
+        parser,
+        fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",
     )
     args = parser.parse_args()
 

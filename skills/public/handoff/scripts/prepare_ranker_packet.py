@@ -38,20 +38,9 @@ chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 def _restore_merge_proposal(payload: dict):
     """Rebuild a MergeProposal from JSON emitted by ``MergeProposal.to_dict()``."""
 
-    def restore_entry(entry_dict):
-        return chunked_routing_lib.HandoffEntry(
-            index=int(entry_dict["index"]),
-            title=entry_dict["title"],
-            body=entry_dict["body"],
-            referenced_paths=tuple(entry_dict.get("referenced_paths", [])),
-            referenced_issues=tuple(entry_dict.get("referenced_issues", [])),
-            referenced_skills=tuple(entry_dict.get("referenced_skills", [])),
-            boundary_tokens=tuple(entry_dict.get("boundary_tokens", [])),
-        )
-
     def restore_candidate(candidate_dict):
         return chunked_routing_lib.ChunkCandidate(
-            entries=tuple(restore_entry(entry) for entry in candidate_dict["entries"]),
+            entries=tuple(chunked_routing_lib.entries_from_payload(candidate_dict["entries"])),
             label=candidate_dict["label"],
             objective_summary=candidate_dict["objective_summary"],
             judgment_summary=candidate_dict.get("judgment_summary"),

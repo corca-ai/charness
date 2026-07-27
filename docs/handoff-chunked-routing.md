@@ -169,6 +169,40 @@ class HandoffEntry:
                                         # components): paths + skill ids +
                                         # policy doc paths. See "Boundary
                                         # tokenization" below.
+    missing_paths: tuple[str, ...]      # referenced_paths that no longer
+                                        # resolve. FACT, not a verdict.
+    closed_issues: tuple[int, ...]      # referenced_issues the tracker
+                                        # reports as not-open. FACT.
+```
+
+`missing_paths` / `closed_issues` are the resolvable-ness facts (#459). They
+answer "does this backlog line still point at anything?" *before* ranking,
+because staleness discovered after a slice plan exists costs the plan. Three
+boundaries hold them honest:
+
+- **Nothing drops an entry on them.** An entry whose paths moved may still be
+  real work; that judgment stays with the agent reading the packet. The one
+  pre-existing auto-drop (inert goal activation) stays deliberately narrow.
+- **Unknown is not stale.** An unreachable tracker, a backend with no
+  `commands.view_state`, or an unrecognized number yields UNKNOWN and is never
+  reported as closed. When *every* lookup returns UNKNOWN the whole check is
+  reported as not-run, since "checked, nothing closed" is the exact false
+  comfort this path exists to prevent.
+- **Existence only, never line identity.** Whether a cited `file:line` still
+  points at the same code is judgment; line numbers drift innocently.
+
+The path check is offline and runs whenever a repo root resolves; the issue
+check needs the tracker and runs only under `--with-issues`, reusing that
+listing's open set so only suspected-stale numbers cost a provider call. The
+parser payload reports `paths_checked` / `issue_states_checked` separately from
+the counts, because "nothing was stale" and "nothing was checked" are the same
+empty tuples on the entries.
+
+`HandoffEntry.from_dict` is the single reconstruction point for every
+downstream stage; the four hand-rolled field lists it replaced meant a new field
+vanished at four pipeline boundaries at once.
+
+```python
 
 @dataclass(frozen=True)
 class ChunkCandidate:

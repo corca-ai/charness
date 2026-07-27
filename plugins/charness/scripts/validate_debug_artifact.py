@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 
@@ -27,7 +26,7 @@ load_adapter = _debug_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
-add_changed_artifact_args = _scripts_artifact_validator_module.add_changed_artifact_args
+run_changed_artifact_validator = _scripts_artifact_validator_module.run_changed_artifact_validator
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
@@ -413,45 +412,50 @@ def _selected_artifacts(args, repo_root: Path, output_dir: Path) -> list[Path] |
     return scoped or None
 
 
+def _debug_artifacts(run) -> list[Path] | None:
+    """Resolve the batch through debug's own adapter, not changed-path discovery.
+
+    Debug is the one family whose artifact set comes from an adapter-declared
+    output directory, so it supplies this instead of `candidate_paths_fn`.
+
+    The two hard-error cases exit 1 DIRECTLY rather than raising
+    `ValidationError`: neither is an artifact rule violation, so routing them
+    through `report_validation_failure` would append the "start from the owning
+    scaffold" hint — advice to author a stub when the real fix is a wrong
+    `--repo-root` or an unbootstrapped repo. `None` means "nothing in scope",
+    which is a success (most commits touch no debug artifact).
+    """
+    output_dir = run.repo_root / load_adapter(run.repo_root)["data"]["output_dir"]
+    if not output_dir.is_dir():
+        _exit_not_a_violation(f"No debug output directory at {output_dir.relative_to(run.repo_root)}.")
+    artifacts = _selected_artifacts(run.args, run.repo_root, output_dir)
+    if artifacts is None:
+        return None
+    if not artifacts:
+        _exit_not_a_violation(f"No debug artifacts found in {output_dir.relative_to(run.repo_root)}.")
+    return artifacts
+
+
+def _exit_not_a_violation(message: str) -> None:
+    print(message, file=sys.stderr)
+    raise SystemExit(1)
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    add_changed_artifact_args(
-        parser,
+    return run_changed_artifact_validator(
         default_repo_root=REPO_ROOT,
         all_help="Validate every checked-in debug artifact.",
+        artifact_label="debug artifact",
+        artifacts_fn=_debug_artifacts,
+        validate_factory=lambda run: (
+            lambda artifact: validate_debug_artifact(artifact, collect_all=run.collect_all)
+        ),
+        no_scope_message="No debug artifacts in scope.",
+        per_artifact_success=True,
+        fail_fast_help=(
+            "Stop at the first rule violation instead of reporting every violation in one pass."
+        ),
     )
-    parser.add_argument(
-        "--report-all",
-        action="store_true",
-        help="Report every rule violation per artifact in one pass instead of failing on the first.",
-    )
-    args = parser.parse_args()
-
-    repo_root = args.repo_root.resolve()
-    adapter = load_adapter(repo_root)
-    output_dir = repo_root / adapter["data"]["output_dir"]
-    if not output_dir.is_dir():
-        print(f"No debug output directory at {output_dir.relative_to(repo_root)}.", file=sys.stderr)
-        return 1
-    artifacts = _selected_artifacts(args, repo_root, output_dir)
-    if artifacts is None:
-        print("No debug artifacts in scope.")
-        return 0
-    if not artifacts:
-        print(f"No debug artifacts found in {output_dir.relative_to(repo_root)}.", file=sys.stderr)
-        return 1
-    errors: list[str] = []
-    for artifact_path in artifacts:
-        artifact_label = artifact_path.relative_to(repo_root)
-        try:
-            validate_debug_artifact(artifact_path, collect_all=args.report_all)
-        except ValidationError as exc:
-            errors.append(f"Invalid debug artifact {artifact_label}: {exc}")
-            continue
-        print(f"Validated debug artifact {artifact_label}.")
-    if errors:
-        return report_validation_failure("\n".join(errors), artifact_type="debug")
-    return 0
 
 
 if __name__ == "__main__":

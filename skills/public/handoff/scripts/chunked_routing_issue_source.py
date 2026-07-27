@@ -71,7 +71,12 @@ DEFAULT_ISSUE_LIMIT = _backend.DEFAULT_ISSUE_LIMIT
 GH_LIST_OPEN_ARGS = _backend.GH_LIST_OPEN_ARGS
 _load_issue_module = _backend._load_issue_module
 list_open_issues = _backend.list_open_issues
+issue_state = _backend.issue_state
 LAST_ISSUE_SOURCE_DIAGNOSTIC: dict[str, Any] | None = None
+# Every number the open listing returned THIS RUN, before adapter label/number
+# filters. A filtered-out issue is still open, so keeping the pre-filter set is
+# what stops the staleness check paying a provider call to rediscover that.
+LAST_OPEN_ISSUE_NUMBERS: tuple[int, ...] = ()
 
 
 def _label_slug(name: str) -> str:
@@ -236,8 +241,9 @@ def build_issue_entries(
     resolution/listing step fails. Indices start at ``start_index`` so the
     union with handoff entries stays collision-free.
     """
-    global LAST_ISSUE_SOURCE_DIAGNOSTIC
+    global LAST_ISSUE_SOURCE_DIAGNOSTIC, LAST_OPEN_ISSUE_NUMBERS
     LAST_ISSUE_SOURCE_DIAGNOSTIC = None
+    LAST_OPEN_ISSUE_NUMBERS = ()
     config = load_issue_source_config(repo_root)
     if not config["enabled"]:
         return []
@@ -268,6 +274,11 @@ def build_issue_entries(
         }
         return []
 
+    LAST_OPEN_ISSUE_NUMBERS = tuple(
+        int(issue["number"])
+        for issue in issues
+        if isinstance(issue, dict) and "number" in issue
+    )
     entries: list[HandoffEntry] = []
     index = start_index
     for issue in issues:

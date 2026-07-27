@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import re
 from datetime import date
 from pathlib import Path
@@ -15,12 +14,10 @@ _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
-add_changed_artifact_args = _artifact_validator.add_changed_artifact_args
 git_changed_paths = _artifact_validator.git_changed_paths
 is_valid_followup_tail = _artifact_validator.is_valid_followup_tail
+run_changed_artifact_validator = _artifact_validator.run_changed_artifact_validator
 run_validation_checks = _artifact_validator.run_validation_checks
-selected_changed_paths = _artifact_validator.selected_changed_paths
-selected_artifact_paths = _artifact_validator.selected_artifact_paths
 file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
@@ -526,18 +523,7 @@ def _resolve_cross_surface_hit(
     )[0]
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    add_changed_artifact_args(
-        parser,
-        default_repo_root=REPO_ROOT,
-        all_help="Validate every checked critique artifact.",
-    )
-    parser.add_argument(
-        "--report-all",
-        action="store_true",
-        help="Report every rule violation per artifact in one pass instead of failing on the first.",
-    )
+def _add_cross_surface_args(parser) -> None:
     parser.add_argument(
         "--changed-ref",
         help="Git ref/range whose changed paths are tested against the repo cross-surface probe; "
@@ -548,32 +534,49 @@ def main() -> int:
         nargs="*",
         help="Explicit changed paths for the cross-surface probe (bypasses git; wins over --changed-ref).",
     )
-    args = parser.parse_args()
 
-    repo_root = args.repo_root.resolve()
-    cross_surface_hit = _resolve_cross_surface_hit(repo_root, args.changed_ref, args.changed_path)
-    explicit_paths = args.paths is not None
-    paths = selected_changed_paths(args, repo_root, changed_paths_fn=changed_paths)
-    artifacts = selected_artifact_paths(
-        args,
-        repo_root,
-        changed_paths_fn=changed_paths,
-        candidate_paths_fn=candidate_paths,
-    )
-    require_tier_paths = set(paths)
-    repo_has_delegation_contract = has_repo_delegation_contract(repo_root)
-    for artifact in artifacts:
-        relpath = artifact.relative_to(repo_root).as_posix()
+
+def _validate_factory(run):
+    """Bind the per-run inputs the shared runner does not model itself.
+
+    The cross-surface probe (which shells out to git) and the delegation-contract
+    lookup (which reads AGENTS.md) are resolved ONCE per run, not once per
+    artifact: a 100-artifact `--all` sweep would otherwise pay for both 100
+    times. Neither reads the artifact, so hoisting cannot change a verdict.
+    `require_tier_evidence` stays per artifact because it keys off whether THAT
+    path was selected.
+    """
+    cross_surface_hit = _resolve_cross_surface_hit(run.repo_root, run.args.changed_ref, run.args.changed_path)
+    repo_has_delegation = has_repo_delegation_contract(run.repo_root)
+    require_tier_paths = set(run.selected_paths)
+
+    def validate(artifact: Path) -> None:
+        relpath = artifact.relative_to(run.repo_root).as_posix()
         validate_critique_artifact(
             artifact,
-            repo_has_delegation_contract=repo_has_delegation_contract,
-            require_tier_evidence=explicit_paths or relpath in require_tier_paths,
-            collect_all=args.report_all,
+            repo_has_delegation_contract=repo_has_delegation,
+            require_tier_evidence=run.explicit_paths or relpath in require_tier_paths,
+            collect_all=run.collect_all,
             cross_surface_hit=cross_surface_hit,
-            check_current_binding=not args.all,
+            check_current_binding=not run.args.all,
         )
-    print(f"Validated {len(artifacts)} critique artifact(s).")
-    return 0
+
+    return validate
+
+
+def main() -> int:
+    return run_changed_artifact_validator(
+        default_repo_root=REPO_ROOT,
+        all_help="Validate every checked critique artifact.",
+        artifact_label="critique artifact",
+        changed_paths_fn=changed_paths,
+        candidate_paths_fn=candidate_paths,
+        validate_factory=_validate_factory,
+        extra_args=_add_cross_surface_args,
+        fail_fast_help=(
+            "Stop at the first rule violation instead of reporting every violation in one pass."
+        ),
+    )
 
 
 if __name__ == "__main__":

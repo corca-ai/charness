@@ -153,7 +153,7 @@ The skill-surface and artifact-shape preflights above cover `skills/**` and
 markdownlint rules (the `MD004` list-marker style, a wrapped inline-code span,
 trailing space), the
 [check_doc_links.py](../../scripts/check_doc_links.py) pathy-ref / link form,
-and the surface length cap (the handoff line cap) one commit-gate failure at a
+and the surface length cap (the handoff content-line cap) one commit-gate failure at a
 time. `check_doc_links` also resolves the repo-owned script a documented command
 names — in a fenced block or an inline span — so a `python3 scripts/…` example
 cannot outlive the script it names. See

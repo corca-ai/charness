@@ -117,7 +117,7 @@ def main() -> int:
         artifact_label="ideation artifact",
         changed_paths_fn=changed_paths,
         candidate_paths_fn=candidate_paths,
-        validate_factory=lambda _collect_all: validate_ideation_artifact,
+        validate_factory=lambda _run: validate_ideation_artifact,
         fail_fast_help=(
             "Stop at the first failing artifact instead of reporting every failure in one pass."
         ),

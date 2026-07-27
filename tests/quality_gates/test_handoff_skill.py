@@ -14,7 +14,11 @@ def test_handoff_skill_names_diary_antipattern_and_size_gate() -> None:
         ROOT / "skills" / "public" / "handoff" / "references" / "state-selection.md"
     ).read_text(encoding="utf-8")
 
-    assert "30-60 lines" in skill_text and "70 lines" in skill_text
+    # The budget counts CONTENT lines; the skill must say so, because an author
+    # who thinks it is a raw line cap trims formatting and reference links and
+    # gets nowhere.
+    assert "CONTENT" in skill_text and "25-50" in skill_text and "58" in skill_text
+    assert "content_line_count" in skill_text
     assert "## This Session" in skill_text and "(<date>)" in skill_text
     assert "spill-targets.md" in skill_text
     assert "changes the next action" in skill_text

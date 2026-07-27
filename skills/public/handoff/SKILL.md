@@ -36,9 +36,12 @@ For a bare direct skill invocation, add `--invoked-directly`; for a task-shaped
 invocation, pass the user's task text so the deterministic chunker can bypass.
 Open the listed reads using each entry's `base` before broader exploration.
 Treat deterministic gates as evidence for shape and freshness, then use
-judgment for the actual baton pass. The repo-owned size target is 30-60 lines;
-70 lines is the usual hard stop. Multiple dated `## This Session (<date>)`
-sections are a hard diary smell.
+judgment for the actual baton pass. The repo-owned size budget counts CONTENT
+lines — blank lines, the required `##` headings, and the whole `## References`
+block are free — with a target of 25-50 and a hard stop at 58; the planner
+reports `content_line_count` and flags `near_limit`/`over_limit`. Trimming formatting
+or shortening reference links buys nothing, so cut state instead. Multiple dated
+`## This Session (<date>)` sections are a hard diary smell.
 Assume a competent next operator can follow one good link.
 
 ## Workflow

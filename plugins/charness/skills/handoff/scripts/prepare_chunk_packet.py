@@ -26,24 +26,10 @@ chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 
 
 def _restore_entries(payload):
-    if isinstance(payload, dict) and "entries" in payload:
-        entry_dicts = payload["entries"]
-    elif isinstance(payload, list):
-        entry_dicts = payload
-    else:
-        raise SystemExit("input JSON must be either a parser payload or an entries array")
-    return [
-        chunked_routing_lib.HandoffEntry(
-            index=int(entry["index"]),
-            title=entry["title"],
-            body=entry["body"],
-            referenced_paths=tuple(entry.get("referenced_paths", [])),
-            referenced_issues=tuple(entry.get("referenced_issues", [])),
-            referenced_skills=tuple(entry.get("referenced_skills", [])),
-            boundary_tokens=tuple(entry.get("boundary_tokens", [])),
-        )
-        for entry in entry_dicts
-    ]
+    try:
+        return chunked_routing_lib.entries_from_payload(payload)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def parse_args() -> argparse.Namespace:
@@ -81,6 +67,7 @@ def main() -> int:
             entries,
             merge_proposal=hints,
             policy=policy,
+            staleness=payload.get("staleness") if isinstance(payload, dict) else None,
         )
         sys.stdout.write(json.dumps(packet, ensure_ascii=False, indent=2) + "\n")
         return 0
