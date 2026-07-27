@@ -131,6 +131,7 @@ def build_packet(
     changed_ref_env_var: str = "CHARNESS_CRITIQUE_CHANGED_REF",
     reviewed_paths: list[str] | None = None,
     excluded_reviewed_paths: list[str] | None = None,
+    excluded_reviewed_prefixes: list[str] | None = None,
 ) -> dict[str, Any]:
     data = adapter.get("data", {}) or {}
     sections_decl = data.get("packet_sections", []) or []
@@ -164,6 +165,7 @@ def build_packet(
             reviewed_paths=reviewed_paths,
             changed_ref=changed_ref,
             excluded_paths=excluded_reviewed_paths,
+            excluded_prefixes=excluded_reviewed_prefixes,
         )
     return packet
 

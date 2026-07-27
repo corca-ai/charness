@@ -152,15 +152,38 @@ no-write brief. Two enforcement rails now back the rule instead of
 instruction-following alone.
 
 1. Parent-side integrity proof. Before spawning shared-tree reviewers, run
-   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" snapshot --repo-root <repo-root>`.
+   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" snapshot --repo-root <repo-root> --window-id <id>`.
    After EACH reviewer returns, run
-   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" verify --repo-root <repo-root>`.
+   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" verify --repo-root <repo-root> --window-id <id>`.
+   Verify at the moment the reviewer returns, BEFORE applying anything the
+   reviewer found: git records that the shared tree changed, never who changed
+   it, so a parent that edits first gets drift on its own work shaped exactly
+   like a boundary violation, and an unattributable `ok: false` teaches the
+   parent to discount the one signal that would catch a real violation.
    A non-zero verify is a concrete, auditable violation signal: quarantine
    that review's approvals, restore state deliberately, and re-run verify to
    a full-clean result before re-snapshotting for the next reviewer (the
    drift list is fail-closed but names at least one drifted surface, not
    necessarily every one). Closeout evidence should cite the verify result,
    not reviewer self-report.
+   The window id above is the first binding: verify refuses a snapshot from a
+   different window (exit 2) instead of answering across two intervals.
+   When the ideal order slips anyway, the parent declares what it changed
+   itself rather than discounting the alarm. `--parent-path <path>` covers
+   worktree content, `--parent-staged <path>` covers the index, and
+   `--parent-head-moved` covers a parent commit; all are repeatable and take
+   the exact repo-relative path git prints. Declared drift is reported as
+   `parent_attributed_drift` and does not fail the verify; everything
+   undeclared still does. Index drift needs its own `--parent-staged` —
+   `--parent-path` never excuses it, because staging is the one class an
+   enveloped reviewer cannot legitimately produce and is the staged-reversion
+   trap above.
+   A declaration is recorded parent testimony, not proof. It cannot pass as an
+   undeclared clean run: an attributed pass exits **3**, not 0, and prints
+   `verdict: parent-attributed` with the full `parent_declared` set. Cite
+   `verdict` and that set in closeout evidence whenever anything was declared;
+   a bare `{"ok": true, "drift": []}` quote is only honest for an exit-0 run.
+   Drift that names no path is never attributable and always fails.
 2. Host envelope. Hosts that expose typed subagent definitions spawn bounded
    reviewers under a read-only envelope (Claude Code receives the installed
    plugin's `agents/bounded-reviewer.md` (Read/Grep/Glob only), so

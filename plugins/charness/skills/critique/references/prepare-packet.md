@@ -61,9 +61,12 @@ Use repeatable `--reviewed-path <repo-relative-path>` arguments when the review
 scope is narrower or more explicit than the changed-path default. The producer
 sorts this declaration canonically and scopes staged, unstaged, untracked, and
 content fingerprints to those paths, so an unrelated working-tree change does
-not invalidate the review. Artifact-writing mode also excludes its own target
-packet JSON/Markdown paths, so rerunning the same slug does not make the packet
-part of the evidence it is trying to identify.
+not invalidate the review. The default sweep already drops the review record —
+the critique artifact and any packet under the adapter `output_dir` — and
+artifact-writing mode also excludes its own target packet JSON/Markdown paths, so
+neither rerunning the same slug nor writing the verdict makes the record part of
+the evidence it is trying to identify. The runner reports both the resulting
+`reviewed_paths` and the dropped `auto_excluded_paths`.
 An explicit `--reviewed-path` is never silently removed; if it names the
 packet's own output path, the runner rejects the collision. Lexical traversal
 and paths through an out-of-repo symlinked directory are also rejected.
@@ -88,7 +91,7 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
   "changed_ref": "<git commit or endpoint-diff range, or null>",
   "adapter_path": "<repo-relative path or null>",
   "reviewed_input_identity": {
-    "algorithm": "sha256-v1",
+    "algorithm": "sha256-v2",
     "status": "captured",
     "mode": "working-tree | changed-ref",
     "changed_ref": "<commit/range or null>",
@@ -101,6 +104,7 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
     "staged_patch_sha256": "<scope-limited sha256>",
     "unstaged_patch_sha256": "<scope-limited sha256>",
     "declared_untracked": [{"path": "<path>", "content_sha256": "<sha256>"}],
+    "auto_excluded_paths": ["<path dropped from the auto sweep>"],
     "identity_sha256": "<canonical component digest>"
   },
   "reviewer_tier_evidence": {
@@ -150,10 +154,21 @@ Rules:
   untracked components are limited to the declared paths; the existing
   reviewer-boundary fingerprint remains a separate whole-worktree proof that
   the reviewer did not mutate shared state.
-- A working-tree identity records `base_head` as provenance but excludes its
-  value from `identity_sha256`; an unrelated commit therefore does not stale a
-  path-scoped verdict. A changed-ref identity treats its resolved target as an
-  input. Symlinks are hashed by their link payload without following them.
+- A working-tree identity is content-addressed under `sha256-v2`: only the declared
+  paths and the bytes at those paths enter `identity_sha256`. `base_head`,
+  `staged_patch_sha256`, `unstaged_patch_sha256`, `declared_untracked`, and
+  `auto_excluded_paths` are recorded as provenance and excluded from the digest, so
+  an unrelated commit, or a plain `git add` of a reviewed path whose bytes did not
+  change, does not stale a path-scoped verdict — only an actual edit does. A
+  changed-ref identity treats its resolved target and patch as inputs. Symlinks are
+  hashed by their link payload without following them.
+- `verify` recomputes under the algorithm recorded in the packet, so bindings written
+  under `sha256-v1` keep verifying under v1 rules rather than being retroactively
+  staled by the v2 digest change.
+- The auto sweep never returns the review record itself: everything under the adapter
+  `output_dir` is dropped and reported in `auto_excluded_paths`, so authoring the
+  critique artifact cannot stale the binding that describes it. An explicit
+  `--reviewed-path` overrides that exclusion and is never dropped.
 - The exact packet byte digest cannot be embedded in the packet without a
   circular hash. After writing the JSON, the runner returns
   `reviewed_input_binding` with `packet_path`, `packet_sha256`, and

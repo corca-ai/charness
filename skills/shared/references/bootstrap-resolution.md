@@ -102,8 +102,8 @@ Two placements, with different scans:
 
 - **Write sites** (the helpers above) check at the moment they persist state, and
   compare the loaded anchors plus already-imported modules.
-- **Irreversible entrypoints** — `publish_release.py` and `issue_tool.py
-  close-with-comment` — check before any mutation, and compare *every* Python
+- **Irreversible entrypoints** — `publish_release.py` and
+  `issue_tool.py close-with-comment` — check before any mutation, and compare *every* Python
   module in both trees (`scan="tree"`). The wider scan is required because the
   module that drifts is usually imported lazily, long after the entrypoint, and
   because `publish_release` bumps the target version only after that point, so

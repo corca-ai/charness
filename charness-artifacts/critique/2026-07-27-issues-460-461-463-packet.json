@@ -1,0 +1,176 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-27T06:54:12Z",
+  "prepared_for": "issues 460/461/463: reviewed-input binding scope, reviewer-window attribution, derived-artifact inventory",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-07-27-issues-460-461-463-packet.json\n- charness-artifacts/critique/2026-07-27-issues-460-461-463-packet.md\n- charness-artifacts/critique/2026-07-27-issues-460-461-463.md\n- charness-artifacts/audit/2026-07-27-derived-artifact-recompute-inventory.md\n- docs/artifact-policy.md\n- plugins/charness/scripts/critique_packet_lib.py\n- plugins/charness/scripts/reviewed_input_identity.py\n- plugins/charness/shared/references/bootstrap-resolution.md\n- plugins/charness/shared/references/fresh-eye-subagent-review.md\n- plugins/charness/shared/scripts/reviewer_boundary_fingerprint.py\n- plugins/charness/shared/scripts/reviewer_boundary_state.py\n- plugins/charness/skills/critique/references/prepare-packet.md\n- plugins/charness/skills/critique/scripts/prepare_packet.py\n- scripts/critique_packet_lib.py\n- scripts/reviewed_input_identity.py\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/prepare_packet.py\n- skills/shared/references/bootstrap-resolution.md\n- skills/shared/references/fresh-eye-subagent-review.md\n- skills/shared/scripts/reviewer_boundary_fingerprint.py\n- skills/shared/scripts/reviewer_boundary_state.py\n- tests/quality_gates/test_reviewer_boundary_fingerprint.py\n- tests/test_critique_prepare_packet.py\n- tests/test_reviewed_input_identity_binding.py\n- tests/test_reviewed_input_identity_failures.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/critique_packet_lib.py, scripts/reviewed_input_identity.py, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_boundary_fingerprint.py, skills/shared/scripts/reviewer_boundary_state.py\n  derived matches: plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/shared/references/bootstrap-resolution.md, plugins/charness/shared/references/fresh-eye-subagent-review.md, plugins/charness/shared/scripts/reviewer_boundary_fingerprint.py, plugins/charness/shared/scripts/reviewer_boundary_state.py, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/prepare_packet.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-27-issues-460-461-463-packet.md, charness-artifacts/critique/2026-07-27-issues-460-461-463.md, charness-artifacts/audit/2026-07-27-derived-artifact-recompute-inventory.md, docs/artifact-policy.md, skills/public/critique/references/prepare-packet.md, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md\n  derived matches: plugins/charness/shared/references/bootstrap-resolution.md, plugins/charness/shared/references/fresh-eye-subagent-review.md, plugins/charness/skills/critique/references/prepare-packet.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_boundary_fingerprint.py, skills/shared/scripts/reviewer_boundary_state.py\n  derived matches: plugins/charness/shared/references/bootstrap-resolution.md, plugins/charness/shared/references/fresh-eye-subagent-review.md, plugins/charness/shared/scripts/reviewer_boundary_fingerprint.py, plugins/charness/shared/scripts/reviewer_boundary_state.py, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/prepare_packet.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_boundary_fingerprint.py, skills/shared/scripts/reviewer_boundary_state.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_boundary_fingerprint.py, skills/shared/scripts/reviewer_boundary_state.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-27-issues-460-461-463-packet.json, charness-artifacts/critique/2026-07-27-issues-460-461-463-packet.md, charness-artifacts/critique/2026-07-27-issues-460-461-463.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/reviewed_input_identity.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/critique_packet_lib.py, scripts/reviewed_input_identity.py, tests/quality_gates/test_reviewer_boundary_fingerprint.py, tests/test_critique_prepare_packet.py, tests/test_reviewed_input_identity_binding.py, tests/test_reviewed_input_identity_failures.py\n  derived matches: plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/reviewed_input_identity.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/critique_packet_lib.py, scripts/reviewed_input_identity.py, skills/public/critique/scripts/prepare_packet.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "02939ff45c4b3d29aa346a5a44dbf27a0713b261",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/audit/2026-07-27-derived-artifact-recompute-inventory.md",
+      "docs/artifact-policy.md",
+      "plugins/charness/scripts/critique_packet_lib.py",
+      "plugins/charness/scripts/reviewed_input_identity.py",
+      "plugins/charness/shared/references/bootstrap-resolution.md",
+      "plugins/charness/shared/references/fresh-eye-subagent-review.md",
+      "plugins/charness/shared/scripts/reviewer_boundary_fingerprint.py",
+      "plugins/charness/shared/scripts/reviewer_boundary_state.py",
+      "plugins/charness/skills/critique/references/prepare-packet.md",
+      "plugins/charness/skills/critique/scripts/prepare_packet.py",
+      "scripts/critique_packet_lib.py",
+      "scripts/reviewed_input_identity.py",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/critique/scripts/prepare_packet.py",
+      "skills/shared/references/bootstrap-resolution.md",
+      "skills/shared/references/fresh-eye-subagent-review.md",
+      "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+      "skills/shared/scripts/reviewer_boundary_state.py",
+      "tests/quality_gates/test_reviewer_boundary_fingerprint.py",
+      "tests/test_critique_prepare_packet.py",
+      "tests/test_reviewed_input_identity_binding.py",
+      "tests/test_reviewed_input_identity_failures.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/audit/2026-07-27-derived-artifact-recompute-inventory.md",
+        "content_sha256": "dc047b15c527a2697972aba671e0fa2775f48dc08380cd9e8879c677d4fb13c8"
+      },
+      {
+        "path": "docs/artifact-policy.md",
+        "content_sha256": "8a5a7b38872c227e9843c7cef6537387566cfc2241199798cca2f8c0561dcc89"
+      },
+      {
+        "path": "plugins/charness/scripts/critique_packet_lib.py",
+        "content_sha256": "f2b5f9dc678edc3535793b9597ed50319c0c1f76bf8c7c9bac3a03c59869f225"
+      },
+      {
+        "path": "plugins/charness/scripts/reviewed_input_identity.py",
+        "content_sha256": "2fd982945f2a7dfad5ba826dd7f525497f8bd746a6230d360ae61a9a0d2746af"
+      },
+      {
+        "path": "plugins/charness/shared/references/bootstrap-resolution.md",
+        "content_sha256": "9bd974d2c7b66d97ff922e44ed40f3b05a161d075e2c58e1f19e8b25fce95951"
+      },
+      {
+        "path": "plugins/charness/shared/references/fresh-eye-subagent-review.md",
+        "content_sha256": "1d617cafde6b3d348c193e3b1616e7534fc0ebff809c6429e6b146f87d7ec4ff"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_boundary_fingerprint.py",
+        "content_sha256": "0ff2be24264102a257d2bb57df892d1b8ac9116a010721672e1e8bb630a36bbb"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_boundary_state.py",
+        "content_sha256": "c24043b5cfe9a5c51ebeb6fd695ffe35ec0fc3426f31d7946831c75682147c61"
+      },
+      {
+        "path": "plugins/charness/skills/critique/references/prepare-packet.md",
+        "content_sha256": "177bfb589ca3564f4e8cc22aa7cc8b796e66ff92f168c919b8f381988815a268"
+      },
+      {
+        "path": "plugins/charness/skills/critique/scripts/prepare_packet.py",
+        "content_sha256": "6fad79adc19ea78ef2a8fff4d52d20a593a13168be6eabbd2b3e70ecff1213da"
+      },
+      {
+        "path": "scripts/critique_packet_lib.py",
+        "content_sha256": "f2b5f9dc678edc3535793b9597ed50319c0c1f76bf8c7c9bac3a03c59869f225"
+      },
+      {
+        "path": "scripts/reviewed_input_identity.py",
+        "content_sha256": "2fd982945f2a7dfad5ba826dd7f525497f8bd746a6230d360ae61a9a0d2746af"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "177bfb589ca3564f4e8cc22aa7cc8b796e66ff92f168c919b8f381988815a268"
+      },
+      {
+        "path": "skills/public/critique/scripts/prepare_packet.py",
+        "content_sha256": "6fad79adc19ea78ef2a8fff4d52d20a593a13168be6eabbd2b3e70ecff1213da"
+      },
+      {
+        "path": "skills/shared/references/bootstrap-resolution.md",
+        "content_sha256": "9bd974d2c7b66d97ff922e44ed40f3b05a161d075e2c58e1f19e8b25fce95951"
+      },
+      {
+        "path": "skills/shared/references/fresh-eye-subagent-review.md",
+        "content_sha256": "1d617cafde6b3d348c193e3b1616e7534fc0ebff809c6429e6b146f87d7ec4ff"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "content_sha256": "0ff2be24264102a257d2bb57df892d1b8ac9116a010721672e1e8bb630a36bbb"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_boundary_state.py",
+        "content_sha256": "c24043b5cfe9a5c51ebeb6fd695ffe35ec0fc3426f31d7946831c75682147c61"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_boundary_fingerprint.py",
+        "content_sha256": "e96a6763fe51df2281ecb146c6d45586fdf580e2d33a6ec325268feb197deba8"
+      },
+      {
+        "path": "tests/test_critique_prepare_packet.py",
+        "content_sha256": "5148c06eae7ddc54de731b7ba2b1e596187cfd9928d9b20a4685af50a8cff55f"
+      },
+      {
+        "path": "tests/test_reviewed_input_identity_binding.py",
+        "content_sha256": "259451b03b5273289fdf086d584ed2b8a4d7c3833ee7ecab469b4776bc00dc83"
+      },
+      {
+        "path": "tests/test_reviewed_input_identity_failures.py",
+        "content_sha256": "d6e0e2650c81c952cab6aa07dc9a691ada7c423a969e1db986d1d148ed66a736"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "8ef3f5b700f37e6cd41feccb1713542619be5442aefd6a227399e1948680e40f",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-07-27-issues-460-461-463-packet.json",
+      "charness-artifacts/critique/2026-07-27-issues-460-461-463-packet.md",
+      "charness-artifacts/critique/2026-07-27-issues-460-461-463.md"
+    ],
+    "identity_sha256": "d87a002ec48942f7f4955996d6ef7f91d98f31a78a7501a137c93cbe5d91f96c"
+  }
+}

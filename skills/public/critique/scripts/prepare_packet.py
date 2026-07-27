@@ -97,6 +97,11 @@ def main() -> int:
         collisions = sorted(set(args.reviewed_path or []) & set(excluded_paths))
         if collisions:
             parser.error(f"--reviewed-path collides with packet output: {', '.join(collisions)}")
+    # The review record is not a reviewed input: the auto sweep drops every
+    # artifact under the critique output dir — the artifact being authored, and any
+    # packet already written this session — so writing the record cannot stale the
+    # binding that describes it. Explicit `--reviewed-path` still wins.
+    excluded_prefixes = [f"{output_dir.relative_to(repo_root).as_posix()}/"]
     packet = build_packet(
         adapter=adapter,
         repo_root=repo_root,
@@ -104,6 +109,7 @@ def main() -> int:
         changed_ref=changed_ref,
         reviewed_paths=args.reviewed_path,
         excluded_reviewed_paths=excluded_paths,
+        excluded_reviewed_prefixes=excluded_prefixes,
     )
 
     if args.json:
@@ -112,11 +118,24 @@ def main() -> int:
         return 0 if packet["ok"] else 1
 
     json_path, md_path = write_packet(packet, output_dir=output_dir, slug=slug)
+    identity = packet["reviewed_input_identity"]
     binding = {
         "packet_path": str(json_path.relative_to(repo_root)),
         "packet_sha256": packet_file_sha256(json_path),
-        "identity_sha256": packet["reviewed_input_identity"]["identity_sha256"],
+        "identity_sha256": identity["identity_sha256"],
+        "reviewed_paths": identity.get("reviewed_paths", []),
+        # Auto-sweep drops, reported so a narrowed binding is never silently narrow.
+        "auto_excluded_paths": identity.get("auto_excluded_paths", []),
     }
+    if not identity.get("reviewed_paths"):
+        # A zero-path binding digests to the same constant everywhere and can never
+        # go stale, so it would verify as current while proving nothing. Say so here
+        # rather than let the three hex fields read as a checked review.
+        binding["usable"] = False
+        binding["warning"] = (
+            "binding covers zero reviewed paths and proves nothing; re-run with "
+            "explicit --reviewed-path values for what was actually reviewed"
+        )
     json.dump(
         {
             "ok": packet["ok"],

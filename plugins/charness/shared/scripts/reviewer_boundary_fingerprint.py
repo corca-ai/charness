@@ -24,14 +24,40 @@ Two subcommands:
     generated/scratch surface, unlike the tracked snapshot the reviewer is
     being checked against).
 
-``verify --repo-root <dir> [--before <file>]``
+``verify --repo-root <dir> [--before <file>] [--window-id <id>]
+       [--parent-path <path>]... [--parent-head-moved]``
     Recompute the fingerprint and diff it against the snapshot, reporting
     concrete drift (``head``, ``index``, ``worktree``, ``untracked-added``,
     ``untracked-removed``, ``untracked-modified``) with the affected path where
     one is identifiable. The drift list is fail-closed but not exhaustive: it
     names at least one drifted surface, not necessarily every one. Exit 0
-    clean, 1 on any drift, 2 on a usage error (missing/unreadable snapshot
-    file).
+    clean, 1 on undeclared drift, 2 on a usage error (missing/unreadable
+    snapshot file, or a snapshot from a different review window).
+
+Attribution, and what this proof does NOT establish. Git records that the
+shared tree changed, never who changed it. A parent that applies review
+findings before running ``verify`` gets drift on its own edits, shaped exactly
+like a reviewer boundary violation -- an unattributable ``ok: false`` teaches
+the parent to discount the signal, which is how a real violation later gets
+waved through. Two bindings keep the verdict meaningful:
+
+``--window-id``
+    ``snapshot`` stamps a review-window id (generated unless supplied) and
+    ``verify`` refuses a snapshot from a different window rather than
+    answering across it.
+
+``--parent-path`` / ``--parent-staged`` / ``--parent-head-moved``
+    The parent declares the surfaces it changed itself inside the window.
+    Declared drift is reported separately as ``parent_attributed_drift`` and
+    does not fail the verify; anything undeclared still does. Declarations are
+    scoped by kind: ``--parent-path`` covers worktree content and never excuses
+    index drift, which needs ``--parent-staged``. The declaration is parent
+    testimony, not proof -- an attributed pass exits **3**, not 0, and prints
+    the full ``parent_declared`` set, so it cannot be quoted as an undeclared
+    clean run. Drift with no identifiable path is never attributable and always
+    fails.
+
+State capture lives in the sibling ``reviewer_boundary_state.py``.
 
 Scope note: gitignored files are intentionally invisible to this fingerprint --
 they cannot land in a closeout commit, so they are not a reviewer-boundary
@@ -41,107 +67,50 @@ concern this script needs to cover.
 from __future__ import annotations
 
 import argparse
-import hashlib
+import importlib.util
 import json
 import os
-import subprocess
 import sys
 
 _SNAPSHOT_SUBDIR = os.path.join(".charness", "reviewer-boundary")
 _SNAPSHOT_FILENAME = "snapshot.json"
+_ATTRIBUTION_NOTE = (
+    "git proves the shared tree changed, never who changed it; parent-declared paths are "
+    "recorded testimony, and undeclared drift is a boundary signal only for a window in "
+    "which the parent made no writes"
+)
 
 
-class FingerprintError(Exception):
-    """A usage-level failure: bad repo root, unreadable/corrupt snapshot file."""
+def _load_state_module():
+    """Load the sibling capture module by path, not by package import: this file
+    runs from the repo AND from an installed plugin's `shared/scripts/`, where no
+    package context exists and the cwd is the consuming repository."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reviewer_boundary_state.py")
+    spec = importlib.util.spec_from_file_location("reviewer_boundary_state", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"reviewer boundary state module not found beside this script: {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_STATE = _load_state_module()
+FingerprintError = _STATE.FingerprintError
+build_snapshot = _STATE.build_snapshot
+new_window = _STATE.new_window
+_status_path_map = _STATE._status_path_map
 
 
 def _default_snapshot_path(repo_root: str) -> str:
     return os.path.join(repo_root, _SNAPSHOT_SUBDIR, _SNAPSHOT_FILENAME)
 
 
-def _git_text(repo_root: str, *args: str) -> str:
-    # surrogateescape keeps non-UTF8 filenames representable instead of
-    # crashing the rail with UnicodeDecodeError (fail-closed must stay JSON).
-    proc = subprocess.run(
-        ["git", "-C", repo_root, *args],
-        check=False,
-        capture_output=True,
-        text=True,
-        errors="surrogateescape",
-    )
-    if proc.returncode != 0:
-        raise FingerprintError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
-    return proc.stdout
-
-
-def _git_bytes(repo_root: str, *args: str) -> bytes:
-    proc = subprocess.run(["git", "-C", repo_root, *args], check=False, capture_output=True)
-    if proc.returncode != 0:
-        raise FingerprintError(
-            f"git {' '.join(args)} failed: {proc.stderr.decode(errors='replace').strip()}"
-        )
-    return proc.stdout
-
-
-def _status_entries(repo_root: str) -> list[str]:
-    raw = _git_text(repo_root, "status", "--porcelain=v2", "-z", "--untracked-files=all")
-    return sorted(entry for entry in raw.split("\0") if entry)
-
-
-def _status_path(entry: str) -> str | None:
-    """Extract the path field from a porcelain v2 change-type entry (1/2/u)."""
-    prefix = entry[0] if entry else ""
-    field_count = {"1": 8, "2": 9, "u": 10}.get(prefix)
-    if field_count is None:
-        return None
-    parts = entry.split(" ", field_count)
-    return parts[field_count] if len(parts) == field_count + 1 else None
-
-
-def _status_path_map(entries: list[str]) -> dict[str, str]:
-    """path -> XY status pair, for the change-type (1/2/u) entries only."""
-    result: dict[str, str] = {}
-    for entry in entries:
-        if len(entry) < 4 or entry[0] not in ("1", "2", "u") or entry[1] != " ":
-            continue
-        path = _status_path(entry)
-        if path is not None:
-            result[path] = entry[2:4]
-    return result
-
-
-def _hash_untracked(repo_root: str, entries: list[str]) -> dict[str, str]:
-    result: dict[str, str] = {}
-    for entry in entries:
-        if not entry.startswith("? "):
-            continue
-        path = entry[2:]
-        try:
-            with open(os.path.join(repo_root, path), "rb") as handle:
-                result[path] = hashlib.sha256(handle.read()).hexdigest()
-        except OSError:
-            result[path] = "unreadable"
-    return result
-
-
-def build_snapshot(repo_root: str) -> dict:
-    entries = _status_entries(repo_root)
-    return {
-        "head": _git_text(repo_root, "rev-parse", "HEAD").strip(),
-        "status": entries,
-        "staged_patch_sha256": hashlib.sha256(
-            _git_bytes(repo_root, "diff", "--cached", "--binary")
-        ).hexdigest(),
-        "worktree_patch_sha256": hashlib.sha256(
-            _git_bytes(repo_root, "diff", "--binary")
-        ).hexdigest(),
-        "untracked": _hash_untracked(repo_root, entries),
-    }
-
-
 def _index_worktree_drift(before: dict, after: dict) -> list[dict]:
     before_map = _status_path_map(before["status"])
     after_map = _status_path_map(after["status"])
+    before_content = before.get("changed_content", {})
+    after_content = after.get("changed_content", {})
+    content_comparable = "changed_content" in before and "changed_content" in after
     drift: list[dict] = []
     for path in sorted(set(before_map) | set(after_map)):
         before_xy = before_map.get(path, "..")
@@ -150,6 +119,12 @@ def _index_worktree_drift(before: dict, after: dict) -> list[dict]:
             drift.append({"kind": "index", "path": path})
         if before_xy[1] != after_xy[1]:
             drift.append({"kind": "worktree", "path": path})
+        elif content_comparable and before_content.get(path) != after_content.get(path):
+            # Same XY, different bytes: an already-dirty file edited again.
+            drift.append({"kind": "worktree", "path": path})
+    # The aggregate digests name no path, so they can neither be attributed nor
+    # tell the parent what moved; they stay a backstop for whatever the per-path
+    # comparison above cannot see, and only when it saw nothing at all.
     if not drift:
         if before["staged_patch_sha256"] != after["staged_patch_sha256"]:
             drift.append({"kind": "index", "path": None})
@@ -180,6 +155,42 @@ def compare_snapshots(before: dict, after: dict) -> list[dict]:
     return drift
 
 
+def split_parent_attributed(
+    drift: list[dict],
+    parent_paths: list[str],
+    parent_head_moved: bool,
+    parent_staged: list[str] | None = None,
+) -> tuple[list[dict], list[dict]]:
+    """Partition drift into (undeclared, parent-attributed).
+
+    Declarations are scoped by KIND, not only by path. ``--parent-path``
+    excuses worktree drift; index drift needs its own ``--parent-staged``,
+    because index mutation is the one class an enveloped read-only reviewer
+    can never legitimately produce and the staged-reversion trap it hides is
+    the reason this rail exists. A parent that edited a file it also told a
+    reviewer to read would otherwise excuse that reviewer's `git add` of the
+    same path with one flag.
+
+    A `head` entry is attributable only through the explicit
+    ``--parent-head-moved`` declaration, and a pathless entry (the aggregate
+    patch-digest backstop, which names no surface) is never attributable: an
+    unnamed change cannot be matched against a parent's declaration, so it
+    stays fail-closed."""
+    declared = {"worktree": set(parent_paths), "index": set(parent_staged or [])}
+    undeclared: list[dict] = []
+    attributed: list[dict] = []
+    for entry in drift:
+        if entry["kind"] == "head":
+            (attributed if parent_head_moved else undeclared).append(entry)
+        elif entry["path"] is not None and entry["path"] in declared.get(entry["kind"], set()):
+            attributed.append(entry)
+        elif entry["kind"].startswith("untracked") and entry["path"] in declared["worktree"]:
+            attributed.append(entry)
+        else:
+            undeclared.append(entry)
+    return undeclared, attributed
+
+
 def _drop_self(snapshot: dict, repo_root: str, snapshot_path: str) -> None:
     """Writing the snapshot file necessarily creates it as a new untracked path
     (unless the caller's ``.gitignore`` already excludes it); without this, the
@@ -193,7 +204,7 @@ def _drop_self(snapshot: dict, repo_root: str, snapshot_path: str) -> None:
 def _cmd_snapshot(args: argparse.Namespace) -> int:
     repo_root = os.path.abspath(args.repo_root)
     out_path = os.path.abspath(args.out) if args.out else _default_snapshot_path(repo_root)
-    snapshot = build_snapshot(repo_root)
+    snapshot = build_snapshot(repo_root, new_window(args.window_id))
     # A stale snapshot from a prior review round is itself untracked in repos
     # that do not gitignore it; without this drop, the documented re-snapshot
     # flow would report the tool's own file as untracked-removed drift.
@@ -202,7 +213,11 @@ def _cmd_snapshot(args: argparse.Namespace) -> int:
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump(snapshot, handle, indent=2)
         handle.write("\n")
-    print(json.dumps({"ok": True, "out": out_path, "head": snapshot["head"]}))
+    print(
+        json.dumps(
+            {"ok": True, "out": out_path, "head": snapshot["head"], "window": snapshot["window"]}
+        )
+    )
     return 0
 
 
@@ -221,13 +236,73 @@ def _cmd_verify(args: argparse.Namespace) -> int:
         print(json.dumps({"ok": False, "error": f"unreadable snapshot file {before_path}: {exc}", "before_path": before_path}))
         return 2
 
-    after = build_snapshot(repo_root)
+    missing = [key for key in ("head", "status", "staged_patch_sha256", "worktree_patch_sha256", "untracked") if key not in before]
+    if missing:
+        # A snapshot that parses but is truncated must refuse as JSON, not die on
+        # a KeyError traceback with nothing on stdout for the caller to read.
+        print(json.dumps({"ok": False, "error": f"snapshot file {before_path} is missing keys: {missing}", "before_path": before_path}))
+        return 2
+
+    window = before.get("window") or {}
+    if args.window_id and window.get("id") != args.window_id:
+        # Refusing beats answering: a snapshot from another window certifies a
+        # different interval, so its drift says nothing about this review.
+        print(json.dumps({
+            "ok": False,
+            "error": (
+                f"snapshot records review window "
+                f"{window.get('id') or 'none (snapshot predates window binding)'}, not the "
+                f"requested {args.window_id!r}; re-snapshot before this review window"
+            ),
+            "before_path": before_path,
+            "window": window,
+        }))
+        return 2
+
+    after = build_snapshot(repo_root, window or None)
     _drop_self(after, repo_root, before_path)
     drift = compare_snapshots(before, after)
+    parent_paths = list(args.parent_path or [])
+    parent_staged = list(args.parent_staged or [])
+    undeclared, attributed = split_parent_attributed(
+        drift, parent_paths, args.parent_head_moved, parent_staged
+    )
     # floor-addition-restraint: keep — enforcement teeth requested by tracked issue #428 after three recorded recurrences
-    ok = not drift
-    print(json.dumps({"ok": ok, "drift": drift, "before_path": before_path}))
-    return 0 if ok else 1
+    ok = not undeclared
+    declared_anything = bool(parent_paths or parent_staged or args.parent_head_moved)
+    verdict = "boundary-drift" if undeclared else ("parent-attributed" if declared_anything else "clean")
+    print(json.dumps({
+        "ok": ok,
+        "verdict": verdict,
+        "drift": undeclared,
+        "parent_attributed_drift": attributed,
+        "parent_declared": {
+            "paths": sorted(set(parent_paths)),
+            "staged_paths": sorted(set(parent_staged)),
+            "head_moved": args.parent_head_moved,
+        },
+        # A declared path that never drifted is reported, not silently dropped: it
+        # means the parent's account of the window does not match the tree.
+        "unmatched_parent_paths": sorted(
+            (set(parent_paths) | set(parent_staged))
+            - {entry["path"] for entry in attributed if entry["path"]}
+        ),
+        "window": window,
+        # A snapshot taken before per-path capture existed cannot be compared by
+        # content, so an edit to an already-dirty file is invisible in that run.
+        # Say which sensitivity the verdict actually had rather than let a
+        # weaker comparison read like the full one.
+        "content_comparison": "per-path" if "changed_content" in before else "unavailable-legacy-snapshot",
+        "attribution": _ATTRIBUTION_NOTE,
+        "before_path": before_path,
+    }))
+    if not ok:
+        return 1
+    # Exit 3, not 0, when the clean result rests on a parent declaration. Every
+    # closeout in this repo quotes `{"ok": true, "drift": []}` as proof of a clean
+    # review; an attributed pass prints exactly that shape, so the exit code is
+    # what stops it from being cited as an undeclared clean run.
+    return 3 if verdict == "parent-attributed" else 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -243,11 +318,22 @@ def main(argv: list[str] | None = None) -> int:
     snap = subparsers.add_parser("snapshot", help="Capture the current worktree+index fingerprint.")
     snap.add_argument("--repo-root", default=".", help="Repository root (default: .)")
     snap.add_argument("--out", default=None, help="Output path (default: .charness/reviewer-boundary/snapshot.json)")
+    snap.add_argument("--window-id", default=None, help="Review-window id this snapshot opens (default: generated)")
     snap.set_defaults(func=_cmd_snapshot)
 
     verify = subparsers.add_parser("verify", help="Diff the current fingerprint against a prior snapshot.")
     verify.add_argument("--repo-root", default=".", help="Repository root (default: .)")
     verify.add_argument("--before", default=None, help="Snapshot path to compare against (default: .charness/reviewer-boundary/snapshot.json)")
+    verify.add_argument("--window-id", default=None, help="Review window this verify certifies; a snapshot from another window is refused")
+    verify.add_argument("--parent-path", action="append", default=None,
+                        help="Exact repo-relative path (as git prints it) whose WORKTREE content the "
+                             "PARENT changed inside the window (repeatable); drift there is reported "
+                             "as parent-attributed instead of failing")
+    verify.add_argument("--parent-staged", action="append", default=None,
+                        help="Exact repo-relative path the PARENT staged inside the window (repeatable). "
+                             "Index drift needs this separate declaration: --parent-path never excuses it")
+    verify.add_argument("--parent-head-moved", action="store_true",
+                        help="Declare that the parent moved HEAD inside the window")
     verify.set_defaults(func=_cmd_verify)
 
     args = parser.parse_args(argv)

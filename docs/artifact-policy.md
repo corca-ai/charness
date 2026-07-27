@@ -300,6 +300,36 @@ Prefer hidden runtime state when the data is mainly for:
 - keeping rendered or generated proof artifacts that help the current machine
   inspect a surface without becoming checked-in repo truth
 
+## Derived-Artifact Validation Posture
+
+An artifact is **purely derived** when this repo's own code reproduces its exact
+bytes from repo state. Those get a recompute-and-compare gate — a `--check` mode
+that re-derives the artifact and byte-compares, plus a repo-local-helper guard at
+the write site — so drift is caught whatever caused it: a foreign or stale
+harness copy, a partial edit, a bad merge, a hand-edit of a generated surface.
+The gated ones today are the
+[retro lesson-selection index](../charness-artifacts/retro/lesson-selection-index.json)
+and its rendered [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+digest (both at
+[recent_lessons_lib.py](../scripts/recent_lessons_lib.py)), and the
+[debug seam-risk index](../charness-artifacts/debug/seam-risk-index.json).
+
+Across the artifact families a foreign or stale harness copy can write —
+`charness-artifacts/{critique,probe,release,retro}/` — every other machine-written
+artifact embeds agent prose, a generation timestamp, producer subprocess output,
+a live release URL, or absolute host paths, so recompute-and-compare has no
+defined meaning for it. **Shape-only validation is the deliberate contract for
+those families, not a missing gate** — the per-family evidence is in the
+[derived-artifact recompute inventory](../charness-artifacts/audit/2026-07-27-derived-artifact-recompute-inventory.md).
+Families outside those four directories were not surveyed, and at least one
+(`capability-catalog`) is byte-stable by design, so read this as a scoped finding
+rather than a repo-wide claim.
+
+When adding a machine-written artifact, classify it first. Purely derived: add
+the recompute gate at write time and a `--check` verify command on its
+[surface](../.agents/surfaces.json). Not purely derived: say so in the surface
+entry, so a later reader sees a decision rather than an omission.
+
 ## Anti-Patterns
 
 Avoid these mistakes:
