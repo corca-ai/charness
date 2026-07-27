@@ -269,3 +269,195 @@ def test_preflight_report_json_round_trips(tmp_path) -> None:
     payload = json.loads(json.dumps(report.to_dict()))
     assert payload["target"].endswith("clean.md")
     assert payload["status"] == "ok"
+
+
+# --- the same class, on THIS branch's own changed lines ------------------------
+#
+# The CI changed-line gate flagged seven more files after the #457 fix landed,
+# which is the class reasserting itself rather than a new problem: every target
+# below is again a rarely-taken branch. Covering them here keeps the fix general
+# instead of scoped to the 14 lines the issue happened to list.
+
+
+def test_artifact_label_falls_back_when_the_path_escapes_the_repo(tmp_path) -> None:
+    """`_artifact_label` must degrade to the raw path, not raise.
+
+    `Path.relative_to` raises ValueError for a path outside repo_root, and
+    `--artifact-path` deliberately accepts a draft in a temp dir, so this except
+    is on the success path of a supported invocation.
+    """
+    outside = tmp_path / "elsewhere" / "draft.md"
+    outside.parent.mkdir(parents=True)
+    outside.write_text("x", encoding="utf-8")
+    label = artifact_validator._artifact_label(outside, ROOT)
+    assert label == str(outside)
+    # And the repo-relative branch still wins when it applies.
+    inside = ROOT / "AGENTS.md"
+    assert artifact_validator._artifact_label(inside, ROOT) == "AGENTS.md"
+
+
+def test_artifact_label_without_a_repo_root_returns_the_path() -> None:
+    assert artifact_validator._artifact_label(Path("a/b.md"), None) == "a/b.md"
+
+
+def test_handoff_artifact_path_accepts_a_repo_relative_value(tmp_path) -> None:
+    """A relative `--artifact-path` resolves against `--repo-root`.
+
+    Covers the `artifact_path = repo_root / artifact_path` branch, which only runs
+    for a non-absolute value and is the ergonomic form an operator would type.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "handoff-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\nlanguage: en\noutput_dir: docs\n", encoding="utf-8"
+    )
+    (repo / "docs" / "handoff.md").write_text("# broken\n", encoding="utf-8")
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    good = "\n".join(
+        [
+            "# Candidate Handoff",
+            "",
+            "## Workflow Trigger",
+            "",
+            "- run it",
+            "",
+            "## Current State",
+            "",
+            "- state",
+            "",
+            "## Next Session",
+            "",
+            "- next",
+            "",
+            "## Discuss",
+            "",
+            "- discuss",
+            "",
+            "## References",
+            "",
+            "- [guide](docs/guide.md)",
+            "",
+        ]
+    )
+    (repo / "docs" / "candidate.md").write_text(good + "\n", encoding="utf-8")
+    result = _run(
+        "scripts/validate_handoff_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-path",
+        "docs/candidate.md",  # relative on purpose
+    )
+    assert result.returncode == 0, result.stderr
+    assert "candidate.md" in result.stdout
+
+
+def test_lesson_that_is_only_a_class_tag_is_skipped(tmp_path) -> None:
+    """A bullet whose entire content is the tag must not become an empty lesson.
+
+    Covers the post-strip `continue`: stripping the marker can empty the text, and
+    an empty lesson would otherwise be indexed with a blank display string.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import recent_lessons_lib as lib
+
+    retro_dir = tmp_path / "charness-artifacts" / "retro"
+    retro_dir.mkdir(parents=True)
+    (retro_dir / "2026-07-27-demo.md").write_text(
+        "# Session Retro: demo\nDate: 2026-07-27\nMode: session\n\n"
+        "## Waste\n\n- recurrence-class: only-a-tag\n- a real lesson\n\n"
+        "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-07-27-demo.md\n",
+        encoding="utf-8",
+    )
+    payload = lib.build_lesson_selection_index(
+        repo_root=tmp_path, output_dir=retro_dir, summary_path=retro_dir / "recent-lessons.md"
+    )
+    lessons = [c["lesson"] for c in payload["candidates"]]
+    assert "a real lesson" in lessons
+    assert "" not in lessons, "a tag-only bullet must be skipped, not indexed blank"
+
+
+def test_source_tree_marker_with_unreadable_manifest_is_not_a_source_tree(tmp_path) -> None:
+    """A corrupt marker must read as 'not a source tree', never crash the guard."""
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import helper_provenance_lib as lib
+
+    root = tmp_path / "repo"
+    root.mkdir()
+    marker = root / lib.SOURCE_TREE_MARKER
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text("{not json", encoding="utf-8")
+    assert lib.is_charness_source_tree(root) is False
+
+
+def test_charness_version_skips_unreadable_and_non_dict_manifests(tmp_path) -> None:
+    """Version lookup walks past a corrupt or wrong-shaped manifest to the next one."""
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import helper_provenance_lib as lib
+
+    root = tmp_path / "repo"
+    root.mkdir()
+    sources = list(lib._VERSION_SOURCES)
+    first = root / sources[0]
+    first.parent.mkdir(parents=True, exist_ok=True)
+    first.write_text("{broken", encoding="utf-8")
+    # No readable manifest anywhere -> None rather than an exception.
+    assert lib.charness_version(root) is None
+
+    if len(sources) > 1:
+        second = root / sources[1]
+        second.parent.mkdir(parents=True, exist_ok=True)
+        second.write_text('{"version": "9.9.9"}', encoding="utf-8")
+        assert lib.charness_version(root) == "9.9.9"
+
+
+def test_probed_options_with_values_is_empty_when_the_probe_failed() -> None:
+    """A depth that never probed clean contributes no options, rather than raising."""
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import check_documented_command_flags as gate
+
+    class _Probe:
+        def result_or_none(self, _script, _path):
+            return None
+
+        def text(self, _script, _path):  # pragma: no cover - must not be reached
+            raise AssertionError("text() must not be called when the probe is absent")
+
+    assert gate._probed_options_with_values(_Probe(), "demo", ()) == set()
+
+    class _Failed(_Probe):
+        def result_or_none(self, _script, _path):
+            import subprocess as _sp
+
+            return _sp.CompletedProcess(args=["x"], returncode=2, stdout="", stderr="")
+
+    assert gate._probed_options_with_values(_Failed(), "demo", ()) == set()
+
+
+def test_attention_scan_roots_include_skills_shared_when_present(tmp_path) -> None:
+    """`skills/shared` must be scanned in the source layout, and skipped when absent.
+
+    It sat outside every scan root, so its declarations could never be satisfied.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import validate_attention_state_visibility as gate
+
+    repo = tmp_path / "repo"
+    for rel in ("skills/public", "skills/support"):
+        (repo / rel).mkdir(parents=True)
+    without = {str(root) for root in gate.default_scan_roots(repo)}
+    (repo / "skills" / "shared").mkdir()
+    with_shared = {str(root) for root in gate.default_scan_roots(repo)}
+    assert len(with_shared) == len(without) + 1
+    assert any("shared" in root for root in with_shared)
+    assert not any("shared" in root for root in without)
