@@ -9,13 +9,15 @@
 
 ## Continuation Capability
 
-The backlog is empty on the tracker — zero open issues. This session pushed the
-prior run (closing #459), closed F9, and published `2.11.2` (release verified,
-notes carry the unmarked-is-not-verified complement).
-[The F9 critique](../charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md)
-and [the release critique](../charness-artifacts/critique/2026-07-27-v2-11-2-release-critique.md)
-hold twenty findings between them, ten rejected. No decisions pending.
-The auto-retro asks whether this session also owes a full `retro`; it was not run.
+Pushed the prior run (closing #459), closed F9, published `2.11.2`, ran the
+session retro, and closed the foreign-copy question. Three issues are open and
+the chunker unions them with the entries below: **#460** (critique packet binding
+sweeps the artifact it describes), **#461** (fingerprint verify has no review
+window), **#463** (only one foreign-writable artifact is recompute-validated).
+No decisions pending — the foreign-copy
+[spec](../charness-artifacts/spec/2026-07-27-foreign-copy-write-enforcement.md)
+is decided: target-side rejected, message fixed, entrypoint guard landed with its
+claim reduced.
 
 ## Current State
 
@@ -40,12 +42,11 @@ The auto-retro asks whether this session also owes a full `retro`; it was not ru
    distinguish "issue states checked, none closed" from "never asked". The
    path check always runs; the residual is issue citations only, because the
    issue check is gated behind `--with-issues`.
-2. **`emit_payload_main --write` and scaffold fill guards (D28 remainder).** The
-   report-all half is fully resolved; these two never were. Fill guards want an
-   observed n-fold rework instance for the family in question before landing.
-3. **Suite speed beyond the git-identity fix.** Census: 11756 spawns, git still 68%
-   (`rev-parse` 1322, `ls-files` 774, `add` 672). The in-process `run_script` lever
-   is unmeasured. Spawn count is the honest metric; 16-worker wall-clock is noise.
+2. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards). Fill
+   guards want an observed n-fold rework instance before landing.
+3. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774,
+   `add` 672). In-process `run_script` is the unmeasured lever; spawn count is
+   the honest metric, 16-worker wall-clock is noise.
 4. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
    real shared `.charness/usage-episodes/` tree and assert byte-identity after a CLI
    subprocess, so a live SessionStart hook or concurrent `run-quality.sh` fails them

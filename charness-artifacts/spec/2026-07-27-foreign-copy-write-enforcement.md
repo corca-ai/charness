@@ -2,7 +2,14 @@
 
 Date: 2026-07-27
 
-Status: draft — operator decision pending
+Status: decided 2026-07-27 — option 3 + option 2 adopted, option 1 rejected
+
+Executed in `9356697a`: the misleading validator message is fixed (#462, closed)
+and the entrypoint guard landed with its six review defects repaired and its
+claim reduced to "fast failure for copies that carry it". Option 1 was rejected
+because recompute-and-compare applies only to derived artifacts and a provenance
+stamp needs cooperation the stale copy cannot give; the residual it exposed is
+tracked separately as #463.
 
 ## Problem
 
@@ -37,7 +44,7 @@ What actually contained the 2026-07-27 incident was the **consumer** side: the
 target repo's `validate-retro-lesson-index` rejected the foreign artifact and
 the publish rolled back. Target-side detection worked and failed closed.
 
-## Decision needed
+## Decision (resolved — see Status)
 
 Three candidate directions, not mutually exclusive:
 
