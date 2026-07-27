@@ -360,10 +360,22 @@ def _format_failure(report: dict[str, Any]) -> str:
             missing = ", ".join(f"#{number}" for number in item["missing_close_keywords"])
             lines.append(f"  missing close keywords: {missing}")
         if item.get("missing_fields"):
-            lines.append(f"  missing ledger fields: {', '.join(item['missing_fields'])}")
+            # "missing" alone misdescribes the dominant post-B1 cause: the field
+            # is physically present and carries a placeholder (`N/A`, `TBD`).
+            lines.append(f"  missing or placeholder ledger fields: {', '.join(item['missing_fields'])}")
         critique = item.get("resolution_critique_check", {})
         if not critique.get("ok", True):
             lines.append("  missing/invalid resolution critique evidence")
+            # This is the ONLY carrier that can block `git commit`, and the
+            # library already built the specific reason (wrong enum head, or a
+            # signal under the detail floor). Dropping it left the author with
+            # nine words and no diagnosis on the one surface that stops them.
+            for entry in critique.get("invalid_skips", []):
+                lines.append(f"    {entry.get('name')}: {entry.get('detail')}")
+            for entry in critique.get("missing_evidence_files", []):
+                lines.append(f"    {entry.get('name')}: evidence file missing or empty: {entry.get('path')}")
+            for failure in critique.get("binding_failures", []):
+                lines.append(f"    #{failure.get('number')}: {failure.get('reason')}")
         behavioral = item.get("behavioral_verdict", {})
         if behavioral.get("applies") and not behavioral.get("ok", True):
             missing_behavior = ", ".join(f"#{number}" for number in behavioral.get("missing", []))

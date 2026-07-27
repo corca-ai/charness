@@ -318,7 +318,13 @@ def test_check_goal_artifact_cli_reports_invalid_skips(tmp_path: Path, monkeypat
 
     assert result.returncode == 1
     payload = json.loads(result.stdout)
-    assert "invalid skips: retro_artifact, host_log_probe" in payload["issues"][-1]
+    issue = payload["issues"][-1]
+    assert "invalid skips: retro_artifact" in issue
+    assert "host_log_probe" in issue
+    # Names alone are not actionable: the library already builds the specific
+    # reason (wrong enum head, or a detail under the floor) and this surface used
+    # to discard it, so an author saw which name failed but never why.
+    assert "skip reason must start with one of" in issue
 
 
 def test_check_goal_artifact_cli_reports_unbound_evidence(tmp_path: Path, monkeypatch, capsys) -> None:

@@ -36,6 +36,21 @@ _load_local = runpy.run_path(
 _strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
 
 
+def min_blocked_signal_length() -> int | None:
+    """The floor a `Critique: blocked <signal>` signal must clear, or ``None``
+    when the shared helper is not resolvable.
+
+    Read live from the owning library rather than restated, so the author-facing
+    shape describer cannot drift from the gate the way it did when the floor
+    moved. Returns ``None`` instead of raising: a describer that cannot reach the
+    helper should omit the number, never invent one or crash.
+    """
+    try:
+        return int(_load_shared_helper().MIN_SKIP_DETAIL_LENGTH)
+    except Exception:
+        return None
+
+
 def _critique_lines(body: str) -> list[dict[str, Any]]:
     plain = "\n".join(_strip_code_fences(body))
     lines: list[dict[str, Any]] = []

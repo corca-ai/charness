@@ -665,3 +665,30 @@ def test_commit_msg_gate_bare_close_honors_unfenced_classification_line(tmp_path
     report = json.loads(result.stdout)["reports"][0]
     assert report["classification"] == "question"
     assert report["behavioral_verdict"]["applies"] is False
+
+
+def test_commit_msg_gate_renders_the_specific_critique_failure(tmp_path: Path) -> None:
+    """The commit-msg hook is the ONLY carrier that can block `git commit`, and
+    it was the one printing the least.
+
+    `check_prescribed_skill_executed_lib` builds a specific, actionable reason
+    for every invalid skip (wrong enum head, or a signal under the detail floor);
+    `_format_failure` computed it, carried it in the report, and then rendered
+    nine words with no diagnosis. The sibling carriers both surface it."""
+    _init_repo(tmp_path)
+    body = _bug_closeout_body().replace(
+        "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
+        "Critique: blocked host-down badly",
+    ).replace("Prevention: commit-msg blocks missing closeout carriers.", "Prevention: N/A")
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
+
+    human_readable = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+
+    assert human_readable.returncode == 1
+    stderr = human_readable.stderr
+    assert "resolution_critique: skip reason too short" in stderr
+    # A placeholder field is present-but-empty, not absent; "missing" alone
+    # misdescribes the dominant post-B1 cause.
+    assert "missing or placeholder ledger fields: prevention" in stderr

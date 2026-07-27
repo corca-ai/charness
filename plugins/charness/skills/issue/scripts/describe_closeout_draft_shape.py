@@ -22,6 +22,13 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 _VERIFY = _load_local("issue_verify_closeout")
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique")
+
+
+def _min_signal_clause() -> str:
+    """Render the blocked-signal floor from the live constant, or omit the number
+    when the shared helper is unreachable. Never invents a value."""
+    minimum = _CRITIQUE.min_blocked_signal_length()
+    return f" >= {minimum} chars" if minimum is not None else " specific enough to be a real host signal"
 _CLOSEOUT_DRAFT_STUB_TEMPLATE = (
     Path(__file__).resolve().parent / "templates" / "closeout_draft_stub.txt"
 ).read_text(encoding="utf-8")
@@ -76,7 +83,11 @@ def required_shape() -> str:
         "    BINDS to the issue number (its basename or content contains `#N`/the number).",
         "  - the cited critique must itself pass `validate_critique_artifacts` (a blocked",
         "    fresh-eye satisfaction there needs `host signal:` / `tool signal:`);",
-        "    `Critique: blocked <reason>` records a host-blocked-subagent fallback.",
+        "    `Critique: blocked <signal>` records a host-blocked-subagent fallback; the",
+        f"    SIGNAL you write must be{_min_signal_clause()} long (the"
+        " `host-blocked-subagent:`",
+        "    head the skill prepends does not count toward it), and a skipped critique",
+        "    prints a non-blocking `REVIEW: ... was SKIPPED` line.",
         "",
     ]
     lines += _ledger_block()

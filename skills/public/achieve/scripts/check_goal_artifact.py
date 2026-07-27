@@ -77,7 +77,11 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
         )
     if evidence_report["invalid_skips"]:
         bits.append(
-            "invalid skips: " + ", ".join(entry["name"] for entry in evidence_report["invalid_skips"])
+            "invalid skips: "
+            + ", ".join(
+                f"{entry['name']} ({entry['detail']})" if entry.get("detail") else entry["name"]
+                for entry in evidence_report["invalid_skips"]
+            )
         )
     if evidence_report.get("binding_failures"):
         bits.append(

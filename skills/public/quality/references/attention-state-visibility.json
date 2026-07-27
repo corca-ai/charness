@@ -901,6 +901,19 @@
       ],
       "rationale": "resolve_states_for_repo returns an EMPTY state map plus a typed diagnostic when the handoff adapter's issue_source is disabled or the tracker cannot be resolved, so the cited-issue half of the staleness check did not run. The parse payload reports this as staleness.issue_states_checked=false with the diagnostic attached, never as an empty closed_issues list -- 'nothing was closed' and 'nothing was checked' are the same empty tuples on the entries, and a reader who cannot tell them apart trusts a backlog line the tracker was never asked about. Facts-only path: no verdict, no entry is dropped, and unknown is never reported as closed."
     },
+    "skills/public/issue/scripts/describe_closeout_draft_shape.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "was SKIPPED",
+        "blocked <signal>"
+      ],
+      "rationale": "Author-time shape SOURCE for the issue closeout draft: it prints the `Critique: blocked <signal>` author syntax and names the non-blocking `REVIEW: ... was SKIPPED` advisory that the issue carriers emit when a critique is skipped rather than executed (B2), so an author learns before drafting that a skip is recorded and loud, not silent. The `SKIPPED` token is documentation of ANOTHER surface's advisory text surfaced verbatim to the operator, never a runtime exit-zero status of this script."
+    },
     "skills/public/issue/scripts/issue_create.py": {
       "states": [
         "skipped"

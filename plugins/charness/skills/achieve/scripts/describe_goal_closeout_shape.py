@@ -78,6 +78,7 @@ _CLOSEOUT_STUB_TEMPLATE = (
 def required_shape() -> str:
     skip_enum = ", ".join(sorted(_PRESCRIBED.ALLOWED_SKIP_REASONS))
     min_skip = _PRESCRIBED.MIN_SKIP_LENGTH
+    min_skip_detail = _PRESCRIBED.MIN_SKIP_DETAIL_LENGTH
     min_optout = _DISPOSITION.MIN_OPTOUT_REASON
     valid_form = _DISPOSITION_FORM.VALID_FORM_SUMMARY
     dest_form = _DISPOSITION_FORM.DESTINATION_FORM_SUMMARY
@@ -93,8 +94,9 @@ def required_shape() -> str:
         "    `/goal @<...-slug>` minus the date prefix). Citing an unrelated pre-existing",
         "    artifact fails the binding check. A bare path, not `<path>`/`TODO`/`TBD`.",
         f"  - OR `skipped: <reason>: <detail>` where <reason> is one of: {skip_enum}",
-        f"    (free text is rejected) and the DETAIL after that head is >= {min_skip} chars",
-        "    (the enum head itself does not count toward the floor).",
+        f"    (free text is rejected), the whole reason is >= {min_skip} chars, AND the",
+        f"    DETAIL after the enum head is >= {min_skip_detail} chars (the head itself does",
+        "    not count toward the detail floor).",
         "",
         "`## Coordination Cues` — `Routing:` must NAME the selected owner skill and basis",
         "for recorded work (e.g. `Routing: impl — selected from installed metadata for the",
@@ -135,7 +137,11 @@ def _evidence_unsatisfied(ev: dict[str, Any], name: str) -> str | None:
             return f"evidence file not found: {entry.get('path', '')}"
     for entry in ev.get("invalid_skips", []):
         if entry.get("name") == name:
-            return "skip reason is not an allowed enum"
+            # The library already builds the specific reason (wrong enum head, or
+            # a detail under the floor). A fixed "not an allowed enum" string was
+            # a mostly-right guess when the enum was the dominant cause, and is
+            # an actively wrong diagnosis for a length failure.
+            return entry.get("detail") or "skip reason is not an allowed enum"
     for entry in ev.get("binding_failures", []):
         if entry.get("name") == name:
             return "evidence file does not bind to this goal's slug"
