@@ -96,20 +96,44 @@ def _render_non_goals(chunk: ChunkCandidate) -> str:
     return "\n".join(lines)
 
 
+def _collect(chunk: ChunkCandidate, field: str) -> list:
+    """Sorted union of one per-entry tuple field across the chunk's entries."""
+    return sorted({value for entry in chunk.entries for value in getattr(entry, field)})
+
+
 def _render_boundaries(chunk: ChunkCandidate) -> str:
-    """Boundaries seeded with the in-scope paths + portability invariant."""
-    in_scope_paths = sorted(
-        {path for entry in chunk.entries for path in entry.referenced_paths}
-    )
+    """Boundaries seeded with the in-scope paths + portability invariant.
+
+    A cited path the parser reported as `missing_paths` is never asserted as
+    in scope: a non-empty fact means the check ran and the path is gone, so
+    rendering it beside live paths would make the goal artifact claim a moved
+    path is still the work surface. Empty means "clean OR not checked", which
+    is why only the non-empty case renders a marker.
+    """
+    cited = _collect(chunk, "referenced_paths")
+    missing = _collect(chunk, "missing_paths")
+    in_scope_paths = [path for path in cited if path not in missing]
     if in_scope_paths:
         in_scope = "- In scope: " + ", ".join(f"`{path}`" for path in in_scope_paths)
+    elif missing:
+        in_scope = (
+            "- In scope: paths to be named during the achieve Before-phase "
+            "(every path the source handoff entry cited is missing — see below)."
+        )
     else:
         in_scope = (
             "- In scope: paths to be named during the achieve Before-phase "
             "(the source handoff entry referenced no explicit paths)."
         )
-    lines = [
-        in_scope,
+    lines = [in_scope]
+    if missing:
+        lines.append(
+            "- NOT asserted in scope: "
+            + ", ".join(f"`{path}`" for path in missing)
+            + " — cited by the source entry but absent from the worktree at "
+            "draft time; re-target or confirm before treating as the work surface."
+        )
+    lines += [
         "- Portable per implementation-discipline: no host-specific assumption.",
         "- Stop conditions: name on first discovery; do not guess.",
     ]
@@ -121,6 +145,11 @@ def _render_context_sources(chunk: ChunkCandidate) -> str:
 
     Bullet-list only (no intro line) so the standard goal-artifact
     convention is preserved — slice-5 critique bundle-anyway 1.
+
+    Citations the parser reported as stale carry their marker inline, so the
+    Before-phase reads "cited, and known-dead at draft time" instead of a
+    plain citation it would trust. Only non-empty facts mark; an empty fact
+    means clean OR not-checked and stays silent rather than asserting fresh.
     """
     lines: list[str] = []
     for entry in chunk.entries:
@@ -128,16 +157,30 @@ def _render_context_sources(chunk: ChunkCandidate) -> str:
             f"- Source: handoff entry #{entry.index} ({entry.title}) — "
             "see [docs/handoff.md](../../docs/handoff.md)."
         )
-    cited = sorted(
-        {path for entry in chunk.entries for path in entry.referenced_paths}
-    )
-    for path in cited:
-        lines.append(f"- Cited path: `{path}`")
-    issues = sorted(
-        {issue for entry in chunk.entries for issue in entry.referenced_issues}
-    )
-    for issue in issues:
-        lines.append(f"- Cited issue: #{issue}")
+    missing = set(_collect(chunk, "missing_paths"))
+    for path in _collect(chunk, "referenced_paths"):
+        marker = (
+            " — MISSING from the worktree at draft time; verify or re-target "
+            "before planning from it." if path in missing else ""
+        )
+        lines.append(f"- Cited path: `{path}`{marker}")
+    closed = set(_collect(chunk, "closed_issues"))
+    unresolved = set(_collect(chunk, "unresolved_issues"))
+    for issue in _collect(chunk, "referenced_issues"):
+        if issue in closed:
+            marker = (
+                " — CLOSED on the tracker at draft time; confirm residual work "
+                "exists before planning from it."
+            )
+        elif issue in unresolved:
+            marker = (
+                " — state UNRESOLVED (the tracker was asked and did not "
+                "answer); check the issue before planning from it, and do "
+                "not read this as open."
+            )
+        else:
+            marker = ""
+        lines.append(f"- Cited issue: #{issue}{marker}")
     return "\n".join(lines)
 
 

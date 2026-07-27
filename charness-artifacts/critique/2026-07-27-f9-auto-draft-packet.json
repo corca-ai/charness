@@ -1,0 +1,91 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-27T04:10:37Z",
+  "prepared_for": "auto-draft stale-citation markers (F9)",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-07-27-f9-auto-draft-packet.json\n- charness-artifacts/critique/2026-07-27-f9-auto-draft-packet.md\n- charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md\n- charness-artifacts/quality/sloc-inventory/latest.json\n- docs/handoff-chunked-routing.md\n- docs/handoff.md\n- plugins/charness/skills/handoff/references/chunked-routing.md\n- plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py\n- skills/public/handoff/references/chunked-routing.md\n- skills/public/handoff/scripts/chunked_routing_auto_draft.py\n- tests/test_handoff_chunker_auto_draft.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/handoff/references/chunked-routing.md, skills/public/handoff/scripts/chunked_routing_auto_draft.py\n  derived matches: plugins/charness/skills/handoff/references/chunked-routing.md, plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-07-27-f9-auto-draft-packet.md, charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md, docs/handoff-chunked-routing.md, docs/handoff.md, skills/public/handoff/references/chunked-routing.md\n  derived matches: plugins/charness/skills/handoff/references/chunked-routing.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/handoff/references/chunked-routing.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/handoff/references/chunked-routing.md, skills/public/handoff/scripts/chunked_routing_auto_draft.py\n  derived matches: plugins/charness/skills/handoff/references/chunked-routing.md, plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/handoff/references/chunked-routing.md, skills/public/handoff/scripts/chunked_routing_auto_draft.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/handoff/references/chunked-routing.md, skills/public/handoff/scripts/chunked_routing_auto_draft.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-27-f9-auto-draft-packet.json, charness-artifacts/critique/2026-07-27-f9-auto-draft-packet.md, charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/test_handoff_chunker_auto_draft.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/handoff/scripts/chunked_routing_auto_draft.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "d8c4204b6bc6da4cd9ce3100f15a3b538f094d2a",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "docs/handoff-chunked-routing.md",
+      "plugins/charness/skills/handoff/references/chunked-routing.md",
+      "plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py",
+      "skills/public/handoff/references/chunked-routing.md",
+      "skills/public/handoff/scripts/chunked_routing_auto_draft.py",
+      "tests/test_handoff_chunker_auto_draft.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "docs/handoff-chunked-routing.md",
+        "content_sha256": "1acbb5ef4e7ac275df837e7dbd1ab93061724f664e03c51c6aa7dd7fbd19c9ed"
+      },
+      {
+        "path": "plugins/charness/skills/handoff/references/chunked-routing.md",
+        "content_sha256": "02212473459826c7c4f9ea1cc08e9795f5968d853a5db3a88fc8b7a88eadb2b5"
+      },
+      {
+        "path": "plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py",
+        "content_sha256": "dfe5401f771179c29c6edd4b8e4b4cd4665d75ed75cb901c5fae726cc62220a6"
+      },
+      {
+        "path": "skills/public/handoff/references/chunked-routing.md",
+        "content_sha256": "02212473459826c7c4f9ea1cc08e9795f5968d853a5db3a88fc8b7a88eadb2b5"
+      },
+      {
+        "path": "skills/public/handoff/scripts/chunked_routing_auto_draft.py",
+        "content_sha256": "dfe5401f771179c29c6edd4b8e4b4cd4665d75ed75cb901c5fae726cc62220a6"
+      },
+      {
+        "path": "tests/test_handoff_chunker_auto_draft.py",
+        "content_sha256": "5c3395244fa5634cb51aa84636624c9737f7c764c1c0eb0429961c37b9634ff8"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "a7d8fab9d8c5f757ba801e12da2ba64daf2ea145a75dc5d28ed7511da1281320",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "0ece08a736c49385ca38c40f5ce8e8ee8f4569fc7f90b883586bd38152ee1b58"
+  }
+}

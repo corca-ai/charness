@@ -82,8 +82,9 @@ step 4 is the active agent.
    names.
 
    Each entry also carries **resolvable-ness facts**: `missing_paths` (cited
-   paths that no longer exist) and `closed_issues` (cited issues the tracker
-   reports as not-open), plus a top-level `staleness` summary. These are facts,
+   paths that no longer exist), `closed_issues` (cited issues the tracker
+   reports as not-open), and `unresolved_issues` (cited issues the tracker was
+   asked about and did not answer for), plus a top-level `staleness` summary. These are facts,
    never verdicts — an entry whose paths moved may still be real work, so
    nothing drops it, and an unreachable tracker reports the check as NOT RUN
    rather than as nothing-is-closed. Read them before ranking: staleness found
@@ -143,7 +144,11 @@ step 4 is the active agent.
    Sources, and leaves User Acceptance / Agent Verification Plan /
    Slice Plan (header rows only) / Interview Decisions / Plan
    Critique Findings as placeholder lines for the achieve
-   Before-phase to fill. The drafter validates the result with
+   Before-phase to fill. Boundaries never asserts a `missing_paths` path as
+   in scope, and a stale citation carries an inline `MISSING` / `CLOSED` /
+   `UNRESOLVED` marker; markers render only from a non-empty fact, so an
+   unmarked citation means clean OR not-checked, never "verified live".
+   The drafter validates the result with
    `check_goal_artifact.check_goal` in-process; an artifact that
    fails the gate is rolled back. On success the draft is still
    **unshaped** (User Acceptance / Agent Verification Plan / Slice

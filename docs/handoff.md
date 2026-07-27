@@ -9,17 +9,19 @@
 
 ## Continuation Capability
 
-**Push first.** The 2026-07-27 backlog run resolved #459 plus the three
-operator-decided items, but its commit is unpushed, so #459 is still OPEN on the
-tracker until `Closes #459` lands. [The run critique](../charness-artifacts/critique/2026-07-27-handoff-backlog-1-3-validator-cli-unification-chunker-staleness-facts-content-line-budget.md)
-holds the ten findings and their dispositions. No decisions pending.
+The backlog is empty on the tracker — zero open issues. This session pushed the
+prior run (closing #459) and closed F9: the auto-draft now marks stale citations.
+[The F9 critique](../charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md)
+holds ten findings, six rejected as over-worry. No decisions pending.
 
 ## Current State
 
-- **The chunker now reports staleness facts before ranking.** Each entry carries
-  `missing_paths` / `closed_issues` / `unresolved_issues`, and the packet carries
-  a `staleness` block saying which checks ran. Read the block first: an empty
-  list means "open" only when the matching check is reported as run.
+- **The chunker reports staleness facts before ranking, and the auto-draft now
+  renders them.** Each entry carries `missing_paths` / `closed_issues` /
+  `unresolved_issues`; the packet carries a `staleness` block saying which
+  checks ran. An empty list means "open" only when the matching check is
+  reported as run — markers render from non-empty facts only, so an unmarked
+  citation is never a freshness claim.
 - **The handoff budget counts CONTENT lines now, not file length.** Blank lines,
   the required `##` headings, and all of `## References` are free. Trimming
   formatting or shortening links buys nothing — cut state instead.
@@ -28,11 +30,13 @@ holds the ten findings and their dispositions. No decisions pending.
 
 ## Next Session
 
-1. **Auto-draft renders a known-stale citation without a marker.** `_render_boundaries`
-   lists a missing path as `- In scope:` and `_render_context_sources` lists a
-   closed issue plainly, so the goal artifact asserts a moved path is in scope.
-   The facts are correctly not acted on; they are just dropped at the last
-   operator-facing surface. Deferred from the run's critique as F9.
+1. **The drafter cannot see whether a staleness check ran.** The parser's
+   top-level `staleness` block dies at `materialize_chunk_proposal_response`
+   and the ranker packet — `ChunkCandidate` has no field for it. So the
+   auto-draft marks positively-reported staleness (F9, now closed) but cannot
+   distinguish "issue states checked, none closed" from "never asked". The
+   path check always runs; the residual is issue citations only, because the
+   issue check is gated behind `--with-issues`.
 2. **`emit_payload_main --write` and scaffold fill guards (D28 remainder).** The
    report-all half is fully resolved; these two never were. Fill guards want an
    observed n-fold rework instance for the family in question before landing.
@@ -47,6 +51,11 @@ holds the ten findings and their dispositions. No decisions pending.
 
 ## Discuss
 
+- A critique packet's default working-tree binding sweeps the critique artifact
+  and the packet files themselves, so writing the artifact stales its own
+  binding. Scope it with `--reviewed-path` to the surfaces actually reviewed.
+  Same shape for the reviewer-boundary fingerprint: `verify` before applying
+  act-before-ship fixes, or the drift it reports is your own.
 - Skill loaders build a FRESH module object per import, with no `sys.modules`
   caching. Reading a module global back across a second load silently sees the
   unmutated copy; thread the value through explicitly instead.
@@ -55,5 +64,5 @@ holds the ten findings and their dispositions. No decisions pending.
 
 ## References
 
-- [run critique](../charness-artifacts/critique/2026-07-27-handoff-backlog-1-3-validator-cli-unification-chunker-staleness-facts-content-line-budget.md) · [chunked-routing contract](./handoff-chunked-routing.md) · [deferred decisions](./deferred-decisions.md)
+- [F9 critique](../charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md) · [chunked-routing contract](./handoff-chunked-routing.md) · [deferred decisions](./deferred-decisions.md)
 - [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)

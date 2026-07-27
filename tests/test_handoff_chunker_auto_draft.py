@@ -249,6 +249,97 @@ def test_context_sources_is_non_empty_with_citations(lib, chunk_from_entry_1):
     assert "Cited path:" in after_heading
 
 
+# Stale citations carry a marker -------------------------------------------
+
+
+def _stale_chunk(lib, **facts):
+    entry = lib.HandoffEntry(
+        index=1,
+        title="Work",
+        body="Fix docs/gone.md, tracked as #451.",
+        referenced_paths=("docs/gone.md", "docs/live.md"),
+        referenced_issues=(451, 452),
+        **facts,
+    )
+    return lib.ChunkCandidate(
+        entries=(entry,), label="chunk-1", objective_summary="Do the work"
+    )
+
+
+def _render(lib, chunk) -> str:
+    return lib.render_auto_draft_artifact(
+        chunk, date="2026-07-27", goal_rel="charness-artifacts/goals/x.md"
+    )
+
+
+def test_a_missing_path_is_not_asserted_in_scope(lib):
+    """The parser reported the path as gone; Boundaries must not claim it."""
+    text = _render(lib, _stale_chunk(lib, missing_paths=("docs/gone.md",)))
+    boundaries = _section_body(text, "Boundaries")
+    in_scope = next(
+        line for line in boundaries.splitlines() if line.startswith("- In scope:")
+    )
+    assert "docs/live.md" in in_scope
+    assert "docs/gone.md" not in in_scope
+    assert "NOT asserted in scope: `docs/gone.md`" in boundaries
+
+
+def test_every_cited_path_missing_does_not_claim_no_paths_were_cited(lib, goal_lib):
+    chunk = _stale_chunk(lib, missing_paths=("docs/gone.md", "docs/live.md"))
+    text = _render(lib, chunk)
+    boundaries = _section_body(text, "Boundaries")
+    assert "referenced no explicit paths" not in boundaries
+    assert "every path the source handoff entry cited is missing" in boundaries
+    # The only branch that empties the In-scope path list entirely.
+    assert goal_lib.check_goal(text)["ok"] is True
+
+
+def test_context_sources_marks_missing_paths_and_closed_issues(lib):
+    chunk = _stale_chunk(lib, missing_paths=("docs/gone.md",), closed_issues=(451,))
+    sources = _section_body(_render(lib, chunk), "Context Sources")
+    gone = next(line for line in sources.splitlines() if "docs/gone.md" in line)
+    live = next(line for line in sources.splitlines() if "docs/live.md" in line)
+    assert "MISSING from the worktree at draft time" in gone
+    assert "MISSING" not in live
+    closed = next(line for line in sources.splitlines() if "#451" in line)
+    assert "CLOSED on the tracker at draft time" in closed
+    assert "CLOSED" not in next(
+        line for line in sources.splitlines() if "#452" in line
+    )
+
+
+def test_a_marked_artifact_still_passes_check_goal(lib, goal_lib):
+    """Markers land inside gated sections; they must not break the gate."""
+    chunk = _stale_chunk(
+        lib,
+        missing_paths=("docs/gone.md",),
+        closed_issues=(451,),
+        unresolved_issues=(452,),
+    )
+    report = goal_lib.check_goal(_render(lib, chunk))
+    assert report["ok"] is True, report["issues"]
+
+
+def test_an_unresolved_issue_is_marked_rather_than_read_as_open(lib):
+    """Distinct from closed: the tracker was asked and did not answer."""
+    chunk = _stale_chunk(lib, unresolved_issues=(452,))
+    sources = _section_body(_render(lib, chunk), "Context Sources")
+    line = next(line for line in sources.splitlines() if "#452" in line)
+    assert "UNRESOLVED" in line and "do not read this as open" in line
+    # Every marker names a next step, not only a prohibition (critique C3).
+    assert "check the issue before planning from it" in line
+
+
+def test_clean_or_unchecked_facts_add_no_marker(lib):
+    """Empty facts mean clean OR not-checked, so the render stays silent."""
+    sources = _section_body(_render(lib, _stale_chunk(lib)), "Context Sources")
+    boundaries = _section_body(_render(lib, _stale_chunk(lib)), "Boundaries")
+    assert "MISSING" not in sources and "CLOSED" not in sources
+    assert "UNRESOLVED" not in sources
+    assert "NOT asserted in scope" not in boundaries
+    assert "`docs/gone.md`, `docs/live.md`" in boundaries
+
+
 # Placeholder-only sections (no prose / no data / no sub-headings) ----------
 
 

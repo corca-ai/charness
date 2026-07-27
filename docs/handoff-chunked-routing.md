@@ -173,6 +173,9 @@ class HandoffEntry:
                                         # resolve. FACT, not a verdict.
     closed_issues: tuple[int, ...]      # referenced_issues the tracker
                                         # reports as not-open. FACT.
+    unresolved_issues: tuple[int, ...]  # referenced_issues the tracker was
+                                        # ASKED about and did not answer for.
+                                        # FACT; distinct from "open".
 ```
 
 `missing_paths` / `closed_issues` are the resolvable-ness facts (#459). They
@@ -335,14 +338,25 @@ section:
     entry mentions release wording)
   - `Do not absorb adjacent handoff entries beyond the selected chunk.`
 - **Boundaries**: a bulleted list seeded with:
-  - `In scope: <referenced paths from the source entry, deduped>`
+  - `In scope: <referenced paths from the source entry, deduped>`, minus any
+    path the entry reports in `missing_paths` — a path the check positively
+    found gone is never asserted as the work surface
+  - `NOT asserted in scope: <missing paths>` when `missing_paths` is
+    non-empty; omitted entirely otherwise
   - `Portable per implementation-discipline: no host-specific assumption.`
   - the verbatim Stop Conditions line:
     `Stop conditions: name on first discovery; do not guess.`
 - **Context Sources**: seeded with the source handoff entry citation and
   any cited artifact paths from the entry body (preserves provenance for
   the achieve Before-phase per the goal artifact's slice-5 portability
-  decision).
+  decision). A citation the entry reports as stale carries an inline marker
+  — `MISSING` for a `missing_paths` entry, `CLOSED` for a `closed_issues`
+  entry, `UNRESOLVED` for an `unresolved_issues` entry.
+
+Markers render only from a **non-empty** fact. An empty fact means clean OR
+not-checked, so an unmarked citation is not a freshness claim; the drafter
+cannot currently see the top-level `staleness` block, which is why it never
+renders "checked and clean" either way.
 
 The writer leaves these sections as empty H2 headings with a single
 placeholder line:
