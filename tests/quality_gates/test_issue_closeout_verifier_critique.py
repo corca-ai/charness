@@ -413,3 +413,103 @@ def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> N
     payload = json.loads(result.stdout)
     assert payload["resolution_critique_check"]["ok"] is True
     assert payload["resolution_critique_check"]["skipped"][0]["name"] == "resolution_critique"
+
+
+def test_bug_closeout_rejects_blocked_critique_signal_that_only_the_head_made_long(tmp_path: Path) -> None:
+    """B2 regression at the carrier: a 17-character host signal used to close a
+    real GitHub issue.
+
+    The skill prepends `host-blocked-subagent: ` (23 chars) itself, so the enum
+    check validated a constant the caller supplied and the head's own characters
+    paid down the 40-char floor — leaving 17 characters of author-written signal
+    enough to skip the fresh-eye critique entirely. The floor now measures only
+    what the author wrote; the accepted control below is unchanged."""
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #42.",
+            critique_line="Critique: blocked xxxxxxxxxxxxxxxxx",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["resolution_critique_check"]["ok"] is False
+    invalid = payload["resolution_critique_check"]["invalid_skips"][0]
+    assert invalid["name"] == "resolution_critique"
+    assert "too short" in invalid["detail"]
+
+
+def test_accepted_blocked_critique_is_reported_as_skipped_not_executed(tmp_path: Path) -> None:
+    """A host skip that clears the floor still must not read like an executed
+    critique: the verdict is `ok: True` either way, so the check carries a
+    `REVIEW:` advisory naming the skip as the only distinguishing signal."""
+    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    check = payload["resolution_critique_check"]
+    assert check["ok"] is True
+    assert len(check["review_advisory"]) == 1
+    assert "was SKIPPED" in check["review_advisory"][0]
+    assert "#42" in check["review_advisory"][0]
+
+
+def test_verify_closeout_surfaces_the_skip_advisory_at_the_top_level(tmp_path: Path) -> None:
+    """The advisory has to sit where the operator reads the verdict.
+
+    `verify-closeout` emits JSON only; a REVIEW line three levels down under
+    `resolution_critique_check` beside a top-level `"ok": true` is the quiet path
+    that B2 is about. `close-with-comment` and the commit-msg carrier both carry
+    a top-level `review_advisory`; this carrier now does too."""
+    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert len(payload["review_advisory"]) == 1
+    assert "was SKIPPED" in payload["review_advisory"][0]
+
+
+def test_verify_closeout_top_level_advisory_is_empty_for_an_executed_critique(tmp_path: Path) -> None:
+    """Falsifiable counterpart: a real bound critique leaves the top-level
+    advisory empty, so the key discriminates rather than always firing."""
+    critique = tmp_path / "charness-artifacts" / "critique" / "res-42.md"
+    critique.parent.mkdir(parents=True, exist_ok=True)
+    critique.write_text("Critique of the #42 resolution.\n", encoding="utf-8")
+    _seed_commit(
+        tmp_path,
+        _bug_closeout_body(
+            close_line="Close #42.",
+            critique_line="Critique: charness-artifacts/critique/res-42.md",
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["review_advisory"] == []

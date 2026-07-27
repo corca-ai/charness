@@ -109,9 +109,26 @@ still calls the same presence-only `check()` today.
 | `issue-resolution` | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
-The helper validates that a `skip` reason is non-empty and not in the
-placeholder set (`{tbd, todo, n/a, missing}`). A skip without a substantive
-reason is not honest substitution.
+The helper validates a `skip` reason on two axes, both in
+[check_prescribed_skill_executed_lib.py](../scripts/check_prescribed_skill_executed_lib.py):
+
+1. it must **start with** one of the enum heads `host-blocked-subagent`,
+   `host-log-not-exposed`, `evaluator-unavailable`, followed by `:` and a detail;
+2. the whole reason must be at least `MIN_SKIP_LENGTH` (40) characters **and**
+   the detail after the enum head at least `MIN_SKIP_DETAIL_LENGTH` (20).
+
+The detail floor exists because several callers (`issue_resolution_critique`,
+`publish_release_preflight`) prepend the enum head themselves from an author
+shorthand. On those carriers the enum check validates a constant the caller
+supplied, so the length floor is the only blocking tooth — and the head's own
+characters were paying it down, which let a 17-character signal skip a mandatory
+fresh-eye critique on a GitHub issue close. The floor now measures only author
+text.
+
+Length refuses terseness; it cannot refuse a fluent excuse, and it is not sold as
+doing so. What distinguishes a skipped critique from an executed one is that the
+skip is surfaced as a non-blocking `REVIEW:` advisory on every issue carrier. A
+skip without a substantive reason is not honest substitution.
 
 ### Improvement-Disposition Gate (#253)
 

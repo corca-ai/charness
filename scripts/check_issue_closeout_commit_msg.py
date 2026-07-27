@@ -109,6 +109,29 @@ def _issue_closeout_artifacts(repo_root: Path, iter_refs: Any, strip_code_fences
 
 
 def _infer_classification(body: str) -> str:
+    """Classification for a staged closeout artifact.
+
+    An explicit ``Classification:`` line is a deliberate assertion and is
+    honored, including the floor-exempt values. Absent one, inference may only
+    reach classifications that keep the floors LIVE: the loose
+    ``decision:``/``answer:`` substring test used to hand the fully-exempt
+    ``question`` classification — which turns off the behavioral-verdict, AI-
+    provenance, and resolution-critique floors — to any artifact that happened to
+    contain the word ``Answer:`` anywhere in its body, including inside a quoted
+    log or a prose sentence (B3). ``_bare_classification`` was hardened against
+    exactly this and the hardening was not applied here; it is now. An artifact
+    that genuinely is a question must SAY so with ``Classification: question``,
+    which is one line and is auditable, rather than earning the exemption by
+    accident. Inference otherwise falls back to ``bug``, the strictest value.
+
+    The ``root cause:``/``debug artifact:`` branch is NOT redundant with that
+    fallback and must stay AHEAD of the ``feature`` branch. A real bug closeout
+    routinely carries both ``Root cause:`` and ``Implementation:``/``Resolution
+    brief:``, and ``feature``'s ledger demands neither ``debug_artifact`` nor the
+    ``siblings`` decision-and-proof check. Removing it as "already covered by the
+    fallback" reads correct and is not: it silently downgrades exactly those
+    closeouts to ``feature`` and drops two bug-only floors.
+    """
     explicit = _CLASSIFICATION_RE.search(body)
     if explicit is not None:
         return explicit.group("classification")
@@ -117,27 +140,29 @@ def _infer_classification(body: str) -> str:
         return "bug"
     if "resolution brief:" in lowered or "implementation:" in lowered:
         return "feature"
-    if "decision:" in lowered or "answer:" in lowered:
-        return "question"
     return "bug"
 
 
-def _bare_classification(body: str) -> str:
+def _bare_classification(body: str, strip_code_fences: Any = None) -> str:
     """Classification for a bare close-keyword commit message (no staged
     artifact backing it).
 
-    Honors an explicit ``Classification:`` line exactly like
-    ``_infer_classification`` — that is a deliberate assertion, not inference.
-    Unlike ``_infer_classification`` it never falls through to the loose
-    ``decision:``/``answer:`` substring heuristic, which could otherwise hand a
-    bare commit the fully-exempt ``question``/``decision-needed`` classification
-    (skipping the behavioral-verdict and resolution-critique floors) on nothing
-    more than an incidental word in the message. Absent an explicit line, a bare
-    close keyword defaults to ``bug`` — the strictest classification — so the
-    floor stays live; only a staged closeout artifact may carry an *inferred*
-    ``question``/``decision-needed`` exemption.
+    Honors an explicit ``Classification:`` line — a deliberate assertion, not
+    inference — and otherwise defaults to ``bug``, the strictest classification,
+    so the floors stay live. Neither this function nor ``_infer_classification``
+    infers a floor-exempt value from loose body text (B3).
+
+    ``strip_code_fences`` is required for that explicit read to be trustworthy.
+    The bare path receives the commit body with only ``#`` comments removed —
+    fences are deliberately NOT stripped for close-keyword scanning, because
+    GitHub parses the raw message and auto-closes on a fenced ``Fixes #123``.
+    Reusing that same raw text to read the classification let a ``Classification:
+    question`` line *inside a pasted code fence* assert the exemption, which is
+    the very shape B3 closed on the artifact path (that path strips fences before
+    classifying). Close keywords read raw; the classification reads stripped.
     """
-    explicit = _CLASSIFICATION_RE.search(body)
+    text = "\n".join(strip_code_fences(body)) if strip_code_fences is not None else body
+    explicit = _CLASSIFICATION_RE.search(text)
     if explicit is not None:
         return explicit.group("classification")
     return "bug"
@@ -200,6 +225,11 @@ def _exemption_advisories(reports: list[dict[str, Any]], advisory_fn: Any) -> li
                 source=report.get("source_artifact"),
             )
         )
+        # A resolution critique satisfied by a host-blocked skip rather than an
+        # executed review carries the same top-level verdict as a real one; the
+        # critique check's own advisory is the only thing that distinguishes
+        # them, so surface it on this carrier too (B2).
+        lines.extend(report.get("resolution_critique_check", {}).get("review_advisory", []))
     return lines
 
 
@@ -256,7 +286,9 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
                 repo_root=repo_root,
                 repo=repo,
                 numbers=bare_numbers,
-                classification=_bare_classification(sanitized_body),
+                classification=_bare_classification(
+                    sanitized_body, issue_verify_closeout.strip_code_fences
+                ),
                 carrier="pr-body",
                 backend={"id": "gh"},
                 body_file=sanitized_file,
@@ -317,6 +349,13 @@ def _format_failure(report: dict[str, Any]) -> str:
             )
         else:
             lines.append(f"- {source}: {numbers}")
+        # Name the classification the floors were actually run against. Which
+        # ledger a body owes depends entirely on it, and it can be INFERRED
+        # rather than declared, so "missing ledger fields: boundary" is
+        # undiagnosable without it — the author cannot tell that their
+        # `Classification: bug.` line was not read as a declaration.
+        if item.get("classification"):
+            lines.append(f"  classification checked: {item['classification']}")
         if item.get("missing_close_keywords"):
             missing = ", ".join(f"#{number}" for number in item["missing_close_keywords"])
             lines.append(f"  missing close keywords: {missing}")
@@ -348,6 +387,11 @@ def _format_failure(report: dict[str, Any]) -> str:
             "closeout artifact. If a close keyword above has no staged artifact and you do not want "
             "to carry the full closeout ledger in this commit, rewrite the keyword to a bare `#N` "
             "reference (e.g. `close #123` -> `#123`) so GitHub does not auto-close the issue on push."
+        )
+        lines.append(
+            "If this close really is a question or a recorded decision, declare it with an "
+            "explicit `Classification: question` / `Classification: decision-needed` line in the "
+            "staged artifact. That exemption is never inferred from body text."
         )
     return "\n".join(lines)
 

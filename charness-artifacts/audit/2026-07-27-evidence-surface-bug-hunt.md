@@ -4,8 +4,9 @@ Status: 30 defects reproduced by execution. A4, A7, C5 fixed and E2 partially
 fixed on 2026-07-27 as the empty-scope family; A1, A2 fixed and A9 partially
 fixed on 2026-07-27 as the containment family
 ([spec Decision 2](../spec/2026-07-27-foreign-copy-write-enforcement.md)); A3
-fixed the same day, on its own. The rest are OPEN. This file is the tracking
-record — update the Status column as items land.
+fixed the same day, on its own; B3 fixed, B2 fixed-narrowed and B1 partially
+fixed on 2026-07-27 as the issue-close carrier family. The rest are OPEN. This
+file is the tracking record — update the Status column as items land.
 
 ## Why this exists
 
@@ -141,9 +142,9 @@ worktree-walking validators skip entirely). And `CHARNESS_ALLOW_PARTIAL_STAGE=0`
 
 | id | Status | Defect | file:line |
 | --- | --- | --- | --- |
-| B1 | OPEN | `N/A` passes every rung-1 ledger floor; the placeholder entry is unreachable dead code | `skills/public/issue/scripts/issue_verify_closeout_body.py:45,114` |
-| B2 | OPEN | `Critique: blocked <17 chars>` skips the fresh-eye critique; the caller manufactures the allowed skip head | `skills/public/issue/scripts/issue_resolution_critique.py:64` |
-| B3 | OPEN | The word `Answer:` in a staged artifact infers the fully-exempt `question` classification | `scripts/check_issue_closeout_commit_msg.py:118` |
+| B1 | PARTIAL | `N/A` passes every rung-1 ledger floor; the placeholder entry is unreachable dead code — the entry is reachable now, but B5 still absorbs a bare placeholder into the following line (see below) | `skills/public/issue/scripts/issue_verify_closeout_body.py:45,114` |
+| B2 | FIXED (narrowed) | `Critique: blocked <17 chars>` skips the fresh-eye critique; the caller manufactures the allowed skip head — the length cliff and the silent-skip legibility are closed; the vacuous enum check is unfixable at rung-1 and stays scoped below | `skills/public/issue/scripts/issue_resolution_critique.py:64` |
+| B3 | FIXED | The word `Answer:` in a staged artifact infers the fully-exempt `question` classification | `scripts/check_issue_closeout_commit_msg.py:118` |
 | B4 | OPEN | The critique-to-issue binding accepts any standalone digit run, so a `Date:` line binds an unrelated critique | `skills/public/issue/scripts/issue_resolution_critique.py:91`, `scripts/check_prescribed_skill_executed_lib.py:43` |
 | B5 | OPEN | An empty ledger field absorbs the following `Behavior #N:` line as its value | `skills/public/issue/scripts/issue_verify_closeout_body.py:139` |
 
@@ -180,6 +181,65 @@ same commit message exits 0 when the staged artifact merely contains `Answer:`
 critique all report `applies: False`), and exits 1 when the artifact declares
 `Classification: bug`. A non-blocking `REVIEW:` advisory does print — the only
 mitigation. Class (b).
+
+**B1/B2/B3 — what landed, and what did not (2026-07-27).** All three repros are
+closed with controls; three bounded reviewers then found four things the fixes
+themselves got wrong or left silent, each repaired inside this slice.
+
+1. **B1 is PARTIAL because B5 outlives it.** The declared `n/a` placeholder is
+   reachable now (`N/A` behaves exactly as `TBD` always did), but `_body_fields`
+   appends any non-field line to the *preceding* field, so `Prevention: N/A`
+   followed by a `Behavior #42:` line still normalizes to a substantive value.
+   Measured: the all-`N/A` ledger reports 5 missing fields when nothing follows
+   it, and 3 when a `Behavior` line does. Bare-`N/A` refusal therefore holds only
+   for a field with no continuation line. That is B5, still `OPEN`.
+2. **B1 moved one floor toward PASS, deliberately and pinned.**
+   `evaluate_source_preservation` uses the same predicate as a gate-*opener*, so
+   `Source origin: N/A` flipped from refused to exempt. That reading is right — a
+   bare `N/A` origin asserts no external source, as omitting the field does, and
+   the old behavior demanded a preservation form for a source that does not
+   exist — but it is a floor loosening inside a tightening fix, so it carries its
+   own test rather than living as a side effect.
+3. **B2's real tooth is legibility, not length.** The enum head is manufactured
+   by the caller on this carrier, so the enum check validates a constant and
+   cannot be fixed at rung-1. The length floor now measures only author-written
+   text (`MIN_SKIP_DETAIL_LENGTH = 20`; the head's 23 characters no longer pay
+   it), which closes the confirmed 17-character cliff. It is set at 20 and not at
+   the 40-char total, because the repo's own genuine host signals run 24-39
+   characters — a 40-char detail floor sits above honest usage and buys padding.
+   **A fluent 40-character excuse still passes, and no length floor can refuse
+   one.** What changed is that a skipped critique is no longer byte-identical to
+   an executed one: every issue carrier now emits a non-blocking `REVIEW: … was
+   SKIPPED` line. The class-(b) verdict here is narrowed, not closed.
+4. **B3's first fix was a regression.** Removing the loose `question` inference
+   is right, but the same edit dropped the `root cause:`/`debug artifact:` →
+   `bug` branch as "redundant with the `bug` fallback". It is not: it precedes
+   the `feature` branch, and a real bug closeout carries both `Root cause:` and
+   `Implementation:`. Measured — such a body classified `feature`, whose ledger
+   demands neither `debug_artifact` nor the `siblings` decision-and-proof check,
+   so the fix silently dropped two bug-only floors before the branch was
+   restored. This is the fourth slice in a row where the review defect was inside
+   the fix.
+5. **B3 had a sibling escape on the other carrier.** The bare close-keyword path
+   reads the commit body with fences deliberately unstripped (GitHub auto-closes
+   on a fenced `Fixes #123`), and reused that raw text to read the
+   classification — so `Classification: question` inside a *pasted code fence*
+   asserted the exemption. Close keywords now read raw; the classification reads
+   stripped.
+
+Leads opened by the reviewers and **not** fixed here (out of B1-B3 scope, none
+parent-reproduced except where noted): `publish_release_preflight.py:251` is the
+same manufactured-head carrier at the publish boundary and got the floor but no
+advisory; `docs/prescribed-skill-closeout-contract.md` described a placeholder
+check the helper never had (fixed); `_CLASSIFICATION_RE` rejects the trailing
+period in `Classification: bug.`, which is the dominant checked-in convention, so
+those artifacts reach the floors by inference rather than declaration (harmless
+now that the `root cause:` branch is restored, live if it is removed again);
+`release_issue_closeout_message.py:9` lacks the bold `**Classification**:` form
+the hook has; and `check_resolution_critique` judges only `checks[0]` on the
+single-issue path, so a valid critique line followed by an invalid one reports
+`ok: True`. `none` is still not a placeholder value, and is a likelier
+hand-written empty than `N/A` was.
 
 **B4** — `_token_matches` treats any digit cluster with non-alphanumeric
 neighbours as a match, so `Date: 2026-07-27` binds #27 and #2026, `v0.42.1`
@@ -343,8 +403,13 @@ Class (f).
 
 - Fixes have landed for the rows whose Status column says so (A4, A7, C5, E2
   partial on the empty-scope slice; A1, A2, A9 partial on the containment
-  slice; A3 partially, on its own). Every other id above is `OPEN`. The Status column is the current
-  truth; this section is not a second status register.
+  slice; A3 partially, on its own; B3, B2 narrowed and B1 partial on the
+  issue-close carrier slice). Every other id above is `OPEN`. The Status column
+  is the current truth; this section is not a second status register.
+- B2 is `FIXED (narrowed)`, not closed: the length cliff and the silent-skip
+  legibility are fixed, and a fluent excuse of sufficient length still passes.
+  B1 is `PARTIAL`: bare-`N/A` refusal is real but B5 absorbs a placeholder into
+  the following line, so an all-`N/A` ledger is not uniformly refused.
 - A5, A7, D7, E5 and the empty-input cases are reproduced against synthetic
   roots; they are real behaviors of the code, not observed production incidents.
 - A8, A10, B5, C6, D8, D9, D10, E7 were reported by reviewers and are

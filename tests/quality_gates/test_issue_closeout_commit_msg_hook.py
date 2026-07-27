@@ -235,17 +235,52 @@ def test_commit_msg_gate_bare_close_with_answer_substring_defaults_to_bug_not_qu
     assert "debug_artifact" in report["missing_fields"]
 
 
-def test_commit_msg_gate_staged_artifact_question_inference_is_unaffected(tmp_path: Path) -> None:
-    """The bare-commit tightening must not regress the staged-artifact path: an
-    artifact whose body infers `question` through the existing loose
-    `answer:`/`decision:` heuristic still gets that classification and still
-    only needs the question-classification ledger fields — the exemption stays
-    available when a staged issue artifact carries the question-classified
-    ledger, exactly as before."""
+def test_commit_msg_gate_staged_artifact_never_infers_the_exempt_classification(tmp_path: Path) -> None:
+    """B3 regression: the fully-exempt `question`/`decision-needed`
+    classification must never be *inferred*.
+
+    `_bare_classification` was hardened against the loose `answer:`/`decision:`
+    substring heuristic and its sibling `_infer_classification` was not, so a
+    staged artifact containing the word `Answer:` anywhere in its body — a quoted
+    log, a prose sentence — bought the exemption that turns off the
+    behavioral-verdict, AI-provenance, and resolution-critique floors. Both
+    siblings now default to `bug`, the strictest classification, and the
+    exemption is reachable only by explicit declaration (control below)."""
     _init_repo(tmp_path)
     body = "\n\n".join(
         [
             "Close #55.",
+            "JTBD: decide whether to ship the change.",
+            "Answer: yes, proceed.",
+        ]
+    )
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "failed"
+    assert payload["artifacts"][0]["classification"] == "bug"
+    # The floors an inferred `question` would have silently switched off.
+    assert {"root_cause", "debug_artifact"} <= set(payload["reports"][0]["missing_fields"])
+    assert payload["review_advisory"] == []
+    human_readable = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    assert "Classification: question" in human_readable.stderr
+
+
+def test_commit_msg_gate_explicit_question_classification_still_exempts(tmp_path: Path) -> None:
+    """Control for the B3 regression above: the byte-identical body with an
+    explicit `Classification: question` line — a deliberate, auditable assertion
+    rather than an accident of wording — still gets the exemption and still needs
+    only the question-classification ledger fields."""
+    _init_repo(tmp_path)
+    body = "\n\n".join(
+        [
+            "Close #55.",
+            "Classification: question",
             "JTBD: decide whether to ship the change.",
             "Answer: yes, proceed.",
         ]
@@ -274,6 +309,7 @@ def test_commit_msg_gate_surfaces_exemption_advisory_for_question_close(tmp_path
     body = "\n\n".join(
         [
             "Close #55.",
+            "Classification: question",
             "JTBD: decide whether to ship the change.",
             "Answer: yes, proceed.",
         ]
@@ -303,6 +339,52 @@ def test_commit_msg_gate_bug_close_surfaces_no_exemption_advisory(tmp_path: Path
     _stage_issue_closeout(tmp_path, _bug_closeout_body())
     message = tmp_path / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "verified"
+    assert not [line for line in payload["review_advisory"] if "exempts this close" in line]
+
+
+def test_commit_msg_gate_surfaces_skipped_resolution_critique(tmp_path: Path) -> None:
+    """B2 regression: a resolution critique satisfied by a `blocked <signal>`
+    host skip carries a top-level verdict byte-identical to one satisfied by a
+    real critique (`ok: True`, `status: verified`), so a close whose fresh-eye
+    review never ran read exactly like one whose review did. Rung-1 cannot judge
+    whether the host block was genuine — the caller supplies both the enum head
+    and the signal — so the skip must at least be LOUD."""
+    _init_repo(tmp_path)
+    # `_bug_closeout_body` records `Critique: blocked <signal>`, a host skip.
+    _stage_issue_closeout(tmp_path, _bug_closeout_body())
+    message = tmp_path / "message.txt"
+    message.write_text(_bug_closeout_body(), encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "verified"
+    skip_advisories = [line for line in payload["review_advisory"] if "was SKIPPED" in line]
+    assert len(skip_advisories) == 1
+    assert "#42" in skip_advisories[0]
+    human_readable = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    assert "was SKIPPED" in human_readable.stderr
+
+
+def test_commit_msg_gate_executed_resolution_critique_surfaces_no_skip_advisory(tmp_path: Path) -> None:
+    """Falsifiable counterpart to the skip advisory: the same close carrying a
+    real bound critique artifact surfaces no skip advisory."""
+    _init_repo(tmp_path)
+    critique = tmp_path / "charness-artifacts" / "critique" / "closeout-42.md"
+    critique.parent.mkdir(parents=True, exist_ok=True)
+    critique.write_text("Critique of the #42 resolution.\n", encoding="utf-8")
+    body = _bug_closeout_body().replace(
+        "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
+        "Critique: charness-artifacts/critique/closeout-42.md",
+    )
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
 
     result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
     assert result.returncode == 0, result.stderr
@@ -490,3 +572,96 @@ def test_commit_msg_gate_stays_out_of_scope_for_template_faithful_brief(tmp_path
 
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["status"] == "not_applicable"
+
+
+def test_commit_msg_gate_bug_markers_outrank_feature_markers(tmp_path: Path) -> None:
+    """A real bug closeout carries BOTH `Root cause:` and `Implementation:` /
+    `Resolution brief:`. The `root cause:` -> `bug` branch must stay AHEAD of the
+    `feature` branch: `feature`'s ledger demands neither `debug_artifact` nor the
+    `siblings` decision-and-proof check, so classifying such a body as `feature`
+    silently drops two bug-only floors on an irreversible boundary.
+
+    Regression for a fix that removed that branch believing the trailing `bug`
+    fallback made it redundant. It does not — the fallback is only reached when
+    the `feature` branch does not match first."""
+    _init_repo(tmp_path)
+    body = "\n\n".join(
+        [
+            "Close #55.",
+            "JTBD: fix the gate.",
+            "Root cause: the helper never compared the readback.",
+            "Boundary: scripts/x.py only.",
+            "Resolution brief: compare the readback value.",
+            "Implementation: added the comparison.",
+            "Prevention: regression test.",
+        ]
+    )
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["artifacts"][0]["classification"] == "bug"
+    # The two floors a `feature` misclassification would have dropped.
+    assert {"debug_artifact", "siblings"} <= set(payload["reports"][0]["missing_fields"])
+    # The failure output must name the classification the floors ran against;
+    # `missing ledger fields: ...` is undiagnosable without it.
+    human_readable = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    assert "classification checked: bug" in human_readable.stderr
+
+
+def test_commit_msg_gate_bare_close_ignores_fenced_classification_line(tmp_path: Path) -> None:
+    """B3 sibling escape: the bare close-keyword path reads the commit body with
+    fences deliberately NOT stripped, because GitHub parses the raw message and
+    auto-closes on a fenced `Fixes #123`. Reusing that raw text to read the
+    classification let a `Classification: question` line inside a PASTED CODE
+    FENCE assert the fully-exempt classification — the same shape B3 closed on
+    the artifact path. Close keywords read raw; the classification reads
+    stripped."""
+    _init_repo(tmp_path)
+    message = tmp_path / "message.txt"
+    message.write_text(
+        "Fixes #123\n\n"
+        "Pasted from the issue thread:\n\n"
+        "```text\n"
+        "Classification: question\n"
+        "```\n\n"
+        "JTBD: decide whether to ship.\n\n"
+        "Answer: no, closing as answered.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 1
+    report = json.loads(result.stdout)["reports"][0]
+    assert report["trigger"] == "bare-close-keyword"
+    assert report["classification"] == "bug"
+    # The floors an inferred/fenced `question` would have switched off.
+    assert report["behavioral_verdict"]["applies"] is True
+    assert report["ai_provenance"]["applies"] is True
+    assert report["resolution_critique_check"]["ok"] is False
+
+
+def test_commit_msg_gate_bare_close_honors_unfenced_classification_line(tmp_path: Path) -> None:
+    """Control for the fenced case: the same declaration outside a fence is a
+    deliberate assertion and still grants the exemption."""
+    _init_repo(tmp_path)
+    message = tmp_path / "message.txt"
+    message.write_text(
+        "Fixes #123\n\n"
+        "Classification: question\n\n"
+        "JTBD: decide whether to ship.\n\n"
+        "Answer: no, closing as answered.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)["reports"][0]
+    assert report["classification"] == "question"
+    assert report["behavioral_verdict"]["applies"] is False

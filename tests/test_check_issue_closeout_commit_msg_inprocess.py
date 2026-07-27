@@ -19,10 +19,10 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_bare_classification_honors_explicit_classification_line() -> None:
-    # `_bare_classification` deliberately does NOT fall through to the loose
-    # `answer:`/`decision:` substring heuristic `_infer_classification` uses --
-    # only an explicit `Classification:` line overrides the strict `bug`
-    # default for a bare (no staged artifact) close-keyword commit.
+    # Neither classification helper falls through to a loose
+    # `answer:`/`decision:` substring heuristic any more (B3): only an explicit
+    # `Classification:` line overrides the strict `bug` default, on the bare
+    # (no staged artifact) close-keyword path and the staged-artifact path alike.
     body = "Fixes #77\n\nJTBD: ship the fix.\n\nClassification: question\n"
     assert checker._bare_classification(body) == "question"
 

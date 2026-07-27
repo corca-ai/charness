@@ -292,10 +292,21 @@ def verify_closeout(
         "scope": scope,
         "line": f"{verb}: {observer} via {channel} ({scope})" if ok else None,
     }
+    # Surfaced at the top level, not only three levels down under
+    # `resolution_critique_check`, and on the same key `close-with-comment` and
+    # the commit-msg carrier already use. A skipped fresh-eye critique produces a
+    # top-level verdict byte-identical to an executed one (`ok: True`,
+    # `status: carrier_verified`), so burying the one line that says otherwise
+    # made this carrier the quiet path (B2).
+    # Only the critique-skip advisory: the classification-exemption advisory is
+    # already owned and surfaced by each carrier (`issue_close.py`, the commit-msg
+    # hook), and duplicating it here would double-report it.
+    review_advisory = list(resolution_critique_check.get("review_advisory", []))
     result = {
         "ok": ok,
         "status": status,
         "confirmation": confirmation,
+        "review_advisory": review_advisory,
         "repo": repo,
         "numbers": numbers,
         "classification": classification,

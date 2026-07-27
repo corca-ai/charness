@@ -258,3 +258,69 @@ def test_validate_closeout_draft_blocks_silent_carrier_before_mutation(tmp_path:
     assert result.returncode == 2, result.stdout
     payload = json.loads(result.stdout)
     assert payload["behavioral_verdict"]["ok"] is False
+
+
+def test_ledger_floors_refuse_a_bare_na_placeholder(tmp_path: Path) -> None:
+    """B1 regression: `N/A` passed every rung-1 ledger floor.
+
+    `_normalize_field_name` maps every non-`[a-z0-9]` run to a space *before* the
+    placeholder-set test, so the set's own declared `"n/a"` entry could never be
+    produced by it and sat as unreachable dead code. `_has_substantive_value` is
+    the single predicate behind every ledger field, behavioral verdict, AI
+    provenance, HOTL disposition, and source-preservation floor on all carriers,
+    so one unreachable entry made an all-`N/A` closeout indistinguishable from a
+    filled one. Pinned against the `TBD` control that always worked."""
+    module = load_verify_module()
+    na_body = (
+        "Close #42.\n"
+        "JTBD: N/A\nRoot cause: N/A\nDebug artifact: N/A\nSiblings: N/A\nPrevention: N/A\n"
+    )
+    na_missing = module._missing_ledger_fields(na_body, "bug")
+    tbd_missing = module._missing_ledger_fields(na_body.replace("N/A", "TBD"), "bug")
+    assert {"jtbd", "root_cause", "debug_artifact", "siblings", "prevention"} <= set(na_missing)
+    # The control the defect was isolated against: `N/A` now behaves as `TBD` did.
+    assert set(na_missing) == set(tbd_missing)
+    # Falsifiable pair: a real ledger still passes, and a dismissal that carries a
+    # REASON is substantive — only the bare placeholder is refused.
+    assert module._missing_ledger_fields(bug_closeout_body(), "bug") == []
+    assert module._has_substantive_value("n/a - the issue was context only") is True
+
+
+def test_ledger_floors_refuse_every_declared_placeholder() -> None:
+    """Falsifiable sweep over the DECLARED set itself, not a hardcoded copy of
+    it: every value `_PLACEHOLDER_VALUES` names must actually be reachable
+    through the normalizer the comparison uses, so a future entry that the
+    normalizer cannot produce (the B1 shape) fails here when it is added."""
+    module = load_verify_module()
+    body_module = module._BODY
+    declared = body_module._PLACEHOLDER_VALUES
+    assert "n/a" in declared, "the entry B1 was about must stay declared"
+    for placeholder in declared:
+        assert module._has_substantive_value(placeholder) is False, placeholder
+        # Case is not part of the comparison space either.
+        assert module._has_substantive_value(placeholder.upper()) is False, placeholder
+    # Positive control so the all-negative sweep cannot pass on a broken predicate.
+    assert module._has_substantive_value("a real root cause sentence") is True
+
+
+def test_bare_na_source_origin_is_not_externally_sourced(tmp_path: Path) -> None:
+    """Recorded consequence of the B1 fix, pinned rather than left silent.
+
+    `evaluate_source_preservation` uses `_has_substantive_value` as a
+    gate-OPENER, not as a floor: a substantive `Source origin:` is what makes a
+    body externally sourced and therefore obliged to carry a preservation form.
+    Making bare `N/A` a placeholder therefore flips `Source origin: N/A` from
+    refused to exempt. That is the intended reading — a bare `N/A` origin asserts
+    there is no external source, exactly as omitting the field does, and the old
+    behavior demanded a preservation form for a source that does not exist — but
+    it is a floor moving toward PASS inside a fix that otherwise only tightens,
+    so it is pinned here. The falsifiable pair below is the case that must keep
+    failing: a REAL origin with no preservation form."""
+    module = load_verify_module()
+    exempt = module.evaluate_source_preservation("Source origin: N/A\n")
+    assert exempt["external_sourced"] is False
+    assert exempt["ok"] is True
+    real = module.evaluate_source_preservation("Source origin: slack thread in #eng\n")
+    assert real["external_sourced"] is True
+    assert real["missing"] is True
+    assert real["ok"] is False

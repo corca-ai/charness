@@ -42,6 +42,13 @@ def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
     return refs
 _HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<name>.+?)\s*$")
 _FIELD_RE = re.compile(r"^\s*(?:[-*]\s*)?(?P<name>[A-Za-z][A-Za-z -]{1,40}):\s*(?P<value>.*)$")
+# Declared in the form an author writes. The comparison happens on
+# ``_normalize_field_name`` output, which maps every non-``[a-z0-9]`` run to a
+# space — so a literal ``"n/a"`` entry can never be produced by it and sat here
+# as unreachable dead code while ``N/A`` passed every ledger floor as a
+# substantive value (B1). ``_NORMALIZED_PLACEHOLDER_VALUES`` below is what
+# ``_has_substantive_value`` actually tests against; keep additions here and let
+# the normalizer project them into the comparison space.
 _PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na"}
 
 # Classifications whose carrier has user-facing behavior to confirm. The rung-1
@@ -118,6 +125,15 @@ def _normalize_field_name(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
+# Projected through the same normalizer the comparison uses, so every declared
+# placeholder is reachable (B1). ``n/a`` -> ``n a``; the rest are already fixed
+# points. Only a *bare* placeholder collapses to a set member: a value like
+# ``n/a — issue was context only`` normalizes to ``n a issue was context only``
+# and stays substantive, which is the intended split (a bare dismissal is not an
+# answer; a dismissal with a reason is).
+_NORMALIZED_PLACEHOLDER_VALUES = {_normalize_field_name(value) for value in _PLACEHOLDER_VALUES}
+
+
 def _body_fields(text: str) -> dict[str, str]:
     lines = _strip_code_fences(text)
     fields: dict[str, list[str]] = {}
@@ -153,7 +169,7 @@ def _has_substantive_value(value: str | None) -> bool:
     if value is None:
         return False
     normalized = _normalize_field_name(value)
-    return normalized not in _PLACEHOLDER_VALUES and not normalized.startswith("missing ")
+    return normalized not in _NORMALIZED_PLACEHOLDER_VALUES and not normalized.startswith("missing ")
 
 
 def _classification_requirements(classification: str) -> list[tuple[str, tuple[str, ...]]]:

@@ -27,6 +27,27 @@ ALLOWED_SKIP_REASONS = frozenset(
 )
 MIN_SKIP_LENGTH = 40
 
+# Minimum length of the skip *detail* — the text after the enum head and its
+# colon — checked alongside ``MIN_SKIP_LENGTH`` on the whole string.
+#
+# Some callers (``issue_resolution_critique``, ``publish_release_preflight``)
+# manufacture the enum head themselves from a shorthand the author wrote. On
+# those carriers the enum check validates a constant the caller supplied, so the
+# length floor is the only surviving tooth — and the head's own characters were
+# paying it down: ``host-blocked-subagent: `` is 23 characters, so the 40-char
+# total floor accepted a 17-character signal and skipped a mandatory fresh-eye
+# critique on a GitHub issue close (B2). This floor measures only the text the
+# author actually chose, so head length can no longer set the bar.
+#
+# 20, not 40. The pre-fix effective bar for manufactured-head callers was already
+# ~17; the repo's own genuine host signals run 24-39 characters, so a 40-char
+# detail floor would sit ABOVE observed honest usage and buy padding rather than
+# signal. Length is not the real tooth here and cannot be: a fluent 40-character
+# excuse passes any length floor. What distinguishes a skipped critique from an
+# executed one is that the skip is now LOUD — see ``_skip_advisories`` in
+# ``issue_resolution_critique.py``. This floor only refuses terseness.
+MIN_SKIP_DETAIL_LENGTH = 20
+
 # Cap how much of an evidence file is scanned for a binding token. A retro or
 # probe artifact references its goal/issue/release identity in the first
 # screenful when it does at all; reading more buys nothing and risks a large
@@ -126,17 +147,35 @@ def parse_skip_arg(raw: str) -> tuple[str, str]:
 
 
 def _validate_skip_reason(reason: str) -> tuple[bool, str | None]:
-    head, _, _ = reason.partition(":")
+    head, _, detail = reason.partition(":")
     head = head.strip()
     if head not in ALLOWED_SKIP_REASONS:
         return False, (
             f"skip reason must start with one of "
             f"{sorted(ALLOWED_SKIP_REASONS)} followed by ':' and a detail"
         )
+    # A repeated head is the same manufactured-constant hole one level down: a
+    # caller that prepends ``host-blocked-subagent: `` to an author shorthand
+    # that itself begins with an enum head would otherwise let the duplicated
+    # head fund the detail floor.
+    stripped = detail.strip()
+    while True:
+        next_head, sep, rest = stripped.partition(":")
+        if sep and next_head.strip() in ALLOWED_SKIP_REASONS:
+            stripped = rest.strip()
+            continue
+        break
     if len(reason) < MIN_SKIP_LENGTH:
         return False, (
             f"skip reason too short ({len(reason)} chars; min {MIN_SKIP_LENGTH}); "
             "append the concrete host signal or evaluator condition"
+        )
+    if len(stripped) < MIN_SKIP_DETAIL_LENGTH:
+        return False, (
+            f"skip detail too short ({len(stripped)} chars after the "
+            f"{head!r} head; min {MIN_SKIP_DETAIL_LENGTH}); the enum head does not "
+            "count toward the floor — append the concrete host signal or "
+            "evaluator condition"
         )
     return True, None
 

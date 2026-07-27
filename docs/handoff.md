@@ -11,12 +11,12 @@
 
 Closed #460/#461/#463, then an evidence-surface bug hunt reproduced **30
 defects** across the repo's proof surfaces; the empty-scope family (A4, A7, C5;
-E2 partial) and the containment family (A1, A2; A9 partial) are fixed. Every
-item, fixed or open, carries status, file:line, and a confirmed repro in the
+E2 partial), the containment family (A1, A2; A9 partial), A3 partial, and the
+issue-close carrier family (B3; B2 narrowed, B1 partial) are fixed. Every item,
+fixed or open, carries status, file:line, and a confirmed repro in the
 [bug hunt record](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
-— read it before planning any of them. The operator's standing decision is **no
-push and no release until they are fixed**, so four commits sit local. No
-GitHub issues are open (the three close on push). No decisions pending.
+— read it before planning any of them. **20 remain.** The operator lifted the
+no-push hold after B1-B3 and directed a release. No decisions pending.
 
 ## Current State
 
@@ -28,12 +28,13 @@ GitHub issues are open (the three close on push). No decisions pending.
 
 ## Next Session
 
-1. **Fix the bug-hunt backlog; 23 items remain.** Next: **B1-B3** (the
-   issue-close carrier, where a false PASS closes a real issue on GitHub), then
-   **A5/A6**, which sit inside the commit-boundary floor A3 just restored and
-   decide what it is worth. Expect the fix to be the easy part: three slices in a
-   row needed review defects repaired *inside the fix*. Check who really calls a
-   gate before tightening it.
+1. **Fix the bug-hunt backlog; 20 items remain.** Next: **A5/A6**, which sit
+   inside the commit-boundary floor A3 restored and decide what it is worth, then
+   **D1/D5** (the publish gate and the only standing release-version
+   cross-check). Expect the fix to be the easy part: **four** slices in a row
+   needed review defects repaired *inside the fix* — B1-B3's reviewers caught a
+   branch removed as "redundant" that dropped two bug-only floors. Check who
+   really calls a gate, and what a shared predicate's other callers expect.
 2. **A3 is PARTIAL: scheduled is not judged.** A deletion schedules its surface
    gates now, but only `check_staged_mirror_drift` reads the index — the rest walk
    the worktree, and `git revert` runs no pre-commit hook at all (probed).
@@ -44,20 +45,17 @@ GitHub issues are open (the three close on push). No decisions pending.
    `repo-public-skill`, so the documented skill-path recovery hands back the copy
    the provenance guard now refuses mid-`mutate -> sync`. And the export-layout
    fact lives in three places in `helper_provenance_lib.py`.
-4. **The drafter cannot see whether a staleness check ran.** The parser's
-   top-level `staleness` block dies at `materialize_chunk_proposal_response`
-   and the ranker packet — `ChunkCandidate` has no field for it. So the
-   auto-draft marks positively-reported staleness (F9, now closed) but cannot
-   distinguish "issue states checked, none closed" from "never asked". The
-   path check always runs; the residual is issue citations only, because the
-   issue check is gated behind `--with-issues`.
+4. **The drafter cannot see whether a staleness check ran** — the parser's
+   `staleness` block dies before `ChunkCandidate`, so the auto-draft cannot tell
+   "checked, none closed" from "never asked". Issue citations only; detail in the
+   F9 critique below.
 5. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards); fill
    guards want an observed n-fold rework instance first.
-6. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774,
-   `add` 672). In-process `run_script` is the unmeasured lever; spawn count is
-   the honest metric, 16-worker wall-clock is noise.
+6. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774).
+   In-process `run_script` is the unmeasured lever; spawn count is the honest
+   metric, 16-worker wall-clock is noise.
 7. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
-   real shared `.charness/usage-episodes/` tree, so a live hook or a concurrent
+   real shared `.charness/usage-episodes/` tree, so a live hook or concurrent
    `run-quality.sh` fails them for unrelated reasons; needs design, detail in the
    [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md).
 
@@ -65,12 +63,14 @@ GitHub issues are open (the three close on push). No decisions pending.
 
 - Run release/skill helpers from `skills/public/.../scripts/`, NOT an installed
   or `plugins/` copy: an older lesson-index schema gets rejected mid-publish. The
-  provenance guard refuses both cases now, but it lives in the copy you invoke,
-  so a copy predating it carries no check —
+  guard lives in the copy you invoke, so a copy predating it carries no check —
   [RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md).
 - Skill loaders build a FRESH module object per import, with no `sys.modules`
   caching. Reading a module global back across a second load silently sees the
   unmutated copy; thread the value through explicitly instead.
+- **A length floor is not a proof floor.** No length refuses a fluent excuse; the
+  tooth that works is making the skip LOUD. Set length floors at or below
+  observed honest usage (real host signals run 24-39 chars) or you buy padding.
 
 ## References
 

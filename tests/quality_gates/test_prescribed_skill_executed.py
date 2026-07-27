@@ -227,3 +227,80 @@ def test_binding_numeric_token_matches_on_boundary(tmp_path: Path) -> None:
     binds, reason = lib.evidence_binds_to_context(path, tokens=["185"])
     assert binds is True
     assert "185" in reason
+
+
+def test_skip_detail_floor_is_not_paid_by_the_enum_head(tmp_path: Path) -> None:
+    """B2 regression: the length floor must measure the skip DETAIL, not the
+    whole reason.
+
+    Callers such as `issue_resolution_critique` and `publish_release_preflight`
+    manufacture the enum head themselves from an author shorthand, so the enum
+    check validates a constant the caller supplied and only the length floor
+    survives. `host-blocked-subagent: ` is 23 characters, so a 40-char total
+    floor accepted a 17-character signal and closed a real GitHub issue with a
+    fresh-eye critique that never ran."""
+    head = "host-blocked-subagent: "
+    assert len(head) == 23
+    # The confirmed B2 cliff: 17 characters of author-written signal used to pass
+    # because the 23-character head paid down the rest of the 40-char total.
+    result = lib.check(
+        repo_root=tmp_path,
+        required=["resolution_critique"],
+        evidence={},
+        skips={"resolution_critique": head + "x" * 17},
+    )
+    assert result["ok"] is False
+    assert "skip detail too short" in result["invalid_skips"][0]["detail"]
+    # Control: exactly MIN_SKIP_DETAIL_LENGTH of author text passes, so the floor
+    # is genuinely a detail floor and not a longer total floor in disguise.
+    result = lib.check(
+        repo_root=tmp_path,
+        required=["resolution_critique"],
+        evidence={},
+        skips={"resolution_critique": head + "x" * lib.MIN_SKIP_DETAIL_LENGTH},
+    )
+    assert result["ok"] is True
+
+
+def test_skip_detail_floor_does_not_re_baseline_honest_host_signals(tmp_path: Path) -> None:
+    """Restraint control for the floor above: it must refuse terseness without
+    sitting above observed honest usage.
+
+    The repo's own genuine skip details run 24-39 characters, so a floor set at
+    the 40-char *total* value would have rejected real recorded host signals and
+    bought padding rather than signal. These are verbatim details from checked-in
+    goal closeouts and fixtures; every one must still pass."""
+    for detail in (
+        "claude jsonl unavailable",
+        "no codex rollout file in this env",
+        "claude jsonl path missing on this host",
+        "report writing is still possible",
+        "no host token/time/session-log",
+    ):
+        result = lib.check(
+            repo_root=tmp_path,
+            required=["host_log_probe"],
+            evidence={},
+            skips={"host_log_probe": f"host-log-not-exposed: {detail}"},
+        )
+        assert result["ok"] is True, (detail, len(detail), result["invalid_skips"])
+
+
+def test_repeated_enum_head_does_not_fund_the_skip_detail_floor(tmp_path: Path) -> None:
+    """The manufactured-constant hole one level down: a caller prepending the
+    enum head to an author shorthand that itself begins with an enum head must
+    not let the duplicated head pay for the detail floor."""
+    # Discriminating by construction: after stripping only the FIRST head the
+    # detail is 41 chars and clears the floor, so this passes with the repeated-
+    # head loop removed. Only stripping both heads leaves the 18-char detail that
+    # the floor refuses.
+    reason = "host-blocked-subagent: host-blocked-subagent: " + "x" * 18
+    assert len(reason.partition(":")[2].strip()) > lib.MIN_SKIP_DETAIL_LENGTH
+    result = lib.check(
+        repo_root=tmp_path,
+        required=["resolution_critique"],
+        evidence={},
+        skips={"resolution_critique": reason},
+    )
+    assert result["ok"] is False
+    assert "skip detail too short" in result["invalid_skips"][0]["detail"]

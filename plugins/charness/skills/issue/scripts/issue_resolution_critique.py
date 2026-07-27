@@ -108,6 +108,33 @@ def _missing_check(helper: Any, repo_root: Path) -> dict[str, Any]:
     )
 
 
+def _skip_advisories(checks: list[dict[str, Any]]) -> list[str]:
+    """REVIEW-severity advisory for each issue whose resolution critique was
+    satisfied by a ``blocked <signal>`` host skip rather than a real critique.
+
+    Rung-1 cannot judge whether a host block was genuine — the caller supplies
+    both the enum head and the signal text, so the only surviving teeth are the
+    detail-length floor and this line. Without it a skipped critique's top-level
+    verdict (``ok: True``, ``status: carrier_verified``) is indistinguishable
+    from an executed one, which is what let a 17-character excuse close a real
+    issue on GitHub (B2). Advisory only: never affects ``ok`` or exit status.
+    """
+    lines: list[str] = []
+    for entry in checks:
+        skipped = entry["check"].get("skipped") or []
+        for skip in skipped:
+            if skip.get("name") != "resolution_critique":
+                continue
+            refs = ", ".join(f"#{number}" for number in entry["numbers"])
+            lines.append(
+                f"REVIEW: the resolution critique for {refs} was SKIPPED, not executed "
+                f"— recorded host signal: {skip.get('reason', '')!r}. No fresh-eye review "
+                "of this resolution exists; confirm the host genuinely could not spawn one "
+                "before treating this issue as resolved (advisory only, never blocks)."
+            )
+    return lines
+
+
 def check_resolution_critique(
     *,
     repo_root: Path,
@@ -155,11 +182,13 @@ def check_resolution_critique(
             bound_numbers.add(number)
 
     missing_issue_bindings = [number for number in numbers if number not in bound_numbers]
+    review_advisory = _skip_advisories(checks)
     if len(numbers) == 1 and checks:
         report = dict(checks[0]["check"])
         report["bindings"] = [{"number": numbers[0], "target": checks[0]["target"]}]
         report["binding_failures"] = binding_failures
         report["missing_issue_bindings"] = missing_issue_bindings
+        report["review_advisory"] = review_advisory
         report["ok"] = bool(report.get("ok")) and not binding_failures and not missing_issue_bindings
         return report
 
@@ -172,4 +201,5 @@ def check_resolution_critique(
         "checks": checks,
         "binding_failures": binding_failures,
         "missing_issue_bindings": missing_issue_bindings,
+        "review_advisory": review_advisory,
     }

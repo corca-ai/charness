@@ -216,10 +216,12 @@ the self-substitution pattern):
   bundle critique evidence for multi-issue carriers. Every selected issue must
   be bound by one of these lines.
 - `Critique #N: blocked <host-signal>` — when the host genuinely could not
-  spawn the bounded fresh-eye subagent. The signal text must be specific
-  enough that the total skip reason
-  (`host-blocked-subagent: <signal>`) exceeds 40 characters; terse
-  signals like `host-down` are rejected.
+  spawn the bounded fresh-eye subagent. The **signal you write** must itself be
+  at least 20 characters; the `host-blocked-subagent:` head the skill prepends
+  does not count toward it, so terse signals like `host-down` are rejected. A
+  skipped critique also prints a non-blocking `REVIEW:` advisory naming the
+  skip — no fresh-eye review of that resolution exists, and the top-level
+  verdict alone does not say so.
 
 `question` and `decision-needed` classifications do not run the critique
 substrate and skip this gate. The gate is additive — it runs before the
