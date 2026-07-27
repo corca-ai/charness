@@ -548,6 +548,13 @@
     },
     {
       "class": "intentional",
+      "id": "6dc2bc9c360c0ace",
+      "note": "the canonical skill-runtime bootstrap shim, which this repo deliberately duplicates across 107 copies and ENFORCES byte-identical with its own gate (scripts/check_bootstrap_shim_consistency.py, CANONICAL_SHIM). Extracting it is impossible by construction: the shim is what lets a portable skill script FIND the runtime before any import is available. Surfaced by scan rotation when skills/public/release/scripts/publish_release_narrative_gate.py added copy 108; every other member is untouched (#441 rotation class)",
+      "reviewed_at": "2026-07-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "6edaccbfec18eca5",
       "note": "install and uninstall branches intentionally mirror state-file and result handling inside one standalone session-routing hook; symmetry is the lifecycle contract",
       "reviewed_at": "2026-07-13",
@@ -621,6 +628,13 @@
       "id": "7bae0ed263525d88",
       "note": "standalone mutation CLI path resolver helpers; extracting this two-line helper adds import/bootstrap coupling for little value",
       "reviewed_at": "2026-06-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7c18c445e63ebe16",
+      "note": "the ordinary Python early-return-with-a-long-message idiom (`if <status-cond>: return (\"...\" \"...\")`) in three unrelated modules: scripts/check_staged_reversion.py:122-133 (untouched), skills/public/quality/scripts/propose_mutation_testing.py:115-119 (untouched), skills/public/release/scripts/publish_release_artifact_sections.py:178-182. Surfaced by scan rotation when the distinct-channel qualifier was extracted into its own function to clear a C901 complexity failure; the shared tokens are the control-flow keywords and string-continuation shape, not logic. Two of three members untouched this session (#441 rotation class)",
+      "reviewed_at": "2026-07-28",
       "surface": "code"
     },
     {
@@ -761,6 +775,13 @@
       "id": "9a5d2a32988cd4c7",
       "note": "runtime_bootstrap import/alias preamble shared by four unrelated repo-root scripts (build_debug_seam_risk_index.py, check_skill_cut_safety.py, post_edit_skill_anchor_guard.py, validate_cautilus_diagnostics.py); same class as 02923daf7e01c82e -- the per-script portability preamble the nose advisory names as its own known blind spot. Re-fingerprinted when the seam-index builder added require_repo_local_helper to that import, which ruff's isort arm then wraps to the multi-line form: the shape is tool-mandated, not chosen",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9aa4a4aa768a7654",
+      "note": "identical stdlib import headers in scripts/t_events_emit_lib.py:16-24 and skills/public/release/scripts/release_observer.py:1-9 (`json`, `re`, `datetime`, `pathlib`, `typing`); surfaced when `import re` was added to release_observer for the D6 version-token comparison. Import boilerplate is not extractable duplication -- the two modules share no logic, and the release script is a portable public skill that deliberately does not import repo-internal `scripts/`",
+      "reviewed_at": "2026-07-28",
       "surface": "code"
     },
     {

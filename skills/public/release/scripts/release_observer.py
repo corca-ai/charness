@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -69,6 +70,9 @@ def _readback(repo_root: Path, *, command: str, run_shell) -> dict[str, Any]:
     return record
 
 
+_VERSION_TOKEN_RE = re.compile(r"(?<![\w.])\d+\.\d+(?:\.\d+)*(?:[-+][0-9A-Za-z.\-]+)?(?![\w.])")
+
+
 def collect_installed_readback(
     repo_root: Path,
     *,
@@ -76,13 +80,55 @@ def collect_installed_readback(
     version_command: str,
     doctor_command: str,
     run_shell,
+    expected_version: str | None = None,
 ) -> dict[str, Any]:
+    """Readback of the INSTALLED surface after a publish.
+
+    When ``expected_version`` is supplied the version readback is COMPARED
+    against it. Keying the disposition on exit code alone meant the value was
+    read, stored in the durable JSON, and never looked at (D6): a target of
+    `2.11.2` against an installed `2.11.1` recorded `observed`, which is the
+    exact shape of a readback that proves the command ran rather than that the
+    right thing is installed. A `mismatch` is a recorded observable, not a raised
+    error — the publish has already happened.
+    """
     version = _readback(repo_root, command=version_command, run_shell=run_shell)
     doctor = _readback(repo_root, command=doctor_command, run_shell=run_shell)
+    if expected_version:
+        version["expected_version"] = expected_version
+        version.setdefault("version_match", "not-compared")
+    if expected_version and version.get("status") == "confirmed":
+        observed = str(version.get("value", ""))
+        # The REPORTED version is the first version-shaped token on the line, and
+        # it must EQUAL the expected one. A substring test matched `2.11.3`
+        # inside `2.11.30`; even an anchored search matched the trailer in
+        # `charness 2.11.1 (latest 2.11.3 available)` — reporting a match while
+        # the wrong version is installed, which is the dangerous direction for a
+        # readback whose entire job is catching that case.
+        found = _VERSION_TOKEN_RE.findall(observed)
+        reported = found[0] if found else None
+        version["reported_version"] = reported
+        if reported is None:
+            version["version_match"] = "not-compared"
+            version["reason"] = (
+                f"installed readback reported {observed!r}, which contains no version-shaped "
+                f"token to compare against the published version {expected_version!r}"
+            )
+        elif reported == expected_version:
+            version["version_match"] = "matched"
+        else:
+            version["version_match"] = "mismatch"
+            version["status"] = "mismatch"
+            version["reason"] = (
+                f"installed readback reported version {reported!r} (from {observed!r}), not the "
+                f"published version {expected_version!r}; the refresh may not have taken effect"
+            )
     statuses = {str(install_refresh.get("status", "unknown")), version["status"], doctor["status"]}
     status = "unavailable"
     if statuses <= {"refreshed", "confirmed"}:
         status = "observed"
+    if version.get("version_match") == "mismatch":
+        status = "version-mismatch"
     return {"status": status, "install_refresh": install_refresh, "version": version, "doctor": doctor}
 
 

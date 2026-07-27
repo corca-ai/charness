@@ -24,7 +24,7 @@ _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_c
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 _artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_artifact")
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
-_audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
+_narrative_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_narrative_gate")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
 _post_create = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_post_create")
 _release_retro = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_retro")
@@ -37,7 +37,10 @@ build_release_payload = _current_release.build_payload
 build_real_host_payload = _check_real_host.build_payload
 build_review_gate_payload = _check_review_gate.build_payload
 build_fresh_checkout_payload = _fresh_checkout.build_payload
-build_narrative_audit_payload = _audit_narrative.build_payload
+build_narrative_audit_payload = _narrative_gate.build_narrative_audit_payload
+audit_notes_text = _narrative_gate.audit_notes_text
+run_narrative_audit = _narrative_gate.run_narrative_audit
+run_notes_file_preflight = _narrative_gate.run_notes_file_preflight
 run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
@@ -65,6 +68,7 @@ run_release_adapter_preflight = _preflight.run_release_adapter_preflight
 fail_after_post_create_verification = _post_create.fail_after_post_create_verification
 verify_release_visible = _post_create.verify_release_visible
 confirm_release_via_distinct_channel = _post_create.confirm_release_via_distinct_channel
+audit_published_release_body = _post_create.audit_published_release_body
 evaluate_release_distinct_channel = _post_create.evaluate_release_distinct_channel
 fail_release_distinct_channel_floor = _post_create.fail_release_distinct_channel_floor
 run_post_publish_install_refresh = _post_create.run_post_publish_install_refresh
@@ -110,6 +114,8 @@ def _execution_context() -> SimpleNamespace:
         "create_release",
         "verify_release_visible",
         "confirm_release_via_distinct_channel",
+        "audit_published_release_body",
+        "audit_notes_text",
         "evaluate_release_distinct_channel",
         "fail_release_distinct_channel_floor",
         "finalize_release_payload",
@@ -221,40 +227,12 @@ def write_current_artifact(
         requested_review_gate=payload.get("requested_review_gate"),
         retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
         distinct_channel_verification=payload.get("distinct_channel_verification"),
+        published_notes_audit=payload.get("published_notes_audit"),
         lifecycle_capture=payload.get("lifecycle_capture"),
         release_runtime=payload.get("release_runtime"),
         baton_reconcile=payload.get("baton_reconcile"),
         release_observer=payload.get("release_observer"),
     )
-
-
-def run_narrative_audit(
-    repo_root: Path,
-    *,
-    target_tag: str,
-    notes_file: Path | None = None,
-) -> None:
-    audit_payload = build_narrative_audit_payload(
-        repo_root,
-        target_tag=target_tag,
-        notes_file=notes_file,
-    )
-    if audit_payload["status"] == "blocked":
-        raise SystemExit(
-            "public release narrative audit blocked publish:\n"
-            + "\n".join(f"- {blocker}" for blocker in audit_payload["blockers"])
-        )
-
-
-def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Path | None) -> None:
-    if notes_file is None:
-        return
-    notes_blockers = _audit_narrative.audit_notes_file(notes_file, target_tag=target_tag)
-    if notes_blockers:
-        raise SystemExit(
-            "public release notes preflight blocked publish:\n"
-            + "\n".join(f"- {blocker}" for blocker in notes_blockers)
-        )
 
 
 def finalize_release_payload(

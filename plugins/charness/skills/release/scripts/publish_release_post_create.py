@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import runpy
-import shlex
 import time
 import urllib.error
 import urllib.request
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
 _observer = runpy.run_path(str(Path(__file__).resolve().with_name("release_observer.py")))
+_same_proxy = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_same_proxy_guard.py")))
+release_view_shape = _same_proxy["release_view_shape"]
+_probe_matches_release_view_shape = _same_proxy["_probe_matches_release_view_shape"]
 collect_installed_readback = _observer["collect_installed_readback"]
 write_release_observer = _observer["write_release_observer"]
 safe_write_release_observer = _observer["safe_write_release_observer"]
@@ -70,12 +72,106 @@ def verify_release_visible(
     return last_result
 
 
-def _http_release_probe(url: str, *, timeout: float = 10.0) -> dict[str, Any]:
+def audit_published_release_body(
+    repo_root: Path,
+    payload: dict[str, Any],
+    *,
+    tag_name: str,
+    backend: dict[str, Any],
+    backend_command,
+    run,
+    audit_notes_text,
+) -> dict[str, Any]:
+    """Post-create audit of the PUBLISHED release body for mutable source-tree
+    pointers, recorded on ``payload`` as an advisory.
+
+    The pre-publish notes audit only runs when a notes FILE is supplied, so the
+    `--generate-notes` path — the default — published a body nothing had ever
+    looked at (D2 residual). Auto-generated bodies are commit messages and PR
+    text, a prime carrier of `blob/main` links.
+
+    This is post-hoc by construction: `--generate-notes` composes the body at
+    creation time, so there is nothing to inspect earlier. It therefore records
+    an ADVISORY, never a blocker — the release already exists, and refusing after
+    the fact would only strand the publish. The remedy is `gh release edit`.
+    """
+    record: dict[str, Any] = {"scope": "published-release-body", "tag": tag_name}
+    try:
+        command = backend_command(
+            backend, "release_view_body", ["gh", "release", "view", "{tag}", "--json", "body", "-q", ".body"],
+            tag=tag_name,
+        )
+        result = run(command, cwd=repo_root, check=False)
+    # BaseException, not Exception: `backend_command` raises SystemExit for a
+    # non-`gh` backend with no template for this op, and SystemExit does not
+    # derive from Exception. This runs AFTER the release exists and after the
+    # rollback wrapper's scope, so an escaping SystemExit strands the publish
+    # before the rung-1 floor, issue closeout, and the final artifact commit —
+    # for 100% of non-`gh` adapters, over an advisory that is allowed to fail.
+    except BaseException as exc:  # noqa: BLE001 - a stranded publish is worse
+        record.update(
+            status="not-configured" if isinstance(exc, SystemExit) else "unavailable",
+            reason=f"{exc.__class__.__name__}: {exc}",
+        )
+        payload["published_notes_audit"] = record
+        return record
+    if getattr(result, "returncode", 1) != 0:
+        record.update(
+            status="unavailable",
+            reason=(getattr(result, "stderr", "") or "release body readback failed").strip()[-500:],
+        )
+        payload["published_notes_audit"] = record
+        return record
+    body = getattr(result, "stdout", "") or ""
+    if not body.strip():
+        # An empty body is what a misrouted, unauthenticated, or wrong-op
+        # readback returns. Calling that `clean` is class (a) — a PASS over a
+        # scope never established — reintroduced by the fix for class (d).
+        record.update(
+            status="unestablished", advisories=[], body_len=len(body),
+            reason="release body readback returned an empty body; nothing was audited",
+        )
+        payload["published_notes_audit"] = record
+        return record
+    advisories = audit_notes_text(body, target_tag=tag_name)
+    record.update(
+        status="advisory" if advisories else "clean",
+        advisories=advisories,
+        body_len=len(body),
+    )
+    payload["published_notes_audit"] = record
+    return record
+
+
+_PROBE_BODY_BYTES = 262144
+
+
+def _http_release_probe(
+    url: str, *, timeout: float = 10.0, expected_content: str | None = None
+) -> dict[str, Any]:
     """Default rung-2 distinct channel: an unauthenticated HTTP GET of the PUBLIC
     release URL — a transport/auth path distinct from the ``gh release view`` CLI
-    proxy. Returns a ``confirmed`` verdict on HTTP 200 with a body, otherwise a
-    typed non-``verified`` disposition. Never raises: a publish is already an
-    external fact, so a failed probe is a recorded disposition, not a fatal error.
+    proxy. Never raises: a publish is already an external fact, so a failed probe
+    is a recorded disposition, not a fatal error.
+
+    ``confirmed`` requires the response to CONTAIN ``expected_content`` (the
+    release tag). Confirming on "HTTP 200 with at least one body byte" made the
+    verdict independent of what came back (D4): a captive portal, a rate-limit
+    notice, a 404 page served with a 200, or a redirect to the repository root
+    all confirmed a release that might not exist. ``urllib`` follows redirects
+    silently, so the URL actually fetched is recorded too — the probe must be
+    able to say it looked at the page it claims to have looked at.
+
+    **What this channel can and cannot establish, measured 2026-07-27.**
+    `github.com/<o>/<r>/releases/tag/<tag>` returns HTTP 200 with the tag in the
+    body for a tag that has NO GitHub release (verified against `v0.1.1`, a
+    pushed tag with no release: 200, tag present 23 times; both that page and a
+    real release page title themselves "Release <tag>"). The publish flow pushes
+    the tag BEFORE creating the release, so this probe cannot distinguish "the
+    release exists" from "the tag was pushed". The unauthenticated REST API,
+    which does distinguish, answered 403 (rate-limited) and is not a dependable
+    default. So the record carries ``establishes`` naming the narrower claim,
+    rather than letting `confirmed` be read as release existence.
     """
     # Observer identity is a recorded observable, additive to the channel: the
     # rung-2 audit must be able to SEE how distinct the observer was, not only
@@ -88,138 +184,52 @@ def _http_release_probe(url: str, *, timeout: float = 10.0) -> dict[str, Any]:
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 (public release URL)
-            body = response.read(4096)
+            body = response.read(_PROBE_BODY_BYTES)
             status = getattr(response, "status", None) or response.getcode()
+            final_url = getattr(response, "url", None) or url
     except (urllib.error.URLError, OSError, ValueError) as exc:
         return {
             "channel": "https-fetch", "observer": observer, "url": url,
             "status": "blocked-needs-capability",
             "reason": f"distinct-channel HTTP fetch of the public release URL failed: {exc}",
         }
-    if status == 200 and body:
+    base = {
+        "channel": "https-fetch", "observer": observer, "url": url,
+        "http_status": status, "evidence_len": len(body), "fetched_url": final_url,
+    }
+    if status != 200 or not body:
         return {
-            "channel": "https-fetch", "observer": observer, "url": url, "status": "confirmed",
-            "http_status": status, "evidence_len": len(body),
+            **base, "status": "not-confirmed",
+            "reason": f"distinct-channel HTTP fetch returned HTTP {status} with {len(body)} body bytes",
+        }
+    if expected_content is None:
+        # No identifying string to look for is an UNESTABLISHED scope, not a
+        # confirmation: the fetch proves a page exists, never that it is this
+        # release's page.
+        return {
+            **base, "status": "not-confirmed",
+            "reason": (
+                "distinct-channel HTTP fetch succeeded but no expected content was supplied, so "
+                "the response was never checked against this release"
+            ),
+        }
+    text = body.decode("utf-8", errors="ignore")
+    if expected_content not in text:
+        return {
+            **base, "status": "not-confirmed", "expected_content": expected_content,
+            "reason": (
+                f"distinct-channel HTTP fetch returned HTTP {status} but the response body does "
+                f"not mention `{expected_content}`; the page fetched was `{final_url}`"
+            ),
         }
     return {
-        "channel": "https-fetch", "observer": observer, "url": url,
-        "status": "not-confirmed", "http_status": status,
-        "reason": f"distinct-channel HTTP fetch returned HTTP {status} with {len(body)} body bytes",
+        **base, "status": "confirmed", "expected_content": expected_content,
+        "establishes": "public-page-reachable-and-names-the-tag",
+        "does_not_establish": (
+            "that a GitHub RELEASE exists for this tag — the same page returns 200 for a pushed "
+            "tag with no release, and the tag is pushed before the release is created"
+        ),
     }
-
-
-# Executables that run ANOTHER command rather than being the command, so the
-# same-proxy check must look through them instead of at them.
-_COMMAND_WRAPPERS = frozenset(
-    {"sh", "bash", "zsh", "dash", "env", "command", "nohup", "time", "stdbuf", "nice", "setsid"}
-)
-_WRAPPER_INLINE_FLAGS = frozenset({"-c", "-lc", "-cl", "-ic"})
-
-
-_UNWRAP_BUDGET = 32
-
-
-def _normalize_tokens(tokens: list[str], *, drop: set[str] | None = None) -> set[str]:
-    """Tokens as a comparison set: EVERY token reduced to its path basename, not
-    only the executable. Basenaming just the first token let a wrapper and an
-    absolute path compose into an escape (`sudo /usr/bin/gh release view v1`),
-    even though each half alone was caught."""
-    dropped = drop or set()
-    return {PurePosixPath(token).name for token in tokens if token and token not in dropped}
-
-
-def _unwrap_command_tokens(tokens: list[str], *, depth: int = _UNWRAP_BUDGET) -> tuple[list[str], bool]:
-    """``(tokens, exhausted)`` after stripping leading env assignments and wrapper
-    executables and descending into a wrapper's inline `-c "<command>"` payload.
-
-    ``exhausted`` is True when the budget ran out with unwrapping still to do.
-    The caller treats that as same-proxy: a probe nested past the budget is one
-    this check could not establish anything about, and at a publish boundary an
-    unestablished scope must not read as a clean pass.
-    """
-    while tokens:
-        if depth <= 0:
-            return tokens, True
-        head = tokens[0]
-        # `FOO=bar gh ...`
-        if "=" in head and not head.startswith("-") and "/" not in head.split("=", 1)[0]:
-            tokens, depth = tokens[1:], depth - 1
-            continue
-        if PurePosixPath(head).name in _COMMAND_WRAPPERS:
-            rest = tokens[1:]
-            if rest and rest[0] in _WRAPPER_INLINE_FLAGS:
-                try:
-                    tokens = shlex.split(rest[1], comments=True) if len(rest) > 1 else []
-                except ValueError:
-                    return tokens, True
-            else:
-                tokens = rest
-            depth -= 1
-            continue
-        break
-    return tokens, False
-
-
-def release_view_shape(backend: dict[str, Any], backend_command, tag_name: str) -> set[str] | None:
-    """The backend's own ``release_view`` command as a tag-free comparison set,
-    or ``None`` when the template cannot discriminate.
-
-    A degenerate template — empty, or a single generic token like ``gh`` — makes
-    subset matching meaningless in both directions: it would refuse every probe
-    sharing an executable, or pass everything. ``None`` says the guard could not
-    be evaluated, which the caller records rather than silently reading as
-    "distinct" (the class-(a) shape this audit tracks).
-    """
-    view_tokens = backend_command(backend, "release_view", ["gh", "release", "view", "{tag}"], tag=tag_name)
-    shape = _normalize_tokens(view_tokens, drop={tag_name})
-    return shape if len(shape) >= 2 else None
-
-
-def _probe_matches_release_view_shape(
-    rendered_command: str, *, backend: dict[str, Any], backend_command, tag_name: str
-) -> bool:
-    """Data-driven same-proxy check (P4): True when the rendered probe command IS
-    the backend's own ``release_view`` command -- the exact command
-    ``verify_release_visible`` already used for tag/version visibility -- derived
-    from the backend config via ``backend_command``, never an enumerated list of
-    forbidden command strings.
-
-    Matching is by NORMALIZED TOKEN CONTAINMENT, not by positional prefix. A
-    prefix comparison was defeated by everything that does not change what runs
-    (D3): moving a flag ahead of the tag, `sh -c "..."`, `env`, or an absolute
-    `/usr/bin/gh` path all slipped through while running the identical query.
-    Wrappers are unwrapped, the executable is reduced to its basename, and the
-    probe matches when it contains every token of the view command in any order.
-
-    Deliberately biased toward FLAGGING at this boundary: a probe wrongly called
-    same-proxy costs the operator one genuinely distinct probe, while a same-proxy
-    probe wrongly called distinct is a release confirming itself through the
-    channel it was supposed to be checked against. Every branch that cannot
-    ESTABLISH distinctness therefore returns True, including an unparseable
-    command and an unwrap budget exhausted mid-descent.
-
-    The TAG is excluded from the comparison. `gh release view` with no tag
-    defaults to the latest release — which, moments after publish, is the release
-    being confirmed — so requiring the tag to appear let the same query through
-    by omitting an argument.
-    """
-    view_shape = release_view_shape(backend, backend_command, tag_name)
-    if view_shape is None:
-        # A degenerate `release_view` template (empty, or a single generic token
-        # like `gh`) cannot discriminate: subset-matching against it would either
-        # refuse every probe sharing an executable or silently pass everything.
-        # Neither verdict is established, so do not render one.
-        return False
-    try:
-        raw_tokens = shlex.split(rendered_command, comments=True)
-    except ValueError:
-        return True
-    probe_tokens, exhausted = _unwrap_command_tokens(raw_tokens)
-    if exhausted:
-        return True
-    if not probe_tokens:
-        return False
-    return view_shape.issubset(_normalize_tokens(probe_tokens))
 
 
 def confirm_release_via_distinct_channel(
@@ -291,7 +301,7 @@ def confirm_release_via_distinct_channel(
                 tail = (result.stderr or result.stdout or "").strip()[-1500:]
                 record["reason"] = tail or "distinct-channel probe returned a nonzero exit"
     elif expected_release_url:
-        record = http_probe(expected_release_url)
+        record = http_probe(expected_release_url, expected_content=tag_name)
     else:
         record = {
             "channel": "none", "observer": "none", "status": "skipped",

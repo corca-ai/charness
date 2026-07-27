@@ -159,23 +159,31 @@ def _ref_is_immutable(ref: str) -> bool:
 
 
 def audit_notes_file(notes_file: Path, *, target_tag: str) -> list[str]:
-    """Blockers for source-tree pointers in published release notes.
+    """Blockers for source-tree pointers in a release notes FILE."""
+    if not notes_file.is_file():
+        return [f"public release notes file missing: {notes_file}"]
+    return audit_notes_text(notes_file.read_text(encoding="utf-8"), target_tag=target_tag)
+
+
+def audit_notes_text(notes_text: str, *, target_tag: str) -> list[str]:
+    """Blockers for source-tree pointers in release notes TEXT.
 
     The rule is that a PUBLISHED note must not point at content that can change
     after publication. The discriminator was exactly inverted (D2): the blocker
     fired only when the ref EQUALED the release tag, so the one immutable pointer
     was refused and every mutable one — `main`, a branch, a raw-host link — was
     passed. ``target_tag`` is no longer the test; ref immutability is.
+
+    Text-level so the same rule can audit a PUBLISHED body read back after
+    `--generate-notes`, which composes the notes at creation time and so has no
+    file to inspect beforehand.
     """
     blockers: list[str] = []
-    if not notes_file.is_file():
-        blockers.append(f"public release notes file missing: {notes_file}")
-        return blockers
     # A URL rendered as code is shown to the reader, not offered as a reference
     # to follow — an install one-liner in a fenced block is the common case, and
     # refusing it blocked publish with advice ("pin to the release tag") that is
     # impossible when the link points at a different repository.
-    text = strip_display_code(notes_file.read_text(encoding="utf-8"))
+    text = strip_display_code(notes_text)
     for match in _SOURCE_TREE_POINTER_RE.finditer(text):
         ref = match.group("ref")
         # Trailing sentence/markup punctuation is not part of the path; it only

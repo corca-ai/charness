@@ -92,6 +92,27 @@ def run_distinct_channel_floor(
             backend_command=cli.backend_command,
         ),
     )
+    # The pre-publish notes audit only runs when a notes FILE was supplied, so
+    # the `--generate-notes` default published a body nothing had inspected.
+    # Post-hoc by necessity and advisory by design — the release already exists.
+    timed(
+        payload,
+        "published_notes_audit",
+        lambda: cli.audit_published_release_body(
+            repo_root,
+            payload,
+            tag_name=state["tag_name"],
+            backend=state["backend"],
+            backend_command=cli.backend_command,
+            # `run`, NOT `run_shell`: the command is a LIST, and `run_shell` uses
+            # `shell=True`, where a list makes args[0] the command string and
+            # drops the rest into `$0,$1,...`. `git status --short` runs as bare
+            # `git`. The audit would have recorded `unavailable` on every publish
+            # — closed-looking rather than closed.
+            run=cli.run,
+            audit_notes_text=cli.audit_notes_text,
+        ),
+    )
     if cli.evaluate_release_distinct_channel(payload)["ok"]:
         return
     _commit_final_release_artifact(
@@ -159,6 +180,8 @@ def close_issues_install_refresh_and_commit(
             version_command=adapter_data.get("post_publish_version_readback", ""),
             doctor_command=adapter_data.get("post_publish_doctor_readback", ""),
             run_shell=cli.run_shell,
+            # The value read back is only evidence if something compares it.
+            expected_version=payload.get("target_version"),
         ),
     )
     payload["release_observer"] = timed(

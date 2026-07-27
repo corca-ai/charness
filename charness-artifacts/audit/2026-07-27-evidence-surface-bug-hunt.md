@@ -6,9 +6,10 @@ fixed on 2026-07-27 as the containment family
 ([spec Decision 2](../spec/2026-07-27-foreign-copy-write-enforcement.md)); A3
 fixed the same day, on its own; B3 fixed, B2 fixed-narrowed and B1 partially
 fixed on 2026-07-27 as the issue-close carrier family; D1, D3, D5 fixed and D2
-partially fixed on 2026-07-27 as the publish-gate family.
+partially fixed on 2026-07-27 as the publish-gate family; D2, D6, D8 fixed and
+D4 partially fixed on 2026-07-28 as the distinct-channel family.
 
-**Remaining: 23 OPEN + 5 PARTIAL.** Count fully-open rows and partial rows
+**Remaining: 20 OPEN + 5 PARTIAL.** Count fully-open rows and partial rows
 separately; a PARTIAL is not a landed row, and rolling them into a single
 "N remain" figure is the same class of claim this file exists to hunt.
 This file is the tracking record — update the Status column as items land.
@@ -299,13 +300,13 @@ mode. Class (c).
 | id | Status | Defect | file:line |
 | --- | --- | --- | --- |
 | D1 | FIXED | A `## Release State` heading with any suffix disables the entire five-entry ledger check; audit still reports `passed` | `skills/public/release/scripts/audit_public_release_narrative.py:44,66` |
-| D2 | PARTIAL | The mutable-tag notes audit blocks the *pinned* pointer and passes `main`/raw pointers — discriminator fixed; the audit still never runs on the `--generate-notes` path (residual below) | same file, `:80` |
+| D2 | FIXED | The mutable-tag notes audit blocks the *pinned* pointer and passes `main`/raw pointers | same file, `:80` |
 | D3 | FIXED | The same-proxy guard is a positional prefix match: flag order, wrappers, and absolute paths defeat it | `skills/public/release/scripts/publish_release_post_create.py:124` |
-| D4 | OPEN | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked | same file, `:99` |
+| D4 | PARTIAL | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked — content is checked now, but the channel still cannot tell a released tag from a pushed one (measured) | same file, `:99` |
 | D5 | FIXED | `validate_release_version_claim` silently no-ops when the claim is absent or reformatted, and a decoy first match shadows the real claim | `scripts/validate_current_pointer_freshness.py:160` |
-| D6 | OPEN | The installed readback records `observed` on exit code alone; the version read back is never compared | `skills/public/release/scripts/release_observer.py:60` |
+| D6 | FIXED | The installed readback records `observed` on exit code alone; the version read back is never compared | `skills/public/release/scripts/release_observer.py:60` |
 | D7 | OPEN | `check_real_host_proof` returns `not-required` for an empty scope, for a clean tree, and for an unconfigured repo, all indistinguishably | `skills/public/release/scripts/check_real_host_proof.py:124,146` |
-| D8 | OPEN | The artifact asserts "a channel distinct from `gh release view`" even on the `same-proxy-flagged` and `skipped` records | `skills/public/release/scripts/publish_release_artifact_sections.py:171` |
+| D8 | FIXED | The artifact asserts "a channel distinct from `gh release view`" even on the `same-proxy-flagged` and `skipped` records | `skills/public/release/scripts/publish_release_artifact_sections.py:171` |
 | D9 | OPEN | `check_current_pointer_writes` reports clean over a scope excluding `skills/shared/` and any name-computed pointer path | `scripts/check_current_pointer_writes.py:16,54` |
 | D10 | OPEN | Two more silent early-returns in the freshness validator (missing integrations dir, non-dict inventory) | `scripts/validate_current_pointer_freshness.py:222,226` |
 
@@ -392,6 +393,52 @@ D35 in [deferred decisions](../../docs/deferred-decisions.md) suspects
 whitespace and trailing args —
 **both are already caught**; D35 should be re-scoped to flag ordering and
 wrappers, not closed as handled.
+
+**D2/D4/D6/D8 — what landed (2026-07-28).** All three repros closed plus D2's
+`--generate-notes` residual. One bounded reviewer found **four blockers** in the
+fixes, each then confirmed by execution:
+
+1. **The D2-residual audit never ran.** It was wired `run=cli.run_shell`, which
+   uses `shell=True`, where a LIST makes `args[0]` the command and drops the rest
+   into `$0,$1,...`. Measured: `run_shell(["git","status","--short"])` executes
+   bare `git` and exits 1, while `run(...)` returns short-format output. Every
+   publish would have recorded `unavailable` — **closed-looking, not closed.**
+2. **A non-`gh` backend would have stranded the publish.** `backend_command`
+   raises `SystemExit` for an undeclared op, `SystemExit` does not derive from
+   `Exception`, and this call sits after `create_release` and outside the
+   rollback wrapper. Confirmed escaping. It now catches `BaseException` and
+   records `not-configured`; `release_view_body` is documented in the adapter
+   contract as the one op a backend may safely omit.
+3. **An empty published body recorded `clean`** — a PASS over a scope never
+   established, class (a) reintroduced by the fix for class (d). Now
+   `unestablished`.
+4. **The D8 fix branched on the wrong field.** Distinctness is a property of the
+   same-proxy GUARD, not the status: a probe of literally `gh release view v1`
+   reaches `confirmed` when the caller omits `backend`/`backend_command`, and an
+   `inconclusive-degenerate-template` guard coexists with `confirmed`. Confirmed
+   rendering "(a channel distinct from `gh release view`)" over a
+   `gh release view` probe — D8's exact failure mode surviving the D8 fix. The
+   guard's own verdict is rendered now.
+
+Also folded in: the D6 comparison used a substring, so `2.11.3` matched
+`2.11.30` and — worse — matched the trailer in `charness 2.11.1 (latest 2.11.3
+available)`, reporting a match while the wrong version was installed. The
+reported version is now the first version-shaped token and must EQUAL the
+expected one. And `published_notes_audit` reached nobody: it lived only in the
+publish run's stdout JSON, so it is now rendered into the release artifact.
+
+**D4 stays PARTIAL, and this is the important part.** The content check closes
+the "any 200 with any body" hole. It does NOT make the probe proof that a
+release exists. Measured on the live repo: `releases/tag/v0.1.1` — a pushed tag
+with **no** GitHub release — returns HTTP 200 with the tag present 23 times, and
+both that page and a real release page title themselves `Release <tag>`. The
+publish flow pushes the tag before creating the release, so this channel cannot
+distinguish "the release exists" from "the tag was pushed". The unauthenticated
+REST API, which does distinguish, answered 403 (rate-limited) and is not a
+dependable default. The record therefore carries `establishes` and
+`does_not_establish`, and the artifact renders both, rather than letting
+`confirmed` be read as the stronger claim. Closing this needs a release-specific
+channel that does not depend on unauthenticated API quota.
 
 **D4** — confirmed against a local server returning a page that mentions no tag:
 `{'status': 'confirmed', 'http_status': 200, 'evidence_len': 46}`. `urllib`

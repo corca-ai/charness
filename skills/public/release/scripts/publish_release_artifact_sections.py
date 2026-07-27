@@ -164,14 +164,70 @@ def public_release_verification_lines(public_release_verification: str, release_
     return lines
 
 
-def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[str]:
-    if not isinstance(record, dict) or not str(record.get("status", "")).strip():
-        return []
-    lines = ["", "## Distinct-Channel Verification", ""]
-    lines.append(
-        f"- Rung-2 distinct-channel verdict: `{record.get('status')}` via "
-        f"`{record.get('channel', 'unknown')}` (a channel distinct from `gh release view`)."
+def _distinct_channel_qualifier(status: str, channel: str, guard: str | None) -> str:
+    """How to describe the verdict, honestly.
+
+    Distinctness is a property of the same-proxy GUARD, not of the status.
+    Branching on status alone left two escapes: a probe of literally
+    `gh release view v1` reaches `confirmed` when the caller omits
+    `backend`/`backend_command` so the guard never runs, and an
+    `inconclusive-degenerate-release-view-template` guard coexists with
+    `confirmed`. In both, the guard did not establish distinctness and the
+    artifact asserted it anyway — D8's exact failure mode.
+    """
+    if status == "same-proxy-flagged":
+        return (
+            "**NOT a distinct channel** — the configured probe matched this backend's own "
+            "`release_view` command and was refused before running"
+        )
+    if status == "skipped":
+        return "**no distinct channel ran**"
+    if status != "confirmed":
+        return "a channel distinct from `gh release view`, which did NOT confirm this release"
+    established = guard == "evaluated" if channel == "adapter-probe" else guard in (None, "evaluated")
+    if established:
+        return "a channel distinct from `gh release view`"
+    return (
+        "distinctness NOT established — the same-proxy guard reported "
+        f"`{guard or 'not-run'}`, so this probe was never checked against the backend's own "
+        "`release_view` command"
     )
+
+
+def _status_section(record: Any, heading: str) -> tuple[str, list[str]] | None:
+    """``(status, opening_lines)`` for a status-bearing record, or ``None`` when
+    the record carries no status to render.
+
+    Four section renderers repeated this guard verbatim. Shared so a future
+    section cannot render a heading over a record it never checked."""
+    if not isinstance(record, dict) or not str(record.get("status", "")).strip():
+        return None
+    return str(record["status"]), ["", heading, ""]
+
+
+def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[str]:
+    section = _status_section(record, "## Distinct-Channel Verification")
+    if section is None:
+        return []
+    status, lines = section
+    channel = record.get("channel", "unknown")
+    # The distinctness claim is a CLAIM, and it was appended unconditionally —
+    # including on `same-proxy-flagged` records, whose own observer field says
+    # the probe was the same proxy, and on `skipped` records where no channel ran
+    # at all (D8). The parenthetical now describes what actually happened.
+    guard = record.get("same_proxy_guard")
+    qualifier = _distinct_channel_qualifier(status, channel, guard)
+    lines.append(f"- Rung-2 distinct-channel verdict: `{status}` via `{channel}` ({qualifier}).")
+    if guard is not None:
+        lines.append(f"- Same-proxy guard: `{guard}`")
+    if (expected := record.get("expected_content")) and status == "confirmed":
+        lines.append(f"- Response content checked for: `{expected}`")
+    if establishes := record.get("establishes"):
+        lines.append(f"- What this confirms: {establishes}")
+    if not_established := record.get("does_not_establish"):
+        lines.append(f"- What it does NOT confirm: {not_established}")
+    if (fetched := record.get("fetched_url")) and fetched != record.get("url"):
+        lines.append(f"- Redirected to: `{fetched}`")
     if observer := record.get("observer"):
         lines.append(f"- Observer identity: {observer}")
     if url := record.get("url"):
@@ -189,10 +245,41 @@ def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[s
     return lines
 
 
-def release_observer_lines(observer: dict[str, Any] | None) -> list[str]:
-    if not isinstance(observer, dict) or not str(observer.get("status", "")).strip():
+def published_notes_audit_lines(record: dict[str, Any] | None) -> list[str]:
+    """The post-create audit of the PUBLISHED release body.
+
+    Rendered here because an advisory nobody reads is the same silent path the
+    distinct-channel section exists to close: it previously lived only in the
+    publish run's stdout JSON, which nothing re-reads after a release.
+    """
+    section = _status_section(record, "## Published Notes Audit")
+    if section is None:
         return []
-    lines = ["", "## Release Observer Record", ""]
+    status, lines = section
+    lines.append(f"- Published release body audit: `{status}` (advisory; never blocks a publish).")
+    if status == "advisory":
+        lines.append(
+            "- The published notes point at content that can change after publication. "
+            "`gh release edit` is the remedy; the release itself is unaffected."
+        )
+        for advisory in record.get("advisories", []):
+            lines.append(f"  - {advisory}")
+    elif status == "clean":
+        lines.append(f"- No mutable source-tree pointers found ({record.get('body_len', 0)} body bytes).")
+    else:
+        lines.append(
+            "- The body was NOT audited, so this release's notes carry no pointer verdict at all."
+        )
+    if reason := record.get("reason"):
+        lines.append(f"- Disposition reason: {reason}")
+    return lines
+
+
+def release_observer_lines(observer: dict[str, Any] | None) -> list[str]:
+    section = _status_section(observer, "## Release Observer Record")
+    if section is None:
+        return []
+    _status, lines = section
     if path := str(observer.get("path", "") or "").strip():
         lines.append(f"- Durable observer record: `{path}`.")
     else:

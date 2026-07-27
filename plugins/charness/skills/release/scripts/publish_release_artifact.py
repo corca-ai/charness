@@ -28,6 +28,7 @@ fresh_checkout_lines = _sections.fresh_checkout_lines
 release_runtime_lines = _sections.release_runtime_lines
 baton_reconcile_lines = _sections.baton_reconcile_lines
 release_observer_lines = _sections.release_observer_lines
+published_notes_audit_lines = _sections.published_notes_audit_lines
 user_update_lines = _sections.user_update_lines
 
 
@@ -55,6 +56,7 @@ def write_release_artifact(
     requested_review_gate: dict[str, Any] | None = None,
     retro_trigger_evaluation: dict[str, Any] | None = None,
     distinct_channel_verification: dict[str, Any] | None = None,
+    published_notes_audit: dict[str, Any] | None = None,
     lifecycle_capture: dict[str, Any] | None = None,
     release_runtime: list[dict[str, Any]] | None = None,
     baton_reconcile: dict[str, Any] | None = None,
@@ -100,6 +102,7 @@ def write_release_artifact(
     )
     lines.extend(public_release_verification_lines(public_release_verification, release_url))
     lines.extend(distinct_channel_verification_lines(distinct_channel_verification))
+    lines.extend(published_notes_audit_lines(published_notes_audit))
     lines.extend(lifecycle_capture_lines(lifecycle_capture))
     lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
     lines.extend(retro_trigger_evaluation_lines(retro_trigger_evaluation))

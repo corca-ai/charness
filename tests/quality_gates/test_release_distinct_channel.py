@@ -17,6 +17,8 @@ from .release_script_loading import load_release_script
 _POST_CREATE = load_release_script("publish_release_post_create")
 _EXECUTE = load_release_script("publish_release_execute")
 _HELPERS = load_release_script("publish_release_helpers")
+_NARRATIVE = load_release_script("audit_public_release_narrative")
+_COMMON = load_release_script("publish_release_common")
 
 
 def _shell_result(returncode: int, stdout: str = "", stderr: str = ""):
@@ -93,10 +95,16 @@ def test_observer_http_default_confirms_on_200() -> None:
     record = _POST_CREATE.confirm_release_via_distinct_channel(
         Path("."), payload, adapter_data={}, run_shell=None, tag_name="v1.2.3",
         expected_release_url="https://example/releases/tag/v1.2.3",
-        http_probe=lambda url: {"channel": "https-fetch", "url": url, "status": "confirmed", "http_status": 200},
+        http_probe=lambda url, **kwargs: {
+            "channel": "https-fetch", "url": url, "status": "confirmed", "http_status": 200,
+            "expected_content": kwargs.get("expected_content"),
+        },
     )
     assert record["status"] == "confirmed"
     assert record["channel"] == "https-fetch"
+    # The probe must be told what identifies THIS release; confirming on "a 200
+    # with a body" made the verdict independent of what came back (D4).
+    assert record["expected_content"] == "v1.2.3"
     assert payload["distinct_channel_verification"] is record
 
 
@@ -105,7 +113,7 @@ def test_observer_http_default_records_typed_disposition_on_failure() -> None:
     _POST_CREATE.confirm_release_via_distinct_channel(
         Path("."), payload, adapter_data={}, run_shell=None, tag_name="v1.2.3",
         expected_release_url="https://example/releases/tag/v1.2.3",
-        http_probe=lambda url: {"channel": "https-fetch", "url": url, "status": "blocked-needs-capability", "reason": "offline"},
+        http_probe=lambda url, **_kwargs: {"channel": "https-fetch", "url": url, "status": "blocked-needs-capability", "reason": "offline"},
     )
     # A typed disposition is recorded, not a silent green.
     assert payload["distinct_channel_verification"]["status"] == "blocked-needs-capability"
@@ -328,6 +336,10 @@ def _base_cli(observer, recorder: dict) -> SimpleNamespace:
         verify_release_visible=lambda *a, **k: _shell_result(0),
         finalize_release_payload=lambda *a, **k: None,
         confirm_release_via_distinct_channel=observer,
+        # The `--generate-notes` path publishes a body nothing inspected
+        # pre-publish, so the wiring reads it back and audits it post-create.
+        audit_published_release_body=_POST_CREATE.audit_published_release_body,
+        audit_notes_text=lambda text, **k: [],
         evaluate_release_distinct_channel=_POST_CREATE.evaluate_release_distinct_channel,
         fail_release_distinct_channel_floor=_POST_CREATE.fail_release_distinct_channel_floor,
         fail_after_post_create_verification=_POST_CREATE.fail_after_post_create_verification,
@@ -529,3 +541,192 @@ def test_same_proxy_guard_records_when_it_could_not_be_evaluated() -> None:
         backend={"id": "gh", "commands": None}, backend_command=_HELPERS.backend_command,
     )
     assert payload["distinct_channel_verification"]["same_proxy_guard"] == "evaluated"
+
+
+def _serve(body: bytes, code: int = 200):
+    import http.server
+    import socketserver
+    import threading
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            self.send_response(code)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_args):
+            return
+
+    server = socketserver.TCPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True).start()
+    return server, server.server_address[1]
+
+
+def test_http_probe_refuses_a_200_that_does_not_mention_the_release() -> None:
+    """D4 regression: the probe confirmed on any HTTP 200 with at least one body
+    byte, so the verdict was independent of what came back.
+
+    Confirmed against a local server returning a page that mentions no tag:
+    `{'status': 'confirmed', 'http_status': 200, 'evidence_len': 46}`. A captive
+    portal, a rate-limit notice, a 404 served as 200, or a silent redirect to the
+    repository root all confirmed a release that might not exist."""
+    server, port = _serve(b"<html><body>Nothing to see here at all.</body></html>")
+    try:
+        record = _POST_CREATE._http_release_probe(
+            f"http://127.0.0.1:{port}/releases/tag/v2.11.3", timeout=5, expected_content="v2.11.3"
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert record["status"] == "not-confirmed"
+    assert record["http_status"] == 200
+    assert "does not mention" in record["reason"]
+
+
+def test_http_probe_confirms_when_the_response_names_the_release() -> None:
+    """Falsifiable counterpart: the same 200 confirms once the body actually
+    names the tag, and the content it was checked for is recorded."""
+    server, port = _serve(b"<html><body>Release v2.11.3 is out</body></html>")
+    try:
+        record = _POST_CREATE._http_release_probe(
+            f"http://127.0.0.1:{port}/releases/tag/v2.11.3", timeout=5, expected_content="v2.11.3"
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert record["status"] == "confirmed"
+    assert record["expected_content"] == "v2.11.3"
+
+
+def test_http_probe_without_expected_content_does_not_confirm() -> None:
+    """No identifying string to look for is an unestablished scope: the fetch
+    proves a page exists, never that it is this release's page."""
+    server, port = _serve(b"<html>anything</html>")
+    try:
+        record = _POST_CREATE._http_release_probe(f"http://127.0.0.1:{port}/x", timeout=5)
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert record["status"] == "not-confirmed"
+    assert "no expected content was supplied" in record["reason"]
+
+
+def test_published_release_body_audit_surfaces_mutable_pointers_as_advisory() -> None:
+    """D2 residual: the pre-publish notes audit only runs when a notes FILE is
+    supplied, so `--generate-notes` — the default — published a body nothing had
+    inspected. Auto-generated bodies are commit messages and PR text, a prime
+    carrier of `blob/main` links.
+
+    Post-hoc by construction and advisory by design: the release already exists,
+    so refusing after the fact would only strand the publish."""
+    payload: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), payload, tag_name="v1.2.3", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command,
+        run=lambda *a, **k: _shell_result(0, stdout="See https://github.com/o/r/blob/main/docs/x.md\n"),
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+    assert record["status"] == "advisory"
+    assert record["advisories"] and "MUTABLE ref" in record["advisories"][0]
+    assert payload["published_notes_audit"] is record
+
+    clean: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), clean, tag_name="v1.2.3", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command,
+        run=lambda *a, **k: _shell_result(0, stdout="Self-contained notes.\n"),
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+    assert record["status"] == "clean"
+
+
+def test_published_release_body_audit_records_an_unavailable_readback() -> None:
+    """A body readback that fails is a recorded disposition, never a crash and
+    never a clean verdict."""
+    payload: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), payload, tag_name="v1.2.3", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command,
+        run=lambda *a, **k: _shell_result(1, stderr="gh: not authenticated"),
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+    assert record["status"] == "unavailable"
+    assert "not authenticated" in record["reason"]
+
+
+def test_published_body_audit_is_wired_to_the_list_runner_not_the_shell_runner() -> None:
+    """The published-body audit builds a LIST command, and `run_shell` uses
+    `shell=True`, where a list makes `args[0]` the command string and drops the
+    rest into `$0,$1,...`.
+
+    Confirmed: `run_shell(["git","status","--short"])` runs bare `git` and exits
+    1, while `run(...)` returns short-format output. Wired to `run_shell`, the
+    audit recorded `unavailable` on every publish — closed-looking, not closed.
+    This pins the runner the wiring actually passes."""
+    import inspect
+
+    source = inspect.getsource(_COMMON.run_distinct_channel_floor)
+    audit_call = source.split("audit_published_release_body")[1]
+    assert "run=cli.run," in audit_call
+    assert "run=cli.run_shell," not in audit_call
+
+
+def test_published_body_audit_survives_a_backend_without_the_op() -> None:
+    """`backend_command` raises SystemExit for a non-`gh` backend with no
+    template for an op, and SystemExit does not derive from Exception.
+
+    This runs AFTER the release exists and outside the rollback wrapper's scope,
+    so an escaping SystemExit stranded the publish before the rung-1 floor, issue
+    closeout, and the final artifact commit — for every non-`gh` adapter, over an
+    advisory that is allowed to fail."""
+    payload: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), payload, tag_name="v1.2.3",
+        backend={"id": "acme", "commands": {"release_view": ["acme", "release", "view", "{tag}"]}},
+        backend_command=_HELPERS.backend_command,
+        run=_HELPERS.run,
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+    assert record["status"] == "not-configured"
+    assert "release_view_body" in record["reason"]
+
+
+def test_published_body_audit_does_not_call_an_empty_body_clean() -> None:
+    """An empty body is what a misrouted, unauthenticated, or wrong-op readback
+    returns. Calling it `clean` is a PASS over a scope never established — the
+    class this fix was closing, reintroduced by the fix."""
+    payload: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), payload, tag_name="v1.2.3", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command,
+        run=lambda *a, **k: _shell_result(0, stdout="   \n"),
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+    assert record["status"] == "unestablished"
+    assert record["advisories"] == []
+
+
+def test_http_probe_records_what_it_cannot_establish() -> None:
+    """Measured 2026-07-27: `github.com/<o>/<r>/releases/tag/<tag>` returns HTTP
+    200 with the tag in the body for a tag that has NO GitHub release (verified
+    against `v0.1.1`, a pushed tag with no release — 200, tag present 23 times),
+    and both that page and a real release page title themselves `Release <tag>`.
+    The publish flow pushes the tag BEFORE creating the release, so this channel
+    cannot distinguish "the release exists" from "the tag was pushed".
+
+    D4's fix closes the "any 200 with any body" hole; it does NOT make this probe
+    proof of release existence. The record says so rather than letting
+    `confirmed` be read as the stronger claim."""
+    server, port = _serve(b"<html><body>Release v1.2.3</body></html>")
+    try:
+        record = _POST_CREATE._http_release_probe(
+            f"http://127.0.0.1:{port}/releases/tag/v1.2.3", timeout=5, expected_content="v1.2.3"
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert record["status"] == "confirmed"
+    assert record["establishes"] == "public-page-reachable-and-names-the-tag"
+    assert "does not establish" not in record  # spelled `does_not_establish`
+    assert "GitHub RELEASE exists" in record["does_not_establish"]

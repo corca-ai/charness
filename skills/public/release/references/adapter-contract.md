@@ -144,9 +144,18 @@ release-existence checks, and release-create calls can route through the
 adapter-resolved CLI binary. Default is `{id: gh, binary: gh, commands: null}`,
 which keeps the existing `gh release ...` shape. Hosts that resolve releases
 through a different binary supply `commands` templates for `auth_check`,
-`release_view` (uses `{tag}` substitution), and `release_create` (uses `{tag}`
-and `{title}` substitution). Without commands, a non-`gh` backend errors at
-runtime instead of falling back to `gh`.
+`release_view` (uses `{tag}` substitution), `release_create` (uses `{tag}` and
+`{title}` substitution), and optionally `release_view_body` (uses `{tag}`).
+Without commands, a non-`gh` backend errors at runtime instead of falling back
+to `gh`.
+
+`release_view_body` reads the PUBLISHED release body back so the post-create
+notes audit can inspect it — the pre-publish audit only runs when a notes FILE
+is supplied, so `--generate-notes` otherwise publishes a body nothing has seen.
+It is the one op a backend may omit safely: it runs after the release exists,
+its result is advisory, and a missing template is recorded as
+`published_notes_audit: not-configured` rather than raising. Declaring it means
+the audit actually inspects your published notes.
 
 The placeholder set is enforced per op at runtime by
 `publish_release_helpers.backend_command`: `release_view` accepts `{tag}`,

@@ -1193,15 +1193,17 @@
     },
     "skills/public/release/scripts/publish_release_artifact_sections.py": {
       "states": [
-        "not_configured"
+        "not_configured",
+        "skipped"
       ],
       "visibility": [
         "artifact_visible"
       ],
       "evidence_terms": [
-        "No repo-declared fresh checkout probes were configured"
+        "No repo-declared fresh checkout probes were configured",
+        "no distinct channel ran"
       ],
-      "rationale": "Release helper writes not-configured fresh-checkout status into the release artifact."
+      "rationale": "Release artifact renderer. Two exit-zero attention states reach the durable release record and both are rendered as prose the rung-2 human reads: `not_configured` for absent fresh-checkout probes, and `skipped` for a distinct-channel record where NO channel ran. The `skipped` branch exists precisely so the artifact stops asserting 'a channel distinct from `gh release view`' over a record with no channel behind it (D8) - it renders '**no distinct channel ran**' instead. Neither token is a runtime status of this script; both are statuses it must render honestly."
     },
     "skills/public/release/scripts/publish_release_baton.py": {
       "states": [

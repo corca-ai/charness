@@ -15,6 +15,10 @@ SEMVER_TAG_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)$")
 
 OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
     "release_view": RELEASE_VIEW_PLACEHOLDERS,
+    # Reads the PUBLISHED release body back for the post-create notes audit.
+    # Same placeholders as `release_view`; a distinct op so an adapter can point
+    # it at a backend whose body readback is not a `--json` flag.
+    "release_view_body": RELEASE_VIEW_PLACEHOLDERS,
     "release_create": RELEASE_CREATE_PLACEHOLDERS,
     "auth_check": AUTH_CHECK_PLACEHOLDERS,
 }

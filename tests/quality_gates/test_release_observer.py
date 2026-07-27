@@ -299,3 +299,176 @@ def test_release_observer_unknown_refresh_stays_fail_closed(tmp_path: Path) -> N
     assert installed["status"] == "unavailable"
     assert installed["version"]["status"] == "confirmed"
     assert installed["doctor"]["status"] == "confirmed"
+
+
+def test_installed_readback_compares_the_version_it_read(tmp_path: Path) -> None:
+    """D6 regression: the disposition keyed on exit code alone, so the version
+    read back was stored in the durable JSON and never looked at.
+
+    Confirmed: target `2.11.2`, readback `charness 2.11.1`, disposition
+    `observed` — a readback that proves the command ran, not that the right
+    thing is installed."""
+    def run_shell(_command, **_kwargs):
+        return SimpleNamespace(returncode=0, stdout="charness 2.11.1\n", stderr="")
+
+    record = OBSERVER.collect_installed_readback(
+        tmp_path, install_refresh={"status": "refreshed"},
+        version_command="charness --version", doctor_command="charness doctor",
+        run_shell=run_shell, expected_version="2.11.3",
+    )
+
+    assert record["status"] == "version-mismatch"
+    assert record["version"]["version_match"] == "mismatch"
+    assert record["version"]["expected_version"] == "2.11.3"
+    assert record["version"]["reported_version"] == "2.11.1"
+    assert "not the published version '2.11.3'" in record["version"]["reason"]
+
+
+def test_installed_readback_reads_the_reported_version_not_any_version(tmp_path: Path) -> None:
+    """The REPORTED version is the first version-shaped token, and it must EQUAL
+    the expected one.
+
+    A substring test matched `2.11.3` inside `2.11.30`; even an anchored search
+    matched the trailer in `charness 2.11.1 (latest 2.11.3 available)` —
+    reporting a match while the wrong version is installed, which is the
+    dangerous direction for a readback whose entire job is catching that."""
+    def readback(stdout: str):
+        return OBSERVER.collect_installed_readback(
+            tmp_path, install_refresh={"status": "refreshed"},
+            version_command="v", doctor_command="d",
+            run_shell=lambda *_a, **_k: SimpleNamespace(returncode=0, stdout=stdout, stderr=""),
+            expected_version="2.11.3",
+        )
+
+    for stdout, expected in (
+        ("charness 2.11.3\n", "observed"),
+        ("version: 2.11.3\n", "observed"),
+        ("charness 2.11.30\n", "version-mismatch"),
+        ("charness 2.11.1 (latest 2.11.3 available)\n", "version-mismatch"),
+        ("charness 2.11.3-rc1\n", "version-mismatch"),
+    ):
+        assert readback(stdout)["status"] == expected, stdout
+
+    # No version-shaped token is an unestablished comparison, not a match.
+    no_version = readback("charness (dev build)\n")
+    assert no_version["version"]["version_match"] == "not-compared"
+
+
+def test_installed_readback_observes_when_the_version_matches(tmp_path: Path) -> None:
+    """Falsifiable counterpart: the same shape with a matching readback still
+    reaches `observed`, and records that the comparison actually happened."""
+    def run_shell(_command, **_kwargs):
+        return SimpleNamespace(returncode=0, stdout="charness 2.11.3\n", stderr="")
+
+    record = OBSERVER.collect_installed_readback(
+        tmp_path, install_refresh={"status": "refreshed"},
+        version_command="charness --version", doctor_command="charness doctor",
+        run_shell=run_shell, expected_version="2.11.3",
+    )
+
+    assert record["status"] == "observed"
+    assert record["version"]["version_match"] == "matched"
+
+
+def test_installed_readback_marks_an_uncompared_version_as_such(tmp_path: Path) -> None:
+    """When the readback could not run there is nothing to compare, and the
+    record says `not-compared` rather than leaving the absence of a mismatch to
+    read as agreement."""
+    def run_shell(_command, **_kwargs):
+        return SimpleNamespace(returncode=1, stdout="", stderr="command not found")
+
+    record = OBSERVER.collect_installed_readback(
+        tmp_path, install_refresh={"status": "refreshed"},
+        version_command="charness --version", doctor_command="charness doctor",
+        run_shell=run_shell, expected_version="2.11.3",
+    )
+
+    assert record["status"] == "unavailable"
+    assert record["version"]["version_match"] == "not-compared"
+
+
+def test_distinct_channel_section_does_not_assert_distinctness_it_lacks() -> None:
+    """D8 regression: the artifact appended "(a channel distinct from
+    `gh release view`)" unconditionally.
+
+    It said that on `same-proxy-flagged` records — whose own observer field reads
+    `same-proxy (backend release_view shape; not a distinct observer)` — and on
+    `skipped` records where no channel ran at all. The published artifact is what
+    the rung-2 human audit reads, so a sentence it cannot support is the whole
+    failure mode this section exists to prevent."""
+    flagged = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {"status": "same-proxy-flagged", "channel": "adapter-probe"}
+    )
+    verdict = next(line for line in flagged if "verdict" in line)
+    assert "NOT a distinct channel" in verdict
+    assert "(a channel distinct from `gh release view`)" not in verdict
+
+    skipped = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {"status": "skipped", "channel": "none"}
+    )
+    assert "no distinct channel ran" in next(line for line in skipped if "verdict" in line)
+
+    not_confirmed = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {"status": "not-confirmed", "channel": "https-fetch"}
+    )
+    assert "did NOT confirm" in next(line for line in not_confirmed if "verdict" in line)
+
+    # Falsifiable counterpart: the claim survives where it is earned.
+    confirmed = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {"status": "confirmed", "channel": "https-fetch", "expected_content": "v1.2.3"}
+    )
+    verdict = next(line for line in confirmed if "verdict" in line)
+    assert "a channel distinct from `gh release view`" in verdict
+    assert "NOT" not in verdict
+    assert any("Response content checked for" in line for line in confirmed)
+
+
+def test_distinct_channel_section_keys_distinctness_on_the_guard_not_the_status() -> None:
+    """Distinctness is a property of the same-proxy GUARD, not of the status.
+
+    Branching on status alone left two escapes: a probe of literally
+    `gh release view v1` reaches `confirmed` when the caller omits
+    `backend`/`backend_command` so the guard never runs, and an
+    `inconclusive-degenerate-release-view-template` guard coexists with
+    `confirmed`. In both, the guard did not establish distinctness and the
+    artifact asserted it anyway — D8's exact failure mode surviving the D8 fix.
+    The guard's own verdict is now rendered too, so the rung-2 reader can see it."""
+    for guard in ("inconclusive-degenerate-release-view-template", "not-configured", None):
+        lines = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+            {"status": "confirmed", "channel": "adapter-probe",
+             "command": "gh release view v1", **({"same_proxy_guard": guard} if guard else {})}
+        )
+        verdict = next(line for line in lines if "verdict" in line)
+        assert "distinctness NOT established" in verdict, guard
+        assert "(a channel distinct from `gh release view`)" not in verdict, guard
+
+    evaluated = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {"status": "confirmed", "channel": "adapter-probe", "same_proxy_guard": "evaluated"}
+    )
+    assert "a channel distinct from `gh release view`" in next(line for line in evaluated if "verdict" in line)
+    assert any("Same-proxy guard: `evaluated`" in line for line in evaluated)
+
+    # The default HTTP probe is distinct by construction (no guard applies).
+    http = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {"status": "confirmed", "channel": "https-fetch", "expected_content": "v1.2.3"}
+    )
+    assert "a channel distinct from `gh release view`" in next(line for line in http if "verdict" in line)
+
+
+def test_published_notes_audit_reaches_the_artifact() -> None:
+    """An advisory nobody reads is the same silent path the distinct-channel
+    section exists to close. This record previously lived only in the publish
+    run's stdout JSON, which nothing re-reads after a release."""
+    advisory = ARTIFACT_SECTIONS.published_notes_audit_lines(
+        {"status": "advisory", "advisories": ["public release notes point at ... MUTABLE ref `main`"]}
+    )
+    assert "## Published Notes Audit" in advisory
+    assert any("MUTABLE ref" in line for line in advisory)
+    assert any("gh release edit" in line for line in advisory)
+
+    unestablished = ARTIFACT_SECTIONS.published_notes_audit_lines(
+        {"status": "unestablished", "reason": "empty body"}
+    )
+    assert any("NOT audited" in line for line in unestablished)
+
+    assert ARTIFACT_SECTIONS.published_notes_audit_lines(None) == []
