@@ -10,9 +10,12 @@
 ## Continuation Capability
 
 The backlog is empty on the tracker — zero open issues. This session pushed the
-prior run (closing #459) and closed F9: the auto-draft now marks stale citations.
+prior run (closing #459), closed F9, and published `2.11.2` (release verified,
+notes carry the unmarked-is-not-verified complement).
 [The F9 critique](../charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md)
-holds ten findings, six rejected as over-worry. No decisions pending.
+and [the release critique](../charness-artifacts/critique/2026-07-27-v2-11-2-release-critique.md)
+hold twenty findings between them, ten rejected. No decisions pending.
+The auto-retro asks whether this session also owes a full `retro`; it was not run.
 
 ## Current State
 
@@ -56,11 +59,15 @@ holds ten findings, six rejected as over-worry. No decisions pending.
   binding. Scope it with `--reviewed-path` to the surfaces actually reviewed.
   Same shape for the reviewer-boundary fingerprint: `verify` before applying
   act-before-ship fixes, or the drift it reports is your own.
+- Run release/skill helpers from `skills/public/.../scripts/`, NOT the installed
+  plugin copy. An installed `publish_release.py` writes an older lesson-index
+  schema that this repo's own gate then rejects — `validate-retro-lesson-index`
+  fails mid-publish and rolls back. Same class as the four failed publishes
+  `require_repo_local_helper` was added for; the guard covers the write, not the
+  entrypoint you invoke.
 - Skill loaders build a FRESH module object per import, with no `sys.modules`
   caching. Reading a module global back across a second load silently sees the
   unmutated copy; thread the value through explicitly instead.
-- Two files sat exactly at their length cap, so small additions forced a split.
-  Check `check_python_lengths.py` before growing a planner or a shared lib.
 
 ## References
 
