@@ -1,1 +1,1 @@
-2026-07-25-bounded-reviewer-result-delivery.md
+2026-07-27-absent-guard-not-dead-guard.md

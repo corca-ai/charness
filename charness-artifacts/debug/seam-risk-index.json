@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 104,
-  "indexed_artifact_count": 92,
+  "source_artifact_count": 105,
+  "indexed_artifact_count": 93,
   "risk_class_counts": {
     "contract-freeze-risk": 29,
-    "external-seam": 8,
+    "external-seam": 9,
     "host-disproves-local": 2,
     "none": 30,
     "operator-visible-recovery": 22,
-    "repeated-symptom": 4
+    "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
-    "factor-now": 4,
-    "monitor": 78,
+    "factor-now": 6,
+    "monitor": 77,
     "none": 10
   },
   "entries": [
@@ -1281,6 +1281,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md",
+      "is_current_pointer": false,
+      "interrupt_id": "absent-guard-not-dead-guard",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "the installed-copy lifecycle (`charness update` pull cadence), host-managed rather than repo-managed",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-27-foreign-copy-write-enforcement.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-07-27-named-spawn-recurrence.md",
       "is_current_pointer": false,
       "interrupt_id": "named-spawn-recurrence-2026-07-27",
@@ -1298,16 +1312,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "reviewer-result-delivery-2026-07-25",
+      "interrupt_id": "absent-guard-not-dead-guard",
       "risk_classes": [
-        "external-seam",
-        "repeated-symptom"
+        "external-seam"
       ],
-      "seam": "parent-to-reviewer result delivery, owned by host runtime and selected by a caller-supplied spawn parameter; no repo code owns it.",
-      "generalization_pressure": "monitor",
+      "seam": "the installed-copy lifecycle (`charness update` pull cadence), host-managed rather than repo-managed",
+      "generalization_pressure": "factor-now",
       "critique_required": true,
       "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-07-25-reviewer-delivery-seam.md",
+      "handoff_artifact": "charness-artifacts/spec/2026-07-27-foreign-copy-write-enforcement.md",
       "forced": true
     }
   ],
