@@ -17,7 +17,7 @@
 - a lesson that ships as prose only has not shipped. Both rules that bit this session were correct, checked in, and unread. Disposition: applied: the spawn-shape rule moved to always-loaded `AGENTS.md`, propagated to the consuming-repo template, and pinned by four tests in `tests/quality_gates/test_reviewer_result_delivery.py` (source: `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`)
 - make backlog staleness checkable at chunk time rather than at review time — the chunker already parses `file:line` and issue refs from every entry, so it can report which cited paths/issues no longer resolve before an agent plans against them. Disposition: issue #459 (novel: no existing entry covers chunker-side staleness; the closest, D28, is about validator defaults) (source: `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`)
 - the recurrence-class tag shipped this session has no data until retros carry it. This retro is the first to carry tags, which starts the corpus. Disposition: applied: recurrence-class tags on the Waste bullets above, grouped by `scripts/recent_lessons_lib.py` (source: `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`)
-- a counted limit (line caps, size budgets) is a planning input, not a retry loop. Read the reported deficit and make one edit. (source: `charness-artifacts/retro/2026-07-26-session-retro.md`)
+- the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing. (source: `charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md`; sources: 2)
 
 ## Selection Policy
 
@@ -28,5 +28,7 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-07-26-session-retro.md`
+- `charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md`
 - `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`
 - `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`
+- `charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md`
