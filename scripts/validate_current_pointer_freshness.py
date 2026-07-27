@@ -44,7 +44,48 @@ STALE_POINTER_PHRASES = {
     ),
 }
 COMMAND_RE = re.compile(r"`(python3 [^`]+|\.\/scripts\/[^`]+)`")
-TARGET_VERSION_RE = re.compile(r"- target version:\s*`([^`]+)`")
+# The claim line, in every rendering an author plausibly writes it: backticked
+# (canonical), bold, or bare. The old pattern required backticks and a leading
+# `- `, so re-rendering the same claim as `- target version: **2.11.2**` made the
+# cross-check silently no-op — the one standing check that the release pointer
+# agrees with the shipped manifests (D5).
+TARGET_VERSION_RE = re.compile(
+    r"(?im)^[ \t]*(?:[-*][ \t]*)?(?:\*\*)?target version(?:\*\*)?[ \t]*:[ \t]*"
+    r"(?:`(?P<tick>[^`]+)`|\*\*(?P<bold>[^*]+)\*\*|(?P<bare>[^\s`*]+))[ \t]*$"
+)
+
+
+# Values that are the SHAPE of a claim without being one. They must route to the
+# "unestablished" message, not be compared as if they were versions — otherwise
+# `target version: TBD` reports "manifest is 2.11.3, pointer claims TBD", which
+# diagnoses the wrong problem.
+_CLAIM_PLACEHOLDERS = frozenset({"", "tbd", "todo", "n/a", "na", "none", "unknown", "pending", "x"})
+# Fenced blocks in the release artifact carry verbatim captured tool output
+# (`charness update` tails, changed-path lists). A claim-shaped line appearing
+# there is quoted text, not the artifact's own assertion.
+_FENCE_RE = re.compile(r"(?ms)^[ \t]*(`{3,}|~{3,}).*?(?:^[ \t]*\1[ \t]*$|\Z)")
+
+
+def _claimed_versions(release_text: str) -> list[str]:
+    """Every target-version claim the artifact ASSERTS, in order.
+
+    ALL of them, not the first: ``re.search`` returned the first match, so a
+    decoy line earlier in the file that happened to agree with the manifests
+    shadowed a genuinely stale claim below it and the comparison never ran on the
+    real one (D5).
+
+    Values are stripped of residual markup, because the three renderings nest:
+    ``**`2.11.3`**`` captured the backticks inside the bold group and compared
+    them literally, turning a current pointer into a false "stale" verdict.
+    Placeholders are dropped so they surface as an unestablished claim instead.
+    """
+    claims: list[str] = []
+    for match in TARGET_VERSION_RE.finditer(_FENCE_RE.sub("", release_text)):
+        value = match.group("tick") or match.group("bold") or match.group("bare") or ""
+        value = value.strip().strip("`*").strip().rstrip(".").strip()
+        if value and value.lower() not in _CLAIM_PLACEHOLDERS:
+            claims.append(value)
+    return claims
 
 
 def read_text(repo_root: Path, relative_path: Path) -> str:
@@ -162,10 +203,25 @@ def validate_release_version_claim(repo_root: Path) -> None:
     if not release_path.is_file():
         return
     release = release_path.read_text(encoding="utf-8")
-    match = TARGET_VERSION_RE.search(release)
-    if not match:
-        return
-    claimed_version = match.group(1)
+    claims = _claimed_versions(release)
+    if not claims:
+        # An existing release pointer with no parseable claim is an UNESTABLISHED
+        # scope, not a satisfied one. Returning silently here is what made a
+        # reformatted claim indistinguishable from a verified one (D5).
+        raise ValidationError(
+            f"`{RELEASE_POINTER}` exists but carries no parseable `target version:` claim, so the "
+            "release pointer was never compared against the shipped manifests. Write the claim as "
+            "`- target version: `<version>`` (backticks, bold, or bare all parse)."
+        )
+    distinct = sorted(set(claims))
+    if len(distinct) > 1:
+        raise ValidationError(
+            f"`{RELEASE_POINTER}` carries disagreeing target-version claims "
+            + ", ".join(f"`{value}`" for value in distinct)
+            + "; a decoy claim shadowing the real one is exactly what made this check pass over a "
+            "stale release. Leave one claim."
+        )
+    claimed_version = distinct[0]
     version_sources = (
         (PACKAGING_MANIFEST, _json_version(repo_root, PACKAGING_MANIFEST)),
         (CODEX_PLUGIN_MANIFEST, _json_version(repo_root, CODEX_PLUGIN_MANIFEST)),

@@ -402,3 +402,130 @@ def test_carrier_commit_failure_prevents_issue_state_mutation() -> None:
     assert recorder.get("issues_closed") is None
     assert recorder.get("committed") is None
     assert recorder["events"] == [("carrier-artifact", "failed")]
+
+
+def test_same_proxy_guard_is_not_defeated_by_flag_order_wrappers_or_paths() -> None:
+    """D3 regression: the guard was a positional PREFIX match on the rendered
+    command, so everything that changes the token order without changing what
+    runs slipped through and the release confirmed itself through the very
+    channel it was supposed to be checked against.
+
+    Confirmed evasions, all running the identical `gh release view` query:
+    moving `--json url` ahead of the tag, `sh -c "..."`, `env`, and an absolute
+    `/usr/bin/gh` path."""
+    def run_shell_never_called(*_args, **_kwargs):
+        raise AssertionError("a same-proxy-flagged probe must never be run")
+
+    for probe in (
+        "gh release view v1.2.3",
+        "gh   release  view   v1.2.3   --json url",
+        "gh release view --json url v1.2.3",
+        'sh -c "gh release view v1.2.3"',
+        "env gh release view v1.2.3",
+        "/usr/bin/gh release view v1.2.3",
+        'bash -c "GH_TOKEN=x /usr/local/bin/gh release view --json url v1.2.3"',
+    ):
+        payload: dict = {}
+        _POST_CREATE.confirm_release_via_distinct_channel(
+            Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": probe},
+            run_shell=run_shell_never_called, tag_name="v1.2.3",
+            expected_release_url="https://x/v1.2.3",
+            backend={"id": "gh", "commands": None}, backend_command=_HELPERS.backend_command,
+        )
+        record = payload["distinct_channel_verification"]
+        assert record["status"] == "same-proxy-flagged", probe
+        assert record["status"] != "confirmed", probe
+
+
+def test_same_proxy_guard_still_admits_a_genuinely_distinct_probe() -> None:
+    """Falsifiable counterpart: the guard must not swallow every probe. These
+    reach the release through channels `gh release view` does not use — including
+    `gh api`, which shares the executable but not the endpoint."""
+    ran: list[str] = []
+
+    def fake_run_shell(command, *_args, **_kwargs):
+        ran.append(command)
+        return type("R", (), {"returncode": 0, "stdout": "ok", "stderr": ""})()
+
+    for probe in (
+        "curl -sSL https://github.com/o/r/releases/tag/v1.2.3",
+        "git ls-remote --tags origin v1.2.3",
+        "gh api repos/o/r/releases/tags/v1.2.3",
+    ):
+        payload: dict = {}
+        _POST_CREATE.confirm_release_via_distinct_channel(
+            Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": probe},
+            run_shell=fake_run_shell, tag_name="v1.2.3",
+            expected_release_url="https://x/v1.2.3",
+            backend={"id": "gh", "commands": None}, backend_command=_HELPERS.backend_command,
+        )
+        assert payload["distinct_channel_verification"]["status"] != "same-proxy-flagged", probe
+    assert len(ran) == 3
+
+
+def test_same_proxy_guard_closes_the_review_found_bypasses() -> None:
+    """Second-round D3 regression: the first fix closed six evasions and left
+    four, each confirmed by execution.
+
+    - an unparseable command failed OPEN, so one apostrophe in a `#` comment ran
+      the identical query under bash while the guard returned "distinct";
+    - only the FIRST token was basename-normalized, so an unlisted wrapper and an
+      absolute path composed (`sudo /usr/bin/gh ...`) even though each alone was
+      caught;
+    - omitting the tag entirely escaped, and `gh release view` with no tag
+      resolves to the LATEST release — moments after publish, the very one being
+      confirmed;
+    - the unwrap budget could be exhausted by leading env assignments, and
+      running out returned silently as if unwrapping had finished."""
+    def run_shell_never_called(*_args, **_kwargs):
+        raise AssertionError("a same-proxy-flagged probe must never be run")
+
+    for probe in (
+        "gh release view v1.2.3 # don't trust gh",
+        "sudo /usr/bin/gh release view v1.2.3",
+        "timeout 10 /usr/bin/gh release view v1.2.3",
+        "gh release view",
+        "A=1 B=2 C=3 D=4 E=5 /usr/bin/gh release view v1.2.3",
+    ):
+        payload: dict = {}
+        _POST_CREATE.confirm_release_via_distinct_channel(
+            Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": probe},
+            run_shell=run_shell_never_called, tag_name="v1.2.3",
+            expected_release_url="https://x/v1.2.3",
+            backend={"id": "gh", "commands": None}, backend_command=_HELPERS.backend_command,
+        )
+        assert payload["distinct_channel_verification"]["status"] == "same-proxy-flagged", probe
+
+
+def test_same_proxy_guard_records_when_it_could_not_be_evaluated() -> None:
+    """A degenerate `release_view` template (empty, or one generic token like
+    `gh`) cannot discriminate: subset matching against it either refuses every
+    probe sharing an executable or passes everything.
+
+    The first fix rendered a verdict anyway — `gh api ...` was wrongly refused
+    against a one-token template, and a real same-proxy probe silently passed
+    against an empty one. The guard now declines to render a verdict it cannot
+    establish, and says so on the record instead of leaving the reader to read
+    the absence of a flag as a passed check."""
+    def fake_run_shell(*_args, **_kwargs):
+        return type("R", (), {"returncode": 0, "stdout": "ok", "stderr": ""})()
+
+    for label, tokens in (("empty", []), ("single generic token", ["gh"])):
+        payload: dict = {}
+        _POST_CREATE.confirm_release_via_distinct_channel(
+            Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": "gh release view v1.2.3"},
+            run_shell=fake_run_shell, tag_name="v1.2.3", expected_release_url="https://x/v1.2.3",
+            backend={"id": "x", "commands": None}, backend_command=lambda *a, **k: list(tokens),
+        )
+        record = payload["distinct_channel_verification"]
+        assert record["status"] != "same-proxy-flagged", label
+        assert record["same_proxy_guard"] == "inconclusive-degenerate-release-view-template", label
+
+    # Falsifiable counterpart: a real template evaluates the guard.
+    payload = {}
+    _POST_CREATE.confirm_release_via_distinct_channel(
+        Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": "curl -sSL https://x"},
+        run_shell=fake_run_shell, tag_name="v1.2.3", expected_release_url="https://x/v1.2.3",
+        backend={"id": "gh", "commands": None}, backend_command=_HELPERS.backend_command,
+    )
+    assert payload["distinct_channel_verification"]["same_proxy_guard"] == "evaluated"

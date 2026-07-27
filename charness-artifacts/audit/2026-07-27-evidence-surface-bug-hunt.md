@@ -5,8 +5,13 @@ fixed on 2026-07-27 as the empty-scope family; A1, A2 fixed and A9 partially
 fixed on 2026-07-27 as the containment family
 ([spec Decision 2](../spec/2026-07-27-foreign-copy-write-enforcement.md)); A3
 fixed the same day, on its own; B3 fixed, B2 fixed-narrowed and B1 partially
-fixed on 2026-07-27 as the issue-close carrier family. The rest are OPEN. This
-file is the tracking record — update the Status column as items land.
+fixed on 2026-07-27 as the issue-close carrier family; D1, D3, D5 fixed and D2
+partially fixed on 2026-07-27 as the publish-gate family.
+
+**Remaining: 23 OPEN + 5 PARTIAL.** Count fully-open rows and partial rows
+separately; a PARTIAL is not a landed row, and rolling them into a single
+"N remain" figure is the same class of claim this file exists to hunt.
+This file is the tracking record — update the Status column as items land.
 
 ## Why this exists
 
@@ -293,11 +298,11 @@ mode. Class (c).
 
 | id | Status | Defect | file:line |
 | --- | --- | --- | --- |
-| D1 | OPEN | A `## Release State` heading with any suffix disables the entire five-entry ledger check; audit still reports `passed` | `skills/public/release/scripts/audit_public_release_narrative.py:44,66` |
-| D2 | OPEN | The mutable-tag notes audit blocks the *pinned* pointer and passes `main`/raw pointers | same file, `:80` |
-| D3 | OPEN | The same-proxy guard is a positional prefix match: flag order, wrappers, and absolute paths defeat it | `skills/public/release/scripts/publish_release_post_create.py:124` |
+| D1 | FIXED | A `## Release State` heading with any suffix disables the entire five-entry ledger check; audit still reports `passed` | `skills/public/release/scripts/audit_public_release_narrative.py:44,66` |
+| D2 | PARTIAL | The mutable-tag notes audit blocks the *pinned* pointer and passes `main`/raw pointers — discriminator fixed; the audit still never runs on the `--generate-notes` path (residual below) | same file, `:80` |
+| D3 | FIXED | The same-proxy guard is a positional prefix match: flag order, wrappers, and absolute paths defeat it | `skills/public/release/scripts/publish_release_post_create.py:124` |
 | D4 | OPEN | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked | same file, `:99` |
-| D5 | OPEN | `validate_release_version_claim` silently no-ops when the claim is absent or reformatted, and a decoy first match shadows the real claim | `scripts/validate_current_pointer_freshness.py:160` |
+| D5 | FIXED | `validate_release_version_claim` silently no-ops when the claim is absent or reformatted, and a decoy first match shadows the real claim | `scripts/validate_current_pointer_freshness.py:160` |
 | D6 | OPEN | The installed readback records `observed` on exit code alone; the version read back is never compared | `skills/public/release/scripts/release_observer.py:60` |
 | D7 | OPEN | `check_real_host_proof` returns `not-required` for an empty scope, for a clean tree, and for an unconfigured repo, all indistinguishably | `skills/public/release/scripts/check_real_host_proof.py:124,146` |
 | D8 | OPEN | The artifact asserts "a channel distinct from `gh release view`" even on the `same-proxy-flagged` and `skipped` records | `skills/public/release/scripts/publish_release_artifact_sections.py:171` |
@@ -314,6 +319,52 @@ early). Confirmed:
 ```
 
 Class (d). This gates publish through `publish_release_cli.run_narrative_audit`.
+
+**D1/D2/D3/D5 — what landed (2026-07-27).** All four repros closed with
+both-direction controls. Two bounded reviewers then found **ten** further defects
+in the fixes themselves, every one confirmed by execution before repair — the
+same pattern as the B1-B3 slice, now five slices running.
+
+The one that mattered most: **the D1 fix reproduced D1.** `_release_state_block`
+takes the FIRST matching heading and was fence-blind, so an artifact documenting
+the ledger format in a code fence satisfied all five entry checks while its real
+`## Release State` section below was empty — a false PASS at the publish
+boundary, D1's own escape class surviving the D1 fix. Both audits now read
+`strip_display_code(...)`: content rendered as code is shown to the reader, not
+asserted by the author.
+
+The rest, grouped:
+
+- **D2 over-reach.** Dropping the repo-specific path literal made the rule fire
+  on any source-tree link, including third-party ones whose remediation ("pin to
+  the release tag `v2.11.3`") is impossible. Fence-stripping resolves the real
+  case (install one-liners are fenced). `_IMMUTABLE_REF_RE` also over-blocked
+  short shas, `v1.0`, and the `refs/tags/` raw form, while missing `tree/main`
+  with no path. All fixed; a branch NAMED like a version is still accepted, which
+  is not decidable from a ref string and is now stated rather than implied.
+- **D3 left four bypasses and added one over-flag.** An unparseable command
+  failed OPEN, so one apostrophe in a `#` comment ran the identical query under
+  bash while the guard reported "distinct". Only the first token was
+  basename-normalized, so `sudo /usr/bin/gh ...` escaped though each half alone
+  was caught. Omitting the tag escaped — and `gh release view` with no tag
+  resolves to the LATEST release, which moments after publish is the one being
+  confirmed. The unwrap budget could be exhausted silently. And a degenerate
+  `release_view` template made the guard refuse `gh api` or pass everything; it
+  now declines to render a verdict it cannot establish and records
+  `same_proxy_guard: inconclusive-...` instead of leaving absence to read as a
+  passed check.
+- **D5 turned correct pointers stale.** The three claim renderings nest, and the
+  capture kept the residue: `**`2.11.3`**` compared backticks-and-all. A trailing
+  period did the same. `target version: TBD` was compared as a version, reporting
+  "manifest is X, pointer claims TBD" — the wrong diagnosis for the condition the
+  absent-claim branch correctly calls unestablished. Fenced captured tool output
+  is no longer scanned for claims.
+
+**D2 stays PARTIAL:** the notes audit still never runs on the `--generate-notes`
+path (`notes_file is None`), which is the default publish path. Auto-generated
+notes are commit messages and PR text — a prime carrier of `blob/main` links.
+Closing that needs a post-create readback of the published body, which belongs
+with D4/D6/D8.
 
 **D2** — the blocker fires only when the ref equals the release tag, so the
 immutable pointer is blocked and the pointer that changes on every commit passes.

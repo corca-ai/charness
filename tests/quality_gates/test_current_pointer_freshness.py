@@ -278,3 +278,111 @@ def test_current_pointer_freshness_loads_catalog_sanitizer_in_process() -> None:
     assert alias_path is not None
     assert sanitize is not None
     assert alias_path("integrations/tools/github-gh.json") == "integrations/tools/github-worker.json"
+
+
+def _write_release_pointer(repo: Path, body: str) -> None:
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(
+        f"# Release Surface Check\n\n## Current Version\n\n{body}", encoding="utf-8"
+    )
+
+
+def test_release_version_claim_is_checked_in_every_rendering(tmp_path: Path) -> None:
+    """D5 regression: the claim pattern required backticks and a leading `- `,
+    so re-rendering the SAME claim as bold silently disabled the one standing
+    cross-check between the release pointer and the shipped manifests.
+
+    Each rendering below is genuinely stale against the seeded 1.2.3 manifests
+    and must block."""
+    for label, body in (
+        ("backticked", "- target version: `9.9.9`\n"),
+        ("bold", "- target version: **9.9.9**\n"),
+        ("bare", "- target version: 9.9.9\n"),
+        ("no list marker", "target version: `9.9.9`\n"),
+    ):
+        repo = seed_repo(tmp_path / label)
+        _write_release_pointer(repo, body)
+        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        assert result.returncode == 1, (label, result.stdout)
+        assert "release pointer version claim is stale" in result.stderr, label
+
+
+def test_release_version_claim_absent_from_an_existing_pointer_is_refused(tmp_path: Path) -> None:
+    """An existing release pointer carrying no parseable claim is an
+    UNESTABLISHED scope, not a satisfied one. Returning silently made a
+    reformatted or dropped claim indistinguishable from a verified one."""
+    repo = seed_repo(tmp_path)
+    _write_release_pointer(repo, "nothing resembling a version claim here\n")
+
+    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "no parseable `target version:` claim" in result.stderr
+
+
+def test_release_version_decoy_claim_cannot_shadow_a_stale_one(tmp_path: Path) -> None:
+    """`re.search` took the FIRST match, so a decoy line agreeing with the
+    manifests shadowed a genuinely stale claim below it and the comparison never
+    ran on the real one. Disagreeing claims are now refused outright."""
+    repo = seed_repo(tmp_path)
+    _write_release_pointer(repo, "- target version: `1.2.3`\n\nthe real one:\n\n- target version: `9.9.9`\n")
+
+    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "disagreeing target-version claims" in result.stderr
+
+
+def test_release_version_claim_matching_the_manifests_still_passes(tmp_path: Path) -> None:
+    """Falsifiable counterpart: a current claim passes in any rendering, and a
+    claim repeated identically is not a disagreement."""
+    for label, body in (
+        ("backticked", "- target version: `1.2.3`\n"),
+        ("bold", "- target version: **1.2.3**\n"),
+        ("repeated identically", "- target version: `1.2.3`\nlater\n- target version: `1.2.3`\n"),
+    ):
+        repo = seed_repo(tmp_path / f"ok-{label}")
+        _write_release_pointer(repo, body)
+        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        assert result.returncode == 0, (label, result.stderr)
+
+
+def test_release_version_claim_survives_nested_markup_and_placeholders(tmp_path: Path) -> None:
+    """Second-round D5 regression, all confirmed by execution.
+
+    The three renderings NEST, and the capture kept the residue: `**\\`1.2.3\\`**`
+    captured the backticks inside the bold group and compared them literally,
+    turning a current pointer into a false "stale". A trailing period did the
+    same. And `target version: TBD` was compared as if `TBD` were a version,
+    reporting "manifest is 1.2.3, pointer claims TBD" — the wrong diagnosis for
+    the same condition the absent-claim branch calls unestablished."""
+    for label, body in (
+        ("bold wrapping backticks", "- target version: **`1.2.3`**\n"),
+        ("backticks wrapping bold", "- target version: `**1.2.3**`\n"),
+        ("trailing period", "- target version: 1.2.3.\n"),
+        ("previous and target siblings", "- previous version: `1.2.2`\n- target version: `1.2.3`\n"),
+    ):
+        repo = seed_repo(tmp_path / f"ok-{label}")
+        _write_release_pointer(repo, body)
+        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        assert result.returncode == 0, (label, result.stderr)
+
+    for label, body in (("TBD", "- target version: TBD\n"), ("N/A", "- target version: N/A\n")):
+        repo = seed_repo(tmp_path / f"placeholder-{label}")
+        _write_release_pointer(repo, body)
+        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        assert result.returncode == 1, label
+        assert "no parseable `target version:` claim" in result.stderr, label
+        assert "is stale" not in result.stderr, label
+
+
+def test_release_version_claim_ignores_claim_shaped_lines_inside_a_fence(tmp_path: Path) -> None:
+    """The release artifact verbatim-embeds captured tool output. A claim-shaped
+    line in a fenced block is quoted text, not the artifact's own assertion — and
+    with disagreement now refused, treating one as a claim would hard-fail the
+    freshness gate on a correct pointer."""
+    repo = seed_repo(tmp_path)
+    _write_release_pointer(repo, "- target version: `1.2.3`\n\n```\ntarget version: 9.9.9\n```\n")
+
+    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
