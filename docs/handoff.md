@@ -9,14 +9,14 @@
 
 ## Continuation Capability
 
-Closed #460/#461/#463 in one commit (unpushed), then ran an evidence-surface bug
-hunt that reproduced **30 defects** across the repo's proof surfaces. All are
-tracked in the
+Closed #460/#461/#463, then ran an evidence-surface bug hunt that reproduced
+**30 defects** across the repo's proof surfaces, then fixed the empty-scope
+family (A4, A7, C5; E2 partial). Every item, fixed or open, is tracked with
+status, file:line, and a confirmed repro in the
 [bug hunt record](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
-with per-item status, file:line, and confirmed repro. Nothing is fixed yet; the
-operator's standing decision is **no push and no release until they are fixed**,
-so `HEAD` stays local until the fix sessions land. No GitHub issues are open
-(the three close on push). No decisions pending.
+— read it before planning any of them. The operator's standing decision is **no
+push and no release until they are fixed**, so three commits sit local. No
+GitHub issues are open (the three close on push). No decisions pending.
 
 ## Current State
 
@@ -26,21 +26,20 @@ so `HEAD` stays local until the fix sessions land. No GitHub issues are open
   checks ran. An empty list means "open" only when the matching check is
   reported as run — markers render from non-empty facts only, so an unmarked
   citation is never a freshness claim. Shipped in `2.11.2`.
-- **The handoff budget counts CONTENT lines now, not file length.** Blank lines,
-  the required `##` headings, and all of `## References` are free. Trimming
-  formatting or shortening links buys nothing — cut state instead.
 - **CI is the only judge of the changed-line mutation gate here.** Its local run
   outruns a usable timeout and returns `untrusted` when HEAD moves mid-run.
 
 ## Next Session
 
-1. **Fix the bug-hunt backlog, in the order the record proposes.** Start with
-   A1+A2 (the provenance guard exempts the repo's own `plugins/` install source,
-   which is the 2026-07-27 incident's actual mechanism), then A3-A5 (the commit
-   boundary: a deletion-only commit schedules zero gates today), then B1-B3 (the
-   issue-close carrier, where a false PASS closes a real issue). Decide the
-   cross-cutting move first: one shared typed scope field (evaluated / empty /
-   not-configured) would close A4, A7, C5, D7, E2, E5 as a family.
+1. **Fix the bug-hunt backlog; 26 items remain.** Next by severity: **A1+A2**
+   (the provenance guard exempts any copy contained in the target root, and the
+   repo declares its own `plugins/` tree as an install source — a live escape,
+   though NOT the 2026-07-27 incident's cause), then **A3** (a deletion-only or
+   rename-only commit schedules zero commit-boundary gates), then **B1-B3** (the
+   issue-close carrier, where a false PASS closes a real issue on GitHub).
+   Expect the fix to be the easy part: the empty-scope slice shipped four
+   regressions, each worse than the defect, all caught by review or an existing
+   test. Check who really calls a gate before tightening it.
 2. **The drafter cannot see whether a staleness check ran.** The parser's
    top-level `staleness` block dies at `materialize_chunk_proposal_response`
    and the ranker packet — `ChunkCandidate` has no field for it. So the
@@ -76,3 +75,4 @@ so `HEAD` stays local until the fix sessions land. No GitHub issues are open
 
 - [F9 critique](../charness-artifacts/critique/2026-07-27-handoff-auto-draft-stale-citation-markers-f9.md) · [chunked-routing contract](./handoff-chunked-routing.md) · [deferred decisions](./deferred-decisions.md)
 - [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [empty-scope critique](../charness-artifacts/critique/2026-07-27-empty-scope-family.md) · [issues 460/461/463 critique](../charness-artifacts/critique/2026-07-27-issues-460-461-463.md) · [artifact policy](./artifact-policy.md)
