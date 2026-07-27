@@ -16,6 +16,7 @@ _plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_he
 
 GateCommand = _plan_helpers.GateCommand
 collect_staged_paths = _plan_helpers.collect_staged_paths
+collect_staged_scope_paths = _plan_helpers.collect_staged_scope_paths
 _any_starts = _plan_helpers.any_starts
 _artifact_shape_gates = _plan_helpers.artifact_shape_gates
 _mirror_drift_gates = _plan_helpers.mirror_drift_gates
@@ -34,13 +35,25 @@ FAST_SURFACE_VERIFY_COMMANDS: dict[str, str] = {
 }
 
 
-def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
+def _any_exact(paths: list[str], *names: str) -> bool:
+    """A trigger keyed on ONE named file, not a surface prefix."""
+    return any(path in names for path in paths)
+
+
+def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] | None = None) -> list[GateCommand]:
     """The favorable pulled subset from the 2026-06-10 timing audit plus later
     pulls recorded in the same table — each is cheap (<0.3s), deterministic,
     changed-scoped (only its trigger class can flip the verdict), and runs the
     EXACT broad-gate command (single source). ~0.6s combined worst case; see
     docs/conventions/validator-timing-layers.md for the classification table
-    and the ~1s budget line."""
+    and the ~1s budget line.
+
+    ``existing`` is the subset of ``paths`` still on disk. A gate that validates ONE
+    NAMED FILE runs only while that file exists — deleting `docs/handoff.md` used to
+    schedule `validate-handoff-artifact`, which then raised `FileNotFoundError` and
+    took the hook down with a traceback. A gate that validates a whole SURFACE keeps
+    running on `paths`, deletion included: that is the verdict A3 exists to restore."""
+    present = paths if existing is None else existing
     gates: list[GateCommand] = []
     if any(path.endswith(".py") for path in paths):
         gates.extend(
@@ -57,11 +70,11 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
                 "--repo-root", str(repo_root), "--require-git-file-listing",
             )
         )
-    if any(path == ".agents/surfaces.json" for path in paths):
+    if _any_exact(present, ".agents/surfaces.json"):
         # A broken surfaces manifest degrades every surface-driven gate, so it
         # fails earliest.
         gates.extend(_timing_pull_gate(repo_root, "validate-surfaces", "scripts/validate_surfaces.py", "--repo-root", str(repo_root)))
-    if any(path in ("scripts/run-quality.sh", "docs/conventions/validator-timing-layers.md") for path in paths):
+    if _any_exact(present, "scripts/run-quality.sh", "docs/conventions/validator-timing-layers.md"):
         # #368 meta-gate: a new run-quality validator (or a timing-doc edit) must keep
         # the classification table exhaustive, so the shift-left class cannot recur via
         # an unclassified broad-only check. Flips only on these two files.
@@ -69,7 +82,7 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
     if any(
         path == "scripts/validate_quality_reference_catalog.py"
         or path.startswith("skills/public/quality/references/")
-        for path in paths
+        for path in present
     ):
         # Cheap quality planner-catalog parity check. A reference/index/catalog edit can
         # otherwise make planner-following agents miss a reference until the broad gate.
@@ -86,7 +99,7 @@ def _timing_layer_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
         # Advisory posture (north-star P1): non-strict surfaces a WARN line that
         # run-quality.sh surfaces non-blocking; it no longer blocks the commit.
         gates.extend(_timing_pull_gate(repo_root, "check-title-slug-drift", "scripts/check_title_slug_drift.py"))
-    if any(path == "docs/handoff.md" for path in paths):
+    if _any_exact(present, "docs/handoff.md"):
         # ~0.1s, validates exactly the staged file. A goal-closeout commit once
         # emptied a required handoff section AFTER the session's final broad
         # run and sat unpushed in the commit->push window; pre-push was the
@@ -235,33 +248,27 @@ def staged_commit_gate_plan(
     staged_paths: list[str] | None = None,
     *,
     ruff_path: str | None = None,
+    scope_paths: list[str] | None = None,
 ) -> list[GateCommand]:
-    paths = staged_paths if staged_paths is not None else collect_staged_paths(repo_root)
-    staged_py = [path for path in paths if path.endswith(".py")]
+    # Two lists, deliberately: `paths` is the commit's whole touched SCOPE, which
+    # decides WHICH gates run; `existing` is the subset a per-file validator may be
+    # handed. Collapsing them let a deletion-only or rename-only commit schedule zero
+    # gates. `existing` is DERIVED from scope rather than queried separately: a second
+    # `--diff-filter=ACM` query drops rename rows, so a renamed-and-edited file — new
+    # content, present on disk, exactly what a per-file validator exists for — got no
+    # py_compile, no ruff, and no length check.
+    paths = (
+        scope_paths
+        if scope_paths is not None
+        else (staged_paths if staged_paths is not None else collect_staged_scope_paths(repo_root))
+    )
+    existing = [path for path in (staged_paths if staged_paths is not None else paths) if (repo_root / path).is_file()]
+    staged_py = [path for path in existing if path.endswith(".py")]
     ruff = shutil.which("ruff") if ruff_path is None else ruff_path
     plan: list[GateCommand] = []
 
     if paths:
-        plan.append(
-            GateCommand(
-                "check-staged-reversion",
-                ("python3", "scripts/check_staged_reversion.py", "--repo-root", str(repo_root)),
-            )
-        )
-        if (repo_root / "scripts" / "check_git_identity.py").exists():
-            plan.append(
-                GateCommand(
-                    "check-git-identity",
-                    ("python3", "scripts/check_git_identity.py", "--repo-root", str(repo_root)),
-                )
-            )
-        if (repo_root / "scripts" / "check_staged_worktree_consistency.py").exists():
-            plan.append(
-                GateCommand(
-                    "staged-worktree-consistency",
-                    ("python3", "scripts/check_staged_worktree_consistency.py", "--repo-root", str(repo_root)),
-                )
-            )
+        plan.extend(_plan_helpers.index_hygiene_gates(repo_root))
 
     if staged_py:
         plan.append(GateCommand("py_compile (staged)", ("python3", "-m", "py_compile", *staged_py)))
@@ -282,45 +289,51 @@ def staged_commit_gate_plan(
         )
 
     if any(path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/")) for path in paths):
-        plan.append(
-            GateCommand(
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root,
                 "validate-attention-state-visibility",
-                (
-                    "python3",
-                    "scripts/validate_attention_state_visibility.py",
-                    "--repo-root",
-                    str(repo_root),
-                    "--scan-root",
-                    "scripts",
-                    "--scan-root",
-                    "skills",
-                    "--scan-root-map",
-                    "../charness-support=skills/support",
-                ),
+                "validate_attention_state_visibility.py",
+                "--repo-root",
+                str(repo_root),
+                "--scan-root",
+                "scripts",
+                "--scan-root",
+                "skills",
+                "--scan-root-map",
+                "../charness-support=skills/support",
             )
         )
 
+    # Every surface validator below is presence-guarded for one reason: a deletion now
+    # schedules gates, so retiring a validator would otherwise schedule the very script
+    # the commit deletes and refuse its own commit with no route but `--no-verify`.
     if _any_starts(paths, "skills/"):
-        plan.append(GateCommand("validate-skills", ("python3", "scripts/validate_skills.py", "--repo-root", str(repo_root))))
-        plan.append(GateCommand("run-evals", ("python3", "scripts/run_evals.py", "--repo-root", str(repo_root))))
+        plan.extend(_plan_helpers.present_gate(repo_root, "validate-skills", "validate_skills.py", "--repo-root", str(repo_root)))
+        plan.extend(_plan_helpers.present_gate(repo_root, "run-evals", "run_evals.py", "--repo-root", str(repo_root)))
     if _any_starts(paths, "profiles/"):
-        plan.append(GateCommand("validate-profiles", ("python3", "scripts/validate_profiles.py", "--repo-root", str(repo_root))))
+        plan.extend(_plan_helpers.present_gate(repo_root, "validate-profiles", "validate_profiles.py", "--repo-root", str(repo_root)))
     if _any_starts(paths, ".agents/"):
-        plan.append(GateCommand("validate-adapters", ("python3", "scripts/validate_adapters.py", "--repo-root", str(repo_root))))
+        plan.extend(_plan_helpers.present_gate(repo_root, "validate-adapters", "validate_adapters.py", "--repo-root", str(repo_root)))
     if _any_starts(paths, "presets/"):
-        plan.append(GateCommand("validate-presets", ("python3", "scripts/validate_presets.py", "--repo-root", str(repo_root))))
+        plan.extend(_plan_helpers.present_gate(repo_root, "validate-presets", "validate_presets.py", "--repo-root", str(repo_root)))
     if _any_starts(paths, "integrations/"):
-        plan.append(GateCommand("validate-integrations", ("python3", "scripts/validate_integrations.py", "--repo-root", str(repo_root))))
+        plan.extend(_plan_helpers.present_gate(repo_root, "validate-integrations", "validate_integrations.py", "--repo-root", str(repo_root)))
 
     plan.extend(_mirror_drift_gates(repo_root, paths))
 
     if any(path.endswith(".md") for path in paths):
-        plan.append(GateCommand("check-doc-links", ("python3", "scripts/check_doc_links.py", "--repo-root", str(repo_root))))
-        plan.append(GateCommand("check-markdown", ("./scripts/check-markdown.sh",)))
+        if (repo_root / "scripts" / "check_doc_links.py").exists():
+            plan.append(
+                GateCommand("check-doc-links", ("python3", "scripts/check_doc_links.py", "--repo-root", str(repo_root)))
+            )
+        if (repo_root / "scripts" / "check-markdown.sh").exists():
+            plan.append(GateCommand("check-markdown", ("./scripts/check-markdown.sh",)))
 
-    plan.extend(_skill_core_headroom_gates(repo_root, paths))
-    plan.extend(_artifact_shape_gates(repo_root, paths))
-    plan.extend(_timing_layer_gates(repo_root, paths))
+    # Both hand file paths to a validator, so they take the existing-file list.
+    plan.extend(_skill_core_headroom_gates(repo_root, existing))
+    plan.extend(_artifact_shape_gates(repo_root, existing))
+    plan.extend(_timing_layer_gates(repo_root, paths, existing))
     plan.extend(_leak_scan_gates(repo_root, paths))
 
     # #314: append the fast surface verify checkers so the literal pre-commit gate
@@ -457,8 +470,15 @@ def run_predict_commit(
     emit_payload,
     advisory_provider=None,
 ) -> int:
-    selected_paths = paths if paths is not None else collect_staged_paths(repo_root)
-    command_plan = staged_commit_gate_plan(repo_root, selected_paths)
+    selected_paths = paths if paths is not None else collect_staged_scope_paths(repo_root)
+    command_plan = staged_commit_gate_plan(
+        repo_root,
+        # `--paths` injection stays authoritative for both lists; otherwise the
+        # existing-file list and the touched scope are collected separately, so a
+        # deletion or rename still schedules its surface's gates.
+        paths if paths is not None else collect_staged_paths(repo_root),
+        scope_paths=selected_paths,
+    )
     # Advisory providers emit exit-0 informational lines (e.g. the RCA-link nudge)
     # that never block the commit; staged_commit_gate_plan stays surface-agnostic.
     advisories = list(advisory_provider(repo_root, selected_paths)) if advisory_provider else []

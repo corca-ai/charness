@@ -30,9 +30,11 @@ _cut_safety = import_repo_module(__file__, "scripts.check_skill_cut_safety")
 def provider(repo_root: Path, _selected_paths: Sequence[str]) -> list[str]:
     """Advisory provider for `run_slice_closeout.py --predict-commit`.
 
-    Re-derives staged deletions directly from git (independent of the ACM-filtered
-    path set the gate plan uses for command planning, which never carries a
-    deletion). Exit-0 informational lines only; never blocks.
+    Re-derives staged deletions directly from git, independent of the gate plan's
+    own path sets. The plan's SCHEDULING set does carry deletions now (A3), but this
+    advisory asks a different question — is this specific cut safe — and keeps its
+    own source so it cannot be disarmed by a change to that set. Exit-0 informational
+    lines only; never blocks.
     """
     deleted = _cut_safety.deleted_skill_surfaces(repo_root, staged=True)
     if not deleted:

@@ -85,8 +85,8 @@ def provider(repo_root: Path, _selected_paths: Sequence[str]) -> list[str]:
     """Advisory provider for `run_slice_closeout.py --predict-commit`.
 
     Re-derives added-only staged paths so the nudge keys on "a slice *adds* a new
-    debug artifact", independent of the ACM set the gate plan uses for command
-    planning. Exit-0 informational lines only; never blocks.
+    debug artifact" — a narrower question than either path set the gate plan keeps,
+    so it stays independent of both. Exit-0 informational lines only; never blocks.
     """
     return advisory_lines(repo_root, staged_added_paths(repo_root))
 

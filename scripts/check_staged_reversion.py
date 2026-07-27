@@ -120,10 +120,16 @@ def _worktree_blob(repo_root: str, path: str) -> str | None:
 def _recovery(case: str, path: str) -> str:
     """Per-case recovery that never tells the operator to re-corrupt the index."""
     if case == "staged-deletion-phantom":
+        # `git rm --cached` produces this exact triple deliberately, and it is
+        # git-state-indistinguishable from the phantom. Naming only `git add` there
+        # tells the operator to undo the commit they meant to make, so the
+        # untrack reading gets its own line rather than a footnote at the end.
         return (
             f"index stages a deletion of {path!r}, but HEAD and the worktree both "
             f"hold it unchanged. Recover with: git add -- {path!r} "
-            "(re-stage the worktree version, dropping the phantom deletion)."
+            "(re-stage the worktree version, dropping the phantom deletion). "
+            f"If you ran `git rm --cached {path}` on purpose, re-run the commit with "
+            f"{_ENV_BYPASS}=1 instead."
         )
     return (
         f"index holds a stale blob for {path!r} that matches neither HEAD nor the "

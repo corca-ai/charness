@@ -19,17 +19,57 @@ class GateCommand:
         return {"label": self.label, "argv": list(self.argv)}
 
 
-def collect_staged_paths(repo_root: Path) -> list[str]:
-    result = subprocess.run(
-        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+def _git_stdout(repo_root: Path, args: list[str], failure: str) -> str:
+    """Run a read-only git query, raising with git's own message on failure.
+
+    Bytes, not ``text=True``: the ``-z`` caller needs RAW path bytes (git stops
+    C-quoting under ``-z``), so a strict locale decode would take the pre-commit
+    hook down with a traceback on a latin-1 filename.
+    """
+    result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or "failed to list staged paths")
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        raise RuntimeError(result.stderr.decode("utf-8", errors="replace").strip() or failure)
+    return result.stdout.decode("utf-8", errors="surrogateescape")
+
+
+def collect_staged_paths(repo_root: Path) -> list[str]:
+    stdout = _git_stdout(
+        repo_root,
+        ["diff", "--cached", "--name-only", "--diff-filter=ACM"],
+        "failed to list staged paths",
+    )
+    return [line.strip() for line in stdout.splitlines() if line.strip()]
+
+
+def collect_staged_scope_paths(repo_root: Path) -> list[str]:
+    """Every path this commit TOUCHES, including deletions and both rename sides.
+
+    ``collect_staged_paths`` answers "which staged files exist on disk" — the right
+    list to hand a per-file validator. It is the wrong list for deciding WHICH gates
+    run: a deletion-only or rename-only commit has no A/C/M entry at all, so every
+    surface predicate saw an empty list and the hook exited 0 having scheduled
+    nothing, while the suppressed mirror-drift gate would have reported that the
+    checked-in plugin tree no longer matched its source.
+    """
+    stdout = _git_stdout(
+        repo_root,
+        ["diff", "--cached", "--name-status", "--find-renames", "-z"],
+        "failed to list staged path scope",
+    )
+    # `-z` because a path with a space or quote is otherwise C-quoted and would be
+    # silently mis-prefixed. Fields: STATUS NUL PATH NUL, except rename/copy, which
+    # is STATUS NUL SOURCE NUL DEST NUL -- both sides are touched.
+    fields = [field for field in stdout.split("\0") if field]
+    paths: list[str] = []
+    index = 0
+    while index < len(fields):
+        status = fields[index]
+        follows = 2 if status[:1] in {"R", "C"} else 1
+        for offset in range(1, follows + 1):
+            if index + offset < len(fields):
+                paths.append(fields[index + offset])
+        index += follows + 1
+    return sorted(dict.fromkeys(paths))
 
 
 def any_starts(paths: list[str], prefix: str) -> bool:
@@ -56,6 +96,34 @@ _MIRROR_PREFIXES = (
 )
 
 
+def present_gate(repo_root: Path, label: str, script: str, *args: str) -> list[GateCommand]:
+    """A `scripts/<script>` gate, scheduled only while that script is on disk."""
+    if not (repo_root / "scripts" / script).exists():
+        return []
+    return [GateCommand(label, ("python3", f"scripts/{script}", *args))]
+
+
+_INDEX_HYGIENE_GATES = (
+    ("check-staged-reversion", "check_staged_reversion.py"),
+    ("check-git-identity", "check_git_identity.py"),
+    ("staged-worktree-consistency", "check_staged_worktree_consistency.py"),
+)
+
+
+def index_hygiene_gates(repo_root: Path) -> list[GateCommand]:
+    """The index-state guards every non-empty staged set gets.
+
+    Each is presence-guarded: a deletion-only commit now schedules gates, so a commit
+    that removes one of these scripts would otherwise refuse itself on the missing
+    file with no way forward but `--no-verify`.
+    """
+    return [
+        GateCommand(label, ("python3", f"scripts/{script}", "--repo-root", str(repo_root)))
+        for label, script in _INDEX_HYGIENE_GATES
+        if (repo_root / "scripts" / script).exists()
+    ]
+
+
 def mirror_drift_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
     touches_mirror = any(
         path.startswith(_MIRROR_PREFIXES)
@@ -63,7 +131,10 @@ def mirror_drift_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
         or path in {"runtime_bootstrap.py", "skill_runtime_bootstrap.py"}
         for path in paths
     )
-    if not touches_mirror:
+    # The script guard matters now that a deletion schedules this gate: removing
+    # `check_staged_mirror_drift.py` itself is a `scripts/` change, and an unguarded
+    # gate would refuse the commit that deletes it.
+    if not touches_mirror or not (repo_root / "scripts" / "check_staged_mirror_drift.py").exists():
         return []
     return [
         GateCommand(
@@ -75,12 +146,17 @@ def mirror_drift_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
 
 def skill_core_headroom_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
     """Pull the changed-SKILL.md core-headroom ratchet to the commit boundary."""
+    # `is_file` here, not at the caller: this gate hands paths to a validator, and
+    # the callers that pass one collapsed list (the structural sweep, the full
+    # closeout) have always carried deletions. Filtering at the argv site makes the
+    # existing-file invariant hold for every caller shape rather than one.
     staged_skill_md = [
         path
         for path in paths
         if path.startswith(("skills/public/", "skills/support/"))
         and path.endswith("/SKILL.md")
         and path.count("/") == 3
+        and (repo_root / path).is_file()
     ]
     if not staged_skill_md:
         return []
@@ -106,6 +182,9 @@ def artifact_shape_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]
         for path in paths
         if (surface := _artifact_preflight.surface_for_path(Path(path).as_posix())) is not None
         and surface.commit_boundary
+        # Same argv-site rule as `skill_core_headroom_gates`: a deleted artifact
+        # scheduled its own shape validator, which then failed on the missing file.
+        and (repo_root / path).is_file()
     ]
     if not matched:
         return []

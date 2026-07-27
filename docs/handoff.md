@@ -28,36 +28,37 @@ GitHub issues are open (the three close on push). No decisions pending.
 
 ## Next Session
 
-1. **Fix the bug-hunt backlog; 24 items remain.** Next by severity: **A3** (a
-   deletion-only or rename-only commit schedules zero commit-boundary gates),
-   then **B1-B3** (the issue-close carrier, where a false PASS closes a real
-   issue on GitHub). Expect the fix to be the easy part: the empty-scope slice
-   shipped four regressions, and the containment slice needed seventeen review
-   defects repaired, two of them inside the fix itself. Check who really calls a
+1. **Fix the bug-hunt backlog; 23 items remain.** Next: **B1-B3** (the
+   issue-close carrier, where a false PASS closes a real issue on GitHub), then
+   **A5/A6**, which sit inside the commit-boundary floor A3 just restored and
+   decide what it is worth. Expect the fix to be the easy part: three slices in a
+   row needed review defects repaired *inside the fix*. Check who really calls a
    gate before tightening it.
-2. **Two deferrals from the containment slice**, detail in its
-   [critique](../charness-artifacts/critique/2026-07-27-provenance-containment.md)
-   F9/F10. `capability_catalog_resolver` ranks `repo-plugin-export` above
-   `repo-public-skill`, so in this repo the documented skill-path recovery hands
-   back the copy the provenance guard now refuses mid-`mutate -> sync` — guard
-   and resolver ship a contradiction. And the export-layout fact lives in three
-   places inside `helper_provenance_lib.py`. Each wants its own review.
-3. **The drafter cannot see whether a staleness check ran.** The parser's
+2. **A3 is PARTIAL: scheduled is not judged.** A deletion schedules its surface
+   gates now, but only `check_staged_mirror_drift` reads the index — the rest walk
+   the worktree, and `git revert` runs no pre-commit hook at all (probed).
+   [A3 critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9.
+3. **Two deferrals from the containment slice**
+   ([critique](../charness-artifacts/critique/2026-07-27-provenance-containment.md)
+   F9/F10). `capability_catalog_resolver` ranks `repo-plugin-export` above
+   `repo-public-skill`, so the documented skill-path recovery hands back the copy
+   the provenance guard now refuses mid-`mutate -> sync`. And the export-layout
+   fact lives in three places in `helper_provenance_lib.py`.
+4. **The drafter cannot see whether a staleness check ran.** The parser's
    top-level `staleness` block dies at `materialize_chunk_proposal_response`
    and the ranker packet — `ChunkCandidate` has no field for it. So the
    auto-draft marks positively-reported staleness (F9, now closed) but cannot
    distinguish "issue states checked, none closed" from "never asked". The
    path check always runs; the residual is issue citations only, because the
    issue check is gated behind `--with-issues`.
-4. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards). Fill
-   guards want an observed n-fold rework instance before landing.
-5. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774,
+5. **D28 remainder** (`emit_payload_main --write`, scaffold fill guards); fill
+   guards want an observed n-fold rework instance first.
+6. **Suite speed.** 11756 spawns, git 68% (`rev-parse` 1322, `ls-files` 774,
    `add` 672). In-process `run_script` is the unmeasured lever; spawn count is
    the honest metric, 16-worker wall-clock is noise.
-6. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
-   real shared `.charness/usage-episodes/` tree and assert byte-identity after a CLI
-   subprocess, so a live SessionStart hook or concurrent `run-quality.sh` fails them
-   for unrelated reasons. Needs design; detail in the
+7. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
+   real shared `.charness/usage-episodes/` tree, so a live hook or a concurrent
+   `run-quality.sh` fails them for unrelated reasons; needs design, detail in the
    [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md).
 
 ## Discuss

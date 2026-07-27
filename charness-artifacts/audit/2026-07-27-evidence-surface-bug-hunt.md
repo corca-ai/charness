@@ -3,9 +3,9 @@ Date: 2026-07-27
 Status: 30 defects reproduced by execution. A4, A7, C5 fixed and E2 partially
 fixed on 2026-07-27 as the empty-scope family; A1, A2 fixed and A9 partially
 fixed on 2026-07-27 as the containment family
-([spec Decision 2](../spec/2026-07-27-foreign-copy-write-enforcement.md)); the
-rest are OPEN. This file is the tracking record — update the Status column as
-items land.
+([spec Decision 2](../spec/2026-07-27-foreign-copy-write-enforcement.md)); A3
+fixed the same day, on its own. The rest are OPEN. This file is the tracking
+record — update the Status column as items land.
 
 ## Why this exists
 
@@ -46,7 +46,7 @@ deliberate, with the reason recorded.
 | --- | --- | --- | --- |
 | A1 | FIXED | The in-repo install source (the checked-in plugin tree) is exempt from the provenance guard as `same-tree` | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`) |
 | A2 | FIXED | A non-empty drift list (and a version mismatch) is discarded when the invoked entry script is absent from the target | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`) |
-| A3 | OPEN | A deletion-only or rename-only staged commit schedules zero commit-boundary gates | `scripts/staged_commit_gate_plan_helpers.py:22`, `scripts/staged_commit_gate_plan.py:244,484` |
+| A3 | PARTIAL | A deletion-only or rename-only staged commit schedules zero commit-boundary gates — scheduling fixed; what the scheduled gates then *inspect* is the residual (see below) | `scripts/staged_commit_gate_plan_helpers.py` (`collect_staged_scope_paths`), `scripts/staged_commit_gate_plan.py` (`staged_commit_gate_plan`, `run_predict_commit`) |
 | A4 | FIXED | `validate_packaging` exits 0 on an empty manifest set, and it is the whole engine of the mirror-drift gate | `scripts/validate_packaging.py:425` |
 | A5 | OPEN | `check_staged_reversion` prints a positive clean verdict whenever git fails | `scripts/check_staged_reversion.py:76` |
 | A6 | OPEN | `check_staged_worktree_consistency` misses staged-then-deleted, and `CHARNESS_ALLOW_PARTIAL_STAGE=0` enables the bypass | `scripts/check_staged_worktree_consistency.py:41,52` |
@@ -92,6 +92,32 @@ running the suppressed gate directly reports that the checked-in plugin public
 skills do not match the source public skills. Class (c)+(d). Fix must separate the
 *gate-scheduling* path list (needs D/R) from the *per-file validator* list
 (needs existing files only).
+
+**A3 — what landed, and what did not (2026-07-27).** Scheduling is fixed both
+ways: a deletion and a detected rename now plan the same gates a modification
+does (measured 0 -> 6 for a `plugins/**` deletion, 0 -> 6 for a rename, control
+modification unchanged), and the per-file list is now *derived* from that scope by
+`is_file()` rather than queried with `ACM`, so a renamed-and-edited file finally
+gets `py_compile`/`ruff`/lengths — before the fix a rename with a syntax error in
+the destination planned none of the three. Three residuals are NOT closed and the
+row stays `PARTIAL` because of them:
+
+1. **Scheduled is not judged.** Of the gates a deletion schedules, only
+   `check_staged_mirror_drift` reads the *index*; `check_doc_links` and friends
+   walk the worktree, and `check_staged_reversion` passes a genuine deletion by
+   design. So `git rm --cached docs/x.md` schedules the doc gates and they see the
+   file still on disk. The hook now prints gate names and `ok` over a deletion most
+   of those gates did not inspect — legible assurance where there used to be
+   silence, which is class (d) in a more trusted form.
+2. **`git revert` and auto-merge never reach this hook at all.** Probed: with
+   `core.hooksPath` set, `git revert HEAD` ran no pre-commit hook. Reverting a sync
+   commit can still land a mismatched mirror with nothing having run. Pre-push
+   remains the floor for that shape.
+3. **A5 and A6 sit inside the new floor.** The index-hygiene trio a deletion now
+   always schedules is `check_staged_reversion` (A5: prints a clean verdict when
+   git fails), `check_git_identity`, and `check_staged_worktree_consistency` (A6:
+   blind to the staged-then-deleted case). Fixing those raises what this floor is
+   worth.
 
 **A4** — running `validate_packaging.py` against an empty root prints
 `No packaging manifests found.` and exits 0. Since `check_staged_mirror_drift` inspects
@@ -317,7 +343,7 @@ Class (f).
 
 - Fixes have landed for the rows whose Status column says so (A4, A7, C5, E2
   partial on the empty-scope slice; A1, A2, A9 partial on the containment
-  slice). Every other id above is `OPEN`. The Status column is the current
+  slice; A3 partially, on its own). Every other id above is `OPEN`. The Status column is the current
   truth; this section is not a second status register.
 - A5, A7, D7, E5 and the empty-input cases are reproduced against synthetic
   roots; they are real behaviors of the code, not observed production incidents.
@@ -337,9 +363,10 @@ Class (f).
 ## Suggested order for the fix sessions
 
 1. **A1 + A2** — the live incident mechanism, and the guard that would otherwise
-   still be bypassable after A1 is fixed.
-2. **A3 + A4 + A5** — the commit boundary. A3 in particular means an entire class
-   of commit is ungated today.
+   still be bypassable after A1 is fixed. (Landed.)
+2. **A3 + A4 + A5** — the commit boundary. A3 meant an entire class of commit was
+   ungated; A4 landed and A3 landed partially (scheduling fixed, inspection
+   residuals recorded above). A5 remains, and it is now inside A3's floor.
 3. **B1 + B2 + B3** — the issue-close carrier, where a false PASS closes a real
    issue on GitHub.
 4. **D1 + D5** — the publish gate and the only standing release-version

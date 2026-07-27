@@ -12,6 +12,7 @@ from scripts.staged_commit_gate_plan import (
     GateCommand,
     block_on_structural_sweep,
     collect_staged_paths,
+    collect_staged_scope_paths,
     fast_surface_verify_gates,
     run_predict_commit,
     staged_commit_gate_plan,
@@ -75,7 +76,9 @@ def _write_predict_commit_stubs(repo: Path, *, length_fails: bool = False, atten
 
 
 def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
-    labels = _labels(["scripts/new_helper.py"])
+    # A path that EXISTS: since A3 the per-file gates take only staged paths still
+    # on disk, so a synthetic name is filtered before it can be planned.
+    labels = _labels(["scripts/helper_provenance_lib.py"])
 
     assert "check-staged-reversion" in labels
     assert "check-git-identity" in labels
@@ -146,7 +149,9 @@ def test_staged_worktree_consistency_blocks_edit_after_stage(tmp_path: Path, mon
 def test_staged_commit_plan_gates_changed_skill_md_core_headroom() -> None:
     # #319: a changed public/support SKILL.md pulls the commit-boundary core
     # headroom ratchet into the plan, scoped to exactly that path.
-    plan = staged_commit_gate_plan(ROOT, ["skills/public/demo/SKILL.md"], ruff_path="")
+    # A path that EXISTS: the gate hands it to a validator, so a synthetic name
+    # would be a scope the command could never actually check (A3 argv-site rule).
+    plan = staged_commit_gate_plan(ROOT, ["skills/public/critique/SKILL.md"], ruff_path="")
     gate = next((c for c in plan if c.label == "check-skill-core-headroom (staged)"), None)
     assert gate is not None
     assert gate.argv == (
@@ -155,8 +160,15 @@ def test_staged_commit_plan_gates_changed_skill_md_core_headroom() -> None:
         "--repo-root",
         str(ROOT),
         "--changed-skill-md",
-        "skills/public/demo/SKILL.md",
+        "skills/public/critique/SKILL.md",
     )
+
+
+def test_staged_commit_plan_skips_core_headroom_for_a_deleted_skill_md() -> None:
+    # A3 argv-site rule: a deleted SKILL.md still schedules its SURFACE gates, but
+    # must not be handed to the per-file preflight, which fails on a missing file.
+    assert "check-skill-core-headroom (staged)" not in _labels(["skills/public/gone/SKILL.md"])
+    assert "validate-skills" in _labels(["skills/public/gone/SKILL.md"])
 
 
 def test_staged_commit_plan_skips_core_headroom_without_changed_skill_md() -> None:
@@ -165,10 +177,25 @@ def test_staged_commit_plan_skips_core_headroom_without_changed_skill_md() -> No
         assert "check-skill-core-headroom (staged)" not in _labels(paths)
 
 
+def _labels_with_files(tmp_path: Path, paths: list[str]) -> list[str]:
+    """Plan labels for paths that EXIST in a scratch repo.
+
+    Since A3, a gate that hands paths to a per-file validator drops the ones that are
+    not on disk, so a scheduling assertion has to use paths that could really be
+    validated rather than synthetic names.
+    """
+    for path in paths:
+        target = tmp_path / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("# stub\n", encoding="utf-8")
+    return [command.label for command in staged_commit_gate_plan(tmp_path, paths, ruff_path="")]
+
+
 def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
     # the hand-authored artifact family pulls the blocking commit-boundary shape
     # gate, scoped to the changed charness-artifacts/** paths.
-    plan = staged_commit_gate_plan(ROOT, ["charness-artifacts/critique/x.md"], ruff_path="")
+    existing_artifact = "charness-artifacts/critique/2026-07-27-provenance-containment.md"
+    plan = staged_commit_gate_plan(ROOT, [existing_artifact], ruff_path="")
     gate = next((c for c in plan if c.label == "check-artifact-shape (staged)"), None)
     assert gate is not None
     # absolute preflight path: the command runs with cwd=repo_root, and charness is
@@ -180,14 +207,16 @@ def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
         "--repo-root",
         str(ROOT),
         "--changed-artifacts",
-        "charness-artifacts/critique/x.md",
+        existing_artifact,
     )
     # and it is a blocking structural-sweep member (relocated, not advisory).
     assert "check-artifact-shape (staged)" in STRUCTURAL_SWEEP_LABELS
-    assert "check-artifact-shape (staged)" in {g.label for g in structural_sweep_gates(ROOT, ["charness-artifacts/critique/x.md"])}
+    assert "check-artifact-shape (staged)" in {
+        g.label for g in structural_sweep_gates(ROOT, [existing_artifact])
+    }
 
 
-def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md() -> None:
+def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md(tmp_path: Path) -> None:
     # Only the changed-scoped prefix families (critique/ideation/retro) pull the
     # blocking shape gate. The validate-all trio (debug/quality/handoff) are
     # author-time-only, so they do NOT pull the fail-fast sweep; nor do non-artifact
@@ -207,7 +236,10 @@ def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md() -> None:
         ["charness-artifacts/debug/2026-06-08-x.md"],
         ["charness-artifacts/retro/2026-06-08-x.md"],
     ):
-        assert "check-artifact-shape (staged)" in _labels(paths)
+        assert "check-artifact-shape (staged)" in _labels_with_files(tmp_path, paths)
+    # ...and a DELETED one in the same family does not, because the shape validator
+    # would be handed a file that is gone.
+    assert "check-artifact-shape (staged)" not in _labels(["charness-artifacts/critique/2026-06-08-gone.md"])
 
 
 def test_gate_command_serializes_to_dict() -> None:
@@ -221,7 +253,9 @@ def test_collect_staged_paths_reports_git_error(monkeypatch) -> None:
     monkeypatch.setattr(
         subprocess,
         "run",
-        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=1, stderr="no index\n"),
+        # bytes, matching the real capture: the helper decodes with
+        # `surrogateescape` so a non-UTF-8 path cannot crash the pre-commit hook.
+        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=1, stderr=b"no index\n"),
     )
 
     try:
@@ -488,7 +522,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "--repo-root",
         str(ROOT),
         "--paths",
-        "scripts/new_helper.py",
+        "scripts/helper_provenance_lib.py",
         "--no-ruff",
     )
     assert text_result.returncode == 0, text_result.stderr
@@ -627,11 +661,17 @@ def test_predict_commit_accepts_clean_staged_python(tmp_path: Path) -> None:
     assert [step["returncode"] for step in payload["executed_commands"]] == [0, 0, 0, 0, 0, 0]
 
 
-def test_predict_commit_forces_review_on_staged_skill_deletion(tmp_path: Path) -> None:
-    # North-star P5 (finding 3): `collect_staged_paths` filters to A/C/M only, so a
-    # pure SKILL.md deletion never appears in the gate-plan's `changed_paths` --
-    # the advisory provider must independently catch it and force a REVIEW
-    # question in `advisories`, at exit 0 (never a hard block on the deletion).
+def _write_skill_surface_stubs(repo: Path) -> None:
+    """The gates a staged `skills/**/SKILL.md` change schedules, stubbed so a tmp repo
+    can execute the plan instead of failing on missing repo scripts."""
+    scripts = repo / "scripts"
+    scripts.mkdir(parents=True, exist_ok=True)
+    for name in ("validate_skills.py", "run_evals.py", "check_doc_links.py"):
+        _write_executable(scripts / name, f"#!/usr/bin/env python3\nprint('{name} stub')\n")
+    _write_executable(scripts / "check-markdown.sh", "#!/usr/bin/env bash\necho markdown stub\n")
+
+
+def _seed_deleted_skill_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     skill_md = repo / "skills" / "public" / "demo" / "SKILL.md"
     skill_md.parent.mkdir(parents=True)
@@ -643,14 +683,115 @@ def test_predict_commit_forces_review_on_staged_skill_deletion(tmp_path: Path) -
         cwd=repo, check=True, capture_output=True, text=True,
     )
     subprocess.run(["git", "rm", "-q", "skills/public/demo/SKILL.md"], cwd=repo, check=True, capture_output=True, text=True)
+    return repo
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json")
+
+def test_predict_commit_forces_review_on_staged_skill_deletion(tmp_path: Path) -> None:
+    # North-star P5 (finding 3): the advisory provider catches a SKILL.md deletion
+    # independently of the gate plan and forces a REVIEW question in `advisories`,
+    # at exit 0 (never a hard block on the deletion).
+    repo = _seed_deleted_skill_repo(tmp_path)
+    env = _write_predict_commit_stubs(repo)
+    _write_skill_surface_stubs(repo)
+
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json", env=env)
 
     payload = json.loads(result.stdout)
     assert result.returncode == 0, result.stderr
-    assert payload["changed_paths"] == []  # the deletion is invisible to the ACM-filtered set
     assert any(line.startswith("REVIEW:") for line in payload["advisories"])
     assert any("skills/public/demo/SKILL.md" in line for line in payload["advisories"])
+
+
+def test_a_deletion_only_commit_still_schedules_its_surface_gates(tmp_path: Path) -> None:
+    """A3: `--diff-filter=ACM` hid deletions from the SCHEDULING list, so a
+    deletion-only commit planned zero gates and the hook exited 0 printing nothing
+    — while the suppressed mirror-drift gate had a real verdict to report."""
+
+    repo = _seed_deleted_skill_repo(tmp_path)
+    env = _write_predict_commit_stubs(repo)
+    _write_skill_surface_stubs(repo)
+
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json", env=env)
+
+    payload = json.loads(result.stdout)
+    assert payload["changed_paths"] == ["skills/public/demo/SKILL.md"]
+    labels = [command["label"] for command in payload["planned_commands"]]
+    assert "staged-plugin-mirror-drift" in labels
+    assert "validate-skills" in labels
+
+
+def test_a_rename_only_commit_sees_both_sides(tmp_path: Path) -> None:
+    """The other half: rename detection turns both sides into one `R` entry, which
+    `--diff-filter=ACM` drops entirely."""
+
+    repo = tmp_path / "repo"
+    source = repo / "skills" / "public" / "demo" / "SKILL.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("---\nname: demo\n---\n\n# Demo\n", encoding="utf-8")
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    )
+    subprocess.run(
+        ["git", "mv", "skills/public/demo/SKILL.md", "skills/public/demo/MOVED.md"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    )
+    # Rename detection is a git CONFIG, and `git init` inherits the caller's global
+    # one. Both assertions below turn on it, so pin it instead of inheriting.
+    subprocess.run(
+        ["git", "config", "diff.renames", "true"], cwd=repo, check=True, capture_output=True, text=True
+    )
+
+    scope = collect_staged_scope_paths(repo)
+
+    assert scope == ["skills/public/demo/MOVED.md", "skills/public/demo/SKILL.md"]
+    assert collect_staged_paths(repo) == [], "the control: the existing-file list still excludes a rename"
+    # Plan against ROOT: the surface validators are presence-guarded on their own
+    # scripts, which a bare tmp repo does not carry.
+    labels = [command.label for command in staged_commit_gate_plan(ROOT, [], scope_paths=scope)]
+    assert "validate-skills" in labels
+
+
+_GONE_PATHS = (
+    "scripts/gone.py",
+    "skills/public/gone/SKILL.md",
+    "charness-artifacts/critique/2026-06-08-gone.md",
+)
+
+
+def test_a_scope_path_never_reaches_a_per_file_validator() -> None:
+    """A deleted file must schedule its surface's gates without being handed to a
+    validator as a path argument — that would fail on a file that is gone.
+
+    Runs against `ROOT` with real siblings present, so the per-file gates
+    (`py_compile`/`ruff`/`check-python-lengths`, the SKILL.md preflight, the
+    artifact shape validator) are all actually planned and the assertion has
+    something to be false against."""
+
+    present = [
+        "scripts/helper_provenance_lib.py",
+        "skills/public/critique/SKILL.md",
+        "charness-artifacts/critique/2026-07-27-provenance-containment.md",
+    ]
+    plan = staged_commit_gate_plan(ROOT, present, scope_paths=[*present, *_GONE_PATHS], ruff_path="/bin/true")
+    labels = {command.label for command in plan}
+    assert {"py_compile (staged)", "check-python-lengths (staged)", "ruff (staged)"} <= labels
+    assert {"check-skill-core-headroom (staged)", "check-artifact-shape (staged)"} <= labels
+    for command in plan:
+        for gone in _GONE_PATHS:
+            assert gone not in command.argv, f"{command.label} was handed a deleted path"
+
+
+def test_the_invariant_holds_for_the_positional_caller_shape() -> None:
+    """The structural sweep and the full closeout pass ONE list, and that list has
+    always carried deletions (`collect_changed_paths` uses no `--diff-filter`). The
+    existing-file rule therefore lives at the argv site, not at the caller."""
+
+    for gone in _GONE_PATHS:
+        for command in structural_sweep_gates(ROOT, [gone]):
+            assert gone not in command.argv, f"{command.label} was handed {gone}"
 
 
 def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
@@ -767,7 +908,7 @@ def test_structural_sweep_covers_each_329_class_file_type() -> None:
     # scripts/*.py; ergonomics on a skill-package file; the preflight on SKILL.md.
     assert "validate-attention-state-visibility" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/x.py"])}
     assert "validate-skill-ergonomics" in {g.label for g in structural_sweep_gates(ROOT, ["skills/public/demo/scripts/y.py"])}
-    assert "check-skill-core-headroom (staged)" in {g.label for g in structural_sweep_gates(ROOT, ["skills/public/demo/SKILL.md"])}
+    assert "check-skill-core-headroom (staged)" in {g.label for g in structural_sweep_gates(ROOT, ["skills/public/critique/SKILL.md"])}
     # docs-only change pulls no structural sweep gate (no-op).
     assert structural_sweep_gates(ROOT, ["docs/x.md"]) == []
 
@@ -895,3 +1036,44 @@ def test_unrelated_change_adds_no_fast_surface_gates() -> None:
     # not pull the fast subset into the pre-commit plan (no broad widening).
     labels = {command.label for command in staged_commit_gate_plan(ROOT, ["README.md"], ruff_path="")}
     assert labels.isdisjoint(set(FAST_SURFACE_VERIFY_COMMANDS.values()))
+
+
+def test_a_renamed_and_edited_file_still_gets_its_per_file_gates() -> None:
+    """A3's other half: `--diff-filter=ACM` drops the `R` row, so a renamed-and-edited
+    file — new content, present on disk — got no py_compile, no ruff, no length check.
+    The existing-file list is derived from scope now, not queried separately."""
+
+    scope = ["scripts/gone_source.py", "scripts/helper_provenance_lib.py"]
+    plan = staged_commit_gate_plan(ROOT, scope_paths=scope, ruff_path="/bin/true")
+    compile_gate = next(c for c in plan if c.label == "py_compile (staged)")
+    assert compile_gate.argv == ("python3", "-m", "py_compile", "scripts/helper_provenance_lib.py")
+
+
+def test_a_single_file_validator_is_not_scheduled_for_that_file_s_deletion(tmp_path: Path) -> None:
+    """`validate-handoff-artifact` validates one named file; scheduling it for that
+    file's deletion raised FileNotFoundError and took the hook down with a traceback.
+    Whole-surface validators keep running on a deletion — that is the A3 verdict."""
+
+    repo = tmp_path
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    _write_executable(
+        repo / "scripts" / "validate_handoff_artifact.py", "#!/usr/bin/env python3\nprint('stub')\n"
+    )
+    _write_executable(repo / "scripts" / "check_doc_links.py", "#!/usr/bin/env python3\nprint('stub')\n")
+
+    deleted = [command.label for command in staged_commit_gate_plan(repo, scope_paths=["docs/handoff.md"])]
+    assert "validate-handoff-artifact" not in deleted
+    assert "check-doc-links" in deleted, "the surface gates must still run"
+
+    (repo / "docs").mkdir(parents=True, exist_ok=True)
+    (repo / "docs" / "handoff.md").write_text("# handoff\n", encoding="utf-8")
+    present = [command.label for command in staged_commit_gate_plan(repo, scope_paths=["docs/handoff.md"])]
+    assert "validate-handoff-artifact" in present, "the control: it runs while the file is there"
+
+
+def test_surface_validators_are_presence_guarded_on_their_own_script(tmp_path: Path) -> None:
+    """Retiring a validator must not schedule the very script the commit deletes."""
+
+    labels = [command.label for command in staged_commit_gate_plan(tmp_path, scope_paths=["skills/public/demo/SKILL.md"])]
+    assert "validate-skills" not in labels
+    assert "run-evals" not in labels
