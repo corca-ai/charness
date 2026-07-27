@@ -9,8 +9,9 @@
 
 ## Continuation Capability
 
-No open issues. The 2026-07-27 backlog run closed #459 and the three
-operator-decided items; [its critique](../charness-artifacts/critique/2026-07-27-handoff-backlog-1-3-validator-cli-unification-chunker-staleness-facts-content-line-budget.md)
+**Push first.** The 2026-07-27 backlog run resolved #459 plus the three
+operator-decided items, but its commit is unpushed, so #459 is still OPEN on the
+tracker until `Closes #459` lands. [The run critique](../charness-artifacts/critique/2026-07-27-handoff-backlog-1-3-validator-cli-unification-chunker-staleness-facts-content-line-budget.md)
 holds the ten findings and their dispositions. No decisions pending.
 
 ## Current State
