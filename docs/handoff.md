@@ -43,13 +43,10 @@ items; [its goal artifact](../charness-artifacts/goals/2026-07-27-handoff-backlo
    links are penalised while a diary of short lines is not. `MAX_ARTIFACT_LINES` in
    `validate_handoff_artifact.py`; an operating-contract change, so move the skill's
    stated 30-60 target with it.
-4. **`local-linux-aarch64-4cpu` has never run on aarch64 hardware.** Owed the real
-   box, where `check_runtime_budget.py` with `--suggest-budgets` on that profile
-   replaces a block that has no aggregate bar; one red window still open.
-5. **Suite speed beyond the git-identity fix.** Census: 11756 spawns, git still 68%
+4. **Suite speed beyond the git-identity fix.** Census: 11756 spawns, git still 68%
    (`rev-parse` 1322, `ls-files` 774, `add` 672). The in-process `run_script` lever
    is unmeasured. Spawn count is the honest metric; 16-worker wall-clock is noise.
-6. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
+5. **Sibling-scan Tier 2 finding D** (operator-scheduled). Two tests snapshot the
    real shared `.charness/usage-episodes/` tree and assert byte-identity after a CLI
    subprocess, so a live SessionStart hook or concurrent `run-quality.sh` fails them
    for unrelated reasons. Needs design; detail in the
