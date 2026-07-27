@@ -1,8 +1,11 @@
 # Evidence-Surface Bug Hunt — Verdicts Over Unestablished Scope
 Date: 2026-07-27
 Status: 30 defects reproduced by execution. A4, A7, C5 fixed and E2 partially
-fixed on 2026-07-27 as the empty-scope family; the rest are OPEN. This file is
-the tracking record — update the Status column as items land.
+fixed on 2026-07-27 as the empty-scope family; A1, A2 fixed and A9 partially
+fixed on 2026-07-27 as the containment family
+([spec Decision 2](../spec/2026-07-27-foreign-copy-write-enforcement.md)); the
+rest are OPEN. This file is the tracking record — update the Status column as
+items land.
 
 ## Why this exists
 
@@ -41,15 +44,15 @@ deliberate, with the reason recorded.
 
 | id | Status | Defect | file:line |
 | --- | --- | --- | --- |
-| A1 | OPEN | The in-repo install source (the checked-in plugin tree) is exempt from the provenance guard as `same-tree` | `scripts/helper_provenance_lib.py:239` |
-| A2 | OPEN | A non-empty drift list is discarded when the invoked entry script is absent from the target | `scripts/helper_provenance_lib.py:275` |
+| A1 | FIXED | The in-repo install source (the checked-in plugin tree) is exempt from the provenance guard as `same-tree` | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`) |
+| A2 | FIXED | A non-empty drift list (and a version mismatch) is discarded when the invoked entry script is absent from the target | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`) |
 | A3 | OPEN | A deletion-only or rename-only staged commit schedules zero commit-boundary gates | `scripts/staged_commit_gate_plan_helpers.py:22`, `scripts/staged_commit_gate_plan.py:244,484` |
 | A4 | FIXED | `validate_packaging` exits 0 on an empty manifest set, and it is the whole engine of the mirror-drift gate | `scripts/validate_packaging.py:425` |
 | A5 | OPEN | `check_staged_reversion` prints a positive clean verdict whenever git fails | `scripts/check_staged_reversion.py:76` |
 | A6 | OPEN | `check_staged_worktree_consistency` misses staged-then-deleted, and `CHARNESS_ALLOW_PARTIAL_STAGE=0` enables the bypass | `scripts/check_staged_worktree_consistency.py:41,52` |
 | A7 | FIXED | Zero-file scans report a pass (`export-safe imports`, `bootstrap-shim consistency`) | `scripts/check_export_safe_imports.py:209`, `scripts/check_bootstrap_shim_consistency.py:94` |
 | A8 | OPEN | Anchor-guard install/status keyed on a command basename; the matcher is never read back | `scripts/host_hook_install_lib.py:192,449` |
-| A9 | OPEN | `own-root-unknown` is a silent pass; the anchors scan omits `support/` and `shared/` siblings | `scripts/helper_provenance_lib.py:237,156` |
+| A9 | PARTIAL | `own-root-unknown` is a silent pass (OPEN); the anchors scan omitted `support/` and `shared/` siblings (fixed with A1/A2 in `_tracked_files` / `counterpart_path`) | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`, `_tracked_files`) |
 | A10 | OPEN | `post_edit_skill_anchor_guard` fail-opens when the rule library is missing entirely | `scripts/post_edit_skill_anchor_guard.py:72` |
 
 **A1 is NOT the 2026-07-27 incident's mechanism — it is a second, live escape in
@@ -312,12 +315,21 @@ Class (f).
 
 ## What is NOT claimed here
 
-- No fix has landed. Every id above is `OPEN`.
+- Fixes have landed for the rows whose Status column says so (A4, A7, C5, E2
+  partial on the empty-scope slice; A1, A2, A9 partial on the containment
+  slice). Every other id above is `OPEN`. The Status column is the current
+  truth; this section is not a second status register.
 - A5, A7, D7, E5 and the empty-input cases are reproduced against synthetic
   roots; they are real behaviors of the code, not observed production incidents.
-- A8, A9, A10, B5, C6, D8, D9, D10, E7 were reported by reviewers and are
+- A8, A10, B5, C6, D8, D9, D10, E7 were reported by reviewers and are
   **not** parent-reproduced (everything else in this file is). They carry the
   reviewers' file:line and reasoning; treat them as leads until run.
+- A9 was in that lead set. Its *anchors-scan-omits-`support`/`shared`* half was
+  reproduced on the live tree before it was fixed — a `tree` scan of
+  `plugins/charness` resolved no counterpart for exactly 4 of 605 modules
+  (`shared/scripts/*.py`) and 0 of 605 after the remap, and the sibling-glob
+  half has a regression test that fails against the pre-fix module. Its
+  *`own-root-unknown` is a silent pass* half remains an unreproduced lead.
 - The reviewers had no shell. Confirmation is the parent's execution, and every
   confirmed item above was run with a control variant that behaves correctly, so
   a passing control rules out "the harness was broken".

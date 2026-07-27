@@ -9,9 +9,15 @@ work, because the next run through the same stale copy overwrites the fix again.
 
 This module owns the provenance check those write helpers share: when the running
 script belongs to one charness tree and ``--repo-root`` names a different charness
-SOURCE tree that carries its own copy of the same helper, writing is refused
-unless the two copies are provably identical. The refusal names the target repo's
-own copy, which is the only remediation that terminates.
+SOURCE tree, writing is refused unless the compared copies are provably identical.
+When the target carries its own copy of the invoked helper, the refusal names it —
+the only remediation that terminates. When it does not, the refusal says so and
+tells the operator to stop and decide rather than resync-and-retry, because the
+resync can be what removes the entry point.
+
+"A different tree" includes a tree CONTAINED in the target: the checked-in
+``plugins/<pkg>`` export is a full second charness tree that this repo declares as
+an install source, and it is stale during every ``mutate -> sync`` window.
 
 A helper run against an ordinary consuming repo is untouched: that is the normal
 installed-plugin case, and the consuming repo owns no competing copy.
@@ -94,10 +100,13 @@ def counterpart_path(target_root: Path, relative: Path) -> Path | None:
     if len(parts) > 1 and parts[0] == "skills" and parts[1] not in {"public", "support"}:
         tail = Path(*parts[1:])
         candidates = [Path("skills") / "public" / tail, Path("skills") / "support" / tail]
-    elif len(parts) > 1 and parts[0] == "support":
-        # The exporter flattens `skills/support/<id>` to a top-level `support/<id>`,
-        # so the remap has to run in this direction too.
-        candidates = [Path("skills") / "support" / Path(*parts[1:])]
+    elif len(parts) > 1 and parts[0] in {"support", "shared"}:
+        # The exporter hoists `skills/support/<id>` and `skills/shared/**` to
+        # top-level `support/<id>` and `shared/**`, so the remap has to run in this
+        # direction too. Without the `shared` arm the export's shared helpers
+        # resolved to no counterpart and were skipped by a scan that claims to
+        # compare every module the tree could load.
+        candidates = [Path("skills") / parts[0] / Path(*parts[1:])]
     # The identity candidate is always a fallback, never replaced: two trees in the
     # SAME layout (a second source checkout) share the path verbatim, and dropping
     # it silently skipped every `skills/shared/**` file.
@@ -153,7 +162,10 @@ def _tracked_files(own_root: Path, anchors: Iterable[Path], loaded_modules: Iter
         if anchor in files:
             continue
         files.append(anchor)
-        if anchor.relative_to(own_root).parts[0] == "skills":
+        # `support/` and `shared/` are where the EXPORTED layout puts the same script
+        # packages `skills/` holds in the source layout; keying only on `skills` left
+        # every exported support/shared entry point comparing one lone file.
+        if anchor.relative_to(own_root).parts[0] in {"skills", "support", "shared"}:
             files.extend(sorted(p for p in anchor.parent.glob("*.py") if p not in files))
     for module in modules:
         module_file = getattr(module, "__file__", None)
@@ -171,6 +183,26 @@ def _tracked_files(own_root: Path, anchors: Iterable[Path], loaded_modules: Iter
 
 
 _REFUSAL_DRIFT_LIMIT = 8
+_REFUSED_STATUSES = ("drifted", "scope-unestablished")
+_EXPORT_PARENT = "plugins"
+_RESYNC_CURE = "  python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+
+
+def _is_checked_in_export(verdict: dict) -> bool:
+    """True only for the target repo's OWN checked-in `plugins/<pkg>` export.
+
+    Containment alone is the wrong test: a git worktree created inside the repo is
+    also contained, and telling its operator to run the plugin resync would mutate
+    the repo without touching the drift being reported.
+    """
+    own_root = verdict.get("own_root")
+    if not own_root:
+        return False
+    try:
+        relative = Path(own_root).relative_to(Path(verdict["target_root"]))
+    except ValueError:
+        return False
+    return bool(relative.parts) and relative.parts[0] == _EXPORT_PARENT
 _TREE_SCAN_SHIMS = ("runtime_bootstrap.py", "skill_runtime_bootstrap.py")
 # `support/` and `shared/` are where the EXPORTED layout puts support skills and
 # shared helpers; omitting them left 27 of the export's Python modules unscanned
@@ -236,8 +268,14 @@ def inspect_helper_provenance(
     }
     if own_root is None:
         return {**verdict, "status": "own-root-unknown"}
-    if own_root == target_root or script_path.is_relative_to(target_root):
+    if own_root == target_root:
         return {**verdict, "status": "same-tree"}
+    # A copy merely CONTAINED in the target root is not the same tree. The checked-in
+    # `plugins/<pkg>` mirror is a full second charness tree that this repo's own
+    # packaging manifest declares as an install source, so exempting it made the one
+    # copy that is stale during every `mutate -> sync` window structurally unchecked.
+    # It falls through to the normal comparison: synced mirror -> `in-sync`, stale
+    # mirror -> `drifted`.
     if not is_charness_source_tree(target_root):
         return {**verdict, "status": "consuming-repo"}
 
@@ -250,12 +288,22 @@ def inspect_helper_provenance(
         if scan == "tree"
         else _tracked_files(own_root, [script_path, invoked], loaded_modules)
     )
+    matched = 0
+    unreadable: list[str] = []
     for tracked in compared:
         relative = tracked.relative_to(own_root)
         counterpart = counterpart_path(target_root, relative)
         if counterpart is None:
             continue
-        if _digest(tracked) != _digest(counterpart):
+        matched += 1
+        own_digest = _digest(tracked)
+        # Two unreadable files both digest to `None` and would compare EQUAL — a
+        # fail-open inside a fail-closed guard. An unreadable file is unproven, not
+        # identical. Name it on its OWN side too: reporting only the target path
+        # points the operator at a file that is fine.
+        if own_digest is None:
+            unreadable.append(str(relative))
+        if own_digest is None or own_digest != _digest(counterpart):
             drifted.append(str(counterpart.relative_to(target_root)))
     entry_counterpart = counterpart_path(target_root, invoked.relative_to(own_root))
     verdict.update(
@@ -264,54 +312,119 @@ def inspect_helper_provenance(
             "target_version": target_version,
             "version_mismatch": own_version != target_version,
             "drifted": sorted(drifted),
+            "unreadable": sorted(unreadable),
             "scan": scan,
             "compared_count": len(compared),
+            # Files SCANNED is not files COMPARED: a path with no counterpart in the
+            # target is skipped above and still counted. Only this number establishes
+            # the scope a clean verdict is reported over.
+            "compared_pairs": matched,
             "invoked": str(invoked),
             "target_helper": (
                 str(entry_counterpart.relative_to(target_root)) if entry_counterpart is not None else None
             ),
         }
     )
-    if entry_counterpart is None:
+    if not matched:
+        # When NOTHING resolved to a counterpart, "no drift found" is not a finding,
+        # it is an empty scan — the same verdict-over-unestablished-scope this guard
+        # exists to refuse. A rename of the whole script package in the target
+        # reaches exactly this state. Unconditional by design: gating it on the
+        # entry-counterpart test left a `tree`-scan path that still passed `in-sync`
+        # over zero compared bytes.
+        return {**verdict, "status": "scope-unestablished"}
+    if entry_counterpart is None and not drifted and not verdict["version_mismatch"]:
         # The target source tree carries no copy of this helper, so there is no
-        # repo-local alternative to demand.
+        # repo-local alternative to demand. Two things this existence test must NOT
+        # override, because both are evidence the run is foreign: a non-empty
+        # `drifted` list the loop already computed, and a version mismatch.
         return {**verdict, "status": "consuming-repo"}
     if not verdict["version_mismatch"] and not drifted:
         return {**verdict, "status": "in-sync"}
     return {**verdict, "status": "drifted"}
 
 
-def _remaining_argv() -> str:
-    """The invocation's other arguments, so the remediation is runnable as printed.
+def _is_repo_root_flag(token: str) -> bool:
+    """argparse accepts any unambiguous prefix, so `--repo` reaches `--repo-root`."""
+
+    return token.startswith("--") and len(token) > 2 and "--repo-root".startswith(token)
+
+
+def _retargets_root(token: str, value: str, target_root: str) -> bool:
+    """True when this token/value pair is the repo root the guard actually checked.
+
+    A prefix match is NOT enough to rewrite a value. `issue_tool.py` declares
+    `--repo` as its own required owner/repo option on the same subparsers that
+    declare `--repo-root`, so treating every prefix as an abbreviation replaced
+    `--repo corca-ai/charness` with `--repo .` and destroyed the target of an
+    irreversible issue close. The exact spelling is always the root; an
+    abbreviation is only the root when its value is the root the guard resolved.
+    """
+    if token == "--repo-root":
+        return True
+    if not _is_repo_root_flag(token):
+        return False
+    try:
+        return Path(value).expanduser().resolve() == Path(target_root)
+    except OSError:
+        return False
+
+
+def _remediation_argv(target_root: str) -> str:
+    """The invocation rebuilt IN PLACE with the repo root retargeted to `.`.
 
     At a write site `--repo-root .` was the whole command. At an entrypoint it is
     not: `publish_release.py` requires one of `--publish-current/--part/--set-version`,
     so a remediation that drops them exits 2 again — the same
     remediation-that-cannot-terminate this module was written to kill.
+
+    Position matters as much as presence. `issue_tool.py` declares `--repo-root` on
+    each SUBparser, so hoisting the flag ahead of the remaining arguments printed
+    `issue_tool.py --repo-root . close-with-comment ...`, which argparse rejects
+    before it ever reads the subcommand. Rewriting the flag where the operator put
+    it keeps both flat and subcommand CLIs runnable, and keeps an abbreviated
+    spelling (`--repo`) bound to the target the guard actually checked.
     """
     import shlex
 
     argv = sys.argv[1:]
     kept: list[str] = []
+    seen = False
     skip_next = False
-    for token in argv:
+    for index, token in enumerate(argv):
         if skip_next:
             skip_next = False
             continue
-        if token.startswith("--repo-root="):
+        flag, sep, value = token.partition("=")
+        if sep and _retargets_root(flag, value, target_root):
+            kept.extend([flag, "."])
+            seen = True
             continue
-        if token == "--repo-root":
-            skip_next = True
+        following = argv[index + 1] if index + 1 < len(argv) else ""
+        if _retargets_root(token, following, target_root):
+            kept.extend([token, "."])
+            seen = True
+            # A following token that is itself a flag was never this flag's value
+            # (argparse would have rejected the invocation), so consuming it would
+            # silently drop an argument from the printed remediation.
+            skip_next = bool(following) and not following.startswith("--")
             continue
         kept.append(token)
-    return (" " + " ".join(shlex.quote(token) for token in kept)) if kept else ""
+    if not seen:
+        kept.extend(["--repo-root", "."])
+    return " " + " ".join(shlex.quote(part) for part in kept)
 
 
 def format_refusal(verdict: dict) -> str:
     target_helper = verdict.get("target_helper")
+    reason = (
+        "and nothing in this copy could be compared against it."
+        if verdict.get("status") == "scope-unestablished"
+        else "and the two copies have drifted."
+    )
     lines = [
         "charness helper provenance refusal: this script belongs to a different charness tree",
-        "than the --repo-root it was asked to write, and the two copies have drifted.",
+        f"than the --repo-root it was asked to write, {reason}",
         f"  running: {verdict.get('invoked') or verdict['script']} (charness {verdict.get('own_version') or 'unknown'})",
         f"  target:  {verdict['target_root']} (charness {verdict.get('target_version') or 'unknown'})",
     ]
@@ -325,14 +438,58 @@ def format_refusal(verdict: dict) -> str:
         lines.append(f"  drifted: {shown}")
     elif verdict.get("version_mismatch"):
         lines.append("  drifted: version manifests differ; loaded libraries were not compared")
-    lines.extend(
-        [
-            "Writing through this copy can emit an artifact schema the target repo's own gates reject,",
-            "and re-running the same copy overwrites any fix. Run the target repo's own copy instead:",
-            f"  cd {verdict['target_root']} && python3 {target_helper} --repo-root .{_remaining_argv()}",
-            f"Set {OVERRIDE_ENV}=1 only when the copies are known to be compatible.",
-        ]
+    # The scope the verdict was reached over, printed rather than implied: files
+    # scanned in this tree versus counterparts actually resolved and digested. A gap
+    # is the part "compared everything" does not cover.
+    if verdict.get("compared_count") is not None:
+        lines.append(
+            f"  compared: {verdict.get('compared_pairs')} of {verdict['compared_count']} scanned "
+            f"module(s) had a counterpart in the target (scan={verdict.get('scan')})"
+        )
+    unreadable = verdict.get("unreadable") or []
+    if unreadable:
+        lines.append(
+            f"  unreadable in this copy (counted as unproven, not identical): {', '.join(unreadable[:_REFUSAL_DRIFT_LIMIT])}"
+        )
+    lines.append(
+        "Writing through this copy can emit an artifact schema the target repo's own gates reject,"
     )
+    if _is_checked_in_export(verdict):
+        # The newly-compared population: this repo's own checked-in export. Its drift
+        # has a one-command cure, and it is the branch where the generic
+        # "do not resync" advice below would be exactly backwards.
+        lines.append("and re-running the same copy overwrites any fix. Resync the contained copy:")
+        lines.append(_RESYNC_CURE)
+        if target_helper is not None:
+            lines.append("or run the target repo's own copy instead:")
+            lines.append(
+                f"  cd {verdict['target_root']} && python3 {target_helper}{_remediation_argv(verdict['target_root'])}"
+            )
+    elif target_helper is not None:
+        lines.extend(
+            [
+                "and re-running the same copy overwrites any fix. Run the target repo's own copy instead:",
+                f"  cd {verdict['target_root']} && python3 {target_helper}"
+                f"{_remediation_argv(verdict['target_root'])}",
+            ]
+        )
+    else:
+        # The target carries no copy of the invoked entry point, so naming one would
+        # hand the operator a command that does not exist. "Resync and re-run" is not
+        # a remediation here either: the counterpart may be missing BECAUSE the target
+        # dropped the helper, in which case the resync deletes the command being
+        # re-run. The terminating instruction is to stop and decide, not to retry.
+        lines.extend(
+            [
+                "and re-running the same copy overwrites any fix. The target repo carries no counterpart",
+                "for the invoked entry point, so no repo-local command can be named. Stop here and decide:",
+                f"  - the helper is newer than {verdict['target_root']}: run this work from a tree at the",
+                "    target's revision, or update the target first;",
+                "  - the target dropped the helper: this run should not proceed at all.",
+                "Re-running after a resync is not a remediation; the resync can delete this entry point.",
+            ]
+        )
+    lines.append(f"Set {OVERRIDE_ENV}=1 only when the copies are known to be compatible.")
     return "\n".join(lines)
 
 
@@ -359,11 +516,15 @@ def require_repo_local_helper(
     verdict = inspect_helper_provenance(
         script_file, repo_root, loaded_modules=loaded_modules, scan=scan
     )
-    if verdict["status"] != "drifted":
+    # `scope-unestablished` refuses for the same reason `drifted` does: neither has
+    # evidence that this copy agrees with the target. "Found no drift" and "compared
+    # nothing" are different facts, and only the first is a pass.
+    if verdict["status"] not in _REFUSED_STATUSES:
         return verdict
     if os.environ.get(OVERRIDE_ENV):
         print(
-            f"warning: {OVERRIDE_ENV} is set; writing through a drifted helper copy "
+            f"warning: {OVERRIDE_ENV} is set; writing through an unverified helper copy "
+            f"({verdict['status']}) "
             f"({verdict['script']} -> {verdict['target_root']})",
             file=stream or sys.stderr,
         )

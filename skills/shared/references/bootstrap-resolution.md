@@ -92,11 +92,12 @@ charness catalog resolve-skill-path --repo-root . \
 
 The "use the repo's own copy" rule above is now enforced, not just documented.
 Write helpers that persist repo state — `refresh_recent_lessons.py`,
-`persist_retro_artifact.py`, `publish_release.py`,
-`build_retro_lesson_selection_index.py`, `build_debug_seam_risk_index.py` — call
+`persist_retro_artifact.py`, `build_debug_seam_risk_index.py` — call
 `require_repo_local_helper` from
 [scripts/helper_provenance_lib.py](../../../scripts/helper_provenance_lib.py)
-before doing any work.
+before doing any work. `build_retro_lesson_selection_index.py` is guarded
+indirectly and later, at the moment `recent_lessons_lib` writes;
+`publish_release.py` is guarded at the entrypoint instead (below).
 
 Two placements, with different scans:
 
@@ -111,19 +112,40 @@ Two placements, with different scans:
 
 It refuses (exit status 2) only when all of these hold: the running script
 belongs to a different charness tree than `--repo-root`, that `--repo-root` is a
-charness **source** checkout, it carries its own copy of the same helper, and the
-two copies differ by declared version or by compared module content. The refusal
-names the target repo's own copy and repeats the invocation's other arguments,
-because that is the only remediation that terminates — re-running the drifted
-copy overwrites the fix. `--help` and the read-only
+charness **source** checkout, and the two copies differ by declared version or by
+compared module content. "A different tree" includes one *contained* in the
+target — the checked-in `plugins/<pkg>` export is a second charness tree, and it
+is stale during every `mutate -> sync` window, so it is compared rather than
+exempted. When the target carries its own copy of the invoked helper, the refusal
+names it and rewrites the invocation's own arguments in place — the repo root
+retargeted to `.` where the operator put it, so a subcommand CLI stays runnable —
+because that is the only remediation that terminates; re-running the drifted copy
+overwrites the fix. For the repo's own checked-in `plugins/<pkg>` export the
+refusal names the resync instead, since that is the one command that ends its
+staleness. For any other copy with no counterpart in the target, the refusal says
+so and asks the operator to stop and decide rather than resync and retry, since
+the resync can be what removes the entry point. `--help` and the read-only
 `--prep-update-instructions` affordance are not refused. Runs against an ordinary
 consuming repo are untouched, since a consuming repo owns no competing copy.
-`CHARNESS_ALLOW_FOREIGN_HELPER=1` downgrades the refusal to a warning when the
-copies are known to be compatible.
+A verdict reached with no counterpart resolved at all is refused as
+`scope-unestablished` rather than passed: "found no drift" and "compared nothing"
+are different facts. `CHARNESS_ALLOW_FOREIGN_HELPER=1` downgrades the refusal to
+a warning when the copies are known to be compatible.
+
+**Known bypass.** `CHARNESS_REPO_ROOT` retargets
+[scripts/runtime_bootstrap.py](../../../scripts/runtime_bootstrap.py)'s module
+loader, so a guarded library imported through it belongs to the override root and
+classifies `same-tree`. The code that runs is then the target's own, but the
+invoking entry script's drift goes unchecked. Treat it as a second override
+alongside `CHARNESS_ALLOW_FOREIGN_HELPER`, not as a supported way to write
+through a stale copy.
 
 **What this cannot do.** Every one of these checks lives in the copy being
 invoked, so a copy old enough to predate the check does not carry it — which is
-exactly how two `v2.11.2` publishes got through
+exactly how two `v2.11.2` publishes got through. That includes the contained
+`plugins/<pkg>` mirror: the guard module a mirror invocation loads is the
+mirror's own, so a change to the guard itself is unenforced until the next sync
+(one window, not one update cycle)
 ([RCA](../../../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
 Treat it as a fast, well-worded failure for copies that carry it, not as closure
 of the foreign-write class; the target repo's own validators remain the

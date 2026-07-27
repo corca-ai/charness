@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -98,9 +99,24 @@ def test_consuming_repo_target_is_never_refused(tmp_path: Path) -> None:
 def test_source_tree_without_a_matching_helper_is_treated_as_consuming(tmp_path: Path) -> None:
     source = _source_tree(tmp_path, version="2.11.1")
     (source / "skills" / "public" / "demo" / "scripts" / "helper.py").unlink()
-    installed = _installed_tree(tmp_path, version="2.11.0")
+    installed = _installed_tree(tmp_path, version="2.11.1")
     verdict = guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[])
     assert verdict["status"] == "consuming-repo"
+
+
+def test_missing_entry_counterpart_does_not_absorb_a_version_mismatch(tmp_path: Path) -> None:
+    """The invoked helper itself is never compared here, so a clean verdict would be a
+    pass over a scope that was never established."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    (source / "skills" / "public" / "demo" / "scripts" / "helper.py").unlink()
+    installed = _installed_tree(tmp_path, version="2.11.0")
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[])
+    assert verdict["status"] == "drifted"
+    assert verdict["target_helper"] is None
+    assert verdict["version_mismatch"] is True
+    assert verdict["drifted"] == []
+    assert verdict["compared_pairs"] < verdict["compared_count"], "the entry point went uncompared"
 
 
 def test_repo_local_invocation_is_the_same_tree(tmp_path: Path) -> None:
@@ -360,3 +376,266 @@ def test_entrypoint_guard_skips_help(monkeypatch, tmp_path: Path) -> None:
     installed = _installed_tree(tmp_path, version="2.11.1")
     monkeypatch.setattr("sys.argv", ["prog", "--help"])
     assert runtime["refuse_foreign_entrypoint"](_helper(installed))["status"] == "skipped-read-only"
+
+
+def _nested_mirror(source: Path, *, version: str, lib_body: str = "VALUE = 1\n") -> Path:
+    """The checked-in `plugins/<pkg>` export: a second charness tree INSIDE the target."""
+
+    root = source / "plugins" / "charness"
+    _write(root / ".claude-plugin" / "plugin.json", json.dumps({"name": "charness", "version": version}))
+    _write(root / "scripts" / "runtime_bootstrap.py", "# marker\n")
+    _write(root / "scripts" / "lessons_lib.py", lib_body)
+    _write(root / "skills" / "demo" / "scripts" / "helper.py", "# helper\n")
+    _write(root / "skills" / "demo" / "scripts" / "resolve_adapter.py", "# adapter\n")
+    return root
+
+
+def test_synced_nested_mirror_still_writes(tmp_path: Path) -> None:
+    """No legitimate regression: a mirror in sync with its own repo passes, having compared."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    mirror = _nested_mirror(source, version="2.11.1")
+    verdict = guard.require_repo_local_helper(
+        _helper(mirror), source, loaded_modules=[], exit_on_drift=False, scan="tree"
+    )
+    assert verdict["status"] == "in-sync"
+    assert verdict["drifted"] == []
+    # `compared_count` is files SCANNED; only `compared_pairs` proves a counterpart was
+    # resolved and digested, which is the scope a clean verdict is reported over.
+    assert verdict["compared_pairs"] == verdict["compared_count"] > 0
+
+
+def test_stale_nested_mirror_is_refused_not_exempted(tmp_path: Path) -> None:
+    """A1: containment is not identity. The mirror is stale during every mutate->sync window."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    mirror = _nested_mirror(source, version="2.11.1")
+    _write(mirror / "scripts" / "lessons_lib.py", "VALUE = 0\n")
+    verdict = guard.inspect_helper_provenance(_helper(mirror), source, scan="tree")
+    assert verdict["status"] == "drifted"
+    assert verdict["drifted"] == ["scripts/lessons_lib.py"]
+
+
+def test_shared_export_layout_counterpart_is_resolved(tmp_path: Path) -> None:
+    """The exporter hoists `skills/shared/**` to `shared/**`; without the remap it is unscanned."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    _write(source / "skills" / "shared" / "scripts" / "reviewer_result.py", "# newer\n")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    _write(installed / "shared" / "scripts" / "reviewer_result.py", "# older\n")
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, scan="tree")
+    assert verdict["status"] == "drifted"
+    assert verdict["drifted"] == ["skills/shared/scripts/reviewer_result.py"]
+
+
+def test_drift_survives_an_entry_point_absent_from_the_target(tmp_path: Path) -> None:
+    """A2: a coarse existence test on the ENTRY script must not discard a computed drift list."""
+
+    source = _source_tree(tmp_path, version="2.11.1", lib_body="VALUE = 2\n")
+    (source / "skills" / "public" / "demo" / "scripts" / "helper.py").unlink()
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, scan="tree")
+    assert verdict["status"] == "drifted"
+    assert verdict["target_helper"] is None
+    assert verdict["drifted"] == ["scripts/lessons_lib.py"]
+    message = guard.format_refusal(verdict)
+    assert "python3 None" not in message
+    assert "no repo-local command can be named" in message
+
+
+def test_missing_entry_counterpart_without_drift_stays_consuming(tmp_path: Path) -> None:
+    """The control: the existence test still governs when versions agree and nothing drifted."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    (source / "skills" / "public" / "demo" / "scripts" / "helper.py").unlink()
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[])
+    assert verdict["status"] == "consuming-repo"
+
+
+def test_stale_nested_mirror_is_refused_on_the_anchors_scan_too(tmp_path: Path) -> None:
+    """The write sites run the DEFAULT anchors scan; pinning only `scan="tree"` would
+    leave five guarded write helpers unproven."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    mirror = _nested_mirror(source, version="2.11.1")
+    _write(mirror / "skills" / "demo" / "scripts" / "resolve_adapter.py", "# adapter, older\n")
+    verdict = guard.inspect_helper_provenance(_helper(mirror), source, loaded_modules=[])
+    assert verdict["status"] == "drifted"
+    assert verdict["drifted"] == ["skills/public/demo/scripts/resolve_adapter.py"]
+
+
+def test_drift_survives_a_missing_entry_counterpart_on_the_anchors_scan(tmp_path: Path) -> None:
+    """A2 on the production default scan, not only the entrypoint scan."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    (source / "skills" / "public" / "demo" / "scripts" / "helper.py").unlink()
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    _write(installed / "skills" / "demo" / "scripts" / "resolve_adapter.py", "# adapter, older\n")
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[])
+    assert verdict["target_helper"] is None
+    assert verdict["status"] == "drifted"
+    assert verdict["drifted"] == ["skills/public/demo/scripts/resolve_adapter.py"]
+
+
+def test_exported_shared_entry_point_compares_its_siblings(tmp_path: Path) -> None:
+    """The anchor sibling glob was keyed on `skills`, so an exported `shared/` entry
+    point compared one lone file while its siblings drifted unseen."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    _write(source / "skills" / "shared" / "scripts" / "run_plan_envelope.py", "# entry\n")
+    _write(source / "skills" / "shared" / "scripts" / "reviewer_result.py", "# newer\n")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    entry = _write(installed / "shared" / "scripts" / "run_plan_envelope.py", "# entry\n")
+    _write(installed / "shared" / "scripts" / "reviewer_result.py", "# older\n")
+    verdict = guard.inspect_helper_provenance(entry, source, loaded_modules=[])
+    assert verdict["status"] == "drifted"
+    assert verdict["drifted"] == ["skills/shared/scripts/reviewer_result.py"]
+
+
+def test_an_empty_comparison_is_not_a_pass(tmp_path: Path) -> None:
+    """Rename the whole script package in the target: every counterpart resolves to
+    None, so `no drift found` is an empty scan, not a finding."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    (source / "skills" / "public" / "demo").rename(source / "skills" / "public" / "demo2")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[])
+    assert verdict["status"] == "scope-unestablished"
+    assert verdict["compared_pairs"] == 0
+    assert verdict["drifted"] == []
+    with pytest.raises(guard.ForeignHelperError):
+        guard.require_repo_local_helper(_helper(installed), source, loaded_modules=[], exit_on_drift=False)
+
+
+def test_the_refusal_states_the_scope_it_compared(tmp_path: Path) -> None:
+    source = _source_tree(tmp_path, version="2.11.1")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    _write(installed / "skills" / "demo" / "scripts" / "resolve_adapter.py", "# adapter, older\n")
+    message = guard.format_refusal(guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[]))
+    assert "compared: 2 of 2 scanned module(s) had a counterpart" in message
+
+
+def test_a_contained_mirror_refusal_names_the_resync(tmp_path: Path) -> None:
+    source = _source_tree(tmp_path, version="2.11.1")
+    mirror = _nested_mirror(source, version="2.11.1")
+    _write(mirror / "scripts" / "lessons_lib.py", "VALUE = 0\n")
+    message = guard.format_refusal(guard.inspect_helper_provenance(_helper(mirror), source, scan="tree"))
+    assert "sync_root_plugin_manifests.py --repo-root ." in message
+
+
+def test_remediation_keeps_a_subcommand_cli_runnable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`issue_tool.py` declares `--repo-root` on each SUBparser, so hoisting the flag
+    to the front prints a command argparse rejects before reading the subcommand."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    installed = _installed_tree(tmp_path, version="2.11.0")
+    monkeypatch.setattr(
+        "sys.argv",
+        ["issue_tool.py", "close-with-comment", "--repo-root", str(source), "--number", "463"],
+    )
+    message = guard.format_refusal(guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[]))
+    remediation = next(line for line in message.splitlines() if line.strip().startswith("cd "))
+    assert remediation.endswith("close-with-comment --repo-root . --number 463")
+
+
+def test_remediation_retargets_an_abbreviated_repo_root_in_place(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = _source_tree(tmp_path, version="2.11.1")
+    installed = _installed_tree(tmp_path, version="2.11.0")
+    monkeypatch.setattr("sys.argv", ["prog", "--repo", str(source), "--part", "patch"])
+    message = guard.format_refusal(guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[]))
+    remediation = next(line for line in message.splitlines() if line.strip().startswith("cd "))
+    assert remediation.endswith("--repo . --part patch")
+    assert str(source) not in remediation.split("&&")[1]
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="root reads a 0o000 file, so the fail-open cannot be staged")
+def test_an_unreadable_pair_is_drift_not_agreement(tmp_path: Path) -> None:
+    source = _source_tree(tmp_path, version="2.11.1")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    for root, tail in ((source, Path("skills/public/demo")), (installed, Path("skills/demo"))):
+        (root / tail / "scripts" / "resolve_adapter.py").chmod(0o000)
+    try:
+        verdict = guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[])
+    finally:
+        for root, tail in ((source, Path("skills/public/demo")), (installed, Path("skills/demo"))):
+            (root / tail / "scripts" / "resolve_adapter.py").chmod(0o644)
+    assert verdict["status"] == "drifted"
+    assert verdict["drifted"] == ["skills/public/demo/scripts/resolve_adapter.py"]
+    # The operator is pointed at the file that is actually unreadable — its own —
+    # not only at the target counterpart, which is fine.
+    assert verdict["unreadable"] == ["skills/demo/scripts/resolve_adapter.py"]
+
+
+def test_the_checked_in_export_root_is_not_a_source_tree(tmp_path: Path) -> None:
+    """Load-bearing: an export root fails `is_charness_source_tree`, which is the only
+    reason the one-directional source->export counterpart gap stays unreachable."""
+
+    assert guard.is_charness_source_tree(Path(".").resolve()) is True
+    assert guard.is_charness_source_tree(Path("plugins/charness").resolve()) is False
+
+
+def test_remediation_preserves_a_distinct_repo_option(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`issue_tool.py` declares `--repo <owner/repo>` alongside `--repo-root`. Treating
+    every prefix as an abbreviation replaced the issue's target repo with `.`."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    installed = _installed_tree(tmp_path, version="2.11.0")
+    monkeypatch.setattr(
+        "sys.argv",
+        ["issue_tool.py", "close-with-comment", "--repo", "corca-ai/charness",
+         "--repo-root", str(source), "--number", "463"],
+    )
+    message = guard.format_refusal(guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[]))
+    remediation = next(line for line in message.splitlines() if line.strip().startswith("cd "))
+    assert "--repo corca-ai/charness" in remediation
+    assert remediation.endswith("--repo-root . --number 463")
+
+
+def test_a_contained_mirror_without_a_counterpart_is_told_to_resync(tmp_path: Path) -> None:
+    """The no-counterpart branch warns against resyncing; for the contained mirror that
+    advice is backwards, and it is the branch the mirror's worst case lands in."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    mirror = _nested_mirror(source, version="2.11.1")
+    (source / "skills" / "public" / "demo").rename(source / "skills" / "public" / "demo2")
+    message = guard.format_refusal(guard.inspect_helper_provenance(_helper(mirror), source, scan="tree"))
+    assert "sync_root_plugin_manifests.py --repo-root ." in message
+    assert "Re-running after a resync is not a remediation" not in message
+
+
+def test_a_contained_worktree_is_not_told_to_resync_the_plugin_tree(tmp_path: Path) -> None:
+    """Containment alone is the wrong test: a worktree inside the repo is contained too,
+    and the plugin resync would mutate the repo without touching the reported drift."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    worktree = source / ".worktrees" / "fix"
+    _write(worktree / "packaging" / "charness.json",
+           json.dumps({"package_id": "charness", "version": "2.11.1"}))
+    _write(worktree / "scripts" / "runtime_bootstrap.py", "# marker\n")
+    _write(worktree / "scripts" / "lessons_lib.py", "VALUE = 0\n")
+    entry = _write(worktree / "skills" / "public" / "demo" / "scripts" / "helper.py", "# helper\n")
+    _write(worktree / "skills" / "public" / "demo" / "scripts" / "resolve_adapter.py", "# adapter\n")
+    verdict = guard.inspect_helper_provenance(entry, source, scan="tree")
+    assert verdict["status"] == "drifted"
+    assert "sync_root_plugin_manifests.py" not in guard.format_refusal(verdict)
+
+
+def test_a_tree_scan_that_matches_nothing_is_not_in_sync(tmp_path: Path) -> None:
+    """The empty-scope refusal is unconditional, not gated behind the entry-counterpart
+    test, so no scan can report a clean verdict over zero compared bytes."""
+
+    source = _source_tree(tmp_path, version="2.11.1")
+    (source / "skills" / "public" / "demo").rename(source / "skills" / "public" / "demo2")
+    (source / "scripts" / "lessons_lib.py").unlink()
+    (source / "scripts" / "runtime_bootstrap.py").unlink()
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, scan="tree")
+    assert verdict["compared_pairs"] == 0
+    assert verdict["status"] == "scope-unestablished"
