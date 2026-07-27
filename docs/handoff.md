@@ -60,11 +60,12 @@ The auto-retro asks whether this session also owes a full `retro`; it was not ru
   Same shape for the reviewer-boundary fingerprint: `verify` before applying
   act-before-ship fixes, or the drift it reports is your own.
 - Run release/skill helpers from `skills/public/.../scripts/`, NOT the installed
-  plugin copy. An installed `publish_release.py` writes an older lesson-index
-  schema that this repo's own gate then rejects — `validate-retro-lesson-index`
-  fails mid-publish and rolls back. Same class as the four failed publishes
-  `require_repo_local_helper` was added for; the guard covers the write, not the
-  entrypoint you invoke.
+  copy. An installed copy carrying an older lesson-index schema gets rejected by
+  this repo's own gate mid-publish. The provenance guard now also runs at the
+  irreversible entrypoints, but it lives in the copy you invoke, so a copy that
+  predates it carries no check at all — that is how two `2.11.2` publishes got
+  through. Target-side validators are the part that does not depend on caller
+  age; [RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md).
 - Skill loaders build a FRESH module object per import, with no `sys.modules`
   caching. Reading a module global back across a second load silently sees the
   unmutated copy; thread the value through explicitly instead.

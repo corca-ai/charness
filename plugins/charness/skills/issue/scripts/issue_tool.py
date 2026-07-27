@@ -121,7 +121,29 @@ def command_read(args: argparse.Namespace) -> int:
     )
 
 
+def _refuse_foreign_copy(repo_root: Path) -> None:
+    """Refuse a drifted foreign copy before closing an issue.
+
+    Closing is irreversible in the sense that matters here: a reopened issue was
+    already read as done by everything downstream. The guard is scoped to this
+    command rather than the whole tool so the read-only subcommands stay usable
+    from an installed copy.
+    """
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:
+        return
+    runpy.run_path(str(bootstrap))["refuse_foreign_entrypoint"](__file__, repo_root)
+
+
 def command_close_with_comment(args: argparse.Namespace) -> int:
+    _refuse_foreign_copy(args.repo_root.resolve())
     return _run_backend_command(
         args,
         lambda resolved: CLOSE.close_with_comment(

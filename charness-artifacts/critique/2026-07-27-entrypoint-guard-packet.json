@@ -1,0 +1,96 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-27T05:17:49Z",
+  "prepared_for": "entrypoint provenance guard at irreversible boundaries",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/quality/sloc-inventory/latest.json\n- plugins/charness/scripts/helper_provenance_lib.py\n- plugins/charness/scripts/skill_runtime_bootstrap.py\n- plugins/charness/skill_runtime_bootstrap.py\n- plugins/charness/skills/issue/scripts/issue_tool.py\n- plugins/charness/skills/release/scripts/publish_release.py\n- scripts/helper_provenance_lib.py\n- scripts/skill_runtime_bootstrap.py\n- skill_runtime_bootstrap.py\n- skills/public/issue/scripts/issue_tool.py\n- skills/public/release/scripts/publish_release.py\n- tests/quality_gates/test_helper_provenance_guard.py\n- tests/quality_gates/test_release_publish_provenance.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/helper_provenance_lib.py, scripts/skill_runtime_bootstrap.py, skill_runtime_bootstrap.py, skills/public/issue/scripts/issue_tool.py, skills/public/release/scripts/publish_release.py\n  derived matches: plugins/charness/scripts/helper_provenance_lib.py, plugins/charness/scripts/skill_runtime_bootstrap.py, plugins/charness/skill_runtime_bootstrap.py, plugins/charness/skills/issue/scripts/issue_tool.py, plugins/charness/skills/release/scripts/publish_release.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/issue/scripts/issue_tool.py, skills/public/release/scripts/publish_release.py\n  derived matches: plugins/charness/skills/issue/scripts/issue_tool.py, plugins/charness/skills/release/scripts/publish_release.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/issue/scripts/issue_tool.py, skills/public/release/scripts/publish_release.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/issue/scripts/issue_tool.py, skills/public/release/scripts/publish_release.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/helper_provenance_lib.py, plugins/charness/scripts/skill_runtime_bootstrap.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/helper_provenance_lib.py, scripts/skill_runtime_bootstrap.py, skill_runtime_bootstrap.py, tests/quality_gates/test_helper_provenance_guard.py, tests/quality_gates/test_release_publish_provenance.py\n  derived matches: plugins/charness/scripts/helper_provenance_lib.py, plugins/charness/scripts/skill_runtime_bootstrap.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/helper_provenance_lib.py, scripts/skill_runtime_bootstrap.py, skills/public/issue/scripts/issue_tool.py, skills/public/release/scripts/publish_release.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v1",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "46cfcdfc069b94769e0dd158c99ab5e8481397fc",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "scripts/helper_provenance_lib.py",
+      "scripts/skill_runtime_bootstrap.py",
+      "skill_runtime_bootstrap.py",
+      "skills/public/issue/scripts/issue_tool.py",
+      "skills/public/release/scripts/publish_release.py",
+      "tests/quality_gates/test_helper_provenance_guard.py",
+      "tests/quality_gates/test_release_publish_provenance.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "scripts/helper_provenance_lib.py",
+        "content_sha256": "1517362e2670700f45554acea1d22789e362eb9068906746ec049f7686aea511"
+      },
+      {
+        "path": "scripts/skill_runtime_bootstrap.py",
+        "content_sha256": "ae232a7e4e612ecfa2892e5ade2079839ac53694e7ab601ad26ba3293cb0be74"
+      },
+      {
+        "path": "skill_runtime_bootstrap.py",
+        "content_sha256": "88496fd81cd1e65e7c481d8b0da09c9bd984939e07ba623ff9d067007c3f36b5"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_tool.py",
+        "content_sha256": "b07c4c2e97385d6cd59981bb4d62e295b11efb003199a3c4d1247a9022db022c"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release.py",
+        "content_sha256": "83552cdbfd062406d7a4aacbca7eae067a91b5599345eee559f3f1283c567ebb"
+      },
+      {
+        "path": "tests/quality_gates/test_helper_provenance_guard.py",
+        "content_sha256": "620aa5aa23d3e5191508aad5d22b03d11d0579f96c795bfe08f3b1e6fa044a19"
+      },
+      {
+        "path": "tests/quality_gates/test_release_publish_provenance.py",
+        "content_sha256": "e726218309fac1550e02397a68871c1b7331bf4952193afd4791d22e57766027"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e73149a9f245c85f0f7616dc26dc7ce934691e64a45bd2e51148ad599a4907e9",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "identity_sha256": "b0f732e496b22add429cf5121831a42a7a26ac5d55607e9f24a6a4bc3ea494de"
+  }
+}

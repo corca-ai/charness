@@ -482,11 +482,24 @@ def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
             "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`"
         )
     if index_path.read_text(encoding="utf-8") != expected:
+        # Order matters. This message used to lead with `--write`, and a real
+        # investigation followed it: `--write` produced identical bytes (the
+        # index was correct for THIS repo's code), so the operator concluded the
+        # failure was elsewhere and spent a full gate cycle on the quality suite.
+        # The discriminator has to come first, because when a foreign copy wrote
+        # the index, `--write` through that same copy is a loop, not a fix.
         raise ValueError(
-            f"retro lesson selection index `{index_path.relative_to(repo_root)}` is stale; "
-            "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write` "
-            "from this repo root. Use this repo's own copy of the script: a copy from an "
-            "installed plugin can write an older schema, which re-triggers this same failure."
+            f"retro lesson selection index `{index_path.relative_to(repo_root)}` "
+            "does not match what this repo's own code produces.\n"
+            "FIRST, check who wrote it: if you ran a charness helper from an "
+            "installed/exported copy (`~/.agents/...`, `$SKILL_DIR`, "
+            "`plugins/charness/...`) against this repo, that copy's schema is the "
+            "cause. Re-run from this repo's own copy; running `--write` through "
+            "the foreign copy overwrites the fix and re-triggers this failure.\n"
+            "Otherwise the index is genuinely stale: run "
+            "`python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write` "
+            "from this repo root. If that produces no diff, you are in the first "
+            "case, not this one."
         )
     expected_digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     if not summary_path.is_file():

@@ -186,3 +186,177 @@ def test_guard_is_reachable_from_both_bootstrap_surfaces() -> None:
     runtime_bootstrap = importlib.import_module("scripts.runtime_bootstrap")
     assert callable(skill_bootstrap.require_repo_local_helper)
     assert callable(runtime_bootstrap.require_repo_local_helper)
+
+
+# Entrypoint tree scan (#the 2.11.2 publish failures) -------------------------
+
+
+def _entrypoint_condition(tmp_path: Path) -> tuple[Path, Path]:
+    """The state a release entrypoint actually sees: versions agree, code lags.
+
+    This is the exact shape of the two failed 2.11.2 publishes. The bump that
+    would expose a version mismatch happens *after* the entrypoint, and the
+    module that had drifted (`recent_lessons_lib`) is imported lazily, much
+    later, when the retro closeout writes. So at the moment the entrypoint could
+    still refuse cheaply, both signals the anchor scan relies on are absent.
+    """
+    source = _source_tree(tmp_path, version="2.11.2", lib_body="VALUE = 2  # new schema\n")
+    installed = _installed_tree(tmp_path, version="2.11.2", lib_body="VALUE = 1\n")
+    return source, installed
+
+
+def test_anchor_scan_misses_a_lazily_imported_drifted_module(tmp_path: Path) -> None:
+    """Documents the gap, so a future change cannot quietly reintroduce it."""
+    source, installed = _entrypoint_condition(tmp_path)
+    verdict = guard.inspect_helper_provenance(_helper(installed), source, loaded_modules=[])
+    assert verdict["status"] == "in-sync"
+    assert verdict["drifted"] == []
+
+
+def test_tree_scan_catches_the_drift_the_anchor_scan_misses(tmp_path: Path) -> None:
+    source, installed = _entrypoint_condition(tmp_path)
+    verdict = guard.inspect_helper_provenance(
+        _helper(installed), source, loaded_modules=[], scan="tree"
+    )
+    assert verdict["status"] == "drifted"
+    assert "scripts/lessons_lib.py" in verdict["drifted"]
+    assert verdict["scan"] == "tree"
+    assert verdict["compared_count"] > 0
+
+
+def test_tree_scan_refuses_and_names_the_runnable_repo_local_command(tmp_path: Path) -> None:
+    source, installed = _entrypoint_condition(tmp_path)
+    with pytest.raises(guard.ForeignHelperError) as excinfo:
+        guard.require_repo_local_helper(
+            _helper(installed), source, loaded_modules=[], exit_on_drift=False, scan="tree"
+        )
+    message = str(excinfo.value)
+    assert "scripts/lessons_lib.py" in message
+    assert "skills/public/demo/scripts/helper.py" in message
+
+
+def test_tree_scan_stays_silent_for_a_consuming_repo(tmp_path: Path) -> None:
+    """The normal installed-plugin case must not be blocked by the wider scan."""
+    consumer = tmp_path / "consumer"
+    _write(consumer / "README.md", "# not a charness source tree\n")
+    installed = _installed_tree(tmp_path, version="2.11.2")
+    verdict = guard.require_repo_local_helper(
+        _helper(installed), consumer, loaded_modules=[], exit_on_drift=False, scan="tree"
+    )
+    assert verdict["status"] == "consuming-repo"
+
+
+def test_tree_scan_allows_an_identical_installed_copy(tmp_path: Path) -> None:
+    source = _source_tree(tmp_path, version="2.11.2")
+    installed = _installed_tree(tmp_path, version="2.11.2")
+    verdict = guard.require_repo_local_helper(
+        _helper(installed), source, loaded_modules=[], exit_on_drift=False, scan="tree"
+    )
+    assert verdict["status"] == "in-sync"
+
+
+def test_refusal_caps_the_drift_list_instead_of_burying_the_remediation(tmp_path: Path) -> None:
+    source = _source_tree(tmp_path, version="2.11.2")
+    installed = _installed_tree(tmp_path, version="2.11.2")
+    for index in range(guard._REFUSAL_DRIFT_LIMIT + 4):
+        _write(source / "scripts" / f"mod_{index}.py", "SOURCE = 1\n")
+        _write(installed / "scripts" / f"mod_{index}.py", "INSTALLED = 1\n")
+    with pytest.raises(guard.ForeignHelperError) as excinfo:
+        guard.require_repo_local_helper(
+            _helper(installed), source, loaded_modules=[], exit_on_drift=False, scan="tree"
+        )
+    message = str(excinfo.value)
+    assert "more)" in message
+    # The remediation must survive the evidence.
+    assert "Run the target repo's own copy instead:" in message
+
+
+# Post-review fixes ----------------------------------------------------------
+
+
+def test_identity_candidate_survives_for_a_same_layout_foreign_tree(tmp_path: Path) -> None:
+    """Two source-layout checkouts share paths verbatim; dropping identity skipped them."""
+    source = _source_tree(tmp_path, version="2.11.2")
+    other = tmp_path / "other"
+    _write(other / "packaging" / "charness.json", json.dumps({"package_id": "charness", "version": "2.11.2"}))
+    _write(other / "scripts" / "runtime_bootstrap.py", "# marker\n")
+    _write(other / "skills" / "shared" / "scripts" / "fingerprint.py", "DRIFTED = 1\n")
+    _write(source / "skills" / "shared" / "scripts" / "fingerprint.py", "DRIFTED = 2\n")
+    _write(other / "skills" / "public" / "demo" / "scripts" / "helper.py", "# helper\n")
+    verdict = guard.inspect_helper_provenance(
+        other / "skills" / "public" / "demo" / "scripts" / "helper.py",
+        source,
+        loaded_modules=[],
+        scan="tree",
+    )
+    assert verdict["status"] == "drifted"
+    assert "skills/shared/scripts/fingerprint.py" in verdict["drifted"]
+
+
+def test_tree_scan_reaches_the_exported_support_layout(tmp_path: Path) -> None:
+    """The exporter puts support skills at top-level `support/`, not under `skills/`."""
+    source = _source_tree(tmp_path, version="2.11.2")
+    _write(source / "skills" / "support" / "web-fetch" / "scripts" / "reader.py", "V = 2\n")
+    installed = _installed_tree(tmp_path, version="2.11.2")
+    _write(installed / "support" / "web-fetch" / "scripts" / "reader.py", "V = 1\n")
+    verdict = guard.inspect_helper_provenance(
+        _helper(installed), source, loaded_modules=[], scan="tree"
+    )
+    assert verdict["status"] == "drifted"
+    assert "skills/support/web-fetch/scripts/reader.py" in verdict["drifted"]
+
+
+def test_refusal_remediation_keeps_the_other_arguments(monkeypatch, tmp_path: Path) -> None:
+    """`publish_release.py` requires one of --part/--publish-current/--set-version.
+
+    A remediation that drops them exits 2 again — the remediation-that-cannot-
+    terminate shape this module exists to kill.
+    """
+    monkeypatch.setattr(
+        guard.sys, "argv", ["publish_release.py", "--repo-root", "/x", "--part", "patch"]
+    )
+    source = _source_tree(tmp_path, version="2.11.2")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    with pytest.raises(guard.ForeignHelperError) as excinfo:
+        guard.require_repo_local_helper(
+            _helper(installed), source, loaded_modules=[], exit_on_drift=False
+        )
+    remediation = next(
+        line for line in str(excinfo.value).splitlines() if line.strip().startswith("cd ")
+    )
+    assert remediation.endswith("--repo-root . --part patch")
+    assert remediation.count("--repo-root") == 1, "the caller's --repo-root must not be re-added"
+
+
+def test_entrypoint_repo_root_parsing_matches_argparse(monkeypatch, tmp_path: Path) -> None:
+    """argparse accepts any unambiguous prefix and lets the LAST flag win.
+
+    Matching only the exact `--repo-root` spelling let `--repo <target>` bypass
+    the guard entirely while the CLI still mutated that target.
+    """
+    import runpy
+
+    runtime = runpy.run_path("scripts/skill_runtime_bootstrap.py")
+    refuse = runtime["refuse_foreign_entrypoint"]
+    source = _source_tree(tmp_path, version="2.11.2")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    forms = (
+        ["--repo-root", str(source)],
+        ["--repo", str(source)],
+        [f"--repo-roo={source}"],
+        ["--repo-root", str(tmp_path / "ignored"), "--repo-root", str(source)],
+    )
+    for argv in forms:
+        monkeypatch.setattr("sys.argv", ["prog", *argv])
+        with pytest.raises(SystemExit) as excinfo:
+            refuse(_helper(installed))
+        assert excinfo.value.code == 2, argv
+
+
+def test_entrypoint_guard_skips_help(monkeypatch, tmp_path: Path) -> None:
+    import runpy
+
+    runtime = runpy.run_path("scripts/skill_runtime_bootstrap.py")
+    installed = _installed_tree(tmp_path, version="2.11.1")
+    monkeypatch.setattr("sys.argv", ["prog", "--help"])
+    assert runtime["refuse_foreign_entrypoint"](_helper(installed))["status"] == "skipped-read-only"

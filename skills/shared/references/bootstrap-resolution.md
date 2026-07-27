@@ -98,15 +98,36 @@ Write helpers that persist repo state — `refresh_recent_lessons.py`,
 [scripts/helper_provenance_lib.py](../../../scripts/helper_provenance_lib.py)
 before doing any work.
 
+Two placements, with different scans:
+
+- **Write sites** (the helpers above) check at the moment they persist state, and
+  compare the loaded anchors plus already-imported modules.
+- **Irreversible entrypoints** — `publish_release.py` and `issue_tool.py
+  close-with-comment` — check before any mutation, and compare *every* Python
+  module in both trees (`scan="tree"`). The wider scan is required because the
+  module that drifts is usually imported lazily, long after the entrypoint, and
+  because `publish_release` bumps the target version only after that point, so
+  neither the import-anchor nor the version signal is available yet.
+
 It refuses (exit status 2) only when all of these hold: the running script
 belongs to a different charness tree than `--repo-root`, that `--repo-root` is a
 charness **source** checkout, it carries its own copy of the same helper, and the
-two copies differ by declared version or by the content of any library the helper
-loads. The refusal names the target repo's own copy, because that is the only
-remediation that terminates — re-running the drifted copy overwrites the fix.
-Runs against an ordinary consuming repo are untouched, since a consuming repo owns
-no competing copy. `CHARNESS_ALLOW_FOREIGN_HELPER=1` downgrades the refusal to a
-warning when the copies are known to be compatible.
+two copies differ by declared version or by compared module content. The refusal
+names the target repo's own copy and repeats the invocation's other arguments,
+because that is the only remediation that terminates — re-running the drifted
+copy overwrites the fix. `--help` and the read-only
+`--prep-update-instructions` affordance are not refused. Runs against an ordinary
+consuming repo are untouched, since a consuming repo owns no competing copy.
+`CHARNESS_ALLOW_FOREIGN_HELPER=1` downgrades the refusal to a warning when the
+copies are known to be compatible.
+
+**What this cannot do.** Every one of these checks lives in the copy being
+invoked, so a copy old enough to predate the check does not carry it — which is
+exactly how two `v2.11.2` publishes got through
+([RCA](../../../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
+Treat it as a fast, well-worded failure for copies that carry it, not as closure
+of the foreign-write class; the target repo's own validators remain the
+enforcement that does not depend on the caller's age.
 
 ## Resolve `$CHARNESS_SUPPORT_DIR` (split monorepo only)
 

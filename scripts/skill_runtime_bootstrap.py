@@ -51,6 +51,50 @@ def run_adapter_cli(
         cancel_timeout()
 
 
+def refuse_foreign_entrypoint(script_file: str | Path, repo_root: str | Path | None = None) -> dict:
+    """Refuse a drifted foreign copy at a skill entrypoint, before any mutation.
+
+    The write-site guards (`require_repo_local_helper` inside the libraries that
+    write) fire only once a run reaches them — for a release, after bump,
+    manifest sync, and the full quality suite. This is the same guard moved to
+    the seam the operator actually invokes, so the refusal costs milliseconds
+    instead of a rolled-back publish.
+
+    Two details make the entrypoint case different from a write site, and both
+    are why this wrapper exists rather than a bare call:
+
+    - ``scan="tree"``, because the module that drifts is usually imported
+      lazily, long after the entrypoint; an anchor scan here sees only what is
+      already imported and reports ``in-sync``.
+    - ``repo_root`` is read from ``sys.argv`` when the caller cannot supply it,
+      because the check has to precede the CLI's own argument parsing.
+    """
+    import sys
+
+    argv = sys.argv[1:]
+    # Read-only invocations are not a mutation boundary, and refusing them takes
+    # away the operator's cheapest way to inspect the copy they are holding at
+    # exactly the moment they are confused about which copy that is.
+    if any(token in {"-h", "--help"} for token in argv):
+        return {"status": "skipped-read-only"}
+    if repo_root is None:
+        repo_root = Path.cwd()
+        for index, token in enumerate(argv):
+            # argparse accepts any unambiguous prefix, so `--repo` reaches
+            # `--repo-root`. Matching only the exact spelling let that form
+            # bypass the guard while the CLI still mutated the named target.
+            if token.startswith("--") and "=" in token:
+                flag, _, value = token.partition("=")
+                if flag != "--" and "--repo-root".startswith(flag):
+                    repo_root = Path(value)
+                    continue
+            elif token.startswith("--") and len(token) > 2 and "--repo-root".startswith(token):
+                if index + 1 < len(argv):
+                    repo_root = Path(argv[index + 1])
+                    continue
+    return require_repo_local_helper(script_file, Path(repo_root).expanduser().resolve(), scan="tree")
+
+
 def repo_root_from_skill_script(script_file: str | Path) -> Path:
     script_path = Path(script_file).resolve()
     for ancestor in script_path.parents:
