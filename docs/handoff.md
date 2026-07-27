@@ -21,7 +21,7 @@ holds ten findings, six rejected as over-worry. No decisions pending.
   `unresolved_issues`; the packet carries a `staleness` block saying which
   checks ran. An empty list means "open" only when the matching check is
   reported as run — markers render from non-empty facts only, so an unmarked
-  citation is never a freshness claim.
+  citation is never a freshness claim. Shipped in `2.11.2`.
 - **The handoff budget counts CONTENT lines now, not file length.** Blank lines,
   the required `##` headings, and all of `## References` are free. Trimming
   formatting or shortening links buys nothing — cut state instead.

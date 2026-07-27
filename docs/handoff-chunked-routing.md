@@ -343,6 +343,10 @@ section:
     found gone is never asserted as the work surface
   - `NOT asserted in scope: <missing paths>` when `missing_paths` is
     non-empty; omitted entirely otherwise
+  - when the subtraction empties the list — every cited path is missing —
+    `In scope:` reads `paths to be named during the achieve Before-phase
+    (every path the source handoff entry cited is missing — see below)`,
+    never the no-paths-were-cited fallback
   - `Portable per implementation-discipline: no host-specific assumption.`
   - the verbatim Stop Conditions line:
     `Stop conditions: name on first discovery; do not guess.`
