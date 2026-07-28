@@ -4,6 +4,8 @@ import importlib.util
 import json
 import subprocess
 
+import pytest
+
 from .support import ROOT
 
 SPEC = importlib.util.spec_from_file_location(
@@ -309,3 +311,55 @@ def test_unmeasured_files_are_not_recorded_as_perfectly_covered() -> None:
     assert [item["path"] for item in report["unmeasured"]] == ["empty.py"]
     assert "empty.py" not in [item["path"] for item in report["exempt_below_threshold"]]
     assert [item["path"] for item in report["exempt_below_floor"]] == ["tiny.py"]
+
+
+def test_human_report_names_the_exempt_and_unmeasured_populations(monkeypatch, capsys) -> None:
+    """`run-quality.sh` invokes this gate WITHOUT --json, so the non-JSON render
+    is the only surface an operator reads. These two lines are the whole reason
+    the exemption stopped being silent: a file excused for having fewer than
+    `PER_FILE_MIN_STATEMENTS` statements, and a file that contributed no
+    observation at all, must both be named rather than folded into the percent.
+    """
+    summary = {
+        "coverage": 0.5,
+        "covered": 1,
+        "total": 2,
+        "files": [
+            {"path": "scripts/measured.py", "covered": 1, "total": 2, "coverage": 0.5, "measured": True},
+            {"path": "scripts/empty.py", "covered": 0, "total": 0, "coverage": 1.0, "measured": False},
+        ],
+        "per_file_floor": {
+            "violations": [],
+            "warn_band": [],
+            "exempt_below_floor": [{"path": "scripts/tiny.py", "coverage": 0.1}],
+            "min_statements_threshold": 30,
+        },
+        "unmeasured_files": ["scripts/empty.py"],
+    }
+    monkeypatch.setattr(CHECK_COVERAGE, "collect_counts", lambda repo_root: {})
+    monkeypatch.setattr(CHECK_COVERAGE, "summarize", lambda *a, **k: summary)
+    monkeypatch.setattr(
+        CHECK_COVERAGE.sys, "argv", ["check_coverage.py", "--repo-root", str(ROOT), "--min-coverage", "0.1"]
+    )
+
+    assert CHECK_COVERAGE.main() == 0
+    out = capsys.readouterr().out
+    assert "[UNMEASURED: 0 executable lines]" in out
+    assert "1 file(s) below the floor but EXEMPT for having fewer than 30 statements: scripts/tiny.py" in out
+    assert "Unmeasured: 1 target file(s) have zero executable lines" in out
+    assert "scripts/empty.py" in out
+
+
+def test_cli_refuses_legibly_when_nothing_was_measured(monkeypatch) -> None:
+    """The E5 refusal's CLI half: a `None` coverage must surface as this gate's
+    own named error, not as a `None < float` TypeError traceback and not as the
+    pre-fix perfect 1.0 over zero observations."""
+    monkeypatch.setattr(CHECK_COVERAGE, "TARGET_FILES", ())
+    monkeypatch.setattr(CHECK_COVERAGE, "collect_counts", lambda repo_root: {})
+    monkeypatch.setattr(CHECK_COVERAGE.sys, "argv", ["check_coverage.py", "--repo-root", str(ROOT)])
+
+    with pytest.raises(CHECK_COVERAGE.CoverageError) as excinfo:
+        CHECK_COVERAGE.main()
+    message = str(excinfo.value)
+    assert "never measured" in message
+    assert "no target files configured" in message

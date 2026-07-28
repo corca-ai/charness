@@ -1185,6 +1185,13 @@
     },
     {
       "class": "intentional",
+      "id": "f1ecdb322d57f29e",
+      "note": "a 14-member family of two-to-five-line `if <cond>: return <literal>` guard clauses spread over eight unrelated modules (a staged-reversion check, a mutation-testing proposer, a t-signal classifier, a prompt-sentinel scorer, a tool-recommendation table, a JS eval runtime, and this release qualifier). It has no shared concept to centralize: each member returns its own module's own message for its own condition. It surfaced as new because widening the `same-proxy-flagged` qualifier text (S93) changed this file's normalized shape, not because duplication was introduced; the same guard-clause chain is present at 920b05ab.",
+      "reviewed_at": "2026-07-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "f47a6c0ed140b9fb",
       "note": "the parallel argparse main() of the repo's two index builders (build_retro_lesson_selection_index.py, build_debug_seam_risk_index.py): both expose the same deliberate --write/--check/--json operator contract over different payloads, and that contract IS the shared surface a reader relies on. Extraction would need a generic index-CLI framework parameterized by builder, checker, renderer, and result keys -- more indirection than the ~25 duplicated lines it removes, for two callers. Re-fingerprinted when the retro builder's write branch was routed through the library writer that owns the helper-provenance refusal",
       "reviewed_at": "2026-07-26",

@@ -104,6 +104,36 @@ def test_clean_fixture_is_silent(tmp_path: Path) -> None:
     assert not report.length["over"]
 
 
+def test_raw_line_count_surface_forecasts_through_validate_max_lines(tmp_path: Path, monkeypatch) -> None:
+    # Every surface registered today declares its own counting/checking pair, so
+    # the raw-line fallback (`count_attr`/`check_attr` left None) has no live
+    # caller. It is the default a NEW capped surface inherits, so it is pinned
+    # here rather than left to be discovered by the first author who omits both.
+    surface = _pf.LengthSurface(
+        name="synthetic",
+        module="scripts.validate_handoff_artifact",
+        constant="MAX_CONTENT_LINES",
+        label="synthetic artifact",
+        matches=lambda rel: rel == "docs/synthetic.md",
+    )
+    monkeypatch.setattr(_pf, "_length_surfaces", lambda repo_root: (surface,))
+    repo = _seed_repo(tmp_path, _CLEAN_FIXTURE)
+    doc = repo / "docs" / "synthetic.md"
+
+    doc.write_text("x\n" * (_handoff.MAX_CONTENT_LINES + 40), encoding="utf-8")
+    over = _pf.collect_length(repo, doc, "docs/synthetic.md", None)
+    assert over["surface"] == "synthetic"
+    assert over["cap"] == _handoff.MAX_CONTENT_LINES
+    assert over["current"] == _handoff.MAX_CONTENT_LINES + 40
+    assert over["over"] is True
+    assert "synthetic artifact" in (over["detail"] or "")
+
+    doc.write_text("x\n" * 3, encoding="utf-8")
+    under = _pf.collect_length(repo, doc, "docs/synthetic.md", None)
+    assert under["over"] is False
+    assert under["detail"] is None
+
+
 def test_general_doc_has_no_enforced_length_cap(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, _CLEAN_FIXTURE)
     (repo / "docs" / "guide.md").write_text(_CLEAN_FIXTURE, encoding="utf-8")

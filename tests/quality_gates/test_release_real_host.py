@@ -432,3 +432,105 @@ def test_real_host_artifact_does_not_assert_an_evaluation_that_never_ran() -> No
     # sentence, which is true of it.
     evaluated = sections.real_host_lines({"required": False, "evaluation_scope": "evaluated"})
     assert any("trigger matched this slice" in line for line in evaluated)
+
+
+def _verification_sections():
+    return load_script_module(
+        "publish_release_verification_sections_under_test",
+        ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_verification_sections.py",
+    )
+
+
+def test_real_host_required_slice_separates_executed_proof_from_open_items() -> None:
+    """The triggered branch, which the scope tests above never reach.
+
+    A slice that triggers real-host verification renders two sections, and the
+    difference between them is the whole point: `## Real-Host Verification` says
+    the trigger fired, `## Real-Host Proof` says what was actually executed. An
+    adapter-declared install refresh that ran is executed proof and names its
+    command and return code; without it the checklist items must stay explicitly
+    OPEN rather than be rendered as a satisfied requirement."""
+    sections = _verification_sections()
+
+    refreshed = sections.real_host_lines(
+        {"required": True, "checklist": ["reinstall the plugin on a real host"]},
+        {"status": "refreshed", "command": "charness update --force", "returncode": 0},
+    )
+    assert any("real-host verification was triggered" in line for line in refreshed)
+    assert any("install-refresh proof was executed" in line for line in refreshed)
+    assert any("`charness update --force`" in line and "return code `0`" in line for line in refreshed)
+    assert any("still require explicit proof" in line for line in refreshed)
+    assert any("- reinstall the plugin on a real host" in line for line in refreshed)
+    assert not any("remain open until their executed proof is recorded" in line for line in refreshed)
+
+    unrefreshed = sections.real_host_lines({"required": True, "checklist": []}, None)
+    assert any("remain open until their executed proof is recorded" in line for line in unrefreshed)
+    assert not any("install-refresh proof was executed" in line for line in unrefreshed)
+    assert unrefreshed.count("## Real-Host Proof") == 1
+
+
+def test_real_host_unresolvable_triggers_are_not_reported_as_a_non_match() -> None:
+    # The fourth D7 world: triggers exist but could not be resolved. "No trigger
+    # matched" would assert an evaluation that never completed.
+    sections = _verification_sections()
+
+    lines = sections.real_host_lines({"required": False, "evaluation_scope": "not-established"})
+
+    assert any("could not be resolved" in line for line in lines)
+    assert not any("trigger matched this slice" in line for line in lines)
+    assert any("Evaluation scope: `not-established`" in line for line in lines)
+
+
+def test_published_notes_audit_names_a_clean_body_and_an_unaudited_one_apart() -> None:
+    """An advisory nobody reads is the silent path this section exists to close,
+    so each of its three worlds must be distinguishable: pointers found, no
+    pointers found (with the body size that scope was established over), and no
+    audit at all."""
+    sections = _verification_sections()
+
+    clean = sections.published_notes_audit_lines({"status": "clean", "body_len": 812})
+    assert any("No mutable source-tree pointers found (812 body bytes)" in line for line in clean)
+
+    unaudited = sections.published_notes_audit_lines(
+        {"status": "skipped", "reason": "release body could not be fetched"}
+    )
+    assert any("NOT audited" in line for line in unaudited)
+    assert any("Disposition reason: release body could not be fetched" in line for line in unaudited)
+
+    advisory = sections.published_notes_audit_lines(
+        {"status": "advisory", "advisories": ["points at blob/main"]}
+    )
+    assert any("  - points at blob/main" in line for line in advisory)
+
+    assert sections.published_notes_audit_lines(None) == []
+
+
+def test_distinct_channel_section_carries_the_claim_and_its_limits() -> None:
+    """The record's own scope statement must reach the artifact: what the probe
+    confirms, what it explicitly does NOT, a redirect that changed the URL that
+    was actually read, and the disposition reason for a non-confirmed verdict."""
+    sections = _verification_sections()
+
+    lines = sections.distinct_channel_verification_lines(
+        {
+            "status": "confirmed",
+            "channel": "http",
+            "url": "https://example.test/v1.2.3",
+            "fetched_url": "https://example.test/releases/tag/v1.2.3",
+            "establishes": "the release page is publicly readable",
+            "does_not_establish": "that the published notes are correct",
+            "reason": "redirect followed",
+        }
+    )
+
+    assert any("What this confirms: the release page is publicly readable" in line for line in lines)
+    assert any("What it does NOT confirm: that the published notes are correct" in line for line in lines)
+    assert any("Redirected to: `https://example.test/releases/tag/v1.2.3`" in line for line in lines)
+    assert any("Disposition reason: redirect followed" in line for line in lines)
+
+    # A fetched URL identical to the requested one is not a redirect and must not
+    # be rendered as one.
+    same = sections.distinct_channel_verification_lines(
+        {"status": "confirmed", "channel": "http", "url": "https://x/v1", "fetched_url": "https://x/v1"}
+    )
+    assert not any("Redirected to" in line for line in same)

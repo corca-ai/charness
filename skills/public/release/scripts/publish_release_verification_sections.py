@@ -28,9 +28,15 @@ def _distinct_channel_qualifier(status: str, channel: str, guard: str | None) ->
     artifact asserted it anyway — D8's exact failure mode.
     """
     if status == "same-proxy-flagged":
+        # This status covers every cause the guard could not rule out: a token-shape
+        # match, an unparseable command, a probe nested past the unwrap budget, and
+        # (S93) one that unwraps to no command at all. Naming only the first sent the
+        # auditor to fix a same-proxy probe that does not exist — the artifact
+        # asserting one cause it did not establish, which is the failure mode above.
         return (
-            "**NOT a distinct channel** — the configured probe matched this backend's own "
-            "`release_view` command and was refused before running"
+            "**NOT a distinct channel** — the configured probe did not establish a channel "
+            "distinct from this backend's own `release_view` command, and was refused before "
+            "running; see the disposition reason for which cause"
         )
     if status == "skipped":
         return "**no distinct channel ran**"

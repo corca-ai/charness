@@ -730,3 +730,86 @@ def test_http_probe_records_what_it_cannot_establish() -> None:
     assert record["establishes"] == "public-page-reachable-and-names-the-tag"
     assert "does not establish" not in record  # spelled `does_not_establish`
     assert "GitHub RELEASE exists" in record["does_not_establish"]
+
+
+def test_same_proxy_guard_flags_a_probe_that_unwraps_to_no_command() -> None:
+    """S93: the guard's stated contract is that every branch which cannot
+    ESTABLISH distinctness returns True, and one branch did the opposite.
+
+    A configured probe that unwraps to zero tokens — `env`, `sh -c ""` — runs no
+    query at all, so nothing about distinctness is established. It was reported
+    as "not same-proxy", which put it on the branch that RUNS the probe and
+    records an ordinary result: an unestablished scope reading as a clean
+    distinct-channel observation at the publish boundary.
+    """
+    def run_shell_never_called(*_args, **_kwargs):
+        raise AssertionError("a probe that establishes nothing must never be run as a distinct channel")
+
+    for probe in ("env", 'sh -c ""'):
+        payload: dict = {}
+        _POST_CREATE.confirm_release_via_distinct_channel(
+            Path("."), payload, adapter_data={"post_publish_distinct_channel_probe": probe},
+            run_shell=run_shell_never_called, tag_name="v1.2.3",
+            expected_release_url="https://x/v1.2.3",
+            backend={"id": "gh", "commands": None}, backend_command=_HELPERS.backend_command,
+        )
+        record = payload["distinct_channel_verification"]
+        assert record["status"] == "same-proxy-flagged", probe
+        # The record is what the rung-2 human auditor reads, and `same-proxy-flagged`
+        # now covers four causes. Naming only the token-shape match would send that
+        # auditor to fix a same-proxy probe that does not exist.
+        assert "unwraps to no command at all" in record["reason"], probe
+        assert "does not ESTABLISH" in record["reason"], probe
+        assert "release_view shape" not in record["observer"], probe
+
+    # Falsifiable counterpart, on the same guard: a genuinely distinct probe must
+    # stay on the other side of the same call.
+    guard = load_release_script("publish_release_same_proxy_guard")
+    assert guard._probe_matches_release_view_shape(
+        "curl -sSL https://x", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command, tag_name="v1",
+    ) is False
+
+
+def test_flagged_qualifier_does_not_name_a_cause_it_did_not_establish() -> None:
+    """The reader-facing half of S93. `_distinct_channel_qualifier` branched on
+    status alone, so a probe that ran no query at all was described to the auditor
+    as one that "matched this backend's own `release_view` command" — the artifact
+    asserting a specific cause it never established, which is D8's failure mode
+    one surface over."""
+    sections = load_release_script("publish_release_verification_sections")
+
+    lines = sections.distinct_channel_verification_lines(
+        {
+            "status": "same-proxy-flagged",
+            "channel": "adapter-probe",
+            "command": "env",
+            "reason": "probe unwraps to no command at all",
+        }
+    )
+
+    verdict = next(line for line in lines if "Rung-2 distinct-channel verdict" in line)
+    assert "NOT a distinct channel" in verdict
+    assert "did not establish" in verdict
+    assert "matched this backend's own" not in verdict
+    assert any("Disposition reason: probe unwraps to no command at all" in line for line in lines)
+
+
+def test_unwrap_budget_exhaustion_and_unlexable_payload_are_reported_as_exhausted() -> None:
+    """The two `_unwrap_command_tokens` escape hatches, pinned on the helper.
+
+    A probe nested past the unwrap budget, and a wrapper whose inline `-c`
+    payload cannot be lexed, are both scopes the guard could not descend into.
+    Returning `exhausted=False` for either would let the caller treat a
+    half-unwrapped command as fully inspected."""
+    guard = load_release_script("publish_release_same_proxy_guard")
+
+    _, exhausted = guard._unwrap_command_tokens(["env"] * 40)
+    assert exhausted is True
+
+    _, unlexable = guard._unwrap_command_tokens(["sh", "-c", "gh release view 'v1"])
+    assert unlexable is True
+
+    tokens, clean = guard._unwrap_command_tokens(["env", "sh", "-c", "gh release view v1"])
+    assert clean is False
+    assert tokens == ["gh", "release", "view", "v1"]

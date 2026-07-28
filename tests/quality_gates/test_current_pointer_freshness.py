@@ -428,3 +428,27 @@ def test_capability_catalog_claims_refuse_an_unestablishable_scope(tmp_path: Pat
     catalog.unlink()
     assert not (repo / INTEGRATIONS_DIR).is_dir()
     validate_capability_catalog_integration_claims(repo)
+
+
+def test_capability_catalog_claims_name_unreadable_and_unknown_schema_apart(tmp_path: Path) -> None:
+    """Two refusals that a shape complaint would have mis-diagnosed.
+
+    `_load_json` swallows OSError/JSONDecodeError and returns `{}`, so a
+    truncated catalog reached the shape check and was reported as "inventory is
+    NoneType" — the right refusal with the wrong remedy. A catalog written by a
+    schema this validator does not read is a third case again: nothing was
+    compared, and saying "malformed v1" sends the reader to fix the wrong file.
+    """
+    from scripts.validate_current_pointer_freshness import CAPABILITY_CATALOG
+
+    repo = tmp_path / "repo"
+    catalog = repo / CAPABILITY_CATALOG
+    catalog.parent.mkdir(parents=True)
+
+    catalog.write_text('{"schema_version": 1, "inven', encoding="utf-8")
+    with pytest.raises(ValidationError, match="could not be read as JSON"):
+        validate_capability_catalog_integration_claims(repo)
+
+    catalog.write_text(json.dumps({"schema_version": 2, "inventory": {}}), encoding="utf-8")
+    with pytest.raises(ValidationError, match="does not read"):
+        validate_capability_catalog_integration_claims(repo)

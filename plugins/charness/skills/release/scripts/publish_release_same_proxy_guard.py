@@ -126,5 +126,10 @@ def _probe_matches_release_view_shape(
     if exhausted:
         return True
     if not probe_tokens:
-        return False
+        # A probe that unwraps to nothing — `env`, `sh -c ""` — runs no query at
+        # all, so it establishes nothing about distinctness. Reporting it as
+        # "not same-proxy" (S93) put it on the branch that RUNS it and records a
+        # normal probe result, which is exactly the unestablished-scope pass this
+        # module's flagging bias exists to refuse.
+        return True
     return view_shape.issubset(_normalize_tokens(probe_tokens))

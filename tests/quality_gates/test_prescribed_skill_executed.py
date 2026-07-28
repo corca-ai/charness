@@ -304,3 +304,26 @@ def test_repeated_enum_head_does_not_fund_the_skip_detail_floor(tmp_path: Path) 
     )
     assert result["ok"] is False
     assert "skip detail too short" in result["invalid_skips"][0]["detail"]
+
+
+def test_blocked_signal_floor_is_read_live_and_omitted_when_unreachable() -> None:
+    """The author-facing shape describer reads the skip-detail floor from the
+    owning library rather than restating it, so the number it prints cannot drift
+    from the gate the way it did when the floor moved. When the shared helper is
+    not resolvable — an installed copy, a partial vendor — it must return None so
+    the describer omits the number; inventing one, or crashing the describer, are
+    both worse than saying nothing."""
+    critique_spec = importlib.util.spec_from_file_location(
+        "issue_resolution_critique_floor",
+        REPO_ROOT / "skills/public/issue/scripts/issue_resolution_critique.py",
+    )
+    critique = importlib.util.module_from_spec(critique_spec)
+    critique_spec.loader.exec_module(critique)
+
+    assert critique.min_blocked_signal_length() == lib.MIN_SKIP_DETAIL_LENGTH
+
+    def _unreachable():
+        raise ImportError("shared helper not resolvable from this copy")
+
+    critique._load_shared_helper = _unreachable
+    assert critique.min_blocked_signal_length() is None

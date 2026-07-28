@@ -121,10 +121,6 @@ def _resolve_length_surface(
     return next((s for s in surfaces if s.matches(rel)), None)
 
 
-def _surface_cap(repo_root: Path, surface: LengthSurface) -> int:
-    return int(getattr(_surface_module(surface), surface.constant))
-
-
 def _surface_module(surface: LengthSurface):
     return import_repo_module(__file__, surface.module)
 

@@ -265,13 +265,18 @@ def confirm_release_via_distinct_channel(
         ):
             record = {
                 "channel": "adapter-probe",
-                "observer": "same-proxy (backend release_view shape; not a distinct observer)",
+                "observer": (
+                    "same-proxy or otherwise unestablished distinctness against the backend's own "
+                    "release_view command; not a distinct observer"
+                ),
                 "command": rendered, "status": "same-proxy-flagged",
                 "reason": (
-                    "configured post_publish_distinct_channel_probe matches this backend's own "
-                    "`release_view` command -- the SAME proxy `verify_release_visible` already used, "
-                    "not a channel distinct from it. Point the probe at a genuinely distinct channel "
-                    "(deploy readback, artifact download, consumer-side check)."
+                    "configured post_publish_distinct_channel_probe does not ESTABLISH a channel "
+                    "distinct from this backend's own `release_view` command -- the SAME proxy "
+                    "`verify_release_visible` already used. Either it matches that command's token "
+                    "shape, or it is unparseable, nested past the unwrap budget, or unwraps to no "
+                    "command at all. Point the probe at a genuinely distinct channel (deploy "
+                    "readback, artifact download, consumer-side check)."
                 ),
             }
         else:

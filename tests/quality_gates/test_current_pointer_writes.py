@@ -634,3 +634,27 @@ def test_computed_detector_leaves_an_ordinary_assigned_write_alone(tmp_path: Pat
     )
 
     assert SCANNER.scan_repo(repo) == []
+
+
+def test_computed_detector_catches_a_bare_stem_head_and_ignores_a_read_open() -> None:
+    """Two narrow edges of the D9 detector, pinned directly on the helpers.
+
+    The extension can live entirely in the interpolated half — `"latest" + ext`
+    or `f"latest{suffix}"` leaves the literal head as the bare stem with no dot,
+    which the `head == "latest."` / `startswith("latest.")` tests both miss. And
+    `Path.open()` in a READ mode is not a write at all: dispatching it to the
+    same target as `write_text` would make every pointer read a finding."""
+    bare_stem = SCANNER.ast.parse('name = "latest" + ext\n').body[0].value
+    assert SCANNER._computed_pointer_name_in(bare_stem) == "latest.<computed>"
+
+    dotted = SCANNER.ast.parse('name = f"latest.{ext}"\n').body[0].value
+    assert SCANNER._computed_pointer_name_in(dotted) == "latest.<computed>"
+
+    unrelated = SCANNER.ast.parse('name = "notes" + ext\n').body[0].value
+    assert SCANNER._computed_pointer_name_in(unrelated) is None
+
+    read_open = SCANNER.ast.parse('path.open("r")\n').body[0].value
+    assert SCANNER._write_target_node(read_open) is None
+
+    write_open = SCANNER.ast.parse('path.open("w")\n').body[0].value
+    assert SCANNER._write_target_node(write_open) is not None

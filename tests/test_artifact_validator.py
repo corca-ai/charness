@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -61,3 +62,53 @@ def test_validate_max_lines_points_at_the_scaffold_budget() -> None:
             ["x"] * 240, max_lines=180, artifact_label="debug artifact", artifact_type="debug"
         )
     assert "`size_budget.max_lines`" in str(excinfo.value)
+
+
+def _run_shared_runner(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, **kwargs: object) -> int:
+    # The shared runner IS the whole main() of every changed-path validator, so
+    # it reads sys.argv rather than taking an argv list; a new artifact family
+    # inherits these two resolution edges without writing a line of its own.
+    monkeypatch.setattr(sys, "argv", ["validator", "--repo-root", str(tmp_path)])
+    return _artifact_validator.run_changed_artifact_validator(
+        default_repo_root=tmp_path,
+        all_help="all",
+        artifact_label="demo artifact",
+        validate_factory=lambda run: (lambda artifact: None),
+        fail_fast_help="stop at the first violation",
+        **kwargs,
+    )
+
+
+def test_shared_runner_refuses_a_validator_that_resolves_no_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Neither resolver hook wired is an authoring mistake in the CALLER, not a
+    # run with nothing in scope: without this the validator would report
+    # `Validated 0 demo artifact(s).` and pass forever over an empty set.
+    with pytest.raises(TypeError) as excinfo:
+        _run_shared_runner(tmp_path, monkeypatch)
+    assert "candidate_paths_fn or artifacts_fn" in str(excinfo.value)
+
+
+def test_shared_runner_reports_nothing_in_scope_as_a_named_success(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # `artifacts_fn` returning None means "nothing in scope" — a success for the
+    # common commit that touches no artifact of this family. The message must be
+    # the caller's own so the operator learns WHICH family was empty.
+    code = _run_shared_runner(
+        tmp_path,
+        monkeypatch,
+        artifacts_fn=lambda run: None,
+        no_scope_message="No demo artifact directory here.",
+    )
+    assert code == 0
+    assert "No demo artifact directory here." in capsys.readouterr().out
+
+
+def test_shared_runner_falls_back_to_the_labelled_no_scope_message(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code = _run_shared_runner(tmp_path, monkeypatch, artifacts_fn=lambda run: None)
+    assert code == 0
+    assert "No demo artifacts in scope." in capsys.readouterr().out

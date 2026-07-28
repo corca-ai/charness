@@ -313,3 +313,42 @@ def test_audit_notes_ref_classification_matrix(tmp_path: Path) -> None:
         result = _run_audit(repo, "--notes-file", str(notes_path))
         blocked = json.loads(result.stdout)["notes_blockers"] != []
         assert blocked is should_block, (label, result.stdout)
+
+
+def test_audit_refuses_a_release_state_mentioned_only_in_prose(tmp_path: Path) -> None:
+    """The third ledger world: the phrase is present but never as a heading line.
+
+    `_release_state_block` returns None, so the five entry checks cannot run — and
+    returning quietly there is what let an artifact report `passed` over a ledger
+    that was never located (D1). It must not draw the plain "missing section"
+    blocker either, because the phrase IS there; the blocker has to name why the
+    section could not be located and what to do about it."""
+    repo = _seed_fixture(tmp_path)
+    artifact = (
+        "# Release Surface Check\n\n## Scope\n\nRelease `0.1.0` (tag `v0.1.0`).\n\n"
+        "## Verification\n\n"
+        "- the ## Release State ledger for this publish is recorded in the previous artifact\n\n"
+        "## Public Release Verification\n\n- pending\n"
+    )
+    artifact_path = repo / "charness-artifacts" / "release" / "latest.md"
+    artifact_path.write_text(artifact, encoding="utf-8")
+
+    result = _run_audit(repo)
+
+    assert result.returncode == 1
+    state_blockers = [b for b in json.loads(result.stdout)["blockers"] if "Release State" in b]
+    assert len(state_blockers) == 1
+    assert "never checked" in state_blockers[0]
+    assert "on its own heading line" in state_blockers[0]
+
+    # Also in-process, so the branch is attributable to this test rather than only
+    # to the CLI child process.
+    from tests.script_loader import load_script_module
+
+    audit = load_script_module(
+        "audit_public_release_narrative_prose",
+        REPO_ROOT / "skills" / "public" / "release" / "scripts" / "audit_public_release_narrative.py",
+    )
+    inprocess = [b for b in audit._audit_artifact(artifact_path, target_tag="v0.1.0") if "Release State" in b]
+    assert len(inprocess) == 1
+    assert "never checked" in inprocess[0]

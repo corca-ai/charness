@@ -181,3 +181,36 @@ def test_pause_brief_provenance_floor_is_unconditional_on_classification() -> No
     assert reports[0]["ok"] is False
     assert reports[0]["ai_provenance"]["missing"] is True
     assert reports[0]["classification"] == "question"
+
+
+def test_format_failure_names_every_critique_evidence_failure_shape() -> None:
+    # This is the ONLY carrier that can block `git commit`, so each shape the
+    # critique check can reject must reach the author by name: an invalid host
+    # skip, an evidence file that is missing or empty, and a critique that does
+    # not bind to the issue it was cited for. Nine generic words on this surface
+    # left the author with no diagnosis.
+    report = {
+        "reports": [
+            {
+                "numbers": [42],
+                "resolution_critique_check": {
+                    "ok": False,
+                    "invalid_skips": [{"name": "resolution_critique", "detail": "host signal too short"}],
+                    "missing_evidence_files": [
+                        {"name": "resolution_critique", "path": "charness-artifacts/critique/gone.md"}
+                    ],
+                    "binding_failures": [{"number": 42, "reason": "critique cites no #42"}],
+                },
+            }
+        ]
+    }
+
+    rendered = checker._format_failure(report)
+
+    assert "missing/invalid resolution critique evidence" in rendered
+    assert "resolution_critique: host signal too short" in rendered
+    assert (
+        "resolution_critique: evidence file missing or empty: charness-artifacts/critique/gone.md"
+        in rendered
+    )
+    assert "#42: critique cites no #42" in rendered
