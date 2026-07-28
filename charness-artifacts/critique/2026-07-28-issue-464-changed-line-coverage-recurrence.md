@@ -94,6 +94,41 @@ Per-target coverage was additionally measured through the gate's own mechanism
 (`mutation_sampling_lib.run_test_coverage` + `load_covered_lines`) across the nine touched
 test files: all 15 target lines present in the covered set, 152 tests passing.
 
+## Post-Push Outcome (the close did NOT happen)
+
+Finding C8 changed the plan before the push: the carrier carries `Refs #464`, not
+`Closes #464`, so nothing auto-closed. That decision paid for itself immediately.
+
+**Push 1 (`c5886080`, run 30352089354): the mirror went RED** — and not on the changed-line
+signal. The coverage probe's own pytest run died, taking the verdict with it
+(`subprocess.CalledProcessError` out of `_ensure_coverage`). Four tests in
+`tests/quality_gates/test_dup_review_seed.py` fail wherever `nose` is absent, and no CI
+workflow installs it. They inject `--code-inventory` and leave the doc arm to the real
+producer, which degrades to `status=missing`; commit `53e883a8` — the slice that taught
+these readers to refuse a verdict over a scan that never ran — turns that degrade into a
+refusal the tests read as a crash. The class reproduced inside its own fix, one surface
+over, invisible to that author's green local run because this machine has `nose` on PATH.
+Repaired in `5ad503d8` by injecting both inventories; verified in both arms (29 passed with
+`nose`, 29 passed with it hidden, where 4 failed before). Sibling scope closed empirically
+rather than by grep: the CI run at `c5886080` IS the `nose`-absent environment, and the 21
+other nose-referencing test modules passed in it.
+
+**Push 2 (`5ad503d8`, run 30354134484): the mirror went GREEN, and the green is VACUOUS.**
+Its payload reads `"reason": "no eligible mutation-pool files changed in this range"` with
+`base_sha: c5886080` — the push-arm base is `github.event.before`, so this run analyzed only
+the test-file commit and rendered no changed-line verdict over `d0172d3b..5ad503d8` at all.
+It proves the probe no longer crashes. It proves nothing about the 15 repaired lines.
+Reading the colour instead of the `reason` here would have produced exactly the trap the
+repo already recorded at `scripts/mutation_sample_manifest_score_lib.py:20-23` — an
+empty-diff green closing an auto-filed issue without re-proof.
+
+**#464 therefore stays OPEN.** The only channel that can render a non-vacuous verdict over
+the repaired range is the SCHEDULED mutation run, whose base is the previous completed run's
+head (`d0172d3b`) and whose head will be `5ad503d8`. `workflow_dispatch` cannot substitute:
+it computes no `base_sha`, so its changed-line classifier is inert by construction
+(`.github/workflows/mutation-tests.yml`). The next scheduled run either comments a fresh
+failure or posts a recovery candidate; a distinct observer closes #464 on the latter.
+
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage
@@ -113,8 +148,28 @@ return across four windows (`i464-causal-review`, `i464-critique-angles`,
 `i464-critique-angles-2`, `i464-critique-angles-3`, `i464-critique-counterweight`); every
 verify returned exit 0 with `verdict: clean` and an empty drift list, with nothing declared.
 
-No second bounded round is owed: this slice changes no verdict logic and no proof surface —
-the diff is tests only, and every production file named above was read, not edited.
+A SECOND round ran anyway, and it earned its cost. The trigger was not the verdict-logic
+rule — this slice edits no proof surface — but the currency floor in
+`validate_critique_artifacts`, which refused the artifact once the CI-driven repair landed
+after round 1: declared reviewed inputs had gone stale, which is the floor saying the
+repairs are unreviewed. Round 2 re-read the REPAIRED file whole (not the repair hunks) and
+asked the one question: does this fix reproduce the class it fixes?
+
+It partly did, and the instance was the parent's own round-1 test.
+`test_main_refusal_still_emits_the_payload_under_json` injected `--code-inventory` and left
+the DOC arm to the real `nose`-backed producer — the same shape that had just broken four
+sibling tests. It did not go red only because a refusal is what that test wants: on a
+`nose`-less runner the doc arm supplies its own unestablished reason, so three of its four
+assertions passed whether or not the code-arm branch worked. A falsifier settled it rather
+than argument: with the doc arm made to fail instead, the old `any("cannot read")`
+assertion still PASSED, proving it could not tell the two arms apart. The repaired test now
+injects both arms and asserts the refusal names the code path specifically; the same
+falsifier now fails it. Round 2 also cleared the four CI-driven repairs themselves (Q1/Q2:
+the declared-empty doc inventory is the right declaration, and the invalid-overlay test no
+longer rides on its exit code alone).
+
+Per the two-round cap, the round-2 repair is recorded as accepted-unreviewed rather than
+triggering a third round.
 
 The causal reviewer's own strongest claim was FALSIFIED by the parent rather than accepted:
 it named "the CI mirror is PR-only, so it fires post-landing" as root cause #2, and the
@@ -131,10 +186,19 @@ stays frozen as-is and still validates, and no evaluator scenario is implicated.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/2026-07-28-102134-packet.json
-- Packet path: charness-artifacts/critique/2026-07-28-102134-packet.json
-- Packet SHA256: 94991572436b8c82d69a2f89b0ed691f1c3c2677c8e11c8bf61894508573a453
-- Identity SHA256: 984bbc0efad998f297c052af61b6b57adf78406faee9b14bd36a9a0181ea341b
+Round 1 read nine changed test files; round 2 re-read the one the CI failure repaired.
+The binding below is round 2's, because it is the one current against the tree.
+
+- Packet consumed: charness-artifacts/critique/2026-07-28-i464-round2-packet.json
+- Packet path: charness-artifacts/critique/2026-07-28-i464-round2-packet.json
+- Packet SHA256: 1fb2539b71b28e7a4bd174e1dddb70896a96c826c43569487a6b2f1544203e64
+- Identity SHA256: 8a6b303bea06f0e1b205d06584d443882368c980686a8787770d6db42424ffc8
+
+Round 1's packet was `charness-artifacts/critique/2026-07-28-102134-packet.json`
+(SHA256 `94991572436b8c82d69a2f89b0ed691f1c3c2677c8e11c8bf61894508573a453`, identity
+`984bbc0efad998f297c052af61b6b57adf78406faee9b14bd36a9a0181ea341b`) over the nine changed
+test files. It is recorded rather than declared current: the repairs after it landed, which
+is exactly what the currency floor refused when this artifact still claimed it.
 
 ## Boundary Ownership
 

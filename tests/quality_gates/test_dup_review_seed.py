@@ -374,10 +374,17 @@ def test_main_refusal_still_emits_the_payload_under_json(tmp_path: Path, monkeyp
     # otherwise get nothing at all to distinguish "refused" from "crashed".
     unreadable = tmp_path / "code-dir.json"
     unreadable.mkdir()
+    # The DOC arm is injected as a declared-empty inventory even though this test is
+    # about the CODE arm. Left uninjected it runs the real producer, which shells out
+    # to `nose`; wherever that binary is absent the doc arm contributes its OWN
+    # unestablished reason and three of the four assertions below pass whether or not
+    # the code-arm branch works at all. A test that refuses for a reason it did not
+    # name is the same class this suite exists to refuse.
+    doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(
         sys, "argv",
         ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(unreadable),
-         "--reviewed-at", "2026-06-19", "--json"],
+         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19", "--json"],
     )
 
     assert seed.main() == 1
@@ -385,7 +392,12 @@ def test_main_refusal_still_emits_the_payload_under_json(tmp_path: Path, monkeyp
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert payload["ok"] is False
-    assert any("cannot read" in reason for reason in payload["unestablished_reasons"])
+    # Exactly one reason, and it is the code arm's: with the doc arm established the
+    # refusal can no longer be over-determined by an ambient missing binary.
+    assert payload["unestablished_reasons"] == [
+        reason for reason in payload["unestablished_reasons"] if "cannot read" in reason
+    ]
+    assert any(str(unreadable) in reason for reason in payload["unestablished_reasons"])
     assert "refused" in captured.err
 
 
