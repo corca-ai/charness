@@ -266,7 +266,7 @@ def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_
         validate_capability_catalog_integration_claims(repo)
 
     (inventory_dir / "latest.json").write_text(
-        json.dumps({"inventory": {"integrations": []}}) + "\n",
+        json.dumps({"schema_version": 1, "inventory": {"integrations": []}}) + "\n",
         encoding="utf-8",
     )
     with pytest.raises(ValidationError, match="capability catalog pointer is stale"):
@@ -386,3 +386,45 @@ def test_release_version_claim_ignores_claim_shaped_lines_inside_a_fence(tmp_pat
     result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
+
+
+def test_capability_catalog_claims_refuse_an_unestablishable_scope(tmp_path: Path) -> None:
+    """D10 regression: two silent early-returns.
+
+    With a genuinely stale claim in place, deleting the integrations directory or
+    corrupting the inventory shape flipped BLOCK to PASS — the comparison never
+    ran and the absence of a complaint read as freshness. A missing directory is
+    only benign when the catalog claims no integrations."""
+    from scripts.validate_current_pointer_freshness import (
+        CAPABILITY_CATALOG,
+        INTEGRATIONS_DIR,
+        ValidationError,
+        validate_capability_catalog_integration_claims,
+    )
+
+    repo = tmp_path / "repo"
+    catalog = repo / CAPABILITY_CATALOG
+    catalog.parent.mkdir(parents=True)
+
+    # Inventory present but not an object: the catalog exists and was never read.
+    catalog.write_text(json.dumps({"schema_version": 1, "inventory": "not-a-dict"}), encoding="utf-8")
+    with pytest.raises(ValidationError, match="not an object"):
+        validate_capability_catalog_integration_claims(repo)
+
+    # Claims integrations, but the tree they describe is gone.
+    catalog.write_text(
+        json.dumps({"schema_version": 1, "inventory": {"integrations": [{"path": "integrations/tools/tool.json"}]}}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValidationError, match="does not exist"):
+        validate_capability_catalog_integration_claims(repo)
+
+    # Falsifiable counterpart: no claims and no directory is genuinely
+    # not-configured, and must stay a pass.
+    catalog.write_text(json.dumps({"schema_version": 1, "inventory": {"integrations": []}}), encoding="utf-8")
+    validate_capability_catalog_integration_claims(repo)
+
+    # And a repo with no catalog at all is still exempt.
+    catalog.unlink()
+    assert not (repo / INTEGRATIONS_DIR).is_dir()
+    validate_capability_catalog_integration_claims(repo)

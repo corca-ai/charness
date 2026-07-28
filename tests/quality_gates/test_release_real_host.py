@@ -361,3 +361,74 @@ def test_release_skill_enforces_phase_barriers_for_mutating_commands(
     assert any("publish-dry-run" in item and "publish-execute" in item for item in payload["phase_barriers"])
     assert any("parallelize" in item and "git" in item for item in payload["phase_barriers"])
     assert all({"id", "cost_tier", "trust_model", "run_when"} <= set(packet) for packet in payload["gate_packets"])
+
+
+def _seed_adapter(repo: Path, body: str) -> Path:
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/release\n" + body, encoding="utf-8"
+    )
+    return repo
+
+
+def test_real_host_proof_names_the_scope_it_evaluated(tmp_path: Path) -> None:
+    """D7 regression: `required: False` was returned identically for four
+    different worlds, with the same sentence attached.
+
+    A repo that declares no triggers, a configured repo handed an EMPTY changed
+    scope, and a configured repo whose triggers genuinely did not match were
+    indistinguishable — so "real-host proof not required" covered both "we
+    checked and it is fine" and "we never checked"."""
+    configured = _seed_adapter(
+        tmp_path / "configured",
+        'real_host_required_path_globs:\n  - "scripts/host/**"\nreal_host_checklist:\n  - "probe the host"\n',
+    )
+    unconfigured = _seed_adapter(tmp_path / "unconfigured", "")
+
+    empty_scope = _REAL_HOST.build_payload(configured, [])
+    assert empty_scope["required"] is False
+    assert empty_scope["evaluation_scope"] == "empty"
+    assert "EMPTY" in empty_scope["reason"]
+
+    evaluated = _REAL_HOST.build_payload(configured, ["docs/x.md"])
+    assert evaluated["required"] is False
+    assert evaluated["evaluation_scope"] == "evaluated"
+
+    not_configured = _REAL_HOST.build_payload(unconfigured, ["scripts/x.py"])
+    assert not_configured["required"] is False
+    assert not_configured["evaluation_scope"] == "not-configured"
+
+    # Falsifiable counterpart: a genuine hit is still required, and evaluated.
+    hit = _REAL_HOST.build_payload(configured, ["scripts/host/probe.py"])
+    assert hit["required"] is True
+    assert hit["evaluation_scope"] == "evaluated"
+
+    # All four verdicts must be distinguishable from one another.
+    assert len({empty_scope["evaluation_scope"], evaluated["evaluation_scope"], not_configured["evaluation_scope"]}) == 3
+
+
+def test_real_host_artifact_does_not_assert_an_evaluation_that_never_ran() -> None:
+    """D7's scope must reach the READER, not just the payload.
+
+    `real_host_lines` branched on `required` alone, so the four worlds D7
+    separated collapsed back into "No configured release-time real-host proof
+    trigger matched this slice" — a sentence that is FALSE for an empty scope,
+    where nothing was evaluated. The release artifact is what the rung-2 human
+    audit reads, so this is D8's failure mode one surface over."""
+    sections = load_script_module(
+        "publish_release_artifact_sections_realhost",
+        ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_artifact_sections.py",
+    )
+
+    empty = sections.real_host_lines({"required": False, "evaluation_scope": "empty"})
+    assert any("EMPTY" in line for line in empty)
+    assert not any("trigger matched this slice" in line for line in empty)
+    assert any("Evaluation scope: `empty`" in line for line in empty)
+
+    not_configured = sections.real_host_lines({"required": False, "evaluation_scope": "not-configured"})
+    assert any("declares no release-time real-host proof triggers" in line for line in not_configured)
+
+    # Falsifiable counterpart: a genuine evaluated non-match keeps the original
+    # sentence, which is true of it.
+    evaluated = sections.real_host_lines({"required": False, "evaluation_scope": "evaluated"})
+    assert any("trigger matched this slice" in line for line in evaluated)

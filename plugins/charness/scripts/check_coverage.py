@@ -359,18 +359,28 @@ def summarize(
                 "covered": covered,
                 "total": total,
                 "coverage": round(coverage, 4),
+                # `covered/total if total else 1.0` reports a perfect score for a
+                # file with nothing to measure — a missing file, an unparseable
+                # one, an empty one. 1.0 there is not a measurement (E5).
+                "measured": bool(total),
             }
         )
         executed_total += covered
         possible_total += total
     overall = executed_total / possible_total if possible_total else 1.0
+    unmeasured = [item["path"] for item in files if not item["measured"]]
     summary = {
         "schema_version": 1,
         "scope": "control-plane",
+        # Whether a number was MEASURED is part of the number. Zero observations
+        # produced `coverage: 1.0, covered: 0, total: 0` — indistinguishable from
+        # a fully covered surface, on the gate that reports test confidence.
+        "measurement_scope": "evaluated" if possible_total else "empty",
+        "unmeasured_files": unmeasured,
         "files": files,
         "covered": executed_total,
         "total": possible_total,
-        "coverage": round(overall, 4),
+        "coverage": round(overall, 4) if possible_total else None,
     }
     summary["per_file_floor"] = build_per_file_floor_report(files, floor=min_file_coverage)
     return summary
@@ -388,16 +398,28 @@ def main() -> int:
     summary = summarize(repo_root, collect_counts(repo_root), min_file_coverage=args.min_file_coverage)
     if args.json:
         print(json.dumps(summary, ensure_ascii=False, indent=2))
-    else:
+    if summary["coverage"] is None:
+        # Nothing was measured. Refuse LEGIBLY: reaching the comparison below
+        # with `None` raised a bare TypeError traceback instead of this gate's
+        # own error, and returning 1.0 (the pre-fix behavior) reported a perfect
+        # score over zero observations (E5).
+        raise CoverageError(
+            "control-plane coverage was never measured: "
+            f"{len(summary['unmeasured_files'])} target file(s) yielded zero executable lines "
+            f"({', '.join(summary['unmeasured_files']) or 'no target files configured'}). "
+            "A coverage number cannot be reported over an empty scope."
+        )
+    if not args.json:
         percent = summary["coverage"] * 100
         print(
             f"Control-plane coverage: {percent:.1f}% "
             f"({summary['covered']}/{summary['total']} executable lines)"
         )
         for item in summary["files"]:
+            measured = "" if item["measured"] else "  [UNMEASURED: 0 executable lines]"
             print(
                 f"- {item['path']}: {item['coverage'] * 100:.1f}% "
-                f"({item['covered']}/{item['total']})"
+                f"({item['covered']}/{item['total']}){measured}"
             )
         floor_report = summary["per_file_floor"]
         assert isinstance(floor_report, dict)
@@ -411,6 +433,23 @@ def main() -> int:
             f"{len(warn_band)} in {args.min_file_coverage * 100:.1f}-"
             f"{PER_FILE_WARN_BELOW * 100:.1f}% warn band"
         )
+        # The exemption is deliberate policy; being silent about it was not.
+        # `run-quality.sh` invokes this gate WITHOUT --json, so the operator who
+        # reads it would otherwise never see the excused population.
+        hidden = floor_report["exempt_below_floor"]
+        assert isinstance(hidden, list)
+        if hidden:
+            print(
+                f"Per-file floor: {len(hidden)} file(s) below the floor but EXEMPT for having "
+                f"fewer than {floor_report['min_statements_threshold']} statements: "
+                + ", ".join(str(item["path"]) for item in hidden)
+            )
+        if summary["unmeasured_files"]:
+            print(
+                f"Unmeasured: {len(summary['unmeasured_files'])} target file(s) have zero "
+                "executable lines and contribute no observation: "
+                + ", ".join(str(path) for path in summary["unmeasured_files"])
+            )
 
     if summary["coverage"] < args.min_coverage:
         raise CoverageError(

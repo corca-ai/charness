@@ -516,3 +516,121 @@ def test_current_pointer_write_scanner_skips_helper_during_repo_scan(
 
 def test_current_pointer_write_scanner_prefilter_allows_spaced_open_call() -> None:
     assert SCANNER._could_write_current_pointer("target = 'latest.md'\npath.open ('w')\n")
+
+
+def _pointer_write_fixture(repo: Path, relative: str, body: str) -> None:
+    path = repo / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")
+
+
+_LITERAL_WRITE = (
+    "from pathlib import Path\n"
+    "def write(root):\n"
+    '    (root / "charness-artifacts" / "quality" / "latest.md").write_text("x")\n'
+)
+_COMPUTED_WRITE = (
+    "from pathlib import Path\n"
+    "def write(root, ext='md'):\n"
+    '    (root / "charness-artifacts" / f"latest.{ext}").write_text("x")\n'
+)
+
+
+def test_pointer_write_scan_covers_skills_shared(tmp_path: Path) -> None:
+    """D9 regression: `skills/shared` was absent from `SCAN_ROOTS`, so the gate
+    reported clean over a scope that excluded it.
+
+    Confirmed with the discriminating control: an IDENTICAL violation was caught
+    under `scripts/` and `skills/public/` and invisible under `skills/shared/`."""
+    repo = tmp_path / "repo"
+    for relative in (
+        "scripts/writer.py",
+        "skills/public/x/scripts/writer.py",
+        "skills/shared/scripts/writer.py",
+    ):
+        _pointer_write_fixture(repo, relative, _LITERAL_WRITE)
+
+    findings = SCANNER.scan_repo(repo)
+    flagged = {finding.path for finding in findings}
+
+    assert "skills/shared/scripts/writer.py" in flagged
+    assert "scripts/writer.py" in flagged
+    assert "skills/public/x/scripts/writer.py" in flagged
+
+
+def test_pointer_write_scan_refuses_silence_on_a_computed_name(tmp_path: Path) -> None:
+    """The other half of D9: the gate matched string constants only, so
+    `f"latest.{ext}"` produced a path it could not see — and the prefilter
+    required the literal `latest.md` in the text, so such a file never even
+    reached the AST scan. A computed pointer name is a scope this gate cannot
+    establish, and it now says so instead of reporting clean."""
+    repo = tmp_path / "repo"
+    _pointer_write_fixture(repo, "scripts/computed.py", _COMPUTED_WRITE)
+
+    findings = SCANNER.scan_repo(repo)
+
+    assert len(findings) == 1
+    assert findings[0].path == "scripts/computed.py"
+    assert "BUILT at runtime" in findings[0].reason
+
+
+def test_pointer_write_scan_still_passes_a_clean_tree(tmp_path: Path) -> None:
+    """Falsifiable counterpart: neither widening flags an ordinary write."""
+    repo = tmp_path / "repo"
+    _pointer_write_fixture(
+        repo,
+        "skills/shared/scripts/ordinary.py",
+        "from pathlib import Path\ndef write(root):\n    (root / 'notes.md').write_text('x')\n",
+    )
+
+    assert SCANNER.scan_repo(repo) == []
+
+
+def test_computed_pointer_name_is_caught_through_an_assigned_variable(tmp_path: Path) -> None:
+    """The computed detector originally saw only the single-expression form, but
+    the two-statement form is the idiom this repo actually writes — and its
+    LITERAL twin was already handled, so covering one and not the other left the
+    dominant shape invisible.
+
+    Also pins the concatenation case: Python parses `a + b + c`
+    left-associatively, so in `str(out) + "/latest." + ext` the pointer-ish
+    literal is only ever a RIGHT operand and inspecting `left` alone missed it."""
+    repo = tmp_path / "repo"
+    shapes = {
+        "assigned.py": (
+            "from pathlib import Path\ndef write(root, ext='md'):\n"
+            '    target = root / "charness-artifacts" / f"latest.{ext}"\n'
+            '    target.write_text("x")\n'
+        ),
+        "concat.py": (
+            "from pathlib import Path\ndef write(out, ext='md'):\n"
+            '    Path(str(out) + "/latest." + ext).write_text("x")\n'
+        ),
+        "keyword_mode.py": (
+            "from pathlib import Path\ndef write(root, ext='md'):\n"
+            '    target = root / f"latest.{ext}"\n'
+            '    target.open(mode="w").write("x")\n'
+        ),
+    }
+    for name, body in shapes.items():
+        _pointer_write_fixture(repo, f"scripts/{name}", body)
+
+    flagged = {finding.path for finding in SCANNER.scan_repo(repo)}
+
+    assert flagged == {f"scripts/{name}" for name in shapes}
+
+
+def test_computed_detector_leaves_an_ordinary_assigned_write_alone(tmp_path: Path) -> None:
+    """Falsifiable counterpart for the widened detector: an assigned path that is
+    not a pointer name is untouched, and so is an f-string that merely mentions
+    `latest` in prose."""
+    repo = tmp_path / "repo"
+    _pointer_write_fixture(
+        repo,
+        "scripts/ordinary.py",
+        "from pathlib import Path\ndef write(root, n=1):\n"
+        '    target = root / "notes.md"\n'
+        '    target.write_text(f"latest sample {n}")\n',
+    )
+
+    assert SCANNER.scan_repo(repo) == []

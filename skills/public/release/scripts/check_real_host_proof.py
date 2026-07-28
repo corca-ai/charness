@@ -71,6 +71,7 @@ def broken_trigger_config_payload(
 ) -> dict[str, object]:
     return {
         "required": False,
+        "evaluation_scope": "not-established",
         "configuration_status": "broken",
         "unresolved_trigger_surfaces": unresolved,
         "surfaces_manifest_path": manifest_path,
@@ -88,6 +89,7 @@ def broken_trigger_config_payload(
 def surface_error_payload(error: str) -> dict[str, object]:
     return {
         "required": False,
+        "evaluation_scope": "not-established",
         "error": error,
         "checklist": [],
         "reason": "Release real-host proof configuration is present, but the surfaces manifest could not be loaded.",
@@ -122,17 +124,38 @@ def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object
         ]
     path_hits = [path for path in changed_paths if matches_any(path, trigger_globs)]
     required = bool(surface_hits or path_hits)
+    # `required: False` was returned identically for four different worlds: a repo
+    # that declares no triggers at all, a configured repo handed an EMPTY changed
+    # scope, a configured repo whose triggers genuinely did not match, and a
+    # trigger config that could not be resolved. Only the last had its own
+    # payload. `scope` names which one, so "not required" stops being a single
+    # word covering "we checked and it is fine" and "we never checked" (D7).
+    configured = bool(trigger_surfaces or trigger_globs)
+    if not configured:
+        scope, reason = "not-configured", (
+            "This repo declares no release-time real-host proof triggers "
+            "(`real_host_required_surfaces` / `real_host_required_path_globs`), so no check ran."
+        )
+    elif not changed_paths:
+        scope, reason = "empty", (
+            "Release-time real-host proof triggers are configured, but the changed-path scope "
+            "handed to this check was EMPTY, so nothing was evaluated against them."
+        )
+    elif required:
+        scope, reason = "evaluated", "Changed surfaces hit configured release-time real-host proof seams."
+    else:
+        scope, reason = "evaluated", (
+            "Configured release-time real-host proof triggers were evaluated against "
+            f"{len(changed_paths)} changed path(s) and none matched."
+        )
     return {
         "required": required,
+        "evaluation_scope": scope,
         "changed_paths": changed_paths,
         "surface_hits": surface_hits,
         "path_hits": path_hits,
         "checklist": checklist if required else [],
-        "reason": (
-            "Changed surfaces hit configured release-time real-host proof seams."
-            if required
-            else "No configured release-time real-host proof trigger matched the current slice."
-        ),
+        "reason": reason,
     }
 
 

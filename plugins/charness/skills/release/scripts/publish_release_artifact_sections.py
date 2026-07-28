@@ -1,6 +1,19 @@
 from __future__ import annotations
 
+import runpy
+from pathlib import Path
 from typing import Any
+
+# The post-publish verification renderers live in their own module (one concept,
+# and this file reached its length cap). Re-exported so existing importers keep
+# one import site.
+_verification = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_verification_sections.py"))
+)
+distinct_channel_verification_lines = _verification["distinct_channel_verification_lines"]
+published_notes_audit_lines = _verification["published_notes_audit_lines"]
+real_host_lines = _verification["real_host_lines"]
+release_observer_lines = _verification["release_observer_lines"]
 
 
 def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
@@ -57,12 +70,32 @@ def requested_review_lines(payload: dict[str, Any] | None) -> list[str]:
     return lines
 
 
-def release_adapter_preflight_lines(payload: dict[str, Any] | None) -> list[str]:
-    lines = ["", "## Release Adapter Preflight", ""]
+def _pending_payload_section(
+    payload: dict[str, Any] | None, *, heading: str, pending: str, status_label: str
+) -> tuple[str, list[str]] | None:
+    """``(status, opening_lines)`` for a section whose payload may not exist yet,
+    or ``None`` once the caller has emitted the pending line.
+
+    Two renderers carried this shape verbatim; shared so a third cannot render a
+    status heading over a payload that was never produced.
+    """
+    lines = ["", heading, ""]
     if payload is None:
-        return lines + ["- Release adapter focused preflight: pending helper execution."]
-    status = payload.get("status", "unknown")
-    lines.append(f"- Release adapter focused preflight status: `{status}`.")
+        return None, lines + [pending]  # type: ignore[return-value]
+    status = str(payload.get("status", "unknown"))
+    lines.append(f"- {status_label}: `{status}`.")
+    return status, lines
+
+
+def release_adapter_preflight_lines(payload: dict[str, Any] | None) -> list[str]:
+    status, lines = _pending_payload_section(
+        payload,
+        heading="## Release Adapter Preflight",
+        pending="- Release adapter focused preflight: pending helper execution.",
+        status_label="Release adapter focused preflight status",
+    )
+    if status is None:
+        return lines
     if reason := payload.get("reason"):
         lines.append(f"- Reason: {reason}")
     if previous_ref := payload.get("previous_ref"):
@@ -133,11 +166,14 @@ def post_publish_proof_lines(resolved_tag: str, public_release_verification: str
 
 
 def install_refresh_lines(payload: dict[str, Any] | None) -> list[str]:
-    lines = ["", "## Install Refresh", ""]
-    if payload is None:
-        return lines + ["- Post-publish install refresh: pending final publish verification."]
-    status = payload.get("status", "unknown")
-    lines.append(f"- Post-publish install refresh status: `{status}`.")
+    status, lines = _pending_payload_section(
+        payload,
+        heading="## Install Refresh",
+        pending="- Post-publish install refresh: pending final publish verification.",
+        status_label="Post-publish install refresh status",
+    )
+    if status is None:
+        return lines
     if command := payload.get("command"):
         lines.append(f"- Command: `{command}`")
     if payload.get("returncode") is not None:
@@ -164,136 +200,6 @@ def public_release_verification_lines(public_release_verification: str, release_
     return lines
 
 
-def _distinct_channel_qualifier(status: str, channel: str, guard: str | None) -> str:
-    """How to describe the verdict, honestly.
-
-    Distinctness is a property of the same-proxy GUARD, not of the status.
-    Branching on status alone left two escapes: a probe of literally
-    `gh release view v1` reaches `confirmed` when the caller omits
-    `backend`/`backend_command` so the guard never runs, and an
-    `inconclusive-degenerate-release-view-template` guard coexists with
-    `confirmed`. In both, the guard did not establish distinctness and the
-    artifact asserted it anyway — D8's exact failure mode.
-    """
-    if status == "same-proxy-flagged":
-        return (
-            "**NOT a distinct channel** — the configured probe matched this backend's own "
-            "`release_view` command and was refused before running"
-        )
-    if status == "skipped":
-        return "**no distinct channel ran**"
-    if status != "confirmed":
-        return "a channel distinct from `gh release view`, which did NOT confirm this release"
-    established = guard == "evaluated" if channel == "adapter-probe" else guard in (None, "evaluated")
-    if established:
-        return "a channel distinct from `gh release view`"
-    return (
-        "distinctness NOT established — the same-proxy guard reported "
-        f"`{guard or 'not-run'}`, so this probe was never checked against the backend's own "
-        "`release_view` command"
-    )
-
-
-def _status_section(record: Any, heading: str) -> tuple[str, list[str]] | None:
-    """``(status, opening_lines)`` for a status-bearing record, or ``None`` when
-    the record carries no status to render.
-
-    Four section renderers repeated this guard verbatim. Shared so a future
-    section cannot render a heading over a record it never checked."""
-    if not isinstance(record, dict) or not str(record.get("status", "")).strip():
-        return None
-    return str(record["status"]), ["", heading, ""]
-
-
-def distinct_channel_verification_lines(record: dict[str, Any] | None) -> list[str]:
-    section = _status_section(record, "## Distinct-Channel Verification")
-    if section is None:
-        return []
-    status, lines = section
-    channel = record.get("channel", "unknown")
-    # The distinctness claim is a CLAIM, and it was appended unconditionally —
-    # including on `same-proxy-flagged` records, whose own observer field says
-    # the probe was the same proxy, and on `skipped` records where no channel ran
-    # at all (D8). The parenthetical now describes what actually happened.
-    guard = record.get("same_proxy_guard")
-    qualifier = _distinct_channel_qualifier(status, channel, guard)
-    lines.append(f"- Rung-2 distinct-channel verdict: `{status}` via `{channel}` ({qualifier}).")
-    if guard is not None:
-        lines.append(f"- Same-proxy guard: `{guard}`")
-    if (expected := record.get("expected_content")) and status == "confirmed":
-        lines.append(f"- Response content checked for: `{expected}`")
-    if establishes := record.get("establishes"):
-        lines.append(f"- What this confirms: {establishes}")
-    if not_established := record.get("does_not_establish"):
-        lines.append(f"- What it does NOT confirm: {not_established}")
-    if (fetched := record.get("fetched_url")) and fetched != record.get("url"):
-        lines.append(f"- Redirected to: `{fetched}`")
-    if observer := record.get("observer"):
-        lines.append(f"- Observer identity: {observer}")
-    if url := record.get("url"):
-        lines.append(f"- Channel URL: `{url}`")
-    if command := record.get("command"):
-        lines.append(f"- Probe command: `{command}`")
-    if (http_status := record.get("http_status")) is not None:
-        lines.append(f"- HTTP status: `{http_status}`")
-    if reason := record.get("reason"):
-        lines.append(f"- Disposition reason: {reason}")
-    lines.append(
-        "- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was "
-        "not silent; the honesty of this verdict is the human rung-2 disposition review."
-    )
-    return lines
-
-
-def published_notes_audit_lines(record: dict[str, Any] | None) -> list[str]:
-    """The post-create audit of the PUBLISHED release body.
-
-    Rendered here because an advisory nobody reads is the same silent path the
-    distinct-channel section exists to close: it previously lived only in the
-    publish run's stdout JSON, which nothing re-reads after a release.
-    """
-    section = _status_section(record, "## Published Notes Audit")
-    if section is None:
-        return []
-    status, lines = section
-    lines.append(f"- Published release body audit: `{status}` (advisory; never blocks a publish).")
-    if status == "advisory":
-        lines.append(
-            "- The published notes point at content that can change after publication. "
-            "`gh release edit` is the remedy; the release itself is unaffected."
-        )
-        for advisory in record.get("advisories", []):
-            lines.append(f"  - {advisory}")
-    elif status == "clean":
-        lines.append(f"- No mutable source-tree pointers found ({record.get('body_len', 0)} body bytes).")
-    else:
-        lines.append(
-            "- The body was NOT audited, so this release's notes carry no pointer verdict at all."
-        )
-    if reason := record.get("reason"):
-        lines.append(f"- Disposition reason: {reason}")
-    return lines
-
-
-def release_observer_lines(observer: dict[str, Any] | None) -> list[str]:
-    section = _status_section(observer, "## Release Observer Record")
-    if section is None:
-        return []
-    _status, lines = section
-    if path := str(observer.get("path", "") or "").strip():
-        lines.append(f"- Durable observer record: `{path}`.")
-    else:
-        lines.append("- Durable observer record: unavailable; see the capture disposition below.")
-    lines.append(f"- Installed readback disposition: `{observer.get('status', 'unknown')}`.")
-    if reason := observer.get("reason"):
-        lines.append(f"- Capture disposition: {reason}")
-    lines.append(
-        "- Verdict ownership: this record embeds `distinct_channel_verification`; "
-        "it does not declare a second release-success verdict."
-    )
-    return lines
-
-
 def lifecycle_capture_lines(record: dict[str, Any] | None) -> list[str]:
     lines = ["", "## Lifecycle Usage Capture", ""]
     if not isinstance(record, dict) or not str(record.get("status", "")).strip():
@@ -309,33 +215,6 @@ def lifecycle_capture_lines(record: dict[str, Any] | None) -> list[str]:
     lines.append(
         "- Non-claim: objective lifecycle capture is not human approval or general satisfaction evidence."
     )
-    return lines
-
-
-def real_host_lines(real_host_payload: dict[str, Any], install_refresh: dict[str, Any] | None = None) -> list[str]:
-    lines = ["", "## Real-Host Verification", ""]
-    if real_host_payload.get("required"):
-        lines.append("- Release-time real-host verification was triggered for this slice.")
-        if install_refresh and install_refresh.get("status") == "refreshed":
-            lines.append(
-                "- Adapter-declared maintainer install-refresh proof was executed by the release helper "
-                "for installed-vs-repo skew."
-            )
-        else:
-            lines.append("- Real-host checklist items remain open until their executed proof is recorded.")
-        lines.extend(["", "## Real-Host Proof", "", "- Release-time real-host proof is required for this slice."])
-        if install_refresh and install_refresh.get("status") == "refreshed":
-            lines.append(
-                f"- Executed maintainer install refresh: `{install_refresh.get('command')}` "
-                f"(status `{install_refresh.get('status')}`, return code `{install_refresh.get('returncode')}`)."
-            )
-            lines.append(
-                "- Remaining real-host checklist items, if any, still require explicit proof before full closeout."
-            )
-        lines.extend(f"- {item}" for item in real_host_payload.get("checklist", []))
-        return lines
-    lines.append("- No configured release-time real-host verification trigger matched this slice.")
-    lines.extend(["", "## Real-Host Proof", "", "- No configured release-time real-host proof trigger matched this slice."])
     return lines
 
 

@@ -40,10 +40,30 @@ def build_per_file_floor_report(
 ) -> dict[str, object]:
     violations: list[dict[str, object]] = []
     warn_band: list[dict[str, object]] = []
+    exempt: list[dict[str, object]] = []
+    unmeasured: list[dict[str, object]] = []
     for item in files:
         total = int(item["total"])
         coverage = float(item["coverage"])
+        if not total:
+            # A file with nothing to measure still carries `coverage: 1.0` from
+            # the per-file formula, so filing it under the small-file exemption
+            # recorded it as a perfectly-covered small file and — being >= the
+            # floor — kept it OUT of `exempt_below_floor`, the list documented as
+            # "the population the threshold is hiding". The fix for the silent
+            # exemption would have reintroduced a silent exemption one layer
+            # down. An unmeasured file gets its own bucket.
+            unmeasured.append({"path": item["path"], "covered": item["covered"], "total": total})
+            continue
         if total < PER_FILE_MIN_STATEMENTS:
+            # The small-file exemption is deliberate policy, but it was SILENT:
+            # a 0%-covered 29-statement file vanished from the report entirely,
+            # while the same file at 30 statements was a violation. The threshold
+            # stays; the set it excuses is now named, so "no violations" stops
+            # meaning "no violations among the files we chose to look at" (E5).
+            exempt.append(
+                {"path": item["path"], "covered": item["covered"], "total": total, "coverage": coverage}
+            )
             continue
         candidate = {
             "path": item["path"],
@@ -63,6 +83,13 @@ def build_per_file_floor_report(
         "warn_below": PER_FILE_WARN_BELOW,
         "violations": violations,
         "warn_band": warn_band,
+        "exempt_below_threshold": exempt,
+        # The exempt files that would be violations if they were one statement
+        # bigger — the population the threshold is actually hiding.
+        "exempt_below_floor": [item for item in exempt if item["coverage"] < floor],
+        # Files with zero executable lines: not covered, not uncovered, not
+        # measured. Kept apart from the exemption so neither reads as the other.
+        "unmeasured": unmeasured,
     }
 
 

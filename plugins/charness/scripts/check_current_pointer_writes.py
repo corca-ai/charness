@@ -17,6 +17,11 @@ SCAN_ROOTS = (
     Path("scripts"),
     Path("skills/public"),
     Path("skills/support"),
+    # `skills/shared` was omitted, so a direct current-pointer write there was
+    # never scanned and the gate reported clean over a scope excluding it (D9).
+    # Confirmed: an identical violation was caught under `scripts/` and
+    # `skills/public/` and invisible under `skills/shared/`.
+    Path("skills/shared"),
 )
 
 
@@ -51,8 +56,15 @@ def _git_visible_python_files(repo_root: Path) -> list[Path]:
     return sorted(fallback)
 
 
+_POINTER_STEMS = tuple(sorted({name.split(".", 1)[0] for name in CURRENT_POINTER_NAMES}))
+
+
 def _could_write_current_pointer(text: str) -> bool:
-    return any(name in text for name in CURRENT_POINTER_NAMES) and any(
+    # Matches the STEM (`latest`), not only the full filename. Requiring
+    # `latest.md`/`latest.json` verbatim meant a file that builds the name —
+    # `f"latest.{ext}"` — never reached the AST scan at all, so the computed-name
+    # detector below could not have fired even once (D9).
+    return any(f"{stem}." in text for stem in _POINTER_STEMS) and any(
         token in text for token in WRITE_CALL_TOKENS
     )
 
@@ -127,35 +139,110 @@ def _pointer_names_in_resolved(node: ast.AST, constants: dict[str, str], shadowe
     return names
 
 
-def _call_target_name(call: ast.Call, assigned: dict[str, str], constants: dict[str, str]) -> str | None:
-    shadowed = _scope_assigned_names(call)
+def _computed_pointer_name_in(node: ast.AST) -> str | None:
+    """A pointer filename BUILT at runtime rather than written as a literal.
+
+    ``_pointer_names_in`` matches string constants only, so ``f"latest.{ext}"``
+    or ``"latest" + suffix`` produced a path this gate could not see and it
+    reported clean over it (D9). Deliberately narrow — an f-string or
+    concatenation whose literal head is a pointer stem — because the point is to
+    refuse silence about a computed pointer name, not to chase every expression
+    that could theoretically evaluate to one.
+    """
+    for child in ast.walk(node):
+        parts: list[str] = []
+        if isinstance(child, ast.JoinedStr):
+            parts = [v.value for v in child.values if isinstance(v, ast.Constant) and isinstance(v.value, str)]
+        elif isinstance(child, ast.BinOp) and isinstance(child.op, ast.Add):
+            # BOTH operands. Inspecting only `left` missed the shape that
+            # actually occurs: Python parses `a + b + c` left-associatively, so
+            # in `str(out) + "/latest." + ext` the pointer-ish literal is only
+            # ever a RIGHT operand and was never looked at.
+            parts = [
+                side.value
+                for side in (child.left, child.right)
+                if isinstance(side, ast.Constant) and isinstance(side.value, str)
+            ]
+        for part in parts:
+            head = part.split("/")[-1]
+            if any(head == f"{stem}." or head.startswith(f"{stem}.") for stem in _POINTER_STEMS):
+                return f"{head}<computed>"
+            if head in _POINTER_STEMS:
+                return f"{head}.<computed>"
+    return None
+
+
+def _write_target_node(call: ast.Call) -> ast.AST | None:
+    """The expression a MUTATING write call targets, or ``None``.
+
+    One dispatch for `Path.write_text` / `write_bytes`, `Path.open(mode=...)`
+    and builtin `open(path, mode)`. The literal and computed resolvers below had
+    grown a copy each, which is one place for the three call shapes to drift
+    apart and two places to fix when a fourth appears.
+    """
     func = call.func
     if isinstance(func, ast.Attribute) and func.attr in {"write_text", "write_bytes"}:
-        receiver = func.value
-        if isinstance(receiver, ast.Name) and receiver.id in assigned:
-            return assigned[receiver.id]
-        pointer_names = _pointer_names_in_resolved(receiver, constants, shadowed)
-        if pointer_names:
-            return sorted(pointer_names)[0]
+        return func.value
     if isinstance(func, ast.Attribute) and func.attr == "open":
-        receiver = func.value
-        pointer_names = set()
-        if isinstance(receiver, ast.Name) and receiver.id in assigned:
-            pointer_names.add(assigned[receiver.id])
-        pointer_names.update(_pointer_names_in_resolved(receiver, constants, shadowed))
-        if pointer_names:
-            mode = call.args[0] if call.args else None
-            mode_text = mode.value if isinstance(mode, ast.Constant) and isinstance(mode.value, str) else "r"
-            if any(flag in mode_text for flag in ("w", "a", "+")):
-                return sorted(pointer_names)[0]
+        if _write_mode_is_mutating(call.args[0] if call.args else None, call.keywords):
+            return func.value
+        return None
     if isinstance(func, ast.Name) and func.id == "open" and call.args:
-        pointer_names = _pointer_names_in_resolved(call.args[0], constants, shadowed)
-        if pointer_names:
-            mode = call.args[1] if len(call.args) > 1 else None
-            mode_text = mode.value if isinstance(mode, ast.Constant) and isinstance(mode.value, str) else "r"
-            if any(flag in mode_text for flag in ("w", "a", "+")):
-                return sorted(pointer_names)[0]
+        if _write_mode_is_mutating(call.args[1] if len(call.args) > 1 else None, call.keywords):
+            return call.args[0]
     return None
+
+
+def _call_target_name(call: ast.Call, assigned: dict[str, str], constants: dict[str, str]) -> str | None:
+    node = _write_target_node(call)
+    if node is None:
+        return None
+    if isinstance(node, ast.Name) and node.id in assigned:
+        return assigned[node.id]
+    pointer_names = _pointer_names_in_resolved(node, constants, _scope_assigned_names(call))
+    return sorted(pointer_names)[0] if pointer_names else None
+
+
+def _assigned_computed_names(tree: ast.AST) -> dict[str, str]:
+    """Locals bound to a COMPUTED pointer name, mirroring
+    ``_assigned_pointer_names`` for the literal case.
+
+    Without this the detector saw only the single-expression form. The
+    two-statement form — ``target = out / f"latest.{ext}"`` then
+    ``target.write_text(...)`` — is the idiom this repo actually writes, and the
+    literal detector already handles its literal twin, so covering one and not
+    the other left the dominant shape invisible.
+    """
+    names: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        computed = _computed_pointer_name_in(node.value)
+        if computed is None:
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                names[target.id] = computed
+    return names
+
+
+def _write_mode_is_mutating(mode_node: ast.AST | None, keywords: list[ast.keyword]) -> bool:
+    node = mode_node
+    if node is None:
+        node = next((kw.value for kw in keywords if kw.arg == "mode"), None)
+    text = node.value if isinstance(node, ast.Constant) and isinstance(node.value, str) else "r"
+    return any(flag in text for flag in ("w", "a", "+"))
+
+
+def _computed_write_target(call: ast.Call, computed_assigned: dict[str, str]) -> str | None:
+    """The computed-name counterpart of ``_call_target_name``: same write calls,
+    same dispatch, but the filename is assembled rather than spelled out."""
+    node = _write_target_node(call)
+    if node is None:
+        return None
+    if isinstance(node, ast.Name):
+        return computed_assigned.get(node.id)
+    return _computed_pointer_name_in(node)
 
 
 def _scan_text(repo_root: Path, path: Path, text: str) -> list[Finding]:
@@ -169,19 +256,28 @@ def _scan_text(repo_root: Path, path: Path, text: str) -> list[Finding]:
     _attach_parent_links(tree)
     constants = _resolved_string_constants(tree)
     assigned = _assigned_pointer_names(tree, constants)
+    computed_assigned = _assigned_computed_names(tree)
     findings: list[Finding] = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         target = _call_target_name(node, assigned, constants)
+        reason = "direct write to current-pointer filename; use scripts.current_pointer_writer_lib"
         if target is None:
-            continue
+            target = _computed_write_target(node, computed_assigned)
+            if target is None:
+                continue
+            reason = (
+                "write to a current-pointer filename BUILT at runtime; this gate cannot prove "
+                "the target is not a current pointer -- use scripts.current_pointer_writer_lib, "
+                "or write the literal filename so the scope is establishable"
+            )
         findings.append(
             Finding(
                 path=relative.as_posix(),
                 line=getattr(node, "lineno", 0),
                 target=target,
-                reason="direct write to current-pointer filename; use scripts.current_pointer_writer_lib",
+                reason=reason,
             )
         )
     return findings

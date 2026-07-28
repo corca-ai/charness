@@ -224,3 +224,88 @@ def test_python_runtime_ignoredirs_skips_repo_parent_runtime_dir(monkeypatch, tm
         "/python/platstdlib",
         "/python/site",
     )
+
+
+def test_per_file_floor_reports_the_population_it_exempts() -> None:
+    """E5 regression, exemption half: the sub-threshold exemption was SILENT.
+
+    A 0%-covered 29-statement file vanished from the report entirely while the
+    same file at 30 statements was a violation, so "no violations" meant "no
+    violations among the files we chose to look at". The threshold stays; the
+    population it excuses is now named."""
+    spec = importlib.util.spec_from_file_location(
+        "check_coverage_lib_test", ROOT / "scripts" / "check_coverage_lib.py"
+    )
+    lib = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(lib)
+    files = [
+        {"path": "tiny.py", "covered": 0, "total": 29, "coverage": 0.0},
+        {"path": "big.py", "covered": 0, "total": 30, "coverage": 0.0},
+        {"path": "fine.py", "covered": 29, "total": 29, "coverage": 1.0},
+    ]
+
+    report = lib.build_per_file_floor_report(files, floor=0.8)
+
+    # The threshold is deliberate policy, but it was SILENT: a 0%-covered
+    # 29-statement file vanished from the report while the same file at 30
+    # statements was a violation.
+    assert [item["path"] for item in report["violations"]] == ["big.py"]
+    assert "tiny.py" in [item["path"] for item in report["exempt_below_threshold"]]
+    assert [item["path"] for item in report["exempt_below_floor"]] == ["tiny.py"]
+    # Falsifiable counterpart: an exempt file that meets the floor is not in the
+    # hidden population.
+    assert "fine.py" not in [item["path"] for item in report["exempt_below_floor"]]
+
+
+def _coverage_module():
+    spec = importlib.util.spec_from_file_location(
+        "check_coverage_test", ROOT / "scripts" / "check_coverage.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_coverage_summary_refuses_to_report_a_number_it_never_measured() -> None:
+    """E5 regression, headline half: `covered/total if total else 1.0` reported
+    a PERFECT score over zero observations, on the gate whose whole job is
+    reporting test confidence.
+
+    The summary now carries `measurement_scope` and a `None` coverage, and the
+    CLI refuses legibly rather than reaching a `None < float` comparison — which
+    is what shipped when this branch had no test at all."""
+    from pathlib import Path as _Path
+
+    module = _coverage_module()
+    module.TARGET_FILES = ()
+
+    summary = module.summarize(_Path("."), {})
+
+    assert summary["measurement_scope"] == "empty"
+    assert summary["coverage"] is None
+    assert summary["unmeasured_files"] == []
+
+
+def test_unmeasured_files_are_not_recorded_as_perfectly_covered() -> None:
+    """A file with zero executable lines still carries `coverage: 1.0` from the
+    per-file formula, so filing it under the small-file exemption recorded it as
+    a perfectly-covered small file — and, being at the floor, kept it OUT of the
+    list documented as the population the threshold hides. Unmeasured is its own
+    bucket."""
+    spec = importlib.util.spec_from_file_location(
+        "check_coverage_lib_unmeasured", ROOT / "scripts" / "check_coverage_lib.py"
+    )
+    lib = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(lib)
+
+    report = lib.build_per_file_floor_report(
+        [
+            {"path": "empty.py", "covered": 0, "total": 0, "coverage": 1.0},
+            {"path": "tiny.py", "covered": 0, "total": 29, "coverage": 0.0},
+        ],
+        floor=0.8,
+    )
+
+    assert [item["path"] for item in report["unmeasured"]] == ["empty.py"]
+    assert "empty.py" not in [item["path"] for item in report["exempt_below_threshold"]]
+    assert [item["path"] for item in report["exempt_below_floor"]] == ["tiny.py"]

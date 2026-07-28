@@ -7,9 +7,10 @@ fixed on 2026-07-27 as the containment family
 fixed the same day, on its own; B3 fixed, B2 fixed-narrowed and B1 partially
 fixed on 2026-07-27 as the issue-close carrier family; D1, D3, D5 fixed and D2
 partially fixed on 2026-07-27 as the publish-gate family; D2, D6, D8 fixed and
-D4 partially fixed on 2026-07-28 as the distinct-channel family.
+D4 partially fixed on 2026-07-28 as the distinct-channel family; D7, D9, D10, E5
+fixed on 2026-07-28 as the empty-scope family remainder.
 
-**Remaining: 20 OPEN + 5 PARTIAL.** Count fully-open rows and partial rows
+**Remaining: 16 OPEN + 5 PARTIAL.** Count fully-open rows and partial rows
 separately; a PARTIAL is not a landed row, and rolling them into a single
 "N remain" figure is the same class of claim this file exists to hunt.
 This file is the tracking record — update the Status column as items land.
@@ -305,10 +306,10 @@ mode. Class (c).
 | D4 | PARTIAL | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked — content is checked now, but the channel still cannot tell a released tag from a pushed one (measured) | same file, `:99` |
 | D5 | FIXED | `validate_release_version_claim` silently no-ops when the claim is absent or reformatted, and a decoy first match shadows the real claim | `scripts/validate_current_pointer_freshness.py:160` |
 | D6 | FIXED | The installed readback records `observed` on exit code alone; the version read back is never compared | `skills/public/release/scripts/release_observer.py:60` |
-| D7 | OPEN | `check_real_host_proof` returns `not-required` for an empty scope, for a clean tree, and for an unconfigured repo, all indistinguishably | `skills/public/release/scripts/check_real_host_proof.py:124,146` |
+| D7 | FIXED | `check_real_host_proof` returns `not-required` for an empty scope, for a clean tree, and for an unconfigured repo, all indistinguishably | `skills/public/release/scripts/check_real_host_proof.py:124,146` |
 | D8 | FIXED | The artifact asserts "a channel distinct from `gh release view`" even on the `same-proxy-flagged` and `skipped` records | `skills/public/release/scripts/publish_release_artifact_sections.py:171` |
-| D9 | OPEN | `check_current_pointer_writes` reports clean over a scope excluding `skills/shared/` and any name-computed pointer path | `scripts/check_current_pointer_writes.py:16,54` |
-| D10 | OPEN | Two more silent early-returns in the freshness validator (missing integrations dir, non-dict inventory) | `scripts/validate_current_pointer_freshness.py:222,226` |
+| D9 | FIXED | `check_current_pointer_writes` reports clean over a scope excluding `skills/shared/` and any name-computed pointer path | `scripts/check_current_pointer_writes.py:16,54` |
+| D10 | FIXED | Two more silent early-returns in the freshness validator (missing integrations dir, non-dict inventory) | `scripts/validate_current_pointer_freshness.py:222,226` |
 
 **D1** — heading *presence* is a substring test, block *location* is an
 exact-line test, and the disagreement fails open (`state_block is None` returns
@@ -453,6 +454,61 @@ is never compared → exit 0. `re.search` takes the first match. Class (a)+(d).
 **D6** — confirmed: target `2.11.2`, readback `charness 2.11.1`, disposition
 `observed`. The value is stored in the durable JSON and never compared.
 
+**D7/D9/D10/E5 — what landed (2026-07-28).** The empty-scope family remainder.
+Each surface now names the scope its verdict covers instead of returning one
+value for several different worlds. D9 and D10 were unreproduced leads; both were
+parent-reproduced first.
+
+- **D7** returned `required: False` identically for an unconfigured repo, a
+  configured repo handed an EMPTY changed scope, and a configured repo whose
+  triggers genuinely did not match — four worlds, one sentence. Now
+  `evaluation_scope: evaluated | empty | not-configured | not-established`.
+- **D9** omitted `skills/shared` from `SCAN_ROOTS` (an identical violation was
+  caught under `scripts/` and `skills/public/` and invisible under
+  `skills/shared/`), and matched string constants only, so a computed
+  `f"latest.{ext}"` was unseeable — and the prefilter required the literal
+  filename, so such a file never reached the AST scan at all.
+- **D10** had two silent early-returns: with a genuinely stale claim in place,
+  deleting the integrations directory or corrupting the inventory shape flipped
+  BLOCK to PASS.
+- **E5** reported `coverage: 1.0` over zero observations, and the sub-30-statement
+  per-file exemption silently dropped files — a 0%-covered 29-statement file
+  vanished while the same file at 30 statements was a violation.
+
+A bounded reviewer then found **two blockers and four findings**, all reproduced
+by execution:
+
+1. **E5's own fix hard-broke the gate.** `coverage: None` reached
+   `summary["coverage"] < args.min_coverage`; confirmed `TypeError: '<' not
+   supported between instances of 'NoneType' and 'float'` — a traceback instead
+   of this gate's own error. It now refuses legibly. The headline E5 change had
+   **no test at all**, which is why it shipped.
+2. **D7's scope never reached the reader.** `real_host_lines` branched on
+   `required` alone, so the release artifact still said "No configured
+   release-time real-host proof trigger matched this slice" over a record whose
+   scope was `empty` — a sentence asserting an evaluation that never happened,
+   at the publish boundary. D8's failure mode inside the D7 fix.
+3. D9's computed detector missed the **dominant idiom** — `target = out /
+   f"latest.{ext}"` then `target.write_text(...)`, whose literal twin the gate
+   already handled — and its `BinOp` branch read only the left operand, so in
+   `str(out) + "/latest." + ext` the pointer-ish literal (always a RIGHT operand
+   under left-associative parsing) was never inspected.
+4. D10 misdiagnosed unreadable JSON as a shape error, and had no
+   `schema_version` gate — a future schema would be reported as "regenerate the
+   catalog" rather than "this validator does not read schema N".
+5. E5's unmeasured files were filed under the small-file exemption with
+   `coverage: 1.0`, so being at the floor kept them OUT of `exempt_below_floor`,
+   the list documented as the hidden population. The fix for a silent exemption
+   would have reintroduced one a layer down.
+6. A key collision: D7's bare `scope` landed on the same dict `plan_release_run`
+   stamps `evidence_scope` onto. Renamed `evaluation_scope`.
+
+The reviewer's angle-1 hypothesis — that D9's widened prefilter would produce
+live false positives — was checked and **refuted**: the prefilter emits no
+findings, and a whole-tree scan of every `latest`-bearing f-string and
+concatenation under the four scan roots produced none. Recorded as a negative
+result rather than dropped.
+
 ---
 
 ## Cluster E — mutation and coverage proof
@@ -463,7 +519,7 @@ is never compared → exit 0. `re.search` takes the first match. Class (a)+(d).
 | E2 | PARTIAL | score claim with no facts returned `provable: true` — FIXED; the manifest path still cannot establish the run was green, now reported as `conclusion_established: false` rather than refused | `scripts/check_mutation_run_proof.py:86,109` |
 | E3 | OPEN | `--reuse-coverage --write-fresh-marker` stamps the freshness proof onto arbitrary coverage without running any probe | `scripts/check_changed_line_mutation_coverage.py:180` |
 | E4 | OPEN | The freshness fingerprint is blind to `tests/` and to the test command, and degenerates to a per-base constant on an empty pool diff | `scripts/mutation_changed_files_lib.py:235` |
-| E5 | OPEN | `check_coverage` reports 100% when it collected zero observations; files under 30 statements are exempt from the per-file floor | `scripts/check_coverage.py:356,366` |
+| E5 | FIXED | `check_coverage` reports 100% when it collected zero observations; files under 30 statements are exempt from the per-file floor | `scripts/check_coverage.py:356,366` |
 | E6 | OPEN | A sampled file whose mutants were all filtered vanishes from every denominator and raises no signal | `scripts/check_mutation_score.py:229` |
 | E7 | OPEN | The dirty-pool contamination detector fails open when git errors | `scripts/check_changed_line_mutation_coverage.py:190` |
 

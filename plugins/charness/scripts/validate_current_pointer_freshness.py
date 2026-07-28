@@ -275,11 +275,51 @@ def _load_catalog_sanitizer(repo_root: Path):
 def validate_capability_catalog_integration_claims(repo_root: Path) -> None:
     inventory_path = repo_root / CAPABILITY_CATALOG
     integrations_dir = repo_root / INTEGRATIONS_DIR
-    if not inventory_path.is_file() or not integrations_dir.is_dir():
+    if not inventory_path.is_file():
+        # No catalog pointer to check freshness of. Genuinely not-configured.
         return
     payload = _load_json(inventory_path)
+    if not payload:
+        # `_load_json` swallows OSError and JSONDecodeError and returns {}, so an
+        # unreadable or truncated catalog would otherwise be reported as a SHAPE
+        # problem ("inventory is NoneType") — the right refusal with the wrong
+        # diagnosis, which costs the reader the actual remedy.
+        raise ValidationError(
+            f"`{CAPABILITY_CATALOG}` exists but could not be read as JSON (empty, truncated, or "
+            "malformed), so its integration claims were never compared against the checked-in "
+            "manifests. Regenerate the catalog."
+        )
+    schema_version = payload.get("schema_version")
+    if schema_version != 1:
+        # This validator reads the v1 shape. A catalog written by a schema it
+        # does not understand must say so, not be reported as malformed v1.
+        raise ValidationError(
+            f"`{CAPABILITY_CATALOG}` declares schema_version {schema_version!r}, which this "
+            "freshness check does not read; its integration claims were never compared. Update "
+            "`validate_capability_catalog_integration_claims` for the new schema."
+        )
     inventory = payload.get("inventory")
     if not isinstance(inventory, dict):
+        # The catalog EXISTS but its inventory is not the shape this check reads.
+        # Returning silently made a malformed catalog indistinguishable from a
+        # verified-fresh one: with a genuinely stale claim in place, corrupting
+        # the shape flipped BLOCK to PASS (D10).
+        raise ValidationError(
+            f"`{CAPABILITY_CATALOG}` exists but its `inventory` is "
+            f"{type(inventory).__name__}, not an object, so its integration claims were never "
+            "compared against the checked-in manifests. Regenerate the catalog."
+        )
+    if not integrations_dir.is_dir():
+        # A missing integrations tree is fine ONLY when the catalog claims no
+        # integrations. If it claims some, the tree they describe is gone and
+        # every claim is stale — which is exactly what returning here hid.
+        claimed = [item for item in inventory.get("integrations", []) if isinstance(item, dict)]
+        if claimed:
+            raise ValidationError(
+                f"`{CAPABILITY_CATALOG}` claims {len(claimed)} integration(s), but "
+                f"`{INTEGRATIONS_DIR}` does not exist, so none of those claims could be "
+                "compared against a manifest. Regenerate the catalog or restore the directory."
+            )
         return
     alias_path, sanitize_value = _load_catalog_sanitizer(repo_root)
     artifact_integrations = {

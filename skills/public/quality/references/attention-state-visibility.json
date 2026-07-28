@@ -1193,17 +1193,15 @@
     },
     "skills/public/release/scripts/publish_release_artifact_sections.py": {
       "states": [
-        "not_configured",
-        "skipped"
+        "not_configured"
       ],
       "visibility": [
         "artifact_visible"
       ],
       "evidence_terms": [
-        "No repo-declared fresh checkout probes were configured",
-        "no distinct channel ran"
+        "No repo-declared fresh checkout probes were configured"
       ],
-      "rationale": "Release artifact renderer. Two exit-zero attention states reach the durable release record and both are rendered as prose the rung-2 human reads: `not_configured` for absent fresh-checkout probes, and `skipped` for a distinct-channel record where NO channel ran. The `skipped` branch exists precisely so the artifact stops asserting 'a channel distinct from `gh release view`' over a record with no channel behind it (D8) - it renders '**no distinct channel ran**' instead. Neither token is a runtime status of this script; both are statuses it must render honestly."
+      "rationale": "Release artifact renderer. Writes the not-configured fresh-checkout status into the durable release record as prose the rung-2 human reads. The post-publish verification renderers (and the `skipped` state they must render honestly) moved to publish_release_verification_sections.py."
     },
     "skills/public/release/scripts/publish_release_baton.py": {
       "states": [
@@ -1265,6 +1263,18 @@
         "retro trigger did not match"
       ],
       "rationale": "Release-triggered retro closeout records skipped trigger evaluations in the release payload/artifact, while matched triggers persist a bounded retro artifact."
+    },
+    "skills/public/release/scripts/publish_release_verification_sections.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "artifact_visible"
+      ],
+      "evidence_terms": [
+        "no distinct channel ran"
+      ],
+      "rationale": "Post-publish verification renderers for the release artifact. `skipped` is a distinct-channel record status this module must render HONESTLY: the branch exists precisely so the artifact stops asserting 'a channel distinct from `gh release view`' over a record where no channel ran at all (D8), rendering '**no distinct channel ran**' instead. Not a runtime status of this script -- a status it refuses to paper over."
     },
     "skills/public/release/scripts/resolve_adapter.py": {
       "states": [
