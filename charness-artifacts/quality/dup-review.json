@@ -86,6 +86,13 @@
     },
     {
       "class": "intentional",
+      "id": "0df7f8c7a6119974",
+      "note": "the repo-root sys.path bootstrap preamble every scripts/*.py carries -- `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `if str(REPO_ROOT) not in sys.path` guard, and the `# noqa: E402` imports that must follow it. Four members now, two of them added by the D40 lane (changed_line_run_trust.py, prepush_focused_changed_line_coverage.py). Extracting it is impossible by construction: a shared helper could only be imported AFTER sys.path already contained the repo root, which is exactly what the preamble establishes. Same standing class as the resolve_adapter.py portability copies.",
+      "reviewed_at": "2026-07-29",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "0eb1594705427b69",
       "note": "import/bootstrap boilerplate family rotated after HITL scratchpad template extraction; portable skill scripts keep local runtime bootstrap/import setup for direct execution",
       "reviewed_at": "2026-06-27",
@@ -1161,6 +1168,13 @@
       "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
       "reviewed_at": "2026-06-24",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "e9b3b440b176fbfa",
+      "note": "the two-line tail of the same repo-root bootstrap preamble (the sys.path guard plus its insert), shared by changed_line_run_trust.py and sample_mutation_files.py. Idiom-sized and unextractable for the same reason as 0df7f8c7a6119974: the helper that would hold it cannot be imported until it has run.",
+      "reviewed_at": "2026-07-29",
+      "surface": "code"
     },
     {
       "class": "intentional",

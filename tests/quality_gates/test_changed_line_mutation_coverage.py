@@ -12,6 +12,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from .support import ROOT, run_script
 
@@ -409,14 +410,23 @@ def test_git_lines_empty_outside_git_repo(tmp_path: Path) -> None:
 
 def test_git_lines_handles_missing_git_binary(tmp_path: Path, monkeypatch) -> None:
     # OSError (e.g. git absent) -> _git_lines returns [] instead of propagating.
-    teeth = _load_teeth()
+    # Patch the OWNING module: the gate re-exports these names, and patching a
+    # re-export leaves the real callee untouched — the test would go green while
+    # exercising nothing, which is the class this whole file is about.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "changed_line_run_trust_under_test", ROOT / "scripts" / "changed_line_run_trust.py"
+    )
+    trust = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(trust)
 
     def boom(*_args, **_kwargs):
         raise OSError("git not found")
 
-    monkeypatch.setattr(teeth.subprocess, "run", boom)
-    assert teeth._git_lines(tmp_path, ["status"]) == []
-    assert teeth._head_resolves_to_head(tmp_path, "some-ref") is False
+    monkeypatch.setattr(trust.subprocess, "run", boom)
+    assert trust._git_lines(tmp_path, ["status"]) == []
+    assert trust._head_resolves_to_head(tmp_path, "some-ref") is False
 
 
 def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> None:
@@ -617,3 +627,111 @@ def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> No
     assert called.get("probe") is True  # the run-the-probe branch executed
     assert called["dynamic_context"] is True
     assert rc == 0
+
+
+# --------------------------------------------------------------------------- #
+# --limit-to-file (D40): the incremental pre-push producer collects coverage from a
+# FOCUSED test subset, so the blocking set has to narrow with it. Focused coverage is
+# a subset of full coverage, so an unlimited run over it would report files the full
+# suite covers as uncovered — a false block, which is how a gate gets bypassed.
+# --------------------------------------------------------------------------- #
+def _seed_two_changed_pool_files(tmp_path: Path) -> tuple[Path, str, str]:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    _git(repo, "init", "-q")
+    for name in ("foo.py", "bar.py"):
+        (repo / "scripts" / name).write_text("def a():\n    return 1\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    base = _git(repo, "rev-parse", "HEAD")
+    for name in ("foo.py", "bar.py"):
+        (repo / "scripts" / name).write_text(
+            "def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8"
+        )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "head")
+    return repo, base, _git(repo, "rev-parse", "HEAD")
+
+
+def _write_two_file_coverage(repo: Path) -> Path:
+    """foo's new lines covered, bar's not — bar stands in for the file whose tests
+    were outside the focused subset."""
+    cov = repo / "coverage.json"
+    cov.write_text(
+        json.dumps({"files": {
+            "scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []},
+            "scripts/bar.py": {"executed_lines": [1, 2], "missing_lines": [5, 6]},
+        }}),
+        encoding="utf-8",
+    )
+    return cov
+
+
+def test_limit_to_file_narrows_the_blocking_set_and_names_the_rest(tmp_path: Path) -> None:
+    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    cov = _write_two_file_coverage(repo)
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov), "--limit-to-file", "scripts/foo.py",
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["blocking"] == []
+    # The green is scoped, and says so on both channels.
+    assert payload["unanalyzed_changed_pool_files"] == ["scripts/bar.py"]
+    assert "says NOTHING about the rest" in result.stderr
+    assert "scripts/bar.py" in result.stderr
+
+
+def test_without_the_limit_the_same_coverage_still_blocks(tmp_path: Path) -> None:
+    """The discriminating control. If this passed too, the test above would prove
+    only that the coverage fixture was clean, not that the limit did anything."""
+    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    cov = _write_two_file_coverage(repo)
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov),
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["blocking"] == ["scripts/bar.py"]
+    assert "unanalyzed_changed_pool_files" not in payload
+
+
+def test_a_limit_that_matches_nothing_refuses_to_report_an_empty_range(tmp_path: Path) -> None:
+    """An empty ANALYZED set is not an empty CHANGED set.
+
+    Saying "no eligible mutation-pool files changed in this range" here would be the
+    vacuous-green class verbatim: a verdict rendered over a scope that was never read,
+    on the very gate whose recurring failure is exactly that.
+    """
+    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    cov = _write_two_file_coverage(repo)
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov), "--limit-to-file", "scripts/absent.py",
+    )
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert "fell OUTSIDE --limit-to-file" in payload["reason"]
+    assert "proves nothing about them" in payload["reason"]
+    assert sorted(payload["unanalyzed_changed_pool_files"]) == ["scripts/bar.py", "scripts/foo.py"]
+
+
+def test_an_absent_limit_analyzes_everything(tmp_path: Path) -> None:
+    """`--limit-to-file` is absent on every pre-existing caller, so an empty list must
+    mean "analyze all", never "analyze none". Getting this backwards would silently
+    disarm the gate for every existing invocation."""
+    teeth = _load_teeth()
+    args = SimpleNamespace(limit_to_file=[])
+
+    analyzed, unanalyzed = teeth._apply_file_limit(args, ["scripts/foo.py", "scripts/bar.py"])
+
+    assert analyzed == ["scripts/foo.py", "scripts/bar.py"]
+    assert unanalyzed == []

@@ -61,9 +61,42 @@ def _reference_patterns(path: str) -> list[re.Pattern[str]]:
                 re.compile(rf"\bfrom\s+{re.escape(parent)}\s+import\s+.*\b{re.escape(name)}\b"),
                 re.compile(rf"\bfrom\s+{escaped_module}\s+import\b"),
                 re.compile(rf"\bimport\s+{escaped_module}\b"),
+                # The stem as a CALL ARGUMENT: `_load("nose_report_lib")`,
+                # `load_script_module("x_under_test", DIR / "x.py")`. This repo's tests
+                # routinely import a production module by stem while assembling its
+                # directory separately, so none of the patterns above can see the
+                # reference — not the quoted path, not the dotted module, not an import
+                # statement. That blind spot does not merely FAIL to map: the ancestor
+                # climb below then maps the file to whichever OTHER test does mention a
+                # loader parent, so the mapper answers confidently with the wrong test.
+                # Ground truth for the case that exposed it: `nose_report_shape_lib`'s
+                # changed lines are covered by `tests/test_nose_inprocess_coverage.py`
+                # (18/18) and by NOTHING in `test_quality_nose_advisory.py`, which is
+                # what the mapper returned.
+                #
+                # Over-matching here is the safe direction: an extra test in the focused
+                # set can only ADD measured coverage, never remove it, so a loose match
+                # costs runtime while a missed one costs a false block.
+                re.compile(rf"\w+\(\s*(?:[^()]*?,\s*)?['\"]{re.escape(name)}['\"]"),
             ]
         )
     return patterns
+
+
+def _reference_prefilter(path: str) -> str:
+    """A literal every `_reference_patterns` entry requires the text to contain.
+
+    Each pattern anchors on the quoted path, the dotted module, an import of the
+    module, a path-segment chain, or the stem as a call argument — and the stem is a
+    substring of all of them. So a text without the stem cannot match ANY of them, and
+    this one `in` check prunes it before the regexes run. That matters because the
+    closure now spans the whole mutation pool (~900 sources): without the prefilter the
+    scan is `changed_paths x ancestor_levels x sources x patterns` with a backtracking
+    stem pattern, which took this mapper from under a second to over five minutes and
+    would have made the pre-push lane unusable.
+    """
+    stem = path.rsplit("/", 1)[-1]
+    return stem[:-3] if stem.endswith(".py") else stem
 
 
 def _loads_local_sibling(text: str, module_stem: str) -> bool:
@@ -174,9 +207,25 @@ def _test_source_closures(source_text: dict[str, str]) -> dict[str, set[str]]:
     return closures
 
 
+def _candidate_module_sources(repo_root: Path) -> list[str]:
+    """Mutation-pool production modules, so the import closure can span them.
+
+    Without these, `_test_source_closures` only walks imports BETWEEN test files, and a
+    production module is reachable only when some test mentions it textually. A
+    `test -> production_a -> production_b` chain therefore leaves `production_b`
+    unmapped even though running that one test covers it. Sourcing the pool from the
+    same helper the gate uses keeps the two from disagreeing about what a pool file is.
+    """
+    from scripts.sample_mutation_files import list_eligible  # local: keeps CLI import cheap
+
+    return sorted(list_eligible(repo_root))
+
+
 def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[str, list[str]]:
     source_text: dict[str, str] = {}
-    for source_path in _candidate_test_sources(repo_root):
+    for source_path in [*_candidate_test_sources(repo_root), *_candidate_module_sources(repo_root)]:
+        if source_path in source_text:
+            continue
         try:
             source_text[source_path] = (repo_root / source_path).read_text(encoding="utf-8")
         except OSError:
@@ -184,20 +233,36 @@ def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[s
     test_sources = _test_source_closures(source_text)
     matches: dict[str, list[str]] = {}
     for changed_path in changed_paths:
+        # A changed file inside the closure of a test is covered BY RUNNING that test —
+        # no textual mention required. This is the structural half; the pattern search
+        # below stays for references the import graph cannot see (path strings, stems
+        # handed to a dynamic loader, subprocess invocations).
+        reached_by = sorted(
+            test_path
+            for test_path, dependencies in test_sources.items()
+            if changed_path in dependencies
+        )
         path_levels = [[changed_path], *_local_loader_ancestor_levels(repo_root, changed_path)]
         all_found: set[str] = set()
         for level in path_levels:
-            patterns = [pattern for related in level for pattern in _reference_patterns(related)]
+            probes = [
+                (_reference_prefilter(related), _reference_patterns(related))
+                for related in level
+            ]
             referring_sources = {
                 source_path
                 for source_path, text in source_text.items()
-                if any(pattern.search(text) for pattern in patterns)
+                if any(
+                    prefilter in text and any(pattern.search(text) for pattern in patterns)
+                    for prefilter, patterns in probes
+                )
             }
             all_found.update(
                 test_path
                 for test_path, dependencies in test_sources.items()
                 if dependencies & referring_sources
             )
+        all_found.update(reached_by)
         if all_found:
             matches[changed_path] = sorted(all_found)
     return {path: sorted(paths) for path, paths in matches.items() if paths}

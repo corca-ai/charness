@@ -372,7 +372,15 @@ def test_configured_probe_with_no_changed_scope_reports_not_established(tmp_path
     no-artifacts fallback instead of the probe resolution, i.e. it was green
     whether or not the repair worked.
     """
-    existing = sorted((ROOT / "charness-artifacts" / "critique").glob("2026-07-2*.md"))
+    # `-packet.md` files share the date prefix but are prepare-packet renders, not
+    # critique artifacts: selecting one puts ZERO artifacts in scope and the assertion
+    # below fails on `not-resolved` instead of exercising the probe. The glob happened
+    # to pick a real artifact until a packet sorted last on the same date.
+    existing = sorted(
+        path
+        for path in (ROOT / "charness-artifacts" / "critique").glob("2026-07-2*.md")
+        if not path.name.endswith("-packet.md")
+    )
     assert existing, "expected at least one recent critique artifact to select"
     relpath = existing[-1].relative_to(ROOT).as_posix()
 

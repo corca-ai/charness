@@ -87,14 +87,17 @@ def test_changed_pool_fingerprint_failure_degrades_to_empty(monkeypatch, tmp_pat
     The fingerprint only decides whether a cached coverage JSON is reusable, so
     losing it should cost freshness, never the run.
     """
-    import check_changed_line_mutation_coverage as gate
+    # `_pin_run_state` and the git helper it calls both live in the run-trust module
+    # now, so patch THAT module: patching the gate's re-exported names would leave the
+    # real callee untouched and the test would pass while exercising nothing.
+    import changed_line_run_trust as trust
 
     def boom(*_args, **_kwargs):
         raise subprocess.CalledProcessError(128, ["git"])
 
-    monkeypatch.setattr(gate, "changed_pool_fingerprint", boom)
-    monkeypatch.setattr(gate, "_git_lines", lambda *_a, **_k: ["deadbeef"])
-    pinned = gate._pin_run_state(tmp_path, "base", "head")
+    monkeypatch.setattr(trust, "changed_pool_fingerprint", boom)
+    monkeypatch.setattr(trust, "_git_lines", lambda *_a, **_k: ["deadbeef"])
+    pinned = trust._pin_run_state(tmp_path, "base", "head")
     assert pinned["pool_fingerprint"] == ""
     # The rest of the pin must still be usable, i.e. the failure is contained.
     assert pinned["resolved_head_sha"] == "deadbeef"

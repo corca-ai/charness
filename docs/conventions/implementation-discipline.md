@@ -32,8 +32,13 @@ the root instruction file but still apply to Charness maintenance work.
   `--produce-mutation-coverage` to the final `--verification-lock` closeout. By
   default, it instruments that one broad pytest run with plain coverage (no
   double run) and emits `reports/mutation/test-coverage.json` plus the
-  `.fingerprint` freshness marker the pre-push changed-line gate
-  (`check-changed-line-mutation-coverage`) reuses. When the changed pool has an
+  `.fingerprint` freshness marker. Since D40 the pre-push lane
+  (`check-changed-line-mutation-coverage`) no longer reuses that artifact: it
+  PRODUCES its own incremental coverage from the standing tests the mapper resolves
+  for the changed pool files, writes it to `reports/mutation/prepush-focused-coverage.json`
+  so subset coverage never sits at the broad producer's path carrying a valid
+  freshness marker, and BLOCKS on uncovered changed lines in the mapped files. The
+  closeout producer remains the broad proof. When the changed pool has an
   honest focused pytest proof, prefer a focused producer command alongside
   `--produce-mutation-coverage`; for example,
   `--mutation-coverage-command "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/quality_gates/test_x.py"`.

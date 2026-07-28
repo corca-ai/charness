@@ -564,27 +564,42 @@ queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts 
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
-# Changed-line mutation-coverage pre-merge teeth (spec:
-# charness-artifacts/spec/mutation-changed-line-premerge-gate.md). Blocks uncovered
-# changed lines in eligible mutation-pool files over the unpushed range (merge-base
-# with origin/main) — the recurring #219->#251->#260->#320->#321 class — before the
-# scheduled cron re-derives it post-merge. Cheap and safe by construction: it NEVER
-# runs the slow coverage probe here (--skip-if-no-coverage) and it only trusts a
-# coverage source FRESH for the current changed-pool content (--require-fresh-coverage,
-# a `.fingerprint` marker match), so a stale reports/mutation/test-coverage.json cannot
-# raise false positives — it skips non-blocking instead. With no fresh coverage, or no
-# origin/main base, it is non-blocking by construction. The producer that writes fresh
-# coverage + the `.fingerprint` marker is the closeout step
-# `run_slice_closeout.py --produce-mutation-coverage` (run with --verification-lock).
-# CHANGED_LINE_BASE_SHA is defined above (hoisted so the critique cross-surface
-# probe shares the same merge-base anchor).
-# --allow-dirty keeps this lane's long-standing ADVISORY semantics: run-quality
-# runs against a live (often dirty) worktree, and the consumer's default is now to
-# REFUSE when mutation-pool files are uncommitted. Refusing here would hard-fail an
-# ordinary pre-push run; instead the payload records `dirty_pool_unverified` and the
-# existing FALSE GREEN warning still fires. Authoritative changed-line proof comes
-# from the closeout producer/consumer pair, which runs WITHOUT --allow-dirty.
-queue_selected "check-changed-line-mutation-coverage" python3 scripts/check_changed_line_mutation_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --head-sha HEAD --reuse-coverage --skip-if-no-coverage --require-fresh-coverage --allow-dirty
+# Changed-line mutation-coverage PRE-MERGE TEETH (spec:
+# charness-artifacts/spec/mutation-changed-line-premerge-gate.md; armed by D40 in
+# docs/deferred-decisions.md, owner decision 2026-07-29).
+#
+# This lane BLOCKS on uncovered changed lines in eligible mutation-pool files over the
+# unpushed range. It used to skip non-blocking whenever the author had not first paid
+# the ~10-minute broad coverage producer, and that skip is why the recurring class
+# (#219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453 -> #464) landed eight times: the
+# lane that could stop a push exited 0 by construction, while the lane with teeth ran
+# after the push where it cannot unland. The warning was already loud and was read and
+# walked past, so a ninth warning was not the fix.
+#
+# Cost is scoped to the change rather than the repo: the producer asks
+# suggest_mutation_coverage_command which standing tests reach the CHANGED pool files
+# and instruments only those. Measured with the gate's own coverage mechanism: ~24s for
+# a realistic single-commit slice, ~5min for a whole nine-commit session, against
+# 11-15min broad. It writes reports/mutation/prepush-focused-coverage.json, NOT the
+# canonical test-coverage.json, so subset coverage never sits at the broad producer's
+# path carrying a valid freshness marker.
+#
+# Two deliberate non-blocking holes, both named loudly rather than silent:
+#   - policy (a): a changed pool file the mapper resolves to NO standing test is not
+#     blocked on, because that is a mapper gap and blocking there stops a push over the
+#     tool's blind spot.
+#   - a dirty mutation pool is `unestablished`, not clean -- the focused coverage is
+#     collected from the live worktree while the mapping is computed against HEAD.
+# --refuse-unestablished turns the second one into a failure in read-only mode, which is
+# the pre-push hook's mode: mid-work a dirty worktree is normal, at push time it means
+# the code about to land was never proven.
+# CHANGED_LINE_BASE_SHA is defined above (hoisted so the critique cross-surface probe
+# shares the same merge-base anchor).
+CHANGED_LINE_REFUSE_ARGS=()
+if [[ "$RUN_QUALITY_MODE" == "read-only" ]]; then
+  CHANGED_LINE_REFUSE_ARGS+=(--refuse-unestablished)
+fi
+queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" "${CHANGED_LINE_REFUSE_ARGS[@]}"
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"

@@ -1,0 +1,140 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-28T22:35:19Z",
+  "prepared_for": "d40-incremental-prepush-changed-line-teeth",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- plugins/charness/scripts/check_changed_line_mutation_coverage.py\n- plugins/charness/scripts/run-quality.sh\n- plugins/charness/scripts/suggest_mutation_coverage_command.py\n- plugins/charness/skills/quality/references/attention-state-visibility.json\n- scripts/check_changed_line_mutation_coverage.py\n- scripts/run-quality.sh\n- scripts/suggest_mutation_coverage_command.py\n- skills/public/quality/references/attention-state-visibility.json\n- tests/quality_gates/test_changed_line_mutation_coverage.py\n- tests/quality_gates/test_suggest_mutation_coverage_command.py\n- plugins/charness/scripts/prepush_focused_changed_line_coverage.py\n- scripts/prepush_focused_changed_line_coverage.py\n- tests/quality_gates/test_prepush_focused_changed_line_coverage.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/check_changed_line_mutation_coverage.py, scripts/run-quality.sh, scripts/suggest_mutation_coverage_command.py, skills/public/quality/references/attention-state-visibility.json, scripts/prepush_focused_changed_line_coverage.py\n  derived matches: plugins/charness/scripts/check_changed_line_mutation_coverage.py, plugins/charness/scripts/run-quality.sh, plugins/charness/scripts/suggest_mutation_coverage_command.py, plugins/charness/skills/quality/references/attention-state-visibility.json, plugins/charness/scripts/prepush_focused_changed_line_coverage.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  derived matches: plugins/charness/skills/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/check_changed_line_mutation_coverage.py, plugins/charness/scripts/run-quality.sh, plugins/charness/scripts/suggest_mutation_coverage_command.py, plugins/charness/scripts/prepush_focused_changed_line_coverage.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/check_changed_line_mutation_coverage.py, scripts/suggest_mutation_coverage_command.py, tests/quality_gates/test_changed_line_mutation_coverage.py, tests/quality_gates/test_suggest_mutation_coverage_command.py, scripts/prepush_focused_changed_line_coverage.py, tests/quality_gates/test_prepush_focused_changed_line_coverage.py\n  derived matches: plugins/charness/scripts/check_changed_line_mutation_coverage.py, plugins/charness/scripts/suggest_mutation_coverage_command.py, plugins/charness/scripts/prepush_focused_changed_line_coverage.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/check_changed_line_mutation_coverage.py, scripts/suggest_mutation_coverage_command.py, scripts/prepush_focused_changed_line_coverage.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "1114802beee777dbf60021c55fa24eefe9d96727",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "plugins/charness/scripts/check_changed_line_mutation_coverage.py",
+      "plugins/charness/scripts/prepush_focused_changed_line_coverage.py",
+      "plugins/charness/scripts/run-quality.sh",
+      "plugins/charness/scripts/suggest_mutation_coverage_command.py",
+      "plugins/charness/skills/quality/references/attention-state-visibility.json",
+      "scripts/check_changed_line_mutation_coverage.py",
+      "scripts/prepush_focused_changed_line_coverage.py",
+      "scripts/run-quality.sh",
+      "scripts/suggest_mutation_coverage_command.py",
+      "skills/public/quality/references/attention-state-visibility.json",
+      "tests/quality_gates/test_changed_line_mutation_coverage.py",
+      "tests/quality_gates/test_prepush_focused_changed_line_coverage.py",
+      "tests/quality_gates/test_suggest_mutation_coverage_command.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "plugins/charness/scripts/check_changed_line_mutation_coverage.py",
+        "content_sha256": "f7c385402d3bc057f837dfd4255ec24867a82bcb74cee561a08c25691e6819dd"
+      },
+      {
+        "path": "plugins/charness/scripts/prepush_focused_changed_line_coverage.py",
+        "content_sha256": "da3c99fcae40fb1fb744e54a7fa35de7c500b9e6f0f0ab10113e612f86313805"
+      },
+      {
+        "path": "plugins/charness/scripts/run-quality.sh",
+        "content_sha256": "dcb92de00f062b204b8d4180a2eb11d058a710bac76d21dcd7e7d34ad780f3a6"
+      },
+      {
+        "path": "plugins/charness/scripts/suggest_mutation_coverage_command.py",
+        "content_sha256": "6132bac7bd98f60f591561f65aaf0b88c7e90aa13f13b05d31fb8c911ea0c370"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/attention-state-visibility.json",
+        "content_sha256": "f8297bd4794140b6426327e3489399eb892957dd0c9256c7194d2f9ae7f2c10a"
+      },
+      {
+        "path": "scripts/check_changed_line_mutation_coverage.py",
+        "content_sha256": "f7c385402d3bc057f837dfd4255ec24867a82bcb74cee561a08c25691e6819dd"
+      },
+      {
+        "path": "scripts/prepush_focused_changed_line_coverage.py",
+        "content_sha256": "da3c99fcae40fb1fb744e54a7fa35de7c500b9e6f0f0ab10113e612f86313805"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "dcb92de00f062b204b8d4180a2eb11d058a710bac76d21dcd7e7d34ad780f3a6"
+      },
+      {
+        "path": "scripts/suggest_mutation_coverage_command.py",
+        "content_sha256": "6132bac7bd98f60f591561f65aaf0b88c7e90aa13f13b05d31fb8c911ea0c370"
+      },
+      {
+        "path": "skills/public/quality/references/attention-state-visibility.json",
+        "content_sha256": "f8297bd4794140b6426327e3489399eb892957dd0c9256c7194d2f9ae7f2c10a"
+      },
+      {
+        "path": "tests/quality_gates/test_changed_line_mutation_coverage.py",
+        "content_sha256": "9e453f14d7004746ea5179b952e71b8adcdd9d8e959e66883a0f5811c2c31709"
+      },
+      {
+        "path": "tests/quality_gates/test_prepush_focused_changed_line_coverage.py",
+        "content_sha256": "38b1e84706526589729aa616be9064b892a798b5ff6a0a7c2323c7b4b7c6fd36"
+      },
+      {
+        "path": "tests/quality_gates/test_suggest_mutation_coverage_command.py",
+        "content_sha256": "3dfdb15ef0d60e4e40c98185e78eba6449cae7f05763bacf57441bed10041af8"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "5417c1dcab5d6528c1fa3651d20d0f76e2cd68039db6e8a23864331c945fb56e",
+    "declared_untracked": [
+      {
+        "path": "plugins/charness/scripts/prepush_focused_changed_line_coverage.py",
+        "content_sha256": "da3c99fcae40fb1fb744e54a7fa35de7c500b9e6f0f0ab10113e612f86313805"
+      },
+      {
+        "path": "scripts/prepush_focused_changed_line_coverage.py",
+        "content_sha256": "da3c99fcae40fb1fb744e54a7fa35de7c500b9e6f0f0ab10113e612f86313805"
+      },
+      {
+        "path": "tests/quality_gates/test_prepush_focused_changed_line_coverage.py",
+        "content_sha256": "38b1e84706526589729aa616be9064b892a798b5ff6a0a7c2323c7b4b7c6fd36"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "f4770920b3ff8b3d9411476f0e6c0c6659102a9acf65b98d5941b2ef973a1274"
+  }
+}

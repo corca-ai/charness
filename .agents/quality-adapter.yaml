@@ -591,9 +591,11 @@ standing_doc_provenance:
 changed_line_mutation_gate:
   # Portable changed-line coverage gate (handoff-3). Dogfood config: the eligible
   # globs mirror the mutation pool; coverage_json is the report the closeout
-  # producer emits. charness's active pre-push gate stays the cosmic-ray-coupled
-  # scripts/check_changed_line_mutation_coverage.py; this block proves the
-  # portable quality capability resolves the same surface. See
+  # producer emits. charness's active pre-push gate is the incremental producer
+  # scripts/prepush_focused_changed_line_coverage.py (D40), which orchestrates the
+  # cosmic-ray-coupled scripts/check_changed_line_mutation_coverage.py as its
+  # consumer; this block proves the portable quality capability resolves the same
+  # surface. See
   # skills/public/quality/references/mutation-testing.md.
   coverage_json: reports/mutation/test-coverage.json
   eligible_globs:

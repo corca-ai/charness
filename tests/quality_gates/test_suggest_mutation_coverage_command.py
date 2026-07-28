@@ -429,3 +429,124 @@ def test_cli_help_explains_statuses_and_closeout_workflow() -> None:
     assert "--detail" in result.stdout
     assert "--json" not in result.stdout
     assert "broad coverage fallback" in result.stdout
+
+
+# --------------------------------------------------------------------------- #
+# D40 mapper repair: the mapper fed a BLOCKING pre-push gate a confidently wrong
+# answer. Both gaps below produced the same observable — a changed file mapped to
+# a test that does not cover it — and a false block is how a gate gets bypassed.
+# --------------------------------------------------------------------------- #
+def _seed_dynamic_loader_repo(tmp_path: Path) -> tuple[Path, str]:
+    """A test that loads a production module by STEM, assembling the dir separately.
+
+    This is the repo's own dominant in-process-coverage idiom, and it is invisible to
+    a quoted-path / dotted-module / import-statement search: the only literal in the
+    test is the bare stem.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "tests").mkdir(parents=True)
+    _git(repo, "init", "-q")
+    (repo / "scripts" / "shape_lib.py").write_text("def shape():\n    return 1\n", encoding="utf-8")
+    (repo / "scripts" / "decoy.py").write_text("def decoy():\n    return 1\n", encoding="utf-8")
+    (repo / "tests" / "test_inproc.py").write_text(
+        "import importlib.util\n"
+        "from pathlib import Path\n"
+        "SCRIPTS = Path(__file__).resolve().parents[1] / 'scripts'\n"
+        "def _load(name):\n"
+        "    spec = importlib.util.spec_from_file_location(name, SCRIPTS / f'{name}.py')\n"
+        "    module = importlib.util.module_from_spec(spec)\n"
+        "    spec.loader.exec_module(module)\n"
+        "    return module\n"
+        "sl = _load('shape_lib')\n\n\n"
+        "def test_shape():\n    assert sl.shape() == 1\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    base = _git(repo, "rev-parse", "HEAD")
+    (repo / "scripts" / "shape_lib.py").write_text("def shape():\n    return 2\n", encoding="utf-8")
+    return repo, base
+
+
+def test_maps_a_module_loaded_by_bare_stem(tmp_path: Path) -> None:
+    from scripts.suggest_mutation_coverage_command import build_recommendation
+
+    repo, base = _seed_dynamic_loader_repo(tmp_path)
+
+    payload = build_recommendation(repo, base_sha=base)
+
+    mapped = payload["mapped_tests_by_file"]
+    assert mapped.get("scripts/shape_lib.py") == ["tests/test_inproc.py"]
+    assert payload["status"] == "recommended"
+
+
+def test_does_not_map_a_module_the_stem_search_never_names(tmp_path: Path) -> None:
+    """The discriminating control: the stem pattern widened the match, it did not
+    make everything match. `decoy.py` is never named by any test, so it must stay
+    unmapped — otherwise the previous test passes for the wrong reason."""
+    from scripts.suggest_mutation_coverage_command import build_recommendation
+
+    repo, base = _seed_dynamic_loader_repo(tmp_path)
+    (repo / "scripts" / "decoy.py").write_text("def decoy():\n    return 2\n", encoding="utf-8")
+
+    payload = build_recommendation(repo, base_sha=base)
+
+    assert "scripts/decoy.py" in payload["unmapped_changed_pool_files"]
+    assert payload["status"] == "partial"
+
+
+def test_maps_a_module_reached_only_through_another_production_module(tmp_path: Path) -> None:
+    """`test -> production_a -> production_b` maps `production_b`.
+
+    Before the closure spanned production modules, `production_b` was reachable only
+    when a test mentioned it textually. Running that one test DOES cover it, so
+    leaving it unmapped made the focused producer report its changed lines as
+    uncovered — a block on a file the suite actually covers.
+    """
+    from scripts.suggest_mutation_coverage_command import build_recommendation
+
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "tests").mkdir(parents=True)
+    _git(repo, "init", "-q")
+    (repo / "scripts" / "leaf.py").write_text("def leaf():\n    return 1\n", encoding="utf-8")
+    (repo / "scripts" / "mid.py").write_text(
+        "from scripts.leaf import leaf\n\n\ndef mid():\n    return leaf()\n", encoding="utf-8"
+    )
+    (repo / "tests" / "test_mid.py").write_text(
+        "from scripts import mid\n\n\ndef test_mid():\n    assert mid.mid() == 1\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    base = _git(repo, "rev-parse", "HEAD")
+    # Only the LEAF changes, and no test names it.
+    (repo / "scripts" / "leaf.py").write_text("def leaf():\n    return 2\n", encoding="utf-8")
+
+    payload = build_recommendation(repo, base_sha=base)
+
+    assert payload["mapped_tests_by_file"].get("scripts/leaf.py") == ["tests/test_mid.py"]
+    assert payload["unmapped_changed_pool_files"] == []
+
+
+def test_reference_prefilter_admits_every_pattern_it_gates(tmp_path: Path) -> None:
+    """The prefilter is a performance guard on a correctness path, so it has to be a
+    SOUND one: skipping a text that the regexes would have matched silently unmaps a
+    file. Every pattern anchors on the stem, which is what makes the single `in` check
+    safe — assert that directly rather than trusting the claim."""
+    from scripts.suggest_mutation_coverage_command import _reference_patterns, _reference_prefilter
+
+    path = "skills/public/quality/scripts/nose_report_lib.py"
+    prefilter = _reference_prefilter(path)
+    assert prefilter == "nose_report_lib"
+    samples = [
+        "'skills/public/quality/scripts/nose_report_lib.py'",
+        "import skills.public.quality.scripts.nose_report_lib",
+        "from skills.public.quality.scripts.nose_report_lib import run_nose",
+        "nr = _load('nose_report_lib')",
+        "'skills' / 'public' / 'quality' / 'scripts' / 'nose_report_lib.py'",
+    ]
+    for text in samples:
+        assert any(pattern.search(text) for pattern in _reference_patterns(path)), text
+        assert prefilter in text, f"prefilter would have dropped a matching text: {text}"
