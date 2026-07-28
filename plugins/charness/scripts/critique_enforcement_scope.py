@@ -20,7 +20,8 @@ did not establish this", and each is repaired here rather than at its use site:
   artifact is grandfathered only when both agree it is old.
 - **the packet-consumed trigger**, which turns the reviewed-input binding floor
   on and was defined twice with a regex that missed the bullet form the corpus
-  actually uses. One definition lives here.
+  actually uses. One definition lives here, and it now reads the `## Packet
+  Consumed` heading form too — 46 checked-in critiques declare a packet that way.
 - **the cross-surface probe**, whose "no hit" was indistinguishable from "never
   ran". It now resolves to a typed state instead of a bare bool.
 """
@@ -32,18 +33,22 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
+# One home for "the lines of a markdown section"; this module carried three copies.
+_sections = import_repo_module(__file__, "scripts.markdown_sections")
+
 # One home for the trigger that turns the reviewed-input binding floor on.
 # Accepts the bullet and bold forms the corpus writes, and a path on the FOLLOWING
 # line: the flush-and-same-line form was the only match, so the floor was off for
 # artifacts that declared a consumed packet in the shapes authors actually use.
 #
-# Deliberately still NOT matched, and recorded as residual rather than implied
-# closed: the `## Packet Consumed` heading form (no colon, path on a later line,
-# ~20 checked-in release critiques) and a mid-line mention. Both need a different
-# parse than a line trigger, and widening a CONTENT trigger is not free — every
+# A mid-line mention is deliberately still NOT matched, and recorded as residual
+# rather than implied closed. Widening a CONTENT trigger is not free — every
 # widening also fires on an artifact that merely *discusses* this surface, whose
 # remediation (produce a packet SHA for a packet that does not exist) is
-# impossible. That is the release-notes over-block class, inverted.
+# impossible. That is the release-notes over-block class, inverted. The heading
+# form no longer needs that trade; see `PACKET_CONSUMED_HEADING_RE` below.
 PACKET_CONSUMED_RE = re.compile(
     r"(?im)^[ \t]*(?:[-*][ \t]+)?\*{0,2}packet consumed\*{0,2}[ \t]*:[ \t]*(?P<value>\S+|$)"
 )
@@ -53,6 +58,14 @@ PACKET_CONSUMED_RE = re.compile(
 # packet the artifact just said does not exist — a hard refusal of honest work,
 # and the over-block twin of the hole this trigger was widened to close.
 PACKET_ABSENT_VALUES = frozenset({"n/a", "na", "none", "no", "-", "–", "—"})
+# The heading form, which 46 checked-in release critiques use and the line trigger
+# above could never match: `## Packet Consumed` on its own heading line with the
+# path on a later line, no colon anywhere. It needs a section parse rather than a
+# line parse — and unlike widening a line trigger, it carries no over-block risk,
+# because a HEADING cannot be a mid-line prose mention of this surface. The
+# declared value is still read (not just the heading's presence), so the corpus's
+# `n/a` negative keeps the floor off exactly as it does on the line form.
+PACKET_CONSUMED_HEADING_RE = re.compile(r"(?im)^[ \t]*\#{2,}[ \t]*\*{0,2}packet consumed\*{0,2}[ \t]*:?[ \t]*$")
 _CRITIQUE_DATE_LINE = re.compile(r"^date:\s*(\d{4}-\d{2}-\d{2})\b")
 _MARKUP = " `*_\"'>-.:"
 
@@ -79,8 +92,16 @@ def packet_consumed(text: str) -> bool:
     Inline code is deliberately NOT stripped: the corpus writes the path itself as
     `` `some/packet.json` ``, so blanking inline spans would erase the very value
     that proves a declaration.
+
+    Two shapes are read: the `Packet consumed: <path>` LINE (flush, bulleted, bold,
+    or wrapped onto the next line) and the `## Packet Consumed` HEADING whose
+    section body carries the path. The heading form was the residual C3 left open —
+    46 checked-in release critiques use it — and it stayed open because widening
+    the line trigger any further would start firing on artifacts that merely
+    discuss this surface. A heading is not prose, so it needs no such trade.
     """
-    for match in PACKET_CONSUMED_RE.finditer(strip_display_fences(text)):
+    fenceless = strip_display_fences(text)
+    for match in PACKET_CONSUMED_RE.finditer(fenceless):
         value = (match.group("value") or "").strip().strip(_MARKUP).lower()
         if not value:
             # Line-wrapped: the path sits on the following line. Take the next
@@ -89,7 +110,49 @@ def packet_consumed(text: str) -> bool:
             value = tail.split("\n", 1)[0].strip().strip(_MARKUP).lower()
         if value and value not in PACKET_ABSENT_VALUES:
             return True
-    return False
+    return any(
+        value not in PACKET_ABSENT_VALUES
+        for value in (_packet_heading_values(fenceless))
+    )
+
+
+#: A declared packet is a PATH, and only a path counts as a declaration. Reading
+#: the first token of the section's first line unconditionally re-created the
+#: over-block this trigger was carefully NOT widened into: two checked-in critiques
+#: open the section with prose (`Transient prepare packet generated at ...`,
+#: `Inline brief — the review covered ...`), whose first tokens are `transient` and
+#: `inline`. Both would have been read as consumed packets, and one of them — a May
+#: artifact nobody edited — would then have been refused for missing reviewer tier
+#: evidence under `--paths`. Requiring a path shape keeps prose out without another
+#: allowlist of words.
+_PACKET_PATH_RE = re.compile(r"(?i)^[\w./~-]*(?:/|\.(?:md|json))[\w./~-]*$")
+
+
+def _packet_heading_values(fenceless_text: str) -> list[str]:
+    """The declared PATH under each `## Packet Consumed` heading, lowercased.
+
+    The value is the section's first non-empty line — the shape the corpus writes,
+    a bare path (usually inline-code wrapped) one blank line under the heading.
+
+    Two non-declarations yield nothing rather than a value:
+
+    - an EMPTY section: the author wrote the heading and no path, so nothing was
+      declared either way, and inventing an `n/a` there would silently turn the
+      binding floor off;
+    - PROSE: a sentence under the heading is a note about the review, not a packet.
+      A declared `n/a` still reaches the caller so the explicit negative keeps
+      reading as an explicit negative.
+    """
+    values: list[str] = []
+    for match in PACKET_CONSUMED_HEADING_RE.finditer(fenceless_text):
+        tail = fenceless_text[match.end() :].splitlines()
+        first = next(iter(_sections.leading_nonempty(_sections.lines_until_next_section(tail), 1)), "")
+        # Bulleted section bodies write `- <path>`; the line form's own marker rule.
+        first = re.sub(r"^[-*][ \t]+", "", first)
+        value = first.split()[0].strip(_MARKUP) if first.split() else ""
+        if value and (value in PACKET_ABSENT_VALUES or _PACKET_PATH_RE.match(value)):
+            values.append(value)
+    return values
 
 
 _FENCE_RE = re.compile(r"(?ms)^[ \t]*(`{3,}|~{3,}).*?(?:^[ \t]*\1[ \t]*$|\Z)")
@@ -136,21 +199,8 @@ FRESH_EYE_HEADING = "## Fresh-Eye Satisfaction"
 
 def _fresh_eye_section_status(text: str) -> str | None:
     """The body under the canonical heading, joined — `None` when absent."""
-    lines = text.splitlines()
-    try:
-        start = next(index for index, line in enumerate(lines) if line.strip().lower() == FRESH_EYE_HEADING.lower())
-    except StopIteration:
-        return None
-    collected: list[str] = []
-    for raw in lines[start + 1 :]:
-        stripped = raw.strip()
-        if stripped.startswith("## "):
-            break
-        if stripped:
-            collected.append(stripped.lower())
-            if len(collected) >= 3:
-                break
-    return " ".join(collected) or None
+    body = _sections.section_lines(text, FRESH_EYE_HEADING, case_insensitive=True)
+    return " ".join(_sections.leading_nonempty(body, 3)) or None
 
 
 def fresh_eye_satisfaction_status(text: str) -> str | None:
@@ -167,16 +217,10 @@ def _fresh_eye_line_status(text: str) -> str | None:
             continue
         if ":" in lowered:
             return lowered.split(":", 1)[1].strip()
-        section_lines: list[str] = []
-        for following in lines[index + 1 :]:
-            stripped = following.strip()
-            if stripped.startswith("## "):
-                break
-            if stripped:
-                section_lines.append(stripped.lower())
-                if len(section_lines) >= 3:
-                    break
-        return " ".join(section_lines)
+        # A bare mention with no colon: the status wrapped onto the following lines.
+        # Bounded to the same 3 as the section reader, and stopping at the next `## `
+        # for the same reason — the next section's prose is not this status.
+        return " ".join(_sections.leading_nonempty(_sections.lines_until_next_section(lines[index + 1 :]), 3))
     return None
 
 
@@ -203,7 +247,7 @@ def date_from_body(text: str) -> date | None:
     return None
 
 
-def critique_observed_date(path: Path, text: str) -> date | None:
+def observed_date(path: Path, text: str) -> date | None:
     """The artifact's effective date for grandfathering: the LATER of the in-body
     ``Date:`` line and the leading ``YYYY-MM-DD`` of the filename.
 
@@ -232,6 +276,14 @@ def critique_observed_date(path: Path, text: str) -> date | None:
     """
     channels = [value for value in (date_from_body(text), date_from_filename(path)) if value is not None]
     return max(channels) if channels else None
+
+
+#: The critique surface's name for the same concept, kept so its call sites read
+#: in their own vocabulary. The rule is NOT critique-specific — every dated
+#: artifact family grandfathers the same way — and forking it per family is what
+#: left the retro floors on the body-first `or` chain this replaced, back-dateable
+#: for a month after the critique half was fixed.
+critique_observed_date = observed_date
 
 
 def date_channel_disagreement(path: Path, text: str) -> tuple[date, date] | None:

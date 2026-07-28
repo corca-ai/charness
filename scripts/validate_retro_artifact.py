@@ -12,6 +12,12 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
+# One home for "what date does this artifact grandfather on" across every dated
+# artifact family; see `_retro_observed_date`.
+_enforcement_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+# One home for "the lines of a markdown section", shared with the critique and
+# ideation validators.
+_sections = import_repo_module(__file__, "scripts.markdown_sections")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
@@ -40,7 +46,6 @@ DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md 
 # retros dated on/after it must carry a lineage marker on issue-form dispositions.
 RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 9)
 PERSISTED_FORM_RULE_DATE = date(2026, 6, 25)
-_DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\b")
 _PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
 RETRO_PREPARE_PACKET_KIND = "charness.retro_prepare_packet"
 RETRO_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Retro Prepare Packet(?:\s+—\s+\S.*)?$")
@@ -103,55 +108,34 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
     return sorted(candidates)
 
 
-def _retro_date(lines: list[str]) -> date | None:
-    """Parse the retro's ``Date: YYYY-MM-DD`` line; ``None`` when absent/malformed."""
-    for line in lines[:5]:
-        match = _DATE_LINE.match(line.strip())
-        if match:
-            try:
-                return date.fromisoformat(match.group(1))
-            except ValueError:
-                return None
-    return None
-
-
-def _date_from_filename(path: Path) -> date | None:
-    """The leading ``YYYY-MM-DD`` of the retro filename, ``None`` when absent."""
-    match = re.match(r"(\d{4}-\d{2}-\d{2})", path.name)
-    if not match:
-        return None
-    try:
-        return date.fromisoformat(match.group(1))
-    except ValueError:
-        return None
-
-
 def _retro_observed_date(path: Path, lines: list[str]) -> date | None:
-    """The retro's effective date for grandfathering: the in-body ``Date:`` line,
-    else the leading ``YYYY-MM-DD`` of the filename. Many frozen historical retros
-    predate the ``Date:`` header convention but are still dated by filename, so the
-    filename fallback keeps them grandfathered (Goodhart Non-Goal). Only a retro
-    with neither falls through to ``None`` -> fail-closed enforcement, which also
-    blocks dodging the floor by stripping the date line of a current-dated file."""
-    return _retro_date(lines) or _date_from_filename(path)
+    """The retro's effective date for grandfathering, through the shared rule.
+
+    This used to be a body-first ``or`` chain over its own two parsers, which is
+    the exact shape C2 replaced on the critique surface: every floor below
+    grandfathers on ``date < RULE_DATE``, so whichever channel reads EARLIER buys
+    the exemption — and the body ``Date:`` line is author-written. A retro could
+    date itself out of the disposition-form, recurrence-lineage and persisted-form
+    floors at once with one line, while its filename said today. The rule is now
+    the LATER of the two channels, single-sourced with the critique surface so the
+    two halves cannot drift again.
+
+    Frozen historical retros that predate the ``Date:`` header are still dated by
+    filename and stay grandfathered (Goodhart Non-Goal). A retro with NEITHER
+    channel falls through to ``None`` -> fail-closed enforcement, which also blocks
+    dodging a floor by stripping the date line off a current-dated file.
+    """
+    return _enforcement_scope.observed_date(path, "\n".join(lines))
 
 
 def _next_improvements_body(lines: list[str]) -> str:
     """Return the ``## Next Improvements`` section body (heading excluded), from
-    its heading to the next ``## `` heading or EOF. Empty string when absent."""
-    start = None
-    for index, line in enumerate(lines):
-        if line.strip() == NEXT_IMPROVEMENTS_HEADING:
-            start = index + 1
-            break
-    if start is None:
-        return ""
-    end = len(lines)
-    for index in range(start, len(lines)):
-        if lines[index].startswith("## "):
-            end = index
-            break
-    return "\n".join(lines[start:end])
+    its heading to the next ``## `` heading or EOF. Empty string when absent.
+
+    Through the shared section reader, which additionally ignores a heading inside a
+    fenced block — a retro that QUOTES the disposition form in a fence was having the
+    quoted example read as its own declarations."""
+    return "\n".join(_sections.section_lines(lines, NEXT_IMPROVEMENTS_HEADING))
 
 
 def validate_disposition_forms(lines: list[str], observed_date: date | None) -> None:

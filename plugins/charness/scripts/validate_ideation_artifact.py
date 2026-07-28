@@ -9,6 +9,9 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+# The required-fields / unique-id / typed-enum loop over a structured-entry
+# section, shared with the critique `## Structured Findings` floor.
+_structured_entry_floor = import_repo_module(__file__, "scripts.structured_entry_floor")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
 run_changed_artifact_validator = _artifact_validator.run_changed_artifact_validator
@@ -37,69 +40,14 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
     return sorted(candidates)
 
 
-def _structured_questions_lines(text: str) -> list[str]:
-    lines = text.splitlines()
-    try:
-        start = next(index for index, line in enumerate(lines) if line.strip() == STRUCTURED_QUESTIONS_HEADING)
-    except StopIteration:
-        return []
-    section: list[str] = []
-    for line in lines[start + 1 :]:
-        if line.startswith("## "):
-            break
-        section.append(line)
-    return [line for line in section if line.strip().startswith("- ")]
-
-
-def _parse_structured_question(raw: str) -> dict[str, str]:
-    body = raw.strip().lstrip("- ").strip()
-    parts = [chunk.strip() for chunk in body.split("|") if chunk.strip()]
-    if not parts:
-        return {}
-    fields: dict[str, str] = {}
-    head = parts[0]
-    if ":" not in head:
-        fields["id"] = head
-        rest = parts[1:]
-    else:
-        rest = parts
-    for chunk in rest:
-        if ":" not in chunk:
-            continue
-        key, _, value = chunk.partition(":")
-        fields[key.strip().lower()] = value.strip()
-    return fields
-
-
 def validate_structured_questions(path: Path, text: str) -> None:
-    bullets = _structured_questions_lines(text)
-    if not bullets:
-        return
-    seen_ids: set[str] = set()
-    for index, raw in enumerate(bullets, start=1):
-        question = _parse_structured_question(raw)
-        question_id = question.get("id", f"<line {index}>")
-        for field in STRUCTURED_REQUIRED_FIELDS:
-            if not question.get(field):
-                raise ValidationError(
-                    f"{path}: `## Structured Questions` entry {question_id} missing required field `{field}`"
-                )
-        if "id" in question:
-            if question["id"] in seen_ids:
-                raise ValidationError(
-                    f"{path}: `## Structured Questions` duplicate id `{question['id']}`"
-                )
-            seen_ids.add(question["id"])
-        if question["urgency"] not in STRUCTURED_URGENCY:
-            raise ValidationError(
-                f"{path}: `## Structured Questions` entry {question_id} has unknown urgency "
-                f"`{question['urgency']}`; allowed: {sorted(STRUCTURED_URGENCY)}"
-            )
-        if question["action"] not in STRUCTURED_ACTIONS:
-            raise ValidationError(
-                f"{path}: `## Structured Questions` entry {question_id} has unknown action "
-                f"`{question['action']}`; allowed: {sorted(STRUCTURED_ACTIONS)}"
-            )
+    _structured_entry_floor.validate_structured_entries(
+        path,
+        text,
+        heading=STRUCTURED_QUESTIONS_HEADING,
+        required_fields=STRUCTURED_REQUIRED_FIELDS,
+        enum_fields={"urgency": STRUCTURED_URGENCY, "action": STRUCTURED_ACTIONS},
+    )
 
 
 def validate_ideation_artifact(path: Path) -> None:

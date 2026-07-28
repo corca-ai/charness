@@ -14,20 +14,18 @@ ValidationError = _artifact_validator.ValidationError
 # both missed the bullet form the corpus writes, so "is this critique packet-bound"
 # had two answers that could drift independently.
 _scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+_sections = import_repo_module(__file__, "scripts.markdown_sections")
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 packet_consumed = _scope.packet_consumed
 EXPECTED_KIND = "charness.critique_prepare_packet"
 
 
 def _binding_fields(text: str) -> dict[str, str]:
-    section = text.partition(_identity.ARTIFACT_HEADING)[2].partition("\n## ")[0]
-    fields: dict[str, str] = {}
-    for raw in section.splitlines():
-        stripped = raw.strip()
-        if stripped.startswith("- ") and ":" in stripped:
-            key, _, value = stripped.lstrip("- ").partition(":")
-            fields[key.replace("*", "").strip().lower()] = value.strip().strip("`")
-    return fields
+    # The `- Key: value` read is one concept, shared with every other floor that
+    # keys off a declared section; the copy here used `partition` on the heading
+    # SUBSTRING, so a heading mentioned mid-prose sliced the section from the wrong
+    # place. `section_field_map` requires the heading on its own line.
+    return _sections.section_field_map(text, _identity.ARTIFACT_HEADING)
 
 
 def validate_reviewed_input_binding(

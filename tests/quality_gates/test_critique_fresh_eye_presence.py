@@ -13,8 +13,10 @@ from .support import ROOT, run_script
 # for the established `RULE_DATE = landing_day + 1` precedent this mirrors. An
 # UNDATABLE artifact is NOT fail-open by default (a second adversarial pass
 # found the first cut's fail-open-on-`None` treated "no date" as a permanent
-# dodge): it is enforced exactly like post-cutoff unless its filename is one of
-# the two named legacy exceptions in `LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS`.
+# dodge): it is enforced exactly like post-cutoff, with no exception at all. This
+# floor carried an undatable allowlist naming two artifacts until 2026-07-28, when
+# both were shown to be prepare packets `candidate_paths` excludes by content kind
+# — an exemption list that excused nothing while reading as though it did.
 
 
 def test_critique_artifact_validator_rejects_missing_fresh_eye_line_post_cutoff(
@@ -244,29 +246,50 @@ def test_critique_artifact_validator_fails_closed_for_new_undatable_artifact(
     assert "has no `Fresh-eye satisfaction:` line" in result.stderr
 
 
-def test_critique_artifact_validator_grandfathers_legacy_undatable_allowlist_entry(
-    tmp_path: Path,
-) -> None:
-    """The two named legacy filenames stay grandfathered even though undatable
-    — a closed, explicit exception, not a fail-open default. Uses the real
-    corpus filename so a rename off the allowlist is caught here too."""
+def test_this_floor_has_no_undatable_exemption_and_needs_none(tmp_path: Path) -> None:
+    """This floor carried an undatable allowlist naming two filenames, and the test
+    that proved the allowlist worked is the reason the dead rows survived a month.
+
+    The fixture it used carried the filename but NOT the
+    `charness.critique_prepare_packet` Kind marker, so `candidate_paths` selected
+    it — while the real artifacts of those names are prepare packets that
+    `candidate_paths` excludes by content kind in every selection mode. The
+    exemption branch could not fire for either real file, so the allowlist read as
+    two live grandfather decisions while excusing nothing, and its test agreed
+    because the test had reconstructed a file the corpus does not contain.
+
+    What is pinned now is the pair of facts that made the rows dead: the real shape
+    is excluded before any floor runs, and an undatable artifact that DOES reach the
+    floor is enforced with no exception at all.
+    """
     repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "release-0-55-1-packet.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(["# Demo Critique", "", "## Decision Under Review", "", "no fresh-eye line at all", ""]),
+    critiques = repo / "charness-artifacts" / "critique"
+    critiques.mkdir(parents=True)
+    no_fresh_eye = ["# Demo Critique", "", "## Decision Under Review", "", "no fresh-eye line at all", ""]
+
+    # The real corpus shape: a prepare packet, undatable, no fresh-eye line. Excluded
+    # by content kind, so the run validates nothing and passes on an empty selection.
+    (critiques / "release-0-55-1-packet.md").write_text(
+        "\n".join(
+            ["# Critique Prepare Packet — demo", "", "- **Kind**: `charness.critique_prepare_packet` (v1)", ""]
+        ),
         encoding="utf-8",
     )
-
-    result = run_script(
-        "scripts/validate_critique_artifacts.py",
-        "--repo-root",
-        str(repo),
-        "--paths",
-        "charness-artifacts/critique/release-0-55-1-packet.md",
+    packet_result = run_script(
+        "scripts/validate_critique_artifacts.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/critique/release-0-55-1-packet.md",
     )
+    assert packet_result.returncode == 0, packet_result.stderr
 
-    assert result.returncode == 0, result.stderr
+    # A real critique carrying that same allowlisted filename is now enforced: being
+    # undatable buys nothing, which is what the allowlist appeared to be about.
+    (critiques / "release-0-55-1-packet.md").write_text("\n".join(no_fresh_eye), encoding="utf-8")
+    enforced = run_script(
+        "scripts/validate_critique_artifacts.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/critique/release-0-55-1-packet.md",
+    )
+    assert enforced.returncode == 1
+    assert "has no `Fresh-eye satisfaction:` line" in enforced.stderr
 
 
 def test_critique_scaffold_default_stub_fails_validation_post_cutoff(

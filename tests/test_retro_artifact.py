@@ -262,3 +262,51 @@ def test_retro_accepts_a_well_formed_recurrence_class_and_ignores_prose(tmp_path
     )
     result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
+
+
+def test_retro_body_date_cannot_backdate_a_currently_dated_file(tmp_path: Path) -> None:
+    """The sibling C2 left behind: the retro floors read the body `Date:` FIRST and
+    fell back to the filename only when it was absent.
+
+    Every floor here grandfathers on `date < RULE_DATE`, so whichever channel reads
+    EARLIER buys the exemption — and the body line is author-written while the
+    filename is what the scaffold and the directory listing show. One `Date:` line
+    took a retro out of the disposition-form, recurrence-lineage and persisted-form
+    floors at once. The rule is now the LATER of the two channels, so an artifact is
+    exempt only when both agree it is old.
+    """
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-01-01\nMode: session\n\n"
+        "## Waste\n\n- something\n\n"
+        "## Next Improvements\n\n- memory: remember this\n\n"
+        "## Persisted\n\nPersisted: sure\n"
+    )
+    _seed(repo, body, name="2026-07-27-backdated.md")
+
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+
+    # Under the old body-first `or`, the 2026-01-01 line put this file before every
+    # RULE_DATE and the run exited 0 over a malformed `Persisted:` line.
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "invalid persisted status" in result.stderr
+
+
+def test_retro_genuinely_old_on_both_channels_stays_grandfathered(tmp_path: Path) -> None:
+    """Falsifiable counterpart. Taking the LATER date must not un-grandfather the
+    frozen historical corpus: when body and filename agree the retro is old, the
+    date-gated floors stay off. A filename-only date must keep working too, because
+    retros predating the `Date:` header convention carry no body line at all."""
+    repo = tmp_path / "repo"
+    loose = (
+        "## Waste\n\n- something\n\n"
+        "## Next Improvements\n\n- memory: remember this\n\n"
+        "## Persisted\n\nPersisted: sure\n"
+    )
+    _seed(repo, "# Session Retro: Demo\nDate: 2026-01-01\nMode: session\n\n" + loose,
+          name="2026-01-01-both-old.md")
+    _seed(repo, "# Session Retro: Demo\nMode: session\n\n" + loose, name="2026-01-02-filename-only.md")
+
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+
+    assert result.returncode == 0, result.stdout + result.stderr

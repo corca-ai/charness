@@ -28,6 +28,12 @@ _reviewer_evidence = import_repo_module(__file__, "scripts.critique_reviewer_evi
 # The enforcement-scope concept (which floor was live, over what) lives in one
 # module rather than as conditions scattered across this file's use sites.
 _scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+# One home for "the lines of a markdown section": this file carried three copies of
+# the same heading walk, each with a slightly different heading matcher.
+_sections = import_repo_module(__file__, "scripts.markdown_sections")
+# The required-fields / unique-id / typed-enum loop over a structured-entry
+# section, shared with the ideation `## Structured Questions` floor.
+_structured_entry_floor = import_repo_module(__file__, "scripts.structured_entry_floor")
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 critique_observed_date = _scope.critique_observed_date
 # Kept as module attributes: `tests/test_validate_critique_artifacts_dates.py`
@@ -105,15 +111,15 @@ BOUNDARY_VERDICT_SUMMARY = "`single-surface` / `owned-correctly` / `moved-to-own
 # allowlist, NOT fail-open (a NEW undatable artifact is still enforced; the
 # scaffold always emits a dated filename). Kept separate from the fresh-eye
 # allowlist so grandfathering here never weakens that floor's own enforcement.
-BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset({"release-0-55-0-full-packet.md", "release-0-55-1-packet.md", "release-0-55-1-critique.md"})
-# Closed, explicit allowlist — NOT a fail-open default. Every other undatable
-# critique artifact is now enforced as if post-cutoff (a new artifact with no
-# parseable date is itself the anomaly); only these two legacy prepare-packets,
-# frozen before this floor existed and never carrying a `Fresh-eye
-# satisfaction:` line, are named exceptions. Extending this set requires the
-# same care as extending a `boundary-bypass-exemptions.txt` entry: one
-# artifact, one reason (this file has both — no date, pre-floor legacy).
-LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset({"release-0-55-0-full-packet.md", "release-0-55-1-packet.md"})
+#
+# One entry, not three. `release-0-55-0-full-packet.md` and
+# `release-0-55-1-packet.md` are `charness.critique_prepare_packet` documents,
+# which `candidate_paths` excludes by content kind in BOTH selection modes, so
+# neither name ever reached this check. They read as live grandfather decisions —
+# two artifacts this floor had deliberately excused — while excusing nothing, which
+# is worse than an empty allowlist: a reader auditing what the floor lets through
+# counts three exemptions and can find no way to reach two of them.
+BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset({"release-0-55-1-critique.md"})
 # Reviewer tier evidence is not a new floor — it has been enforced since the
 # fresh-eye presence floor landed — but it was enforced only for artifacts the
 # run SELECTED, so `--all` (the command `.agents/surfaces.json` declares as this
@@ -197,47 +203,13 @@ def has_blocked_signal_detail(text: str) -> bool:
             lowered = lowered.lstrip("#").strip()
         if lowered not in SIGNAL_HEADINGS:
             continue
-        for following in lines[index + 1 :]:
-            stripped = following.strip()
-            if stripped.startswith("## "):
-                break
-            if _substantive_signal(stripped):
+        # The heading matcher here is this floor's own (any `#` depth, optional
+        # trailing colon, one of a set of spellings), so only the boundary rule is
+        # shared — which is the half that kept being re-derived.
+        for following in _sections.lines_until_next_section(lines[index + 1 :]):
+            if _substantive_signal(following.strip()):
                 return True
     return False
-
-
-def _structured_findings_lines(text: str) -> list[str]:
-    lines = text.splitlines()
-    try:
-        start = next(index for index, line in enumerate(lines) if line.strip() == STRUCTURED_FINDINGS_HEADING)
-    except StopIteration:
-        return []
-    section: list[str] = []
-    for line in lines[start + 1 :]:
-        if line.startswith("## "):
-            break
-        section.append(line)
-    return [line for line in section if line.strip().startswith("- ")]
-
-
-def _parse_structured_finding(raw: str) -> dict[str, str]:
-    body = raw.strip().lstrip("- ").strip()
-    parts = [chunk.strip() for chunk in body.split("|") if chunk.strip()]
-    if not parts:
-        return {}
-    fields: dict[str, str] = {}
-    head = parts[0]
-    if ":" not in head:
-        fields["id"] = head
-        rest = parts[1:]
-    else:
-        rest = parts
-    for chunk in rest:
-        if ":" not in chunk:
-            continue
-        key, _, value = chunk.partition(":")
-        fields[key.strip().lower()] = value.strip()
-    return fields
 
 
 def _is_valid_followup_value(value: str) -> bool:
@@ -250,75 +222,44 @@ def _is_valid_followup_value(value: str) -> bool:
     return is_valid_followup_tail(value.strip().lower())
 
 
+def _check_finding_followup(finding: dict[str, str], finding_id: str, path: Path) -> None:
+    """The one rule this family adds beyond the shared floor: `action: file-issue`
+    must carry a parseable `follow-up:`, and a present-but-malformed value is
+    refused whatever the action."""
+    followup_value = finding.get("follow-up", "")
+    if finding["action"] == "file-issue":
+        if not _is_valid_followup_value(followup_value):
+            raise ValidationError(
+                f"{path}: `{STRUCTURED_FINDINGS_HEADING}` entry {finding_id} has `action: file-issue` "
+                "but no parseable `follow-up:` field; record the issue URL or "
+                "`follow-up: deferred <handoff-anchor>` per "
+                "skills/public/critique/references/counterweight-triage.md."
+            )
+    elif followup_value and not _is_valid_followup_value(followup_value):
+        raise ValidationError(
+            f"{path}: `{STRUCTURED_FINDINGS_HEADING}` entry {finding_id} has malformed `follow-up:` value "
+            "(bare `deferred` without an anchor)."
+        )
+
+
 def validate_structured_findings(path: Path, text: str) -> None:
-    bullets = _structured_findings_lines(text)
-    if not bullets:
-        return
-    seen_ids: set[str] = set()
-    for index, raw in enumerate(bullets, start=1):
-        finding = _parse_structured_finding(raw)
-        finding_id = finding.get("id", f"<line {index}>")
-        for field in STRUCTURED_REQUIRED_FIELDS:
-            if not finding.get(field):
-                raise ValidationError(
-                    f"{path}: `## Structured Findings` entry {finding_id} missing required field `{field}`; "
-                    f"every entry needs all of {list(STRUCTURED_REQUIRED_FIELDS)} — target form: "
-                    f"`{STRUCTURED_FINDING_FORM}`"
-                )
-        if "id" in finding:
-            if finding["id"] in seen_ids:
-                raise ValidationError(
-                    f"{path}: `## Structured Findings` duplicate id `{finding['id']}`"
-                )
-            seen_ids.add(finding["id"])
-        if finding["bin"] not in STRUCTURED_BINS:
-            raise ValidationError(
-                f"{path}: `## Structured Findings` entry {finding_id} has unknown bin `{finding['bin']}`; "
-                f"allowed: {sorted(STRUCTURED_BINS)}"
-            )
-        if finding["evidence"] not in STRUCTURED_EVIDENCE:
-            raise ValidationError(
-                f"{path}: `## Structured Findings` entry {finding_id} has unknown evidence `{finding['evidence']}`; "
-                f"allowed: {sorted(STRUCTURED_EVIDENCE)}"
-            )
-        if finding["action"] not in STRUCTURED_ACTIONS:
-            raise ValidationError(
-                f"{path}: `## Structured Findings` entry {finding_id} has unknown action `{finding['action']}`; "
-                f"allowed: {sorted(STRUCTURED_ACTIONS)}"
-            )
-        followup_value = finding.get("follow-up", "")
-        if finding["action"] == "file-issue":
-            if not _is_valid_followup_value(followup_value):
-                raise ValidationError(
-                    f"{path}: `## Structured Findings` entry {finding_id} has `action: file-issue` "
-                    "but no parseable `follow-up:` field; record the issue URL or "
-                    "`follow-up: deferred <handoff-anchor>` per "
-                    "skills/public/critique/references/counterweight-triage.md."
-                )
-        elif followup_value and not _is_valid_followup_value(followup_value):
-            raise ValidationError(
-                f"{path}: `## Structured Findings` entry {finding_id} has malformed `follow-up:` value "
-                "(bare `deferred` without an anchor)."
-            )
+    _structured_entry_floor.validate_structured_entries(
+        path,
+        text,
+        heading=STRUCTURED_FINDINGS_HEADING,
+        required_fields=STRUCTURED_REQUIRED_FIELDS,
+        enum_fields={
+            "bin": STRUCTURED_BINS,
+            "evidence": STRUCTURED_EVIDENCE,
+            "action": STRUCTURED_ACTIONS,
+        },
+        form_hint=STRUCTURED_FINDING_FORM,
+        per_entry=lambda finding, finding_id: _check_finding_followup(finding, finding_id, path),
+    )
 
 
 def _section_field_map(text: str, heading: str) -> dict[str, str]:
-    lines = text.splitlines()
-    try:
-        start = next(index for index, line in enumerate(lines) if line.strip() == heading)
-    except StopIteration:
-        return {}
-    fields: dict[str, str] = {}
-    for raw in lines[start + 1 :]:
-        if raw.startswith("## "):
-            break
-        stripped = raw.strip()
-        if not stripped.startswith("- ") or ":" not in stripped:
-            continue
-        key, _, value = stripped.lstrip("- ").partition(":")
-        normalized_key = key.replace("*", "").strip().lower()
-        fields[normalized_key] = value.strip().strip("`")
-    return fields
+    return _sections.section_field_map(text, heading)
 
 
 def _opens_with_typed_value(value: str, allowed: tuple[str, ...]) -> bool:
@@ -402,14 +343,16 @@ def validate_critique_artifact(
 
     def _check_fresh_eye_typed_presence() -> None:
         # Grandfather is narrow, not fail-open: a dated artifact before the
-        # cutoff is grandfathered; an undatable artifact is grandfathered ONLY
-        # by the explicit legacy allowlist. Every other undatable artifact —
-        # including any new artifact that never picks up a `Date:` line or a
-        # dated filename — is enforced exactly as if dated post-cutoff, since
-        # an undatable NEW artifact is itself the anomaly, not a safe default.
+        # cutoff is grandfathered, and nothing else. This floor USED to carry its
+        # own undatable allowlist naming two artifacts — both
+        # `charness.critique_prepare_packet` documents that `candidate_paths`
+        # excludes by content kind, so the branch could not fire for either. It
+        # is gone rather than emptied: an allowlist that excuses nothing still
+        # tells a reader auditing this floor that two artifacts were excused.
+        # Every undatable artifact — including a new one that never picks up a
+        # `Date:` line or a dated filename — is enforced exactly as if dated
+        # post-cutoff, since an undatable NEW artifact is itself the anomaly.
         if observed_date is not None and observed_date < FRESH_EYE_PRESENCE_RULE_DATE:
-            return
-        if observed_date is None and path.name in LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS:
             return
         # floor-addition-restraint: irreversible-boundary P4 floor, typed-presence-only
         if not status_lowered:

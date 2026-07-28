@@ -193,6 +193,102 @@ def test_bullet_trigger_inside_the_identity_section_also_demands_the_fields(tmp_
     assert "reviewed input identity missing fields" in result.stderr
 
 
+def test_heading_form_packet_consumed_triggers_the_binding_floor(tmp_path: Path) -> None:
+    """C3's named residual: the `## Packet Consumed` heading form, which 46 checked-in
+    release critiques use and no line trigger can match — no colon, path on a later
+    line.
+
+    It stayed open because every widening of a CONTENT trigger also fires on an
+    artifact that merely discusses this surface, whose remediation (produce a SHA for
+    a packet that does not exist) is impossible. A heading is not prose, so the
+    heading form needs no such trade: it is read as a section, and the declared VALUE
+    still decides, so the corpus's `n/a` negative keeps the floor off."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    body = _body(tier=tier, tail="\n## Packet Consumed\n\n`some/packet.json`\n\n## Context\n\n- ok\n")
+    relpath = _artifact(repo, "2026-07-28-heading.md", body)
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "packet-bound critique must declare fields" in result.stderr
+
+
+def test_heading_form_prose_is_not_a_declared_packet(tmp_path: Path) -> None:
+    """The over-block the heading widening first re-created, caught by review.
+
+    The declared value was the first TOKEN of the section's first line, tested only
+    against the `n/a` negatives — so a prose opener read as a packet path. Two
+    checked-in critiques open the section exactly that way (`Transient prepare packet
+    generated at ...`, `Inline brief — the review covered ...`), and one of them, a
+    May artifact nobody had edited, would then have been refused for missing reviewer
+    tier evidence under `--paths`. A declared packet is a PATH."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    for label, first_line in (
+        ("transient-prose", "Transient prepare packet generated at `2026-07-09T11:25:12Z` for the run."),
+        ("inline-brief", "Inline brief — the review covered `tests/seed_cache.py` directly."),
+    ):
+        tail = f"\n## Packet Consumed\n\n{first_line}\n\n## Context\n\n- ok\n"
+        relpath = _artifact(repo, f"2026-07-28-heading-{label}.md", _body(tier=tier, tail=tail))
+        assert _validate(repo, relpath).returncode == 0, label
+
+    # Falsifiable counterpart on the same reader: the two path shapes the corpus
+    # writes DO still declare, so requiring a path did not close the widening.
+    for label, first_line in (
+        ("bare-path", "charness-artifacts/critique/x-packet.md"),
+        ("code-wrapped", "`charness-artifacts/critique/x-packet.json`"),
+    ):
+        tail = f"\n## Packet Consumed\n\n{first_line}\n\n## Context\n\n- ok\n"
+        relpath = _artifact(repo, f"2026-07-28-heading-declares-{label}.md", _body(tier=tier, tail=tail))
+        assert _validate(repo, relpath).returncode == 1, label
+
+
+def test_a_fenced_section_heading_is_not_the_real_section(tmp_path: Path) -> None:
+    """Fenced text is SHOWN, not asserted — read as the author's claim on four gates
+    now, and the artifacts most likely to QUOTE a canonical `## Section` block are
+    critiques of these very validators.
+
+    The shared section reader ignores headings inside a fence, so an artifact that
+    documents the `## Reviewed Input Identity` form above its own real section binds
+    through the real one. Before this, the quoted example's fields won by being
+    first."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    tail = (
+        "\n## Context\n\nThe canonical binding block is:\n\n"
+        "```markdown\n## Reviewed Input Identity\n\n- packet path: `quoted/example.json`\n"
+        "- packet sha256: `deadbeef`\n- identity sha256: `cafebabe`\n```\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-fenced-identity.md", _body(tier=tier, tail=tail))
+
+    # The quoted block declares nothing: no packet trigger, no binding fields read,
+    # so the floor stays off rather than binding to `quoted/example.json`.
+    assert _validate(repo, relpath).returncode == 0
+
+
+def test_heading_form_declaring_no_packet_leaves_the_floor_off(tmp_path: Path) -> None:
+    """The over-block twin, on the new shape. `n/a` under the heading is the corpus's
+    way of writing "no packet"; demanding three SHA256 fields for it would be a
+    refusal with no possible remediation. An EMPTY section is the third case: the
+    author declared nothing either way, and reading that as absence would silently
+    turn the floor off, so it is not read as a declaration at all.
+
+    Prose that merely mentions the heading is not a declaration either — this is the
+    trade a line trigger could not avoid and a heading parse does not have to make.
+    """
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    for label, tail in (
+        ("declared-absent", "\n## Packet Consumed\n\nn/a (no adapter sections)\n"),
+        ("empty-section", "\n## Packet Consumed\n\n## Context\n\n- ok\n"),
+        ("prose-mention", "\n## Context\n\n- we changed the `## Packet Consumed` parse today\n"),
+        ("fenced-quotation", "\n## Context\n\n```\n## Packet Consumed\n\n`some/packet.json`\n```\n"),
+    ):
+        relpath = _artifact(repo, f"2026-07-28-heading-{label}.md", _body(tier=tier, tail=tail))
+        assert _validate(repo, relpath).returncode == 0, label
+
+
 def test_no_packet_consumed_line_leaves_the_binding_floor_off(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
