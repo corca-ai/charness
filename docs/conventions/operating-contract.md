@@ -67,6 +67,58 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 - Slice fresh-eye review consumes a bounded packet: intent, changed files and
   owning/generated surfaces, expected invariants, tests/proof, non-claims,
   out-of-scope lines, and reviewer questions.
+- **A slice that changes VERDICT LOGIC on a proof surface runs a SECOND bounded
+  review reading the repaired surface** — notwithstanding the once-per-slice
+  clause above, which this class overrides on the REVIEW count only: the repairs
+  are exactly the "later edits" that clause would otherwise wave through. It is
+  still ONE critique artifact per slice, recording both rounds (the worked
+  example is
+  [this critique](../../charness-artifacts/critique/2026-07-28-four-unestablished-scope-readers-in-the-quality-dup-nose-subsystem.md),
+  whose Fresh-Eye Satisfaction names five reviewers across two rounds). One round
+  is not enough here and the repo has the count to say so: every measured slice
+  shipped a fix carrying the class it fixed, and on 2026-07-28 round 1 found six
+  such instances inside the fix while round 2, reading the repaired state, found
+  four more — two of them blockers that one round would have shipped.
+  - **Trigger is verdict logic, not the file.** A proof surface is a gate,
+    validator, or any code rendering a verdict about other code or artifacts,
+    but ~60-163 such files are touched per week against a population of ~135
+    (measured in [new_proof_surface_advisory.py](../../scripts/new_proof_surface_advisory.py)),
+    so a touched-the-file trigger is unaffordable and would be ignored. Changing
+    what a surface decides, or when it refuses, fires the rule; a rename,
+    comment, docstring, or import-only edit does not.
+  - **Two cases that look out of scope and are not**, because both are recorded
+    escapes: (1) **weakening a test assertion** that pins a verdict — a loosened
+    or flipped assertion stops discriminating, which is the same class in test
+    form, so it fires (merely ADDING a case does not); (2) **changing a status,
+    reason, or value that another surface keys on** — the producer still decides
+    the same thing, and the escape lives in an untouched reader, so round 2's
+    packet is the subsystem's READERS of that value, not the edited file.
+  - **Relationship to the birth advisory.** That advisory argues an
+    edit-triggered check over proof-surface FILES is useless, and it is right:
+    the risk is at a verdict's birth. This rule does not contradict it — new
+    verdict logic inside an existing file, and the repairs themselves, ARE
+    births. The advisory owns newly added surface FILES and its
+    `Fresh-eye pass: <path>` marker; that marker is matched only against
+    newly-added paths, so for a changed existing surface nothing mechanically
+    records this rule and the critique artifact is the record.
+  - **Round 2 reads the repaired surface, not the repair hunks**, and asks the
+    same question of it: does this fix reproduce the class it fixes? A hunk-only
+    packet cannot see a guard that is dead, negative, or bypassed elsewhere.
+  - **A first round that produced no repairs discharges the obligation** — record
+    that it found nothing rather than spawning a second reviewer over an
+    unchanged tree. Scale the pass, not the obligation.
+  - **The cap is two rounds, and round-2 repairs ship unreviewed by that same
+    argument.** This is a deliberate stopping rule, not an oversight: iterating
+    until a round comes back clean is unaffordable, and the marginal round is
+    worth less each time (round 1 found six, round 2 four). Record round-2
+    repairs as accepted-unreviewed in the critique artifact so the residual is
+    visible instead of implied; escalate to a third round only when a round-2
+    finding was itself a blocker in verdict logic.
+  - Both rounds run BEFORE the locked `--produce-mutation-coverage` producer run
+    (see [implementation-discipline.md](./implementation-discipline.md)); a
+    round-2 repair after the producer invalidates the coverage fingerprint.
+  - A docs, artifact, or ordinary-code slice keeps the single-round obligation
+    above.
 - `Critique: not-applicable <reason>` is reserved for inspect-only, status-only,
   or routing-only requests that do not complete repo work.
 - If the required bounded-review path is blocked by the host, stop and record

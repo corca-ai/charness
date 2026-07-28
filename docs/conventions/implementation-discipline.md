@@ -78,7 +78,13 @@ the root instruction file but still apply to Charness maintenance work.
 - Run the fresh-eye slice critique BEFORE the locked `--produce-mutation-coverage`
   producer run, not after: critique-driven code or test changes invalidate the
   coverage fingerprint and force a full instrumented broad-pytest rerun (two
-  reruns in one goal on 2026-06-10 — one per mutating slice).
+  reruns in one goal on 2026-06-10 — one per mutating slice). This covers EVERY
+  round: a proof-surface slice owes a second review of its repairs
+  ([operating-contract.md](./operating-contract.md) Critique Discipline), so the
+  order is round 1 -> repairs -> round 2 -> repairs -> producer, and the cap is
+  two rounds (round-2 repairs are recorded as accepted-unreviewed rather than
+  triggering a third). Satisfying "critique before producer" with round 1 alone
+  buys back the exact rerun this rule exists to prevent.
 - `python3 scripts/sync_support.py --json` and
   `python3 scripts/update_tools.py --json` are dry-run sanity checks.
 - Use `python3 scripts/doctor.py --json` only when intentionally collecting

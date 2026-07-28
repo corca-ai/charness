@@ -111,6 +111,30 @@ each verifier a distinct lens, not N identical refuters) applied to review-lens
 assignment. The lens names are a request like the reviewer tier, not a fixed
 taxonomy: pick the hazard classes the diff actually crosses.
 
+## Two Rounds For Verdict-Rendering Code
+
+A slice that changes what a **proof surface** decides — a gate, validator, or any
+code rendering a verdict about other code or artifacts — owes a SECOND bounded
+round that reads the REPAIRED surface, because the repairs the first round drove
+are themselves unreviewed. This is not caution: every measured slice of that class
+in the authoring repo shipped a fix carrying the class it fixed, and the round that
+read the repairs has caught blockers the first round structurally could not see
+(it was reviewing code that no longer exists).
+
+Round 2 reads the repaired surface, not the repair hunks — a hunk-only packet
+cannot see a guard left dead, inverted, or bypassed elsewhere — and asks one
+question: does this fix reproduce the class it fixes? A first round that produced
+no repairs discharges the obligation; record that it found nothing rather than
+spawning a reviewer over an unchanged tree. The cap is two rounds: round-2
+repairs are recorded as accepted-unreviewed rather than triggering a third, a
+deliberate stopping rule because the marginal round is worth less each time.
+
+The trigger is what the surface decides, not that its file was touched. In the
+authoring repo the full rule, the touched-vs-changed measurement behind that
+scoping, and the producer-run ordering live in the authoring repo's operating contract
+(Critique Discipline; authoring-repo-internal, not vendored with the skill). A
+consuming repo that adopts this rule owns its own trigger definition.
+
 ## Shared-Tree Git Hygiene
 
 Bounded fresh-eye reviewers usually run in the *parent session's* working tree,

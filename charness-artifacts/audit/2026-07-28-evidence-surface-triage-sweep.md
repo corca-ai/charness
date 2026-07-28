@@ -6,13 +6,16 @@ SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
 **8 rows are now CLOSED** (S6, S19, S20, S93, then S27/S29/S33/S34) — reproduced in the
 parent, fixed, and regression-tested on 2026-07-28. Every other row is still open at the
-provenance its own cell states.
+provenance its own cell states — in the MAIN findings table. The reviewer-derived leads
+table at the end of this file has its own statuses (see the vocabulary block below);
+twelve of its rows are `REPAIRED` and one is `DISPOSITIONED`, so "every other row is
+still open" is a claim about the main table only.
 
 The S27/S29/S33/S34 batch also produced **14 new leads** across two review rounds of that
 one fix; they are recorded at the end under
 [Leads found while closing S27/S29/S33/S34](#leads-found-while-closing-s27s29s33s34) and
-are REVIEWER-DERIVED, not parent-reproduced. Twelve were repaired inside the same slice; the
-two outside its subsystem are open. Round 2 reviewed the round-1 REPAIRS and found the class
+are REVIEWER-DERIVED, not parent-reproduced. Twelve were repaired inside the same slice; R8 is
+open and R9 was dispositioned as an accepted residual by the operator on 2026-07-28. Round 2 reviewed the round-1 REPAIRS and found the class
 again in four more places, which is the number worth remembering about this class.
 
 ## Why this exists
@@ -53,6 +56,20 @@ makes the remainder worth reading.
   it, and left a regression test that fails on reverting the fix. This is the only
   status that means a row is done; nothing else in this table does, whatever a test
   docstring elsewhere claims.
+
+The reviewer-derived leads table at the end of this file adds three statuses of its own,
+and none of them is `CLOSED`:
+
+- `REPAIRED (same slice)` / `REPAIRED (round 2)` — fixed and regression-tested inside the
+  slice that surfaced it. It is NOT `CLOSED`: the row was read from source by a reviewer,
+  never reproduced by the parent as its own defect, so the repair rests on the reviewer's
+  reading plus a test written from it.
+- `DISPOSITIONED (accepted residual <date>)` — the operator decided the named residual is
+  the correct cost of avoiding a worse failure, and the decision plus what stays unguarded
+  is recorded on the owning surface. It means "do not work this", NOT "this is fixed".
+  Reopen only with evidence that the residual is reachable by a path the decision did not
+  consider.
+- `OPEN` — surviving lead, unworked.
 
 **What is NOT claimed:** that 109 defects exist. That is the count of surviving
 claims, not of reproduced defects. The prior hunt's discipline was that
@@ -231,8 +248,9 @@ surfaces that are known good.
 Two bounded review rounds over that one fix produced these. **Provenance:
 REVIEWER-DERIVED** — read from source by a read-only reviewer, not reproduced by the
 parent, except where a row says otherwise. The rows marked `REPAIRED (same slice)` were
-fixed and regression-tested inside the S27/S29/S33/S34 commit; the two `OPEN` rows are
-outside that slice's subsystem and are the next coherent batch of this class.
+fixed and regression-tested inside the S27/S29/S33/S34 commit. **R8 is the one OPEN row
+and is the next coherent batch of this class**; R9 was dispositioned as an accepted
+residual by the operator on 2026-07-28 and is not work to pick up.
 
 | id | sev | status | surface:line | the unestablished verdict |
 | --- | --- | --- | --- | --- |
@@ -244,7 +262,7 @@ outside that slice's subsystem and are the next coherent batch of this class.
 | R6 | med | REPAIRED (same slice) | `skills/public/quality/scripts/seed_dup_review.py` | `_families_from_payload` was byte-for-byte the pre-fix `families_from_text`; `_run_inventory` read stdout and ignored the return code; `_load_existing` swallowed a corrupt overlay, so `--write` rebuilt it from scratch and dropped every operator classification while reporting success. |
 | R7 | med | REPAIRED (same slice) | `skills/public/quality/scripts/dup_ratchet_rebaseline.py` | `--write-baseline` over a zero-family live scan wrote an EMPTY accepted baseline and reported `baseline-written`, which then disarms the gate's own zero-family backstop (keyed on a non-empty baseline). On first-time bootstrap the large-delta guard is skipped entirely. Reachable: nose exits 0 with `families: []` over a scope root matching no supported files (parent-probed 2026-07-28). |
 | R8 | high | **OPEN** | `skills/public/quality/scripts/changed_line_coverage_gate_lib.py:27` | A failed `git diff` (`returncode != 0`) returns `[]`, which the gate renders as "no eligible changed files in this range", `ok: True`. The canonical producer is a shallow CI fetch where `base_sha` is not present locally. The freshness fingerprint is vacuous in the same breath, so the staleness guard passes too. A BLOCKING gate, different subsystem — its own slice. |
-| R9 | med | **OPEN** | `skills/public/quality/scripts/check_dup_ratchet.py:138` | The "0 families but the baseline has N" backstop is gated on `and baseline_ids`, so a present-but-EMPTY baseline disarms it, and there is no doc-arm equivalent even though the doc payload carries `total_family_count`/`accepted_count`. Fixing the code arm needs care: a genuinely clone-free consumer repo must not be false-refused, so this is a design decision, not a one-line flip. |
+| R9 | med | **DISPOSITIONED (accepted residual 2026-07-28)** | `skills/public/quality/scripts/check_dup_ratchet.py:138` | The "0 families but the baseline has N" backstop is gated on `and baseline_ids`, so a present-but-EMPTY baseline disarms it, and there is no doc-arm equivalent. **Operator decision: accept the residual and close the write path instead of adding a detector.** `--write-baseline` now refuses an empty scan without an explicit confirmation (R7), so an empty baseline can no longer arrive silently; widening the backstop would make every genuinely clone-free adopting repo read as degraded on every run — a false refusal traded for an unactionable warning. A repo that ALREADY holds an empty baseline stays unguarded, which is the accepted cost and is documented in the degrade ladder of `skills/public/quality/references/dup-ratchet.md`. Not a defect to work; reopen only with evidence of an empty baseline arriving by a path R7 does not cover. |
 | R10 | high | REPAIRED (round 2) | `skills/public/quality/scripts/draft_dup_ratchet_triage.py:146` | The new unevaluated-status guard omitted `degraded` — the canonical could-not-judge status, and the one every code-arm degrade this slice ADDED now produces (`{"status": "degraded", "new_code_families": [], "ok": true}`). The repair hardened the producer and then taught the consumer to trust exactly that output. A gate may treat a degrade as advisory; this drafter is a writer whose output drafts a permanent accept. |
 | R11 | high | REPAIRED (round 2) | `skills/public/quality/scripts/migrate_dup_fingerprints.py:220` | The new per-surface vanish guard computed overlay survivors as `len(ids) - len(dropped_ids)`; `dropped_ids` is a per-ENTRY list that neither dedupes nor excludes id-less entries, so a duplicated or `id: null` overlay entry made the count NEGATIVE and `not -1` is False. The guard was disarmed by the shape it was written to catch. Parent-proved by injecting the old arithmetic and watching the new test fail. |
 | R12 | med | REPAIRED (round 2) | `skills/public/quality/scripts/seed_dup_review.py:97` | The new overlay refusal caught only unparseable JSON, while its sibling written in the same round required a dict with an `entries` list. A list/scalar/renamed-key overlay still read as "no prior review" through a parse that succeeded, so `--write` wiped every classification. Two readers of one artifact must not disagree about what readable means. |

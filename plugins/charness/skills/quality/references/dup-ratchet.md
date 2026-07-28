@@ -238,6 +238,22 @@ injectable so the policy stays pure and testable.
   permanently vacuous gate. A genuinely clone-free scope is real — hence a
   confirmation gate, not a refusal.
 
+### Known residual: an already-empty gate baseline
+
+The "a real scan returned 0 families while the baseline holds N" backstop is keyed on
+a NON-EMPTY baseline, so a repo whose accepted baseline is already empty gets no such
+warning: a broken scan and a clone-free scope look identical to it, and the doc arm has
+no equivalent check at all even though its payload carries the counts.
+
+This is an accepted residual, not an oversight (decided 2026-07-28). The write path is
+where an empty baseline comes from, and that path now refuses without an explicit
+confirmation, so the ARRIVAL PATH is closed rather than papered over with a detector.
+An empty baseline that already exists stays unguarded; only new ones are prevented. Widening the backstop to fire on an empty baseline would make every genuinely
+clone-free adopting repo read as degraded on every run — a false refusal traded for a
+warning nobody can act on. If your repo already carries an empty accepted baseline,
+re-seed it deliberately (`--write-baseline --confirm-baseline-delta`) and confirm the
+family count in the output line rather than relying on the gate to notice.
+
 ## Adoption
 
 Order matters: the gate-baseline seed reads `scope_paths`, so configure scope

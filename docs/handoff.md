@@ -14,29 +14,28 @@ Two records drive this work. The
 reproduced 30 defects over 22 surfaces; **9 OPEN + 4 PARTIAL remain**. The
 [triage sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md)
 first-looked the other 146 surfaces: **101 leads still open**, 30 high severity, plus
-its own `## Leads found while closing S27/S29/S33/S34` table. `CLOSED
-(parent-reproduced <date>)` is the ONLY status that means a row is done.
+its own `## Leads found while closing S27/S29/S33/S34` table. In the MAIN findings table,
+`CLOSED (parent-reproduced <date>)` is the only status that means a row is done; the
+leads table declares its own statuses, including an operator `DISPOSITIONED` — read that
+file's status vocabulary before citing any row.
 
 ## Current State
 
-- **8 sweep rows are closed; this session took S27/S29/S33/S34** — the quality
-  dup/nose readers that reported `clean`/`planned`/`intentional` over a scan that
-  never happened. Each was reproduced in the parent first, and the new tests were
-  proven to fail against pristine HEAD source by running them there.
-- **The fix carried its own class TWICE MORE: 6 instances in round 1, 4 in round 2**
-  (round 2 reviewed the repairs). All 14 reviewer-derived leads are in the sweep's own
-  table; 12 were repaired in-slice. Budget the repair round, then a review OF the
-  repair round — the second round is where the negative survivor count and the
-  `degraded`-shaped hole were found.
+- **8 sweep rows are closed; this session took S27/S29/S33/S34** — dup/nose readers
+  that reported `clean`/`planned`/`intentional` over a scan that never happened.
+- **A slice that changes VERDICT LOGIC owes a second bounded review reading the
+  REPAIRED surface** (not the repair hunks; a clean first round discharges it) — the
+  rule and its trigger live in
+  [operating-contract](./conventions/operating-contract.md) Critique Discipline,
+  approved 2026-07-28. Budget the repair round AND the review of it.
 - **The subsystem now has one rule:** `[]` means the producer DECLARED zero families;
   anything else is a reason. Shape reading lives in
   [nose_report_shape_lib](../skills/public/quality/scripts/nose_report_shape_lib.py);
   the unestablished-input gate behavior is pinned in
   [test_dup_ratchet_unestablished_inputs.py](../tests/quality_gates/test_dup_ratchet_unestablished_inputs.py).
-- **Two leads were deliberately left OPEN** (R8, R9 in that table) because each needs
-  its own design, not a one-line flip. R8 is a BLOCKING gate.
-- **The fix itself tripped `dup-ratchet` and the length cap**; both were resolved by
-  extraction/split, not by classifying self-inflicted duplication as intentional.
+- **R8 is the only open lead from that table; R9 was dispositioned** as an accepted
+  residual (the write path is closed, so a detector would only false-refuse clone-free
+  repos) — do not re-work it without new evidence.
 
 ## Next Session
 
@@ -44,13 +43,13 @@ its own `## Leads found while closing S27/S29/S33/S34` table. `CLOSED
    `[]`, which a blocking gate renders as "no eligible changed files", and the
    freshness fingerprint is vacuous in the same breath. Canonical trigger is a shallow
    CI fetch where `base_sha` is absent locally. Reproduce that before changing it.
-2. **R9: the dup-ratchet zero-family backstop** (`check_dup_ratchet.py:138`) is gated on
-   `and baseline_ids`, so an empty baseline disarms it, and the doc arm has no
-   equivalent though its payload carries the counts. A naive fix false-refuses a
-   clone-free consumer repo — design first.
-3. **The sweep's remaining high-severity rows, reproducing each first.** Class (a) is
+2. **The sweep's remaining high-severity rows, reproducing each first.** Class (a) is
    still dominant. Prefer batches that share one subsystem, as S27/S29/S33/S34 did:
    the siblings are where the class hides.
+3. **Pin the vendored two-round rule** in
+   [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md):
+   unpinned copies drifted once already this slice, and pinning a vendored reference needs
+   a portability call on what a consuming repo may change.
 4. **The original hunt's A5/A6, A8/A9/A10, B4/B5** (**E last** — per-changed-file
    mutation discrimination is a contract change).
 5. **A3 is PARTIAL** (scheduled is not judged; needs a live staged/revert probe, not
