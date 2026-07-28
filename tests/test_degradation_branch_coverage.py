@@ -464,3 +464,22 @@ def test_attention_scan_roots_include_skills_shared_when_present(tmp_path) -> No
     assert len(with_shared) == len(without) + 1
     assert any("shared" in root for root in with_shared)
     assert not any("shared" in root for root in without)
+
+
+def test_pin_run_state_survives_a_git_failure_in_the_fingerprint(monkeypatch, tmp_path) -> None:
+    """`_pin_run_state` pins the run's identity BEFORE any expensive work, so a git
+    failure while computing the changed-pool fingerprint must cost freshness only.
+    Letting it propagate would turn a degraded input into a crash at the one point
+    where the gate is deciding what it is even allowed to judge."""
+    import changed_line_run_trust as trust
+
+    def boom(*_args, **_kwargs):
+        raise OSError("git not found")
+
+    monkeypatch.setattr(trust, "changed_pool_fingerprint", boom)
+    monkeypatch.setattr(trust, "_git_lines", lambda *_a, **_k: ["cafebabe"])
+
+    pinned = trust._pin_run_state(tmp_path, "base", "head")
+
+    assert pinned["pool_fingerprint"] == ""
+    assert pinned["resolved_head_sha"] == "cafebabe"

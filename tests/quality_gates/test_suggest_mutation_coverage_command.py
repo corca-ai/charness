@@ -550,3 +550,52 @@ def test_reference_prefilter_admits_every_pattern_it_gates(tmp_path: Path) -> No
     for text in samples:
         assert any(pattern.search(text) for pattern in _reference_patterns(path)), text
         assert prefilter in text, f"prefilter would have dropped a matching text: {text}"
+
+
+def test_a_path_in_both_source_sets_is_read_once(tmp_path: Path, monkeypatch) -> None:
+    """The test targets and the mutation pool can name the SAME file, and each source
+    is read from disk. Re-reading it would be waste; letting the second read overwrite
+    the first would be worse if the two lists ever disagreed about the path. The dedup
+    guard is asserted by counting reads rather than by inspecting the result, because
+    the mapping looks identical either way."""
+    from scripts import suggest_mutation_coverage_command as suggester
+
+    repo, base = _seed_repo(tmp_path)
+    reads: list[str] = []
+    real_read = Path.read_text
+
+    def counting_read(self: Path, *args, **kwargs):
+        reads.append(self.as_posix())
+        return real_read(self, *args, **kwargs)
+
+    duplicated = "scripts/foo.py"
+    monkeypatch.setattr(suggester, "_candidate_test_sources", lambda _root: [duplicated, "tests/test_top.py"])
+    monkeypatch.setattr(suggester, "_candidate_module_sources", lambda _root: [duplicated])
+    monkeypatch.setattr(Path, "read_text", counting_read)
+
+    suggester.tests_referencing_paths(repo, [duplicated])
+
+    assert reads.count((repo / duplicated).as_posix()) == 1
+
+
+def test_an_unreadable_source_is_skipped_rather_than_fatal(tmp_path: Path, monkeypatch) -> None:
+    """A source file the mapper cannot read must not abort the mapping: the mapper
+    feeds a BLOCKING gate, and a crash there is a push blocked by an unrelated
+    filesystem problem. The remaining sources still map."""
+    from scripts import suggest_mutation_coverage_command as suggester
+
+    repo, base = _seed_repo(tmp_path)
+    real_read = Path.read_text
+
+    def selective_read(self: Path, *args, **kwargs):
+        if self.name == "test_top.py":
+            raise OSError("unreadable")
+        return real_read(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", selective_read)
+
+    payload = suggester.build_recommendation(repo, base_sha=base)
+
+    mapped = payload["mapped_tests_by_file"]["scripts/foo.py"]
+    assert "tests/quality_gates/test_foo.py" in mapped
+    assert "tests/test_top.py" not in mapped

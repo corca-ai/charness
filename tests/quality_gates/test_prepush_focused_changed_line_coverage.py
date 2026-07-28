@@ -307,3 +307,81 @@ def test_missing_focused_coverage_refuses_instead_of_stalling(gate, monkeypatch,
     captured = capsys.readouterr()
     assert json.loads(captured.out)["reason"] == "focused coverage missing after produce"
     assert "wrote no coverage" in captured.err
+
+
+# --------------------------------------------------------------------------- #
+# The lane's own uncovered changed lines, named by the lane itself on its first
+# committed run. Each is a not-a-pass arm or the human channel that reports one:
+# leaving them unexecuted would mean the paths that exist to refuse silence had
+# never themselves been run.
+# --------------------------------------------------------------------------- #
+def test_a_blocked_suggester_is_a_no_verdict(gate, monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation(status="blocked")
+    )
+
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == gate.NO_VERDICT_EXIT
+
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["reason"] == "suggester blocked"
+    assert "This is NOT a pass" in captured.err
+
+
+def test_a_consumer_refusal_is_a_no_verdict(gate, monkeypatch, capsys) -> None:
+    """The consumer exits 2 for a startup refusal or a mid-run drift — its own
+    "no verdict". Passing that through as anything else would launder a refusal."""
+    _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": []}, returncode=2)
+
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == gate.NO_VERDICT_EXIT
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert payload["status"] == "no-verdict"
+    assert "exit 2" in payload["reason"]
+    assert "this is NOT a pass" in captured.err
+
+
+def test_human_output_reports_status_and_reason(gate, monkeypatch, capsys) -> None:
+    """Without --json this line IS the operator's whole view of the verdict; the
+    run-quality summary prints only the label and PASS/FAIL."""
+    _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "changed_pool_files": ["scripts/a.py"]})
+
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == 0
+
+    out = capsys.readouterr().out
+    assert "incremental changed-line coverage: clean -- " in out
+    assert "covered" in out
+
+
+def test_the_consumer_payload_reaches_stdout_without_json(gate, monkeypatch, capsys) -> None:
+    _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "marker": "PAYLOAD_MARKER"})
+
+    gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
+
+    assert "PAYLOAD_MARKER" in capsys.readouterr().out
+
+
+def test_run_command_returns_the_producer_result_on_success(gate, tmp_path) -> None:
+    result = gate._run_command(tmp_path, "echo produced", "verify")
+
+    assert result["returncode"] == 0
+    assert result["phase"] == "verify"
+    assert "produced" in result["stdout"]
+
+
+def test_an_unreadable_consumer_payload_refuses_end_to_end(gate, monkeypatch, capsys) -> None:
+    """The consumer exited 0 but emitted nothing parseable, so its exit code stands for
+    nothing. Reached through `main` rather than the classifier alone: the classifier
+    returning `no-verdict` is worthless if `main` still returns the consumer's 0."""
+    _blocking_consumer_stub(gate, monkeypatch, {}, returncode=0)
+    monkeypatch.setattr(
+        gate.subprocess,
+        "run",
+        lambda *_a, **_k: SimpleNamespace(returncode=0, stdout="<html>not json</html>", stderr=""),
+    )
+
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == gate.NO_VERDICT_EXIT
+
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["status"] == "no-verdict"
+    assert "established no changed-line verdict" in captured.err
