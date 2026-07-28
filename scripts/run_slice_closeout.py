@@ -41,6 +41,8 @@ _slice_closeout_commit_advisories = import_repo_module(__file__, "scripts.slice_
 advise_close_keyword_leakage = _slice_closeout_commit_advisories.advise_close_keyword_leakage
 advise_decaying_habits = _slice_closeout_commit_advisories.advise_decaying_habits
 attach_gate_runtime_advisory = _slice_closeout_advisories.attach_gate_runtime_advisory
+_new_proof_surface_advisory = import_repo_module(__file__, "scripts.new_proof_surface_advisory")
+attach_new_proof_surface_advisory = _new_proof_surface_advisory.attach_new_proof_surface_advisory
 _slice_closeout_telemetry = import_repo_module(__file__, "scripts.slice_closeout_telemetry")
 emit_closeout_telemetry_for_slice = _slice_closeout_telemetry.emit_closeout_telemetry_for_slice
 _scripts_check_python_lengths = import_repo_module(__file__, "scripts.check_python_lengths")
@@ -332,6 +334,7 @@ def _run_preexecution_blocks(
     advise_new_pool_module(repo_root, payload["changed_paths"])
     advise_over_slicing(repo_root)
     advise_floor_addition_restraint(repo_root, payload["changed_paths"])
+    attach_new_proof_surface_advisory(payload, repo_root)
     advise_close_keyword_leakage(repo_root)
     advise_decaying_habits(repo_root, payload["changed_paths"])
 

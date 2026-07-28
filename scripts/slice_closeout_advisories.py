@@ -436,7 +436,12 @@ def _added_diff_lines(repo_root: Path, base: str, paths: list[str]) -> str:
     for path in _added_vs_base(repo_root, paths, base=base):
         try:
             new_texts.append((repo_root / path).read_text(encoding="utf-8"))
-        except OSError:
+        except (OSError, ValueError):
+            # `UnicodeDecodeError` subclasses `ValueError`, not `OSError`, so a
+            # newly-added file with non-UTF-8 bytes used to raise straight out of
+            # the advisory block and abort a closeout that would otherwise pass.
+            # Every caller here is advisory: an unreadable file must degrade, not
+            # decide.
             continue
     return "\n".join([diff_added, *new_texts])
 

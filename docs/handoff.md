@@ -9,19 +9,27 @@
 
 ## Continuation Capability
 
-An evidence-surface bug hunt reproduced **30 defects** across the repo's proof
-surfaces; eight families have landed. Every item carries status, file:line and a
-confirmed repro in the
-[bug hunt record](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
-— read it before planning any of them. **11 OPEN + 6 PARTIAL remain.**
+Two records now drive this work. The
+[2026-07 hunt](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
+reproduced 30 defects over 22 surfaces; **11 OPEN + 6 PARTIAL remain**, each with
+a confirmed repro. The
+[triage sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md)
+then first-looked the other **146** never-examined surfaces: **109 leads survived
+adversarial refutation** (34 refuted), 37 high severity. Only 4 are
+parent-reproduced — read its status vocabulary before citing any row.
 
 ## Current State
 
-- **The structural question is decided and half-executed.** Chosen: fix the
-  critique floor as one subsystem (LANDED), reclassify proof-surface authoring as
-  irreversible in the [north star](./design-north-star.md) (LANDED), then wire the
-  hunt into something repeatable (NOT STARTED — the highest-value move left), and
-  adopt the scope affordance opportunistically, never as a sweep.
+- **The structural plan is executed except its last step.** Critique floor as one
+  subsystem (LANDED); proof-surface authoring reclassified irreversible in the
+  [north star](./design-north-star.md) (LANDED); triage sweep over the 146
+  (LANDED — 109 survivors to burn down); birth trigger for new proof surfaces
+  (LANDED as a closeout advisory). Remaining: adopt the scope affordance
+  opportunistically as each gate is touched, never as a repo-wide sweep.
+- **The burn-down is now the work.** Cycle cadence is coupled to closure capacity,
+  not the calendar: do not start a new deep cycle while the prior one's confirmed
+  rows are unclosed. Class (a) — empty input still returns PASS — is a third of
+  the survivors, the same dominant shape as the first hunt.
 - **The fix keeps reproducing the defect: 7 of 7 slices.** The C-cluster's three
   reviewers found eleven defects inside the fix; the sharpest was the scope
   record — added to stop verdicts over unestablished scope — asserting one on the
@@ -35,38 +43,31 @@ confirmed repro in the
 
 ## Next Session
 
-1. **A5/A6** (inside A3's commit-boundary floor), then **B4/B5**, then
-   **A8/A9/A10**. **E last** — per-changed-file mutation discrimination is a
-   contract change, not a patch.
+1. **Work the sweep's 37 high-severity rows by reproducing each one first**, or
+   continue the original hunt's **A5/A6**, **B4/B5**, **A8/A9/A10** (**E last** —
+   per-changed-file mutation discrimination is a contract change). The sweep's
+   `SUBAGENT-CONFIRMED` rows are stronger than leads and weaker than proof.
 2. **C3/C4/C6 are narrowed on purpose**, residuals named in the bug hunt record:
    C3 misses the `## Packet Consumed` heading form; C6 still reads the COMMITTED
    range, so the slice under critique is invisible at validation time.
-3. **Two siblings the C slice implicated but did not touch:**
-   `validate_retro_artifact.py:136` keeps the body-first `or` date fallback C2
-   replaced; and two `LEGACY_UNDATABLE` allowlist rows name packets excluded by
-   content kind, so they are dead rows reading as live decisions.
+3. **Two siblings the C slice implicated:** `validate_retro_artifact.py:136` keeps
+   the body-first `or` date fallback C2 replaced; two `LEGACY_UNDATABLE` rows are
+   dead allowlist entries reading as live grandfather decisions.
 4. **A3 is PARTIAL: scheduled is not judged.** Only `check_staged_mirror_drift`
    reads the index; the rest walk the worktree, and `git revert` runs no
    pre-commit hook (probed). [A3 critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9.
 5. **D4 is PARTIAL and cannot be closed by this channel.** A pushed tag with no
    release returns 200 with the tag present, before the release exists. Needs a
    release-specific channel independent of unauthenticated API quota.
-6. **Two deferrals from the containment slice**
-   ([critique](../charness-artifacts/critique/2026-07-27-provenance-containment.md)
-   F9/F10): `capability_catalog_resolver` ranks `repo-plugin-export` above
-   `repo-public-skill`; and the export-layout fact lives in three places.
-7. **D28 remainder** and **sibling-scan Tier 2 finding D** are unchanged.
+6. **Containment-slice deferrals** F9/F10, **D28 remainder** and **sibling-scan
+   Tier 2 finding D** are unchanged; see their linked records.
 
 ## Discuss
 
 - **Fenced text is shown, not asserted.** Three gates have now read it as the
   author's claim; the C slice added a fourth before review caught it.
-- **A widened content trigger buys a false refusal.** C3's widening turned
-  `- Packet Consumed: n/a` into a demand for SHA256s for a packet declared absent.
-  Read the declared VALUE, not just the line.
-- **A scaffold that pre-loads an undisclosed failure costs a round-trip per
-  artifact, forever.** If a floor refuses a scaffold default, say so in the stub.
-- **A length floor is not a proof floor.** Make the skip LOUD instead.
+- **A widened content trigger buys a false refusal**, and a length floor is not a
+  proof floor. Make the skip LOUD instead; read the declared VALUE, not the line.
 - Run release/skill helpers from `skills/public/.../scripts/`, NOT an installed
   or `plugins/` copy ([RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
 
