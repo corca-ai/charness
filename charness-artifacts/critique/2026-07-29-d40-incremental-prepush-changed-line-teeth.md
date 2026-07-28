@@ -162,8 +162,8 @@ this is recorded as an explicit decision rather than an evaluator scenario that 
 
 - Packet consumed: charness-artifacts/critique/2026-07-29-d40-round2-packet.json
 - Packet path: charness-artifacts/critique/2026-07-29-d40-round2-packet.json
-- Packet SHA256: e3eedf04266a9fecb89aa65f55a82b9246edf61ebc98740aadabf84050d1d09d
-- Identity SHA256: 6873dbb98030efdb9875b1ad5a1599b4fb659a29030c83fa47577243e3ae82c0
+- Packet SHA256: 6a81b69cd5682591661bb4a7091a323733abe4cd6acd1dcbd2171becfc4a59aa
+- Identity SHA256: bb1c4bb6f92e033fbfec916f5f35beab0c4ef62ac244693040ebfdbf77a84a9a
 
 The binding above was re-rendered after the round-2 repairs landed, so it is current
 against the tree; the round-2 reviewer read the surfaces as they stood at identity
