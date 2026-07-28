@@ -333,6 +333,54 @@ def test_main_inprocess_invalid_overlay_exits_one(tmp_path: Path, monkeypatch, c
     assert "invalid overlay" in capsys.readouterr().err
 
 
+def test_families_reports_an_unreadable_injected_inventory_as_a_reason(tmp_path: Path) -> None:
+    # An injected `--code-inventory` that cannot be READ is not an empty family set.
+    # Returning `[]` with no reason here is the same unestablished-scope read the
+    # subsystem's one rule refuses: `[]` may only mean the producer DECLARED zero.
+    unreadable = tmp_path / "inventory-dir.json"
+    unreadable.mkdir()
+
+    families, reason = seed._families(unreadable, tmp_path / "absent.py", tmp_path)
+
+    assert families == []
+    assert reason is not None and "cannot read" in reason and str(unreadable) in reason
+
+
+def test_load_existing_refuses_a_parseable_overlay_that_lost_its_entries_list(tmp_path: Path) -> None:
+    # Unparseable is not the only unreadable: a payload that PARSES but is a list, a
+    # scalar, or a dict whose `entries` key was renamed yields zero prior entries
+    # through a successful parse — the same silent wipe, one branch over.
+    path = tmp_path / "ex.json"
+    for payload in ('["entries"]', '"entries"', '{"reviewed": []}'):
+        path.write_text(payload, encoding="utf-8")
+
+        existing, reason = seed._load_existing(path)
+
+        assert existing == {}, payload
+        assert reason is not None and "no `entries` list" in reason, payload
+        assert "refusing to reseed" in reason, payload
+
+
+def test_main_refusal_still_emits_the_payload_under_json(tmp_path: Path, monkeypatch, capsys) -> None:
+    # The refusal exits 1 on stderr prose; a `--json` caller parsing stdout would
+    # otherwise get nothing at all to distinguish "refused" from "crashed".
+    unreadable = tmp_path / "code-dir.json"
+    unreadable.mkdir()
+    monkeypatch.setattr(
+        sys, "argv",
+        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(unreadable),
+         "--reviewed-at", "2026-06-19", "--json"],
+    )
+
+    assert seed.main() == 1
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert payload["ok"] is False
+    assert any("cannot read" in reason for reason in payload["unestablished_reasons"])
+    assert "refused" in captured.err
+
+
 def test_main_help_documents_repo_root_and_json(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["seed", "--help"])
     with pytest.raises(SystemExit) as exc_info:

@@ -112,3 +112,32 @@ def test_repo_root_targets_reports_every_offending_position(tmp_path: Path) -> N
     # A glob is never treated as a root target: `repo_root.glob("*")` cannot yield the
     # root itself, so a glob that happens to be `*` widens without collapsing.
     assert checker.repo_root_targets(repo, ["*"]) == []
+
+
+def test_repo_root_targets_skips_a_target_whose_path_cannot_be_resolved(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """An unresolvable target is skipped, not treated as the repo root.
+
+    This gate's whole job is to refuse a target that IS the repo root, because such a
+    target makes the completeness check rglob everything and report full coverage
+    having established nothing. `resolve()` can fail on the filesystem (ENAMETOOLONG,
+    a broken mount, an unreadable parent). If that raise escaped, the gate would crash
+    on an input it should merely pass over; if it were caught and the target counted,
+    a path that could not be resolved would be reported as the repo root — a verdict
+    about a path nobody ever read. Skipping is the only honest arm.
+    """
+    real_resolve = Path.resolve
+
+    def resolve(self: Path, strict: bool = False) -> Path:
+        if self.name == "unresolvable":
+            raise OSError(36, "File name too long")
+        return real_resolve(self, strict=strict) if strict else real_resolve(self)
+
+    monkeypatch.setattr(Path, "resolve", resolve)
+
+    offenders = checker.repo_root_targets(tmp_path, ["unresolvable", "", "tests"])
+
+    # The empty target still resolves to the root and is still caught: the skip is
+    # scoped to the unresolvable path, not a blanket bypass of the check.
+    assert offenders == [(2, "")]

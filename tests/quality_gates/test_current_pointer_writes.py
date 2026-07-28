@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from scripts.capability_catalog_artifact import persist_catalog
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
@@ -715,3 +717,40 @@ def test_refresh_current_pointer_refuses_an_empty_record(tmp_path: Path) -> None
     ok = _refresh_pointer(repo, fresh)
     assert ok.returncode == 0, ok.stdout + ok.stderr
     assert os.readlink(pointer) == fresh.name
+
+
+def test_refresh_current_pointer_refuses_an_unreadable_record(tmp_path: Path) -> None:
+    """`is_file()` is not `can_read()`.
+
+    The emptiness guard above reads the record to judge it. A record that exists but
+    cannot be READ (mode 000, a stale mount, an ACL) raises inside that read, and an
+    unhandled raise on the generic pointer writer either crashes the caller or — worse,
+    if the read were moved after the write — leaves `latest.md` already repointed. The
+    refusal has to be a payload, on the same channel as every other blocked reason, so
+    the caller distinguishes "the pointer was not moved" from "the tool fell over".
+    """
+    repo = tmp_path / "repo"
+    gather = repo / "charness-artifacts" / "gather"
+    gather.mkdir(parents=True)
+    real = gather / "2026-05-09-real.md"
+    real.write_text("# Real asset\n\nGathered text.\n", encoding="utf-8")
+    pointer = gather / "latest.md"
+    pointer.symlink_to(real.name)
+
+    unreadable = gather / "2026-05-12-unreadable.md"
+    unreadable.write_text("# Has content\n\nBut cannot be read.\n", encoding="utf-8")
+    unreadable.chmod(0o000)
+    if os.access(unreadable, os.R_OK):  # running as root: the mode is not a barrier
+        pytest.skip("cannot make a file unreadable for this user")
+
+    try:
+        result = _refresh_pointer(repo, unreadable)
+    finally:
+        unreadable.chmod(0o644)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert "could not be read" in payload["reason"]
+    assert payload["would_update"] is False
+    assert os.readlink(pointer) == real.name, "pointer repointed by an unreadable record"

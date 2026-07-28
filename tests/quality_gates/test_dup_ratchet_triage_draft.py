@@ -236,6 +236,28 @@ def test_adapter_copy_branch_refuses_an_undeclared_member_count() -> None:
     assert "does not say how many members" in reason
 
 
+def test_main_human_output_carries_the_refusal_to_the_reader(monkeypatch, capsys) -> None:
+    # `--json` is the machine channel; the DEFAULT channel is this human rendering, and a
+    # refusal that only reaches the JSON reader leaves the operator's terminal showing
+    # "0 family(ies)" — an unestablished scope rendered as an evaluated empty one.
+    monkeypatch.setattr(
+        triage,
+        "run",
+        lambda _args: {
+            "ok": False,
+            "family_count": 0,
+            "families": [],
+            "unestablished_reason": "ratchet report is DEGRADED: baseline unreadable",
+        },
+    )
+
+    assert triage.main(["--repo-root", "."]) == 1
+
+    out = capsys.readouterr().out
+    assert "dup-ratchet triage: 0 family(ies)" in out
+    assert "REFUSED: ratchet report is DEGRADED: baseline unreadable" in out
+
+
 def test_build_report_reports_inventory_misses() -> None:
     report = triage.build_report({"new_code_families": ["missing"]}, {"families": []})
 

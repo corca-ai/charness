@@ -313,3 +313,40 @@ def test_write_record_refuses_empty_content_instead_of_erasing_the_pointer(tmp_p
     )
     assert planned.returncode == 1
     assert "refusing to write an empty gather record" in planned.stderr
+
+
+def test_write_record_refuses_a_content_file_that_is_not_a_file(tmp_path: Path) -> None:
+    """An ABSENT `--content-file` is not empty content, and it is not a crash either.
+
+    The emptiness refusal above reads the file to judge it. Reaching that read with a
+    path that does not exist (a fetch step that never ran, a typo'd path) or that is a
+    directory raises inside the reader; the writer has to refuse it on the same
+    channel as every other refusal, before either the record or the `latest.md`
+    pointer is touched. Both the executing and the dry-run arm read content, so both
+    must refuse the same input.
+    """
+    repo = _bootstrap_gather_repo(tmp_path)
+    gather_dir = repo / "charness-artifacts" / "gather"
+    prior = gather_dir / "2026-05-09-prior-asset.md"
+    prior.write_text("# Prior canonical record\n\nReal gathered text.\n", encoding="utf-8")
+    pointer = gather_dir / "latest.md"
+    pointer.symlink_to(prior.name)
+    prior_sha = _sha256_bytes(prior)
+
+    a_directory = tmp_path / "content-dir"
+    a_directory.mkdir()
+    cases = (("absent", tmp_path / "never-written.md"), ("directory", a_directory))
+    for label, content_file in cases:
+        for arm, extra in (("execute", ["--execute"]), ("dry-run", [])):
+            result = run_script(
+                WRITE_RECORD, "--repo-root", str(repo), "--slug", f"{label}-{arm}",
+                "--date", "2026-05-13", "--content-file", str(content_file), *extra,
+                cwd=Path.cwd(), env={**os.environ},
+            )
+            assert result.returncode == 1, f"{label}/{arm}"
+            assert "does not exist or is not a file" in result.stderr, f"{label}/{arm}"
+            assert str(content_file) in result.stderr, f"{label}/{arm}"
+            assert not (gather_dir / f"2026-05-13-{label}-{arm}.md").exists(), f"{label}/{arm}"
+
+    assert _sha256_bytes(prior) == prior_sha, "prior canonical mutated by a refused run"
+    assert os.readlink(pointer) == prior.name

@@ -20,6 +20,7 @@ Pins the spec's depth-bounded guarantees:
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import subprocess
 from pathlib import Path
@@ -563,3 +564,42 @@ def test_an_empty_chunk_is_refused_instead_of_drafted(tmp_path: Path, lib, chunk
     assert ok.returncode == 0, ok.stderr
     assert json.loads(ok.stdout)["ok"] is True
     assert list((tmp_path / "charness-artifacts" / "goals").glob("*.md"))
+
+
+def test_a_failed_gate_rolls_the_artifact_back_instead_of_leaving_it_on_disk(
+    tmp_path: Path, lib, chunk_from_entry_1, monkeypatch, capsys
+) -> None:
+    """The writer runs `check_goal` to justify trusting its own output; the rollback
+    is what makes a FAILED check honest.
+
+    Without it the drafter leaves a real file at the artifact path and reports the
+    failure only on stderr — so the next reader (or a re-run, which then hits the
+    already-exists refusal) finds an artifact the gate rejected sitting where a valid
+    draft belongs. `check_goal`'s floors are structural and this writer renders from a
+    fixed template, so the failure is injected here rather than smuggled in through a
+    chunk: the arm under test is the rollback, not the gate's own judgment.
+    """
+    drafter = _load_lib(DRAFTER_SCRIPT, "draft_goal_from_chunk_under_test")
+    monkeypatch.setattr(
+        drafter.GOAL_LIB,
+        "check_goal",
+        lambda _text: {"ok": False, "issues": ["forced: missing required section"], "status": "draft"},
+    )
+    monkeypatch.setattr(
+        drafter.sys, "argv",
+        ["draft_goal_from_chunk.py", "--input", "-", "--date", "2026-07-28",
+         "--slug", "rollback-guard", "--repo-root", str(tmp_path)],
+    )
+    monkeypatch.setattr(
+        drafter.sys, "stdin", io.StringIO(json.dumps(chunk_from_entry_1.to_dict()))
+    )
+
+    assert drafter.main() == 1
+
+    captured = capsys.readouterr()
+    refusal = json.loads(captured.err)
+    assert refusal["ok"] is False
+    assert refusal["error"] == "auto-drafted artifact failed check_goal_artifact"
+    assert refusal["check_goal_issues"] == ["forced: missing required section"]
+    goals = tmp_path / "charness-artifacts" / "goals"
+    assert not list(goals.glob("*.md")), "gate-rejected artifact left on disk"

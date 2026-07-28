@@ -436,6 +436,24 @@ Reopen trigger:
   and since decayed, or a session that re-derives a wrong attribution the repo
   already refuted.
 
+### D39. Changed-line coverage freshness fingerprint is blind to `tests/`
+
+- Question: Should the coverage freshness marker the pre-push changed-line gate trusts digest the test files whose presence the coverage actually depends on, or stay scoped to mutation-pool files only?
+- Current choice: Defer. The marker stays pool-scoped; the risk is recorded rather than repaired inside an issue-resolution slice.
+- Why now: [changed_pool_fingerprint](../scripts/mutation_changed_files_lib.py) digests only `changed_pool_files_vs_base(...)`, and the mutation pool globs in [sample_mutation_files.py](../scripts/sample_mutation_files.py) do not include `tests/`. A tests-only slice therefore moves the fingerprint by zero bits, so a `reports/mutation/test-coverage.json` produced BEFORE the new tests existed still satisfies `--require-fresh-coverage` and is accepted as fresh. Surfaced as finding C6 of [the #464 resolution critique](../charness-artifacts/critique/2026-07-28-issue-464-changed-line-coverage-recurrence.md).
+- Why deferral is right at the time: for a slice that ADDS tests the failure direction is self-announcing — stale coverage shows the changed lines still uncovered, so the consumer raises a loud false FAIL, not a false pass. The dangerous direction is a slice that DELETES or renames tests while the marker still matches, which is a gate design question (what content the freshness claim is actually about) rather than a one-line widening, and widening the digest to all of `tests/` would invalidate the marker on every unrelated test edit and push authors back toward the ~10-minute producer they already skip.
+- Impact surfaces: [mutation_changed_files_lib.py](../scripts/mutation_changed_files_lib.py), [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py), [run-quality.sh](../scripts/run-quality.sh) (the `--require-fresh-coverage` consumer), [mutation_coverage_producer.py](../scripts/mutation_coverage_producer.py).
+- Reopen trigger: a changed-line gate verdict that passes against coverage produced before the tests it credits, or any slice that removes tests from a mutation-pool file's proof set.
+
+### D40. No pre-landing lane BLOCKS an unproven changed line
+
+- Question: Should a lane that runs before a landing refuse a push whose changed lines were never proven — and if so, which one pays: a mandatory ~10-minute local coverage producer, or branch protection forcing the PR path?
+- Current choice: Defer. This is a cost decision for the repo owner, not an agent's call inside an issue closeout.
+- Why now: the class is eight instances deep (#219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453 -> #464, named in [quality-core.yml](../.github/workflows/quality-core.yml)) and the usual explanations are already falsified. The remote push-arm mirror is NOT missing — it has been live since `69941efb` and went RED on all three pushes preceding #464's latest comment (runs 30269197950, 30314842348, 30317036462). The local advisory is NOT silent — [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py) `_surface_skip` writes a `WARNING (changed-line mutation gate):` line and [run-quality.sh](../scripts/run-quality.sh) `print_phase_output` surfaces it. What is missing is teeth: the lane that runs before a landing exits 0 by construction, and the lane with teeth runs after the push and cannot unland it.
+- Why deferral is right at the time: every available repair charges a real toll — a blocking local producer costs ~10 minutes per push, branch protection ends direct-to-main work, and a push-time remote-red check adds a network dependency to every push. Adding a ninth advisory is the one option that is definitely useless, since the eighth was already read and walked past. Choosing among the tolls is the owner's, and picking one inside a tests-only issue resolution would smuggle a workflow change in under a coverage-repair banner.
+- Impact surfaces: [run-quality.sh](../scripts/run-quality.sh) (the `--skip-if-no-coverage` flag set), [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py), [quality-core.yml](../.github/workflows/quality-core.yml), [mutation-tests.yml](../.github/workflows/mutation-tests.yml), repository branch-protection settings (not in tree).
+- Reopen trigger: a ninth instance of the class, or an operator decision to pay one of the tolls above.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

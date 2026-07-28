@@ -1,0 +1,112 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-28T10:21:34Z",
+  "prepared_for": "issue-464-changed-line-coverage-recurrence",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- tests/quality_gates/test_check_test_completeness.py\n- tests/quality_gates/test_critique_enforcement_scope.py\n- tests/quality_gates/test_current_pointer_writes.py\n- tests/quality_gates/test_dup_ratchet_triage_draft.py\n- tests/quality_gates/test_dup_review_seed.py\n- tests/quality_gates/test_gather_symlink_safety.py\n- tests/test_handoff_chunker_auto_draft.py\n- tests/test_validate_critique_artifacts_dates.py\n- tests/test_markdown_sections.py\n\nOwning surfaces:\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_check_test_completeness.py, tests/quality_gates/test_critique_enforcement_scope.py, tests/quality_gates/test_current_pointer_writes.py, tests/quality_gates/test_dup_ratchet_triage_draft.py, tests/quality_gates/test_dup_review_seed.py, tests/quality_gates/test_gather_symlink_safety.py, tests/test_handoff_chunker_auto_draft.py, tests/test_validate_critique_artifacts_dates.py, tests/test_markdown_sections.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "594f2bfde21938d86741bde7dc5695f220d4d5d4",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "tests/quality_gates/test_check_test_completeness.py",
+      "tests/quality_gates/test_critique_enforcement_scope.py",
+      "tests/quality_gates/test_current_pointer_writes.py",
+      "tests/quality_gates/test_dup_ratchet_triage_draft.py",
+      "tests/quality_gates/test_dup_review_seed.py",
+      "tests/quality_gates/test_gather_symlink_safety.py",
+      "tests/test_handoff_chunker_auto_draft.py",
+      "tests/test_markdown_sections.py",
+      "tests/test_validate_critique_artifacts_dates.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "tests/quality_gates/test_check_test_completeness.py",
+        "content_sha256": "742a50e7892f0f67e4525beb60bc338880e5c2606f4f1c9fc6ae3fc5106b00f4"
+      },
+      {
+        "path": "tests/quality_gates/test_critique_enforcement_scope.py",
+        "content_sha256": "fe5fb028fc43eb1c3ff30b392ea0cedf847fd15cff2e843b47e50f29a6d4546f"
+      },
+      {
+        "path": "tests/quality_gates/test_current_pointer_writes.py",
+        "content_sha256": "a21fccb630876b6506f1416cc993f3eb58223647a88f4e6e47f42277fe3e626c"
+      },
+      {
+        "path": "tests/quality_gates/test_dup_ratchet_triage_draft.py",
+        "content_sha256": "207525352d1761ea022bde815266c7f74e1f7ef204ae0ff1de9e66d9152b1d92"
+      },
+      {
+        "path": "tests/quality_gates/test_dup_review_seed.py",
+        "content_sha256": "d930e832970f38897b5e3d0b7d21ebb08691158751b629c4cc118f01d914b8a4"
+      },
+      {
+        "path": "tests/quality_gates/test_gather_symlink_safety.py",
+        "content_sha256": "8c8b7eba17a51372f67f5bb9ee89d75fbc27762c6b36c9f1f7c83d4ba5595f7b"
+      },
+      {
+        "path": "tests/test_handoff_chunker_auto_draft.py",
+        "content_sha256": "e9bd8ae31198fc0aea0b0815d0daa88f432f9d5f776d15524ac1219306a306fb"
+      },
+      {
+        "path": "tests/test_markdown_sections.py",
+        "content_sha256": "7267e9242dd813f0c3021f481d36be79956effcbb3933a7405e27f87c2b07b53"
+      },
+      {
+        "path": "tests/test_validate_critique_artifacts_dates.py",
+        "content_sha256": "0aee2342f120d5f4bc9813ab561899606a54e2a59bdca54236713417d0bacc35"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "d54f3897a85f3acc0c573dc464bfd5cd7bba3da62ec834f8596e18dcd78d8684",
+    "declared_untracked": [
+      {
+        "path": "tests/test_markdown_sections.py",
+        "content_sha256": "7267e9242dd813f0c3021f481d36be79956effcbb3933a7405e27f87c2b07b53"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "984bbc0efad998f297c052af61b6b57adf78406faee9b14bd36a9a0181ea341b"
+  }
+}

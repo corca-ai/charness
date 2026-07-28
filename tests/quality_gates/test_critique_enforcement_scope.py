@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts import critique_enforcement_scope as _scope
+
 from .support import ROOT, run_script
 
 # Regression floor for the five ways this surface reported a verdict over a scope
@@ -538,3 +540,37 @@ def test_unconfigured_probe_is_reported_distinctly_from_unestablished(tmp_path: 
 
     assert result.returncode == 0
     assert "cross-surface-probe=not-configured" in result.stdout
+
+
+def test_bare_fresh_eye_mention_reads_the_status_off_the_following_lines() -> None:
+    """A colonless `Fresh-Eye Satisfaction` mention with the status wrapped below it.
+
+    `declared_fresh_eye_status` is `section_reader(...) or line_reader(...)`, so this
+    arm is reachable ONLY when no canonical `## Fresh-Eye Satisfaction` section exists.
+    The corpus writes the bare mention when the declaration lives in a prose preamble;
+    reading it as absent would report an undeclared status for an artifact that
+    declared one, and the fresh-eye floor keys off exactly this value.
+    """
+    text = (
+        "# Demo Critique\nDate: 2026-07-28\n\n"
+        "Fresh-Eye Satisfaction\n\n"
+        "parent-delegated\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+    )
+
+    assert _scope.fresh_eye_satisfaction_status(text) == "parent-delegated"
+
+
+def test_bare_fresh_eye_mention_stops_at_the_next_section() -> None:
+    """The next section's prose is not this status.
+
+    Without the stop, the boundary-ownership verdict below is spliced into the
+    fresh-eye status and the floor matches against a string the author never wrote.
+    """
+    text = (
+        "# Demo Critique\n\n"
+        "Fresh-Eye Satisfaction\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+    )
+
+    assert _scope.fresh_eye_satisfaction_status(text) == ""
