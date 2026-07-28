@@ -106,11 +106,88 @@ def test_run_nose_invalid_json(monkeypatch) -> None:
     assert result["families"] == []
 
 
-def test_run_nose_empty_stdout_is_clean(monkeypatch) -> None:
+def test_run_nose_empty_stdout_degrades_not_clean(monkeypatch) -> None:
+    # A `--format json` query always emits a report object, so blank stdout is a run
+    # that produced nothing — NOT a scope with zero clone families. Reporting `clean`
+    # here was a verdict over a scan the reader never established (sweep S34 sibling);
+    # `error` degrades every consumer to advisory instead of a false all-clear.
     monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="   "))
+    result = nr.run_nose(REPO_ROOT, ["nose"])
+    assert result["status"] == "error"
+    assert "no output" in result["stderr"]
+    assert result["families"] == []
+
+
+def test_run_nose_declared_empty_family_list_is_clean(monkeypatch) -> None:
+    # The discriminating control for the branch above: a report that DECLARES an empty
+    # family list is the one shape that legitimately reads as clean.
+    monkeypatch.setattr(
+        nr._tool.subprocess, "run",
+        lambda *_a, **_k: _completed(stdout=json.dumps({"schema_version": 3, "families": []})),
+    )
     result = nr.run_nose(REPO_ROOT, ["nose"])
     assert result["status"] == "clean"
     assert result["families"] == []
+
+
+def test_run_nose_unrecognized_schema_degrades_not_clean(monkeypatch) -> None:
+    # A future/renamed family key yields zero families from a scan that really found
+    # some. Rendering that as `clean` is the sweep's S34 defect.
+    payload = {"schema_version": 4, "clone_families": [{"id": "a"}], "summary": {"families": 7}}
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=json.dumps(payload)))
+    result = nr.run_nose(REPO_ROOT, ["nose"])
+    assert result["status"] == "error"
+    assert "families" in result["stderr"]
+    assert result["families"] == []
+
+
+def test_run_nose_unreadable_family_entries_degrade_without_a_declared_count(monkeypatch) -> None:
+    # The other half of S34: the family key IS recognized but its entries are not. The
+    # guard must read the RAW entry count, because this shape carries no
+    # `ranking`/`summary` block at all — a check keyed only on a self-declared total
+    # abstains on exactly the payloads it exists to catch.
+    payload = {"schema_version": 3, "families": ["8a1f0c", "b3d9e2"]}
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=json.dumps(payload)))
+    result = nr.run_nose(REPO_ROOT, ["nose"])
+    assert result["status"] == "error"
+    assert "2 of 2" in result["stderr"]
+
+
+def test_run_nose_unreadable_bare_array_entries_degrade(monkeypatch) -> None:
+    # Same shape via the legacy bare-array payload, which the first fix waived entirely.
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=json.dumps(["a", "b"])))
+    result = nr.run_nose(REPO_ROOT, ["nose"])
+    assert result["status"] == "error"
+    assert "2 of 2" in result["stderr"]
+
+
+def test_run_nose_declared_count_over_empty_readable_list_degrades(monkeypatch) -> None:
+    # The converse the declared-count check still owns: the reader keyed a list the report
+    # itself counts higher. Real nose emits this count under `summary` (probed 2026-07-28).
+    payload = {"families": [], "summary": {"families": 7, "shown": 7}}
+    monkeypatch.setattr(nr._tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=json.dumps(payload)))
+    result = nr.run_nose(REPO_ROOT, ["nose"])
+    assert result["status"] == "error"
+    assert "declares 7" in result["stderr"]
+
+
+@pytest.mark.parametrize(
+    ("parsed", "fragment"),
+    [
+        ({"families": []}, None),
+        ([{"family_id": "a"}], None),
+        (42, "neither a family array nor a report object"),
+        ({}, "no report payload"),
+        ({"schema_version": 4, "clone_families": []}, "declares no `families`/`top_candidates` list"),
+    ],
+)
+def test_report_shape_error_names_only_unestablished_shapes(parsed, fragment) -> None:
+    families, _version, _scope, ranking = nr.extract_report(parsed)
+    error = nr.report_shape_error(parsed, families, ranking)
+    if fragment is None:
+        assert error is None
+    else:
+        assert error is not None and fragment in error
 
 
 def test_run_nose_nonzero_returncode_is_error(monkeypatch) -> None:

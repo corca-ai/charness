@@ -20,10 +20,9 @@ nose 0.13.3 removed the deprecated `nose scan` subcommand, so the code path runs
   unlike the pre-0.14.0 per-root-loop-and-merge, which missed cross-root clones.
   This is a deliberate semantic choice (global clustering); identities are
   scanner-version- AND scope-model-scoped, so re-baseline when switching it.
-- The `--format json` family array is `families` (with the `all` term) under both
-  schema_version 2 (nose 0.13.0 query) and schema_version 3 (0.13.3 query); the
-  no-`all` dashboard emits `top_candidates`. `extract_report` reads either, plus
-  the legacy bare-array / scan-object shapes still used by test fixtures.
+- The report SHAPES (which key holds the families, and when a report establishes no
+  family set at all) live in `nose_report_shape_lib`; `extract_report` /
+  `report_shape_error` are re-exported here so consumers keep one import site.
 - Family identity is `id` in query output (a stable 16-hex content hash), named
   `family_id` in the removed `scan` output; `family_summary` normalizes to
   `family_id`. Locations use `start`/`end` (query) vs `start_line`/`end_line`
@@ -51,7 +50,13 @@ def _load_sibling(module_name: str) -> Any:
 
 _fingerprint = _load_sibling("nose_fingerprint_lib")
 _tool = _load_sibling("nose_tool_lib")
+_shape = _load_sibling("nose_report_shape_lib")
 NOSE_TIMEOUT_SECONDS = _tool.NOSE_TIMEOUT_SECONDS
+# Re-exported so existing consumers (and the report-shape tests) keep one import site for
+# "turn nose's stdout into a family set"; the shapes themselves live in one module now.
+extract_report = _shape.extract_report
+raw_family_entries = _shape.raw_family_entries
+report_shape_error = _shape.report_shape_error
 
 
 def tool_version_skew(baseline_version: str | None, live_version: str | None) -> str | None:
@@ -285,6 +290,15 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
             "families": [],
             "tool_version": "",
         }
+    if error_kind == "empty-output":
+        return {
+            "status": "error",
+            "exit_code": result["exit_code"] or 1,
+            "stdout": "",
+            "stderr": "nose emitted no output; the scan produced nothing to read",
+            "families": [],
+            "tool_version": "",
+        }
     if error_kind == "invalid-json":
         return {
             "status": "error",
@@ -296,55 +310,20 @@ def run_nose(repo_root: Path, command: list[str]) -> dict[str, Any]:
         }
     families, tool_version, scope, ranking = extract_report(result["payload"])
     status = "findings" if families else "clean"
+    stderr = result["stderr"]
+    shape_error = report_shape_error(result["payload"], families, ranking)
+    if shape_error:
+        status = "error"
+        stderr = f"{shape_error}; nose stderr: {stderr}" if stderr else shape_error
     if result["status"] == "error":
         status = "error"
     return {
         "status": status,
         "exit_code": result["exit_code"],
         "stdout": "",
-        "stderr": result["stderr"],
+        "stderr": stderr,
         "families": families,
         "tool_version": tool_version,
         "scope": scope,
         "ranking": ranking,
     }
-
-
-def extract_report(parsed: Any) -> tuple[list[dict[str, Any]], str, dict[str, Any], dict[str, Any]]:
-    """Return report fields across nose's JSON shapes.
-
-    `nose query <path> all --format json` emits a top-level object with `families`
-    (schema_version 2 on 0.13.0, 3 on 0.13.3); the no-`all` dashboard emits
-    `top_candidates` instead. The removed `nose scan` emitted `families` with a
-    `tool_version` (and 0.4 emitted a bare top-level array). Reading the wrong key
-    silently yielded zero families, under-reporting the live scan. When only a
-    `summary` block is present, ranking is derived from it for the advisory's
-    "showing N of M" line.
-    """
-    families: Any = []
-    tool_version = ""
-    scope: Any = {}
-    ranking: Any = {}
-    if isinstance(parsed, dict):
-        families = parsed.get("families")
-        if not isinstance(families, list):
-            families = parsed.get("top_candidates")
-        tool_version = str(parsed.get("tool_version") or "")
-        scope = parsed.get("scope")
-        ranking = parsed.get("ranking")
-        if not isinstance(ranking, dict):
-            summary = parsed.get("summary")
-            if isinstance(summary, dict):
-                ranking = {
-                    "total_families": summary.get("families"),
-                    "shown_families": summary.get("shown"),
-                }
-    elif isinstance(parsed, list):
-        families = parsed
-    if not isinstance(families, list):
-        families = []
-    if not isinstance(scope, dict):
-        scope = {}
-    if not isinstance(ranking, dict):
-        ranking = {}
-    return [family for family in families if isinstance(family, dict)], tool_version, scope, ranking

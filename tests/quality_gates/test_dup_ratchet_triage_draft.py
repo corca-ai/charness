@@ -84,6 +84,158 @@ def test_build_report_suggests_intentional_for_tiny_idiom() -> None:
     assert report["families"][0]["draft_dup_review_entry"]["class"] == "intentional"
 
 
+def test_family_without_sample_locations_is_never_suggested_intentional() -> None:
+    # Sweep S27: an empty basename set made `basenames <= {adapter copies}` vacuously
+    # true, so a 9-member/400-shared-line family whose locations the inventory omitted
+    # (a --summary view, a truncated record) was suggested `intentional` and drafted a
+    # permanent accept into dup-review.json over ZERO established evidence.
+    ratchet = {"status": "hard-block", "new_code_families": ["fam-noloc"]}
+    inventory = {"families": [{"family_fingerprint": "fam-noloc", "members": 9, "shared_lines": 400}]}
+
+    report = triage.build_report(ratchet, inventory)
+
+    family = report["families"][0]
+    assert family["suggested_action"] == "review-needed"
+    assert "no sampled member locations" in family["reason"]
+    assert family["draft_dup_review_entry"]["class"] == "unreviewed"
+
+
+def test_family_with_empty_sample_locations_is_never_suggested_intentional() -> None:
+    action, reason = triage.suggest_action(
+        {"family_fingerprint": "f", "members": 9, "shared_lines": 400, "sample_locations": []}
+    )
+    assert action == "review-needed" and "no sampled member locations" in reason
+
+
+def test_family_without_shared_lines_is_not_read_as_a_tiny_idiom() -> None:
+    # The same defect one field over: `int(None or 0)` made an ABSENT span size satisfy
+    # the `shared_lines <= 5` small-idiom branch, again drafting `intentional`.
+    action, reason = triage.suggest_action(
+        {
+            "family_fingerprint": "f",
+            "members": 2,
+            "sample_locations": [
+                {"file": "scripts/a.py", "start_line": 1, "end_line": 40},
+                {"file": "skills/public/x/scripts/b.py", "start_line": 9, "end_line": 48},
+            ],
+        }
+    )
+    assert action == "review-needed" and "no shared_lines" in reason
+
+
+def test_adapter_copy_branch_refuses_a_truncated_member_set() -> None:
+    # `sample_locations` is capped at 6 by family_summary, so on a 20-member family the
+    # basename subset rules on 6 of 20. Suggesting the permanent accept from a truncated
+    # member set is the same unestablished-scope call as suggesting it from an empty one.
+    action, reason = triage.suggest_action(
+        {
+            "family_fingerprint": "f",
+            "members": 20,
+            "shared_lines": 40,
+            "sample_locations": [
+                {"file": f"skills/public/s{i}/scripts/resolve_adapter.py", "start_line": 1, "end_line": 40}
+                for i in range(6)
+            ],
+        }
+    )
+    assert action == "review-needed"
+    assert "samples only 6 of 20 members" in reason
+
+
+def test_build_report_refuses_a_ratchet_payload_that_never_evaluated() -> None:
+    # `ratchet.get("new_code_families") or []` turned a gate that could not judge
+    # (invalid adapter, inert, rebaseline mode) into "0 families to triage", ok, exit 0.
+    for ratchet in (
+        {"status": "adapter-invalid", "messages": ["bad adapter"]},
+        {"status": "inert"},
+        {"status": "baseline-written", "code_family_count": 7},
+        {"status": "clean"},  # evaluated statuses still need the list itself
+    ):
+        report = triage.build_report(ratchet, {"families": []})
+        assert report["ok"] is False, ratchet
+        assert report["family_count"] == 0
+        assert "no new_code_families list" in report["unestablished_reason"] \
+            or "never evaluated the gate" in report["unestablished_reason"]
+
+
+def test_build_report_refuses_a_degraded_ratchet_payload() -> None:
+    # `degraded` is the canonical could-not-judge status and the one this subsystem now
+    # produces most: every code-arm degrade this slice added leaves `evaluate` with an empty
+    # live id set, so the verdict is `{"status": "degraded", "new_code_families": [], "ok":
+    # true}` — which passed a status-set guard that omitted it. The gate is right to treat a
+    # degrade as advisory; this drafter is a WRITER whose output drafts a permanent accept.
+    ratchet = {
+        "ok": True, "status": "degraded", "new_code_families": [], "new_doc_families": [],
+        "degraded_reasons": ["injected code inventory unreadable (/tmp/empty.json)"],
+    }
+    report = triage.build_report(ratchet, {"families": []})
+    assert report["ok"] is False
+    assert "DEGRADED" in report["unestablished_reason"]
+    assert "unreadable" in report["unestablished_reason"]  # the gate's own reason is carried
+
+
+def test_degraded_ratchet_payload_still_lists_the_families_it_named() -> None:
+    # The refusal must not hide evidence: whatever a degraded gate DID name is still
+    # summarized, so the operator loses nothing by the packet being marked unestablished.
+    ratchet = {
+        "status": "degraded", "new_code_families": ["fam-named"],
+        "degraded_reasons": ["doc inventory produced no output"],
+    }
+    inventory = {"families": [{
+        "family_fingerprint": "fam-named", "members": 2, "shared_lines": 30,
+        "sample_locations": [
+            {"file": "scripts/a.py", "start_line": 1, "end_line": 30},
+            {"file": "scripts/a.py", "start_line": 40, "end_line": 69},
+        ],
+    }]}
+    report = triage.build_report(ratchet, inventory)
+    assert report["ok"] is False
+    assert [family["id"] for family in report["families"]] == ["fam-named"]
+
+
+def test_build_report_accepts_an_evaluated_empty_family_list() -> None:
+    # The discriminating control: an evaluated gate with nothing new to triage.
+    report = triage.build_report({"status": "clean", "new_code_families": []}, {"families": []})
+    assert report["ok"] is True and report["family_count"] == 0
+    assert "unestablished_reason" not in report
+
+
+def test_adapter_copy_family_still_reads_intentional_with_evidence() -> None:
+    # DISCRIMINATING CONTROL (passes before and after): the adapter-copy rule is intact when
+    # the record establishes its FULL member set — `members` declared and every member
+    # sampled. This is the truncation guard's non-firing arm, so it also pins the
+    # `members - len(files)` arithmetic that no other test exercises at equality.
+    action, _reason = triage.suggest_action(
+        {
+            "family_fingerprint": "f",
+            "members": 2,
+            "shared_lines": 30,
+            "sample_locations": [
+                {"file": "skills/public/a/scripts/resolve_adapter.py", "start_line": 1, "end_line": 30},
+                {"file": "skills/public/b/scripts/resolve_adapter.py", "start_line": 1, "end_line": 30},
+            ],
+        }
+    )
+    assert action == "intentional"
+
+
+def test_adapter_copy_branch_refuses_an_undeclared_member_count() -> None:
+    # Absent `members` is not zero unsampled: a record that never says how many members it
+    # has establishes no coverage, so it must not reach the permanent-accept suggestion.
+    action, reason = triage.suggest_action(
+        {
+            "family_fingerprint": "f",
+            "shared_lines": 30,
+            "sample_locations": [
+                {"file": "skills/public/a/scripts/resolve_adapter.py", "start_line": 1, "end_line": 30},
+                {"file": "skills/public/b/scripts/resolve_adapter.py", "start_line": 1, "end_line": 30},
+            ],
+        }
+    )
+    assert action == "review-needed"
+    assert "does not say how many members" in reason
+
+
 def test_build_report_reports_inventory_misses() -> None:
     report = triage.build_report({"new_code_families": ["missing"]}, {"families": []})
 

@@ -225,11 +225,24 @@ def test_validate_review_flags_entries_not_list() -> None:
 # --------------------------------------------------------------------------- #
 # seed CLI helpers + main() in-process (independent of subprocess coverage capture).
 # --------------------------------------------------------------------------- #
-def test_families_from_payload_handles_invalid_and_valid() -> None:
-    assert seed._families_from_payload("not json") == []
-    assert seed._families_from_payload("") == []
-    assert seed._families_from_payload(json.dumps({"families": [{"family_id": "x"}]})) == [{"family_id": "x"}]
-    assert seed._families_from_payload(json.dumps({"families": "bad"})) == []
+def test_families_from_payload_separates_declared_empty_from_unestablished() -> None:
+    # `[]` with no reason means the payload DECLARED zero families. Every other shape now
+    # carries a reason, because reading them as zero seeded a confident overlay over a
+    # corpus that was never scanned (the twin of dup_ratchet_scan's sweep S29 fix).
+    assert seed._families_from_payload(json.dumps({"families": []}), "src") == ([], None)
+    assert seed._families_from_payload(json.dumps({"families": [{"family_id": "x"}]}), "src") == (
+        [{"family_id": "x"}], None)
+    for text, fragment in (
+        ("not json", "did not emit JSON"),
+        ("", "produced no output"),
+        ("   \n", "produced no output"),
+        (json.dumps({"families": "bad"}), "declares no families list"),
+        (json.dumps([1, 2]), "not a report object"),
+        (json.dumps({"status": "missing", "families": []}), "degraded (status=missing)"),
+        (json.dumps({"status": "error", "families": []}), "degraded (status=error)"),
+    ):
+        families, reason = seed._families_from_payload(text, "src")
+        assert families == [] and reason is not None and fragment in reason, text
 
 
 def test_run_inventory_parses_subprocess(monkeypatch, tmp_path: Path) -> None:
@@ -240,16 +253,50 @@ def test_run_inventory_parses_subprocess(monkeypatch, tmp_path: Path) -> None:
         seed.subprocess, "run",
         lambda *a, **k: subprocess.CompletedProcess(a[0], 0, json.dumps({"families": families}), ""),
     )
-    assert seed._run_inventory(tmp_path / "x.py", tmp_path) == families
+    assert seed._run_inventory(tmp_path / "x.py", tmp_path) == (families, None)
 
 
-def test_load_existing_reads_valid_and_tolerates_invalid(tmp_path: Path) -> None:
-    assert seed._load_existing(tmp_path / "absent.json") == {}
+def test_run_inventory_refuses_a_nonzero_exit(monkeypatch, tmp_path: Path) -> None:
+    # The producer's return code was read by nothing. DEFENSIVE, not reproduced: neither
+    # inventory exits nonzero today (`inventory_nose_clones.main` always returns 0;
+    # `inventory_doc_duplicates` exits 1 only under `--require-nose`, which this caller does
+    # not pass), and the reachable crash prints nothing, which the blank-output row covers.
+    # The check exists so a future nonzero exit cannot seed as if it had scanned.
+    import subprocess
+
+    monkeypatch.setattr(
+        seed.subprocess, "run",
+        lambda *a, **k: subprocess.CompletedProcess(a[0], 3, json.dumps({"families": []}), "traceback"),
+    )
+    families, reason = seed._run_inventory(tmp_path / "x.py", tmp_path)
+    assert families == [] and reason is not None and "exited 3" in reason
+
+
+def test_load_existing_reads_valid_and_refuses_corrupt(tmp_path: Path) -> None:
+    assert seed._load_existing(tmp_path / "absent.json") == ({}, None)
     path = tmp_path / "ex.json"
     path.write_text(json.dumps({"entries": []}), encoding="utf-8")
-    assert seed._load_existing(path) == {"entries": []}
+    assert seed._load_existing(path) == ({"entries": []}, None)
+    # A corrupt overlay read as "no prior review", so --write rebuilt it from scratch and
+    # dropped every operator classification while reporting success.
     path.write_text("not json", encoding="utf-8")
-    assert seed._load_existing(path) == {}
+    existing, reason = seed._load_existing(path)
+    assert existing == {} and reason is not None and "present but unreadable" in reason
+
+
+def test_main_refuses_to_reseed_over_a_corrupt_overlay(tmp_path: Path, monkeypatch, capsys) -> None:
+    code_json = _write_inventory(tmp_path / "code.json", [_code_family("mid", ["a/x.py", "b/x.py"])])
+    doc_json = _write_inventory(tmp_path / "doc.json", [])
+    overlay = tmp_path / "dup-review.json"
+    overlay.write_text('{"entries": [{"surface": "code",', encoding="utf-8")  # truncated mid-write
+    monkeypatch.setattr(
+        seed.sys, "argv",
+        ["seed_dup_review.py", "--repo-root", str(tmp_path), "--output", "dup-review.json",
+         "--code-inventory", str(code_json), "--doc-inventory", str(doc_json), "--write"],
+    )
+    assert seed.main() == 1
+    assert "refused" in capsys.readouterr().err
+    assert overlay.read_text(encoding="utf-8") == '{"entries": [{"surface": "code",'  # untouched
 
 
 def test_main_inprocess_write_json(tmp_path: Path, monkeypatch, capsys) -> None:

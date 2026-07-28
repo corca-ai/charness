@@ -32,6 +32,16 @@ def _completed_result(completed: subprocess.CompletedProcess[str], **extra: Any)
     return result
 
 
+def _unreadable_result(completed: subprocess.CompletedProcess[str], error_kind: str, **extra: Any) -> dict[str, Any]:
+    """A completed run whose stdout carries no readable report. ``status`` is forced to
+    ``error`` regardless of the exit code — an exit-0 run that printed nothing readable is
+    still a run whose report the caller must not treat as a result — so no consumer can
+    pair ``status == "ok"`` with ``payload: None``."""
+    result = _completed_result(completed, payload=None, error_kind=error_kind, **extra)
+    result["status"] = "error"
+    return result
+
+
 def resolve_nose_bin() -> str | None:
     """Honor ``NOSE_BIN`` before falling back to the executable on ``PATH``."""
     return os.environ.get("NOSE_BIN") or shutil.which("nose")
@@ -69,6 +79,10 @@ def run_json_query(repo_root: Path, command: list[str], *, timeout: int = NOSE_T
 
     ``payload`` is present whenever stdout parses, even for a nonzero exit. This
     lets schema owners preserve diagnostic details without re-running a command.
+    ``payload`` is ``None`` only on an ``error_kind`` result (``timeout``,
+    ``oserror``, ``invalid-json``, ``empty-output``), and every one of those
+    carries ``status: "error"`` — so a caller may read ``payload`` as a report
+    whenever ``status`` is ``ok``.
     """
     try:
         completed = subprocess.run(
@@ -85,14 +99,18 @@ def run_json_query(repo_root: Path, command: list[str], *, timeout: int = NOSE_T
             "status": "error", "exit_code": 1, "stdout": "", "stderr": "",
             "payload": None, "error_kind": "oserror", "error": str(exc),
         }
+    if not completed.stdout.strip():
+        # No output is NOT an empty result set: a `--format json` query always emits a
+        # report object (probed 2026-07-28 — a scope root with no supported files still
+        # prints `{"families":[],...,"summary":{"families":0,...}}` and exits 0), so blank
+        # stdout is a died/produced-nothing run. Substituting `[]` here let a code-clone
+        # consumer read it as a clean scan (triage sweep S34's sibling); the doc consumer
+        # had to re-detect it from `stdout` instead.
+        return _unreadable_result(completed, "empty-output")
     try:
-        payload = json.loads(completed.stdout) if completed.stdout.strip() else []
+        payload = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        return {
-            "status": "error", "exit_code": completed.returncode,
-            "stdout": completed.stdout, "stderr": completed.stderr.strip(),
-            "payload": None, "error_kind": "invalid-json", "error": str(exc),
-        }
+        return _unreadable_result(completed, "invalid-json", error=str(exc))
     return _completed_result(
         completed,
         payload=payload,

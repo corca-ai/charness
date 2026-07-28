@@ -92,10 +92,48 @@ def test_run_query_oserror_degrades_not_crashes(monkeypatch, tmp_path: Path) -> 
 
 
 def test_run_query_nonzero_exit(monkeypatch, tmp_path: Path) -> None:
+    # Nonzero exit AND blank stdout. Both halves are asserted: `boom` because the branch
+    # must keep nose's own stderr (that is the diagnosis), and the empty-output naming
+    # because the old path reached this case through the generic exit-code branch and said
+    # nothing about the missing report. Asserting only `boom` passes on the old code too,
+    # which would leave the doc arm's empty-output handling pinned by nothing.
     monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(returncode=2, stderr="boom"))
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "error"
-    assert result["stderr"] == "boom"
+    assert "no output" in result["stderr"]
+    assert "boom" in result["stderr"]
+
+
+def test_run_query_empty_stdout_with_zero_exit_is_error(monkeypatch, tmp_path: Path) -> None:
+    # The exit-0 half, which the exit-code branch never covered.
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="  "))
+    result = dd.run_query(tmp_path, ["nose"])
+    assert result["status"] == "error"
+    assert "no output" in result["stderr"]
+
+
+def test_run_query_unrecognized_report_shape_is_error(monkeypatch, tmp_path: Path) -> None:
+    # Doc-side twin of the code arm's `report_shape_error`: a payload whose Markdown family
+    # list the reader cannot key established no family set, but used to render
+    # `status: "ok"` with zero families — a clean doc advisory AND a vacuously clean
+    # dup-ratchet doc arm over a report the reader did not understand.
+    payload = {"schema_version": 99, "markdown_families": [{"signature": "a"}]}
+    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=json.dumps(payload)))
+    result = dd.run_query(tmp_path, ["nose"])
+    assert result["status"] == "error"
+    assert "no `markdown` family list" in result["stderr"]
+    assert result["families"] == []
+
+
+def test_run_query_declared_empty_markdown_list_is_ok(monkeypatch, tmp_path: Path) -> None:
+    # The discriminating control: a report that DECLARES an empty Markdown family list is
+    # a real clean doc scan.
+    monkeypatch.setattr(
+        dd.nose_tool.subprocess, "run",
+        lambda *_a, **_k: _completed(stdout=json.dumps({"schema_version": 9, "markdown": []})),
+    )
+    result = dd.run_query(tmp_path, ["nose"])
+    assert result["status"] == "ok" and result["families"] == []
 
 
 def test_shared_transport_keeps_nonzero_json_payload(monkeypatch, tmp_path: Path) -> None:

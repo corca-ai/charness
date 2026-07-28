@@ -54,6 +54,25 @@ def write_baseline(repo_root: Path, config: dict, args) -> dict:
         return error
     ids = set(members)
     out = repo_root / baseline_rel
+    # A zero-family scan writes an EMPTY accepted baseline and reports success, which then
+    # disarms the gate's own "0 families but the baseline has N" backstop (that check is
+    # keyed on a non-empty baseline). nose exits 0 with `families: []` over a scope root
+    # that matches no supported files (probed 2026-07-28), so a renamed or mistyped
+    # `dup_ratchet.scope_paths` reaches here — and on FIRST-TIME bootstrap the large-delta
+    # guard below is skipped entirely, so nothing else stops it. A genuinely clone-free
+    # scope is real, so this is a confirmation gate rather than a hard refusal.
+    if not ids and not args.confirm_baseline_delta:
+        return {
+            "ok": False, "inert": False, "status": "empty-scan-unconfirmed",
+            "code_family_count": 0, "gate_baseline_path": baseline_rel,
+            "messages": [
+                "refusing to write an EMPTY gate baseline: the live scan established zero clone "
+                "families, which is usually a broken scan or a misconfigured dup_ratchet.scope_paths "
+                "rather than a clone-free repo. An empty accepted baseline also disarms the gate's "
+                "zero-family backstop. If the scope really is clone-free, re-run with "
+                "--confirm-baseline-delta.",
+            ],
+        }
     # C: guard a large, possibly-accidental rewrite of the accepted baseline. A
     # deliberate re-baseline (a nose scanner-version swing re-hashes every family_id;
     # a reviewed batch accept) is the legitimate large-delta case — it proceeds with

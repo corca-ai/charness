@@ -711,14 +711,6 @@ def test_inproc_write_baseline_failed_on_unreadable_inventory(tmp_path: Path) ->
     assert report["ok"] is False and report["status"] == "write-baseline-failed"
 
 
-def test_inproc_families_from_text_handles_bad_inputs() -> None:
-    assert scan.families_from_text(None) is None
-    assert scan.families_from_text("not json{") is None
-    assert scan.families_from_text("[1, 2]") is None  # not a dict
-    assert scan.families_from_text('{"families": "x"}') == []  # families not a list
-    assert scan.families_from_text("") == []
-
-
 def test_inproc_missing_overlay_and_baseline_degrade(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     (repo / "q" / "dup-review.json").unlink()
@@ -731,29 +723,21 @@ def test_inproc_missing_overlay_and_baseline_degrade(tmp_path: Path) -> None:
     assert "overlay missing" in reasons and "gate baseline missing" in reasons
 
 
-def test_inproc_doc_inventory_status_degrades(tmp_path: Path) -> None:
-    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
-    bad_doc = _write_json(tmp_path / "baddoc.json", {"status": "missing"})
-    code_json = _code_inventory(tmp_path / "code.json", ["known1"])
-    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(bad_doc))
-    assert report["status"] == "degraded"
-    assert any("doc inventory degraded" in r for r in report["degraded_reasons"])
-
-
 # --------------------------------------------------------------------------- #
-# Scanner tool_version stamp (issue #391): the live version threads through the
+# Injected-payload field reads (scanner tool_version stamp, issue #391; plus the
+# self-reported `status` the code arm now refuses on): the live version threads through the
 # code-family helpers, stamps the baseline on write, and surfaces a skew WARNING on
 # evaluate WITHOUT degrading the block. In-process so coverage attributes the lines
 # (the #393 subprocess-only class — the injected-inventory branch carries the version).
 # --------------------------------------------------------------------------- #
-def test_payload_tool_version_reads_or_empty() -> None:
-    assert scan.payload_tool_version('{"tool_version": "0.14.0"}') == "0.14.0"
-    assert scan.payload_tool_version('{"families": []}') == ""  # unstamped
-    assert scan.payload_tool_version("") == ""
-    assert scan.payload_tool_version(None) == ""
-    assert scan.payload_tool_version("not json{") == ""
-    assert scan.payload_tool_version('{"tool_version": 14}') == ""  # non-string
-    assert scan.payload_tool_version("[1, 2]") == ""  # not a dict
+def test_payload_string_field_reads_or_empty() -> None:
+    assert scan.payload_string_field('{"tool_version": "0.14.0"}', "tool_version") == "0.14.0"
+    assert scan.payload_string_field('{"families": []}', "tool_version") == ""  # unstamped
+    assert scan.payload_string_field("", "tool_version") == ""
+    assert scan.payload_string_field(None, "tool_version") == ""
+    assert scan.payload_string_field("not json{", "tool_version") == ""
+    assert scan.payload_string_field('{"tool_version": 14}', "tool_version") == ""  # non-string
+    assert scan.payload_string_field("[1, 2]", "tool_version") == ""  # not a dict
 
 
 def test_scan_code_members_threads_live_version(monkeypatch, tmp_path: Path) -> None:
@@ -884,8 +868,6 @@ def test_inproc_no_version_skew_on_legacy_unstamped_baseline(tmp_path: Path) -> 
     # unstamped baseline.
     assert report["version_skew"] is None and report["status"] == "clean"
     assert report["new_code_families"] == []
-
-
 
 
 # --------------------------------------------------------------------------- #

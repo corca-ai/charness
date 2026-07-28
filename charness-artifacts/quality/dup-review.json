@@ -423,9 +423,9 @@
     {
       "class": "intentional",
       "id": "5494fadd46ead922",
-      "surface": "code",
+      "note": "bootstrap-locating preamble that walks parents for skill_runtime_bootstrap.py, shared by the two irreversible-action entrypoints that refuse a drifted foreign copy (publish_release.py, issue_tool.py) plus ~108 existing portable skill scripts. Chicken-and-egg the preamble exists to solve: a portable skill script cannot import the shared locator without first locating it. The shared logic IS extracted (refuse_foreign_entrypoint in skill_runtime_bootstrap.py); only the locate prologue remains per-script, matching every other member. The nose advisory names this class as its own known blind spot.",
       "reviewed_at": "2026-07-27",
-      "note": "bootstrap-locating preamble that walks parents for skill_runtime_bootstrap.py, shared by the two irreversible-action entrypoints that refuse a drifted foreign copy (publish_release.py, issue_tool.py) plus ~108 existing portable skill scripts. Chicken-and-egg the preamble exists to solve: a portable skill script cannot import the shared locator without first locating it. The shared logic IS extracted (refuse_foreign_entrypoint in skill_runtime_bootstrap.py); only the locate prologue remains per-script, matching every other member. The nose advisory names this class as its own known blind spot."
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -810,6 +810,13 @@
       "id": "a0e35d08243887cc",
       "note": "scan rotation, not new duplication: all four members (check_command_docs.py, check_cli_skill_surface.py, check_skill_surface_preflight.py, validate_quality_reference_catalog.py) are untouched this session, and the family is the same repo-root import/alias preamble class as 02923daf7e01c82e. Surfaced by the nose 0.19.0 -> 0.20.0 regroup the gate's own scanner-version warning names (#441 rotation class)",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a48128599fc7b827",
+      "note": "one-shared-line blank-string guard (`X is None or not X.strip(): return None`) that dup_ratchet_scan.families_from_text now uses to refuse a zero-byte injected inventory (triage sweep S29), matching issue_runtime.parse_selector's own guard on a selector string. Two unrelated public skills reading two unrelated inputs; a shared helper would couple issue and quality across the portable-skill boundary to centralize one `if` on one line.",
+      "reviewed_at": "2026-07-28",
       "surface": "code"
     },
     {

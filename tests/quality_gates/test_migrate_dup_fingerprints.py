@@ -276,6 +276,153 @@ def test_build_report_collision_check_failed(monkeypatch, tmp_path: Path) -> Non
     assert report["ok"] is False and report["status"] == "collision-check-failed"
 
 
+def test_build_report_refuses_an_empty_live_scan(monkeypatch, tmp_path: Path) -> None:
+    # Sweep S33: a live scan with zero families (scope_paths matching nothing after a
+    # rename, a nose scan that found nothing) reported ok/planned, and --execute then
+    # wrote an EMPTY gate baseline, an EMPTY advisory baseline and a stripped overlay --
+    # every accepted identity dropped over a scope the scan never established.
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src"])
+    monkeypatch.setattr(cli._scan, "scan_families", lambda *_a, **_k: ([], None, "0.1.0"))
+    report = cli.build_report(tmp_path, {"scope_paths": ["src"]}, args)
+    assert report["ok"] is False and report["status"] == "empty-live-scan"
+    assert "refusing to migrate" in report["messages"][0]
+
+
+def test_build_report_refuses_when_no_accepted_identity_survives(monkeypatch, tmp_path: Path) -> None:
+    # The same defect one step less extreme: the live scan HAS families but matches none
+    # of the accepted identities, so the migration would drop all of them.
+    (tmp_path / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    fam = {
+        "family_fingerprint": "v2_a", "family_member_hashes": ["ha"], "family_id": "nid_a",
+        "locations": [{"file": "a.py", "start": 1, "end": 2}],
+    }
+    monkeypatch.setattr(cli._scan, "scan_families", lambda *_a, **_k: ([fam], None, "0.1.0"))
+    gate_rel = "q/dup-ratchet-baseline.json"
+    (tmp_path / "q").mkdir()
+    (tmp_path / gate_rel).write_text(json.dumps({"code_family_fingerprints": ["unrelated_v1"]}), encoding="utf-8")
+    config = {"scope_paths": ["src"], "gate_baseline_path": gate_rel}
+
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src"])
+    report = cli.build_report(tmp_path, config, args)
+    assert report["ok"] is False and report["status"] == "total-vanish"
+    assert report["gate_vanished"] == ["unrelated_v1"]
+
+    # ...and the operator can still take it deliberately.
+    accepted = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src", "--accept-total-vanish"])
+    assert cli.build_report(tmp_path, config, accepted)["status"] == "planned"
+
+
+def _one_family_repo(tmp_path: Path, monkeypatch) -> tuple[dict, str]:
+    """A healthy one-family live scan whose v1 fingerprint is returned for baseline seeding."""
+    (tmp_path / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    fam = {
+        "family_fingerprint": "v2_a", "family_member_hashes": ["ha"], "family_id": "nid_a",
+        "locations": [{"file": "a.py", "start": 1, "end": 2}],
+    }
+    monkeypatch.setattr(cli._scan, "scan_families", lambda *_a, **_k: ([fam], None, "0.1.0"))
+    (tmp_path / "q").mkdir()
+    return fam, fingerprint.family_content_fingerprint(fam, tmp_path, algo="1")
+
+
+def test_build_report_refuses_a_per_surface_total_vanish(monkeypatch, tmp_path: Path) -> None:
+    # The guard summed gate+advisory survivors, so one surface's TOTAL vanish hid behind
+    # the other's survivor and --execute wrote a gate baseline that dropped all 10
+    # accepted identities. The three artifacts key on independent id sets.
+    _fam, v1_a = _one_family_repo(tmp_path, monkeypatch)
+    gate_rel, nose_rel = "q/dup-ratchet-baseline.json", "q/nose-baseline.json"
+    (tmp_path / gate_rel).write_text(json.dumps({"code_family_fingerprints": ["gone1", "gone2"]}), encoding="utf-8")
+    (tmp_path / nose_rel).write_text(json.dumps({"code_family_fingerprints": [v1_a]}), encoding="utf-8")
+    config = {"scope_paths": ["src"], "gate_baseline_path": gate_rel}
+
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src", "--nose-baseline-path", nose_rel])
+    report = cli.build_report(tmp_path, config, args)
+    assert report["ok"] is False and report["status"] == "total-vanish"
+    assert any(gate_rel in surface for surface in report["vanished_surfaces"])
+
+
+def test_build_report_refuses_when_every_overlay_classification_would_be_dropped(monkeypatch, tmp_path: Path) -> None:
+    # The overlay is the least reconstructible of the three artifacts and had NO vanish
+    # guard: one gate survivor was enough for --execute to rewrite it with zero entries.
+    _fam, v1_a = _one_family_repo(tmp_path, monkeypatch)
+    gate_rel, review_rel = "q/dup-ratchet-baseline.json", "q/dup-review.json"
+    (tmp_path / gate_rel).write_text(json.dumps({"code_family_fingerprints": [v1_a]}), encoding="utf-8")
+    (tmp_path / review_rel).write_text(json.dumps({
+        "schemaVersion": "charness.quality.dup_review.v1", "fixable_ceiling": 0,
+        "entries": [{"surface": "code", "id": "orphan_v1", "class": "intentional", "note": "n", "reviewed_at": "d"}],
+    }), encoding="utf-8")
+    config = {"scope_paths": ["src"], "gate_baseline_path": gate_rel, "review_artifact_path": review_rel}
+
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src"])
+    report = cli.build_report(tmp_path, config, args)
+    assert report["ok"] is False and report["status"] == "total-vanish"
+    assert report["review_dropped_ids"] == ["orphan_v1"]
+
+
+@pytest.mark.parametrize("bad_sibling", [
+    {"surface": "code", "id": "orphan_v1", "class": "intentional", "note": "n", "reviewed_at": "d"},
+    {"surface": "code", "id": None, "class": "intentional", "note": "n", "reviewed_at": "d"},
+])
+def test_overlay_vanish_guard_survives_duplicate_or_idless_entries(monkeypatch, tmp_path: Path, bad_sibling: dict) -> None:
+    # The overlay arm computed survivors as `len(ids) - len(dropped_ids)`, but `dropped_ids`
+    # is a per-ENTRY list that neither dedupes nor excludes the malformed entries the id set
+    # skips. A duplicated or id-less entry made that arithmetic NEGATIVE, and `not -1` is
+    # False — so the refusal added in the same repair round was disarmed by the shape it was
+    # written to catch. The input overlay is never validated; only the output is.
+    _fam, v1_a = _one_family_repo(tmp_path, monkeypatch)
+    gate_rel, review_rel = "q/dup-ratchet-baseline.json", "q/dup-review.json"
+    (tmp_path / gate_rel).write_text(json.dumps({"code_family_fingerprints": [v1_a]}), encoding="utf-8")
+    (tmp_path / review_rel).write_text(json.dumps({
+        "schemaVersion": "charness.quality.dup_review.v1", "fixable_ceiling": 0,
+        "entries": [
+            {"surface": "code", "id": "orphan_v1", "class": "intentional", "note": "n", "reviewed_at": "d"},
+            bad_sibling,
+        ],
+    }), encoding="utf-8")
+    config = {"scope_paths": ["src"], "gate_baseline_path": gate_rel, "review_artifact_path": review_rel}
+
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src"])
+    report = cli.build_report(tmp_path, config, args)
+    assert report["ok"] is False and report["status"] == "total-vanish"
+    assert any(review_rel in surface for surface in report["vanished_surfaces"])
+
+
+@pytest.mark.parametrize("artifact", ["gate", "nose", "review"])
+def test_build_report_refuses_a_present_but_unreadable_accepted_artifact(monkeypatch, tmp_path: Path, artifact: str) -> None:
+    # `... or set()` / `or {}` made an unreadable artifact indistinguishable from an absent
+    # one: old_family_count 0, the total-vanish guard skipped, and --execute overwrote the
+    # artifact with an empty one. The gate degrades on this same condition; the tool that
+    # WRITES the file must refuse it.
+    _fam, v1_a = _one_family_repo(tmp_path, monkeypatch)
+    gate_rel, nose_rel, review_rel = "q/dup-ratchet-baseline.json", "q/nose-baseline.json", "q/dup-review.json"
+    payloads = {
+        "gate": json.dumps({"code_family_fingerprints": [v1_a]}),
+        "nose": json.dumps({"code_family_fingerprints": [v1_a]}),
+        "review": json.dumps({"schemaVersion": "charness.quality.dup_review.v1", "fixable_ceiling": 0, "entries": []}),
+    }
+    payloads[artifact] = '{"code_family_fingerprints": ['  # truncated mid-write
+    for key, rel in (("gate", gate_rel), ("nose", nose_rel), ("review", review_rel)):
+        (tmp_path / rel).write_text(payloads[key], encoding="utf-8")
+    config = {"scope_paths": ["src"], "gate_baseline_path": gate_rel, "review_artifact_path": review_rel}
+
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src", "--nose-baseline-path", nose_rel])
+    report = cli.build_report(tmp_path, config, args)
+    assert report["ok"] is False and report["status"] == "unreadable-accepted-artifact"
+    assert any("present but unreadable" in message for message in report["messages"])
+
+
+def test_build_report_treats_absent_artifacts_as_no_accepted_identities(monkeypatch, tmp_path: Path) -> None:
+    # The discriminating control for the branch above: a first-run repo with no accepted
+    # artifacts at all still plans (absent honestly declares nothing accepted).
+    _fam, _v1_a = _one_family_repo(tmp_path, monkeypatch)
+    config = {"scope_paths": ["src"], "gate_baseline_path": "q/dup-ratchet-baseline.json",
+              "review_artifact_path": "q/dup-review.json"}
+    args = cli.parse_args(["--repo-root", str(tmp_path), "--scope-path", "src",
+                           "--nose-baseline-path", "q/nose-baseline.json"])
+    report = cli.build_report(tmp_path, config, args)
+    assert report["ok"] is True and report["status"] == "planned"
+    assert report["gate_baseline"]["old_family_count"] == 0
+
+
 # --------------------------------------------------------------------------- #
 # run() -- adapter-invalid short-circuit, and the full --execute write path.
 # --------------------------------------------------------------------------- #

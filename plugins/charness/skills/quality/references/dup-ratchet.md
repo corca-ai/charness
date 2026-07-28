@@ -220,6 +220,23 @@ injectable so the policy stays pure and testable.
   not schema-invalid — same no-dual-read discipline as the v1→v2 re-key.
 - nose missing or the scan errors → degraded advisory; the doc-duplicates
   `--require-nose` phase owns failing closed on nose presence, not this gate.
+- an inventory that ESTABLISHED no family set → degraded advisory. `[]` counts as a
+  scan result only when the payload declares a `families` list; a zero-byte or blank
+  file, a non-object payload, a missing family list, a nose report whose family key
+  the reader cannot find, and a payload whose own `status` is
+  `missing`/`version-too-old`/`error`/`baseline-written` are all reasons rather than
+  zero duplication. This holds on BOTH arms — the doc reader always checked the
+  self-reported status and the code reader checked only shape, and that asymmetry was
+  the hole. Blank nose stdout is included: a `--format json` query always emits a
+  report object, so no output means the run produced nothing (a scope root with no
+  supported files still prints `{"families": [], ...}` and exits 0).
+- `--write-baseline` over a live scan of zero families → refuses
+  (`empty-scan-unconfirmed`) unless `--confirm-baseline-delta` is passed. An empty
+  accepted baseline also disarms the zero-families-vs-non-empty-baseline backstop
+  below, and on a first-time bootstrap the large-delta guard does not apply, so the
+  confirmation is the only thing standing between a mistyped `scope_paths` and a
+  permanently vacuous gate. A genuinely clone-free scope is real — hence a
+  confirmation gate, not a refusal.
 
 ## Adoption
 

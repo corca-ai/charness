@@ -104,6 +104,39 @@ def _enrich_live_scan(repo_root: Path, families: list[dict]) -> tuple[list[dict]
     return enriched, unreadable
 
 
+def _load_review_data(path: Path) -> tuple[dict | None, str | None]:
+    """``(overlay payload, refusal reason)``. Absent overlay = no prior classifications;
+    present-but-unreadable is a refusal, because ``or {}`` here meant --execute rewrote
+    the overlay with zero entries and a reset note, destroying every operator
+    classification while reporting ``dropped_ids: []``."""
+    if not path.exists():
+        return {"entries": []}, None
+    data = _scan.load_json(path)
+    if not isinstance(data, dict) or not isinstance(data.get("entries"), list):
+        return None, (f"{path} is present but unreadable (invalid JSON, or no `entries` list); refusing "
+                      "to migrate rather than overwriting the reviewed overlay with an empty one.")
+    return data, None
+
+
+def _load_accepted_ids(path: Path, loader) -> tuple[set[str] | None, str | None]:
+    """``(accepted ids, refusal reason)`` for one accepted-identity artifact.
+
+    An ABSENT artifact honestly declares no accepted identities (first-run repo). A
+    PRESENT but unreadable one — truncated mid-write, conflict markers, an unknown
+    schemaVersion — does not: every loader here returns ``None`` for exactly that case,
+    and coercing it with ``or set()`` made the migration report `old_family_count: 0`,
+    skip the total-vanish refusal, and then OVERWRITE the artifact with an empty one.
+    The gate already degrades on this same unreadable-baseline condition; the tool that
+    WRITES the file must refuse it."""
+    if not path.exists():
+        return set(), None
+    ids = loader()
+    if ids is None:
+        return None, (f"{path} is present but unreadable (invalid JSON, or a schema this tool does not "
+                      "know); refusing to migrate rather than overwriting it with an empty baseline.")
+    return ids, None
+
+
 def _requires_review_payload(gate_plan: dict, enriched: list[dict]) -> list[dict]:
     files_by_v2 = {entry["v2"]: entry["files"] for entry in enriched}
     return [
@@ -133,6 +166,16 @@ def build_report(repo_root: Path, config: dict, args) -> dict:
                          "fix or re-scope before migrating (never a partial migration)."],
             "unreadable_family_ids": unreadable,
         }
+    if not enriched:
+        # A live scan with zero families remaps nothing, so --execute would write an
+        # EMPTY gate baseline, an EMPTY advisory baseline and a stripped overlay while
+        # reporting ok/planned — every accepted identity dropped over a scope the scan
+        # never established (triage sweep S33). Nothing to migrate is a refusal, not a
+        # plan: a genuinely clone-free scope needs --write-baseline, not a migration.
+        return {"ok": False, "status": "empty-live-scan",
+                "messages": ["live scan produced zero clone families; refusing to migrate "
+                             "(migrating nothing would write EMPTY baselines and drop every "
+                             "accepted identity). Re-check nose and dup_ratchet.scope_paths."]}
     collision = _plan.collision_report(enriched)
     if not collision["ok"]:
         return {"ok": False, "status": "collision-check-failed", "collision": collision,
@@ -140,13 +183,55 @@ def build_report(repo_root: Path, config: dict, args) -> dict:
                              "scan; refusing to migrate (implementation-induced collision, not a "
                              "corpus fact -- see PQ1)."]}
 
-    old_gate_ids = _read_old_gate_ids(_scan.load_json(repo_root / gate_baseline_rel)) or set()
+    gate_path = repo_root / gate_baseline_rel
+    old_gate_ids, gate_error = _load_accepted_ids(
+        gate_path, lambda: _read_old_gate_ids(_scan.load_json(gate_path)))
+    nose_path = repo_root / nose_baseline_rel
+    old_nose_ids, nose_error = _load_accepted_ids(
+        nose_path, lambda: _nose_baseline.load_baseline_ids(repo_root, nose_baseline_rel))
+    review_path = repo_root / review_rel
+    review_data, review_error = _load_review_data(review_path)
+    unreadable = [message for message in (gate_error, nose_error, review_error) if message]
+    if unreadable:
+        return {"ok": False, "status": "unreadable-accepted-artifact", "messages": unreadable}
+    review_entries = review_data["entries"]
     gate_plan = _plan.plan_gate_baseline_migration(old_gate_ids, enriched, args.accept_new_family or [])
-    old_nose_ids = _nose_baseline.load_baseline_ids(repo_root, nose_baseline_rel) or set()
     nose_plan = _plan.plan_advisory_baseline_migration(old_nose_ids, enriched)
-    review_data = _scan.load_json(repo_root / review_rel) or {}
-    review_entries = review_data.get("entries") if isinstance(review_data.get("entries"), list) else []
     review_plan = _plan.plan_review_migration(review_entries, enriched)
+    # Same defect one step less extreme: a live scan that matches NONE of one surface's
+    # accepted identities drops all of them and writes that artifact built only from
+    # newly-accepted families. An algo migration is supposed to remap survivors, so zero
+    # survivors over a non-empty accepted set is a wrong-algo/wrong-scope signal, not a
+    # plan. The check is PER SURFACE: the three artifacts key on independent id sets, so a
+    # summed survivor count let one surface's total vanish hide behind another's survivor
+    # (and the overlay, the least reconstructible of the three, had no guard at all).
+    code_review_ids = {str(entry.get("id")) for entry in review_entries
+                       if isinstance(entry, dict) and entry.get("surface") == "code" and entry.get("id")}
+    vanished_surfaces = [
+        f"{name}: {old_count} accepted -> 0 surviving"
+        for name, old_count, survivors in (
+            (gate_baseline_rel, len(old_gate_ids), len(gate_plan["survivors"])),
+            (nose_baseline_rel, len(old_nose_ids), len(nose_plan["survivors"])),
+            # Set difference, NOT a length subtraction: `dropped_ids` is a per-ENTRY list
+            # that neither dedupes nor excludes the malformed entries `code_review_ids`
+            # skips, so a duplicated or id-less overlay entry made the arithmetic count go
+            # NEGATIVE — and `not -1` is False, which disarmed the very refusal this guard
+            # is. A survivor count that can go negative is itself the tell.
+            (review_rel, len(code_review_ids), len(code_review_ids - set(review_plan["dropped_ids"]))),
+        )
+        if old_count and not survivors
+    ]
+    if vanished_surfaces and not args.accept_total_vanish:
+        return {
+            "ok": False, "status": "total-vanish",
+            "messages": ["no accepted identity survived the live scan on " + "; ".join(vanished_surfaces)
+                         + ". Refusing to migrate: check that the live scan's scope and old algo "
+                         f"(v{OLD_ALGO_VERSION}) match how these artifacts were minted, or pass "
+                         "--accept-total-vanish to drop every accepted identity deliberately."],
+            "vanished_surfaces": vanished_surfaces,
+            "gate_vanished": gate_plan["vanished"], "nose_vanished": nose_plan["vanished"],
+            "review_dropped_ids": review_plan["dropped_ids"],
+        }
 
     return {
         "ok": True, "status": "planned", "mode": "execute" if args.execute else "dry-run",
@@ -227,6 +312,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--nose-baseline-path", help="Override the advisory baseline path (default nose_baseline_lib.DEFAULT_BASELINE_REL).")
     parser.add_argument("--accept-new-family", action="append", metavar="V2_FINGERPRINT",
                          help="Accept one requires_review live family (by its v2 fingerprint) into the migrated gate baseline (repeatable).")
+    parser.add_argument("--accept-total-vanish", action="store_true",
+                         help="Proceed when NONE of one artifact's accepted identities survive the live scan (the default refuses: zero survivors on a surface drops every accepted identity it held). Does NOT cover a zero-family live scan, which refuses unconditionally.")
     parser.add_argument("--execute", action="store_true", help="Write the migrated artifacts (else dry-run: print the plan only).")
     parser.add_argument("--json", action="store_true", help="Emit the migration report as JSON")
     return parser.parse_args(argv)

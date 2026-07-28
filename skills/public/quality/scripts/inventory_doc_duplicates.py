@@ -98,16 +98,38 @@ def run_query(repo_root: Path, command: list[str]) -> dict[str, Any]:
         return {"status": "error", "families": [], "stderr": f"nose timed out after {NOSE_TIMEOUT_SECONDS}s"}
     if result.get("error_kind") == "oserror":
         return {"status": "error", "families": [], "stderr": f"nose could not be executed: {result.get('error', '')}"}
-    if result.get("error_kind") == "invalid-json" or (result["status"] == "ok" and not result["stdout"].strip()):
-        detail = result.get("error", "empty stdout")
-        return {"status": "error", "families": [], "stderr": f"nose returned invalid JSON: {detail}"}
+    if result.get("error_kind") in {"invalid-json", "empty-output"}:
+        # Name the actual kind: an empty stdout is a producer that printed nothing, which is
+        # a different diagnosis from output that failed to parse.
+        stderr = (
+            "nose emitted no output; the scan produced nothing to read"
+            if result.get("error_kind") == "empty-output"
+            else f"nose returned invalid JSON: {result.get('error', 'unparseable stdout')}"
+        )
+        # Keep nose's own stderr: a nonzero exit with blank stdout reaches this branch, and
+        # the diagnosis the operator needs is what nose printed, not just "no JSON".
+        if result.get("stderr"):
+            stderr = f"{stderr}; {result['stderr']}"
+        return {"status": "error", "families": [], "stderr": stderr}
     if result["status"] == "error":
         return {"status": "error", "families": [], "stderr": result["stderr"]}
     payload = result["payload"]
-    families = payload.get("markdown")
+    families = payload.get("markdown") if isinstance(payload, dict) else None
+    if not isinstance(families, list):
+        # Shape parity with the code arm's `nose_report_lib.report_shape_error`: a payload
+        # whose Markdown family list the reader cannot key (renamed/future key, a
+        # non-object report) establishes NO family set, so it is an error rather than zero
+        # doc drift. Reading it as `[]` made a bumped nose render a clean doc advisory AND
+        # a vacuously clean dup-ratchet doc arm — the doc-side twin of triage sweep S34.
+        keys = ", ".join(sorted(str(key) for key in payload)[:8]) if isinstance(payload, dict) else "<not an object>"
+        return {
+            "status": "error", "families": [],
+            "stderr": f"nose report declares no `markdown` family list (keys: {keys}); "
+                      "the Markdown family set is unestablished",
+        }
     return {
         "status": "ok",
-        "families": families if isinstance(families, list) else [],
+        "families": families,
         "schema_version": payload.get("schema_version"),
         "stderr": result["stderr"],
     }

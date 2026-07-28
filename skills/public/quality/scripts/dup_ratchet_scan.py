@@ -42,6 +42,12 @@ DOC_INVENTORY = Path(__file__).resolve().parent / "inventory_doc_duplicates.py"
 # carry EVERY family_id, or unenumerated families false-block later).
 FULL_SCAN_TOP = 1_000_000
 FULL_SCAN_MIN_SIZE = 24
+# An inventory payload carrying one of these statuses established no family set: it
+# reports a missing/old/broken scanner, or (baseline-written) what was accepted rather
+# than what drifted. Shared by the code and doc readers so the two arms of the gate
+# cannot disagree about which statuses count as a scan.
+UNESTABLISHED_DOC_STATUSES = frozenset({"missing", "version-too-old", "error", "baseline-written"})
+UNESTABLISHED_CODE_STATUSES = UNESTABLISHED_DOC_STATUSES
 
 
 def safe_read(path: Path) -> str | None:
@@ -62,16 +68,22 @@ def load_json(path: Path):
 
 
 def families_from_text(text: str | None) -> list | None:
-    if text is None:
+    """The injected inventory's DECLARED family list, or ``None`` when the payload does
+    not establish one. A zero-byte/blank file, a non-object payload, and an object with
+    no `families` list all used to read as `[]` — indistinguishable from an inventory
+    that declared zero families, so a crashed or truncated producer rendered a clean
+    gate over a scan that never ran (triage sweep S29). `[]` now means the payload said
+    zero; anything else is a reason the caller degrades on."""
+    if text is None or not text.strip():
         return None
     try:
-        payload = json.loads(text) if text.strip() else {}
+        payload = json.loads(text)
     except json.JSONDecodeError:
         return None
     if not isinstance(payload, dict):
         return None
     families = payload.get("families")
-    return families if isinstance(families, list) else []
+    return families if isinstance(families, list) else None
 
 
 def scan_families(repo_root: Path, scope_paths: list[str]) -> tuple[list[dict] | None, str | None, str]:
@@ -155,16 +167,20 @@ def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str
     return members, spans, None, live_version
 
 
-def payload_tool_version(text: str | None) -> str:
-    """Top-level nose tool_version stamped into an injected inventory --json payload,
-    or ``""`` when absent/unreadable. The injected scan's version is the live scanner
-    version for skew detection against the gate baseline's stamped version."""
+def payload_string_field(text: str | None, field: str) -> str:
+    """One top-level string field of an injected inventory --json payload, or ``""`` when
+    the payload is absent/unreadable or the field is missing or not a string.
+
+    Two fields are read this way and neither gets its own wrapper: ``status`` (read ONLY to
+    refuse a self-reported non-scan payload — the family set itself always comes from the
+    declared list) and ``tool_version`` (the injected scan's scanner version, for skew
+    detection against the gate baseline's stamp)."""
     try:
         payload = json.loads(text) if text and text.strip() else {}
     except json.JSONDecodeError:
         return ""
-    version = payload.get("tool_version") if isinstance(payload, dict) else None
-    return version if isinstance(version, str) else ""
+    value = payload.get(field) if isinstance(payload, dict) else None
+    return value if isinstance(value, str) else ""
 
 
 def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], dict[str, list[dict]], str | None, str]:
@@ -178,6 +194,13 @@ def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[
     evidence-only, never identity."""
     if args.code_inventory is not None:
         text = safe_read(args.code_inventory)
+        # The doc reader has always degraded on a self-reported non-scan status; the code
+        # reader checked shape only, so an injected payload minted when nose was absent
+        # or erroring (`families: []` by construction) read as a declared-empty scan and
+        # rendered a clean gate — the S29 class, in the sibling arm of the same function.
+        status = payload_string_field(text, "status")
+        if status in UNESTABLISHED_CODE_STATUSES:
+            return {}, {}, f"injected code inventory degraded (status={status})", ""
         families = families_from_text(text)
         if families is None:
             return {}, {}, f"injected code inventory unreadable ({args.code_inventory})", ""
@@ -195,7 +218,7 @@ def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[
             if fingerprint and isinstance(hashes, list):
                 members[str(fingerprint)] = [str(h) for h in hashes]
                 spans[str(fingerprint)] = family_member_spans(fam)
-        return members, spans, None, payload_tool_version(text)
+        return members, spans, None, payload_string_field(text, "tool_version")
     return scan_code_members(repo_root, scope_paths)
 
 
@@ -214,17 +237,27 @@ def doc_drift_signatures(args, repo_root: Path) -> tuple[set[str], str | None]:
             return set(), f"injected doc inventory missing ({args.doc_inventory})"
     else:
         text = run_doc_inventory(repo_root)
+    # An empty payload is a producer that died (a crashed/nonzero-exit
+    # `inventory_doc_duplicates` prints nothing), NOT a doc corpus with no drift; it
+    # used to parse as `{}` and return no signatures with no reason (S29).
+    if not text or not text.strip():
+        return set(), "doc inventory produced no output; the doc scan produced nothing to read"
     try:
-        payload = json.loads(text) if text and text.strip() else {}
+        payload = json.loads(text)
     except json.JSONDecodeError:
         return set(), "doc inventory JSON unreadable"
     if not isinstance(payload, dict):
         return set(), "doc inventory payload malformed"
-    if payload.get("status") in {"missing", "version-too-old", "error"}:
+    # `baseline-written` belongs here with the other non-drift statuses: that payload
+    # reports what was ACCEPTED and always carries `families: []`, so reading it as a
+    # drift scan is a clean verdict over a scan that answered a different question.
+    if payload.get("status") in UNESTABLISHED_DOC_STATUSES:
         return set(), f"doc inventory degraded (status={payload.get('status')})"
     families = payload.get("families")
     if not isinstance(families, list):
-        return set(), None
+        # Covers a renamed key and the `--summary` view (which emits `families_sample`),
+        # the doc-side twin of the S27 truncated-view trap.
+        return set(), "doc inventory payload declares no families list"
     signatures = {
         fam["signature"] for fam in families
         if isinstance(fam, dict) and isinstance(fam.get("signature"), str) and fam.get("signature")
