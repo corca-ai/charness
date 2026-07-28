@@ -94,3 +94,20 @@ def _fail(*, stage: str, source: str, expects: str, reason: str,
         payload["hint"] = hint
     print(json.dumps(payload, ensure_ascii=False), file=sys.stderr)
     raise SystemExit(2)
+
+
+def stage_refusal(payload: dict, *, code: int = 1) -> int:
+    """Emit a pipeline stage's typed refusal on stderr and RETURN its exit code.
+
+    Sibling to `_fail`, which raises `SystemExit(2)` for a contaminated INPUT. This one
+    returns instead, because a stage's own refusals are decided inside `main()` where a
+    `SystemExit` would bypass the `finally` that cancels the CLI timeout — and they are
+    a different verdict from "your input was not what this stage reads", so they keep a
+    different code.
+
+    `ok: False` is set here rather than trusted from the caller: every stage refusal
+    carries it, and a payload that omitted it would read as a success to any consumer
+    keying on that field.
+    """
+    print(json.dumps({**payload, "ok": False}, ensure_ascii=False), file=sys.stderr)
+    return code

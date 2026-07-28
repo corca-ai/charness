@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -10,6 +11,7 @@ from types import SimpleNamespace
 
 from scripts.capability_catalog_artifact import persist_catalog
 from tests.script_loader import load_script_module
+from tests.script_main import run_loaded_script_main
 
 from .support import ROOT, init_git_repo, run_script
 
@@ -658,3 +660,58 @@ def test_computed_detector_catches_a_bare_stem_head_and_ignores_a_read_open() ->
 
     write_open = SCANNER.ast.parse('path.open("w")\n').body[0].value
     assert SCANNER._write_target_node(write_open) is not None
+
+
+REFRESH_CURRENT_POINTER = load_script_module(
+    "refresh_current_pointer_under_test", ROOT / "scripts" / "refresh_current_pointer.py"
+)
+
+
+def _refresh_pointer(repo: Path, record: Path):
+    """In-process, not a subprocess: the boundary-bypass ratchet classifies this
+    crossing as convertible, and the verdict under test is the returned payload rather
+    than any process-level behavior."""
+    return run_loaded_script_main(
+        "refresh_current_pointer.py",
+        REFRESH_CURRENT_POINTER,
+        "--repo-root", str(repo),
+        "--skill-id", "gather",
+        "--record-artifact-path", f"charness-artifacts/gather/{record.name}",
+        "--execute",
+    )
+
+
+def test_refresh_current_pointer_refuses_an_empty_record(tmp_path: Path) -> None:
+    """Sweep row S19's destructive half, at the surface that actually owns it.
+
+    The gather writer was fixed to refuse empty content, but `is_file()` was the only
+    content check in `scripts/refresh_current_pointer.py` — the GENERIC pointer writer
+    every skill routes through — and a 0-byte file passes it. Repointing `latest.md` at
+    nothing destroys the asset other sessions read as current and reports
+    `{"status": "updated"}`, which is the same wrong output one command over."""
+    repo = tmp_path / "repo"
+    gather = repo / "charness-artifacts" / "gather"
+    gather.mkdir(parents=True)
+    real = gather / "2026-05-09-real.md"
+    real.write_text("# Real asset\n\nGathered text.\n", encoding="utf-8")
+    pointer = gather / "latest.md"
+    pointer.symlink_to(real.name)
+
+    for label, body in (("empty", ""), ("whitespace-only", "  \n\n\t\n")):
+        record = gather / f"2026-05-10-{label}.md"
+        record.write_text(body, encoding="utf-8")
+        result = _refresh_pointer(repo, record)
+        assert result.returncode == 1, label
+        payload = json.loads(result.stdout)
+        assert payload["status"] == "blocked", label
+        assert "record artifact is empty" in payload["reason"], label
+        assert payload["would_update"] is False, label
+        assert os.readlink(pointer) == real.name, f"pointer repointed by the {label} record"
+
+    # Falsifiable counterpart: a record with real bytes still repoints the pointer, so
+    # the refusal is about emptiness and not about the writer having been broken.
+    fresh = gather / "2026-05-11-fresh.md"
+    fresh.write_text("# Fresh asset\n\nMore gathered text.\n", encoding="utf-8")
+    ok = _refresh_pointer(repo, fresh)
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+    assert os.readlink(pointer) == fresh.name

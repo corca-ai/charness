@@ -79,6 +79,13 @@
     },
     {
       "class": "intentional",
+      "id": "0bc23ea0000c6cf9",
+      "note": "what remains of the chunked-routing per-stage CLI entrypoint after the extractable half was actually extracted: `arm_cli_timeout` -> `parse_args` -> stage-specific work -> `sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2))` -> `return 0` -> `cancel_timeout()` in `finally`. Each pipeline stage is a standalone runnable script by design (the operator runs them individually and pipes between them), so this scaffolding is per stage for the same portability reason `resolve_adapter.py` is. The typed-refusal emit that review identified as genuinely shared is now `chunked_routing_cli.stage_refusal`, which is what shrank this family's span; wrapping the remaining try/finally in a decorator would hide each stage's own flow behind a framework for four call sites. The two mains this family pairs do not even share their input resolution (one reads a pipeline JSON, the other resolves --handoff).",
+      "reviewed_at": "2026-07-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "0eb1594705427b69",
       "note": "import/bootstrap boilerplate family rotated after HITL scratchpad template extraction; portable skill scripts keep local runtime bootstrap/import setup for direct execution",
       "reviewed_at": "2026-06-27",

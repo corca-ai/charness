@@ -513,3 +513,53 @@ def test_cli_refuses_to_overwrite_existing_artifact(tmp_path, lib, chunk_from_en
     second = subprocess.run(args, input=chunk_payload, capture_output=True, text=True, check=False)
     assert second.returncode != 0
     assert "already exists" in second.stderr
+
+
+def test_an_empty_chunk_is_refused_instead_of_drafted(tmp_path: Path, lib, chunk_from_entry_1) -> None:
+    """Sweep row S20, parent-reproduced. A chunk with zero sources and no objective
+    wrote a real goal artifact titled `# Achieve Goal: ` with an empty `## Goal`
+    section and reported `{"ok": true, "status": "draft"}`.
+
+    `check_goal` — the gate this writer runs in-process precisely so the output can be
+    trusted — passed it, because every floor it enforces is structural. The operator is
+    then handed a `/achieve @<artifact>` command pointing at nothing, and the failure
+    surfaces only when a human opens the file."""
+    def _draft(payload: dict) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["python3", str(DRAFTER_SCRIPT), "--input", "-", "--date", "2026-07-28",
+             "--repo-root", str(tmp_path)],
+            input=json.dumps(payload), capture_output=True, text=True, check=False,
+        )
+
+    for label, payload in (
+        ("no sources and no objective", {"entries": [], "label": "", "objective_summary": ""}),
+        ("no sources", {"entries": [], "label": "x", "objective_summary": "a real objective"}),
+    ):
+        result = _draft(payload)
+        assert result.returncode == 1, label
+        assert "refusing to draft a goal from an empty chunk" in result.stderr, label
+        assert not list((tmp_path / "charness-artifacts" / "goals").glob("*.md")), label
+
+    # Entries that EXIST but are empty are the same case, found by review: the count
+    # check passed a one-entry chunk of nothing, which rendered `Source: handoff entry
+    # 1` with nothing behind it.
+    empty_entry = _draft(
+        {"entries": [{"index": 1, "title": "", "body": "  "}], "label": "x",
+         "objective_summary": "a real objective"}
+    )
+    assert empty_entry.returncode == 1
+    assert "entries" in empty_entry.stderr
+
+    # A whitespace-only objective is the same case: `## Goal` would render empty.
+    blank_objective = json.loads(json.dumps(chunk_from_entry_1.to_dict()))
+    blank_objective["objective_summary"] = "   "
+    blank = _draft(blank_objective)
+    assert blank.returncode == 1
+    assert "objective_summary" in blank.stderr
+
+    # Falsifiable counterpart: the real chunk still drafts, so the refusal is about
+    # emptiness and not about the drafter having been broken.
+    ok = _draft(chunk_from_entry_1.to_dict())
+    assert ok.returncode == 0, ok.stderr
+    assert json.loads(ok.stdout)["ok"] is True
+    assert list((tmp_path / "charness-artifacts" / "goals").glob("*.md"))

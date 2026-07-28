@@ -50,11 +50,34 @@ def _resolve_output_dir(repo_root: Path) -> Path:
 
 
 def _read_content(path: Path | None) -> str:
-    if path is None:
-        return sys.stdin.read()
-    if not path.is_file():
-        raise wlib.WriteError(f"--content-file {path} does not exist or is not a file")
-    return path.read_text(encoding="utf-8")
+    """The record body. Empty or whitespace-only content is REFUSED, not written.
+
+    A gather record is a durable knowledge asset, and this helper writes two things:
+    the dated record and the `latest.md` current pointer that other sessions read as
+    "the gathered source". Empty stdin — a fetch that produced nothing, a pipe that
+    failed, a `--content-file` of a truncated download — wrote a 0-byte record AND
+    overwrote the pointer with 0 bytes, reporting `{"status": "updated",
+    "wrote_record": true}` and exit 0. The destructive half is the pointer: a
+    previously good asset is replaced by nothing, and the report says it worked.
+
+    Refused HERE rather than at the write, so `--dry-run` (which reads content to
+    report `content_bytes`) refuses on the same input the executing run would.
+    """
+    content = sys.stdin.read() if path is None else None
+    if content is None:
+        if not path.is_file():
+            raise wlib.WriteError(f"--content-file {path} does not exist or is not a file")
+        content = path.read_text(encoding="utf-8")
+    if not content.strip():
+        source = "stdin" if path is None else f"--content-file {path}"
+        raise wlib.WriteError(
+            f"refusing to write an empty gather record: {source} produced "
+            f"{len(content.encode('utf-8'))} byte(s) of content, none of it non-whitespace. "
+            "A 0-byte record would also overwrite the `latest.md` current pointer, replacing a "
+            "real gathered asset with nothing while reporting success. Check that the fetch or "
+            "pipe upstream of this command actually produced the source text."
+        )
+    return content
 
 
 def _build_parser() -> argparse.ArgumentParser:

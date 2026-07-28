@@ -53,6 +53,37 @@ def target_files(repo_root: Path, targets: list[str]) -> set[str]:
     return files
 
 
+def repo_root_targets(repo_root: Path, targets: list[str]) -> list[tuple[int, str]]:
+    """1-based ``(position, target)`` for every target that IS the repo root.
+
+    `repo_root / ""` resolves to the REPO ROOT, so such a target made
+    `relative_test_files` rglob the entire repo and every test file counted as
+    covered by standing targets — this gate reporting full completeness having
+    established nothing. It is not a hypothetical input: `run-quality.sh` builds the
+    array with `mapfile` from `run_standing_pytest.py --print-expanded-targets`, and
+    `mapfile` on empty output yields exactly one empty element.
+
+    Blankness is NOT the test, because it is only one spelling of the same thing.
+    `PurePath` drops single-dot components at construction, so `.` and `./` resolve
+    to the repo root too — and `.` is the most natural pytest target anyone would
+    write, reachable through `run_standing_pytest.py --pytest-target .`. The check is
+    therefore on the RESOLVED path, which catches every spelling including an
+    absolute path that happens to be the root.
+    """
+    resolved_root = repo_root.resolve()
+    offenders: list[tuple[int, str]] = []
+    for index, target in enumerate(targets, start=1):
+        if any(char in target for char in "*?["):
+            continue
+        try:
+            candidate = (repo_root / target).resolve()
+        except OSError:
+            continue
+        if candidate == resolved_root:
+            offenders.append((index, target))
+    return offenders
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -68,9 +99,37 @@ def main() -> int:
     if not all_tests:
         return 0
 
+    # Reached only when this repo HAS test files (both earlier returns are about a repo
+    # with none), so an empty target list here is the producer having failed, not a repo
+    # without tests. It used to skip with exit 0 — the same unestablished-scope pass the
+    # blank-target refusal below exists to stop, which meant the refusal's own advice
+    # ("check the producer") routed an operator into a green run by filtering the blank
+    # out of the array.
     if not args.targets:
-        print("no standing targets provided; skipping completeness check", file=sys.stderr)
-        return 0
+        print(
+            f"no standing pytest targets provided, but {len(all_tests)} test file(s) exist under "
+            f"{test_root}; the target list did not resolve, so completeness was never established. "
+            "Check the producer (`run_standing_pytest.py --print-expanded-targets`).",
+            file=sys.stderr,
+        )
+        return 1
+
+    offenders = repo_root_targets(repo_root, args.targets)
+    if offenders:
+        # LOUD, not skipped: such a target is the caller's target list failing to
+        # resolve, and both silent options are wrong here. Widening to the repo root
+        # reports full completeness over an unestablished scope; dropping the offender
+        # would report completeness against the remaining targets as if the list were
+        # whole.
+        rendered = ", ".join(f"position {index} ({target!r})" for index, target in offenders)
+        print(
+            f"standing target(s) resolve to the repo root: {rendered}. `repo_root / \"\"` (and "
+            "`.`, and `./`) IS the repo root, so this would rglob the whole repo and report every "
+            "test file as covered. Check the producer of the target list "
+            "(`run_standing_pytest.py --print-expanded-targets`).",
+            file=sys.stderr,
+        )
+        return 1
 
     targeted_tests = target_files(repo_root, args.targets)
     missing = all_tests - targeted_tests

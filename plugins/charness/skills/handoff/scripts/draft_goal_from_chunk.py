@@ -133,6 +133,38 @@ def main() -> int:
             expects="a single ChunkCandidate JSON (ChunkCandidate.to_dict())",
         )
         chunk = _restore_chunk(chunk_payload)
+        # A chunk with no sources and no objective is not a draftable goal. It used
+        # to write a real artifact titled `# Achieve Goal: ` with an empty `## Goal`
+        # section and report `{"ok": true, "status": "draft"}` — and `check_goal`, the
+        # gate this writer runs to justify trusting the output, passed it, because
+        # every floor it enforces is structural. The operator is then handed a
+        # `/achieve @<artifact>` command pointing at nothing.
+        # `entries` truthiness alone is not the floor: `HandoffEntry.from_dict` accepts
+        # an empty title AND an empty body, so a one-entry chunk of nothing passed the
+        # count check and rendered `Source: handoff entry 1` with nothing behind it —
+        # the same command-pointing-at-nothing outcome, minus the empty title line.
+        substantive = [
+            entry for entry in chunk.entries if str(entry.title).strip() or str(entry.body).strip()
+        ]
+        missing = [
+            field
+            for field, ok in (
+                ("entries", bool(substantive)),
+                ("objective_summary", bool(str(chunk.objective_summary).strip())),
+            )
+            if not ok
+        ]
+        if missing:
+            return chunked_routing_cli.stage_refusal(
+                {
+                    "error": (
+                        f"refusing to draft a goal from an empty chunk: {missing} is empty. A goal "
+                        "artifact with no sources and no objective passes check_goal (whose floors "
+                        "are structural) while naming no work at all."
+                    ),
+                    "empty_fields": missing,
+                }
+            )
         slug = args.slug or chunked_routing_lib.auto_draft_slug(chunk)
         goal_path = GOAL_LIB.goal_path(repo_root, args.date, slug)
         goal_rel = GOAL_LIB.goal_rel(repo_root, goal_path)
@@ -143,35 +175,21 @@ def main() -> int:
         # Refuse to overwrite an existing artifact; the auto-draft writer
         # is for fresh drafts only.
         if goal_path.exists():
-            print(
-                json.dumps(
-                    {
-                        "ok": False,
-                        "error": f"artifact already exists: {goal_rel}",
-                    },
-                    ensure_ascii=False,
-                ),
-                file=sys.stderr,
+            return chunked_routing_cli.stage_refusal(
+                {"error": f"artifact already exists: {goal_rel}"}
             )
-            return 1
         goal_path.write_text(artifact_text, encoding="utf-8")
         check = GOAL_LIB.check_goal(artifact_text)
         if not check["ok"]:
             # Roll back the bad artifact so a failure does not leave
             # half-written state on disk.
             goal_path.unlink(missing_ok=True)
-            print(
-                json.dumps(
-                    {
-                        "ok": False,
-                        "error": "auto-drafted artifact failed check_goal_artifact",
-                        "check_goal_issues": check["issues"],
-                    },
-                    ensure_ascii=False,
-                ),
-                file=sys.stderr,
+            return chunked_routing_cli.stage_refusal(
+                {
+                    "error": "auto-drafted artifact failed check_goal_artifact",
+                    "check_goal_issues": check["issues"],
+                }
             )
-            return 1
         payload = {
             "ok": True,
             "path": str(goal_path),

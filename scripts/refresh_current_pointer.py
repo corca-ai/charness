@@ -202,6 +202,22 @@ def main() -> int:
         return _blocked(payload, "record artifact path is outside the skill output directory")
     if not record_path.is_file():
         return _blocked(payload, "record artifact path does not exist or is not a file")
+    # An EMPTY record is not a record. This helper's whole job is to replace the
+    # pointer other sessions read as "the current asset", so pointing it at a 0-byte
+    # (or whitespace-only) file destroys a real asset and reports
+    # `{"status": "updated"}` — the same wrong output as sweep row S19, one command
+    # over. `is_file()` alone was the only content check, and a 0-byte file passes it.
+    try:
+        record_text = record_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return _blocked(payload, f"record artifact path could not be read: {exc}")
+    if not record_text.strip():
+        return _blocked(
+            payload,
+            f"record artifact is empty ({record_path.stat().st_size} byte(s), no non-whitespace "
+            "content); repointing the current pointer at it would replace a real asset with "
+            "nothing while reporting success",
+        )
     nominal_current_path = nominal_current_parent / current_path.name
     if record_path == nominal_current_path:
         return _blocked(payload, "record artifact path is already the current pointer path")
