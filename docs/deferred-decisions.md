@@ -454,6 +454,15 @@ Reopen trigger:
 - Impact surfaces: [run-quality.sh](../scripts/run-quality.sh) (the `--skip-if-no-coverage` flag set), [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py), [quality-core.yml](../.github/workflows/quality-core.yml), [mutation-tests.yml](../.github/workflows/mutation-tests.yml), repository branch-protection settings (not in tree).
 - Reopen trigger: a ninth instance of the class, or an operator decision to pay one of the tolls above.
 
+### D41. The coverage mapper cannot see a bare top-level import of a repo script
+
+- Question: Should `tests_referencing_paths` resolve a changed script from a bare `import <stem>` / `from <stem> import ...`, or should the repo require the dotted `from scripts import <stem>` form in tests?
+- Current choice: Defer the mapper change; fix the call sites. The two tests found this way now use the dotted form, and the convention is the cheaper half.
+- Why now: surfaced by dogfooding the armed lane on its own slice. [test_degradation_branch_coverage.py](../tests/test_degradation_branch_coverage.py) covered `scripts/changed_line_run_trust.py:103-104` and the gate still reported those lines uncovered, because the test imported the module as a bare top-level name. [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py) builds its module map from `_module_name(path)` (`scripts.changed_line_run_trust`), so a bare import matches none of its patterns — not the quoted path, not the dotted module, not an import statement, not the stem-as-call-argument form. The blind spot is repo-wide: a conftest puts `scripts/` on `sys.path`, so the bare form works at runtime and several existing tests already use it.
+- Why deferral is right at the time: the obvious widening (match `import <stem>` for every pool file's stem) is a mapper change on a surface that now feeds a BLOCKING gate, so it owes its own two-round review — and it over-matches in a way the existing patterns do not, since a bare stem can collide with a real top-level package name. The direction is safe (an extra test only adds measured coverage) but the cost lands on every push, and the same effect is available for free by writing the import the way the rest of the repo does.
+- Impact surfaces: [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py), [prepush_focused_changed_line_coverage.py](../scripts/prepush_focused_changed_line_coverage.py), any test importing a `scripts/` module by bare name.
+- Reopen trigger: a third changed file reported uncovered while a test demonstrably covers it, or a slice where converting the call sites is not available (a vendored or generated test).
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

@@ -90,7 +90,11 @@ def test_changed_pool_fingerprint_failure_degrades_to_empty(monkeypatch, tmp_pat
     # `_pin_run_state` and the git helper it calls both live in the run-trust module
     # now, so patch THAT module: patching the gate's re-exported names would leave the
     # real callee untouched and the test would pass while exercising nothing.
-    import changed_line_run_trust as trust
+    # `from scripts import ...`, not a bare `import changed_line_run_trust`: the
+    # coverage mapper resolves a changed file to its tests by looking for the DOTTED
+    # module path, and a bare top-level import is invisible to it. Written that way,
+    # this file covers the lines below while the gate still reports them uncovered.
+    from scripts import changed_line_run_trust as trust
 
     def boom(*_args, **_kwargs):
         raise subprocess.CalledProcessError(128, ["git"])
@@ -471,7 +475,11 @@ def test_pin_run_state_survives_a_git_failure_in_the_fingerprint(monkeypatch, tm
     failure while computing the changed-pool fingerprint must cost freshness only.
     Letting it propagate would turn a degraded input into a crash at the one point
     where the gate is deciding what it is even allowed to judge."""
-    import changed_line_run_trust as trust
+    # `from scripts import ...`, not a bare `import changed_line_run_trust`: the
+    # coverage mapper resolves a changed file to its tests by looking for the DOTTED
+    # module path, and a bare top-level import is invisible to it. Written that way,
+    # this file covers the lines below while the gate still reports them uncovered.
+    from scripts import changed_line_run_trust as trust
 
     def boom(*_args, **_kwargs):
         raise OSError("git not found")
