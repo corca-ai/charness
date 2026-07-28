@@ -9,65 +9,64 @@
 
 ## Continuation Capability
 
-Two records now drive this work. The
+Two records drive this work. The
 [2026-07 hunt](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
-reproduced 30 defects over 22 surfaces; **11 OPEN + 6 PARTIAL remain**, each with
-a confirmed repro. The
+reproduced 30 defects over 22 surfaces; **9 OPEN + 4 PARTIAL remain**. The
 [triage sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md)
-then first-looked the other **146** never-examined surfaces: **109 leads survived
-adversarial refutation** (34 refuted), 37 high severity. Only 4 are
-parent-reproduced — read its status vocabulary before citing any row.
+first-looked the other 146 surfaces: **105 leads still open**, 34 high severity.
+It now carries a `CLOSED (parent-reproduced <date>)` status — the ONLY status that
+means a row is done. Read its status vocabulary before citing any row.
 
 ## Current State
 
-- **The structural plan is executed except its last step.** Critique floor as one
-  subsystem (LANDED); proof-surface authoring reclassified irreversible in the
-  [north star](./design-north-star.md) (LANDED); triage sweep over the 146
-  (LANDED — 109 survivors to burn down); birth trigger for new proof surfaces
-  (LANDED as a closeout advisory). Remaining: adopt the scope affordance
-  opportunistically as each gate is touched, never as a repo-wide sweep.
-- **The burn-down is now the work.** Cycle cadence is coupled to closure capacity,
-  not the calendar: do not start a new deep cycle while the prior one's confirmed
-  rows are unclosed. Class (a) — empty input still returns PASS — is a third of
-  the survivors, the same dominant shape as the first hunt.
-- **The fix keeps reproducing the defect: 7 of 7 slices.** The C-cluster's three
-  reviewers found eleven defects inside the fix; the sharpest was the scope
-  record — added to stop verdicts over unestablished scope — asserting one on the
-  common `run-quality.sh` path. Budget for review AND for the repair round after it.
-- **CI is the only judge of the changed-line mutation gate.** Its local run
-  outruns a usable timeout and returns `untrusted` when HEAD moves mid-run.
-- Two of three bounded reviewers reported `envelope-unbound` (write tools visible
-  despite the read-only agent type). None wrote; boundary verify was
-  `parent-attributed`, zero unattributed drift. The typed restriction is not
-  reliably applied on this host.
+- **The burn-down is the work, and 6 rows closed this session** (S6, S19, S20, S93
+  from the sweep; C3 and both C-slice siblings from the hunt). Each was reproduced
+  in the parent before anything changed, and each has a test that fails on revert.
+- **`dup-ratchet` is green.** It failed identically on the session's base commit
+  in a pristine worktree; the 6 families were the artifact validators' copied
+  section readers, which now live in one home each
+  ([markdown sections](../scripts/markdown_sections.py),
+  [structured-entry floor](../scripts/structured_entry_floor.py)). 83 of 83 gates pass.
+- **The fix keeps reproducing the defect: 9 of 9 slices.** Both reviews this session
+  found the fix carrying the class it fixed — a widened trigger reading prose as a
+  path, a consolidated reader fence-blind while its own caller was not, and S19
+  fixed at the gather entrypoint while the generic pointer writer kept the hole.
+  Budget for review AND for the repair round after it.
+- **C6 stays PARTIAL by decision, not omission.** The committed-range/worktree
+  union was written, reviewed and reverted: the boundary tooth is a HARD refusal,
+  so any unrelated dirty library file would refuse every selected critique.
+- **#464's blocking signal is a moving 12h window**, so its rows self-clear; every
+  line its live comment named is covered now, measured in-process. CI stays the only
+  judge of that gate — the local run outruns a usable timeout.
 
 ## Next Session
 
-1. **Work the sweep's 37 high-severity rows by reproducing each one first**, or
-   continue the original hunt's **A5/A6**, **B4/B5**, **A8/A9/A10** (**E last** —
-   per-changed-file mutation discrimination is a contract change). The sweep's
-   `SUBAGENT-CONFIRMED` rows are stronger than leads and weaker than proof.
-2. **C3/C4/C6 are narrowed on purpose**, residuals named in the bug hunt record:
-   C3 misses the `## Packet Consumed` heading form; C6 still reads the COMMITTED
-   range, so the slice under critique is invisible at validation time.
-3. **Two siblings the C slice implicated:** `validate_retro_artifact.py:136` keeps
-   the body-first `or` date fallback C2 replaced; two `LEGACY_UNDATABLE` rows are
-   dead allowlist entries reading as live grandfather decisions.
-4. **A3 is PARTIAL: scheduled is not judged.** Only `check_staged_mirror_drift`
-   reads the index; the rest walk the worktree, and `git revert` runs no
-   pre-commit hook (probed). [A3 critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9.
-5. **D4 is PARTIAL and cannot be closed by this channel.** A pushed tag with no
-   release returns 200 with the tag present, before the release exists. Needs a
-   release-specific channel independent of unauthenticated API quota.
-6. **Containment-slice deferrals** F9/F10, **D28 remainder** and **sibling-scan
-   Tier 2 finding D** are unchanged; see their linked records.
+1. **Work the sweep's remaining 34 high-severity rows, reproducing each first.**
+   Class (a) is still the dominant shape; S27/S33/S34 (quality dup/nose readers
+   returning clean over zero families) are the next coherent batch. **S29 is
+   reproduced but NOT fixed** — an empty scan inventory reads as `clean`; it needs
+   care because this session re-baselined that gate.
+2. **The original hunt's A5/A6, A8/A9/A10, B4/B5** (**E last** — per-changed-file
+   mutation discrimination is a contract change).
+3. **A3 is PARTIAL: scheduled is not judged.** Only `check_staged_mirror_drift`
+   reads the index; the rest walk the worktree, and `git revert` runs no pre-commit
+   hook (probed). Needs a live staged/revert probe, not fixtures.
+   [A3 critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9.
+4. **D4 is PARTIAL and cannot be closed by this channel.** A pushed tag with no
+   release returns 200 with the tag present. Needs a release-specific channel
+   independent of unauthenticated API quota — a design decision before code.
+5. **Containment-slice deferrals** F9/F10, **D28 remainder** and **sibling-scan
+   Tier 2 finding D** are unchanged and still un-dispositioned.
 
 ## Discuss
 
-- **Fenced text is shown, not asserted.** Three gates have now read it as the
-  author's claim; the C slice added a fourth before review caught it.
-- **A widened content trigger buys a false refusal**, and a length floor is not a
-  proof floor. Make the skip LOUD instead; read the declared VALUE, not the line.
+- **Fenced text is shown, not asserted.** Four gates have now read it as the
+  author's claim. The shared section reader blanks fences; the sibling readers that
+  locate their own heading still do not.
+- **A widened content trigger buys a false refusal**, twice proven this session.
+  Read the declared VALUE and require its shape, not the line.
+- **A dead allowlist row is worse than none**: it reads as a live decision. Its
+  test agreed with it because the test had reconstructed a file the corpus lacks.
 - Run release/skill helpers from `skills/public/.../scripts/`, NOT an installed
   or `plugins/` copy ([RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
 
