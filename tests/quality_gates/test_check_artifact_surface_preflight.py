@@ -241,6 +241,20 @@ def test_changed_artifacts_passes_scaffold_roundtrip(
     ]
     assert verdict_lines, "critique stub must still carry the Boundary Ownership Verdict TODO"
     filled_in_stub = filled_in_stub.replace(verdict_lines[0], "- Verdict: single-surface")
+    # The tier block is the third thing an author fills, and leaving it at its
+    # scaffold defaults made the asserted-green shape a `parent-delegated` claim
+    # over a record stating no reviewer was ever spawned — the same truncating-fill
+    # drift this test's comment above records, one floor further down.
+    for stub_line, filled in (
+        ("- Requested tier: TODO", "- Requested tier: bounded-reviewer"),
+        ("- Requested spawn fields: TODO", "- Requested spawn fields: model, reasoning effort"),
+        ("- Application state: TODO", "- Application state: n/a"),
+        ("- Host exposure state: pending-parent-spawn", "- Host exposure state: requested_fields_sent"),
+        ("- Delivery state: pending-parent-spawn", "- Delivery state: findings-received"),
+    ):
+        matches = [line for line in filled_in_stub.splitlines() if line.startswith(stub_line)]
+        assert matches, f"critique stub must still carry `{stub_line}`"
+        filled_in_stub = filled_in_stub.replace(matches[0], filled)
     target = repo / "charness-artifacts" / "critique" / "_preflight_roundtrip_selftest.md"
     target.parent.mkdir(parents=True)
     target.write_text(filled_in_stub, encoding="utf-8")

@@ -13,6 +13,42 @@ _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
 SCAFFOLD = "skills/public/critique/scripts/scaffold_critique_artifact.py"
 
 
+def filled_in_template(template: str) -> str:
+    """The scaffold's template as an author submits it AFTER the reviewer ran.
+
+    Both round-trips below claim to exercise the filled-in shape, and both used
+    to fill only the two floors that refuse an unedited stub outright (fresh-eye
+    + boundary verdict) while leaving the `## Reviewer Tier Evidence` block at its
+    scaffold defaults — `Requested tier: TODO ...` and `pending-parent-spawn`. So
+    the asserted-green shape was a `parent-delegated` claim sitting over a record
+    saying no reviewer was ever spawned: the artifact the fresh-eye floor exists
+    to refuse, pinned by the floor's own tests as correct. Filling the spawn
+    record here is what makes these tests assert what their comments always said
+    they asserted.
+    """
+    head, heading, _ = template.partition("## Fresh-Eye Satisfaction")
+    assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
+    # Replace the scaffold's tier block in place rather than appending a filled
+    # one: `_section_field_map` reads the FIRST matching heading, so an appended
+    # block would be shadowed by the TODO stub and the test would go on asserting
+    # the unedited shape while looking like it fills it.
+    before_tier, tier_heading, _rest = head.partition("## Reviewer Tier Evidence")
+    assert tier_heading, "template must still carry the Reviewer Tier Evidence heading"
+    # The boundary section renders after Fresh-Eye Satisfaction, so the partition
+    # drops the scaffold's TODO stub and we re-add a filled one. Filling every
+    # date-gated floor proves the shape validates regardless of the machine date.
+    return (
+        f"{before_tier}{tier_heading}\n\n"
+        "- Requested tier: bounded-reviewer\n"
+        "- Requested spawn fields: model, reasoning effort\n"
+        "- Host exposure state: requested_fields_sent\n"
+        "- Application state: n/a\n"
+        "- Delivery state: findings-received\n\n"
+        f"{heading}\n\nparent-delegated.\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+    )
+
+
 def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["python3", *args],
@@ -83,20 +119,11 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     # runs), which is what "shape-by-construction" is meant to prove; the
     # raw-stub-fails-once-post-cutoff case has its own dedicated test in
     # tests/quality_gates/test_critique_fresh_eye_presence.py.
-    head, heading, _ = template.partition("## Fresh-Eye Satisfaction")
-    assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
-    # Fill BOTH date-gated floors (fresh-eye + boundary ownership); the boundary
-    # section renders after Fresh-Eye Satisfaction, so the partition drops the
-    # scaffold's TODO stub and we re-add a filled one. This proves the filled
-    # shape validates regardless of the machine date.
-    filled_in_template = (
-        f"{head}{heading}\n\nparent-delegated.\n\n"
-        "## Boundary Ownership\n\n- Verdict: single-surface\n"
-    )
+    filled = filled_in_template(template)
 
     artifact_path = repo / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
-    artifact_path.write_text(filled_in_template, encoding="utf-8")
+    artifact_path.write_text(filled, encoding="utf-8")
     validation = subprocess.run(
         shlex.split(payload["validator_command"]),
         cwd=repo,
@@ -175,17 +202,11 @@ def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tm
     # validator_and_template above: the raw stub's Fresh-Eye Satisfaction line
     # is deliberately not a typed value, so round-trip here proves the FILLED-
     # IN shape validates through the exported plugin's copy of the validator.
-    head, heading, _ = payload["template"].partition("## Fresh-Eye Satisfaction")
-    assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
-    # Same both-floors fill as the in-repo round-trip above.
-    filled_in_template = (
-        f"{head}{heading}\n\nparent-delegated.\n\n"
-        "## Boundary Ownership\n\n- Verdict: single-surface\n"
-    )
+    filled = filled_in_template(payload["template"])
 
     artifact_path = consumer / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
-    artifact_path.write_text(filled_in_template, encoding="utf-8")
+    artifact_path.write_text(filled, encoding="utf-8")
     validation = subprocess.run(
         shlex.split(payload["validator_command"]),
         cwd=consumer,

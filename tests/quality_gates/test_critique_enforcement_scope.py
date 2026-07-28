@@ -1,0 +1,444 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from .support import ROOT, run_script
+
+# Regression floor for the five ways this surface reported a verdict over a scope
+# it had not established (bug-hunt rows C1-C4/C6). Each test pairs the defect with
+# the control that isolates it, because "the fix works" and "the harness is broken"
+# produce the same green otherwise.
+#
+# The shared shape: every floor here is CONDITIONAL — on a date, a selection mode,
+# a probe config, or a trigger line the artifact itself supplies — and each of
+# those conditions was silently satisfiable. A floor that is off emits nothing by
+# construction, so the surface every other closeout leans on could report clean
+# having evaluated almost nothing.
+
+VALIDATOR = "scripts/validate_critique_artifacts.py"
+
+_TIER_BLOCK = """## Reviewer Tier Evidence
+
+- Requested tier: bounded-reviewer
+- Requested spawn fields: model, reasoning effort
+- Host exposure state: {host}
+- Application state: n/a
+- Delivery state: {delivery}
+"""
+
+
+def _artifact(repo: Path, name: str, body: str) -> str:
+    path = repo / "charness-artifacts" / "critique" / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")
+    return f"charness-artifacts/critique/{name}"
+
+
+def _body(*, date: str = "2026-07-28", fresh: str = "parent-delegated", tier: str = "", tail: str = "") -> str:
+    return (
+        f"# Demo Critique\nDate: {date}\n\n"
+        f"## Fresh-Eye Satisfaction\n\n{fresh}\n\n"
+        f"{tier}\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+        f"{tail}"
+    )
+
+
+def _validate(repo: Path, relpath: str, *extra: str):
+    return run_script(VALIDATOR, "--repo-root", str(repo), "--paths", relpath, *extra)
+
+
+# --- C1: the record that contradicts its own claim -------------------------
+
+
+def test_unedited_scaffold_tier_placeholders_do_not_satisfy_the_tier_floor(tmp_path: Path) -> None:
+    """Presence was bare truthiness, so `Requested tier: TODO ...` — the scaffold's
+    OWN default — satisfied the floor permanently. The block validated itself."""
+    repo = tmp_path / "repo"
+    tier = (
+        "## Reviewer Tier Evidence\n\n"
+        "- Requested tier: TODO the fresh-eye reviewer tier requested.\n"
+        "- Requested spawn fields: TODO the fields sent to the host spawn surface.\n"
+        "- Host exposure state: requested_fields_sent\n"
+        "- Application state: n/a\n"
+        "- Delivery state: findings-received\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-stub.md", _body(tier=tier))
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "unedited scaffold `TODO`/`TBD` placeholder" in result.stderr
+
+
+def test_honest_n_a_tier_value_is_not_treated_as_a_placeholder(tmp_path: Path) -> None:
+    """The control that bounds the rule above. `n/a` appears 72 times in the
+    checked-in corpus as a real answer — this host exposes no tier to request —
+    and refusing it would demand a fabricated value for a thing that does not
+    exist. Only unedited `TODO`/`TBD` stubs are refused."""
+    repo = tmp_path / "repo"
+    tier = (
+        "## Reviewer Tier Evidence\n\n"
+        "- Requested tier: n/a\n"
+        "- Requested spawn fields: n/a\n"
+        "- Host exposure state: host-defaulted\n"
+        "- Application state: n/a\n"
+        "- Delivery state: findings-received\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-na.md", _body(tier=tier))
+
+    assert _validate(repo, relpath).returncode == 0
+
+
+def test_parent_delegated_claim_over_a_pending_spawn_record_is_refused(tmp_path: Path) -> None:
+    """`parent-delegated` asserts a COMPLETED delegation; `pending-parent-spawn`
+    states no reviewer was spawned and no findings arrived. Both floors already
+    required and typed these fields — nothing consumed them together, so the
+    disproof sat six lines below the claim and validated green."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="pending-parent-spawn", delivery="pending-parent-spawn")
+    relpath = _artifact(repo, "2026-07-28-contradiction.md", _body(tier=tier))
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "claims a completed delegation" in result.stderr
+
+
+def test_consistent_spawn_record_under_the_same_claim_passes(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    relpath = _artifact(repo, "2026-07-28-consistent.md", _body(tier=tier))
+
+    assert _validate(repo, relpath).returncode == 0
+
+
+def test_blocked_fresh_eye_line_may_keep_a_pending_spawn_record(tmp_path: Path) -> None:
+    """The escape hatch must stay open, or the rule above buys a false claim: an
+    author whose spawn was genuinely blocked records `blocked <signal>` and the
+    pending spawn state is then the TRUTH, not a contradiction."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="pending-parent-spawn", delivery="pending-parent-spawn")
+    body = _body(
+        fresh="blocked the Agent tool is not exposed in this session",
+        tier=tier,
+        tail="\n## Host signal\n\nAgent tool absent from the session tool list.\n",
+    )
+    relpath = _artifact(repo, "2026-07-28-blocked.md", body)
+
+    assert _validate(repo, relpath).returncode == 0
+
+
+# --- C2: the artifact that dates itself out of its own floors --------------
+
+
+def test_body_date_cannot_back_date_an_artifact_out_of_its_floors(tmp_path: Path) -> None:
+    """`_date_from_body(text) or _date_from_filename(path)` read the author-written
+    channel FIRST, and every floor grandfathers on `date < RULE_DATE` — so an
+    earlier body `Date:` bought exemption from the fresh-eye, boundary-ownership,
+    delivery-state and reviewed-input binding floors at once."""
+    repo = tmp_path / "repo"
+    body = "# Demo Critique\nDate: 2026-07-01\n\n## Decision Under Review\n\nno floors filled at all\n"
+    relpath = _artifact(repo, "2026-07-28-backdated.md", body)
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "has no `Fresh-eye satisfaction:` line" in result.stderr
+
+
+def test_both_channels_agreeing_pre_cutoff_is_still_grandfathered(tmp_path: Path) -> None:
+    """The control: taking the LATER date must not retroactively fail genuinely
+    old artifacts, which is the whole checked-in corpus."""
+    repo = tmp_path / "repo"
+    body = "# Demo Critique\nDate: 2026-07-01\n\n## Decision Under Review\n\nno floors filled at all\n"
+    relpath = _artifact(repo, "2026-07-01-old.md", body)
+
+    assert _validate(repo, relpath).returncode == 0
+
+
+# --- C3: the floor whose trigger its own producer never emits --------------
+
+
+def test_bullet_form_packet_consumed_triggers_the_binding_floor(tmp_path: Path) -> None:
+    """`PACKET_CONSUMED_RE` allowed leading whitespace but not a list marker, so
+    the bullet form — what 34 checked-in artifacts and the scaffold's own
+    instructions write — turned the binding floor OFF while declaring a packet."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    # Where the corpus actually writes it: a metadata bullet list, not inside the
+    # `## Reviewed Input Identity` section.
+    body = _body(tier=tier, tail="\n## Context\n\n- Packet Consumed: `some/packet.json`\n")
+    relpath = _artifact(repo, "2026-07-28-bullet.md", body)
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "packet-bound critique must declare fields" in result.stderr
+
+
+def test_bullet_trigger_inside_the_identity_section_also_demands_the_fields(tmp_path: Path) -> None:
+    """The same trigger placed inside `## Reviewed Input Identity` is parsed as a
+    field there, so it refuses through the missing-fields branch instead. Both
+    placements must refuse; only the message differs, and pinning both keeps a
+    future parser change from re-opening one of them."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    body = _body(tier=tier, tail="\n## Reviewed Input Identity\n\n- Packet consumed: some/packet.json\n")
+    relpath = _artifact(repo, "2026-07-28-bullet-in-section.md", body)
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "reviewed input identity missing fields" in result.stderr
+
+
+def test_no_packet_consumed_line_leaves_the_binding_floor_off(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    relpath = _artifact(repo, "2026-07-28-nopacket.md", _body(tier=tier))
+
+    assert _validate(repo, relpath).returncode == 0
+
+
+# --- C4: the declared verify command that disables the floors --------------
+
+
+def test_all_sweep_still_requires_reviewer_tier_evidence(tmp_path: Path) -> None:
+    """`--all` is what `.agents/surfaces.json` declares as this validator's verify
+    command, and under it `selected_paths` is empty — so `require_tier_evidence`
+    was False for EVERY artifact. Whether an artifact carries tier evidence is a
+    property of the artifact, not of how the run reached it."""
+    repo = tmp_path / "repo"
+    _artifact(repo, "2026-07-28-notier.md", _body())
+
+    result = run_script(VALIDATOR, "--repo-root", str(repo), "--all")
+
+    assert result.returncode == 1
+    assert "reviewer tier evidence missing fields" in result.stderr
+
+
+def test_all_sweep_does_not_retroactively_fail_pre_cutoff_artifacts(tmp_path: Path) -> None:
+    """The control that bounds the rule above, and the reason it shares the
+    fresh-eye enforce-from date: 99 checked-in artifacts claim `parent-delegated`
+    with no tier block, and every one of them predates that date."""
+    repo = tmp_path / "repo"
+    _artifact(repo, "2026-07-01-notier.md", _body(date="2026-07-01"))
+
+    assert run_script(VALIDATOR, "--repo-root", str(repo), "--all").returncode == 0
+
+
+def test_all_sweep_names_the_floors_it_did_not_evaluate(tmp_path: Path) -> None:
+    """`Validated N critique artifact(s).` reads as coverage. It was equally true
+    of a sweep that evaluated neither binding currency nor the cross-surface
+    probe, so the run now says what it did not establish."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    _artifact(repo, "2026-07-28-scope.md", _body(tier=tier))
+
+    result = run_script(VALIDATOR, "--repo-root", str(repo), "--all")
+
+    assert result.returncode == 0
+    assert "enforcement scope over 1 artifact(s)" in result.stdout
+    assert "mode=--all" in result.stdout
+    # `-check=disabled`, not `=not-evaluated`: the flag is a fact about the
+    # invocation. Saying "evaluated" would assert work over artifacts that
+    # declared no binding at all — the overclaim the artifact count already made.
+    assert "binding-currency-check=disabled" in result.stdout
+
+
+def test_scope_record_reports_a_date_channel_disagreement(tmp_path: Path) -> None:
+    """Reported, not refused: the corpus carries one honest past-midnight
+    off-by-one, and the exemption a disagreement could buy is already gone."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    _artifact(repo, "2026-07-28-skew.md", _body(date="2026-07-29", tier=tier))
+
+    result = run_script(VALIDATOR, "--repo-root", str(repo), "--all")
+
+    assert result.returncode == 0
+    assert "date-channel-disagreement=1" in result.stdout
+
+
+# --- C6: the probe whose "no hit" meant "never ran" ------------------------
+
+
+def test_configured_probe_with_no_changed_scope_reports_not_established(tmp_path: Path) -> None:
+    """`run-quality.sh` passes `--changed-ref ""` whenever `merge-base origin/main
+    HEAD` fails, and an empty ref short-circuited to `False` — indistinguishable
+    from "configured, resolved, no match". The #408 objective override was
+    silently absent with nothing to notice.
+
+    Uses `--paths` against a real in-repo artifact so an artifact IS in scope: run
+    in `changed` mode against a clean tree this assertion passed via the
+    no-artifacts fallback instead of the probe resolution, i.e. it was green
+    whether or not the repair worked.
+    """
+    existing = sorted((ROOT / "charness-artifacts" / "critique").glob("2026-07-2*.md"))
+    assert existing, "expected at least one recent critique artifact to select"
+    relpath = existing[-1].relative_to(ROOT).as_posix()
+
+    result = run_script(VALIDATOR, "--repo-root", str(ROOT), "--paths", relpath, "--changed-ref", "")
+
+    assert result.returncode == 0, result.stderr
+    assert "cross-surface-probe=not-established" in result.stdout
+
+
+def test_zero_artifacts_in_scope_does_not_fabricate_a_probe_resolution(tmp_path: Path) -> None:
+    """The scope record reproduced the class it was added to close. `on_complete`
+    runs unconditionally but the probe is resolved inside `validate_factory`,
+    which the shared runner calls only when artifacts exist — so a run passing a
+    perfectly good `--changed-ref` and simply finding no critique artifact printed
+    "no --changed-ref/--changed-path resolved", asserting a resolution that never
+    ran. That is the common `run-quality.sh` path."""
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "critique").mkdir(parents=True)
+
+    result = run_script(VALIDATOR, "--repo-root", str(repo), "--all")
+
+    assert result.returncode == 0
+    assert "cross-surface-probe=not-resolved" in result.stdout
+    assert "not-established" not in result.stdout
+
+
+def test_undatable_artifact_is_not_exempt_from_tier_evidence(tmp_path: Path) -> None:
+    """The C4 repair keyed on `observed_date is not None and >= RULE_DATE`, so an
+    artifact with no parseable date was fully exempt under `--all` — through the
+    one input this module's own rule names as never fail-open. Becoming undatable
+    is easy and often accidental: an undated filename, or a `Date:` written as
+    `**Date:**`."""
+    repo = tmp_path / "repo"
+    _artifact(
+        repo,
+        "release-2-12-0-critique.md",
+        "# Release Critique\n\n**Date:** 2026-07-28\n\n"
+        "## Fresh-Eye Satisfaction\n\nparent-delegated\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n",
+    )
+
+    result = run_script(VALIDATOR, "--repo-root", str(repo), "--all")
+
+    assert result.returncode == 1
+    assert "reviewer tier evidence missing fields" in result.stderr
+
+
+def test_markup_wrapped_stub_does_not_satisfy_the_tier_floor(tmp_path: Path) -> None:
+    """`_section_field_map` strips only backticks, so testing the raw value let
+    `**TODO**` through — the unedited stub wearing three characters of markup,
+    which is how this surface has been defeated before. Both sibling checks in the
+    same file already normalized leading markup; this one did not."""
+    repo = tmp_path / "repo"
+    tier = (
+        "## Reviewer Tier Evidence\n\n"
+        "- Requested tier: **TODO** the fresh-eye reviewer tier requested.\n"
+        "- Requested spawn fields: _TBD_ the fields sent.\n"
+        "- Host exposure state: requested_fields_sent\n"
+        "- Application state: > TODO the host signal.\n"
+        "- Delivery state: findings-received\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-markup.md", _body(tier=tier))
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "unedited scaffold `TODO`/`TBD` placeholder" in result.stderr
+
+
+def test_earlier_mention_does_not_shadow_the_declared_fresh_eye_claim(tmp_path: Path) -> None:
+    """`fresh_eye_satisfaction_status` returned the FIRST line containing the
+    phrase, so a sentence in an earlier section shadowed the real
+    `## Fresh-Eye Satisfaction` section — silently disarming the claim-vs-record
+    consistency check, whose trigger is the claim's own text, while a human reader
+    saw the contradiction plainly."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="pending-parent-spawn", delivery="pending-parent-spawn")
+    body = (
+        "# Demo Critique\nDate: 2026-07-28\n\n"
+        "## Decision Under Review\n\n"
+        "Fresh-eye satisfaction: nested-delegated for the sub-slice; the parent record is below.\n\n"
+        f"{tier}\n"
+        "## Fresh-Eye Satisfaction\n\nparent-delegated\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-shadowed.md", body)
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "claims a completed delegation" in result.stderr
+
+
+def test_fenced_quotation_of_the_claim_is_not_read_as_the_claim(tmp_path: Path) -> None:
+    """Fenced text is shown, not asserted — this repo's standing lesson, and a
+    critique OF this validator is exactly the artifact that quotes the canonical
+    form. The honest artifact below records a blocked review; the fence must not
+    turn it into a delegation claim."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="pending-parent-spawn", delivery="pending-parent-spawn")
+    body = (
+        "# Demo Critique\nDate: 2026-07-28\n\n"
+        "## Decision Under Review\n\n"
+        "The refused shape is:\n\n```\nFresh-eye satisfaction: parent-delegated\n```\n\n"
+        f"{tier}\n"
+        "## Fresh-Eye Satisfaction\n\nblocked the Agent tool is not exposed in this session\n\n"
+        "## Host signal\n\nAgent tool absent from the session tool list.\n\n"
+        "## Boundary Ownership\n\n- Verdict: single-surface\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-fenced.md", body)
+
+    assert _validate(repo, relpath).returncode == 0
+
+
+def test_nested_delegated_claim_is_held_to_the_same_spawn_record(tmp_path: Path) -> None:
+    """Both typed values assert a delegation that COMPLETED; keying only on the
+    parent spelling let the same false confidence through under the other token
+    the scaffold offers as a co-equal choice."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="pending-parent-spawn", delivery="pending-parent-spawn")
+    relpath = _artifact(repo, "2026-07-28-nested.md", _body(fresh="nested-delegated", tier=tier))
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "claims a completed delegation" in result.stderr
+
+
+def test_declared_absent_packet_does_not_turn_the_binding_floor_on(tmp_path: Path) -> None:
+    """Widening the trigger to the bullet form made `- Packet Consumed: n/a` — the
+    corpus's own way of writing "no packet" — demand three SHA256 fields for a
+    packet the artifact just said does not exist. The over-block twin of the hole
+    the widening closed."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    body = _body(tier=tier, tail="\n## Context\n\n- Packet Consumed: n/a (no adapter sections).\n")
+    relpath = _artifact(repo, "2026-07-28-nopacket-declared.md", body)
+
+    assert _validate(repo, relpath).returncode == 0
+
+
+def test_line_wrapped_and_bold_packet_declarations_trigger_the_floor(tmp_path: Path) -> None:
+    """The corpus's only genuine bullet declaration wraps the path onto the next
+    line, so the first widening still missed the artifact that motivated it."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    for name, form in (
+        ("wrapped", "- Packet consumed:\n  `charness-artifacts/critique/p.md`."),
+        ("bold", "- **Packet Consumed**: `charness-artifacts/critique/p.md`"),
+    ):
+        relpath = _artifact(repo, f"2026-07-28-{name}.md", _body(tier=tier, tail=f"\n## Context\n\n{form}\n"))
+        result = _validate(repo, relpath)
+        assert result.returncode == 1, f"{name} form did not trigger the binding floor"
+        assert "packet-bound critique must declare fields" in result.stderr
+
+
+def test_unconfigured_probe_is_reported_distinctly_from_unestablished(tmp_path: Path) -> None:
+    """A repo that configures no probe is opt-out by design (spec DBD-4) and must
+    not read the same as a configured probe handed nothing to look at."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    _artifact(repo, "2026-07-28-noprobe.md", _body(tier=tier))
+
+    result = run_script(VALIDATOR, "--repo-root", str(repo), "--all")
+
+    assert result.returncode == 0
+    assert "cross-surface-probe=not-configured" in result.stdout

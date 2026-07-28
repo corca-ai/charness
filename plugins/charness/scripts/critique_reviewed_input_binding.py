@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from datetime import date
 from pathlib import Path
 
@@ -11,7 +10,12 @@ from runtime_bootstrap import import_repo_module
 _identity = import_repo_module(__file__, "scripts.reviewed_input_identity")
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
-PACKET_CONSUMED_RE = re.compile(r"(?im)^\s*packet consumed\s*:\s*(?P<path>\S+)")
+# One definition, shared with the validator. Two copies of this regex existed and
+# both missed the bullet form the corpus writes, so "is this critique packet-bound"
+# had two answers that could drift independently.
+_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
+packet_consumed = _scope.packet_consumed
 EXPECTED_KIND = "charness.critique_prepare_packet"
 
 
@@ -35,7 +39,7 @@ def validate_reviewed_input_binding(
 ) -> None:
     fields = _binding_fields(text)
     required = _identity.artifact_binding_required(
-        path.name, observed_date, PACKET_CONSUMED_RE.search(text) is not None
+        path.name, observed_date, packet_consumed(text)
     )
     current, reason = _identity.verify_declared_binding(
         path,

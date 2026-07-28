@@ -10,7 +10,7 @@ partially fixed on 2026-07-27 as the publish-gate family; D2, D6, D8 fixed and
 D4 partially fixed on 2026-07-28 as the distinct-channel family; D7, D9, D10, E5
 fixed on 2026-07-28 as the empty-scope family remainder.
 
-**Remaining: 16 OPEN + 5 PARTIAL.** Count fully-open rows and partial rows
+**Remaining: 11 OPEN + 6 PARTIAL.** Count fully-open rows and partial rows
 separately; a PARTIAL is not a landed row, and rolling them into a single
 "N remain" figure is the same class of claim this file exists to hunt.
 This file is the tracking record — update the Status column as items land.
@@ -259,12 +259,12 @@ deleting only its `Date:` line flips the verdict to a binding failure. Class (b)
 
 | id | Status | Defect | file:line |
 | --- | --- | --- | --- |
-| C1 | OPEN | The unedited scaffold's tier block validates green beside a `parent-delegated` claim it contradicts | `scripts/critique_reviewer_evidence.py:87,138` |
-| C2 | OPEN | A body `Date:` back-dates a new artifact past all four date-gated floors; nothing cross-checks the filename | `scripts/validate_critique_artifacts.py:174` |
-| C3 | OPEN | `- Packet consumed:` (bullet form) does not match the binding trigger, so the binding floor never runs | `scripts/critique_reviewed_input_binding.py:14` |
-| C4 | OPEN | `--all` — the surface's own declared verify command — disables tier evidence, delivery state, and binding currency | `scripts/validate_critique_artifacts.py:549` |
+| C1 | FIXED | The unedited scaffold's tier block validates green beside a `parent-delegated` claim it contradicts | `scripts/critique_reviewer_evidence.py:87,138` |
+| C2 | FIXED | A body `Date:` back-dates a new artifact past all four date-gated floors; nothing cross-checks the filename | `scripts/validate_critique_artifacts.py:174` |
+| C3 | FIXED (narrowed) | `- Packet consumed:` (bullet form) does not match the binding trigger, so the binding floor never runs | `scripts/critique_reviewed_input_binding.py:14` |
+| C4 | FIXED (narrowed) | `--all` — the surface's own declared verify command — disables tier evidence, delivery state, and binding currency | `scripts/validate_critique_artifacts.py:549` |
 | C5 | FIXED (narrowed) | `--paths <nonexistent>` reports `Validated 0 critique artifact(s).` and exits 0 | `scripts/validate_critique_artifacts.py:130`, `scripts/artifact_validator.py:458` |
-| C6 | OPEN | The cross-surface probe reads the committed range only, and is silently off when `merge-base origin/main HEAD` fails | `scripts/validate_critique_artifacts.py:514`, `scripts/run-quality.sh:511` |
+| C6 | PARTIAL | The cross-surface probe reads the committed range only, and is silently off when `merge-base origin/main HEAD` fails | `scripts/validate_critique_artifacts.py:514`, `scripts/run-quality.sh:511` |
 
 **C1** — `Requested tier: TODO ...` is truthy, and `pending-parent-spawn` is a
 full typed value with an empty remainder, so the scaffold's own defaults satisfy
@@ -285,6 +285,95 @@ Confirmed: flush form exits 1 (`packet-bound critique must declare fields`),
 bullet form exits 0. Two checked-in artifacts already use the bullet form, and
 `scaffold_critique_artifact.py` never emits the line at all — the floor's own
 producer does not emit its trigger. Class (d).
+
+**C1/C2/C3/C4/C6 — what landed, and what did not (2026-07-28).** The critique
+evidence floor, taken as ONE subsystem rather than five patches: every floor here
+is conditional — on a date, a selection mode, a probe config, or a trigger line
+the artifact itself supplies — and each condition was independently satisfiable
+in silence. The enforcement-scope concept now lives in
+`scripts/critique_enforcement_scope.py` and the run prints what it did NOT
+establish. All five reproduced with controls before the fix; the whole 650-artifact
+corpus stays green after it.
+
+Three bounded reviewers then found **eleven** defects in the fixes, every one
+reproduced by execution before repair. **This is the seventh consecutive slice
+where the review defect was inside the fix**, and the sharpest one is again the
+class under repair:
+
+1. **The scope record reproduced the class it was added to close.** `on_complete`
+   runs unconditionally, but the probe is resolved inside `validate_factory`,
+   which the shared runner calls only when artifacts exist. So a run that passed a
+   perfectly good `--changed-ref` and simply found no critique artifact printed
+   `cross-surface-probe=not-established (… no --changed-ref/--changed-path
+   resolved …)` — asserting a resolution that never ran, on the common
+   `run-quality.sh` path. Now `not-resolved`, its own state.
+2. **C4's fix handed C4 back through `observed_date is None`.** The new
+   date-keyed requirement read `is not None and >= RULE_DATE`, so an undatable
+   artifact was fully exempt under `--all` — through the one input this module's
+   own docstring names as never fail-open, while every sibling floor obeys that
+   rule. Becoming undatable is easy and often accidental (`**Date:**`, or an
+   undated filename, both already in the corpus).
+3. **C1a was defeated by three characters of markup.** `_section_field_map`
+   strips only backticks, and the stub check tested the raw value, so `**TODO**`
+   passed while `TODO` was refused — in the one function the slice added, whose
+   two siblings in the same file already normalize leading markup.
+4. **C1b's trigger was shadowable and fence-blind.** `fresh_eye_satisfaction_status`
+   returned the FIRST line containing the phrase, so an earlier sentence — or a
+   fenced quotation of the canonical form, which a critique *of this validator*
+   is very likely to contain — became the artifact's asserted claim. Fenced text
+   is shown, not asserted: this repo's own standing lesson, live again.
+5. **C1b covered only half its own claim set.** `nested-delegated` asserts a
+   completed delegation too and got the consistency check for free.
+6. **C3's widening created the over-block twin of the hole it closed.**
+   `- Packet Consumed: n/a (no adapter sections)` — the corpus's own way of
+   writing "no packet" — became a trigger demanding three SHA256 fields for a
+   packet the artifact had just said does not exist. A refusal with no possible
+   remediation, which is the release-notes over-block class inverted. The trigger
+   now reads the declared VALUE, not just the line.
+7. **C3 still missed the corpus's only genuine bullet declaration**, which wraps
+   the path onto the next line. Wrapped and bold forms are handled now.
+8. **The scaffold pre-loaded three failures it never disclosed.** Its fresh-eye
+   and boundary placeholders say "replace with"; the tier block read as a
+   descriptive hint, so an author filled the two marked surfaces, submitted, and
+   was refused on a third — one guaranteed extra validator round-trip per
+   critique, forever. The scaffold now names the rule and the `n/a` escape.
+9. **One fix was a floor addition smuggled in as a repair.** Routing the
+   tier-evidence trigger through the completed-delegation set would have demanded
+   a whole tier section for `nested-delegated`, whose absent evidence link this
+   module records as a known, accepted boundary. Caught by the existing suite;
+   narrowed back to `parent-delegated`.
+10. `binding-currency=evaluated` reported the run MODE, not evaluation — the same
+    overclaim the bare artifact count makes. Now `binding-currency-check=enabled|
+    disabled`. And an unrecognized probe state rendered as `evaluated`, the one
+    value that asserts the probe ran.
+11. The scope record was invisible on failing runs, which is exactly where the
+    silently-skipped floors stay silent. It now prints on both paths.
+
+**C3, C4 and C6 are narrowed or partial, not closed:**
+
+- **C3** still does not match the `## Packet Consumed` heading form (~20 checked-in
+  release critiques) or a mid-line mention. Both need a different parse than a
+  line trigger, and every widening of a CONTENT trigger also fires on an artifact
+  that merely discusses this surface.
+- **C4** closes the tier-evidence and delivery-state halves in every mode.
+  Binding CURRENCY stays off under `--all` deliberately — a full sweep re-reads
+  historical bindings that are stale by design — and is now named rather than
+  silent.
+- **C6** distinguishes `not-configured` / `not-established` / `not-resolved` /
+  `evaluated (match|no match)`, which closes the "off is indistinguishable from
+  clean" half. It does NOT close the other half: the probe still reads the
+  COMMITTED range, so the slice under critique — which is in the worktree at
+  validation time, because verify precedes commit — is invisible to it. Closing
+  that needs the probe to read the working tree, which is a contract change.
+- **C2's residual, stated:** when only one date channel parses, that channel
+  decides alone. Corroboration is unavailable, not achieved.
+
+Two findings outside this slice's scope, recorded rather than folded in:
+`scripts/validate_retro_artifact.py:136` still uses the body-first `or` fallback
+that C2 replaced, so the retro floors remain back-dateable; and
+`LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS` names two prepare packets that
+`candidate_paths` excludes by content kind, so both entries are dead allowlist
+rows that read as live grandfather decisions.
 
 **C4** — under `--all`, `selected_paths` is empty so `require_tier_evidence` is
 False for every artifact, and `check_current_binding` is False. Confirmed: a

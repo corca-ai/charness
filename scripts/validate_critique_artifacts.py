@@ -22,8 +22,18 @@ file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_pre
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
 _boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
+_critique_adapter_lib = import_repo_module(__file__, "scripts.critique_adapter_lib")
 _reviewed_input_binding = import_repo_module(__file__, "scripts.critique_reviewed_input_binding")
 _reviewer_evidence = import_repo_module(__file__, "scripts.critique_reviewer_evidence")
+# The enforcement-scope concept (which floor was live, over what) lives in one
+# module rather than as conditions scattered across this file's use sites.
+_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
+critique_observed_date = _scope.critique_observed_date
+# Kept as module attributes: `tests/test_validate_critique_artifacts_dates.py`
+# pins the calendar-validity behavior of both date channels through this module.
+_date_from_filename = _scope.date_from_filename
+_date_from_body = _scope.date_from_body
 REVIEWER_TIER_HEADING = _reviewer_evidence.REVIEWER_TIER_HEADING
 REVIEWER_TIER_REQUIRED_FIELDS = _reviewer_evidence.REVIEWER_TIER_REQUIRED_FIELDS
 REVIEWER_TIER_HOST_STATES = _reviewer_evidence.REVIEWER_TIER_HOST_STATES
@@ -46,7 +56,6 @@ STRUCTURED_FINDING_FORM = (
     "- <id> | bin: <bin> | evidence: <evidence> | ref: <path-or-line> | "
     "action: <action> | note: <one-line rationale>"
 )
-PACKET_CONSUMED_RE = re.compile(r"(?im)^\s*packet consumed\s*:\s*(?P<path>\S+)")
 CRITIQUE_PREPARE_PACKET_KIND = "charness.critique_prepare_packet"
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
@@ -105,7 +114,16 @@ BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset({"release-0-55-0-full-p
 # same care as extending a `boundary-bypass-exemptions.txt` entry: one
 # artifact, one reason (this file has both — no date, pre-floor legacy).
 LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS = frozenset({"release-0-55-0-full-packet.md", "release-0-55-1-packet.md"})
-_CRITIQUE_DATE_LINE = re.compile(r"^date:\s*(\d{4}-\d{2}-\d{2})\b")
+# Reviewer tier evidence is not a new floor — it has been enforced since the
+# fresh-eye presence floor landed — but it was enforced only for artifacts the
+# run SELECTED, so `--all` (the command `.agents/surfaces.json` declares as this
+# validator's verify command) skipped it for every artifact including the ones it
+# was written for. Whether an artifact carries the evidence is a property of the
+# artifact, not of how the run happened to reach it, so it is now required by
+# date in every mode. Sharing the fresh-eye date rather than taking a new one is
+# a measured claim: a sweep of all 650 checked-in critique artifacts found zero
+# dated on/after it that claim `parent-delegated` without a tier block.
+TIER_EVIDENCE_RULE_DATE = FRESH_EYE_PRESENCE_RULE_DATE
 # Leading markdown/quote markup stripped before matching a typed token, so a
 # backtick-wrapped or bulleted value (`` `parent-delegated`. `` — the observed
 # in-corpus convention) still matches; mirrors `disposition_form._MARKDOWN_LEAD`.
@@ -148,58 +166,10 @@ def has_repo_delegation_contract(repo_root: Path) -> bool:
     )
 
 
-def _date_from_filename(path: Path) -> date | None:
-    """The leading ``YYYY-MM-DD`` of the artifact filename, ``None`` when absent."""
-    match = re.match(r"(\d{4}-\d{2}-\d{2})", path.name)
-    if not match:
-        return None
-    try:
-        return date.fromisoformat(match.group(1))
-    except ValueError:
-        return None
-
-
-def _date_from_body(text: str) -> date | None:
-    """The in-body ``Date: YYYY-MM-DD`` line (first 5 lines), ``None`` when absent."""
-    for line in text.splitlines()[:5]:
-        match = _CRITIQUE_DATE_LINE.match(line.strip().lower())
-        if match:
-            try:
-                return date.fromisoformat(match.group(1))
-            except ValueError:
-                return None
-    return None
-
-
-def critique_observed_date(path: Path, text: str) -> date | None:
-    """The artifact's effective date for grandfathering: the in-body ``Date:``
-    line, else the leading ``YYYY-MM-DD`` of the filename — same fallback order
-    as ``validate_retro_artifact._retro_observed_date``. ``None`` when neither is
-    parseable. Callers must NOT treat ``None`` as fail-open by default: only the
-    explicit ``LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS`` allowlist is grandfathered
-    on absence; every other undatable artifact is enforced as if post-cutoff."""
-    return _date_from_body(text) or _date_from_filename(path)
-
-
-def fresh_eye_satisfaction_status(text: str) -> str | None:
-    lines = text.splitlines()
-    for index, raw in enumerate(lines):
-        lowered = raw.strip().lower()
-        if "fresh-eye satisfaction" not in lowered and "fresh-eye satisfaction" not in lowered.replace("_", "-"):
-            continue
-        if ":" in lowered:
-            return lowered.split(":", 1)[1].strip()
-        section_lines: list[str] = []
-        for following in lines[index + 1 :]:
-            stripped = following.strip()
-            if stripped.startswith("## "):
-                break
-            if stripped:
-                section_lines.append(stripped.lower())
-                if len(section_lines) >= 3:
-                    break
-        return " ".join(section_lines)
-    return None
+# Claim-reading lives with the enforcement-scope concept: "which claim does this
+# artifact actually assert" is the same question as "what did this run establish",
+# and the consistency check depends on getting it right.
+fresh_eye_satisfaction_status = _scope.fresh_eye_satisfaction_status
 
 
 def _substantive_signal(value: str) -> bool:
@@ -476,8 +446,28 @@ def validate_critique_artifact(
                 )
 
     def _check_reviewer_tier_evidence() -> None:
-        requires_tier_evidence = require_tier_evidence and (
-            "parent-delegated" in status_lowered or PACKET_CONSUMED_RE.search(text)
+        # Selection mode OR date: a post-cutoff artifact carries tier evidence
+        # whichever way the run reached it, so `--all` can no longer be the mode
+        # in which this floor is universally off.
+        #
+        # `observed_date is None` counts as INTO the floor, matching every sibling
+        # here and this module's own stated rule that an undatable artifact is
+        # enforced as if post-cutoff. The first cut read `is not None and >=`,
+        # which made "no parseable date" a total exemption under `--all` — and
+        # becoming undatable is easy and often accidental (an undated filename,
+        # or a `Date:` written as `**Date:**` or pushed past line 5). That handed
+        # back the whole of C4 through the one input the rule names as never
+        # fail-open.
+        dated_into_floor = observed_date is None or observed_date >= TIER_EVIDENCE_RULE_DATE
+        # `parent-delegated` only, NOT the full completed-delegation set. The
+        # consistency check covers `nested-delegated` because it merely reads back
+        # fields that are already present; requiring the tier SECTION for a nested
+        # claim would be a new floor demanding a new artifact shape, and this
+        # module's own comment records the absence of a nested evidence link as a
+        # known, accepted boundary. Widening it here would have been a floor
+        # addition smuggled in as a fix.
+        requires_tier_evidence = (require_tier_evidence or dated_into_floor) and (
+            "parent-delegated" in status_lowered or _scope.packet_consumed(text)
         )
         if requires_tier_evidence or _section_field_map(text, REVIEWER_TIER_HEADING):
             validate_reviewer_tier_evidence(path, text)
@@ -499,6 +489,9 @@ def validate_critique_artifact(
         _check_blocked_signal_detail,
         lambda: validate_structured_findings(path, text),
         _check_reviewer_tier_evidence,
+        lambda: _reviewer_evidence.validate_delegation_consistency(
+            path, text, status_lowered, section_field_map=_section_field_map
+        ),
         lambda: validate_reviewed_input_binding(
             path,
             text,
@@ -511,32 +504,28 @@ def validate_critique_artifact(
     )
 
 
-def _resolve_cross_surface_hit(
-    repo_root: Path, changed_ref: str | None, changed_path: list[str] | None
-) -> bool:
-    """False unless --changed-ref/--changed-path was passed AND those paths match
-    this repo's configured probe (the #408 override; logic in boundary_probe_lib)."""
-    if not changed_ref and not changed_path:
-        return False
-    return _boundary_probe_lib.resolve_hit(
-        repo_root, changed_path=changed_path, changed_ref=changed_ref
-    )[0]
+def _make_run_hooks():
+    """`(validate_factory, on_complete)` sharing this run's resolved probe scope.
+
+    A pair rather than two independent hooks because the scope record must report
+    the SAME probe resolution the artifacts were judged against; re-resolving it
+    for the report would let the two disagree, which is exactly the shape of
+    defect this surface exists to catch.
+    """
+    resolved: dict[str, object] = {}
+
+    def validate_factory(run):
+        return _validate_factory(run, resolved)
+
+    def on_complete(run, artifacts) -> None:
+        _scope.report_enforcement_scope(
+            run, artifacts, resolved.get("cross_surface"), resolved.get("disagreements", [])
+        )
+
+    return validate_factory, on_complete
 
 
-def _add_cross_surface_args(parser) -> None:
-    parser.add_argument(
-        "--changed-ref",
-        help="Git ref/range whose changed paths are tested against the repo cross-surface probe; "
-        "a hit rejects a bare `single-surface` boundary verdict (#408 override).",
-    )
-    parser.add_argument(
-        "--changed-path",
-        nargs="*",
-        help="Explicit changed paths for the cross-surface probe (bypasses git; wins over --changed-ref).",
-    )
-
-
-def _validate_factory(run):
+def _validate_factory(run, resolved: dict[str, object] | None = None):
     """Bind the per-run inputs the shared runner does not model itself.
 
     The cross-surface probe (which shells out to git) and the delegation-contract
@@ -546,18 +535,31 @@ def _validate_factory(run):
     `require_tier_evidence` stays per artifact because it keys off whether THAT
     path was selected.
     """
-    cross_surface_hit = _resolve_cross_surface_hit(run.repo_root, run.args.changed_ref, run.args.changed_path)
+    cross_surface = _scope.resolve_cross_surface_scope(
+        run.repo_root,
+        run.args.changed_ref,
+        run.args.changed_path,
+        probe_lib=_boundary_probe_lib,
+        adapter_lib=_critique_adapter_lib,
+    )
+    if resolved is not None:
+        resolved["cross_surface"] = cross_surface
     repo_has_delegation = has_repo_delegation_contract(run.repo_root)
     require_tier_paths = set(run.selected_paths)
 
     def validate(artifact: Path) -> None:
         relpath = artifact.relative_to(run.repo_root).as_posix()
+        pair = _scope.date_channel_disagreement(artifact, artifact.read_text(encoding="utf-8"))
+        if pair is not None and resolved is not None:
+            resolved.setdefault("disagreements", []).append(
+                f"{artifact.name} (body {pair[0]} vs filename {pair[1]})"
+            )
         validate_critique_artifact(
             artifact,
             repo_has_delegation_contract=repo_has_delegation,
             require_tier_evidence=run.explicit_paths or relpath in require_tier_paths,
             collect_all=run.collect_all,
-            cross_surface_hit=cross_surface_hit,
+            cross_surface_hit=cross_surface.overrides,
             check_current_binding=not run.args.all,
         )
 
@@ -565,14 +567,16 @@ def _validate_factory(run):
 
 
 def main() -> int:
+    validate_factory, on_complete = _make_run_hooks()
     return run_changed_artifact_validator(
         default_repo_root=REPO_ROOT,
         all_help="Validate every checked critique artifact.",
         artifact_label="critique artifact",
         changed_paths_fn=changed_paths,
         candidate_paths_fn=candidate_paths,
-        validate_factory=_validate_factory,
-        extra_args=_add_cross_surface_args,
+        validate_factory=validate_factory,
+        on_complete=on_complete,
+        extra_args=_scope.add_cross_surface_args,
         fail_fast_help=(
             "Stop at the first rule violation instead of reporting every violation in one pass."
         ),

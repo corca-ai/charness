@@ -74,8 +74,33 @@ not by literal undo-ability:
   state.
 
 The irreversible set includes: GitHub issue/PR close, release publish, external
-state writes (Slack / Notion / provider / apply-to-prod), and deletions.
+state writes (Slack / Notion / provider / apply-to-prod), deletions, and
+**authoring or changing a proof surface** — a gate, validator, or evidence floor.
 (Reopenable ≠ reversible: a reopened issue was already read as "done".)
+
+That last entry is a reading of the definition above, not an addition to it. A
+proof surface that fails open satisfies all three clauses at once: other agents
+act on its green, it ships to every consuming repo, and every future session
+builds on the history it certified. And a wrong pass here is *silent by
+construction* — a fail-open gate emits no failure, no log line, no ticket — so
+the elapsed time before anyone notices is unbounded. The 2026-07 evidence-surface
+hunt measured that: thirty defects across the repo's proof surfaces, none of them
+regressions, most written once and never revised, the oldest sitting green for
+three months in a repo with a 5.8K-test suite. One arrived on the very commit
+implementing P4 — *applying the principle produced a violation of it*.
+
+So P4 applies here in full: a proof surface's own author and its own tests are
+one observer, and a large suite is not many independent observations along this
+axis — the author writes the gate and the gate's tests in the same sitting, from
+the same mental model, so the blind spot in the code and the blind spot in its
+test are the same blind spot. The distinct observer is a fresh-eye review at the
+authoring boundary, which in that hunt found defects inside the fix on 6 of 6
+slices, several of them the exact class under repair.
+
+What this does **not** license is a gate that checks gates. That is the
+anti-pattern named in the diagnosis above — meeting a gate-quality problem with
+another bespoke gate — applied to itself. The teeth here are a distinct observer
+and a scope a verdict must name, not another green.
 
 ## Operating stance
 

@@ -259,6 +259,25 @@
       ],
       "rationale": "Tool lifecycle disabled states and intentionally absent optional healthchecks share explicit payloads for detect and healthcheck output."
     },
+    "scripts/critique_enforcement_scope.py": {
+      "states": [
+        "disabled",
+        "skipped"
+      ],
+      "visibility": [
+        "stdout_attention",
+        "operator_summary"
+      ],
+      "evidence_terms": [
+        "binding-currency-check=",
+        "disabled (a full sweep",
+        "not-resolved",
+        "not-established",
+        "not-configured",
+        "skipped"
+      ],
+      "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs — `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
+    },
     "scripts/doctor.py": {
       "states": [
         "disabled",

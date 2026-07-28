@@ -134,10 +134,23 @@ def render_template(*, title: str, date_text: str) -> str:
             "",
             f"<!-- allowed Host exposure state: {host_states_legend}. Use applied "
             "only with Application state: host-confirmed: plus a concrete signal. -->",
-            "- Requested tier: TODO the fresh-eye reviewer tier requested.",
-            "- Requested spawn fields: TODO the fields sent to the host spawn surface.",
+            # Every one of these bullets must be replaced after the reviewer runs,
+            # and the validator refuses each unedited default. Say so HERE: the
+            # fresh-eye and boundary placeholders below both read "replace with",
+            # and this block used to read as a descriptive hint instead — so an
+            # author filled the two surfaces marked replace-me, submitted, and was
+            # refused on a third they were never told about. That is one
+            # guaranteed extra validator round-trip per critique, forever, which
+            # is the closeout-authoring-churn class this repo names.
+            "<!-- Every bullet below is a placeholder: a value still opening TODO/TBD is "
+            "refused, and a pending-parent-spawn Host exposure or Delivery state is refused "
+            "alongside a parent-delegated/nested-delegated Fresh-Eye Satisfaction (it would "
+            "claim a completed delegation over a record saying nothing was spawned). Write "
+            "n/a when the host genuinely exposes no such control. -->",
+            "- Requested tier: TODO replace with the fresh-eye reviewer tier requested (or n/a).",
+            "- Requested spawn fields: TODO replace with the fields sent to the host spawn surface (or n/a).",
             "- Host exposure state: pending-parent-spawn",
-            "- Application state: TODO the host signal once the reviewer runs.",
+            "- Application state: TODO replace with the host signal once the reviewer runs (or n/a).",
             f"<!-- allowed Delivery state: {delivery_states_legend}. Boundary "
             "cleanliness is a separate claim and does not imply delivery. -->",
             "- Delivery state: pending-parent-spawn",
@@ -167,9 +180,17 @@ def render_template(*, title: str, date_text: str) -> str:
         [
             "## Reviewed Input Identity",
             "",
-            "<!-- Packet-bound critiques replace this comment with three bullets copied from "
-            "prepare_packet.py after the reviewed packet is final: Packet path, exact Packet "
-            "SHA256, and Identity SHA256. Leave this section comment-only when no packet was consumed. -->",
+            # The `Packet consumed:` line is what TURNS THIS FLOOR ON, and the
+            # scaffold never named it — so an author had no way to learn the
+            # trigger from the surface that enforces it, and the floor was
+            # silently off for artifacts that did declare a packet another way.
+            # Named here, not pre-filled: emitting it unconditionally would demand
+            # binding fields from every scaffolded critique, most of which consume
+            # no packet.
+            "<!-- Packet-bound critiques replace this comment with `- Packet consumed: <packet-path>` "
+            "plus three bullets copied from prepare_packet.py after the reviewed packet is final: "
+            "Packet path, exact Packet SHA256, and Identity SHA256. That `Packet consumed:` line is "
+            "what turns the binding floor on. Leave this section comment-only when no packet was consumed. -->",
             "",
         ]
     )

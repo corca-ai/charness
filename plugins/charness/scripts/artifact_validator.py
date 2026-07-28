@@ -346,6 +346,7 @@ def run_changed_artifact_validator(
     per_artifact_success: bool = False,
     owned_prefix: str | None = None,
     error_cls: type[Exception] = ValidationError,
+    on_complete: Callable[[ChangedArtifactRun, Sequence[Path]], None] | None = None,
 ) -> int:
     """The whole `main()` for a changed-path artifact validator, in one place.
 
@@ -368,6 +369,12 @@ def run_changed_artifact_validator(
       means "nothing in scope", reported via `no_scope_message` as a success.
     - `per_artifact_success` prints one line per validated artifact instead of a
       count. Reporting verbosity only — it changes no verdict and no exit code.
+    - `on_complete` reports what the PASSING run actually evaluated. A count of
+      validated artifacts reads as coverage while saying nothing about which
+      conditional floors were live, and a floor that is off emits nothing by
+      construction; a validator whose enforcement varies by mode, date or probe
+      config uses this to name its scope. Called only on success — a failing run
+      already carries a signal. Reporting only: it changes no verdict.
     """
     import argparse
 
@@ -435,21 +442,32 @@ def run_changed_artifact_validator(
     # runner existed: the common commit touches no artifact of a given family,
     # and a probe failure there would turn a silent pass into a crash.
     if artifacts:
-        validate_each_artifact(
-            artifacts,
-            validate_factory(run),
-            collect_all=run.collect_all,
-            artifact_label=artifact_label,
-            repo_root=repo_root,
-            error_cls=error_cls,
-            on_success=(
-                (lambda artifact: print(f"Validated {artifact_label} {_artifact_label(artifact, repo_root)}."))
-                if per_artifact_success
-                else None
-            ),
-        )
+        try:
+            validate_each_artifact(
+                artifacts,
+                validate_factory(run),
+                collect_all=run.collect_all,
+                artifact_label=artifact_label,
+                repo_root=repo_root,
+                error_cls=error_cls,
+                on_success=(
+                    (lambda artifact: print(f"Validated {artifact_label} {_artifact_label(artifact, repo_root)}."))
+                    if per_artifact_success
+                    else None
+                ),
+            )
+        except error_cls:
+            # The scope record belongs on a FAILING run too. A failure carries a
+            # signal about the failures; it carries nothing about the floors that
+            # were off for the other 649 artifacts, which is the silence the
+            # record exists to break.
+            if on_complete is not None:
+                on_complete(run, artifacts)
+            raise
     if not per_artifact_success:
         print(f"Validated {len(artifacts)} {artifact_label}(s).")
+    if on_complete is not None:
+        on_complete(run, artifacts)
     return 0
 
 
