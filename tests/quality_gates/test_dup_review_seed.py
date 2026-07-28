@@ -181,9 +181,11 @@ def test_seed_cli_writes_overlay(tmp_path: Path) -> None:
 
 def test_seed_cli_dry_run_does_not_write(tmp_path: Path) -> None:
     code_json = _write_inventory(tmp_path / "code.json", [])
+    doc_json = _write_inventory(tmp_path / "doc.json", [])
     result = run_script(
         str(SEED_SCRIPT), "--repo-root", str(tmp_path),
-        "--code-inventory", str(code_json), "--reviewed-at", "2026-06-19", cwd=ROOT,
+        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
+        "--reviewed-at", "2026-06-19", cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     assert "previewed" in result.stdout
@@ -301,9 +303,11 @@ def test_main_refuses_to_reseed_over_a_corrupt_overlay(tmp_path: Path, monkeypat
 
 def test_main_inprocess_write_json(tmp_path: Path, monkeypatch, capsys) -> None:
     code_json = _write_inventory(tmp_path / "code.json", [_code_family("mid", ["a/resolve_adapter.py", "b/resolve_adapter.py"])])
+    doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(
         sys, "argv",
         ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json),
+         "--doc-inventory", str(doc_json),
          "--reviewed-at", "2026-06-19", "--write", "--json"],
     )
     assert seed.main() == 0
@@ -314,9 +318,11 @@ def test_main_inprocess_write_json(tmp_path: Path, monkeypatch, capsys) -> None:
 
 def test_main_inprocess_dry_run_human(tmp_path: Path, monkeypatch, capsys) -> None:
     code_json = _write_inventory(tmp_path / "code.json", [])
+    doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(
         sys, "argv",
-        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json), "--reviewed-at", "2026-06-19"],
+        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json),
+         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19"],
     )
     assert seed.main() == 0
     assert "previewed" in capsys.readouterr().out
@@ -324,10 +330,12 @@ def test_main_inprocess_dry_run_human(tmp_path: Path, monkeypatch, capsys) -> No
 
 def test_main_inprocess_invalid_overlay_exits_one(tmp_path: Path, monkeypatch, capsys) -> None:
     code_json = _write_inventory(tmp_path / "code.json", [])
+    doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(seed.dup_review, "validate_review", lambda _review: ["forced error"])
     monkeypatch.setattr(
         sys, "argv",
-        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json), "--reviewed-at", "2026-06-19"],
+        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json),
+         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19"],
     )
     assert seed.main() == 1
     assert "invalid overlay" in capsys.readouterr().err
