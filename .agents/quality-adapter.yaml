@@ -154,6 +154,12 @@ runtime_budget_profiles:
     budgets:
       charness-version: 500
       # (contended) was 5000; post-change max 5933
+      # The lane's cost scales with base..HEAD distance, so this bar is a RANGE
+      # ceiling, not a per-run expectation: ~24s for one commit is the common case and
+      # 300000 is the documented nine-commit figure. It had no bar at all while being
+      # the most expensive gate in the bundle, which is how the aggregate above went
+      # stale unnoticed.
+      check-changed-line-mutation-coverage: 300000
       check-cli-skill-surface: 8500
       check-inventory-declaration-coverage: 500
       check-references-link-inventory: 800
@@ -269,7 +275,20 @@ runtime_budget_profiles:
       # paths are involuntary (xdist < 3.2, an unrelated PYTEST_ADDOPTS tuning), so
       # `choose_sched_chunk` returns a reason and the runner prints it to stderr
       # rather than leaving that red pointing nowhere.
-      run-quality-full: 62000
+      # The armed changed-line lane (D40, 2026-07-29) is the dominant term now and
+      # was never accounted for here: its documented cost is ~24s for a one-commit
+      # slice and ~5min for a nine-commit range, so a 62000 aggregate contradicted an
+      # accepted design decision from the session before this one. 420000 = the lane's
+      # documented 300000 nine-commit ceiling plus the ~120000 the rest of the full
+      # bundle costs (median 182923 total observed with a small changed pool).
+      #
+      # Sized from the DOCUMENTED range cost, NOT from this session's worst run. The
+      # observed 549239ms came from a six-commit UNPUSHED range: `--suggest-budgets`
+      # proposed 769000 from it, which would bake a transient base..HEAD distance in
+      # as the permanent bar and leave a guard nothing could trip. That is the
+      # transcribe-a-bar-below-what-you-measured class inverted, and it is why this
+      # number is not the suggester's.
+      run-quality-full: 420000
       # `pytest` now records standing-mode runs only (release-only pytest moved to
       # its own `pytest-release` label). This 90000 was sized from the CONFLATED
       # window and is loose for standing mode alone. Note the slack advisory will
