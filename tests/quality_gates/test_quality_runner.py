@@ -903,3 +903,34 @@ def test_the_real_runtime_recorder_accepts_every_status_the_runner_emits() -> No
         recorder._read_batch_line(
             json.dumps({"label": "x", "elapsed_ms": 1, "status": "green", "timestamp": "2026-07-29T00:00:00Z"})
         )
+
+
+def test_the_push_time_refusal_is_wired_to_the_hook_not_to_read_only(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    """The hook/runner coupling, pinned on the runner side.
+
+    Nothing asserted that `CHARNESS_PRE_PUSH` reaches `--refuse-unestablished`, so an
+    old vendored hook with this runner would drop the push-time teeth silently, with a
+    green console — the shape this whole feature exists to close, in the wiring of the
+    fix. `--read-only` must NOT arm it: that is the published mid-work command, and
+    overloading it stopped ordinary runs with "refusing at push time" and no push.
+    """
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    argv_log = repo / "argv.log"
+    write_executable(
+        repo / "scripts" / _UNPROVEN_GATE_SCRIPT,
+        "#!/usr/bin/env python3\nimport sys\n"
+        f"open({str(argv_log)!r}, 'a').write(' '.join(sys.argv[1:]) + chr(10))\n",
+    )
+    env["CHARNESS_QUALITY_LABELS"] = _UNPROVEN_LABEL
+
+    run_shell_script(repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo, env=env)
+    assert "--refuse-unestablished" not in argv_log.read_text(encoding="utf-8")
+
+    argv_log.unlink()
+    run_shell_script(
+        repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo,
+        env={**env, "CHARNESS_PRE_PUSH": "1"},
+    )
+    assert "--refuse-unestablished" in argv_log.read_text(encoding="utf-8")

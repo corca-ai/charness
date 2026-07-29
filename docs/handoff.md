@@ -21,7 +21,8 @@ row is done; the leads table declares its own vocabulary — read it before citi
 
 - **The pre-push changed-line lane BLOCKS** ([D40](./deferred-decisions.md)): ~24s for
   one commit, ~5min for nine, now budgeted at that documented range cost rather than at
-  a worst run. Its verdict is a FALSE GREEN before commit — commit, then re-run.
+  a worst run. A dirty POOL is `UNPROVEN` now, not a green; a dirty non-pool file
+  still skews it silently, so commit, then re-run.
   **#464 is CLOSED**; **R8 is gone from the leads table**.
 - **A slice that changes VERDICT LOGIC owes a second bounded review of the REPAIRED
   surface.** Round 2 caught a round-1 repair reintroducing the escape three times in
@@ -68,7 +69,6 @@ row is done; the leads table declares its own vocabulary — read it before citi
 - **3 is not the runner's byte to redefine** — `pytest` uses it for INTERNAL_ERROR,
   `shellcheck` for a bad invocation. A gate joins the allowlist only after its own exit
   contract is read.
-- **A dead guard is worse than none** — it reads as a handled case.
 - Run release/skill helpers from `skills/public/.../scripts/`, never an installed or
   `plugins/` copy ([RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
 
