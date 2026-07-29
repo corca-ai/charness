@@ -800,3 +800,29 @@ def test_an_undecodable_release_artifact_blocks_instead_of_raising(tmp_path: Pat
         decodable["blockers"]
     )
 
+
+def test_an_undecodable_notes_file_blocks_instead_of_raising(tmp_path: Path) -> None:
+    """`audit_notes_file`'s read arm, separate from its stat arm.
+
+    The stat guard is exercised by the permission test, which self-skips as
+    root; this one needs no permissions, so the read arm stays measured
+    everywhere. `UnicodeDecodeError` is a `ValueError`, so an `except OSError`
+    here would still traceback out of the publish preflight.
+    """
+    audit = _load_release_module("audit_notes_decode", "audit_public_release_narrative.py")
+    notes = tmp_path / "v0.1.0-notes.md"
+    notes.write_bytes(b"\xff\xfe# v0.1.0\n")
+
+    blockers = audit.audit_notes_file(notes, target_tag="v0.1.0")
+
+    assert blockers, "an undecodable notes file must produce a blocker, not a traceback"
+    assert "could not read the public release notes file" in blockers[0]
+    assert "public release notes file missing" not in blockers[0]
+
+    # Control: a decodable file for the same tag produces no read blocker.
+    notes.write_text("# v0.1.0\n\nreal notes\n", encoding="utf-8")
+    assert not any(
+        "could not read the public release notes file" in b
+        for b in audit.audit_notes_file(notes, target_tag="v0.1.0")
+    )
+
