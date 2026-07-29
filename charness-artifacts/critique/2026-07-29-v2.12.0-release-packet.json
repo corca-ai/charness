@@ -1,0 +1,77 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-29T05:29:48Z",
+  "prepared_for": "v2.12.0 release",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- (none — clean working tree)\n\nOwning surfaces:\n- (no surfaces matched the changed paths)\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "fd9dd7a6ab28e6783dde2906ce0ac3974e758233",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/release/2026-07-29-v2.12.0-notes.md",
+      "scripts/run-quality.sh",
+      "skills/public/release/scripts/audit_public_release_narrative.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/release/2026-07-29-v2.12.0-notes.md",
+        "content_sha256": "a8aa1191135c1310266b9d60d280185206a1907e1c462233c1b5ff9ce21a4d9b"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "3ca3c06627dd949a9452dc8eb7bfb4edd11f7b7b0b3ed8dd4103ca0e9f3fbe87"
+      },
+      {
+        "path": "skills/public/release/scripts/audit_public_release_narrative.py",
+        "content_sha256": "6a7a15e62f97e12e914b02d2c4185dca0a4a159a08d924a87883fc354d6e1071"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "375bb8644d890846252f700d7dc5534ff11961d78d12f394e98dc2a49f7a32c1"
+  }
+}
