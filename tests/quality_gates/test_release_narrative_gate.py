@@ -127,7 +127,14 @@ def test_drafted_notes_lookup_defers_to_build_payload_on_an_invalid_adapter(tmp_
     The preflight must not pre-empt it with a listing failure."""
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "release-adapter.yaml").write_text("not: a valid adapter\n", encoding="utf-8")
+    # An adapter must be made ACTUALLY invalid: `not: a valid adapter` validates
+    # fine, because every field is optional over inferred repo defaults. The
+    # blocking changed-line gate caught that the branch below had never run under
+    # the first version of this test.
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "version: not-an-integer\nsync_command: ''\n", encoding="utf-8"
+    )
+    assert GATE.load_adapter(repo)["valid"] is False
 
     assert GATE._drafted_notes_for(repo, target_tag="v0.1.0") == []
     GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=None)

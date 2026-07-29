@@ -5,6 +5,8 @@ import re
 import subprocess
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AUDIT_SCRIPT = "skills/public/release/scripts/audit_public_release_narrative.py"
 
@@ -512,13 +514,18 @@ def test_drafted_notes_discovery_survives_an_absent_or_unreadable_output_dir(tmp
     # crash the publish preflight on a directory listing.
     assert audit.find_drafted_notes(tmp_path, "charness-artifacts/release", target_tag="v0.1.0") == []
 
-    # `is_dir()` swallows OSError, the glob does not: an unreadable directory
-    # would otherwise strand a publish AFTER the bump and the pre-push gates.
+    # An UNREADABLE directory yields nothing too -- and this is a non-claim, not
+    # a guard. `Path.glob` swallows the scandir error rather than raising, so an
+    # `except OSError` arm written for this was dead code, and the assertion
+    # below held for the wrong reason. It is pinned as the platform behavior it
+    # is: silence here is indistinguishable from "this repo drafts no notes".
     blocked = tmp_path / "locked"
     blocked.mkdir()
     (blocked / "v0.1.0-notes.md").write_text("x", encoding="utf-8")
     blocked.chmod(0o000)
     try:
+        if list(blocked.glob("*.md")):
+            pytest.skip("filesystem/user does not enforce directory permissions here")
         assert audit.find_drafted_notes(tmp_path, "locked", target_tag="v0.1.0") == []
     finally:
         blocked.chmod(0o755)

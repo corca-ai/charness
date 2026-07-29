@@ -250,12 +250,18 @@ def find_drafted_notes(repo_root: Path, output_dir: str, *, target_tag: str) -> 
 
     def names_this_version(stem: str) -> bool:
         return any(run.replace("-", ".") == wanted for run in _VERSION_RUN_RE.findall(stem))
-    try:
-        candidates = [path for path in notes_dir.glob("*.md") if path.is_file()]
-    except OSError:
-        # An unreadable or absent output_dir is not a reason to strand a publish
-        # after the bump. `is_dir()` swallows OSError but the glob does not.
-        return []
+    # No try/except here, deliberately. An `except OSError` guard was written for
+    # an unreadable `output_dir` and the blocking changed-line gate showed it was
+    # never executed: `Path.glob` swallows the scandir error and yields nothing,
+    # so the guard was dead and the test that "proved" it passed because the glob
+    # returned empty, not because anything was caught. A dead guard is worse than
+    # none — it reads as a handled case.
+    #
+    # What actually happens, stated rather than guarded: an unreadable or absent
+    # output_dir yields no candidates and the arm stays silent. That is a
+    # fail-open this function cannot distinguish from "this repo drafts no
+    # notes", and it is why the missing-directory case is a non-claim below.
+    candidates = [path for path in notes_dir.glob("*.md") if path.is_file()]
     return sorted(
         (path for path in candidates
          if "notes" in path.stem.lower() and names_this_version(path.stem)),
