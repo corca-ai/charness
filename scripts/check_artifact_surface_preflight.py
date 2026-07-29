@@ -48,6 +48,7 @@ class Surface:
     commit_boundary: bool  # relocate the validator's verdict to the commit gate
     note: str
     paths_arg: bool = True  # validator accepts --paths; False => validate-all default
+    artifact_path_arg: bool = False  # validator accepts --artifact-path: judge THIS draft, not the adapter default
     template_preamble: str | None = None  # template_path; preamble (pre-first-`## `) shape source
     owner: str | None = None  # override for the validator=None owner line (default: achieve complete-flip)
     shape_command: tuple[str, ...] | None = None  # skill-script argv that prints the enforced shape (run with --stub for a starter); rendered from the owning validator's live constants
@@ -170,6 +171,7 @@ REGISTRY: tuple[Surface, ...] = (
         "skills/public/quality/scripts/scaffold_quality_artifact.py",
         None, False,
         "Hand-authored quality artifact; required sections + runtime-signal/delegated-review shape.",
+        artifact_path_arg=True,
         paths_arg=False,
     ),
     Surface(
@@ -179,6 +181,7 @@ REGISTRY: tuple[Surface, ...] = (
         None, False,
         "Hand-authored handoff artifact (default docs/handoff.md); required H2 sections + a References link.",
         paths_arg=False,
+        artifact_path_arg=True,
     ),
 )
 
@@ -341,11 +344,20 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
         if surface.paths_arg and target_rel:
             argv += ["--paths", target_rel]
             cmd += f" --paths {target_rel}"
+        elif surface.artifact_path_arg and target_rel:
+            # Without this the adapter-scoped validators run validate-all against the
+            # POINTER target, so the verdict was about a different file than the one
+            # the author is holding -- and it printed PASS. A prefix-mapped surface
+            # (quality) makes that gap visible; the exact-file sibling (handoff) hid it
+            # because validate-all happened to equal the target.
+            argv += ["--artifact-path", target_rel]
+            cmd += f" --artifact-path {target_rel}"
         out.append(f"owning validator: {cmd}")
         if target_rel and (repo_root / target_rel).is_file():
             proc = _run(repo_root, argv)
             verdict = "PASS" if proc.returncode == 0 else "FAIL"
-            scope = target_rel if surface.paths_arg else f"{surface.artifact_type} surface (validate-all)"
+            scoped = surface.paths_arg or surface.artifact_path_arg
+            scope = target_rel if scoped else f"{surface.artifact_type} surface (validate-all)"
             out.append(f"current verdict on {scope}: {verdict}")
             if proc.returncode != 0:
                 out.append((proc.stderr or proc.stdout).strip())

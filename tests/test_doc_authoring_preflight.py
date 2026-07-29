@@ -296,3 +296,47 @@ def test_the_regenerable_rule_is_the_handoffs_not_every_docs(tmp_path: Path) -> 
     report = _pf.build_report(repo, "docs/notes.md", None)
 
     assert report.regenerable_facts == []
+
+
+def test_a_version_inside_a_fenced_block_is_not_a_transcribed_fact(tmp_path: Path) -> None:
+    """A fenced block carries the COMMAND this rule asks the author to write instead,
+    so scanning it would refuse the replacement it just recommended. The gate skips
+    fences for that reason and the forecast must skip them identically, or it would
+    send the author back to edit the fix."""
+    repo = _seed_repo(
+        tmp_path,
+        "# Demo Handoff\n"
+        "\n"
+        "Carry the command:\n"
+        "\n"
+        "```bash\n"
+        "git describe --tags --abbrev=0   # prints v9.9.9 today\n"
+        "```\n",
+    )
+
+    report = _pf.build_report(repo, "docs/handoff.md", "handoff")
+
+    assert report.regenerable_facts == []
+    _handoff.validate_no_regenerable_facts(repo / "docs" / "handoff.md")
+
+
+def test_the_regenerable_forecast_reaches_the_operator_facing_text(tmp_path: Path) -> None:
+    """The findings list is not what an author reads — `format_human` is. Asserting only
+    the payload leaves the rendering that carries the remedy unproven, which is the same
+    'tested the data, not the verdict the reader sees' gap this preflight exists to close.
+    """
+    repo = _seed_repo(tmp_path, "# Demo Handoff\n\nShipped v9.9.9.\n")
+    rendered = _pf.format_human(_pf.build_report(repo, "docs/handoff.md", "handoff"))
+
+    assert "regenerable-facts: BLOCK (1 finding(s))" in rendered
+    assert "line 3" in rendered
+    assert "a release or tool version" in rendered
+    # the remedy must survive into the text, not just the payload
+    assert "git describe --tags --abbrev=0" in rendered
+
+    # The clean branch renders too. Use an ORDINARY doc: passing as_surface=None for
+    # docs/handoff.md still resolves the handoff surface from the PATH, so that would
+    # have asserted the clean line while exercising the block branch.
+    (repo / "docs" / "notes.md").write_text("# Notes\n\nDocuments v9.9.9.\n", encoding="utf-8")
+    clean = _pf.format_human(_pf.build_report(repo, "docs/notes.md", None))
+    assert "regenerable-facts: clean" in clean

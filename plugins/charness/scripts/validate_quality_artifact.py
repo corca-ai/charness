@@ -346,6 +346,18 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--artifact-path",
+        type=Path,
+        default=None,
+        help=(
+            "Validate this artifact instead of the adapter-resolved one. Lets a caller "
+            "check a candidate draft without moving the live pointer. The handoff "
+            "sibling has carried this since June; quality did not, so the author-time "
+            "preflight ran validate-all and printed a verdict about a DIFFERENT file "
+            "while the author held a draft path."
+        ),
+    )
     add_one_pass_args(
         parser,
         fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",
@@ -354,9 +366,18 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     adapter = load_adapter(repo_root)
-    artifact_path = repo_root / adapter["artifact_path"]
+    if args.artifact_path is not None:
+        artifact_path = args.artifact_path if args.artifact_path.is_absolute() else repo_root / args.artifact_path
+    else:
+        artifact_path = repo_root / adapter["artifact_path"]
     validate_quality_artifact(artifact_path, repo_root=repo_root, collect_all=not args.fail_fast)
-    print(f"Validated quality artifact {artifact_path.relative_to(repo_root)}.")
+    try:
+        shown = artifact_path.relative_to(repo_root)
+    except ValueError:
+        # `--artifact-path` accepts a draft outside the tree (a temp dir), so the
+        # confirmation must name what it read rather than crash on the display.
+        shown = artifact_path
+    print(f"Validated quality artifact {shown}.")
     return 0
 
 

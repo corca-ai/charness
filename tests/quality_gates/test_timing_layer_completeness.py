@@ -54,3 +54,67 @@ def test_unclassified_label_is_detected(tmp_path: Path) -> None:
 def test_degrades_when_files_absent(tmp_path: Path) -> None:
     missing, checked = META.unclassified_labels(tmp_path)
     assert (missing, checked) == ([], [])
+
+
+def test_a_label_mentioned_only_in_another_rows_prose_is_not_classified() -> None:
+    """Substring containment over the whole table region made a label classified AT
+    BIRTH if its name appeared inside another row's prose.
+
+    `check-links`, `check-doc`, `validate-cautilus` and `validate-skill` all read as
+    present that way, so `queue_selected "check-links"` would have been waved through
+    and the shift-left recurrence class (#314/#319/#332/#366/#368) would pass silently.
+    A `\\b` word boundary does not fix it either: `-` is a non-word character, so
+    `\\bcheck-links\\b` still matches inside `check-links-internal`.
+    """
+    region = META.classification_region(
+        (ROOT / "docs" / "conventions" / "validator-timing-layers.md").read_text(encoding="utf-8")
+    )
+    classified = META.classified_labels(region)
+
+    for prose_only in ("check-links", "check-doc", "validate-cautilus", "validate-skill"):
+        assert prose_only not in classified, prose_only
+        assert prose_only in region, f"{prose_only} must still be a substring, or this test is vacuous"
+
+    # real rows still resolve, including the one the substring test would alias onto
+    for real in ("check-links-internal", "pytest", "dup-ratchet"):
+        assert real in classified, real
+
+
+def test_a_docs_only_push_label_that_names_no_gate_is_refused(tmp_path: Path) -> None:
+    """Not a late verdict — a verdict that never arrives.
+
+    `label_is_selected` compares exact names, so a renamed or retired label leaves the
+    hook naming something nothing matches: `queue_selected` quietly queues nothing and
+    the docs-only push reports a clean pass having run one fewer gate than it claims.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / ".githooks").mkdir(parents=True)
+    (repo / "docs" / "conventions").mkdir(parents=True)
+    (repo / "scripts" / "run-quality.sh").write_text(
+        'queue_selected "check-doc-links" x\nqueue_selected "check-markdown" y\n', encoding="utf-8"
+    )
+    (repo / "docs" / "conventions" / "validator-timing-layers.md").write_text(
+        "## Classification table\n\n| Check | Ran | Verdict | Reason |\n| --- | --- | --- | --- |\n"
+        "| check-doc-links, check-markdown | broad | already earlier | x |\n",
+        encoding="utf-8",
+    )
+
+    (repo / ".githooks" / "pre-push").write_text(
+        'DOCS_ONLY_LABELS="check-doc-links,check-markdown"\n', encoding="utf-8"
+    )
+    assert META.stale_docs_only_labels(repo) == []
+
+    (repo / ".githooks" / "pre-push").write_text(
+        'DOCS_ONLY_LABELS="check-doc-links,check-markdownn"\n', encoding="utf-8"
+    )
+    assert META.stale_docs_only_labels(repo) == ["check-markdownn"]
+
+    # Subset direction ONLY: a run-quality label absent from the curated docs-only set
+    # is a deliberate judgment, not drift, so completeness here would be a false refusal.
+    (repo / ".githooks" / "pre-push").write_text('DOCS_ONLY_LABELS="check-doc-links"\n', encoding="utf-8")
+    assert META.stale_docs_only_labels(repo) == []
+
+    # Degrades where the hook is not vendored.
+    (repo / ".githooks" / "pre-push").unlink()
+    assert META.stale_docs_only_labels(repo) == []

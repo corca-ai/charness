@@ -31,6 +31,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 RUN_QUALITY_PATH = Path("scripts/run-quality.sh")
 TIMING_DOC_PATH = Path("docs/conventions/validator-timing-layers.md")
+PRE_PUSH_PATH = Path(".githooks/pre-push")
+DOCS_ONLY_RE = re.compile(r'^DOCS_ONLY_LABELS="([^"]*)"', re.MULTILINE)
 QUEUE_SELECTED_RE = re.compile(r'queue_selected\s+"([^"]+)"')
 TABLE_HEADING = "## Classification table"
 
@@ -54,6 +56,36 @@ def classification_region(doc_text: str) -> str:
     return rest if nxt == -1 else rest[:nxt]
 
 
+# A classification row's FIRST cell is the label list; the remaining cells are the
+# verdict and its prose reason. Only the first cell counts as "this label carries a
+# recorded verdict".
+_ROW_RE = re.compile(r"^\|([^|]*)\|")
+
+
+def classified_labels(region: str) -> set[str]:
+    """Labels recorded in the classification table's FIRST column.
+
+    Substring containment over the whole region was the original test, and it made a
+    label classified AT BIRTH if its name happened to appear in another row's prose:
+    `check-links`, `check-doc`, `validate-cautilus` and `validate-skill` all read as
+    present that way, so adding `queue_selected "check-links"` would have been waved
+    through and the shift-left recurrence class (#314/#319/#332/#366/#368) would pass
+    silently. A `\b` word boundary does not fix it either -- `-` is a non-word
+    character, so `\bcheck-links\b` still matches inside `check-links-internal`.
+    Splitting the first cell on commas is the only reading that cannot alias.
+    """
+    labels: set[str] = set()
+    for line in region.splitlines():
+        match = _ROW_RE.match(line.strip())
+        if match is None:
+            continue
+        for cell_entry in match.group(1).split(","):
+            token = cell_entry.strip().strip("`*_ ")
+            if token and token not in {"---", "Check (broad-gate label)"}:
+                labels.add(token)
+    return labels
+
+
 def unclassified_labels(repo_root: Path) -> tuple[list[str], list[str]]:
     """Return (missing, checked). `missing` is run-quality labels with no verdict
     recorded in the timing-doc classification table."""
@@ -63,8 +95,35 @@ def unclassified_labels(repo_root: Path) -> tuple[list[str], list[str]]:
         return [], []
     labels = run_quality_labels(run_quality.read_text(encoding="utf-8"))
     region = classification_region(timing_doc.read_text(encoding="utf-8"))
-    missing = [label for label in labels if label not in region]
+    classified = classified_labels(region)
+    missing = [label for label in labels if label not in classified]
     return missing, labels
+
+
+def stale_docs_only_labels(repo_root: Path) -> list[str]:
+    """Labels the docs-only pre-push subset names that `run-quality.sh` no longer has.
+
+    Subset direction ONLY. This is not a late verdict, it is a verdict that never
+    arrives: `label_is_selected` compares exact names, so a renamed or retired label
+    leaves the hook naming something nothing matches, `queue_selected` quietly queues
+    nothing, and the docs-only push -- the common path for a handoff or artifact
+    commit -- reports a clean pass having run one fewer gate than it claims.
+
+    The reverse direction (every run-quality label must appear in the docs-only set)
+    is deliberately NOT checked: the subset is a curated judgment about what a pure
+    docs change can break, and the timing doc records at least one intentional
+    exclusion, so completeness here would be a false refusal.
+    """
+    run_quality = repo_root / RUN_QUALITY_PATH
+    pre_push = repo_root / PRE_PUSH_PATH
+    if not run_quality.is_file() or not pre_push.is_file():
+        return []
+    match = DOCS_ONLY_RE.search(pre_push.read_text(encoding="utf-8"))
+    if match is None:
+        return []
+    known = set(run_quality_labels(run_quality.read_text(encoding="utf-8")))
+    named = [item.strip() for item in match.group(1).split(",") if item.strip()]
+    return [label for label in named if label not in known]
 
 
 def main() -> int:
@@ -91,6 +150,20 @@ def main() -> int:
             file=sys.stderr,
         )
         return 1
+
+    stale = stale_docs_only_labels(repo_root)
+    if stale:
+        print(
+            f"{len(stale)} label(s) in `{PRE_PUSH_PATH}`'s DOCS_ONLY_LABELS name no "
+            "run-quality gate, so the docs-only push silently runs fewer checks than "
+            "it claims:",
+            file=sys.stderr,
+        )
+        for label in stale:
+            print(f"  - {label}", file=sys.stderr)
+        print("Rename or drop each to match a `queue_selected` label.", file=sys.stderr)
+        return 1
+
     print(f"timing-layer completeness: all {len(checked)} run-quality validators carry a timing verdict.")
     return 0
 

@@ -58,10 +58,55 @@ def _ledger_block() -> list[str]:
     return out
 
 
+def _hotl_vocabulary() -> str:
+    """The typed HOTL statuses, expanded from the verifier's own anchored pattern and
+    then CHECKED against it.
+
+    Expanding the alternation by string surgery alone leaked the inner group
+    (`blocked-needs-(?:operator, capability)`). Every rendered token is matched back
+    against the live pattern, so a shape that names a status the verifier would refuse
+    cannot be printed -- the producer asks the rule rather than restating it.
+    """
+    source = _BODY._HOTL_STATUS_LEAD.pattern
+    body = source.split("(?:", 1)[1].rsplit(")", 1)[0].replace("\\b", "")
+    tokens: set[str] = set()
+    for part in _split_top_level(body):
+        if "(?:" in part:
+            head, inner = part.split("(?:", 1)
+            inner = inner.rsplit(")", 1)[0]
+            tokens.update(f"{head}{alt}" for alt in _split_top_level(inner))
+        else:
+            tokens.add(part)
+    accepted = sorted(tok for tok in tokens if tok and _BODY._HOTL_STATUS_LEAD.match(tok))
+    return ", ".join(accepted)
+
+
+def _split_top_level(pattern_body: str) -> list[str]:
+    """Split an alternation on `|` at nesting depth 0."""
+    parts, depth, current = [], 0, ""
+    for char in pattern_body:
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        if char == "|" and depth == 0:
+            parts.append(current)
+            current = ""
+            continue
+        current += char
+    parts.append(current)
+    return [part for part in parts if part]
+
+
 def required_shape() -> str:
     crit = ", ".join(_CRITIQUE.CRITIQUE_REQUIRED_CLASSIFICATIONS)
+    behavioral = ", ".join(_BODY.BEHAVIORAL_VERDICT_CLASSIFICATIONS)
     carriers = ", ".join(_VERIFY.CARRIERS)
     reasons = ", ".join(_VERIFY.MANUAL_FALLBACK_REASONS)
+    # Three floors this shape used to omit while its own validator hard-blocked on
+    # them, so a draft filled straight from here failed the check it was written to
+    # pass. Rendered from the verifier's live constants, never restated: a shape
+    # producer that re-declares a rule is a fork that drifts.
     lines = [
         "closeout-draft required shape (enforced by `issue_tool.py validate-closeout-draft`,",
         "which reuses `verify_closeout` — same checks before anything mutates GitHub):",
@@ -100,6 +145,25 @@ def required_shape() -> str:
         "",
         "If the body declares a `## Proof Ledger`: each gap must be dispositioned",
         "(no proof entry / reached < required / gap lacks disposition all fail).",
+    ]
+    lines += [
+        "",
+        f"Behavior (required for classifications: {behavioral}):",
+        "  - one `Behavior #N: <…>` line per closed issue (single-issue shorthand",
+        "    `Behavior: <…>`), naming the DISTINCT channel the user-facing behavior was",
+        "    confirmed through, or a typed non-`verified` disposition.",
+        "  - a typed disposition satisfies it exactly as a confirmation does; this floor",
+        "    refuses SILENCE, it never declares completion.",
+        "",
+        f"AI-provenance (required for classifications: {behavioral}):",
+        "  - an `AI-provenance: <…>` line, so the irreversible external write is legible",
+        "    as agent-authored to the distinct observer. Presence/form only.",
+        "",
+        "HOTL dispositions (only when the draft carries HOTL entries):",
+        "  - each value must BEGIN with a typed status; an unanchored mention lets a",
+        "    status's own negation pass. Vocabulary:",
+        f"    {_hotl_vocabulary()}",
+        "  - `issue` must additionally carry its tracker ref (`#N`).",
     ]
     return "\n".join(lines).rstrip() + "\n"
 

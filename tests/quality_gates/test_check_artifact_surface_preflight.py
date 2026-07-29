@@ -193,14 +193,17 @@ def test_emit_stub_critique_carries_required_sections() -> None:
     assert "## Structured Findings" in text
 
 
-def test_describe_adapter_scoped_runs_validate_all_without_paths() -> None:
-    # an adapter-scoped surface (paths_arg=False) must NOT get --paths in describe
-    # (its validator has no such flag); it reports a surface-level validate-all
-    # verdict. docs/handoff.md is a real valid handoff artifact.
+def test_describe_adapter_scoped_binds_artifact_path_never_paths() -> None:
+    # An adapter-scoped surface (paths_arg=False) must NOT get --paths — its validator
+    # has no such flag. It used to fall through to a surface-level validate-all verdict;
+    # that read as honest for handoff only because its prefix is an exact file, and it
+    # was actively misleading for the directory-prefixed sibling. Both bind
+    # --artifact-path now, so the verdict is about the file the author is holding.
     out = preflight.describe(ROOT, preflight.surface_for_type("handoff"), target_rel="docs/handoff.md")
     assert "owning validator: python3 scripts/validate_handoff_artifact.py --repo-root ." in out
     assert "--paths" not in out
-    assert "validate-all" in out
+    assert "--artifact-path docs/handoff.md" in out
+    assert "current verdict on docs/handoff.md:" in out
 
 
 def test_describe_debug_is_changed_scoped_after_gaining_paths() -> None:
@@ -795,3 +798,53 @@ def test_every_shape_producer_is_reachable_from_its_owning_skill() -> None:
             f"{skill_dir.relative_to(ROOT)} — an agent can only reach it by failing the validator. "
             "Name it in the planner payload, the SKILL body, or a reference the planner routes to."
         )
+
+
+def test_adapter_scoped_surfaces_judge_the_authors_file_not_the_pointer_target() -> None:
+    """The verdict named a surface and judged a DIFFERENT file.
+
+    `quality` and `handoff` both validate-all, but `quality`'s prefix is a directory
+    while `handoff`'s is an exact file — so validate-all happened to equal the target
+    for handoff and hid the gap, and for quality it printed a PASS about whatever
+    `latest.md` pointed at while the author held a dated draft. The whole point of an
+    author-time preflight is a verdict about the thing being authored.
+    """
+    for artifact_type in ("quality", "handoff"):
+        surface = preflight.surface_for_type(artifact_type)
+        assert surface.paths_arg is False, artifact_type
+        assert surface.artifact_path_arg is True, artifact_type
+
+    target = "charness-artifacts/quality/2026-07-25-quality-review.md"
+    out = preflight.describe(ROOT, preflight.surface_for_type("quality"), target_rel=target)
+
+    # the command shown, and the scope of the verdict, both name the author's file
+    assert f"--artifact-path {target}" in out
+    assert f"current verdict on {target}:" in out
+    assert "(validate-all)" not in out
+
+
+def test_a_prefix_surface_without_the_arg_still_reports_validate_all_scope() -> None:
+    """Falsifiable counterpart: the honest `validate-all` wording must survive for any
+    surface whose validator cannot be pointed at one file, or the fix would trade a
+    misleading PASS for a misleading scope claim."""
+    surface = replace(preflight.surface_for_type("quality"), artifact_path_arg=False)
+    out = preflight.describe(ROOT, surface, target_rel="charness-artifacts/quality/2026-07-25-quality-review.md")
+    assert "(validate-all)" in out
+    assert "--artifact-path" not in out
+
+
+def test_closeout_draft_shape_renders_the_floors_its_validator_blocks_on() -> None:
+    """A shape producer that omits a rule its own validator hard-blocks on hands the
+    author a document built to fail. These three were absent while
+    `evaluate_behavioral_verdict` / `evaluate_ai_provenance` / the HOTL lead pattern
+    refused on them."""
+    out = preflight.describe(ROOT, preflight.surface_for_type("closeout-draft"), target_rel=None)
+
+    assert "Behavior #N:" in out and "AI-provenance:" in out
+    # Rendered FROM the verifier's live constants, not restated beside them.
+    assert "bug, feature, deferred-work" in out
+    # The HOTL vocabulary is expanded from the anchored pattern and checked back
+    # against it, so a status the verifier would refuse cannot be advertised here.
+    for status in ("blocked-needs-operator", "blocked-needs-capability", "local-only-by-contract"):
+        assert status in out
+    assert "(?:" not in out, "the regex group leaked into operator-facing text"
