@@ -34,28 +34,25 @@ row is done; the leads table declares its own vocabulary — read it before citi
   sitting in `charness-artifacts/release/` while publish took `--generate-notes`, so its
   correction of an earlier release's wrong migration instruction reached nobody. Publish
   now refuses drafted notes it is not shipping. **Those five public bodies are still one
-  line** (backfill scoped out by the owner; the critique names the tags), and a
-  `--generate-notes` publish with NO draft on disk is still allowed — recorded
-  `unauthored`, not refused.
+  line and will stay that way** — the owner DECLINED backfill outright, so this is
+  closed, not pending. A `--generate-notes` publish with NO draft on disk is also
+  still allowed: recorded `unauthored`, not refused.
 
 ## Next Session
 
-1. **Decide the backfill of the five one-line release bodies** (tags in the critique
-   above). The recurrence path is shut, but the operator-facing damage is untouched and
-   one of them is a correction nobody received. Cheapest external-value item open.
-2. **The sweep's remaining high-severity rows, reproducing each first.** Class (a) is
+1. **The sweep's remaining high-severity rows, reproducing each first.** Class (a) is
    still dominant. Prefer batches that share one subsystem: the siblings are where the
    class hides.
-3. **The original hunt's A5/A6, A8/A9/A10, B4/B5** (E last — a contract change).
-4. **Pin the vendored two-round rule** in
+2. **The original hunt's A5/A6, A8/A9/A10, B4/B5** (E last — a contract change).
+3. **Pin the vendored two-round rule** in
    [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md):
    unpinned copies drifted once, and pinning a vendored reference needs a portability
    call on what a consuming repo may change.
-5. **Un-dispositioned:** A3 PARTIAL (needs a live staged/revert probe, not fixtures —
+4. **Un-dispositioned:** A3 PARTIAL (needs a live staged/revert probe, not fixtures —
    [critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9), D4
    PARTIAL and unclosable by this channel, containment deferrals F9/F10, D28 remainder,
    sibling-scan Tier 2 finding D.
-6. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
+5. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
    two recorded gaps (freshness blind to `tests/`, mapper blind to bare top-level
    imports). Both have reopen triggers; neither is urgent.
 
@@ -65,8 +62,9 @@ row is done; the leads table declares its own vocabulary — read it before citi
   was settled by a command: whether the CI mirror fires (it did, three times, RED),
   whether an `OSError` input is reachable (it is not on this platform), which test
   actually covers a line (18/18 from the one the mapper did not return).
-- **Read the `reason`, not the exit code.** Greens that establish nothing say so in
-  their own payload.
+- **Commit before reading a changed-line verdict.** It is a false green over
+  uncommitted pool files and says so in its own warning; running it in the wrong order
+  cost a cycle and nearly shipped two dead guards this session.
 - **A dead guard is worse than none** — it reads as a handled case. Both guards removed
   this session had a test that passed for a reason other than the one it named.
 - Run release/skill helpers from `skills/public/.../scripts/`, never an installed or
