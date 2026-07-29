@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -302,6 +303,79 @@ def test_every_known_disarm_of_one_branch_is_reported(label: str) -> None:
         _rewrite_full_branch(DISARMING_REWRITES[label])
     )
     assert unarmed or unclear or swallowed, f"{label} was not reported; armed={armed}"
+
+
+REFUSAL_BRANCHES = {
+    "swallowed": (
+        "CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only || true\n",
+        "discards its verdict",
+    ),
+    "unarmed": (
+        "./scripts/run-quality.sh --read-only\n",
+        "without arming the push-time changed-line refusal",
+    ),
+    "unclear": (
+        "RUNNER=./scripts/run-quality.sh\n$RUNNER --read-only\n",
+        "cannot classify",
+    ),
+    "never invoked": (
+        'echo "run ./scripts/run-quality.sh --read-only yourself"\n',
+        "no longer invokes",
+    ),
+}
+
+
+@pytest.mark.parametrize("label", sorted(REFUSAL_BRANCHES))
+def test_each_refusal_branch_names_its_own_reason(label: str, tmp_path: Path) -> None:
+    """Four distinct ways to lose the lane, four distinct messages.
+
+    In-process rather than through the CLI so each branch is actually measured:
+    the subprocess tests above prove the wiring, but a changed verdict line that
+    only ever runs in a child process reads as uncovered to the changed-line
+    gate, which is how a verdict branch ships unproven.
+    """
+    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    hook_text, expected = REFUSAL_BRANCHES[label]
+    hook = tmp_path / "pre-push"
+    hook.write_text(hook_text, encoding="utf-8")
+    with pytest.raises(module.ValidationError) as excinfo:
+        module.check_pre_push_arming(hook, ".githooks/pre-push")
+    assert expected in str(excinfo.value)
+
+
+def test_check_pre_push_arming_accepts_the_real_hook(tmp_path: Path) -> None:
+    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    hook = tmp_path / "pre-push"
+    hook.write_text((ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8"), encoding="utf-8")
+    module.check_pre_push_arming(hook, ".githooks/pre-push")  # must not raise
+
+
+def test_a_trailing_continuation_is_not_dropped() -> None:
+    """A file whose last line ends in `\\` still yields that command.
+
+    Dropping it would make the final invocation invisible, which is the
+    silently-skipped-reference class in its simplest form.
+    """
+    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    armed, unarmed, unclear, swallowed = module.quality_runner_invocations(
+        "CHARNESS_PRE_PUSH=1 \\\n./scripts/run-quality.sh --read-only \\"
+    )
+    assert len(armed) == 1, (armed, unarmed, unclear, swallowed)
+
+
+def test_main_runs_the_arming_check_in_this_repo(monkeypatch, capsys) -> None:
+    """The call site, not just the helper: `main()` must reach the content check.
+
+    `main()` could stop calling `check_pre_push_arming` and every helper test
+    above would stay green.
+    """
+    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    calls: list[str] = []
+    monkeypatch.setattr(module, "check_pre_push_arming", lambda path, rel: calls.append(rel))
+    monkeypatch.setattr(sys, "argv", ["validate_maintainer_setup.py", "--repo-root", str(ROOT)])
+    assert module.main() == 0
+    assert calls == [".githooks/pre-push"], calls
+    assert "Validated maintainer hook setup" in capsys.readouterr().out
 
 
 @pytest.mark.parametrize("label", sorted(LEGITIMATE_REWRITES))
