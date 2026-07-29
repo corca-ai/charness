@@ -1,6 +1,6 @@
 # Achieve Goal: Close the armed changed-line pre-push lane's known holes: pin the hook to the runner (CHARNESS_PRE_PUSH / unexported .githooks/pre-push), stop check_mutation_run_proof calling an empty range provable, tighten fg_warning and the publish refusal's fail-open paths, and land D39/D41 (freshness blind to tests/, mapper blind to bare imports)
 
-Status: active
+Status: complete
 Created: 2026-07-29
 Activation: `/goal @charness-artifacts/goals/2026-07-29-close-the-armed-changed-line-pre-push-lane-s-known-holes-pin.md`
 
@@ -9,8 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: ACTIVE — activated 2026-07-29; slice 1 of 5 closed.
-- Current slice: slices 1-4 DONE. Slice 5 next: the `run-quality-full` bars, per machine profile.
+- Current disposition: COMPLETE — all five slices closed 2026-07-30.
+- Current slice: none; the goal is closed. See `## Final Verification` for what was and was not proven.
 - Next action: slice 5 — restate each `run-quality-full` bar against its OWN recorded window. The 36cpu bar sits BELOW its observed max (false-RED risk); the 4cpu bar was sized from n=2 samples predating the armed lane. A `BUDGET_SLACK_FACTOR` change is a separate decision: the constant is global across every label and profile.
 - Verification cadence: per slice — targeted pytest + `run_slice_closeout.py`
   at the commit boundary; `bash scripts/run-quality.sh` (full) at the bundle
@@ -322,17 +322,24 @@ non-claim that survives it.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+- Decision: file the changed-line-gate capability improvement as a tracked issue,
+  or leave it in the retro only
+- Owner: operator
+- Why deferred: creating a public issue on `corca-ai/charness` is outward-facing
+  and was not authorized for this run; the goal closed on local evidence instead
+- Unblock action: say whether to file it; the evidence is in the retro's
+  `## Next Improvements` and `## Sibling Search`
+- Revisit trigger: the next slice that hits a changed-line BLOCK on a branch
+  whose only coverage is a subprocess test
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: whether `check_mutation_run_proof` should exit 3 rather than 0 when
+  the range contents are unestablished (D42), and whether the loose-bar advisory
+  should become per-label (D43)
+- Owner: operator
+- Why deferred: both are operator-facing contract calls; deciding either inside a
+  defect-repair slice would smuggle a contract change in under a repair banner
+- Unblock action: read `docs/deferred-decisions.md` D42 and D43 and pick
+- Revisit trigger: the reopen triggers written into each entry
 
 ## Slice Log
 
@@ -384,12 +391,26 @@ Queue item form:
 - Why this approach: Publish is in the named irreversible set and the escape is measured five times over; the arm's own comment already admitted the fail-open and it stayed.
 - Commits: 62d1e6a1, plus the notes-file read-arm coverage follow-up
 - What changed: skills/public/release/scripts/audit_public_release_narrative.py; skills/public/release/scripts/drafted_release_notes.py (new, split at the length cap); skills/public/release/scripts/publish_release_narrative_gate.py; skills/public/release/references/adapter-contract.md; tests/quality_gates/test_release_narrative_audit.py; plugins/charness mirror
-- Alternatives rejected: REVERTED after review rather than repaired: widening the recognised role words to (notes, release, changelog, announcement). Matching 'release' inside a directory literally named release made a dated <date>-<version>-release-record.md read as drafted notes, and the refusal's remedy asks the operator to rename or delete the file and commit that — a verdict surface at an irreversible boundary pointing that advice at durable evidence. The miss it guarded was never observed: all 44 real drafts in the 51-file release directory carry the token. REJECTED last-token matching: this repo ships both v0.55.0-notes.md and notes-v0.56.7.md, so it would drop five real drafts. What shipped instead: the convention documented in the release adapter contract, and token-not-substring matching.
+- Alternatives rejected: REVERTED after review rather than repaired: widening the recognised role words to (notes, release, changelog, announcement). Matching 'release' inside a directory literally named release made a dated `<date>-<version>-release-record.md` read as drafted notes, and the refusal's remedy asks the operator to rename or delete the file and commit that — a verdict surface at an irreversible boundary pointing that advice at durable evidence. The miss it guarded was never observed: all 44 real drafts in the 51-file release directory carry the token. REJECTED last-token matching: this repo ships both v0.55.0-notes.md and notes-v0.56.7.md, so it would drop five real drafts. What shipped instead: the convention documented in the release adapter contract, and token-not-substring matching.
 - Targeted verification: Both fail-opens reproduced first (unreadable dir returned [] identically to absent; a -release.md draft invisible). Round-1 and round-2 findings all executed: 5 of round 1's and 3 of round 2's confirmed by running them. Falsifiers: reverting each of the three repairs fails 2/1/1 tests respectively. 29 focused tests pass; 78 across the release selection; run_slice_closeout green; changed-line gate run AFTER commit BLOCKED on one unmeasured branch, clean after covering it. Also confirmed a 15-failure charness_cli scare was plugin-mirror drift from a stash/pop, not slice logic: stashed 201 pass, mirror re-synced 201 pass.
 - Test duplication pressure: no dup-ratchet movement. check_python_lengths BLOCKED at 371/360, so drafted-notes DISCOVERY moved to its own module — one question (was anything drafted for this tag, and could we even look?) distinct from what a drafted-but-unshipped note MEANS for publish. Not a spill: the version matching, role-word convention, and readable/absent/unreadable split all belong to the first question.
 - Critique: Two bounded rounds. Round 1: audit_notes_file carried the identical unguarded stat/read pair and runs FIRST, so the ordinary --notes-file shape turned the new verdict back into a traceback; two more stats in find_drafted_notes escaped (unreadable PARENT, chmod 444); UnicodeDecodeError is a ValueError so a UTF-16 artifact tracebacked out of the boundary; and the role-word widening was the false-refusal-with-a-delete-evidence-remedy that got reverted. Round 2 read those repairs and caught the revert's own comment asserting the adapter contract 'now does' document the convention when it did not — a claim over a scope nobody established, inside the rationale for the fix to that class — plus the bare-substring mechanism surviving the revert (footnotes/denotes) and a vacuous status assertion in the decode test. Round-2 repairs accepted-unreviewed per the cap. Reviewer boundary snapshotted before each spawn and verified at return BEFORE repairing: both rounds exit 0, verdict clean, drift [].
 - Off-goal findings: Recorded, not filed: publish_release_post_create._http_release_probe documents 'Never raises' but catches only (URLError, OSError, ValueError), while http.client.HTTPException subclasses none of them. It runs after create_release and before the issue close, so an escape would strand a published release without a closeout. Reviewer-read only, reachability unproven, and outside this slice's surface.
 - Lessons carried forward: Half a criterion retired is still a scope change and belongs in the record, not in the diff. And a rationale is a claim: writing 'the adapter contract now documents this' without checking reproduced, inside the justification, the exact class the slice was closing.
+- Metrics:
+
+### Slice 5: Slice 5 — the bars, per profile, against their own windows
+
+- Objective: Restate each run-quality aggregate bar against its own recorded window, or record a dated decision naming why not.
+- Why this approach: Last slice, and the one where the slice's stated premise turned out to be inverted — which is how the real gap surfaced.
+- Commits: b80f0088
+- What changed: .agents/quality-adapter.yaml; docs/deferred-decisions.md (D43); tests/quality_gates/test_runtime_budget_gate.py
+- Alternatives rejected: NOT changed, with the reason recorded rather than a silent number: the 36cpu run-quality-full bar (420000) is already a recorded decision sized from documented range cost, and re-deriving it would second-guess that without new evidence; the 4cpu bars, where the obstacle is COST not access — that profile is this same box under taskset, so the measurement is one 10-20 minute command away and was not spent. REJECTED sizing the read-only bar from the window max (551780 is a transient six-commit range; baking it in leaves a guard nothing can trip). REJECTED changing BUDGET_SLACK_FACTOR: one global constant, recorded as D43.
+- Targeted verification: Facts read from .charness/quality/runtime-signals.json and runtime_budget_lib.py rather than assumed, after the original premise proved inverted. The aggregation model was MEASURED, not reasoned: six paired lane/aggregate samples from the runtime history put the wall at lane + 2565..2848ms. check_runtime_budget --detail confirms run-quality-read-only was reporting latest-spike before the change and the budget check passes after. Falsifier: reverting the bar to 58500 fails the new test. 38 runtime-budget tests pass; run_slice_closeout green.
+- Test duplication pressure: no dup-ratchet or length movement; one test added to an existing file.
+- Critique: One bounded round — this slice changes budget numbers and their recorded rationale, not verdict logic about other code, so the two-round rule does not fire. The round found a BLOCKER the slice had missed entirely: run-quality-read-only, the bar that actually stops a push, was stale in the TIGHT direction and already reporting latest-spike, while the slice was looking only at run-quality-full. It also falsified the 420000 derivation's additive '+120000' term, showed D43's three-blind-spots count was inflated to one, corrected 'goes RED' (enforcement is median-of-20, so one run is a non-blocking spike), corrected 'this repo's rule' to the one-day-old precedent it is, and corrected 'a machine nobody measured' to the cost decision it actually was. Reviewer boundary snapshotted before the spawn and verified at return BEFORE repairing: exit 0, verdict clean, drift [].
+- Off-goal findings: Named in the adapter rather than filed: the 4cpu profile's read-only bar has the same pre-lane basis, its changed-line samples are all pre-arming so --suggest-budgets would propose ~3500 for the dominant gate, and the aarch64 profile has no aggregate bars and no samples at all.
+- Lessons carried forward: A wrong premise is worth following to the point where it breaks: checking why the advisory did not fire is what surfaced that the advisory divides by max, which is what surfaced that the bar was tight rather than loose, which is what led to the blocking bar the slice had not been looking at. And a bar is a claim: 420000's stated derivation was additive on gates that run concurrently, so the number was defensible and its reasoning was not.
 - Metrics:
 
 ## Context Sources
@@ -492,14 +513,123 @@ on the recorded window rather than a live run.
   shaping with the trigger recorded in Boundaries, so there is no open
   root-cause question. Load it if a repair does not behave as the reproduction
   predicted.
-- No tracked issue originates this goal, so no `Close #N` closeout is owed;
-  record `Issue closeout: n/a — no originating tracked issue` at completion
-  unless a slice files one.
+- No tracked issue originates this goal, so no `Close #N` closeout is owed.
+- Routing: impl — selected from installed skill metadata for each slice's build
+  step, with `prove` at every slice stop gate and `critique` for the bounded
+  review rounds; `quality` owned the bundle-boundary gate and slice 5's runtime
+  bars. Recorded from metadata and model judgment, not an inline phase map.
+- Release: n/a — no version bump, no install-manifest edit, and no publish was
+  cut. Slice 4 changed the release skill's publish REFUSAL and its adapter
+  contract prose, which is gate behaviour rather than a release surface; the
+  public-skill validation decision for it is recorded in
+  `docs/public-skill-dogfood.json` under the `quality` case's sibling entry.
+- Issue closeout: n/a — no originating tracked issue, and no slice filed one.
+- Gather: n/a — every source this goal read is in-repo; no external URL or
+  gathered artifact entered the work.
 
 ## Off-Goal Findings
 
+- **A dated critique artifact cannot be amended once its reviewed paths move.**
+  Slice 4 changed `audit_public_release_narrative.py`, which
+  `charness-artifacts/critique/2026-07-29-v2.12.0-release.md` had declared as a
+  reviewed input, so that artifact's identity digest no longer reconstructs.
+  That staleness is the binding working as designed and five of the six most
+  recent critique artifacts are already in the same state — the repo does not
+  repair them. But `validate-critique-artifacts` runs in `changed` mode with the
+  currency check enabled, so TOUCHING such an artifact for any reason (here: to
+  record that it no longer covers the current file) makes it block the quality
+  run. The supersession is therefore recorded here instead of in the artifact.
+  Not filed as an issue: it is a real trap but it belongs to the critique
+  validator's contract, not to this goal's lane, and naming it is what this
+  section is for.
+- Recorded in the slice-4 log rather than filed: `publish_release_post_create`'s
+  `_http_release_probe` documents "Never raises" while catching only
+  `(URLError, OSError, ValueError)`, and `http.client.HTTPException` subclasses
+  none of them. Reviewer-read only; reachability unproven.
+
 ## Final Verification
+
+Retro: charness-artifacts/retro/2026-07-30-session-retro.md
+Host log probe: skipped: host-log-not-exposed: the Claude session log exposes
+point-in-time token snapshots (873) rather than a cumulative total, and no
+`Host metric window:` was recorded at activation, so `probe_host_logs.py`
+reports the window as `not_requested` and every figure it returns is thread-wide
+pressure rather than this goal's cost. Recorded as unavailable rather than
+citing 535 function calls as if they were a per-goal total.
+Disposition review: charness-artifacts/retro/2026-07-30-session-retro.md
+
+Self-verification, what was actually run:
+
+- Every one of the five gaps was REPRODUCED before it was repaired, and each
+  repair has a falsifier that was executed: reverting it fails a named count of
+  tests (2, 3, 3, 2/1/1, and 1 respectively).
+- Six bounded review rounds across four slices. Reviewer boundary snapshotted
+  before each spawn and verified at RETURN before any repair: all six exit 0,
+  `verdict: clean`, drift `[]`.
+- `bash scripts/run-quality.sh` full: 82 passed / 1 failed on the first final
+  run. Both failures were traced (one mine: a version-pinned example in a public
+  doc; one a fragile test selecting whichever critique artifact sorted last) and
+  fixed; the re-run is clean.
+- `prepush_focused_changed_line_coverage.py` run AFTER commit on every slice.
+  It BLOCKED four times on unmeasured verdict branches and is clean now.
+- 17 commits, each through the pre-commit gate aggregate.
+
+Residual risks:
+
+- The 4cpu runtime bars are still sized from a pre-lane window. The reason is
+  cost, not access, and it is written into the adapter with the arithmetic and a
+  reopen trigger.
+- D42 and D43 are recorded contract questions, not closed ones.
+- The role-word half of User Acceptance #4 is retired, not met.
+
+Non-claims:
+
+- No push to `origin`. The push-time refusal is proven through the real hook
+  against a local bare remote only, so the unproven-gate critique's "no live
+  push has exercised `--refuse-unestablished`" narrows rather than clears.
+- No runtime measurement was taken. Every statement about bars rests on the
+  recorded window in `.charness/quality/runtime-signals.json`.
+- Both release permission tests self-skip where a `0o000` directory is not
+  enforced, so as root neither those fixes nor a regression of them is observed.
+- `_head_resolves_to_head` and `uncommitted_pool_changes` still collapse a git
+  failure to `[]`. Both were traced to be unreachable as greens; that is a
+  reachability argument, not a repair.
+- No consumer repo gains push-time changed-line teeth from this goal, and this
+  goal does not claim they should.
 
 ## User Verification Instructions
 
+1. `python3 scripts/validate_maintainer_setup.py --repo-root .` passes today.
+   Delete the `CHARNESS_PRE_PUSH=1` prefix from one line of `.githooks/pre-push`
+   and re-run: it now fails naming that line. Restore it.
+2. `bash scripts/run-quality.sh` — expect 83 passed, 0 failed.
+3. Read `## Off-Goal Findings` below: two things are named there that this goal
+   deliberately did not fix.
+4. The handoff's `## Next Session` item 7 lists three gaps as open. Two are now
+   closed by this goal and one (the `fg_warning` / publish / bar cluster) is
+   partially closed. The handoff is rewritten at closeout, not mid-run.
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-07-30-session-retro.md
+
+Retro dispositions: applied: the "a rationale is a claim" lesson is persisted into
+  `charness-artifacts/retro/recent-lessons.md` by `persist_retro_artifact.py`,
+  and both instances are repaired in place with the reasoning in the code —
+  `changed_line_run_trust`'s module header, and the release adapter-contract
+  convention that a comment had claimed already existed.
+
+- out-of-scope: the workflow improvement (a reachability probe during shaping for
+  any slice whose value claim names a consumer, host, or environment the session
+  cannot see) changes the `achieve` Before-phase shaping contract, a public skill
+  surface with its own validation and dogfood obligations, while this goal's lane
+  was the pre-push gate. Recorded here and in the retro so the next shaping run
+  inherits it.
+- out-of-scope: the capability improvement (teach the changed-line gate to report
+  when a blocked line's only coverage is a subprocess test) changes a BLOCKING
+  gate's payload, so by this repo's own Critique Discipline it owes two bounded
+  review rounds of its own. Deliberately NOT filed as an issue inside this run:
+  creating a public issue on the shared repo is an outward-facing act the
+  operator has not been asked about. It is surfaced at closeout instead, with the
+  evidence — four identical changed-line BLOCKs across four files this session,
+  and 61 test-to-script subprocess pairs in the boundary-bypass baseline.

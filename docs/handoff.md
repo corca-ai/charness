@@ -13,23 +13,29 @@ Two records drive the burn-down. The
 [2026-07 hunt](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
 reproduced 30 defects over 22 surfaces; **9 OPEN + 4 PARTIAL remain**. The
 [triage sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md)
-first-looked the other 146 surfaces: **~100 leads still open**, 30 high severity. In the
-MAIN findings table, `CLOSED (parent-reproduced <date>)` is the only status that means a
-row is done; the leads table declares its own vocabulary — read it before citing a row.
+first-looked the other 146 surfaces: **~100 leads still open**, 29 high severity
+(**S25 is now parent-reproduced and CLOSED**). In the MAIN findings table,
+`CLOSED (parent-reproduced <date>)` is the only status that means a row is done;
+the leads table declares its own vocabulary — read it before citing a row.
+
+Refresh kept: the two burn-down records, the pre-push lane's closed state with
+its non-claims, the raised bar, and the items awaiting an operator call.
+
+Refresh non-claims: the D40 lane state, the #464/R8 lines, and the
+publish-refusal gap list are gone — closed, or now D42/D43, with the goal
+artifact owning the detail. No claim that any consumer repo gained push-time
+teeth, nor that a live `origin` push exercised the refusal.
 
 ## Current State
 
-- **The pre-push changed-line lane BLOCKS** ([D40](./deferred-decisions.md)), budgeted
-  from its range cost. A dirty POOL is `UNPROVEN` now, not a green; a dirty non-pool
-  file still skews it silently, so commit, then re-run. **#464 is CLOSED**; **R8 is
-  gone from the leads table**.
-- **A slice that changes VERDICT LOGIC owes a second bounded review of the REPAIRED
-  surface.** Round 2 caught a round-1 repair reintroducing the escape three times in
-  this session alone. Verify the reviewer boundary at RETURN, before repairing.
-- **Publish now refuses drafted notes it is not shipping**
-  ([critique](../charness-artifacts/critique/2026-07-29-release-notes-publish-escape.md)).
-  The already-escaped one-line bodies stay as they are — the owner DECLINED backfill,
-  so that is closed, not pending. A publish with no draft on disk is still allowed.
+- **The pre-push lane's five named holes are CLOSED**
+  ([goal](../charness-artifacts/goals/2026-07-29-close-the-armed-changed-line-pre-push-lane-s-known-holes-pin.md),
+  see its Slice Log for commits and review rounds). Read its `## Final Verification`
+  before citing any of it: no `origin` push, no runtime measurement, and two
+  git-failure collapses left unrepaired because they are unreachable as greens.
+- **`run-quality-read-only` was raised 58500 -> 305000.** It is the bar that
+  stops a push and its basis predated the armed lane; it was already reporting
+  `latest-spike`. The 4cpu bars are still pre-lane and say so in the adapter.
 
 ## Next Session
 
@@ -45,30 +51,24 @@ row is done; the leads table declares its own vocabulary — read it before citi
    [critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9), D4
    PARTIAL, containment F9/F10, D28 remainder, sibling-scan Tier 2 finding D.
 6. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
-   gaps (freshness blind to `tests/`, mapper blind to bare imports). Not urgent.
-7. **Gaps this session named and did not close**, ranked by how silently each fails
-   and argued in the [unproven](../charness-artifacts/critique/2026-07-29-unproven-gate-status.md)
-   and [publish](../charness-artifacts/critique/2026-07-29-release-notes-publish-escape.md)
-   critiques:
-   - Nothing pins the hook to the runner: `--refuse-unestablished` keys on
-     `CHARNESS_PRE_PUSH`, set only by the unexported `.githooks/pre-push`, so an old
-     vendored hook drops the push-time teeth with a green console.
-   - `check_mutation_run_proof` calls a changed-line claim `provable` on `base_sha`
-     alone, so an empty-range run is a citable green.
-   - `fg_warning` under-approximates untrustworthy runs; the publish refusal fails open
-     on an unreadable `output_dir` and on a draft whose filename lacks `notes`; and the
-     `run-quality-full` bar sits under the slack advisory, so nothing reports it.
+   gaps. Still deferred; neither reopen trigger fired during the goal that read them.
+7. **Awaiting an operator call**, all with the evidence already written:
+   - [D42](./deferred-decisions.md): should `check_mutation_run_proof` exit 3
+     rather than 0 when the range contents are unestablished?
+   - [D43](./deferred-decisions.md): should the loose-bar advisory be per-label?
+   - File the changed-line gate's subprocess-only-coverage diagnosis as an issue,
+     or leave it in the retro? Four identical BLOCKs in one session argue for it.
 
 ## Discuss
 
-- **Probe the contract instead of arguing it.** Three reviewer claims about exit-3
-  collisions were settled by running them: two confirmed, one refuted.
+- **Probe the contract instead of arguing it.** Three `ls` commands over
+  `../ceal`, `../crill`, `../cautilus` collapsed a chunk ranked #1 on a premise
+  none of them supported.
 - **A gate that establishes nothing prints `UNPROVEN`, not `PASS`** (exit 3, opt-in per
   label via `UNESTABLISHED_CAPABLE_LABELS`; the word removes the green, it does not move
   the pre-commit window).
-- **3 is not the runner's byte to redefine** — `pytest` uses it for INTERNAL_ERROR,
-  `shellcheck` for a bad invocation. A gate joins the allowlist only after its own exit
-  contract is read.
+- **Verdict branches proven only through subprocess tests read as uncovered** to
+  the changed-line mapper. Four slices hit this in four files.
 - Run release/skill helpers from `skills/public/.../scripts/`, never an installed or
   `plugins/` copy ([RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
 
@@ -77,4 +77,4 @@ row is done; the leads table declares its own vocabulary — read it before citi
 - [chunked-routing contract](./handoff-chunked-routing.md) · [deferred decisions](./deferred-decisions.md) · [design north star](./design-north-star.md)
 - [why the class stayed invisible](../charness-artifacts/audit/2026-07-28-why-the-hunt-class-stayed-invisible.md) · [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)
 - [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [D40 critique](../charness-artifacts/critique/2026-07-29-d40-incremental-prepush-changed-line-teeth.md) · [#464 critique](../charness-artifacts/critique/2026-07-28-issue-464-changed-line-coverage-recurrence.md)
+- [D40 critique](../charness-artifacts/critique/2026-07-29-d40-incremental-prepush-changed-line-teeth.md) · [session retro](../charness-artifacts/retro/2026-07-30-session-retro.md)

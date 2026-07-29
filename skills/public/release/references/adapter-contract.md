@@ -93,9 +93,9 @@ Dated release records should use `<repo-root>/charness-artifacts/release/YYYY-MM
 Release notes drafted ahead of publish must carry `notes` as a whole
 `-`/`_`-delimited token in the filename, alongside the version:
 
-- `2026-07-26-v2.11.0-notes.md`
-- `notes-v0.56.7.md`
-- `2026-07-14-v1-0-7-public-notes.md` (dash-separated versions are recognised)
+- `<date>-<tag>-notes.md`
+- `notes-<tag>.md` (the token may lead or trail)
+- `<date>-<tag>-public-notes.md` (dash-separated version tokens are recognised)
 
 This is the shape the pre-publish refusal looks for when it checks whether notes
 were drafted for the target tag and something else is being published. A draft

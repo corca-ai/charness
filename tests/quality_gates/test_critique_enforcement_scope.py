@@ -376,15 +376,31 @@ def test_configured_probe_with_no_changed_scope_reports_not_established(tmp_path
     # critique artifacts: selecting one puts ZERO artifacts in scope and the assertion
     # below fails on `not-resolved` instead of exercising the probe. The glob happened
     # to pick a real artifact until a packet sorted last on the same date.
-    existing = sorted(
+    #
+    # Nor can it be the LAST artifact by name: `--paths` enables the binding-currency
+    # check, and a critique artifact's reviewed-input identity goes stale as soon as
+    # any reviewed path is edited afterwards — the normal, intended end state, which
+    # five of the six most recent artifacts are already in. Pinning "the newest one
+    # validates" made this test fail whenever an unrelated slice touched a file some
+    # recent critique had reviewed. Select one whose binding is still current instead;
+    # this test is about PROBE RESOLUTION, and the artifact is only a vehicle for
+    # putting something in scope.
+    candidates = sorted(
         path
         for path in (ROOT / "charness-artifacts" / "critique").glob("2026-07-2*.md")
         if not path.name.endswith("-packet.md")
     )
-    assert existing, "expected at least one recent critique artifact to select"
-    relpath = existing[-1].relative_to(ROOT).as_posix()
-
-    result = run_script(VALIDATOR, "--repo-root", str(ROOT), "--paths", relpath, "--changed-ref", "")
+    assert candidates, "expected at least one recent critique artifact to select"
+    for candidate in reversed(candidates):
+        relpath = candidate.relative_to(ROOT).as_posix()
+        result = run_script(VALIDATOR, "--repo-root", str(ROOT), "--paths", relpath, "--changed-ref", "")
+        if result.returncode == 0:
+            break
+    else:  # pragma: no cover - only when every recent artifact has drifted
+        raise AssertionError(
+            "no recent critique artifact still has a current reviewed-input binding; "
+            "this test needs one in scope to exercise probe resolution"
+        )
 
     assert result.returncode == 0, result.stderr
     assert "cross-surface-probe=not-established" in result.stdout
