@@ -1,6 +1,6 @@
 # Achieve Goal: Close the armed changed-line pre-push lane's known holes: pin the hook to the runner (CHARNESS_PRE_PUSH / unexported .githooks/pre-push), stop check_mutation_run_proof calling an empty range provable, tighten fg_warning and the publish refusal's fail-open paths, and land D39/D41 (freshness blind to tests/, mapper blind to bare imports)
 
-Status: draft
+Status: active
 Created: 2026-07-29
 Activation: `/goal @charness-artifacts/goals/2026-07-29-close-the-armed-changed-line-pre-push-lane-s-known-holes-pin.md`
 

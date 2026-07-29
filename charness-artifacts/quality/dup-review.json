@@ -303,6 +303,13 @@
     },
     {
       "class": "intentional",
+      "id": "3e6ac3c56414ccc9",
+      "note": "the `if __name__ == \"__main__\": try: sys.exit(main()) except <Error> as exc: print(..., file=sys.stderr); sys.exit(1)` CLI entrypoint epilogue shared by 15 repo validator/export scripts; 14 of the 15 members are untouched and this file already carried the epilogue before the change that surfaced the family -- splitting test_quality_runner.py rotated the scan fingerprints (five sibling families reported reductions in the same run, the #441 rotation class). Not extractable: the `__main__` guard is a language-level idiom and each member names its own exception type, so a shared helper would replace six explicit lines with an indirection every script still has to spell out.",
+      "reviewed_at": "2026-07-29",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "3f18bd389422968e",
       "note": "cross-skill package-root discovery for source and installed layouts; this is bootstrap-before-import code and cannot live in a shared imported helper without circularly assuming the path it resolves",
       "reviewed_at": "2026-07-11",
