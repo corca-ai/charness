@@ -19,50 +19,50 @@ row is done; the leads table declares its own vocabulary — read it before citi
 
 ## Current State
 
-- **The pre-push changed-line lane BLOCKS** ([D40](./deferred-decisions.md)): ~24s for
-  one commit, ~5min for nine, now budgeted at that documented range cost rather than at
-  a worst run. A dirty POOL is `UNPROVEN` now, not a green; a dirty non-pool file
-  still skews it silently, so commit, then re-run.
-  **#464 is CLOSED**; **R8 is gone from the leads table**.
+- **The pre-push changed-line lane BLOCKS** ([D40](./deferred-decisions.md)), budgeted
+  from its range cost. A dirty POOL is `UNPROVEN` now, not a green; a dirty non-pool
+  file still skews it silently, so commit, then re-run. **#464 is CLOSED**; **R8 is
+  gone from the leads table**.
 - **A slice that changes VERDICT LOGIC owes a second bounded review of the REPAIRED
   surface.** Round 2 caught a round-1 repair reintroducing the escape three times in
   this session alone. Verify the reviewer boundary at RETURN, before repairing.
-- **The release-notes publish escape is closed; the escaped bodies are not**
+- **Publish now refuses drafted notes it is not shipping**
   ([critique](../charness-artifacts/critique/2026-07-29-release-notes-publish-escape.md)).
-  Publish now refuses drafted notes it is not shipping. Five public bodies stay one line
-  — the owner DECLINED backfill, so that is closed, not pending — and a
-  `--generate-notes` publish with no draft on disk is still allowed, recorded
-  `unauthored` rather than refused.
+  The already-escaped one-line bodies stay as they are — the owner DECLINED backfill,
+  so that is closed, not pending. A publish with no draft on disk is still allowed.
 
 ## Next Session
 
-1. **The sweep's remaining high-severity rows, reproducing each first.** Class (a) is
-   still dominant. Prefer batches that share one subsystem: the siblings are where the
-   class hides.
+1. **The sweep's remaining high-severity rows, reproducing each first.** Class (a)
+   dominates; batch by subsystem, where the siblings hide.
 2. **The original hunt's A5/A6, A8/A9/A10, B4/B5** (E last — a contract change).
 3. **Pin the vendored two-round rule** in
-   [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md):
-   unpinned copies drifted once, and pinning a vendored reference needs a portability
-   call on what a consuming repo may change.
+   [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md)
+   — unpinned copies drifted once; needs a portability call.
 4. **Un-dispositioned:** A3 PARTIAL (needs a live staged/revert probe, not fixtures —
    [critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9), D4
-   PARTIAL and unclosable by this channel, containment deferrals F9/F10, D28 remainder,
-   sibling-scan Tier 2 finding D.
+   PARTIAL, containment deferrals F9/F10, D28 remainder, sibling-scan Tier 2 finding D.
 5. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
    two recorded gaps (freshness blind to `tests/`, mapper blind to bare top-level
    imports). Both have reopen triggers; neither is urgent.
-6. **Two escapes the UNPROVEN slice named and did not close.** `check_mutation_run_proof`
-   marks a changed-line claim `provable` on `base_sha` alone, so a CI range with no
-   eligible pool file is a citable green; and `fg_warning` under-approximates
-   untrustworthy runs (explicit non-HEAD `--head-sha`, a git failure read as "nothing
-   found", dirty non-pool files). Both are recorded in
-   [the critique](../charness-artifacts/critique/2026-07-29-unproven-gate-status.md).
+6. **Gaps this session named and did not close**, ranked by how silently each fails
+   and argued in the [unproven](../charness-artifacts/critique/2026-07-29-unproven-gate-status.md)
+   and [publish](../charness-artifacts/critique/2026-07-29-release-notes-publish-escape.md)
+   critiques:
+   - Nothing pins the hook to the runner: `--refuse-unestablished` keys on
+     `CHARNESS_PRE_PUSH`, set only by the unexported `.githooks/pre-push`, so an old
+     vendored hook drops the push-time teeth with a green console.
+   - `check_mutation_run_proof` calls a changed-line claim `provable` on `base_sha`
+     alone, so a range holding no eligible pool file is a citable green.
+   - `fg_warning` under-approximates untrustworthy runs; the publish refusal fails open
+     on an unreadable `output_dir` and misses a draft whose filename lacks `notes`; and
+     the `run-quality-full` bar sits under the slack advisory's 3.0x, so nothing will
+     report it as a bar that cannot fail.
 
 ## Discuss
 
-- **Probe the contract instead of arguing it.** Every load-bearing claim this session
-  was settled by a command — including three reviewer claims about exit-3 collisions,
-  two confirmed and one refuted.
+- **Probe the contract instead of arguing it.** Three reviewer claims about exit-3
+  collisions were settled by running them: two confirmed, one refuted.
 - **A gate that establishes nothing prints `UNPROVEN`, not `PASS`** (exit 3, opt-in per
   label via `UNESTABLISHED_CAPABLE_LABELS`; the word removes the green, it does not move
   the pre-commit window).

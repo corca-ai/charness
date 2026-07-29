@@ -46,6 +46,7 @@ _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
 _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 
 # A markdownlint-cli2 per-violation line: ``<file>:<line>[:<col>] error MDxxx/rule desc``.
 _MARKDOWNLINT_LINE_RE = re.compile(
@@ -261,12 +262,53 @@ def collect_length(
 # --- report assembly ---------------------------------------------------------
 
 
+def collect_regenerable_facts(
+    repo_root: Path, doc: Path, rel: str, as_surface: str | None
+) -> list[dict[str, Any]]:
+    """Version/sha literals the handoff validator refuses, forecast per line.
+
+    The rule lived ONLY in `validate_handoff_artifact`'s error string, so it was
+    visible only AFTER writing the thing it forbids -- which is how a version
+    literal reached a handoff draft twice. This is the same class the aggregate
+    preflight exists for: a constraint enforced at commit time and un-briefed at
+    authoring time.
+
+    Reuses `REGENERABLE_PATTERNS` and the validator's own scrubbing regexes rather
+    than restating them, so the forecast cannot drift from the gate. It reports
+    EVERY hit; the gate raises on the first, which is the one difference and the
+    point of a forecast.
+    """
+    handoff_rel = _handoff_rel(repo_root)
+    is_handoff = rel == handoff_rel or (as_surface or "") == "handoff"
+    if not is_handoff:
+        return []
+    findings: list[dict[str, Any]] = []
+    for lineno, raw, in_fence in _markdown_scan.iter_doc_lines(doc):
+        if in_fence:
+            continue
+        scrubbed = _handoff.INLINE_CODE_RE.sub(
+            "", _handoff.URL_RE.sub("", _handoff.LINK_TARGET_RE.sub("", raw))
+        )
+        for pattern, label, replacement in _handoff.REGENERABLE_PATTERNS:
+            match = pattern.search(scrubbed)
+            if match is None:
+                continue
+            findings.append({
+                "line": lineno,
+                "literal": match.group(0).strip(),
+                "label": label,
+                "replacement": replacement,
+            })
+    return findings
+
+
 @dataclass
 class Report:
     target: str
     markdownlint: dict[str, Any]
     wrapped_inline_code: list[dict[str, Any]]
     doc_links: list[dict[str, Any]]
+    regenerable_facts: list[dict[str, Any]]
     length: dict[str, Any]
     warnings: list[str] = field(default_factory=list)
 
@@ -276,6 +318,7 @@ class Report:
             self.markdownlint["findings"]
             or self.wrapped_inline_code
             or self.doc_links
+            or self.regenerable_facts
             or self.length["over"]
         )
 
@@ -286,6 +329,7 @@ class Report:
             "markdownlint": self.markdownlint,
             "wrapped_inline_code": self.wrapped_inline_code,
             "doc_links": self.doc_links,
+            "regenerable_facts": self.regenerable_facts,
             "length": self.length,
             "warnings": self.warnings,
         }
@@ -317,9 +361,22 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
         markdownlint=markdownlint,
         wrapped_inline_code=collect_wrapped_inline_code(doc),
         doc_links=collect_doc_links(repo_root, doc),
+        regenerable_facts=collect_regenerable_facts(repo_root, doc, rel, as_surface),
         length=collect_length(repo_root, doc, rel, as_surface),
         warnings=warnings,
     )
+
+
+def _regenerable_lines(findings: list[dict[str, Any]]) -> list[str]:
+    if not findings:
+        return ["regenerable-facts: clean"]
+    lines = [f"regenerable-facts: BLOCK ({len(findings)} finding(s))"]
+    for row in findings:
+        lines.append(
+            f"  - line {row['line']}: transcribes {row['label']} (`{row['literal']}`); "
+            f"carry the command instead: {row['replacement']}"
+        )
+    return lines
 
 
 def format_human(report: Report) -> str:
@@ -362,6 +419,8 @@ def format_human(report: Report) -> str:
                 lines.append(f"  - {row['detail']}")
     else:
         lines.append("doc-links: clean")
+
+    lines.extend(_regenerable_lines(report.regenerable_facts))
 
     length = report.length
     if length["surface"] is None:

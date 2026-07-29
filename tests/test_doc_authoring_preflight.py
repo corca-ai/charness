@@ -239,3 +239,60 @@ def test_slice_advisory_fires_on_doc_edit_only(capsys) -> None:
 
     _advisories.advise_doc_surface_preflight(ROOT, ["scripts/foo.py", "skills/public/x/SKILL.md"])
     assert capsys.readouterr().err == ""
+
+
+def test_preflight_forecasts_the_handoff_regenerable_fact_rule(tmp_path: Path) -> None:
+    """This rule lived ONLY in `validate_handoff_artifact`'s error string, so it was
+    visible only AFTER writing the thing it forbids — which is how a version literal
+    reached a handoff draft twice. Briefing a surface's constraints before the edit is
+    exactly what this aggregate exists for, and it was not carrying this one.
+    """
+    repo = _seed_repo(
+        tmp_path,
+        "# Demo Handoff\n"
+        "\n"
+        "Shipped v9.9.9 and pinned 9f3a1c2 this session.\n"
+        "\n"
+        "A `v9.9.9` in code and a 1.4x ratio are not version claims.\n",
+    )
+
+    report = _pf.build_report(repo, "docs/handoff.md", "handoff")
+
+    literals = {row["literal"] for row in report.regenerable_facts}
+    assert "v9.9.9" in literals
+    assert "9f3a1c2" in literals
+    assert report.blocked
+    # Inline code and a bare ratio must not fire, or the forecast would disagree with
+    # the gate about WHAT counts — which is why it reuses the validator's own patterns
+    # and scrubbing rather than restating them.
+    assert all(row["line"] == 3 for row in report.regenerable_facts), report.regenerable_facts
+    assert all(row["replacement"] for row in report.regenerable_facts)
+
+
+def test_the_forecast_agrees_with_the_gate_on_the_regenerable_rule(tmp_path: Path) -> None:
+    """Drift check, in both directions: what the forecast blocks the gate must refuse,
+    and what the forecast calls clean the gate must accept."""
+    repo = _seed_repo(tmp_path, "# Demo Handoff\n\nShipped v9.9.9.\n")
+    doc = repo / "docs" / "handoff.md"
+
+    assert _pf.build_report(repo, "docs/handoff.md", "handoff").regenerable_facts
+    try:
+        _handoff.validate_no_regenerable_facts(doc)
+        raise AssertionError("the gate accepted a version literal the forecast blocked")
+    except _handoff.ValidationError:
+        pass
+
+    doc.write_text("# Demo Handoff\n\nCarry `git describe --tags --abbrev=0` instead.\n", encoding="utf-8")
+    assert _pf.build_report(repo, "docs/handoff.md", "handoff").regenerable_facts == []
+    _handoff.validate_no_regenerable_facts(doc)
+
+
+def test_the_regenerable_rule_is_the_handoffs_not_every_docs(tmp_path: Path) -> None:
+    """Falsifiable counterpart: a version in an ordinary doc is legitimate and must not
+    be forecast as a block, or the affordance becomes noise everywhere."""
+    repo = _seed_repo(tmp_path, _CLEAN_FIXTURE)
+    (repo / "docs" / "notes.md").write_text("# Notes\n\nThis documents v9.9.9.\n", encoding="utf-8")
+
+    report = _pf.build_report(repo, "docs/notes.md", None)
+
+    assert report.regenerable_facts == []
