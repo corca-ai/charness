@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+from runtime_bootstrap import import_repo_module
+
 from .support import ROOT, run_script
 
 _TEETH = "scripts/check_changed_line_mutation_coverage.py"
@@ -611,8 +613,15 @@ def test_contaminating_pool_changes_is_the_single_detector(tmp_path: Path) -> No
     teeth = _load_teeth()
 
     assert teeth.contaminating_pool_changes(repo, "HEAD", {"scripts/foo.py"}) == ["scripts/foo.py"]
-    assert teeth.contaminating_pool_changes(repo, base, {"scripts/foo.py"}) == []  # explicit older ref
+    # An explicit older ref used to return [] here, and this assertion pinned that
+    # as an invariant. It was the under-approximation, not a property: coverage is
+    # collected from the live worktree whatever head is analyzed, so a dirty pool
+    # file contaminates the run either way. Reproduced before the change.
+    assert teeth.contaminating_pool_changes(repo, base, {"scripts/foo.py"}) == ["scripts/foo.py"]
     assert "scripts/foo.py" in teeth.false_green_warning(repo, "HEAD", {"scripts/foo.py"})
+    # The WARNING stays scoped to head==HEAD, because its wording asserts exactly
+    # that; the older-ref shape is reported by `probe_run_trust` in its own words.
+    assert teeth.false_green_warning(repo, base, {"scripts/foo.py"}) is None
 
 
 def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> None:
@@ -759,3 +768,161 @@ def test_an_absent_limit_analyzes_everything(tmp_path: Path) -> None:
 
     assert analyzed == ["scripts/foo.py", "scripts/bar.py"]
     assert unanalyzed == []
+
+def test_probe_run_trust_separates_could_not_look_from_looked_and_found_nothing() -> None:
+    """The distinction this module's docstring demanded and the code did not have.
+
+    A failed git command returned `[]`, identical to a clean pool, so a run whose
+    inputs could not be inspected still rendered a clean verdict. Reproduced
+    before the fix by probing a directory that is not a git repo at all.
+    """
+    import tempfile
+
+    teeth = _load_teeth()
+    probe = teeth.probe_run_trust(Path(tempfile.mkdtemp()), "HEAD", {"scripts/foo.py"})
+    assert probe.contaminated == []
+    assert probe.unestablished_reason is not None
+    assert "could not inspect" in probe.unestablished_reason
+    # An inspection failure is REFUSED, not the lenient "ran, established nothing":
+    # exit 3's leniency is granted because a dirty worktree is normal mid-work, and
+    # a broken git is never that.
+    assert probe.unestablished_kind == teeth.INSPECTION_FAILED
+
+
+def test_probe_run_trust_reports_an_analyzed_head_that_is_not_HEAD(tmp_path: Path) -> None:
+    """Coverage comes from the HEAD worktree whatever head is analyzed.
+
+    When they differ the mapping and the measurement describe different trees, so
+    the run establishes nothing — previously it short-circuited to `[]` and the
+    dirty pool went unreported entirely.
+    """
+    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    teeth = _load_teeth()
+
+    clean_at_head = teeth.probe_run_trust(repo, "HEAD", {"scripts/foo.py"})
+    assert clean_at_head == ([], None, None)
+
+    older = teeth.probe_run_trust(repo, base, {"scripts/foo.py"})
+    assert older.unestablished_reason is not None
+    assert "is not the checked-out HEAD" in older.unestablished_reason
+    assert older.unestablished_kind == teeth.SCOPE_MISMATCH
+
+    _dirty_pool_file(repo)
+    dirty_older = teeth.probe_run_trust(repo, base, {"scripts/foo.py"})
+    assert dirty_older.contaminated == ["scripts/foo.py"]
+    assert dirty_older.unestablished_reason is not None
+
+
+def test_the_gate_refuses_when_it_could_not_inspect_the_tree(tmp_path: Path, monkeypatch) -> None:
+    """Wiring, not just the helper, and the RIGHT code.
+
+    A git command that will not run is "no verdict" (exit 2), the same family as
+    a mid-run drift. Exit 3's leniency exists because a dirty worktree is the
+    normal mid-work state; a broken git inheriting that leniency would be one
+    cause borrowing another's justification.
+    """
+    from scripts.changed_line_run_trust import INSPECTION_FAILED, TrustProbe
+
+    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
+    cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
+    teeth = _load_teeth()
+    monkeypatch.setattr(
+        teeth, "probe_run_trust",
+        lambda *_a, **_k: TrustProbe([], "probe forced unestablished", INSPECTION_FAILED),
+    )
+    monkeypatch.setattr(
+        sys, "argv",
+        ["check_changed_line_mutation_coverage.py", "--repo-root", str(repo),
+         "--base-sha", base, "--head-sha", head, "--reuse-coverage",
+         "--coverage-json", str(cov)],
+    )
+    assert teeth.main() == teeth.REFUSED_EXIT
+
+
+def test_a_scope_mismatch_does_not_make_an_empty_changed_set_refusable(tmp_path: Path) -> None:
+    """Exit 3's own contract: an EMPTY changed set still exits 0.
+
+    The first version of this check returned 3 before the changed set was known,
+    so a docs-only range analyzed against an older head became refusable under
+    `--refuse-unestablished` — which the consumer names as an incoherent blocker
+    on the gate whose credibility is the point. Reproduced before the fix.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "scripts").mkdir()
+    _git(repo, "init", "-q")
+    (repo / "scripts" / "foo.py").write_text("def a():\n    return 1\n", encoding="utf-8")
+    (repo / "docs" / "n.md").write_text("a\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    base = _git(repo, "rev-parse", "HEAD")
+    (repo / "docs" / "n.md").write_text("a\nb\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "head")
+
+    # base..base is empty AND the analyzed head is not the checked-out HEAD.
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", base, "--reuse-coverage"
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "no eligible" in json.loads(result.stdout)["reason"]
+
+def test_a_scope_mismatch_over_an_empty_scope_still_discloses_itself(tmp_path: Path) -> None:
+    """Exit 0 is right; silence is not.
+
+    Moving the scope-mismatch check below the changed-set computation (so an
+    empty scope stopped being refusable) initially dropped the disclosure with
+    it: the same tree judged against the checked-out HEAD exits 1 with a real
+    blocker, while this path printed `clean` and said nothing about why the two
+    disagree. Round 2 found it; reproduced before the repair.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "docs").mkdir()
+    _git(repo, "init", "-q")
+    (repo / "scripts" / "foo.py").write_text("def a():\n    return 1\n", encoding="utf-8")
+    (repo / "docs" / "n.md").write_text("a\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    base = _git(repo, "rev-parse", "HEAD")
+    (repo / "docs" / "n.md").write_text("a\nb\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "mid")
+    mid = _git(repo, "rev-parse", "HEAD")
+    (repo / "scripts" / "foo.py").write_text(
+        "def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8"
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "head")
+    cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])
+
+    result = _run(repo, base, mid, cov)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    # `reason` must NOT change: the consumer prefix-matches it to recognise an
+    # empty scope, and rewriting it would turn this into a refusable blocker.
+    assert payload["reason"].startswith("no eligible mutation-pool files changed")
+    assert "is not the checked-out HEAD" in payload["analyzed_head_not_checked_out_head"]
+    assert "not the checked-out HEAD" in result.stderr
+
+    # Same base, same tree, honest head: a real blocker. This is the contrast the
+    # silent version hid.
+    honest = _run(repo, base, "HEAD", cov)
+    assert honest.returncode == 1, honest.stdout + honest.stderr
+
+
+def test_consumer_status_keeps_refused_distinct_from_blocked() -> None:
+    """A refusal must not be narrated to the operator as uncovered changed lines.
+
+    The producer collapsed every nonzero consumer exit to `blocked`, so the new
+    exit-2 path (a git command that would not run) reported "the consumer blocked
+    the produced coverage" — a refusal rendered as a verdict about other code.
+    """
+    producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
+    teeth = _load_teeth()
+    assert producer.CONSUMER_REFUSED_EXIT == teeth.REFUSED_EXIT
+    assert producer.consumer_status(0) == "passed"
+    assert producer.consumer_status(1) == "blocked"
+    assert producer.consumer_status(teeth.REFUSED_EXIT) == "refused"
+

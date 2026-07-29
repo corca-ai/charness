@@ -26,6 +26,10 @@ _sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
 _changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_lib")
 _consumer = import_repo_module(__file__, "scripts.check_changed_line_mutation_coverage")
 
+#: Read from the consumer rather than transcribed: a local `2` here that drifted
+#: from the consumer's own contract would silently re-collapse the two states.
+CONSUMER_REFUSED_EXIT = _consumer.REFUSED_EXIT
+
 DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 _COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
 _STANDING_RUNNER_HELPER_FLAGS = (
@@ -307,6 +311,28 @@ def _consumer_pass_validation_error(
     return None
 
 
+def consumer_status(returncode: object) -> str:
+    """Map a consumer exit code to a producer status.
+
+    The consumer separates "I judged and it failed" (1) from "I refused to judge"
+    (2) deliberately. Collapsing every nonzero to `blocked` threw that away and
+    told the operator there are uncovered changed lines when the truth was that
+    the gate could not look — a refusal narrated as a verdict, on a proof surface.
+
+    Exit 3 (ran, established nothing) still maps to `blocked`, and that is
+    PRESERVED behavior rather than a considered one: the producer runs under
+    `--verification-lock` where coverage was just produced, so an unestablished
+    result there is a real closeout gap, and softening it would weaken the
+    closeout in a slice that was not scoped to decide that. Named here so the
+    next reader sees a decision instead of an accident.
+    """
+    if returncode == 0:
+        return "passed"
+    if returncode == CONSUMER_REFUSED_EXIT:
+        return "refused"
+    return "blocked"
+
+
 def run_produced_coverage_consumer(
     repo_root: Path,
     payload: dict[str, object],
@@ -360,7 +386,7 @@ def run_produced_coverage_consumer(
         result = dict(run_command(repo_root, command, "verify"))
         result["mutation_coverage_consumer"] = True
         report = _consumer_report(result)
-        status = "blocked" if result.get("returncode") != 0 else "passed"
+        status = consumer_status(result.get("returncode"))
         if report and report.get("coverage_not_verified"):
             status = "not_checked"
         validation_error = None
@@ -383,6 +409,14 @@ def run_produced_coverage_consumer(
         payload["mutation_coverage_changed_line_proof"] = consumer_record
         payload["executed_commands"].append(result)
 
+        if status == "refused":
+            payload["status"] = "failed"
+            payload["error"] = (
+                "changed-line mutation-coverage consumer REFUSED to judge (no verdict): "
+                f"{(report or {}).get('reason') or 'contaminated inputs or an untrusted run'}. "
+                "This is not a report of uncovered changed lines."
+            )
+            return True
         if status == "blocked":
             payload["status"] = "failed"
             payload["error"] = "changed-line mutation-coverage consumer blocked the produced coverage"

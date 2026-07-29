@@ -65,6 +65,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.changed_line_run_trust import (  # noqa: E402
+    INSPECTION_FAILED,
+    SCOPE_MISMATCH,
     _git_lines,
     _head_resolves_to_head,
     _mark_untrusted,
@@ -73,6 +75,7 @@ from scripts.changed_line_run_trust import (  # noqa: E402
     dirty_pool_refusal,
     false_green_message,
     false_green_warning,
+    probe_run_trust,
     run_state_drift,
     uncommitted_pool_changes,
 )
@@ -102,6 +105,7 @@ __all__ = [
     "_mark_untrusted",
     "_pin_run_state",
     "contaminating_pool_changes",
+    "probe_run_trust",
     "dirty_pool_refusal",
     "false_green_message",
     "false_green_warning",
@@ -435,9 +439,28 @@ def main() -> int:
     # coverage/probe work, so a contaminated run costs ~0s instead of ~10 minutes
     # and a commit landing mid-run cannot re-resolve `HEAD` under the analysis.
     all_eligible = set(list_eligible(repo_root))
-    contaminated = contaminating_pool_changes(repo_root, head_sha, all_eligible)
+    trust = probe_run_trust(repo_root, head_sha, all_eligible)
+    contaminated = trust.contaminated
     pinned = _pin_run_state(repo_root, base_sha, head_sha)
     metadata = _run_metadata(base_sha, head_sha, pinned, contaminated)
+    if trust.unestablished_kind == INSPECTION_FAILED:
+        # REFUSED (2), not unestablished (3). Exit 3's leniency is granted for a
+        # named reason -- a dirty worktree IS the normal mid-work state -- and a
+        # git command that will not run is never that. Inheriting one cause's
+        # leniency for a different cause is the substitution this family of
+        # scripts exists to refuse.
+        sys.stderr.write(
+            f"ERROR (changed-line mutation gate): {trust.unestablished_reason}; "
+            "this run produced NO verdict.\n"
+        )
+        return _finalize({
+            "ok": False,
+            "blocking": [],
+            "refused": True,
+            **metadata,
+            "changed_line_proof": "refused",
+            "reason": trust.unestablished_reason,
+        }, repo_root, base_sha, head_sha, pinned, REFUSED_EXIT)
     if contaminated and not args.allow_dirty:
         return _emit_dirty_refusal(contaminated, metadata)
     fg_warning = false_green_message(contaminated) if contaminated else None
@@ -447,6 +470,28 @@ def main() -> int:
 
     changed_before_coverage = [p for p in list_changed(repo_root, base_sha, analyzed_head) if p in all_eligible]
     changed_before_coverage, unanalyzed = _apply_file_limit(args, changed_before_coverage)
+    if trust.unestablished_kind == SCOPE_MISMATCH and changed_before_coverage:
+        # Deliberately AFTER the changed set is known. Exit 3's own contract scopes
+        # it to a NON-EMPTY changed set -- "an empty changed set still exits 0" --
+        # and returning 3 before this point made an empty scope refusable, which
+        # `prepush_focused_changed_line_coverage` names by name as an incoherent
+        # blocker on the gate whose credibility is the point.
+        sys.stderr.write(
+            f"WARNING (changed-line mutation gate): {trust.unestablished_reason}; "
+            "this run establishes no changed-line verdict.\n"
+        )
+        mismatch: dict = {
+            "ok": True,
+            "blocking": [],
+            **metadata,
+            "changed_line_proof": "unestablished-untrustworthy-input",
+            "reason": trust.unestablished_reason,
+        }
+        if unanalyzed:
+            # Two unestablished causes at once. Returning here dropped the limit's
+            # own disclosure, so the operator saw one reason and not the other.
+            mismatch["unanalyzed_changed_pool_files"] = unanalyzed
+        return _finalize(mismatch, repo_root, base_sha, head_sha, pinned, UNESTABLISHED_EXIT)
     if unanalyzed:
         metadata = {**metadata, "unanalyzed_changed_pool_files": unanalyzed}
         sys.stderr.write(
@@ -467,12 +512,23 @@ def main() -> int:
                 "--limit-to-file; this run analyzed nothing and proves nothing about them"
             )
         )
-        return _finalize(_attach_warning({
-            "ok": True,
-            "blocking": [],
-            **metadata,
-            "reason": reason,
-        }, fg_warning), repo_root, base_sha, head_sha, pinned,
+        empty_scope: dict = {"ok": True, "blocking": [], **metadata, "reason": reason}
+        if trust.unestablished_kind == SCOPE_MISMATCH:
+            # Exit stays 0 — the range honestly changed no pool file — but the
+            # DISCLOSURE must not vanish with it. Moving the mismatch check below
+            # the changed-set computation (to stop refusing an empty scope) left
+            # this path silent: the same tree judged against the checked-out HEAD
+            # exits 1 with a real blocker, while this one printed `clean` and said
+            # nothing about why the two disagree. `reason` is deliberately NOT
+            # touched: the consumer prefix-matches it to recognise an empty scope.
+            empty_scope["analyzed_head_not_checked_out_head"] = trust.unestablished_reason
+            sys.stderr.write(
+                f"WARNING (changed-line mutation gate): {trust.unestablished_reason}. "
+                "This range changed no eligible pool file, so there was nothing to "
+                "prove — but the empty scope is the ANALYZED head's, not this tree's.\n"
+            )
+        return _finalize(_attach_warning(empty_scope, fg_warning),
+            repo_root, base_sha, head_sha, pinned,
             # `unanalyzed` non-empty means files WERE in scope and the limit
             # emptied the set: nothing was established about them. An empty
             # `unanalyzed` means nothing was in scope to begin with.
