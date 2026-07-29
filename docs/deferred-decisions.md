@@ -463,6 +463,15 @@ Reopen trigger:
 - Impact surfaces: [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py), [prepush_focused_changed_line_coverage.py](../scripts/prepush_focused_changed_line_coverage.py), any test importing a `scripts/` module by bare name.
 - Reopen trigger: a third changed file reported uncovered while a test demonstrably covers it, or a slice where converting the call sites is not available (a vendored or generated test).
 
+### D42. Should a claim-time proof gate that established nothing exit 3 rather than 0?
+
+- Question: `check_mutation_run_proof.py --claim changed-line --base-sha <sha>` with no sample manifest establishes that the run's TRIGGER could evaluate the claim, never that it evaluated any file. Should that exit 3 (`UNPROVEN`, non-blocking) instead of 0 with a stderr warning?
+- Current choice: Defer the exit-code change; make the gap audible. The verdict now carries `range_established` and the hedge prints to stderr on both the range and the conclusion.
+- Why now: a bounded round-2 review showed the earlier deferral cited [the empty-scope critique](../charness-artifacts/critique/2026-07-27-empty-scope-family.md) F9 backwards. F9's reasoning is that `conclusion_established` "is read by nothing in the repo except its own tests, so the exit code remains the whole signal" — an argument that the EXIT CODE must carry the meaning, cited as license to leave the exit code alone. The same review established that adopting exit 3 here is unusually cheap: this gate is not a `run-quality.sh` label, is absent from `UNESTABLISHED_CAPABLE_LABELS`, and no runner, workflow, or script in the repo executes it, so its only consumer is the agent citing proof.
+- Why deferral is right at the time: the sibling gate's own contract records why an always-UNPROVEN verdict backfires — "marking every such run UNPROVEN would train the reader to skip the word" ([check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py) exit-code docstring) — and the flag-only invocation is the documented primary one. Choosing between "scope exit 3 to the manifest-less path" and "leave exit 0 and rely on the warning" is an operator-facing contract call about a tool whose reader is a human citing proof, not a runner. Picking it inside a slice scoped to the empty-range refusal would smuggle a contract change in under a defect-repair banner.
+- Impact surfaces: [check_mutation_run_proof.py](../scripts/check_mutation_run_proof.py), [mutation-testing.md](../skills/public/quality/references/mutation-testing.md), [run-quality.sh](../scripts/run-quality.sh) `UNESTABLISHED_CAPABLE_LABELS` if it ever becomes a queued label.
+- Reopen trigger: a citation of a `range_established: false` or `conclusion_established: false` run as changed-line proof in any closeout, issue, or release note; or this gate becoming a queued `run-quality.sh` label.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

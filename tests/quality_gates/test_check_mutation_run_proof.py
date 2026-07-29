@@ -57,7 +57,34 @@ def test_changed_line_claim_provable_with_real_base_range() -> None:
     for event in ("schedule", None):
         verdict = GATE.classify_run_proof("changed-line", event=event, base_sha="abc123")
         assert verdict["provable"] is True, event
-        assert "live" in verdict["reason"]
+        # base_sha alone establishes that the trigger COULD evaluate the claim,
+        # never that it DID over a non-empty scope. The wording used to say
+        # "live over a real base..head range", which asserted the second.
+        assert verdict["range_established"] is False, event
+        assert "COULD run" in verdict["reason"], event
+
+    with_range = GATE.classify_run_proof(
+        "changed-line", event="schedule", base_sha="abc123", changed_pool_files=4
+    )
+    assert with_range["provable"] is True
+    assert with_range["range_established"] is True
+    assert "live over 4 changed pool file(s)" in with_range["reason"]
+
+
+def test_an_empty_changed_pool_is_not_changed_line_proof() -> None:
+    """A live classifier that evaluated no file proves nothing about the fix.
+
+    `provable` was set on `base_sha` alone, so a run whose range contained no
+    pool file was a citable green. Reproduced against a real manifest shape
+    before the fix.
+    """
+    verdict = GATE.classify_run_proof(
+        "changed-line", event="schedule", base_sha="abc123", changed_pool_files=0
+    )
+    assert verdict["provable"] is False
+    assert verdict["range_established"] is True
+    assert "EMPTY changed pool" in verdict["reason"]
+    assert verdict["supported_proof_paths"]
 
 
 def test_score_claim_provable_for_dispatch_and_schedule_but_not_pr() -> None:
@@ -79,21 +106,34 @@ def test_non_success_conclusion_refuses_every_claim() -> None:
 def test_manifest_facts_from_json_and_md(tmp_path: Path) -> None:
     json_manifest = tmp_path / "sample.json"
     json_manifest.write_text(json.dumps({"base_sha": "abc123"}), encoding="utf-8")
-    assert GATE.facts_from_manifest(json_manifest) == {"base_sha": "abc123"}
+    # An older manifest shape carries no range key: reported as not-established
+    # rather than as an empty range, which would be a refusal it cannot support.
+    assert GATE.facts_from_manifest(json_manifest) == {"base_sha": "abc123", "changed_pool_files": None}
 
     json_manifest.write_text(json.dumps({"base_sha": None}), encoding="utf-8")
-    assert GATE.facts_from_manifest(json_manifest) == {"base_sha": ""}
+    assert GATE.facts_from_manifest(json_manifest) == {"base_sha": "", "changed_pool_files": None}
+
+    json_manifest.write_text(
+        json.dumps({"base_sha": "abc123", "changed_files_before_coverage": ["a.py", "b.py"]}),
+        encoding="utf-8",
+    )
+    assert GATE.facts_from_manifest(json_manifest) == {"base_sha": "abc123", "changed_pool_files": 2}
 
     md_manifest = tmp_path / "sample.md"
     md_manifest.write_text(
         "# Mutation Sample\n\n- Base SHA: `abc123`\n- Head SHA: `def456`\n", encoding="utf-8"
     )
-    assert GATE.facts_from_manifest(md_manifest) == {"base_sha": "abc123"}
+    assert GATE.facts_from_manifest(md_manifest) == {"base_sha": "abc123", "changed_pool_files": None}
+
+    md_manifest.write_text(
+        "# Mutation Sample\n\n- Base SHA: `abc123`\n- Changed pool files: 0\n", encoding="utf-8"
+    )
+    assert GATE.facts_from_manifest(md_manifest) == {"base_sha": "abc123", "changed_pool_files": 0}
 
     md_manifest.write_text(
         "# Mutation Sample\n\n- Base SHA: `(none)`\n- Head SHA: `def456`\n", encoding="utf-8"
     )
-    assert GATE.facts_from_manifest(md_manifest) == {"base_sha": ""}
+    assert GATE.facts_from_manifest(md_manifest) == {"base_sha": "", "changed_pool_files": None}
 
 
 def test_manifest_without_base_line_is_an_error(tmp_path: Path) -> None:
@@ -177,13 +217,53 @@ def test_cli_refuses_dispatch_changed_line_claim_with_class_key() -> None:
     assert "Supported changed-line proof paths" in result.stderr
 
 
-def test_cli_accepts_changed_line_claim_with_base_sha() -> None:
+def _manifest_with(changed_pool_files: int, base_sha: str = "abc123") -> Path:
+    """A sampler-shaped JSON manifest carrying an explicit range size."""
+    import tempfile
+
+    path = Path(tempfile.mkdtemp()) / "sample.json"
+    path.write_text(
+        json.dumps({
+            "base_sha": base_sha,
+            "changed_files_before_coverage": [f"scripts/f{i}.py" for i in range(changed_pool_files)],
+        }),
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_cli_accepts_changed_line_claim_with_base_sha_but_says_what_it_did_not_check() -> None:
+    """Exit 0 stays -- this is a documented path -- but it must not be SILENT.
+
+    The assertion here used to be `result.stderr == ""`, which pinned the silent
+    green: `--base-sha` alone shows the trigger could evaluate the claim and says
+    nothing about what was in the range, while exit 0 is the whole signal a
+    consumer reads. Whether the exit code itself should change is the contract
+    question already deferred for `conclusion_established`
+    (charness-artifacts/critique/2026-07-27-empty-scope-family.md F9), so this
+    slice makes the gap audible rather than deciding it.
+    """
     result = run_script(
         _GATE, "--claim", "changed-line", "--event", "schedule", "--base-sha", "abc123"
     )
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["provable"] is True
-    assert result.stderr == ""
+    payload = json.loads(result.stdout)
+    assert payload["provable"] is True
+    assert payload["range_established"] is False
+    assert "RANGE CONTENTS are not established" in result.stderr
+
+    # A manifest-established range is the quiet path: nothing unestablished, so
+    # nothing to warn about. Without this control the warning could fire always.
+    established = run_script(
+        _GATE, "--claim", "changed-line", "--event", "schedule", "--base-sha", "abc123",
+        "--sample-manifest", str(_manifest_with(2)),
+    )
+    assert established.returncode == 0, established.stderr
+    assert "RANGE CONTENTS" not in established.stderr
+    # A manifest carries no conclusion by construction, so this path must still
+    # say so. Asserting `stderr == ""` here pinned that silence -- a manifest from
+    # a RED run reaches this branch identically to one from a green run.
+    assert "CONCLUSION is not established" in established.stderr
 
 
 def test_cli_judges_changed_line_claim_from_manifest(tmp_path: Path) -> None:
@@ -204,3 +284,141 @@ def test_cli_missing_manifest_fails_with_diagnostic(tmp_path: Path) -> None:
     )
     assert result.returncode == 1
     assert "could not resolve run facts" in result.stderr
+
+
+def test_the_cli_refuses_an_empty_range_manifest(tmp_path: Path) -> None:
+    """End to end: the range fact was on disk the whole time.
+
+    Every manifest the sampler writes already carried the changed-pool count;
+    `facts_from_manifest` simply did not read it, so a run over an empty pool
+    exited 0 with "changed-line classifier was live over a real base..head
+    range" -- a citable green for a run that evaluated no file.
+    """
+    empty = tmp_path / "sample.json"
+    empty.write_text(
+        json.dumps({"base_sha": "a" * 40, "changed_files_before_coverage": [], "changed_files": []}),
+        encoding="utf-8",
+    )
+    result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                        "--sample-manifest", str(empty))
+    assert result.returncode == 1, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["provable"] is False
+    assert "EMPTY changed pool" in payload["reason"]
+
+    real = tmp_path / "sample2.json"
+    real.write_text(
+        json.dumps({"base_sha": "a" * 40, "changed_files_before_coverage": ["scripts/x.py"]}),
+        encoding="utf-8",
+    )
+    ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                    "--sample-manifest", str(real))
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+    assert json.loads(ok.stdout)["range_established"] is True
+
+
+def test_the_markdown_manifest_carries_the_same_range_fact(tmp_path: Path) -> None:
+    """Both manifest shapes must agree; the sampler writes both every run."""
+    md = tmp_path / "sample.md"
+    md.write_text(
+        "# Mutation Sample\n\n- Base SHA: `" + "a" * 40 + "`\n- Changed pool files: 0\n",
+        encoding="utf-8",
+    )
+    result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                        "--sample-manifest", str(md))
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "EMPTY changed pool" in json.loads(result.stdout)["reason"]
+
+    # Positive control on the SAME shape. Without it, a regex that matched the
+    # wrong line or truncated the digits to 0 would turn every markdown manifest
+    # into a universal false refusal and still pass every assertion above.
+    md.write_text(
+        "# Mutation Sample\n\n- Base SHA: `" + "a" * 40 + "`\n"
+        "- Mutation pool files: 608\n"
+        "- Changed pool files: 7\n"
+        "- Changed eligible files after coverage/mutation-line filters: 3\n",
+        encoding="utf-8",
+    )
+    ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                    "--sample-manifest", str(md))
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+    payload = json.loads(ok.stdout)
+    assert payload["range_established"] is True
+    # 7, not 608 and not 3: the changed-pool line, not its neighbours.
+    assert "live over 7 changed pool file(s)" in payload["reason"]
+
+
+def test_a_manifest_cannot_lend_its_range_to_a_base_it_never_analyzed(tmp_path: Path) -> None:
+    """The base comes from the flag and the COUNT from the manifest.
+
+    So a disagreement between them would attribute the manifest's scope to a
+    range it never analyzed -- this tool's own named class arriving through the
+    back door. Refuse rather than pick one.
+    """
+    manifest = tmp_path / "sample.json"
+    manifest.write_text(
+        json.dumps({"base_sha": "b" * 40, "changed_files_before_coverage": ["scripts/x.py"]}),
+        encoding="utf-8",
+    )
+    clash = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                       "--base-sha", "a" * 40, "--sample-manifest", str(manifest))
+    assert clash.returncode == 1, clash.stdout + clash.stderr
+    assert "contradicts the manifest's own base" in clash.stderr
+
+    # Abbreviation is not disagreement: this repo's own advice is
+    # `--base-sha origin/main`, and an operator resolving that to a short sha
+    # must not be refused for naming the same commit two ways.
+    abbreviated = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                             "--base-sha", "b" * 12, "--sample-manifest", str(manifest))
+    assert abbreviated.returncode == 0, abbreviated.stdout + abbreviated.stderr
+    assert json.loads(abbreviated.stdout)["range_established"] is True
+
+    # A manifest with no base of its own cannot lend its count either.
+    baseless = tmp_path / "baseless.json"
+    baseless.write_text(
+        json.dumps({"base_sha": "", "changed_files_before_coverage": ["scripts/x.py"]}),
+        encoding="utf-8",
+    )
+    borrowed = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                          "--base-sha", "a" * 40, "--sample-manifest", str(baseless))
+    assert borrowed.returncode == 0, borrowed.stdout + borrowed.stderr
+    assert json.loads(borrowed.stdout)["range_established"] is False
+    assert "records no base SHA of its own" in borrowed.stderr
+
+
+def test_a_gate_report_is_not_a_sample_manifest(tmp_path: Path) -> None:
+    """The changed-line ARM's report also carries `base_sha`.
+
+    Fed in here it read as a manifest, so a report that literally said
+    `changed_line_proof: "refused"` returned `provable: true` -- a verdict that
+    proved nothing accepted as proof of something.
+    """
+    report = tmp_path / "gate-report.json"
+    report.write_text(
+        json.dumps({
+            "ok": False, "blocking": [], "refused": True, "base_sha": "a" * 40,
+            "changed_line_proof": "refused", "reason": "dirty worktree",
+            "changed_files_before_coverage": ["scripts/x.py"],
+        }),
+        encoding="utf-8",
+    )
+    result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                        "--sample-manifest", str(report))
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "GATE REPORT" in result.stderr
+
+    # Positive control on the same shape: a real sampler manifest carries none of
+    # the marker keys and must still be accepted.
+    manifest = tmp_path / "sample.json"
+    manifest.write_text(
+        json.dumps({
+            "base_sha": "a" * 40, "seed": "x", "sample": [],
+            "changed_files_before_coverage": ["scripts/x.py"],
+            "changed_line_uncovered_changed_files": [],
+        }),
+        encoding="utf-8",
+    )
+    ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
+                    "--sample-manifest", str(manifest))
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+
