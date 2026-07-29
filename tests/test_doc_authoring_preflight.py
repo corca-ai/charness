@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -340,3 +342,21 @@ def test_the_regenerable_forecast_reaches_the_operator_facing_text(tmp_path: Pat
     (repo / "docs" / "notes.md").write_text("# Notes\n\nDocuments v9.9.9.\n", encoding="utf-8")
     clean = _pf.format_human(_pf.build_report(repo, "docs/notes.md", None))
     assert "regenerable-facts: clean" in clean
+
+
+def test_a_path_outside_the_repo_is_refused_by_name(tmp_path: Path) -> None:
+    """The refusal branch survived a shared-helper extraction with no test on it.
+
+    `resolve_within_repo` returns None for anything it cannot place inside the repo,
+    and this surface's disposition is to RAISE — the doc preflight cannot forecast
+    constraints for a file the repo does not own, and quietly forecasting the wrong
+    surface's rules would be worse than refusing."""
+    repo = _seed_repo(tmp_path, _CLEAN_FIXTURE)
+    outside = tmp_path / "elsewhere.md"
+    outside.write_text("# Outside\n", encoding="utf-8")
+
+    with pytest.raises(_pf.PreflightError) as excinfo:
+        _pf.build_report(repo, str(outside), None)
+
+    assert "outside repo root" in str(excinfo.value)
+    assert str(outside) in str(excinfo.value)
