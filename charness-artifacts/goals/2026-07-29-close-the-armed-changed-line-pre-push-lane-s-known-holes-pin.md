@@ -9,10 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: real draft/backlog awaiting activation — shaped
-  2026-07-29, inert until `/goal`.
-- Current slice: shaped, not activated. Slice 1 is next on activation.
-- Next action: run the Activation line below. Nothing executes until then.
+- Current disposition: ACTIVE — activated 2026-07-29; slice 1 of 5 closed.
+- Current slice: slice 1 DONE (commits 76560792, c2ad20d7). Slice 2 next: `changed_line_run_trust` under-approximation.
+- Next action: slice 2 — stop a non-HEAD `--head-sha` and a failed git command reading as "nothing contaminated" in `scripts/changed_line_run_trust.py`.
 - Verification cadence: per slice — targeted pytest + `run_slice_closeout.py`
   at the commit boundary; `bash scripts/run-quality.sh` (full) at the bundle
   boundary, after commit so the changed-line verdict is real rather than a
@@ -247,7 +246,7 @@ repair that is inert on every path a consumer runs.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Pin the hook's CONTENT, not just its existence: `validate_maintainer_setup.py` must fail when `.githooks/pre-push` no longer arms the lane. Separately, narrow the adapter-contract language that implies consumer repos run the charness runner. | Scope collapsed from "arm every consumer repo" to "stop this repo silently disarming itself" once the sibling-repo probe showed no consumer runs this runner. It is the only reachable instance of the gap. | Deleting the `CHARNESS_PRE_PUSH=1` prefix from `.githooks/pre-push` makes `validate_maintainer_setup.py` FAIL; today it passes. Revert output quoted both ways. | pending |
+| 1 (done) | Pin the hook's CONTENT, not just its existence: `validate_maintainer_setup.py` must fail when `.githooks/pre-push` no longer arms the lane. Separately, narrow the adapter-contract language that implies consumer repos run the charness runner. | Scope collapsed from "arm every consumer repo" to "stop this repo silently disarming itself" once the sibling-repo probe showed no consumer runs this runner. It is the only reachable instance of the gap. | Deleting the `CHARNESS_PRE_PUSH=1` prefix from `.githooks/pre-push` makes `validate_maintainer_setup.py` FAIL; today it passes. Revert output quoted both ways. | done — 76560792, c2ad20d7 |
 | 2 | `changed_line_run_trust`: stop a non-HEAD `--head-sha` and a failed git command from reading as "nothing contaminated". Separate "could not establish" from "established clean". | The module docstring (`:18-19`) already asserts callers must read `[]` as "could not establish" while handing every caller an indistinguishable `[]`. | Non-HEAD head-sha and a forced git failure each produce a stated unestablished result; revert output quoted. | pending |
 | 3 | `check_mutation_run_proof`: stop `provable: true` standing for a range whose contents were never established. Slice must first decide WHICH input carries the range fact — the script has no head SHA and no git access by design. | Closes the unproven-gate critique's F6, recorded open on a different owner's surface. | One invocation that refuses and one that still passes, with the range-carrying input named. Adding git resolution to a deliberately pure classifier is a design change, not a fix — if that is the answer, stop and say so. | pending |
 | 4 | Publish refusal: split unreadable-vs-absent `output_dir`, and stop a draft whose filename lacks `notes` from being invisible. | Irreversible boundary (release publish); the escape is measured five times over. | Absent `output_dir` stays silently publishable (it is the normal state for a repo that drafts no notes); UNREADABLE produces an explicit unestablished record; a `...-release.md` draft for the target tag produces a blocker. The `--generate-notes`-with-no-drafts path stays publishable, pinned by the existing test. | pending |
@@ -325,6 +324,20 @@ Queue item form:
 - Revisit trigger: event, date, or proof boundary that reopens this
 
 ## Slice Log
+
+### Slice 1: Slice 1 — pin the hook's content, not just its existence
+
+- Objective: Make validate_maintainer_setup.py refuse a .githooks/pre-push that no longer arms the push-time changed-line refusal, instead of checking only that the hook file exists.
+- Why this approach: Scope collapsed from the drafted 'arm every consumer repo' once ../ceal, ../crill and ../cautilus showed no consumer repo runs charness's run-quality.sh at all. What survived is local and reachable: deleting one env prefix disarmed the lane with this gate green.
+- Commits: 76560792, c2ad20d7
+- What changed: scripts/validate_maintainer_setup.py; tests/quality_gates/test_maintainer_hooks.py (new, split from test_quality_runner.py at its length cap); tests/quality_gates/test_quality_runner.py; scripts/boundary-bypass-baseline.json (one key renamed, not added); charness-artifacts/quality/dup-review.json; plugins/charness mirror
+- Alternatives rejected: REJECTED runner-self-determines-push-context (the operator's first choice): git exposes no portable pre-push signal and run-quality.sh:650-654 records that overloading --read-only as push-imminent already caused a false stop. REJECTED exporting the hook: half of it is source-repo-only logic and cautilus already owns a pre-push it would clobber. REJECTED rekeying the check on hook existence (round-1 reviewer suggestion): a consumer repo can own an unrelated pre-push. WITHDRAWN the adapter-contract narrowing sub-objective: the quality references already name lefthook/Husky equivalents and CHARNESS_PRE_PUSH appears in no skill reference, so there was nothing to narrow.
+- Targeted verification: Reproduced the hole first (disarmed hook -> rc=0, 'Validated maintainer hook setup'). Acceptance re-run across the fix: BEFORE rc=0, AFTER rc=1. 27 parser arms executed: 17 disarming rewrites all refused, 10 legitimate spellings all clean. Falsifier: reverting the check_pre_push_arming call fails 2 tests; gutting the run-quality.sh branch body fails the three-surface pin. 39 tests pass. run_slice_closeout.py green. Changed-line gate run AFTER commit: first BLOCKED on 12 uncovered verdict lines, clean after the in-process tests.
+- Test duplication pressure: dup ratchet fired twice. (1) the shared __main__ epilogue family, 14 of 15 members untouched — classified intentional in dup-review.json. (2) two hand-rolled quote scanners this slice introduced — genuinely mine, removed by extracting _unquoted_indexes rather than classified. check_python_lengths forced the test-file split; both files now under the cap.
+- Critique: Two bounded rounds, both changed the design. Round 1: the parser failed OPEN — seven spellings (exec, $REPO_ROOT/, if !, pipe, variable, quoted-value, last-wins) disarmed one branch while the other kept the gate green; all seven parent-executed. Round 2 read the repair and found the same class four more times (comment ending in backslash, fake heredoc in comment/string, escaped-quote desync, .sh-suffixed stub) plus verdict-swallowing || true / & / | . Round-2 repairs are accepted-unreviewed per the cap. Reviewer boundary snapshotted before each spawn and verified at return BEFORE repairing: round 1 clean drift [], round 2 clean drift [].
+- Off-goal findings: none filed
+- Lessons carried forward: A gate that renders a verdict about another proof surface must fail CLOSED on input it cannot parse; 'recognize the known shape and skip the rest' is the same false-green one level up. Verdict branches exercised only through subprocess runs read as uncovered to the changed-line mapper — prove them in-process or they ship unmeasured.
+- Metrics:
 
 ## Context Sources
 
