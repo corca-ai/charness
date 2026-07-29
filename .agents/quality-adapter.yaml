@@ -193,7 +193,32 @@ runtime_budget_profiles:
       # 1.56x median. Two early samples in the turnover were `fail` runs and a failing
       # aggregate EXITS EARLY — a truncated wall, not a measurement — but the max this
       # is drawn from is a passing run and those samples have since aged out.
-      run-quality-read-only: 58500
+      #
+      # 2026-07-30: RAISED 58500 -> 305000, and this is the bar that actually stops
+      # a push (`.githooks/pre-push` runs `--read-only`; `check-runtime-budget` runs
+      # in both modes). The basis above is entirely PRE-D40: the armed changed-line
+      # lane is queued unconditionally, so it is now inside every read-only run, and
+      # the window shows it — latest 90618ms against a 58500 bar, already reporting
+      # `latest-spike`, with two 551.7s range runs in the same 20. Enforcement is
+      # median-of-20, so the current median 40051 has not crossed it yet; that is a
+      # countdown, not a margin, and the failure would be a hard pre-push stop with
+      # nothing regressed.
+      #
+      # Sized from the lane's documented ceiling plus the MEASURED aggregation
+      # overhead, not from the window's max (551780 is a transient six-commit range
+      # and baking it in would leave a guard nothing can trip). Six paired samples in
+      # `.charness/quality/history` put the aggregate wall at lane + 2565..2848ms
+      # (81582/84272, 87738/90403, 87661/90264, 88246/90811, 88498/91140,
+      # 87770/90618 read-only): the gates run CONCURRENTLY, so the aggregate is
+      # lane-dominated rather than lane-plus-the-rest. 300000 (the lane's own bar
+      # above) + ~3000 + rounding = 305000.
+      #
+      # Correcting the record while here: the `run-quality-full: 420000` derivation
+      # below states "+ the ~120000 the rest of the full bundle costs". Those same
+      # paired samples falsify the additive model. 420000 still holds as "a lane of
+      # ~417000", with slack over this bar for the full mode's extra gates, but the
+      # stated reasoning was wrong and is not load-bearing for either number.
+      run-quality-read-only: 305000
       # 2026-07-25 retune. A runtime budget only ever moved one way here: a
       # violation forced a raise and nothing reported when the raise stopped being
       # needed, so several budgets had drifted to 6-10x their worst observed run
@@ -280,7 +305,7 @@ runtime_budget_profiles:
       # slice and ~5min for a nine-commit range, so a 62000 aggregate contradicted an
       # accepted design decision from the session before this one. 420000 = the lane's
       # documented 300000 nine-commit ceiling plus the ~120000 the rest of the full
-      # bundle costs (median 182923 total observed with a small changed pool).
+      # bundle costs (median 182640 observed; the 'small changed pool' reading was wrong -- that run's lane alone was 180557ms).
       #
       # Sized from the DOCUMENTED range cost, NOT from this session's worst run. The
       # observed 549239ms came from a six-commit UNPUSHED range: `--suggest-budgets`
@@ -443,6 +468,22 @@ runtime_budget_profiles:
       # max above, which predates `--maxschedchunk 1`; that older bar is left alone
       # rather than retuned from a window this run did not turn over. 1.4x the 99828ms
       # max, n=2 and stated as such.
+      #
+      # 2026-07-30: NOT RETUNED, and here is why rather than a silent number. Both
+      # samples behind this bar are dated 2026-07-26, which PREDATES the armed
+      # changed-line lane (D40, 2026-07-29). The 36cpu block above accounts for that
+      # lane at 420000 using its documented cost; this profile does not account for it
+      # at all. Arithmetic on the same documented figures: 99828 + ~24000 (one-commit)
+      # = ~124000, still under; 99828 + 300000 (the nine-commit ceiling) = ~400000,
+      # nearly 3x this bar. So a multi-commit range on a 4-core box goes RED with
+      # nothing regressed -- a false red, the direction that gets a lane disabled.
+      # It is left at 140000 deliberately: this repo's rule is that a bar comes from a
+      # documented cost or a real window, never from one transcribed run, and NO
+      # post-lane 4-core run has been observed. Widening it by the 36cpu block's
+      # reasoning would be inventing a measurement for a machine nobody measured.
+      # Reopen: the first `taskset -c 0-3` full run taken after the armed lane landed,
+      # or the first operator report of a 4-core `run-quality-full` red with nothing
+      # regressed.
       check-coverage: 39500
       run-quality-full: 140000
   local-linux-aarch64-4cpu:

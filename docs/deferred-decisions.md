@@ -472,6 +472,15 @@ Reopen trigger:
 - Impact surfaces: [check_mutation_run_proof.py](../scripts/check_mutation_run_proof.py), [mutation-testing.md](../skills/public/quality/references/mutation-testing.md), [run-quality.sh](../scripts/run-quality.sh) `UNESTABLISHED_CAPABLE_LABELS` if it ever becomes a queued label.
 - Reopen trigger: a citation of a `range_established: false` or `conclusion_established: false` run as changed-line proof in any closeout, issue, or release note; or this gate becoming a queued `run-quality.sh` label.
 
+### D43. Should the loose-bar advisory be per-label rather than one global factor?
+
+- Question: `BUDGET_SLACK_FACTOR = 3.0` in [runtime_budget_lib.py](../skills/public/quality/scripts/runtime_budget_lib.py) is a single module constant applied to every label on every profile. Should it become per-label or per-profile so a bar that cannot fail is reported?
+- Current choice: Defer. The constant stays global and the bars it cannot see are named in the adapter where they sit.
+- Why now: the advisory divides by `max_recent_elapsed_ms`, not the median — a fact a slice in this session got backwards and had to correct — so a bar sized from a documented range cost rather than an observed worst run is structurally invisible to it. **Corrected count, after review:** the adapter reads as recording three such blind spots, but only ONE is a live bar. The `pytest` note at 90000/41826 is a stale survivor of the 2026-07-26(b) retighten (the live bar is 58500), and the aarch64 "2.0x case" describes a drafted 270000 bar that was REJECTED — on a profile with zero samples, where the advisory cannot fire at any factor. `run-quality-full: 420000` is the only real one.
+- Why deferral is right at the time: the one real blind spot is a bar sized deliberately, by a recorded decision, from a documented cost — so lowering the factor to see it would fire on exactly the looseness that is intentional. Making it per-label needs a contract for who sets each label's factor and on what evidence, and guessing that taxonomy while fixing a different lane's teeth is the validator-post-hoc-churn reflex. One blind spot is a thinner basis for deferring than three, and that is recorded here rather than left as an inflated count.
+- Impact surfaces: [runtime_budget_lib.py](../skills/public/quality/scripts/runtime_budget_lib.py), [quality-adapter.yaml](../.agents/quality-adapter.yaml), [check_runtime_budget.py](../skills/public/quality/scripts/check_runtime_budget.py).
+- Reopen trigger: a bar that was NOT a recorded decision goes unreported by the advisory and is later found to be unfailable; OR a bar goes stale in the TIGHT direction and hard-fails with nothing regressed. The second clause exists because this session's actual discovery was tight, not loose (`run-quality-read-only` at 58500 against a post-lane latest of 90618), and the original trigger would not have caught it.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

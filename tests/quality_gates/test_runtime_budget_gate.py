@@ -884,3 +884,33 @@ def test_recorder_does_not_define_a_second_profile_derivation() -> None:
         f"not define its own (resolved to {source})"
     )
     assert "def machine_runtime_profile" not in Path(record_quality_runtime.__file__).read_text(encoding="utf-8")
+
+
+def test_the_pre_push_aggregate_bar_covers_the_armed_lane_it_now_contains() -> None:
+    """`run-quality-read-only` is the bar that actually stops a push.
+
+    `.githooks/pre-push` runs `--read-only`, `check-runtime-budget` runs in both
+    modes, and the armed changed-line lane is queued unconditionally -- so the
+    lane is now inside every read-only run while the bar's basis was entirely
+    pre-lane. It was reporting `latest-spike` (latest 90618ms against 58500) with
+    the median still short of the threshold: a countdown, not a margin.
+
+    Pinned as a RELATIONSHIP, not a number, so a future retune of either bar
+    cannot silently reintroduce an aggregate that its own dominant gate can
+    exceed. The aggregate wall is lane-dominated -- six paired samples put it at
+    lane + 2565..2848ms -- so the aggregate bar must clear the lane's own bar.
+    """
+    import yaml
+
+    adapter = yaml.safe_load((ROOT / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8"))
+    profiles = adapter["runtime_budget_profiles"]
+    budgets = profiles["local-linux-x86_64-36cpu"]["budgets"]
+
+    lane = budgets["check-changed-line-mutation-coverage"]
+    for aggregate in ("run-quality-read-only", "run-quality-full"):
+        assert budgets[aggregate] > lane, (
+            f"{aggregate} ({budgets[aggregate]}) must clear the lane it contains ({lane}); "
+            "the aggregate wall is lane-dominated, so a bar below it fails on the gate's "
+            "own documented cost with nothing regressed"
+        )
+
