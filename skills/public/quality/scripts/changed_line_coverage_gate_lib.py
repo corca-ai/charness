@@ -24,13 +24,30 @@ from pathlib import Path
 from typing import Callable
 
 
+class GitUnavailable(RuntimeError):
+    """A git command this gate needs could not be run, or failed.
+
+    Raised rather than collapsed. Returning ``[]`` here made "git said nothing
+    changed" and "git would not answer" the same value, so an unresolvable
+    ``base_sha`` produced ``ok: True, "no eligible changed files in this range"``
+    and the blocking classifier was never invoked at all. Parent-reproduced.
+    """
+
+
 def _git_lines(repo_root: Path, args: list[str]) -> list[str]:
+    # `-c core.quotePath=false` because git otherwise C-quotes non-ASCII paths
+    # (`"src/f\303\266.py"`), which never match the glob-derived eligible set.
     try:
-        result = subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True)
-    except OSError:
-        return []
+        result = subprocess.run(
+            ["git", "-c", "core.quotePath=false", *args], cwd=repo_root, capture_output=True, text=True
+        )
+    except OSError as exc:  # pragma: no cover - exercised via GitUnavailable below
+        raise GitUnavailable(f"could not run `git {' '.join(args)}`: {exc}") from exc
     if result.returncode != 0:
-        return []
+        raise GitUnavailable(
+            f"`git {' '.join(args)}` exited {result.returncode}: "
+            f"{(result.stderr or '').strip() or 'no stderr'}"
+        )
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
@@ -114,6 +131,20 @@ def fingerprint(repo_root: Path, base_sha: str, files: list[str]) -> str:
     return digest.hexdigest()
 
 
+def gate_config(config: dict[str, object]) -> tuple[list[str], str, list[str]]:
+    """`(eligible_globs, coverage_json, exclude_globs)` from the adapter block.
+
+    Both entry points unpacked these three the same way; keeping one reader means
+    the producer that stamps the freshness marker and the consumer that checks it
+    cannot end up scoped to different file sets.
+    """
+    return (
+        list(config.get("eligible_globs") or []),
+        str(config.get("coverage_json") or ""),
+        list(config.get("exclude_globs") or []),
+    )
+
+
 def run_gate(
     repo_root: Path,
     config: dict[str, object],
@@ -141,7 +172,13 @@ def run_gate(
         return {"ok": True, **base, "reason": "no base_sha: changed-line classifier is non-blocking (matches workflow_dispatch)"}
     if not coverage_rel:
         return {"ok": True, **base, "reason": "no coverage_json configured: gate skipped (non-blocking)"}
-    changed = changed_eligible(repo_root, base_sha, head_sha, eligible_globs, exclude_globs)
+    try:
+        changed = changed_eligible(repo_root, base_sha, head_sha, eligible_globs, exclude_globs)
+    except GitUnavailable as exc:
+        # NOT `ok: True`. The gate could not read the range, so it has no standing
+        # to report an empty one -- the shape that let an unresolvable base_sha
+        # pass as "nothing changed" while the classifier never ran.
+        return {"ok": False, **base, "unestablished": True, "reason": f"could not establish the changed set: {exc}"}
     if not changed:
         return {"ok": True, **base, "reason": "no eligible changed files in this range"}
     coverage_json = repo_root / coverage_rel
@@ -150,7 +187,11 @@ def run_gate(
                 "reason": f"no coverage source at {coverage_rel}: gate skipped (non-blocking). Produce it in the full/scheduled run and reuse it here."}
     marker = marker_path(coverage_json)
     recorded = marker.read_text(encoding="utf-8").strip() if marker.is_file() else None
-    current = fingerprint(repo_root, base_sha, changed_pool_vs_base(repo_root, base_sha, eligible_globs, exclude_globs))
+    try:
+        current = fingerprint(repo_root, base_sha, changed_pool_vs_base(repo_root, base_sha, eligible_globs, exclude_globs))
+    except GitUnavailable as exc:
+        return {"ok": False, **base, "changed_pool_files": changed, "unestablished": True,
+                "reason": f"could not establish the coverage-freshness fingerprint: {exc}"}
     if recorded is None or recorded != current:
         return {"ok": True, **base, "changed_pool_files": changed,
                 "reason": f"coverage source is stale (marker {recorded or 'absent'} != current {current}): gate skipped (non-blocking). Re-produce coverage for this range."}
@@ -173,11 +214,13 @@ def stamp_marker(
     """Producer side: stamp the freshness marker after coverage exists for this
     range, so the consumer's freshness check can trust the reused report. Returns
     the fingerprint, or None when inert/unconfigured."""
-    eligible_globs = list(config.get("eligible_globs") or [])
-    coverage_rel = str(config.get("coverage_json") or "")
+    eligible_globs, coverage_rel, exclude_globs = gate_config(config)
     if not eligible_globs or not coverage_rel or not base_sha:
         return None
-    exclude_globs = list(config.get("exclude_globs") or [])
+    # Deliberately NOT caught: `changed_pool_vs_base` can now raise when git will
+    # not answer, and a marker stamped from a file set the producer could not read
+    # would certify freshness it never established. Failing loudly here is the
+    # point -- the consumer trusts this marker.
     files = changed_pool_vs_base(repo_root, base_sha, eligible_globs, exclude_globs)
     fp = fingerprint(repo_root, base_sha, files)
     marker_path(repo_root / coverage_rel).write_text(fp + "\n", encoding="utf-8")

@@ -254,6 +254,13 @@
     },
     {
       "class": "intentional",
+      "id": "349f5d577fe2588b",
+      "note": "two `if <condition>: return \"<literal>\"` guard clauses in unrelated operator-facing renderers -- check_changed_line_coverage's blocking-verdict line and check_standing_doc_provenance's inert line. Different conditions, different strings, different subsystems; the only shared thing is the two-line guard-and-return shape Python gives every such branch. Surfaced when a verdict-word renderer was split out of main() to make the word testable, i.e. by a reduction, not by new duplication.",
+      "reviewed_at": "2026-07-29",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "355892af703b8e23",
       "note": "portable planner envelope and direct-execution bootstrap shared across skill-owned planners whose packet and parser semantics remain distinct",
       "reviewed_at": "2026-07-11",
@@ -985,6 +992,13 @@
       "id": "c86d5365eb700947",
       "note": "debug and retro planners intentionally expose the same portable gate-packet envelope while retaining skill-specific packet semantics and install-local ownership; cross-skill extraction would couple public skill packages",
       "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cb9922f40210b6c3",
+      "note": "the same two-line guard-and-return shape across three unrelated scripts: an inert-gate line, a `du`-unavailable advisory token, and an adapter-error status token. Nothing is shared but the shape -- extracting a helper over three different conditions returning three different literals would replace three readable guards with an indirection each caller still has to spell out.",
+      "reviewed_at": "2026-07-29",
       "surface": "code"
     },
     {

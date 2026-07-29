@@ -12,7 +12,10 @@ Opt-in: empty `changed_line_mutation_gate.eligible_globs` makes this inert.
 
 Exit 0 when clean, inert, or skipped (no base / no eligible change / no fresh
 coverage — all non-blocking by construction); exit 1 on a blocking changed-line
-gap or an invalid adapter (fails closed). Base/head come from `--base-sha` /
+gap, an invalid adapter, or a run that could not establish its own scope because
+git would not answer (all fail closed). The last case prints `UNESTABLISHED:`
+rather than `FAIL:`, because "could not look" is not "looked and found a gap" —
+it used to return an empty changed set and pass as `ok`. Base/head come from `--base-sha` /
 `--head-sha` or `MUTATION_BASE_SHA` / `MUTATION_HEAD_SHA` (head defaults to HEAD).
 """
 from __future__ import annotations
@@ -108,21 +111,34 @@ def run(repo_root: Path, args) -> dict[str, object]:
     return report
 
 
+def human_line(report: dict) -> str:
+    """The operator-facing one-liner for a gate report.
+
+    Split out of `main` so the verdict WORD is testable on its own. It has to be:
+    `unestablished` reports carry an empty `blocking` list, so before this branch
+    existed they fell through to the `OK:` line while the process exited 1 — a
+    failing run narrating itself as a pass, which is the same conflation the
+    unestablished state was introduced to end.
+    """
+    if report.get("adapter_errors"):
+        return f"quality adapter invalid: {'; '.join(str(e) for e in report['adapter_errors'])}"
+    if report.get("inert"):
+        return "changed_line_mutation_gate.eligible_globs is empty; gate inert (opted out)."
+    if report.get("unestablished"):
+        return f"UNESTABLISHED: {report.get('reason', 'this run established nothing')}"
+    if report["blocking"]:
+        return (
+            f"FAIL: {len(report['blocking'])} changed file(s) have uncovered changed lines: "
+            f"{', '.join(report['blocking'])}"
+        )
+    return f"OK: {report.get('reason', 'no uncovered changed lines')}"
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     repo_root = args.repo_root.resolve()
     report = run(repo_root, args)
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-    else:
-        if report.get("adapter_errors"):
-            print(f"quality adapter invalid: {'; '.join(str(e) for e in report['adapter_errors'])}")
-        elif report.get("inert"):
-            print("changed_line_mutation_gate.eligible_globs is empty; gate inert (opted out).")
-        elif report["blocking"]:
-            print(f"FAIL: {len(report['blocking'])} changed file(s) have uncovered changed lines: {', '.join(report['blocking'])}")
-        else:
-            print(f"OK: {report.get('reason', 'no uncovered changed lines')}")
+    print(json.dumps(report, indent=2, sort_keys=True) if args.json else human_line(report))
     if report.get("adapter_errors"):
         return 1
     return 0 if report["ok"] else 1

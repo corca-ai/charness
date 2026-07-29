@@ -144,3 +144,38 @@ def test_help_explains_repo_root_and_json_options() -> None:
         end = match.end() + next_option.start() if next_option else len(result.stdout)
         option_block = re.sub(r"\s+", " ", result.stdout[match.start() : end])
         assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+
+def test_a_git_failure_is_unestablished_not_an_empty_change_set(tmp_path: Path) -> None:
+    """S25, parent-reproduced: an unresolvable base_sha passed as `ok: true`.
+
+    `_git_lines` collapsed a nonzero git exit to `[]`, so the gate reported "no
+    eligible changed files in this range" and never invoked the blocking
+    classifier at all. Recorded in the 2026-07-28 triage sweep as high severity;
+    reproduced by the parent before this fix, which upgrades it from
+    SUBAGENT-CONFIRMED to parent-reproduced.
+    """
+    repo, base = _seed_repo(tmp_path)
+    _write_adapter(repo, ["pkg/**/*.py"])
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", "deadbeef" * 5, "--json")
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["unestablished"] is True
+    assert "could not establish the changed set" in payload["reason"]
+
+    # And the same run must not narrate itself as a pass in human output. With
+    # `blocking` empty, the report fell through to the `OK:` line while exiting 1.
+    human = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", "deadbeef" * 5)
+    assert human.returncode == 1
+    assert human.stdout.startswith("UNESTABLISHED:"), human.stdout
+    assert "OK:" not in human.stdout
+
+    # A resolvable base over the same tree still passes, so the new arm is not
+    # simply refusing everything.
+    clean = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--json")
+    assert clean.returncode == 0, clean.stdout + clean.stderr
+    assert json.loads(clean.stdout)["ok"] is True
+
