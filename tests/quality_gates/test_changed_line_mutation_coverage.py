@@ -186,6 +186,12 @@ def test_passes_when_no_eligible_pool_file_changed(tmp_path: Path) -> None:
     assert "no eligible" in payload["reason"]
 
 
+# Exit 3 = "ran, established nothing": non-blocking like exit 0, but the runner
+# renders it UNPROVEN and counts it in neither column. Every assertion below used
+# to pin exit 0 on a path its own test name calls a skip, a refusal, or unverified.
+UNESTABLISHED_EXIT = 3
+
+
 def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None:
     # Pre-push (read-only) wiring: a changed pool file with NO coverage source must
     # skip non-blocking rather than fall through to the slow probe. This is what
@@ -198,7 +204,10 @@ def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None
         "--reuse-coverage", "--skip-if-no-coverage", "--coverage-json", str(absent),
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.returncode == UNESTABLISHED_EXIT, (
+        "this run established nothing about a non-empty changed set; exit 0 printed "
+        "PASS beside the payload that said so"
+    )
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["blocking"] == []
@@ -269,7 +278,10 @@ def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None
         "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.returncode == UNESTABLISHED_EXIT, (
+        "this run established nothing about a non-empty changed set; exit 0 printed "
+        "PASS beside the payload that said so"
+    )
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["blocking"] == []
@@ -289,7 +301,10 @@ def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> 
         "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.returncode == UNESTABLISHED_EXIT, (
+        "this run established nothing about a non-empty changed set; exit 0 printed "
+        "PASS beside the payload that said so"
+    )
     payload = json.loads(result.stdout)
     assert "stale" in payload["reason"]
     assert payload["coverage_not_verified"] is True  # #335: stale skip surfaces too
@@ -441,7 +456,10 @@ def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> No
         "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.returncode == UNESTABLISHED_EXIT, (
+        "this run established nothing about a non-empty changed set; exit 0 printed "
+        "PASS beside the payload that said so"
+    )
     payload = json.loads(result.stdout)
     assert payload["ok"] is True  # in-range verdict still clean
     assert "warning" in payload and "FALSE GREEN" in payload["warning"]
@@ -504,7 +522,10 @@ def test_allow_dirty_proceeds_but_records_the_result_as_unverified(tmp_path: Pat
         "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.returncode == UNESTABLISHED_EXIT, (
+        "this run established nothing about a non-empty changed set; exit 0 printed "
+        "PASS beside the payload that said so"
+    )
     payload = json.loads(result.stdout)
     assert payload["ok"] is True  # advisory in-range verdict still stands
     assert payload["dirty_pool_unverified"] is True
@@ -717,7 +738,10 @@ def test_a_limit_that_matches_nothing_refuses_to_report_an_empty_range(tmp_path:
         "--reuse-coverage", "--coverage-json", str(cov), "--limit-to-file", "scripts/absent.py",
     )
 
-    assert result.returncode == 0
+    assert result.returncode == UNESTABLISHED_EXIT, (
+        "this run established nothing about a non-empty changed set; exit 0 printed "
+        "PASS beside the payload that said so"
+    )
     payload = json.loads(result.stdout)
     assert "fell OUTSIDE --limit-to-file" in payload["reason"]
     assert "proves nothing about them" in payload["reason"]

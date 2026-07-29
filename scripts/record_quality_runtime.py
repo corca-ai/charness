@@ -15,6 +15,12 @@ from typing import Any, Callable
 
 from runtime_bootstrap import load_path_module, repo_root_from_script
 
+# `unestablished` is the runner's third status: a gate that ran and judged no
+# scope. It was rejected here, so the sample was dropped and every affected run
+# printed "failed to record phase runtimes" -- a permanent telemetry hole in
+# exactly the gates the status was added for.
+VALID_STATUSES = ("pass", "fail", "unestablished")
+
 REPO_ROOT = repo_root_from_script(__file__)
 
 
@@ -62,7 +68,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--label")
     parser.add_argument("--elapsed-ms", type=int)
-    parser.add_argument("--status", choices=("pass", "fail"))
+    parser.add_argument("--status", choices=VALID_STATUSES)
     parser.add_argument("--timestamp")
     parser.add_argument(
         "--batch",
@@ -100,8 +106,8 @@ def _read_batch_line(line: str) -> dict[str, Any]:
     missing = [key for key in ("label", "elapsed_ms", "status") if key not in parsed]
     if missing:
         raise ValueError(f"missing {', '.join(missing)}")
-    if parsed["status"] not in ("pass", "fail"):
-        raise ValueError(f"status {parsed['status']!r}; expected 'pass' or 'fail'")
+    if parsed["status"] not in VALID_STATUSES:
+        raise ValueError(f"status {parsed['status']!r}; expected one of {', '.join(VALID_STATUSES)}")
     return {
         "label": str(parsed["label"]),
         "elapsed_ms": int(parsed["elapsed_ms"]),

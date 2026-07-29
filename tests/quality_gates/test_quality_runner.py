@@ -786,3 +786,120 @@ def test_quality_runner_leaves_no_specdown_state_in_the_worktree(
         handed = helper.build_ephemeral_config(source, tmp_path / "out")
     for reporter in handed["reporters"]:
         assert not Path(reporter["outFile"]).is_relative_to(repo), reporter
+
+
+# --- exit 3: ran, established nothing -------------------------------------
+#
+# A gate that judged no scope must not print PASS. On 2026-07-29 a changed-line
+# run whose own payload said it proved nothing was rendered `PASS` next to its
+# own warning; the warning was read past and two dead guards nearly shipped.
+#
+# OPT-IN PER LABEL. 3 is not this runner's byte to redefine: measured on this
+# machine, `pytest` exits 3 on INTERNAL_ERROR and `shellcheck` exits 3 on a bad
+# invocation. A global reinterpretation would silently stop gating on a test
+# suite that never ran.
+
+_UNPROVEN_LABEL = "check-changed-line-mutation-coverage"
+_UNPROVEN_GATE_SCRIPT = "prepush_focused_changed_line_coverage.py"
+
+
+def _stub_gate(repo: Path, script: str, exit_code: int, message: str) -> None:
+    write_executable(
+        repo / "scripts" / script,
+        f"#!/usr/bin/env python3\nimport sys\nprint({message!r})\nsys.exit({exit_code})\n",
+    )
+
+
+def test_an_optin_gate_that_established_nothing_is_neither_passed_nor_failed(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    _stub_gate(repo, _UNPROVEN_GATE_SCRIPT, 3, "this run analyzed nothing")
+    env["CHARNESS_QUALITY_LABELS"] = f"{_UNPROVEN_LABEL},check-markdown"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    # Not a failure: exit 3 must not turn a lane that deliberately has no teeth
+    # here into a blocker. The point is to remove the green, not add a block.
+    assert result.returncode == 0, result.stderr
+    assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
+    assert f"PASS {_UNPROVEN_LABEL}" not in result.stdout
+    assert "1 passed, 0 failed, 1 UNPROVEN (ran, established nothing)" in result.stdout
+    # The reason is always shown. A bare `UNPROVEN <label>` line is the same
+    # unexplained verdict in a new word, and this message carries no WARNING
+    # prefix, so only the status can be what surfaces it.
+    assert "this run analyzed nothing" in result.stdout
+
+
+def test_exit_three_from_a_gate_that_did_not_opt_in_still_fails(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    """The laundering guard, and the reason the allowlist exists.
+
+    `pytest` exits 3 on INTERNAL_ERROR — a crashed plugin or conftest, i.e. a suite
+    that never ran. `shellcheck` exits 3 on a bad invocation. Reading either as
+    "unestablished, non-blocking" would stop gating on a real failure, which is a
+    worse escape than the green this feature removes."""
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    _stub_gate(repo, "validate_skills.py", 3, "INTERNAL ERROR: conftest crashed")
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode != 0
+    assert "FAIL validate-skills" in result.stdout
+    assert "UNPROVEN" not in result.stdout
+    assert "1 passed, 1 failed, total" in result.stdout
+
+
+def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    # Falsifiable counterpart: the third column must not appear on an ordinary
+    # run, or the word stops carrying information.
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "Quality summary: 2 passed, 0 failed, total" in result.stdout
+    assert "UNPROVEN" not in result.stdout
+
+
+def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    _stub_gate(repo, _UNPROVEN_GATE_SCRIPT, 3, "this run analyzed nothing")
+    _stub_gate(repo, "check_doc_links.py", 1, "broken link")
+    env["CHARNESS_QUALITY_LABELS"] = f"{_UNPROVEN_LABEL},check-doc-links"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode != 0
+    assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
+    assert "FAIL check-doc-links" in result.stdout
+    assert "0 passed, 1 failed, 1 UNPROVEN" in result.stdout
+
+
+def test_the_real_runtime_recorder_accepts_every_status_the_runner_emits() -> None:
+    """The stub recorder in `support.py` accepts any status string, so the runner
+    tests above cannot see the production recorder reject one. It did: `unestablished`
+    was refused at the door, the sample was dropped, and every affected run printed
+    `failed to record phase runtimes` — a telemetry hole in exactly the gates the
+    status exists for."""
+    recorder = import_repo_module(
+        ROOT / "scripts/record_quality_runtime.py", "scripts.record_quality_runtime"
+    )
+
+    assert "unestablished" in recorder.VALID_STATUSES
+    for status in ("pass", "fail", "unestablished"):
+        parsed = recorder._read_batch_line(
+            json.dumps({"label": "x", "elapsed_ms": 1, "status": status, "timestamp": "2026-07-29T00:00:00Z"})
+        )
+        assert parsed["status"] == status
+    with pytest.raises(ValueError):
+        recorder._read_batch_line(
+            json.dumps({"label": "x", "elapsed_ms": 1, "status": "green", "timestamp": "2026-07-29T00:00:00Z"})
+        )

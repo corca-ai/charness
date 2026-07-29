@@ -300,3 +300,41 @@ def test_inventory_standing_gate_verbosity_cli_summary_omits_full_surfaces(
     assert payload["surface_count"] == 1
     assert payload["axes"]["failure_detail"]["status"] == "weak"
     assert any(finding["type"] == "quiet_failure_detail" for finding in payload["findings_sample"])
+
+
+def test_an_env_prefixed_command_is_a_command_not_an_assignment(tmp_path: Path) -> None:
+    """`VAR=1 ./scripts/run-x.sh` is a command with an env prefix.
+
+    Matching the leading `VAR=` and skipping dropped the whole line, so a runner
+    invoked that way became invisible and the surface it references was never
+    discovered — a silent loss of the entire downstream inventory, not one missing
+    snippet. Reproduced by adding `CHARNESS_PRE_PUSH=1` to this repo's own pre-push
+    hook, which took `scripts/run-quality.sh` out of the surface list.
+    """
+    from tests.script_loader import load_script_module
+
+    discovery = load_script_module(
+        "standing_gate_discovery_lib_env_prefix",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "standing_gate_discovery_lib.py",
+    )
+    hooks = tmp_path / ".githooks"
+    hooks.mkdir()
+    (hooks / "pre-push").write_text(
+        "#!/usr/bin/env bash\nFOO=1 BAR=\"two words\" ./scripts/run-quality.sh --read-only\n",
+        encoding="utf-8",
+    )
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "run-quality.sh").write_text(
+        '#!/usr/bin/env bash\nqueue_selected "pytest" python3 scripts/run_standing_pytest.py\n',
+        encoding="utf-8",
+    )
+
+    surfaces = discovery.discover_surfaces(tmp_path)
+
+    assert "scripts/run-quality.sh" in [surface["path"] for surface in surfaces]
+    # A line that is ONLY an assignment is still skipped.
+    (hooks / "pre-push").write_text("#!/usr/bin/env bash\nFOO=1\n", encoding="utf-8")
+    assert "scripts/run-quality.sh" not in [
+        surface["path"] for surface in discovery.discover_surfaces(tmp_path)
+    ]

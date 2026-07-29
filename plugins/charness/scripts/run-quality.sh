@@ -75,6 +75,7 @@ declare -a COMPLETED_STATUSES=()
 
 TOTAL_PASSES=0
 TOTAL_FAILURES=0
+TOTAL_UNESTABLISHED=0
 OVERALL_RC=0
 
 format_elapsed() {
@@ -88,10 +89,34 @@ format_elapsed() {
   printf '%sms' "$elapsed_ms"
 }
 
+# Exit 3 means "ran, established nothing" -- not a pass and not a failure. A gate
+# that judged no scope must not print PASS: that is a terminal green over an
+# unestablished scope appearing in the runner's own summary line. It cost this
+# repo a cycle and two dead guards on 2026-07-29, where a changed-line run whose
+# payload said it proved nothing was rendered `PASS` beside its own warning.
+#
+# OPT-IN PER LABEL, never a global reinterpretation of the byte. 3 is not ours to
+# redefine: measured on this machine, `pytest` exits 3 on INTERNAL_ERROR (a crashed
+# plugin or conftest) and `shellcheck` exits 3 on a bad invocation. Reading those as
+# "unestablished, non-blocking" would silently stop gating on a test suite that
+# never ran and on shell linting that never linted -- laundering a real failure,
+# which is a worse escape than the green this exists to remove. A gate joins by
+# being named here, after its own exit-code contract has been read.
+UNESTABLISHED_EXIT=3
+UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage"
+
+label_may_report_unestablished() {
+  case " $UNESTABLISHED_CAPABLE_LABELS " in
+    *" $1 "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 uppercase_status() {
   case "$1" in
     pass) printf 'PASS' ;;
     fail) printf 'FAIL' ;;
+    unestablished) printf 'UNPROVEN' ;;
     *) printf '%s' "$1" ;;
   esac
 }
@@ -234,7 +259,11 @@ queue_timed() {
       status="pass"
     else
       rc=$?
-      status="fail"
+      if [[ "$rc" == "$UNESTABLISHED_EXIT" ]] && label_may_report_unestablished "$label"; then
+        status="unestablished"
+      else
+        status="fail"
+      fi
     fi
     end_ns="$(date +%s%N)"
     elapsed_ms="$(((end_ns - start_ns) / 1000000))"
@@ -334,7 +363,10 @@ print_phase_output() {
     attention_output=1
   fi
 
-  if [[ "$status" == "fail" || "$RUN_QUALITY_VERBOSE" == "1" || "$attention_output" == "1" ]]; then
+  # `unestablished` always prints its log: the entire point of the status is that
+  # the reader learns WHAT was not established, and a bare `UNPROVEN <label>` line
+  # is the same unexplained verdict in a new word.
+  if [[ "$status" == "fail" || "$status" == "unestablished" || "$RUN_QUALITY_VERBOSE" == "1" || "$attention_output" == "1" ]]; then
     if [[ -s "$log_path" ]]; then
       printf -- '--- %s output ---\n' "$label"
       cat "$log_path"
@@ -378,11 +410,18 @@ flush_phase() {
     COMPLETED_STATUSES+=("$status")
     if [[ "$status" == "pass" ]]; then
       TOTAL_PASSES=$((TOTAL_PASSES + 1))
+    elif [[ "$status" == "unestablished" ]]; then
+      TOTAL_UNESTABLISHED=$((TOTAL_UNESTABLISHED + 1))
     else
       TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
     fi
 
-    if [[ "$cmd_rc" != "0" ]]; then
+    # An unestablished gate does not fail the run. It must not be counted as
+    # passing either, and the summary says so -- the point is to remove the
+    # green, not to add a blocker where the lane deliberately has none.
+    # Keyed on the resolved STATUS, not on the raw code: a label that is not
+    # unestablished-capable exiting 3 must still fail the run.
+    if [[ "$cmd_rc" != "0" && "$status" != "unestablished" ]]; then
       rc="$cmd_rc"
     fi
   done
@@ -401,15 +440,28 @@ print_final_summary() {
 
   end_ns="$(date +%s%N)"
   elapsed_ms="$(((end_ns - RUN_QUALITY_START_NS) / 1000000))"
-  printf 'Quality summary: %s passed, %s failed, total %s\n' \
-    "$TOTAL_PASSES" \
-    "$TOTAL_FAILURES" \
-    "$(format_elapsed "$elapsed_ms")"
+  if [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
+    printf 'Quality summary: %s passed, %s failed, %s UNPROVEN (ran, established nothing), total %s\n' \
+      "$TOTAL_PASSES" \
+      "$TOTAL_FAILURES" \
+      "$TOTAL_UNESTABLISHED" \
+      "$(format_elapsed "$elapsed_ms")"
+  else
+    printf 'Quality summary: %s passed, %s failed, total %s\n' \
+      "$TOTAL_PASSES" \
+      "$TOTAL_FAILURES" \
+      "$(format_elapsed "$elapsed_ms")"
+  fi
 
   if [[ -z "$RUN_QUALITY_LABELS" ]]; then
     status="pass"
     if [[ "$OVERALL_RC" != "0" ]]; then
       status="fail"
+    elif [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
+      # Otherwise the green survives one layer up: the console line said UNPROVEN
+      # and the durable artifact -- the one later readers and closeout narratives
+      # quote -- said `pass`. Same class, one surface over.
+      status="unestablished"
     fi
     aggregate_label="run-quality-${RUN_QUALITY_MODE}"
     if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
@@ -595,8 +647,13 @@ fi
 # the code about to land was never proven.
 # CHANGED_LINE_BASE_SHA is defined above (hoisted so the critique cross-surface probe
 # shares the same merge-base anchor).
+# Keyed on the HOOK, not on `--read-only`. `--read-only` means "skip phases that
+# mutate git-tracked artifacts" and is the published portable command operators run
+# mid-work; overloading it as "a push is imminent" made an ordinary mid-work run over
+# one uncommitted pool file fail the whole battery with "refusing at push time", with
+# no push in flight. That false stop is how a lane gets disabled.
 CHANGED_LINE_REFUSE_ARGS=()
-if [[ "$RUN_QUALITY_MODE" == "read-only" ]]; then
+if [[ "${CHARNESS_PRE_PUSH:-0}" == "1" ]]; then
   CHANGED_LINE_REFUSE_ARGS+=(--refuse-unestablished)
 fi
 queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" "${CHANGED_LINE_REFUSE_ARGS[@]}"

@@ -169,7 +169,7 @@ def test_record_quality_runtime_batch_reports_a_malformed_record_without_losing_
     [
         ('["pytest", 1, "pass"]', "not a JSON object"),
         ('{"label": "pytest"}', "missing elapsed_ms, status"),
-        ('{"label": "pytest", "elapsed_ms": 1, "status": "skipped"}', "expected 'pass' or 'fail'"),
+        ('{"label": "pytest", "elapsed_ms": 1, "status": "skipped"}', "expected one of pass, fail, unestablished"),
     ],
     ids=["not-an-object", "missing-keys", "bad-status"],
 )

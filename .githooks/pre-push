@@ -62,10 +62,10 @@ DOCS_ONLY_LABELS="check-doc-links,check-markdown,check-links-internal,check-refe
 if [[ "$classification" == "docs-artifact-only" ]]; then
   echo "charness pre-push: docs/artifact-only push detected ($reason)"
   echo "charness pre-push: running docs-only quality subset (set CHARNESS_FORCE_FULL_GATE=1 to force full)"
-  CHARNESS_QUALITY_LABELS="$DOCS_ONLY_LABELS" ./scripts/run-quality.sh --read-only
+  CHARNESS_PRE_PUSH=1 CHARNESS_QUALITY_LABELS="$DOCS_ONLY_LABELS" ./scripts/run-quality.sh --read-only
 else
   echo "charness pre-push: running full ./scripts/run-quality.sh --read-only ($reason)"
-  ./scripts/run-quality.sh --read-only
+  CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only
 fi
 
 if ! git diff --quiet -- charness-artifacts; then

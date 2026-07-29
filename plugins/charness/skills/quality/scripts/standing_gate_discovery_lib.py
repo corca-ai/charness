@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 SCRIPT_REF_RE = re.compile(r"(?:^|\s)(?:bash|sh)?\s*(\./[A-Za-z0-9_./-]+\.sh|[A-Za-z0-9_./-]+\.sh)\b")
+# One or more leading `VAR=value` env assignments on a command line.
+ENV_PREFIX_RE = re.compile(r'^(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|\'[^\']*\'|\S*)\s+)+')
 RUNNER_REF_RE = re.compile(r"(?:^|[\s&|;(])(?:(?:bash|sh|node|python3?|ruby)\s+|(?:deno|bun)\s+(?:run\s+)?)?(?:\./)?scripts/run-[A-Za-z0-9_-]+(?:\.(?:sh|mjs|cjs|js|ts|py|rb))?\b")
 NESTED_SCRIPT_RE = re.compile(r"\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?([A-Za-z0-9:_-]+)\b")
 VERBOSE_SCRIPT_RE = re.compile(r"\b[A-Za-z0-9:_-]*verbose[A-Za-z0-9:_-]*\b", re.IGNORECASE)
@@ -45,7 +47,13 @@ def _shell_surface(repo_root: Path, rel_path: str, surface_type: str) -> dict[st
         stripped = line.strip()
         if not stripped or stripped.startswith(("#", "echo ", "printf ", "if ", "elif ", "else", "fi")):
             continue
-        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", stripped):
+        # `VAR=1 some-command` is a COMMAND with an env prefix, not an assignment.
+        # Matching the prefix and skipping dropped the line entirely, so a runner
+        # invoked as `CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh` became invisible
+        # and the surface it references was never discovered at all -- a silent loss
+        # of the whole downstream inventory, not a missing snippet.
+        stripped = ENV_PREFIX_RE.sub("", stripped)
+        if not stripped or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=\S*$", stripped):
             continue
         if COMMAND_TOKEN_RE.search(stripped) or 'queue_selected "pytest"' in stripped or SCRIPT_REF_RE.search(stripped):
             commands.append({"origin": surface_type, "snippet": stripped})

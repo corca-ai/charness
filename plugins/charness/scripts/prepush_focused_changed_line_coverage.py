@@ -58,6 +58,14 @@ from scripts import mutation_coverage_producer as _producer  # noqa: E402
 from scripts import suggest_mutation_coverage_command as _suggest  # noqa: E402
 
 NO_VERDICT_EXIT = 2
+# The consumer's exit-0 reason for a range that contained no eligible pool file.
+EMPTY_SCOPE_REASON_PREFIX = "no eligible mutation-pool files changed"
+# What `check_changed_line_mutation_coverage.py` returns when it judged no scope.
+# Non-blocking by design: mid-work it becomes this wrapper's own exit 3, which
+# run-quality renders UNPROVEN; at push time `--refuse-unestablished` still turns
+# it into a 1.
+CONSUMER_UNESTABLISHED_EXIT = 3
+UNESTABLISHED_EXIT = 3
 CONSUMER = "scripts/check_changed_line_mutation_coverage.py"
 
 #: The run judged nothing about the files it was asked to judge — a dirty pool whose
@@ -142,6 +150,69 @@ def _focused_pytest_command(recommendation: dict) -> str | None:
     if not targets:
         return None
     return "python3 -m pytest -q " + " ".join(shlex.quote(target) for target in targets)
+
+
+
+def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
+    """The exit code for a consumer result that is not an ordinary pass/block, or
+    ``None`` when the caller should fall through to the normal path.
+
+    One place decides what a consumer code MEANS, because the two readings that
+    exist here are easy to conflate and were:
+
+    - exit 3 is "ran, established nothing". Sending it to `no-verdict` reported it
+      as refused-or-errored and returned 2, which `run-quality.sh` scores as FAIL —
+      hard-failing every ordinary mid-work run, since a dirty mutation pool is the
+      NORMAL verify-phase state, and leaving `--refuse-unestablished` dead code
+      because control never reached it.
+    - unestablished mid-work is non-blocking but NOT exit 0. Returning 0 made
+      `run-quality.sh` print PASS beside the warning below, which is the green over
+      an unestablished scope this lane exists to refuse.
+    """
+    if result.returncode == CONSUMER_UNESTABLISHED_EXIT:
+        # Only when the payload was READABLE. `no-verdict` means the consumer's stdout
+        # could not be read, so its exit code stands for nothing -- including this one.
+        # Rewriting that to `unestablished` reported an unreadable result as a bounded,
+        # non-blocking "ran, established nothing": the same exit-code-stands-for-nothing
+        # equivalence this lane exists to break, one layer in.
+        if payload["status"] != "no-verdict":
+            payload["status"] = UNESTABLISHED_STATUS
+    elif result.returncode not in (0, 1):
+        payload["status"] = "no-verdict"
+        payload["reason"] = f"the consumer refused or errored (exit {result.returncode})"
+        _warn(f"the changed-line consumer exited {result.returncode}; this is NOT a pass.")
+        _emit(payload, as_json=args.json)
+        return NO_VERDICT_EXIT
+    if payload["status"] in (UNESTABLISHED_STATUS, "no-verdict"):
+        # Has to be LOUD or it is indistinguishable from a pass in a summary that
+        # prints only the label and its status.
+        _warn(f"this run established no changed-line verdict: {payload['reason']}")
+    if payload["status"] == "no-verdict":
+        _emit(payload, as_json=args.json)
+        return NO_VERDICT_EXIT
+    if payload["status"] == UNESTABLISHED_STATUS:
+        if args.refuse_unestablished:
+            # The predecessor lane was walked past because its worst outcome was exit
+            # 0 plus prose. Repeating that here would rebuild the defect this lane
+            # exists to fix.
+            _warn("refusing at push time: an unestablished changed-line result is not a pass.")
+            # The consumer payload names WHICH files went unestablished. Withholding
+            # it on the one path that stops a push -- while emitting it on the path
+            # that does not -- is a gate whose refusal cannot be diagnosed.
+            _emit_consumer_stdout(payload, result, args)
+            _emit(payload, as_json=args.json)
+            return 1
+        _emit_consumer_stdout(payload, result, args)
+        _emit(payload, as_json=args.json)
+        return UNESTABLISHED_EXIT
+    return None
+
+
+def _emit_consumer_stdout(payload: dict, result, args) -> None:
+    if args.json:
+        payload["consumer_stdout"] = result.stdout
+    else:
+        sys.stdout.write(result.stdout)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -273,29 +344,10 @@ def main(argv: list[str] | None = None) -> int:
         "unmapped_changed_pool_files": unmapped,
         "consumer_returncode": result.returncode,
     }
-    if result.returncode not in (0, 1):
-        payload["status"] = "no-verdict"
-        payload["reason"] = f"the consumer refused or errored (exit {result.returncode})"
-        _warn(f"the changed-line consumer exited {result.returncode}; this is NOT a pass.")
-        _emit(payload, as_json=args.json)
-        return NO_VERDICT_EXIT
-    if payload["status"] in (UNESTABLISHED_STATUS, "no-verdict"):
-        # Exit 0 with nothing established has to be LOUD or it is indistinguishable from
-        # a pass in the run-quality summary, which prints only the label and PASS.
-        _warn(f"this run established no changed-line verdict: {payload['reason']}")
-    if payload["status"] == "no-verdict":
-        _emit(payload, as_json=args.json)
-        return NO_VERDICT_EXIT
-    if payload["status"] == UNESTABLISHED_STATUS and args.refuse_unestablished:
-        # The predecessor lane was walked past because its worst outcome was exit 0 plus
-        # prose. Repeating that here would rebuild the defect this slice exists to fix.
-        _warn("refusing at push time: an unestablished changed-line result is not a pass.")
-        _emit(payload, as_json=args.json)
-        return 1
-    if args.json:
-        payload["consumer_stdout"] = result.stdout
-    else:
-        sys.stdout.write(result.stdout)
+    verdict_code = _dispose_consumer_verdict(payload, result, args)
+    if verdict_code is not None:
+        return verdict_code
+    _emit_consumer_stdout(payload, result, args)
     _emit(payload, as_json=args.json)
     return result.returncode
 
@@ -339,6 +391,12 @@ def _verdict_from_consumer(result: subprocess.CompletedProcess) -> tuple[str, st
             "analyzed, so this run proves nothing about them",
         )
     reason = str(report.get("reason") or "")
+    if reason.startswith(EMPTY_SCOPE_REASON_PREFIX):
+        # An empty changed set is nothing to prove, not something left unproven.
+        # Mapping it to `unestablished` made it refusable, so a push could be
+        # stopped with the reason "no eligible mutation-pool files changed" -- an
+        # incoherent blocker on the gate whose credibility is the point.
+        return "clean", reason
     if reason:
         return UNESTABLISHED_STATUS, reason
     return "clean", "every mapped changed pool file's changed lines are covered"

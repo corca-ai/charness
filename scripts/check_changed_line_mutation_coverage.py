@@ -29,6 +29,13 @@ non-blocking by construction without one — matching ``workflow_dispatch``).
 Exit 2 when the run is REFUSED up front (contaminated inputs) or when its result
 is UNTRUSTED because the repo moved mid-run — both are "no verdict", not a
 verdict; see ``dirty_pool_refusal`` and ``run_state_drift``.
+Exit 3 when the run RAN and ESTABLISHED NOTHING about a non-empty changed set:
+coverage was unavailable, ``--limit-to-file`` emptied the set, or the pool was
+contaminated so a clean verdict describes a tree that is not this one. It is
+non-blocking, like exit 0 was — but exit 0 made `run-quality.sh` print PASS
+beside the payload that said nothing was proven, and that green is the class this
+gate exists to refuse. An EMPTY changed set still exits 0: nothing was in scope,
+which is honestly nothing to prove.
 """
 
 from __future__ import annotations
@@ -44,6 +51,14 @@ from pathlib import Path
 #: from 1 (a real changed-line blocker) so callers can tell "I refused to judge"
 #: from "I judged and it failed".
 REFUSED_EXIT = 2
+# "Ran, established nothing" -- distinct from both a pass and a block. The runner
+# renders this as UNPROVEN and counts it in neither column, because a green over a
+# scope this gate never read is the exact class it exists to refuse, and printing
+# PASS next to its own "this run proves nothing" warning is that class appearing in
+# the verdict line. Deliberately NOT returned when no eligible file changed at all:
+# an empty scope is honestly nothing to prove, and marking every such run UNPROVEN
+# would train the reader to skip the word.
+UNESTABLISHED_EXIT = 3
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -111,7 +126,7 @@ def parse_args() -> argparse.Namespace:
         "--skip-if-no-coverage",
         action="store_true",
         help=(
-            "When no coverage JSON exists, skip non-blocking (exit 0) instead of "
+            "When no coverage JSON exists, skip non-blocking (exit 3: ran, established nothing) instead of "
             "running the slow probe. The pre-push (read-only) wiring uses this so the "
             "teeth stay cheap; the coverage source is produced by the full/closeout run "
             "and reused here."
@@ -263,7 +278,7 @@ def _surface_skip(skip: dict, changed_before_coverage: list[str]) -> dict:
     The skip path is only reached with a non-empty ``changed_before_coverage`` (the
     empty case returns earlier), so a skip ALWAYS means "eligible files changed but
     went unverified" — the recurrence driver. Write the obligation to stderr and
-    record it structurally; the verdict itself stays unchanged (exit 0)."""
+    record it structurally; the verdict itself stays non-blocking, but exits 3 (ran, established nothing) rather than 0."""
     not_verified = coverage_not_verified_warning(changed_before_coverage, str(skip.get("reason", "coverage unavailable")))
     sys.stderr.write(f"WARNING (changed-line mutation gate): {not_verified}\n")
     skip["coverage_not_verified"] = True
@@ -457,22 +472,38 @@ def main() -> int:
             "blocking": [],
             **metadata,
             "reason": reason,
-        }, fg_warning), repo_root, base_sha, head_sha, pinned, 0)
+        }, fg_warning), repo_root, base_sha, head_sha, pinned,
+            # `unanalyzed` non-empty means files WERE in scope and the limit
+            # emptied the set: nothing was established about them. An empty
+            # `unanalyzed` means nothing was in scope to begin with.
+            UNESTABLISHED_EXIT if unanalyzed else 0)
 
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
     if skip is not None:
         skip = {**skip, **metadata}
+        # Coverage was unavailable over a NON-EMPTY changed set: the reason field
+        # already said so and the exit code said PASS.
         report = _attach_warning(_surface_skip(skip, changed_before_coverage), fg_warning)
-        return _finalize(report, repo_root, base_sha, head_sha, pinned, 0)
+        return _finalize(report, repo_root, base_sha, head_sha, pinned, UNESTABLISHED_EXIT)
 
     report = _blocking_report(
         repo_root, args, base_sha, analyzed_head, changed_before_coverage, coverage_json
     )
     blocking = list(report["blocking"])
+    if blocking:
+        clean_code = 1
+    elif fg_warning:
+        # The false-green case, named exactly. Changed pool files have uncommitted
+        # worktree edits that `base..HEAD` cannot see, so a clean verdict is clean
+        # about a tree that is not this one. This path returned 0 and printed PASS
+        # beside its own warning.
+        clean_code = UNESTABLISHED_EXIT
+    else:
+        clean_code = 0
     code = _finalize(
         _attach_warning({**report, **metadata}, fg_warning),
-        repo_root, base_sha, head_sha, pinned, 1 if blocking else 0,
+        repo_root, base_sha, head_sha, pinned, clean_code,
     )
     if blocking and code == 1:
         _write_blocking_stderr(blocking, report["blocking_targets"])

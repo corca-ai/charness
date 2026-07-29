@@ -249,7 +249,13 @@ def _blocking_consumer_stub(gate, monkeypatch, consumer_payload: dict, returncod
 
 
 def test_an_unestablished_result_refuses_at_push_time(gate, monkeypatch, capsys) -> None:
-    _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "dirty_pool_unverified": True})
+    # `returncode=3` is what the consumer ACTUALLY returns for this payload. Stubbing
+    # 0 alongside a `dirty_pool_unverified` payload fabricated a combination the
+    # consumer cannot produce, so this pair stayed green while the wrapper/consumer
+    # seam was broken end to end.
+    _blocking_consumer_stub(
+        gate, monkeypatch, {"ok": True, "blocking": [], "dirty_pool_unverified": True}, returncode=3
+    )
 
     code = gate.main(
         ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
@@ -264,12 +270,18 @@ def test_an_unestablished_result_refuses_at_push_time(gate, monkeypatch, capsys)
 def test_the_same_result_stays_non_blocking_mid_work(gate, monkeypatch, capsys) -> None:
     """The discriminating control. A dirty worktree IS the normal state during the
     verify phase, which runs before commit, so refusing unconditionally would hard-fail
-    every ordinary run and get the lane disabled — the failure mode being repaired."""
-    _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "dirty_pool_unverified": True})
+    every ordinary run and get the lane disabled — the failure mode being repaired.
+
+    Non-blocking is NOT exit 0: `run-quality.sh` prints PASS for 0, which is the green
+    over an unestablished scope this lane exists to refuse. Exit 3 is rendered UNPROVEN
+    and counted in neither column."""
+    _blocking_consumer_stub(
+        gate, monkeypatch, {"ok": True, "blocking": [], "dirty_pool_unverified": True}, returncode=3
+    )
 
     code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
 
-    assert code == 0
+    assert code == gate.UNESTABLISHED_EXIT
     captured = capsys.readouterr()
     assert json.loads(captured.out)["status"] == gate.UNESTABLISHED_STATUS
     assert "established no changed-line verdict" in captured.err
@@ -385,3 +397,76 @@ def test_an_unreadable_consumer_payload_refuses_end_to_end(gate, monkeypatch, ca
     captured = capsys.readouterr()
     assert json.loads(captured.out)["status"] == "no-verdict"
     assert "established no changed-line verdict" in captured.err
+
+
+def test_a_consumer_error_is_still_a_no_verdict_not_an_unestablished(gate, monkeypatch, capsys) -> None:
+    """Exit 3 is the ONLY consumer code routed to the unestablished path. A refusal
+    (2) or any other non-zero must stay `no-verdict`, or the wrapper launders a real
+    failure into a non-blocking word."""
+    _blocking_consumer_stub(gate, monkeypatch, {"ok": False, "blocking": []}, returncode=2)
+
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+
+    assert code == gate.NO_VERDICT_EXIT
+    assert json.loads(capsys.readouterr().out)["status"] == "no-verdict"
+
+
+def test_an_unreadable_consumer_payload_stays_a_no_verdict_even_on_exit_three(
+    gate, monkeypatch, capsys
+) -> None:
+    """`no-verdict` means the consumer's stdout could not be READ, so its exit code
+    stands for nothing — including a 3. Rewriting it to `unestablished` reported an
+    unreadable result as a bounded, non-blocking "ran, established nothing": the same
+    exit-code-stands-for-nothing equivalence this lane exists to break, one layer in."""
+    _blocking_consumer_stub(gate, monkeypatch, {}, returncode=3)
+    monkeypatch.setattr(
+        gate.subprocess,
+        "run",
+        lambda *_a, **_k: __import__("subprocess").CompletedProcess([], 3, "not json at all", ""),
+    )
+
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+
+    assert code == gate.NO_VERDICT_EXIT
+    assert json.loads(capsys.readouterr().out)["status"] == "no-verdict"
+
+
+def test_the_push_refusal_carries_the_payload_that_names_what_went_unproven(
+    gate, monkeypatch, capsys
+) -> None:
+    """The consumer payload is where the unestablished FILES are listed. Emitting it
+    on the non-blocking path and withholding it on the one path that stops a push is
+    a refusal the operator cannot diagnose."""
+    _blocking_consumer_stub(
+        gate, monkeypatch,
+        {"ok": True, "blocking": [], "dirty_pool_unverified": True,
+         "uncommitted_pool_files": ["scripts/x.py"]},
+        returncode=3,
+    )
+
+    code = gate.main(
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+    )
+
+    assert code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert "scripts/x.py" in payload["consumer_stdout"]
+
+
+def test_an_empty_changed_set_is_clean_not_refusable(gate, monkeypatch, capsys) -> None:
+    """An empty scope is nothing to prove, not something left unproven. Mapping it to
+    `unestablished` made it refusable, so a push could be stopped with the reason
+    "no eligible mutation-pool files changed" — an incoherent blocker."""
+    _blocking_consumer_stub(
+        gate, monkeypatch,
+        {"ok": True, "blocking": [],
+         "reason": "no eligible mutation-pool files changed in this range"},
+        returncode=0,
+    )
+
+    code = gate.main(
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+    )
+
+    assert code == 0
+    assert json.loads(capsys.readouterr().out)["status"] == "clean"
