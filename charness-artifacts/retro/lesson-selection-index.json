@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-07-29",
-  "source_artifact_count": 402,
-  "candidate_count": 1629,
+  "source_artifact_count": 403,
+  "candidate_count": 1630,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -758,358 +758,20 @@
       ]
     },
     {
-      "candidate_id": "current_focus:072c2f18acb5",
-      "kind": "current_focus",
-      "lesson": "One goal run over the handoff backlog (aarch64 excluded by the operator), plus issue #458 added mid-run.",
-      "normalized_key": "one goal run over the handoff backlog aarch64 excluded by the operator plus issue",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "One goal run over the handoff backlog (aarch64 excluded by the operator), plus issue #458 added mid-run."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:60a8a3278fde",
-      "kind": "current_focus",
-      "lesson": "One session under a handoff pickup: push the prior run (closing #459), close the handoff's `Next Session` item 1 (deferred critique finding F9 — the chunked-routing auto-draft dropped staleness facts at its last operator-facing surface), and publish a release.",
-      "normalized_key": "one session under a handoff pickup push the prior run closing 459 close the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "One session under a handoff pickup: push the prior run (closing #459), close the handoff's `Next Session` item 1 (deferred critique finding F9 — the chunked-routing auto-draft dropped staleness facts at its last operator-facing surface), and publish a release."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5d9ebf0b956d",
-      "kind": "next_improvement",
-      "lesson": "a lesson that ships as prose only has not shipped. Both rules that bit this session were correct, checked in, and unread. Disposition: applied: the spawn-shape rule moved to always-loaded `AGENTS.md`, propagated to the consuming-repo template, and pinned by four tests in `tests/quality_gates/test_reviewer_result_delivery.py`",
-      "normalized_key": "a lesson that ships as prose only has not shipped both rules that bit",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "a lesson that ships as prose only has not shipped. Both rules that bit this session were correct, checked in, and unread. Disposition: applied: the spawn-shape rule moved to always-loaded `AGENTS.md`, propagated to the consuming-repo template, and pinned by four tests in `tests/quality_gates/test_reviewer_result_delivery.py`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c2644b094935",
-      "kind": "next_improvement",
-      "lesson": "guard the irreversible entrypoints, not the inner writes. `publish_release.py` and `issue_close.py` should refuse a foreign-copy invocation at the entrypoint, where the operator can still act, rather than failing partway through bump/sync/quality. This is the next slice, and it is `P5`-shaped: a form check at an irreversible boundary, not a new judgment gate.",
-      "normalized_key": "guard the irreversible entrypoints not the inner writes publish release py and issue close",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "guard the irreversible entrypoints, not the inner writes. `publish_release.py` and `issue_close.py` should refuse a foreign-copy invocation at the entrypoint, where the operator can still act, rather than failing partway through bump/sync/quality. This is the next slice, and it is `P5`-shaped: a form check at an irreversible boundary, not a new judgment gate."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:f50c15e644fd",
-      "kind": "next_improvement",
-      "lesson": "make backlog staleness checkable at chunk time rather than at review time — the chunker already parses `file:line` and issue refs from every entry, so it can report which cited paths/issues no longer resolve before an agent plans against them. Disposition: issue #459 (novel: no existing entry covers chunker-side staleness; the closest, D28, is about validator defaults)",
-      "normalized_key": "make backlog staleness checkable at chunk time rather than at review time the chunker",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make backlog staleness checkable at chunk time rather than at review time — the chunker already parses `file:line` and issue refs from every entry, so it can report which cited paths/issues no longer resolve before an agent plans against them. Disposition: issue #459 (novel: no existing entry covers chunker-side staleness; the closest, D28, is about validator defaults)"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:330907c0bda4",
-      "kind": "next_improvement",
-      "lesson": "the recurrence-class tag `guard-adjacent-to-action` is introduced by this retro across three Waste bullets, so `recent_lessons_lib` grouping has a seed for it.",
-      "normalized_key": "the recurrence class tag guard adjacent to action is introduced by this retro across",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "the recurrence-class tag `guard-adjacent-to-action` is introduced by this retro across three Waste bullets, so `recent_lessons_lib` grouping has a seed for it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:783185dd1add",
-      "kind": "next_improvement",
-      "lesson": "the recurrence-class tag shipped this session has no data until retros carry it. This retro is the first to carry tags, which starts the corpus. Disposition: applied: recurrence-class tags on the Waste bullets above, grouped by `scripts/recent_lessons_lib.py`",
-      "normalized_key": "the recurrence class tag shipped this session has no data until retros carry it",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "the recurrence-class tag shipped this session has no data until retros carry it. This retro is the first to carry tags, which starts the corpus. Disposition: applied: recurrence-class tags on the Waste bullets above, grouped by `scripts/recent_lessons_lib.py`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:763c6ac2835b",
-      "kind": "next_improvement",
-      "lesson": "when a gate fails inside a helper run, read the failing validator's own module docstring before re-running the broad suite. This session's docstring named the cause; the suite run cost a full cycle and produced a wrong hypothesis.",
-      "normalized_key": "when a gate fails inside a helper run read the failing validator s own",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "when a gate fails inside a helper run, read the failing validator's own module docstring before re-running the broad suite. This session's docstring named the cause; the suite run cost a full cycle and produced a wrong hypothesis."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:98bfe95b37ac",
-      "kind": "repeat_trap",
-      "lesson": "**A `git checkout -- tests/` silently reverted a conftest fixture** I had already written, and the suite still passed because this machine has a global git identity. The reviewer caught that the fix was not in the tree at all. A scoped revert with an unscoped path.",
-      "normalized_key": "a git checkout tests silently reverted a conftest fixture i had already written and",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A `git checkout -- tests/` silently reverted a conftest fixture** I had already written, and the suite still passed because this machine has a global git identity. The reviewer caught that the fix was not in the tree at all. A scoped revert with an unscoped path."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:bddaf17ef458",
-      "kind": "repeat_trap",
-      "lesson": "**A named subagent spawn stranded ~8 minutes and a full review packet**, and I reported the findings unrecoverable without running `reviewer_result.py get` — the diagnostic the same contract ships for exactly that case. Running it later recovered a finding I never independently derived. The rule and the recovery path were both in a reference I had listed and not opened.",
-      "normalized_key": "a named subagent spawn stranded 8 minutes and a full review packet and i",
-      "recurrence_class": "rule-exists-but-does-not-bind",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A named subagent spawn stranded ~8 minutes and a full review packet**, and I reported the findings unrecoverable without running `reviewer_result.py get` — the diagnostic the same contract ships for exactly that case. Running it later recovered a finding I never independently derived. The rule and the recovery path were both in a reference I had listed and not opened."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:47505cd43910",
-      "kind": "repeat_trap",
-      "lesson": "**A third publish attempt died on a dirty worktree** because my own diagnostic quality run had regenerated `sloc-inventory/latest.json`. Self-inflicted by debugging inside the same tree the helper requires clean.",
-      "normalized_key": "a third publish attempt died on a dirty worktree because my own diagnostic quality",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A third publish attempt died on a dirty worktree** because my own diagnostic quality run had regenerated `sloc-inventory/latest.json`. Self-inflicted by debugging inside the same tree the helper requires clean."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:9739386fe958",
-      "kind": "repeat_trap",
-      "lesson": "**Iterated one line at a time against a counted limit** when trimming a debug artifact to its 180-line ceiling — four rounds — which is the exact counted-limit-as-retry-loop trap the repo already records.",
-      "normalized_key": "iterated one line at a time against a counted limit when trimming a debug",
-      "recurrence_class": "counted-limit-retry-loop",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Iterated one line at a time against a counted limit** when trimming a debug artifact to its 180-line ceiling — four rounds — which is the exact counted-limit-as-retry-loop trap the repo already records."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:d9c2235112df",
-      "kind": "repeat_trap",
-      "lesson": "**Two regex passes over 42 test files corrupted multi-line `subprocess.run` calls** before I switched to an AST pass that re-parses each file before writing. Two full revert cycles, both self-inflicted by editing structured code with line patterns.",
-      "normalized_key": "two regex passes over 42 test files corrupted multi line subprocess run calls before",
-      "recurrence_class": "structured-edit-by-line-pattern",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two regex passes over 42 test files corrupted multi-line `subprocess.run` calls** before I switched to an AST pass that re-parses each file before writing. Two full revert cycles, both self-inflicted by editing structured code with line patterns."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 123,
+      "source_count": 124,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+      "latest_source_date": "2026-07-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -2094,6 +1756,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+          "date": "2026-07-29",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -2103,15 +1773,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 3,
+      "source_count": 4,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+      "latest_source_date": "2026-07-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -2132,6 +1802,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
           "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+          "date": "2026-07-29",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -2145,15 +1823,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 3,
+      "source_count": 4,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+      "latest_source_date": "2026-07-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -2178,6 +1856,378 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+          "date": "2026-07-29",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:5210fc1d0a57",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v2.12.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v2 12 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+      "latest_source_date": "2026-07-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+          "date": "2026-07-29",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v2.12.0`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:072c2f18acb5",
+      "kind": "current_focus",
+      "lesson": "One goal run over the handoff backlog (aarch64 excluded by the operator), plus issue #458 added mid-run.",
+      "normalized_key": "one goal run over the handoff backlog aarch64 excluded by the operator plus issue",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One goal run over the handoff backlog (aarch64 excluded by the operator), plus issue #458 added mid-run."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:60a8a3278fde",
+      "kind": "current_focus",
+      "lesson": "One session under a handoff pickup: push the prior run (closing #459), close the handoff's `Next Session` item 1 (deferred critique finding F9 — the chunked-routing auto-draft dropped staleness facts at its last operator-facing surface), and publish a release.",
+      "normalized_key": "one session under a handoff pickup push the prior run closing 459 close the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One session under a handoff pickup: push the prior run (closing #459), close the handoff's `Next Session` item 1 (deferred critique finding F9 — the chunked-routing auto-draft dropped staleness facts at its last operator-facing surface), and publish a release."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5d9ebf0b956d",
+      "kind": "next_improvement",
+      "lesson": "a lesson that ships as prose only has not shipped. Both rules that bit this session were correct, checked in, and unread. Disposition: applied: the spawn-shape rule moved to always-loaded `AGENTS.md`, propagated to the consuming-repo template, and pinned by four tests in `tests/quality_gates/test_reviewer_result_delivery.py`",
+      "normalized_key": "a lesson that ships as prose only has not shipped both rules that bit",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a lesson that ships as prose only has not shipped. Both rules that bit this session were correct, checked in, and unread. Disposition: applied: the spawn-shape rule moved to always-loaded `AGENTS.md`, propagated to the consuming-repo template, and pinned by four tests in `tests/quality_gates/test_reviewer_result_delivery.py`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c2644b094935",
+      "kind": "next_improvement",
+      "lesson": "guard the irreversible entrypoints, not the inner writes. `publish_release.py` and `issue_close.py` should refuse a foreign-copy invocation at the entrypoint, where the operator can still act, rather than failing partway through bump/sync/quality. This is the next slice, and it is `P5`-shaped: a form check at an irreversible boundary, not a new judgment gate.",
+      "normalized_key": "guard the irreversible entrypoints not the inner writes publish release py and issue close",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "guard the irreversible entrypoints, not the inner writes. `publish_release.py` and `issue_close.py` should refuse a foreign-copy invocation at the entrypoint, where the operator can still act, rather than failing partway through bump/sync/quality. This is the next slice, and it is `P5`-shaped: a form check at an irreversible boundary, not a new judgment gate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f50c15e644fd",
+      "kind": "next_improvement",
+      "lesson": "make backlog staleness checkable at chunk time rather than at review time — the chunker already parses `file:line` and issue refs from every entry, so it can report which cited paths/issues no longer resolve before an agent plans against them. Disposition: issue #459 (novel: no existing entry covers chunker-side staleness; the closest, D28, is about validator defaults)",
+      "normalized_key": "make backlog staleness checkable at chunk time rather than at review time the chunker",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make backlog staleness checkable at chunk time rather than at review time — the chunker already parses `file:line` and issue refs from every entry, so it can report which cited paths/issues no longer resolve before an agent plans against them. Disposition: issue #459 (novel: no existing entry covers chunker-side staleness; the closest, D28, is about validator defaults)"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:330907c0bda4",
+      "kind": "next_improvement",
+      "lesson": "the recurrence-class tag `guard-adjacent-to-action` is introduced by this retro across three Waste bullets, so `recent_lessons_lib` grouping has a seed for it.",
+      "normalized_key": "the recurrence class tag guard adjacent to action is introduced by this retro across",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the recurrence-class tag `guard-adjacent-to-action` is introduced by this retro across three Waste bullets, so `recent_lessons_lib` grouping has a seed for it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:783185dd1add",
+      "kind": "next_improvement",
+      "lesson": "the recurrence-class tag shipped this session has no data until retros carry it. This retro is the first to carry tags, which starts the corpus. Disposition: applied: recurrence-class tags on the Waste bullets above, grouped by `scripts/recent_lessons_lib.py`",
+      "normalized_key": "the recurrence class tag shipped this session has no data until retros carry it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the recurrence-class tag shipped this session has no data until retros carry it. This retro is the first to carry tags, which starts the corpus. Disposition: applied: recurrence-class tags on the Waste bullets above, grouped by `scripts/recent_lessons_lib.py`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:763c6ac2835b",
+      "kind": "next_improvement",
+      "lesson": "when a gate fails inside a helper run, read the failing validator's own module docstring before re-running the broad suite. This session's docstring named the cause; the suite run cost a full cycle and produced a wrong hypothesis.",
+      "normalized_key": "when a gate fails inside a helper run read the failing validator s own",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a gate fails inside a helper run, read the failing validator's own module docstring before re-running the broad suite. This session's docstring named the cause; the suite run cost a full cycle and produced a wrong hypothesis."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:98bfe95b37ac",
+      "kind": "repeat_trap",
+      "lesson": "**A `git checkout -- tests/` silently reverted a conftest fixture** I had already written, and the suite still passed because this machine has a global git identity. The reviewer caught that the fix was not in the tree at all. A scoped revert with an unscoped path.",
+      "normalized_key": "a git checkout tests silently reverted a conftest fixture i had already written and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A `git checkout -- tests/` silently reverted a conftest fixture** I had already written, and the suite still passed because this machine has a global git identity. The reviewer caught that the fix was not in the tree at all. A scoped revert with an unscoped path."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:bddaf17ef458",
+      "kind": "repeat_trap",
+      "lesson": "**A named subagent spawn stranded ~8 minutes and a full review packet**, and I reported the findings unrecoverable without running `reviewer_result.py get` — the diagnostic the same contract ships for exactly that case. Running it later recovered a finding I never independently derived. The rule and the recovery path were both in a reference I had listed and not opened.",
+      "normalized_key": "a named subagent spawn stranded 8 minutes and a full review packet and i",
+      "recurrence_class": "rule-exists-but-does-not-bind",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A named subagent spawn stranded ~8 minutes and a full review packet**, and I reported the findings unrecoverable without running `reviewer_result.py get` — the diagnostic the same contract ships for exactly that case. Running it later recovered a finding I never independently derived. The rule and the recovery path were both in a reference I had listed and not opened."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:47505cd43910",
+      "kind": "repeat_trap",
+      "lesson": "**A third publish attempt died on a dirty worktree** because my own diagnostic quality run had regenerated `sloc-inventory/latest.json`. Self-inflicted by debugging inside the same tree the helper requires clean.",
+      "normalized_key": "a third publish attempt died on a dirty worktree because my own diagnostic quality",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A third publish attempt died on a dirty worktree** because my own diagnostic quality run had regenerated `sloc-inventory/latest.json`. Self-inflicted by debugging inside the same tree the helper requires clean."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:9739386fe958",
+      "kind": "repeat_trap",
+      "lesson": "**Iterated one line at a time against a counted limit** when trimming a debug artifact to its 180-line ceiling — four rounds — which is the exact counted-limit-as-retry-loop trap the repo already records.",
+      "normalized_key": "iterated one line at a time against a counted limit when trimming a debug",
+      "recurrence_class": "counted-limit-retry-loop",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Iterated one line at a time against a counted limit** when trimming a debug artifact to its 180-line ceiling — four rounds — which is the exact counted-limit-as-retry-loop trap the repo already records."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:d9c2235112df",
+      "kind": "repeat_trap",
+      "lesson": "**Two regex passes over 42 test files corrupted multi-line `subprocess.run` calls** before I switched to an AST pass that re-parses each file before writing. Two full revert cycles, both self-inflicted by editing structured code with line patterns.",
+      "normalized_key": "two regex passes over 42 test files corrupted multi line subprocess run calls before",
+      "recurrence_class": "structured-edit-by-line-pattern",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "latest_source_date": "2026-07-27",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two regex passes over 42 test files corrupted multi-line `subprocess.run` calls** before I switched to an AST pass that re-parses each file before writing. Two full revert cycles, both self-inflicted by editing structured code with line patterns."
         }
       ]
     },
