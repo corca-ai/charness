@@ -86,10 +86,19 @@ operator-facing product.
   move below.
 - Plugin mirror re-synced after every mutation round; `sync_root_plugin_manifests`
   reports the five release scripts as the only changed export paths.
-- NOT established by this run: the changed-line mutation verdict. The gate
+- The changed-line mutation verdict was NOT established pre-commit: the gate
   warned that five mutation-pool files had uncommitted worktree changes excluded
-  from `base..HEAD`, so a clean verdict there would be a false green. Re-run
-  after commit is the honest reading, and it is recorded as owed, not as passed.
+  from `base..HEAD`, so a clean verdict there would have been a false green. Run
+  after commit, where the verdict is real, it BLOCKED on three uncovered changed
+  lines — and both were guards that had never executed:
+  `except OSError` around `notes_dir.glob` (`Path.glob` swallows the scandir
+  error rather than raising, so an unreadable directory never reached it) and
+  `_drafted_notes_for`'s invalid-adapter return (`not: a valid adapter`
+  VALIDATES, because every field is optional over inferred repo defaults). Each
+  had a test that passed for a reason other than the one it named. The dead guard
+  was removed and the real behavior stated as a non-claim; the adapter test now
+  asserts `valid is False` before exercising the branch. Re-run after that repair:
+  `check-changed-line-mutation-coverage` PASSES.
 
 ## Reviewer Tier Evidence
 
@@ -147,7 +156,10 @@ token EQUALITY over the version-shaped runs in the stem — which also removes t
 pre-existing single-component case (`v14` matching every `...-07-14-...` name).
 
 Per the two-round cap, the round-2 repairs and that replacement are recorded as
-accepted-unreviewed rather than opening a third round.
+accepted-unreviewed rather than opening a third round. So is the dead-guard
+removal in `Executed Proof` above: it was driven by the blocking changed-line
+gate rather than by a reviewer, and it is the third defect in this slice found by
+running something rather than by reading it.
 
 Reviewer boundary: round 2 snapshotted before the spawn and verified at return —
 exit 0, `verdict: clean`, drift `[]`. Round 1's verification is NOT claimed: the
@@ -181,8 +193,8 @@ this is recorded as an explicit decision rather than an evaluator scenario run.
 
 - Packet consumed: charness-artifacts/critique/2026-07-29-release-notes-escape-packet.json
 - Packet path: charness-artifacts/critique/2026-07-29-release-notes-escape-packet.json
-- Packet SHA256: 2ca8710dbe0915821ce6386554ad63b6943d8a5812c57078c0f704ee650aa9ba
-- Identity SHA256: 8a944910ce45312f4d0bd97685d5fc5568f7397790950f7cb5c33ac7381280d1
+- Packet SHA256: 856f8dffe70e04036044661263bd9fc6d2604f575ce4d912f0c8f34594b85562
+- Identity SHA256: 77d4933f7e9ea94b1fd4eaa44537bb0606c91a2c420c339fe0b7df0e1a938fe5
 
 The binding above was rendered after all repairs landed, so it is current against
 the tree. It is NOT the input either round read: both rounds were spawned with
