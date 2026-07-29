@@ -19,42 +19,45 @@ row is done; the leads table declares its own vocabulary — read it before citi
 
 ## Current State
 
-- **The pre-push changed-line lane now BLOCKS** ([D40](./deferred-decisions.md), armed
-  2026-07-29). It produces coverage incrementally — the mapper names the standing tests
-  reaching the CHANGED pool files and only those run. Budget ~24s for a single-commit
-  slice, ~5min for a nine-commit range. A dirty pool is `unestablished`, refused at push
-  time (`--refuse-unestablished`, read-only mode only) and advisory mid-work; a file the
-  mapper cannot resolve is named, never blocked on.
-- **#464 is CLOSED** on a scheduled run whose range was non-vacuous (base `d0172d3b` ->
-  head `1114802b`, 31 changed pool files, blocking 0). Two intermediate push-mirror
-  greens were VACUOUS (`no eligible mutation-pool files changed in this range`) because
-  the push arm's base is `github.event.before` — read the `reason`, never the colour.
-- **R8 is gone from the leads table**, and the sweep's remaining high-severity rows are
-  the largest open mass.
+- **The pre-push changed-line lane BLOCKS** ([D40](./deferred-decisions.md), armed
+  2026-07-29): incremental coverage from the standing tests the mapper resolves; ~24s
+  for one commit, ~5min for nine. Its verdict is a FALSE GREEN before commit — it says
+  so in its own warning — so commit, then re-run. Doing that here turned a clean read
+  into a block on two guards that had never executed. **#464 is CLOSED**; **R8 is gone
+  from the leads table**.
 - **A slice that changes VERDICT LOGIC owes a second bounded review reading the
-  REPAIRED surface.** It earned its cost twice this session: round 2 found the round-1
-  repair had only relabeled an exit-0 failure, and found a repaired test refusing for a
-  reason it did not name. Budget the repair round AND the review of it.
+  REPAIRED surface.** Round 2 has now caught a round-1 repair reintroducing the escape
+  in two consecutive sessions. Budget the repair round AND the review of it.
+- **The release-notes publish escape is closed; the escaped bodies are not**
+  ([critique](../charness-artifacts/critique/2026-07-29-release-notes-publish-escape.md)).
+  Five of the last twelve releases shipped a one-line body; one had authored notes
+  sitting in `charness-artifacts/release/` while publish took `--generate-notes`, so its
+  correction of an earlier release's wrong migration instruction reached nobody. Publish
+  now refuses drafted notes it is not shipping. **Those five public bodies are still one
+  line** (backfill scoped out by the owner; the critique names the tags), and a
+  `--generate-notes` publish with NO draft on disk is still allowed — recorded
+  `unauthored`, not refused.
 
 ## Next Session
 
-1. **The sweep's remaining high-severity rows, reproducing each first.** Class (a) is
+1. **Decide the backfill of the five one-line release bodies** (tags in the critique
+   above). The recurrence path is shut, but the operator-facing damage is untouched and
+   one of them is a correction nobody received. Cheapest external-value item open.
+2. **The sweep's remaining high-severity rows, reproducing each first.** Class (a) is
    still dominant. Prefer batches that share one subsystem: the siblings are where the
    class hides.
-2. **The original hunt's A5/A6, A8/A9/A10, B4/B5** (**E last** — per-changed-file
-   mutation discrimination is a contract change).
-3. **Pin the vendored two-round rule** in
+3. **The original hunt's A5/A6, A8/A9/A10, B4/B5** (E last — a contract change).
+4. **Pin the vendored two-round rule** in
    [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md):
    unpinned copies drifted once, and pinning a vendored reference needs a portability
    call on what a consuming repo may change.
-4. **A3 is PARTIAL** (scheduled is not judged; needs a live staged/revert probe, not
-   fixtures — [critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9);
-   **D4 is PARTIAL and unclosable by this channel**; **containment-slice deferrals**
-   F9/F10, **D28 remainder** and **sibling-scan Tier 2 finding D** are un-dispositioned.
-5. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)** are the two
-   recorded gaps in the newly-armed lane — a freshness fingerprint blind to `tests/`,
-   and a mapper blind to bare top-level imports. Both have reopen triggers; neither is
-   urgent.
+5. **Un-dispositioned:** A3 PARTIAL (needs a live staged/revert probe, not fixtures —
+   [critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9), D4
+   PARTIAL and unclosable by this channel, containment deferrals F9/F10, D28 remainder,
+   sibling-scan Tier 2 finding D.
+6. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
+   two recorded gaps (freshness blind to `tests/`, mapper blind to bare top-level
+   imports). Both have reopen triggers; neither is urgent.
 
 ## Discuss
 
@@ -62,13 +65,12 @@ row is done; the leads table declares its own vocabulary — read it before citi
   was settled by a command: whether the CI mirror fires (it did, three times, RED),
   whether an `OSError` input is reachable (it is not on this platform), which test
   actually covers a line (18/18 from the one the mapper did not return).
-- **Read the `reason`, not the exit code.** Two CI greens and one local gate pass this
-  session established nothing, and each said so in its own payload.
-- **A guard that trusts a derived value is not a guard**, and a dead allowlist row is
-  worse than none.
-- Run release/skill helpers from `skills/public/.../scripts/`, NOT an installed or
-  `plugins/` copy ([RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md));
-  the provenance guard now refuses the wrong copy outright.
+- **Read the `reason`, not the exit code.** Greens that establish nothing say so in
+  their own payload.
+- **A dead guard is worse than none** — it reads as a handled case. Both guards removed
+  this session had a test that passed for a reason other than the one it named.
+- Run release/skill helpers from `skills/public/.../scripts/`, never an installed or
+  `plugins/` copy ([RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
 
 ## References
 
