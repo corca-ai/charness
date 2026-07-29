@@ -19,24 +19,19 @@ row is done; the leads table declares its own vocabulary — read it before citi
 
 ## Current State
 
-- **The pre-push changed-line lane BLOCKS** ([D40](./deferred-decisions.md), armed
-  2026-07-29): incremental coverage from the standing tests the mapper resolves; ~24s
-  for one commit, ~5min for nine. Its verdict is a FALSE GREEN before commit — it says
-  so in its own warning — so commit, then re-run. Doing that here turned a clean read
-  into a block on two guards that had never executed. **#464 is CLOSED**; **R8 is gone
-  from the leads table**.
-- **A slice that changes VERDICT LOGIC owes a second bounded review reading the
-  REPAIRED surface.** Round 2 has now caught a round-1 repair reintroducing the escape
-  in two consecutive sessions. Budget the repair round AND the review of it.
+- **The pre-push changed-line lane BLOCKS** ([D40](./deferred-decisions.md)): ~24s for
+  one commit, ~5min for nine, now budgeted at that documented range cost rather than at
+  a worst run. Its verdict is a FALSE GREEN before commit — commit, then re-run.
+  **#464 is CLOSED**; **R8 is gone from the leads table**.
+- **A slice that changes VERDICT LOGIC owes a second bounded review of the REPAIRED
+  surface.** Round 2 caught a round-1 repair reintroducing the escape three times in
+  this session alone. Verify the reviewer boundary at RETURN, before repairing.
 - **The release-notes publish escape is closed; the escaped bodies are not**
   ([critique](../charness-artifacts/critique/2026-07-29-release-notes-publish-escape.md)).
-  Five of the last twelve releases shipped a one-line body; one had authored notes
-  sitting in `charness-artifacts/release/` while publish took `--generate-notes`, so its
-  correction of an earlier release's wrong migration instruction reached nobody. Publish
-  now refuses drafted notes it is not shipping. **Those five public bodies are still one
-  line and will stay that way** — the owner DECLINED backfill outright, so this is
-  closed, not pending. A `--generate-notes` publish with NO draft on disk is also
-  still allowed: recorded `unauthored`, not refused.
+  Publish now refuses drafted notes it is not shipping. Five public bodies stay one line
+  — the owner DECLINED backfill, so that is closed, not pending — and a
+  `--generate-notes` publish with no draft on disk is still allowed, recorded
+  `unauthored` rather than refused.
 
 ## Next Session
 
@@ -55,18 +50,25 @@ row is done; the leads table declares its own vocabulary — read it before citi
 5. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
    two recorded gaps (freshness blind to `tests/`, mapper blind to bare top-level
    imports). Both have reopen triggers; neither is urgent.
+6. **Two escapes the UNPROVEN slice named and did not close.** `check_mutation_run_proof`
+   marks a changed-line claim `provable` on `base_sha` alone, so a CI range with no
+   eligible pool file is a citable green; and `fg_warning` under-approximates
+   untrustworthy runs (explicit non-HEAD `--head-sha`, a git failure read as "nothing
+   found", dirty non-pool files). Both are recorded in
+   [the critique](../charness-artifacts/critique/2026-07-29-unproven-gate-status.md).
 
 ## Discuss
 
 - **Probe the contract instead of arguing it.** Every load-bearing claim this session
-  was settled by a command: whether the CI mirror fires (it did, three times, RED),
-  whether an `OSError` input is reachable (it is not on this platform), which test
-  actually covers a line (18/18 from the one the mapper did not return).
-- **Commit before reading a changed-line verdict.** It is a false green over
-  uncommitted pool files and says so in its own warning; running it in the wrong order
-  cost a cycle and nearly shipped two dead guards this session.
-- **A dead guard is worse than none** — it reads as a handled case. Both guards removed
-  this session had a test that passed for a reason other than the one it named.
+  was settled by a command — including three reviewer claims about exit-3 collisions,
+  two confirmed and one refuted.
+- **A gate that establishes nothing prints `UNPROVEN`, not `PASS`** (exit 3, opt-in per
+  label via `UNESTABLISHED_CAPABLE_LABELS`; the word removes the green, it does not move
+  the pre-commit window).
+- **3 is not the runner's byte to redefine** — `pytest` uses it for INTERNAL_ERROR,
+  `shellcheck` for a bad invocation. A gate joins the allowlist only after its own exit
+  contract is read.
+- **A dead guard is worse than none** — it reads as a handled case.
 - Run release/skill helpers from `skills/public/.../scripts/`, never an installed or
   `plugins/` copy ([RCA](../charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md)).
 

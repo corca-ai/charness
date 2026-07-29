@@ -1,0 +1,82 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-29T05:08:33Z",
+  "prepared_for": "UNPROVEN gate status",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "aae7b73e9778444f6150893862e7e76ae3a3881d",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "scripts/check_changed_line_mutation_coverage.py",
+      "scripts/prepush_focused_changed_line_coverage.py",
+      "scripts/record_quality_runtime.py",
+      "scripts/run-quality.sh"
+    ],
+    "reviewed_content": [
+      {
+        "path": "scripts/check_changed_line_mutation_coverage.py",
+        "content_sha256": "e8301c03af39d37f3a50b53f5bf4b88c4be227259c8986071a9228ab64d7cd59"
+      },
+      {
+        "path": "scripts/prepush_focused_changed_line_coverage.py",
+        "content_sha256": "3f1fdb38a3e69c661f405f3dac42baeddc6dbd69f90ee547ad4e9a44e4dac40a"
+      },
+      {
+        "path": "scripts/record_quality_runtime.py",
+        "content_sha256": "3aad55475706d9f7b7c53422059017809ec2da3948135e868954ae196ab5cc60"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "3ca3c06627dd949a9452dc8eb7bfb4edd11f7b7b0b3ed8dd4103ca0e9f3fbe87"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "dc168a3e3018e16409a747fb28f85044127c73d7f30c478a7da6ea28ee05a0f1"
+  }
+}
