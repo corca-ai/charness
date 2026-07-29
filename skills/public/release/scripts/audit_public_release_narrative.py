@@ -92,10 +92,32 @@ def _release_state_block(artifact_text: str) -> str | None:
 
 def _audit_artifact(artifact_path: Path, *, target_tag: str) -> list[str]:
     blockers: list[str] = []
-    if not artifact_path.is_file():
+    # `is_file()` and `read_text()` both raise on an unreadable parent directory,
+    # and an uncaught PermissionError here is a traceback where a verdict belongs
+    # — it also fires BEFORE the drafted-notes arm, so it hid that arm's own
+    # unreadable-directory blocker in the default layout, where `latest.md` lives
+    # inside `output_dir`. "Missing" would be the wrong word for it: the file may
+    # be right there.
+    try:
+        exists = artifact_path.is_file()
+    except OSError as exc:
+        blockers.append(
+            f"could not stat the durable release artifact {artifact_path}: {exc}. "
+            "This is not a missing artifact and not a clean audit; publish is "
+            "refused because nothing about the artifact was established."
+        )
+        return blockers
+    if not exists:
         blockers.append(f"durable release artifact missing: {artifact_path}")
         return blockers
-    raw_text = artifact_path.read_text(encoding="utf-8")
+    try:
+        raw_text = artifact_path.read_text(encoding="utf-8")
+    except (OSError, ValueError) as exc:
+        blockers.append(
+            f"could not read the durable release artifact {artifact_path}: {exc}. "
+            "Publish is refused rather than auditing a body nobody read."
+        )
+        return blockers
     # Headings and ledger entries are read from the ASSERTED text only. A fenced
     # *example* of the ledger satisfied all five entry checks while the real
     # section below it was empty — D1's own escape class, one indirection over.
@@ -161,9 +183,24 @@ def _ref_is_immutable(ref: str) -> bool:
 
 def audit_notes_file(notes_file: Path, *, target_tag: str) -> list[str]:
     """Blockers for source-tree pointers in a release notes FILE."""
-    if not notes_file.is_file():
+    try:
+        exists = notes_file.is_file()
+    except OSError as exc:
+        return [
+            f"could not stat the public release notes file {notes_file}: {exc}. "
+            "The file may be right there; nothing about it was established, which is "
+            "a different answer from absent."
+        ]
+    if not exists:
         return [f"public release notes file missing: {notes_file}"]
-    return audit_notes_text(notes_file.read_text(encoding="utf-8"), target_tag=target_tag)
+    try:
+        notes_text = notes_file.read_text(encoding="utf-8")
+    except (OSError, ValueError) as exc:
+        return [
+            f"could not read the public release notes file {notes_file}: {exc}. "
+            "Publish is refused rather than auditing a body nobody read."
+        ]
+    return audit_notes_text(notes_text, target_tag=target_tag)
 
 
 def audit_notes_text(notes_text: str, *, target_tag: str) -> list[str]:
@@ -212,61 +249,12 @@ def audit_notes_text(notes_text: str, *, target_tag: str) -> list[str]:
 # boundary `-`, right boundary `-`), and a single-component tag like `v14`
 # matched the day field of every `...-07-14-...-notes.md`. Token equality has no
 # boundary to get wrong.
-_VERSION_RUN_RE = re.compile(r"\d+(?:[-.]\d+)*")
-
-
-def find_drafted_notes(repo_root: Path, output_dir: str, *, target_tag: str) -> list[Path]:
-    """Notes files already drafted for ``target_tag`` under the adapter's
-    ``output_dir``, sorted by name.
-
-    Existence only — the caller decides what a drafted-but-unsupplied note means.
-    This exists because the audits above all read notes the publisher CHOSE to
-    hand over; none of them could see notes the publisher wrote and then did not
-    pass. v2.11.0 shipped that way: its notes were authored, committed, and left
-    in this directory while publish took the `--generate-notes` default, so the
-    published body was one `**Full Changelog**` link and the section amending
-    2.10.0's now-wrong migration instruction reached nobody.
-
-    The version is matched by EQUALITY against the version-shaped tokens in the
-    stem, dot-or-dash separated. Every rule here was found by a reviewer or a
-    test against real filenames, never reasoned out: a plain substring test makes
-    `v2.1` match `v2.11.0`; a dotted-only token silently missed
-    `2026-07-14-v1-0-7-public-notes.md`, a shape this repo used three times, which
-    would have reproduced the v2.11.0 defect while the audit reported `passed`;
-    and the bounded-substring search that fixed THAT matched `v3-2-1-notes.md`
-    for target `2.1`. Comparing whole tokens removes the boundary entirely.
-
-    Deliberately NOT decided here: whether `v1.2.3-rc1-notes.md` belongs to
-    `v1.2.3`. A pre-release suffix and a role word (`-notes`, `-public`) are the
-    same shape after the version, so a filename cannot settle it. The match stays
-    permissive and the caller names every candidate instead of asserting which
-    one is right — a forced question, not a declared answer.
-    """
-    notes_dir = repo_root / output_dir
-    version = target_tag[1:] if target_tag.startswith("v") else target_tag
-    if not version:
-        return []
-    wanted = version.replace("-", ".")
-
-    def names_this_version(stem: str) -> bool:
-        return any(run.replace("-", ".") == wanted for run in _VERSION_RUN_RE.findall(stem))
-    # No try/except here, deliberately. An `except OSError` guard was written for
-    # an unreadable `output_dir` and the blocking changed-line gate showed it was
-    # never executed: `Path.glob` swallows the scandir error and yields nothing,
-    # so the guard was dead and the test that "proved" it passed because the glob
-    # returned empty, not because anything was caught. A dead guard is worse than
-    # none — it reads as a handled case.
-    #
-    # What actually happens, stated rather than guarded: an unreadable or absent
-    # output_dir yields no candidates and the arm stays silent. That is a
-    # fail-open this function cannot distinguish from "this repo drafts no
-    # notes", and it is why the missing-directory case is a non-claim below.
-    candidates = [path for path in notes_dir.glob("*.md") if path.is_file()]
-    return sorted(
-        (path for path in candidates
-         if "notes" in path.stem.lower() and names_this_version(path.stem)),
-        key=lambda path: path.name,
-    )
+_drafted = SKILL_RUNTIME.load_local_skill_module(__file__, "drafted_release_notes")
+#: Re-exported: `publish_release_narrative_gate` and four tests reference these
+#: HERE. Naming them keeps the move behaviour-preserving for those callers.
+NotesDirectoryUnreadable = _drafted.NotesDirectoryUnreadable
+find_drafted_notes = _drafted.find_drafted_notes
+_reads_as_notes = _drafted._reads_as_notes
 
 
 def _display_path(path: Path, repo_root: Path) -> str:
@@ -349,8 +337,26 @@ def build_payload(
     if notes_file is not None:
         notes_blockers = audit_notes_file(notes_file, target_tag=target_tag)
         blockers.extend(notes_blockers)
-    drafted_notes = find_drafted_notes(repo_root, output_dir, target_tag=target_tag)
-    blockers.extend(drafted_notes_blockers(repo_root, drafted_notes, target_tag=target_tag, notes_file=notes_file))
+    drafted_notes: list[Path] = []
+    unreadable: str | None = None
+    try:
+        drafted_notes = find_drafted_notes(repo_root, output_dir, target_tag=target_tag)
+    except NotesDirectoryUnreadable as exc:
+        # A BLOCKER, not a silent pass. Publish is in the irreversible set, and
+        # this arm exists because notes were drafted and something else shipped;
+        # a directory the arm could not read is precisely the state where it
+        # cannot rule that out.
+        unreadable = str(exc)
+        blockers.append(
+            f"{unreadable}. Publish is refused rather than proceeding on an "
+            "unread directory: this arm cannot tell drafted-and-unshipped notes "
+            "from a repo that drafts none when it cannot list them. Fix the "
+            "permissions, or point `output_dir` somewhere readable."
+        )
+    else:
+        blockers.extend(
+            drafted_notes_blockers(repo_root, drafted_notes, target_tag=target_tag, notes_file=notes_file)
+        )
     return {
         "status": "blocked" if blockers else "passed",
         "blockers": blockers,
@@ -359,6 +365,7 @@ def build_payload(
         "notes_file": str(notes_file) if notes_file is not None else None,
         "notes_blockers": notes_blockers,
         "drafted_notes": [str(path) for path in drafted_notes],
+        "drafted_notes_established": unreadable is None,
     }
 
 

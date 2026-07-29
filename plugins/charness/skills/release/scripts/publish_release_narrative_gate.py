@@ -52,6 +52,14 @@ def _drafted_notes_for(repo_root: Path, *, target_tag: str) -> list[Path]:
     return find_drafted_notes(repo_root, adapter["data"]["output_dir"], target_tag=target_tag)
 
 
+def _preflight_unreadable_blocker(exc: Exception) -> str:
+    return (
+        f"{exc}. Publish is refused rather than proceeding on an unread directory: "
+        "this arm cannot tell drafted-and-unshipped notes from a repo that drafts "
+        "none when it cannot list them."
+    )
+
+
 def run_narrative_audit(
     repo_root: Path,
     *,
@@ -81,10 +89,17 @@ def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Pa
     # true, but it never says the path does not exist, and `audit_notes_file`'s
     # `notes file missing` is the message that names the actual mistake.
     notes_blockers = audit_notes_file(notes_file, target_tag=target_tag) if notes_file is not None else []
-    drafted = _drafted_notes_for(repo_root, target_tag=target_tag)
-    notes_blockers += _audit_narrative.drafted_notes_blockers(
-        repo_root, drafted, target_tag=target_tag, notes_file=notes_file
-    )
+    try:
+        drafted = _drafted_notes_for(repo_root, target_tag=target_tag)
+    except _audit_narrative.NotesDirectoryUnreadable as exc:
+        # The two call sites read the same helpers so they cannot disagree; that
+        # invariant only holds if BOTH handle the new failure, and the preflight
+        # is the one that runs before the bump.
+        notes_blockers.append(_preflight_unreadable_blocker(exc))
+    else:
+        notes_blockers += _audit_narrative.drafted_notes_blockers(
+            repo_root, drafted, target_tag=target_tag, notes_file=notes_file
+        )
     if notes_blockers:
         raise SystemExit(
             "public release notes preflight blocked publish:\n"

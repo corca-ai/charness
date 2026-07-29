@@ -514,20 +514,27 @@ def test_drafted_notes_discovery_survives_an_absent_or_unreadable_output_dir(tmp
     # crash the publish preflight on a directory listing.
     assert audit.find_drafted_notes(tmp_path, "charness-artifacts/release", target_tag="v0.1.0") == []
 
-    # An UNREADABLE directory yields nothing too -- and this is a non-claim, not
-    # a guard. `Path.glob` swallows the scandir error rather than raising, so an
-    # `except OSError` arm written for this was dead code, and the assertion
-    # below held for the wrong reason. It is pinned as the platform behavior it
-    # is: silence here is indistinguishable from "this repo drafts no notes".
+    # An UNREADABLE directory is a DIFFERENT answer and used to be the same one.
+    # This assertion previously read `== []` and called the fail-open a pinned
+    # platform behavior: `Path.glob` swallows the scandir error, so an
+    # `except OSError` arm written here was dead and the old assertion held for
+    # the wrong reason. `iterdir` raises, so the guard is reachable and the two
+    # states are now distinguishable -- absent stays publishable, unreadable does
+    # not, because "no drafted notes" is a claim about contents nobody read.
     blocked = tmp_path / "locked"
     blocked.mkdir()
     (blocked / "v0.1.0-notes.md").write_text("x", encoding="utf-8")
     blocked.chmod(0o000)
     try:
-        if list(blocked.glob("*.md")):
+        if _permissions_are_enforced(blocked) is False:
             pytest.skip("filesystem/user does not enforce directory permissions here")
-        assert audit.find_drafted_notes(tmp_path, "locked", target_tag="v0.1.0") == []
+        with pytest.raises(audit.NotesDirectoryUnreadable) as excinfo:
+            audit.find_drafted_notes(tmp_path, "locked", target_tag="v0.1.0")
+        assert "could not read the drafted-notes directory" in str(excinfo.value)
     finally:
+        # Restore in `finally`, including on the skip path: a `Skipped` exception
+        # raised inside the old `try` left the directory at 0o000 under tmp_path,
+        # which breaks pytest's tmp-dir retention cleanup on later runs.
         blocked.chmod(0o755)
 
 
@@ -610,3 +617,186 @@ def test_drafted_notes_blocker_survives_an_absolute_output_dir(tmp_path: Path) -
 
     assert len(blockers) == 1
     assert str(drafted) in blockers[0]
+
+
+def _permissions_are_enforced(path: Path) -> bool:
+    """Whether this filesystem/user actually honours a 0o000 directory.
+
+    Root and some filesystems do not, and both new permission tests self-skip
+    there -- so in a root CI container neither the fix nor a regression of it is
+    observed at all. Recorded rather than left as a silent "tested".
+    """
+    try:
+        list(path.iterdir())
+    except OSError:
+        return True
+    return False
+
+
+def _load_release_module(name: str, script: str):
+    from tests.script_loader import load_script_module
+
+    return load_script_module(name, REPO_ROOT / "skills" / "public" / "release" / "scripts" / script)
+
+
+def _seed_publishable_repo(tmp_path: Path) -> tuple[Path, Path]:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "schema_version: 1\nrepo: t\noutput_dir: rel\ncurrent_pointer: latest.md\n", encoding="utf-8"
+    )
+    rel = repo / "rel"
+    rel.mkdir()
+    (rel / "latest.md").write_text("# Release\n\nVersion: v0.1.0\n", encoding="utf-8")
+    (rel / "v0.1.0-notes.md").write_text("real notes\n", encoding="utf-8")
+    return repo, rel
+
+
+def test_an_unreadable_output_dir_blocks_publish_at_both_call_sites(tmp_path: Path) -> None:
+    """Unreadable is not absent, and both arms have to say so.
+
+    Absent stays publishable -- it is the normal state for a repo that drafts no
+    notes. Unreadable is a directory the arm could not look inside, and reporting
+    "no drafted notes" for it is a claim about contents nobody read. The audit
+    arm also runs AFTER the artifact audit, whose uncaught PermissionError used
+    to fire first and hide it in the default layout where `latest.md` lives
+    inside `output_dir`.
+    """
+    audit = _load_release_module("audit_unreadable", "audit_public_release_narrative.py")
+    gate = _load_release_module("gate_unreadable", "publish_release_narrative_gate.py")
+    repo, rel = _seed_publishable_repo(tmp_path)
+
+    readable = audit.build_payload(repo, target_tag="v0.1.0", notes_file=None)
+    assert readable["drafted_notes_established"] is True
+    assert readable["drafted_notes"], "the control needs a real drafted note to be meaningful"
+
+    rel.chmod(0o000)
+    try:
+        if _permissions_are_enforced(rel) is False:
+            pytest.skip("filesystem/user does not enforce directory permissions here")
+
+        payload = audit.build_payload(repo, target_tag="v0.1.0", notes_file=None)
+        assert payload["status"] == "blocked"
+        assert payload["drafted_notes_established"] is False
+        blockers = payload["blockers"]
+        # A traceback where a verdict belongs, and a wrong word: the artifact may
+        # be right there, so "missing" would be false about it.
+        assert any("could not stat the durable release artifact" in b for b in blockers), blockers
+        assert not any("durable release artifact missing" in b for b in blockers), blockers
+        assert any("could not read the drafted-notes directory" in b for b in blockers), blockers
+
+        with pytest.raises(SystemExit) as excinfo:
+            gate.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=None)
+        assert "could not read the drafted-notes directory" in str(excinfo.value)
+    finally:
+        rel.chmod(0o755)
+
+
+def test_an_absent_output_dir_stays_publishable(tmp_path: Path) -> None:
+    """The half that must NOT change: refusing here would break every repo that
+    drafts no notes, and the fastest route around a blocking gate is deleting
+    it."""
+    audit = _load_release_module("audit_absent", "audit_public_release_narrative.py")
+    assert audit.find_drafted_notes(tmp_path, "no-such-dir", target_tag="v0.1.0") == []
+
+
+def test_the_role_word_stays_narrow_and_says_what_it_still_misses(tmp_path: Path) -> None:
+    """The widening that was written here and reverted, pinned as a decision.
+
+    Adding `release` to the recognised role words made a dated
+    `<date>-<version>-release-record.md` match inside a directory literally named
+    `release` -- and the refusal's remedy tells the operator to "rename or delete
+    it and commit that". A verdict surface at an irreversible boundary
+    instructing an operator to delete durable evidence is worse than the miss it
+    guarded, and the miss was never observed: no draft in this repo's 51-file
+    release directory was missed by requiring `notes`.
+
+    The residual is asserted, not implied: a draft with no role word at all is
+    still invisible. An allowlist relocates that miss rather than closing it.
+    """
+    audit = _load_release_module("audit_roles", "audit_public_release_narrative.py")
+    notes_dir = tmp_path / "rel"
+    notes_dir.mkdir()
+    for name in (
+        "2026-07-30-v2.13.0-notes.md",
+        "2026-07-30-v2.13.0-public-notes.md",
+        "2026-07-30-v2.13.0-release-record.md",
+        "2026-07-30-v2.13.0-real-host-proof.md",
+        "v2.13.0-blockers.md",
+        "2026-07-30-v2.13.0.md",
+        "2026-07-30-v2.12.0-notes.md",
+    ):
+        (notes_dir / name).write_text("x", encoding="utf-8")
+
+    found = [path.name for path in audit.find_drafted_notes(tmp_path, "rel", target_tag="v2.13.0")]
+    assert found == [
+        "2026-07-30-v2.13.0-notes.md",
+        "2026-07-30-v2.13.0-public-notes.md",
+    ], found
+    # Named residual: a role-word-less draft for the target tag is NOT found.
+    assert "2026-07-30-v2.13.0.md" not in found
+
+    # The role word is a whole TOKEN, not a substring -- the substring form is
+    # what let the reverted `release` widening match a dated release RECORD, and
+    # it matches `footnotes`/`denotes` here for the same reason. Position is free
+    # on purpose: this repo ships both `v0.55.0-notes.md` and `notes-v0.56.7.md`,
+    # so a last-token rule would drop five real drafts.
+    for name in ("footnotes-v2.13.0.md", "denotes-v2.13.0.md"):
+        (notes_dir / name).write_text("x", encoding="utf-8")
+    (notes_dir / "notes-v2.13.0.md").write_text("x", encoding="utf-8")
+    widened = [path.name for path in audit.find_drafted_notes(tmp_path, "rel", target_tag="v2.13.0")]
+    assert "notes-v2.13.0.md" in widened
+    assert "footnotes-v2.13.0.md" not in widened
+    assert "denotes-v2.13.0.md" not in widened
+
+
+def test_an_unreadable_notes_file_is_not_reported_as_missing(tmp_path: Path) -> None:
+    """`audit_notes_file` carried the identical unguarded stat/read pair.
+
+    It runs FIRST in the publish preflight, so in the very state the unreadable-
+    directory blocker was written for, adding `--notes-file` (the ordinary
+    publish shape) turned that new verdict back into a traceback. Reproduced.
+    """
+    audit = _load_release_module("audit_notes_file_guard", "audit_public_release_narrative.py")
+    holder = tmp_path / "held"
+    holder.mkdir()
+    notes = holder / "v0.1.0-notes.md"
+    notes.write_text("# v0.1.0\n\nreal notes\n", encoding="utf-8")
+    holder.chmod(0o000)
+    try:
+        if _permissions_are_enforced(holder) is False:
+            pytest.skip("filesystem/user does not enforce directory permissions here")
+        blockers = audit.audit_notes_file(notes, target_tag="v0.1.0")
+        assert blockers, "an unreadable notes file must produce a blocker, not a traceback"
+        assert "could not stat the public release notes file" in blockers[0]
+        # The absent-file wording would be false here: the file is right there.
+        assert "public release notes file missing" not in blockers[0]
+    finally:
+        holder.chmod(0o755)
+
+
+def test_an_undecodable_release_artifact_blocks_instead_of_raising(tmp_path: Path) -> None:
+    """`UnicodeDecodeError` subclasses `ValueError`, not `OSError`.
+
+    So the first version of the read guard caught the permission case and let a
+    UTF-16 or single-stray-byte artifact traceback out of the publish boundary --
+    the same traceback-where-a-verdict-belongs shape, in the function being
+    hardened.
+    """
+    audit = _load_release_module("audit_decode", "audit_public_release_narrative.py")
+    repo, rel = _seed_publishable_repo(tmp_path)
+    (rel / "latest.md").write_bytes(b"\xff\xfe# Release State\n")
+
+    payload = audit.build_payload(repo, target_tag="v0.1.0", notes_file=None)
+
+    assert any("could not read the durable release artifact" in b for b in payload["blockers"]), payload["blockers"]
+    # `status == "blocked"` alone would be VACUOUS here: the seed artifact is
+    # missing required sections, so it blocks for unrelated reasons even when the
+    # bytes decode. The control below shows the decode failure is what added the
+    # blocker above, not the fixture.
+    (rel / "latest.md").write_text("# Release\n\nVersion: v0.1.0\n", encoding="utf-8")
+    decodable = audit.build_payload(repo, target_tag="v0.1.0", notes_file=None)
+    assert not any("could not read the durable release artifact" in b for b in decodable["blockers"]), (
+        decodable["blockers"]
+    )
+

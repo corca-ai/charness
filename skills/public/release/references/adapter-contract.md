@@ -88,6 +88,28 @@ The durable release artifact filename is fixed:
 
 Dated release records should use `<repo-root>/charness-artifacts/release/YYYY-MM-DD-<slug>.md`.
 
+### Drafted release notes filename
+
+Release notes drafted ahead of publish must carry `notes` as a whole
+`-`/`_`-delimited token in the filename, alongside the version:
+
+- `2026-07-26-v2.11.0-notes.md`
+- `notes-v0.56.7.md`
+- `2026-07-14-v1-0-7-public-notes.md` (dash-separated versions are recognised)
+
+This is the shape the pre-publish refusal looks for when it checks whether notes
+were drafted for the target tag and something else is being published. A draft
+that omits the token — `v1.2.3.md`, `<date>-<version>-release.md` — is INVISIBLE
+to that arm, and publish will proceed with a generated body while the drafted
+notes sit unshipped. That is the v2.11.0 escape, and the convention is the part
+of it a filename can fix.
+
+Deliberately narrow: the role word is matched as a whole token, not a substring,
+and no other word is recognised. A wider match once made a dated
+`<date>-<version>-release-record.md` read as drafted notes, and the refusal's
+remedy asks the operator to rename or delete the file — advice that must never
+point at durable evidence.
+
 `release` should treat the packaging manifest as the canonical mutable version
 source. Generated plugin manifests and marketplace files are derived surfaces
 and should be rewritten by the declared sync command, not edited by hand.

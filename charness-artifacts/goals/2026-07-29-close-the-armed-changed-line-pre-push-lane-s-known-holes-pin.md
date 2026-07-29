@@ -185,8 +185,19 @@ The operator can see, without reading code:
    states which input carries the range.
 3. A `--head-sha` that is not HEAD, and a git command that fails, each produce a
    stated "could not establish" rather than a clean verdict.
-4. A release draft named without the word `notes`, and an unreadable
-   `output_dir`, each stop being silently publishable.
+4. An unreadable `output_dir` stops being silently publishable. **Half of this
+   criterion was RETIRED, not met:** "a release draft named without the word
+   `notes`" was to be closed by widening the recognised role words, and that
+   widening was written, reviewed, and reverted. `release` — matched inside a
+   directory literally named `release` — made a dated
+   `<date>-<version>-release-record.md` read as drafted notes, and the refusal's
+   remedy tells the operator to rename or delete the file and commit that. A
+   verdict surface at an irreversible boundary pointing that advice at durable
+   evidence is worse than the miss, and the miss was never observed: no draft in
+   this repo's 51-file release directory was missed by requiring `notes`. What
+   shipped instead is the convention, written into the release adapter contract,
+   plus token-not-substring matching. The residual is asserted in a test rather
+   than implied.
 5. Each of the above has a test that FAILS when the fix is reverted — quoted as
    the revert output, not asserted.
 6. `bash scripts/run-quality.sh` is green after commit, and the changed-line
@@ -249,7 +260,7 @@ repair that is inert on every path a consumer runs.
 | 1 (done) | Pin the hook's CONTENT, not just its existence: `validate_maintainer_setup.py` must fail when `.githooks/pre-push` no longer arms the lane. Separately, narrow the adapter-contract language that implies consumer repos run the charness runner. | Scope collapsed from "arm every consumer repo" to "stop this repo silently disarming itself" once the sibling-repo probe showed no consumer runs this runner. It is the only reachable instance of the gap. | Deleting the `CHARNESS_PRE_PUSH=1` prefix from `.githooks/pre-push` makes `validate_maintainer_setup.py` FAIL; today it passes. Revert output quoted both ways. | done — 76560792, c2ad20d7 |
 | 2 (done) | `changed_line_run_trust`: stop a non-HEAD `--head-sha` and a failed git command from reading as "nothing contaminated". Separate "could not establish" from "established clean". | The module docstring (`:18-19`) already asserts callers must read `[]` as "could not establish" while handing every caller an indistinguishable `[]`. | Non-HEAD head-sha and a forced git failure each produce a stated unestablished result; revert output quoted. | done — 0c481d90, 58d7dd44, 2c6c5e51 |
 | 3 (done) | `check_mutation_run_proof`: stop `provable: true` standing for a range whose contents were never established. The slice's first task was deciding WHICH input carries the range fact; the answer was that the sampler manifest already carried it (see the slice log), so the classifier stayed pure. | Closes the unproven-gate critique's F6, recorded open on a different owner's surface. | One invocation that refuses and one that still passes, with the range-carrying input named. Adding git resolution to a deliberately pure classifier is a design change, not a fix — if that is the answer, stop and say so. | done — e9338493 |
-| 4 | Publish refusal: split unreadable-vs-absent `output_dir`, and stop a draft whose filename lacks `notes` from being invisible. | Irreversible boundary (release publish); the escape is measured five times over. | Absent `output_dir` stays silently publishable (it is the normal state for a repo that drafts no notes); UNREADABLE produces an explicit unestablished record; a `...-release.md` draft for the target tag produces a blocker. The `--generate-notes`-with-no-drafts path stays publishable, pinned by the existing test. | pending |
+| 4 (done, scope reduced) | Publish refusal: split unreadable-vs-absent `output_dir`. The role-word half was reverted after review — see User Acceptance #4. | Irreversible boundary (release publish); the escape is measured five times over. | Absent `output_dir` stays silently publishable (it is the normal state for a repo that drafts no notes); UNREADABLE produces an explicit unestablished record; a `...-release.md` draft for the target tag does NOT produce a blocker (retired, see User Acceptance #4); the recognised filename convention is documented in the release adapter contract instead. The `--generate-notes`-with-no-drafts path stays publishable, pinned by the existing test. | done, one half retired — see User Acceptance #4 |
 | 5 | Make the `run-quality-full` bars honest per profile: the 36cpu bar sits BELOW its observed max (false-RED risk) and the 4cpu bar was sized before the armed lane existed. Decide separately whether the shared `BUDGET_SLACK_FACTOR` should change. | The 4cpu bar is a blocking pre-push false red waiting to happen on a slower box. | Each profile's bar restated against its own recorded window, or a dated decision naming why not. A `BUDGET_SLACK_FACTOR` change is scoped as its own decision, since the constant is global across every label and profile. | pending |
 
 Slices 1-4 each change verdict logic on a proof surface, so each owes two
