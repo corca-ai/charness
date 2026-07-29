@@ -39,13 +39,14 @@ row is done; the leads table declares its own vocabulary — read it before citi
 3. **Pin the vendored two-round rule** in
    [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md)
    — unpinned copies drifted once; needs a portability call.
-4. **Un-dispositioned:** A3 PARTIAL (needs a live staged/revert probe, not fixtures —
+4. **[The verdict-timing sweep's remaining four](../charness-artifacts/audit/2026-07-29-verdict-timing-sweep.md)**
+   — a finished queue, not an open axis. Read its refutations before re-deriving one.
+5. **Un-dispositioned:** A3 PARTIAL (needs a live staged/revert probe —
    [critique](../charness-artifacts/critique/2026-07-27-a3-staged-scope.md) F8/F9), D4
-   PARTIAL, containment deferrals F9/F10, D28 remainder, sibling-scan Tier 2 finding D.
-5. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
-   two recorded gaps (freshness blind to `tests/`, mapper blind to bare top-level
-   imports). Both have reopen triggers; neither is urgent.
-6. **Gaps this session named and did not close**, ranked by how silently each fails
+   PARTIAL, containment F9/F10, D28 remainder, sibling-scan Tier 2 finding D.
+6. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
+   gaps (freshness blind to `tests/`, mapper blind to bare imports). Not urgent.
+7. **Gaps this session named and did not close**, ranked by how silently each fails
    and argued in the [unproven](../charness-artifacts/critique/2026-07-29-unproven-gate-status.md)
    and [publish](../charness-artifacts/critique/2026-07-29-release-notes-publish-escape.md)
    critiques:
@@ -53,11 +54,10 @@ row is done; the leads table declares its own vocabulary — read it before citi
      `CHARNESS_PRE_PUSH`, set only by the unexported `.githooks/pre-push`, so an old
      vendored hook drops the push-time teeth with a green console.
    - `check_mutation_run_proof` calls a changed-line claim `provable` on `base_sha`
-     alone, so a range holding no eligible pool file is a citable green.
+     alone, so an empty-range run is a citable green.
    - `fg_warning` under-approximates untrustworthy runs; the publish refusal fails open
-     on an unreadable `output_dir` and misses a draft whose filename lacks `notes`; and
-     the `run-quality-full` bar sits under the slack advisory's 3.0x, so nothing will
-     report it as a bar that cannot fail.
+     on an unreadable `output_dir` and on a draft whose filename lacks `notes`; and the
+     `run-quality-full` bar sits under the slack advisory, so nothing reports it.
 
 ## Discuss
 
