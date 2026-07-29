@@ -422,3 +422,20 @@ def test_a_gate_report_is_not_a_sample_manifest(tmp_path: Path) -> None:
                     "--sample-manifest", str(manifest))
     assert ok.returncode == 0, ok.stdout + ok.stderr
 
+
+def test_same_commit_is_abbreviation_tolerant_but_not_credulous() -> None:
+    """Prefix tolerance must not become "any two shortish strings match".
+
+    The tool has no git access by design, so it cannot resolve `origin/main`.
+    Tolerating abbreviation is the honest half; treating a ref NAME as a prefix
+    match would let two genuinely different ranges pass as one.
+    """
+    same = GATE._same_commit
+    assert same("a" * 40, "a" * 40)
+    assert same("a" * 7, "a" * 40)          # abbreviated form of the same commit
+    assert same("A" * 12, "a" * 40)          # case-insensitive hex
+    assert not same("b" * 40, "a" * 40)      # genuinely different commits
+    assert not same("a" * 6, "a" * 40)       # too short to identify a commit
+    assert not same("origin/main", "a" * 40)  # a ref NAME is not a prefix
+    assert not same("main", "a" * 40)
+
