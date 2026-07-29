@@ -9,6 +9,7 @@ The negative guard proves an unclassified label turns the gate red.
 from __future__ import annotations
 
 import importlib
+import sys
 from pathlib import Path
 
 from .support import ROOT
@@ -118,3 +119,49 @@ def test_a_docs_only_push_label_that_names_no_gate_is_refused(tmp_path: Path) ->
     # Degrades where the hook is not vendored.
     (repo / ".githooks" / "pre-push").unlink()
     assert META.stale_docs_only_labels(repo) == []
+
+
+def _seed(tmp_path: Path, docs_only_line: str | None) -> Path:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / ".githooks").mkdir(parents=True)
+    (repo / "docs" / "conventions").mkdir(parents=True)
+    (repo / "scripts" / "run-quality.sh").write_text(
+        'queue_selected "check-doc-links" x\n', encoding="utf-8"
+    )
+    (repo / "docs" / "conventions" / "validator-timing-layers.md").write_text(
+        "## Classification table\n\n| Check | Ran | Verdict | Reason |\n| --- | --- | --- | --- |\n"
+        "| check-doc-links | broad | already earlier | x |\n",
+        encoding="utf-8",
+    )
+    body = "#!/usr/bin/env bash\n" + (f"{docs_only_line}\n" if docs_only_line else "")
+    (repo / ".githooks" / "pre-push").write_text(body, encoding="utf-8")
+    return repo
+
+
+def test_a_pre_push_without_the_docs_only_assignment_is_not_a_finding(tmp_path: Path) -> None:
+    """A consumer repo can vendor the hook without the docs-only subset at all. No
+    assignment is nothing to bind, never a stale label."""
+    assert META.stale_docs_only_labels(_seed(tmp_path, None)) == []
+
+
+def test_main_reports_the_stale_label_and_exits_nonzero(tmp_path: Path, monkeypatch, capsys) -> None:
+    """The reporting branch is what the operator actually reads; asserting only the
+    helper leaves the message that names the fix unproven."""
+    repo = _seed(tmp_path, 'DOCS_ONLY_LABELS="check-doc-links,check-gone"')
+    monkeypatch.setattr(sys, "argv", ["check_timing_layer_completeness.py", "--repo-root", str(repo)])
+
+    assert META.main() == 1
+
+    err = capsys.readouterr().err
+    assert "check-gone" in err
+    assert "silently runs fewer checks than it claims" in err
+    assert "Rename or drop each" in err
+
+
+def test_main_is_silent_when_the_subset_matches(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = _seed(tmp_path, 'DOCS_ONLY_LABELS="check-doc-links"')
+    monkeypatch.setattr(sys, "argv", ["check_timing_layer_completeness.py", "--repo-root", str(repo)])
+
+    assert META.main() == 0
+    assert "carry a timing verdict" in capsys.readouterr().out

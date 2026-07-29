@@ -79,6 +79,41 @@ def add_one_pass_args(parser, *, fail_fast_help: str) -> None:
     parser.add_argument("--report-all", action="store_true", help=REPORT_ALL_DEPRECATED_HELP)
 
 
+def add_artifact_path_arg(parser, *, surface: str) -> None:
+    """The draft-override knob for an ADAPTER-SCOPED validator, declared once.
+
+    An adapter-scoped validator resolves its artifact from the adapter (a pointer),
+    so without this it can only ever judge the pointer's target. That made the
+    author-time preflight print a verdict about a DIFFERENT file than the draft the
+    author was holding — invisible for a surface whose prefix is an exact file
+    (handoff), and a plain wrong PASS for a directory-prefixed one (quality).
+
+    Declared here for the same reason `add_one_pass_args` is: the handoff sibling
+    carried this flag alone since June, and the second copy is how a family's flags
+    drift apart in wording and behavior.
+    """
+    parser.add_argument(
+        "--artifact-path",
+        type=Path,
+        default=None,
+        help=(
+            f"Validate this {surface} artifact instead of the adapter-resolved one. Lets a "
+            "caller check a candidate draft without moving the live pointer."
+        ),
+    )
+
+
+def resolve_artifact_override(args, repo_root: Path, adapter_relative: str) -> Path:
+    """The `--artifact-path` override, or the adapter-resolved default.
+
+    Accepts an absolute path so a draft outside the tree (a temp dir) can be checked.
+    """
+    override = getattr(args, "artifact_path", None)
+    if override is None:
+        return repo_root / adapter_relative
+    return override if override.is_absolute() else repo_root / override
+
+
 def selected_changed_paths(args, repo_root: Path, *, changed_paths_fn: Callable[[Path], list[str]]) -> list[str]:
     return [] if args.all else args.paths if args.paths is not None else changed_paths_fn(repo_root)
 

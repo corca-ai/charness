@@ -1280,6 +1280,13 @@
       "note": "two-line empty-input early return (`if not <collection>: return []`) shared by seven unrelated functions across scripts/ and three portable skills. Verified by reading all seven: they guard different collections, return different types of empty result, and share no caller -- the identity is the Python idiom, not copied logic. Extracting it would require every caller to import a helper to express `return []`. Nothing to remove; classified rather than absorbed.",
       "reviewed_at": "2026-07-29",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "694d266aac675acb",
+      "note": "the runtime_bootstrap import idiom itself: `from runtime_bootstrap import import_repo_module, repo_root_from_script`, `REPO_ROOT = repo_root_from_script(__file__)`, and one or more `import_repo_module(__file__, \"scripts.<mod>\")` binds, across five unrelated scripts. Verified by reading all five: they bind DIFFERENT modules for different reasons and share no logic. The shared helper already exists and is exactly `runtime_bootstrap`; the only way to remove this span is to stop importing. Grouped now because a fifth member joined when check_artifact_surface_preflight.py gained a bind.",
+      "reviewed_at": "2026-07-29",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

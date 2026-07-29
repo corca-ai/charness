@@ -45,6 +45,8 @@ iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
+add_artifact_path_arg = _scripts_artifact_validator_module.add_artifact_path_arg
+resolve_artifact_override = _scripts_artifact_validator_module.resolve_artifact_override
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
@@ -226,15 +228,7 @@ def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument(
-        "--artifact-path",
-        type=Path,
-        default=None,
-        help=(
-            "Validate this artifact instead of the adapter-resolved one. Lets a caller "
-            "check a candidate draft without overwriting the live handoff."
-        ),
-    )
+    add_artifact_path_arg(parser, surface="handoff")
     add_one_pass_args(
         parser,
         fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",

@@ -19,6 +19,8 @@ ChangedArtifactRun = _run_scope.ChangedArtifactRun
 ValidationError = _run_scope.ValidationError
 add_changed_artifact_args = _run_scope.add_changed_artifact_args
 add_one_pass_args = _run_scope.add_one_pass_args
+add_artifact_path_arg = _run_scope.add_artifact_path_arg
+resolve_artifact_override = _run_scope.resolve_artifact_override
 git_changed_paths = _run_scope.git_changed_paths
 selected_changed_paths = _run_scope.selected_changed_paths
 unresolvable_named_paths = _run_scope.unresolvable_named_paths
@@ -30,6 +32,8 @@ __all__ = [
     "ValidationError",
     "add_changed_artifact_args",
     "add_one_pass_args",
+    "add_artifact_path_arg",
+    "resolve_artifact_override",
     "git_changed_paths",
     "selected_changed_paths",
     "unresolvable_named_paths",

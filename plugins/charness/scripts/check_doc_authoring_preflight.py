@@ -47,6 +47,7 @@ _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code"
 _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 _markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+_path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
 
 # A markdownlint-cli2 per-violation line: ``<file>:<line>[:<col>] error MDxxx/rule desc``.
 _MARKDOWNLINT_LINE_RE = re.compile(
@@ -340,10 +341,9 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
     if not doc.is_absolute():
         doc = repo_root / doc
     doc = doc.resolve()
-    try:
-        rel = doc.relative_to(repo_root.resolve()).as_posix()
-    except ValueError as exc:
-        raise PreflightError(f"{raw_path} is outside repo root {repo_root}") from exc
+    rel = _path_portability.resolve_within_repo(repo_root, raw_path)
+    if rel is None:
+        raise PreflightError(f"{raw_path} is outside repo root {repo_root}")
     if not doc.is_file():
         raise PreflightError(f"{rel} is not a file")
     if doc.suffix != ".md":

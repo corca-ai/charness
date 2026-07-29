@@ -28,9 +28,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
+_path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
 
 # Goal template that already seeds the `## Final Verification` closeout block;
 # the goal-closeout surface has no scaffold script, so this template section IS
@@ -187,13 +188,10 @@ REGISTRY: tuple[Surface, ...] = (
 
 
 def _resolve(repo_root: Path, raw: str) -> str:
-    target = Path(raw)
-    if not target.is_absolute():
-        target = repo_root / target
-    try:
-        return target.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return Path(raw).as_posix()
+    # Disposition: echo the raw path. A target outside the repo is still worth naming
+    # in the shape output, so this surface never refuses on resolution alone.
+    rel = _path_portability.resolve_within_repo(repo_root, raw)
+    return rel if rel is not None else Path(raw).as_posix()
 
 
 def surface_for_path(rel: str) -> Surface | None:

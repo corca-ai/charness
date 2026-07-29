@@ -29,6 +29,11 @@ _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artif
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
+add_artifact_path_arg = _scripts_artifact_validator_module.add_artifact_path_arg
+resolve_artifact_override = _scripts_artifact_validator_module.resolve_artifact_override
+# The canonical repo-relative renderer. A third local copy of the try/relative_to
+# dance is what a duplication gate caught twice in one session.
+repo_relative = import_repo_module(__file__, "scripts.path_portability_lib").repo_relative
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
@@ -346,18 +351,7 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument(
-        "--artifact-path",
-        type=Path,
-        default=None,
-        help=(
-            "Validate this artifact instead of the adapter-resolved one. Lets a caller "
-            "check a candidate draft without moving the live pointer. The handoff "
-            "sibling has carried this since June; quality did not, so the author-time "
-            "preflight ran validate-all and printed a verdict about a DIFFERENT file "
-            "while the author held a draft path."
-        ),
-    )
+    add_artifact_path_arg(parser, surface="quality")
     add_one_pass_args(
         parser,
         fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",
@@ -366,18 +360,9 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     adapter = load_adapter(repo_root)
-    if args.artifact_path is not None:
-        artifact_path = args.artifact_path if args.artifact_path.is_absolute() else repo_root / args.artifact_path
-    else:
-        artifact_path = repo_root / adapter["artifact_path"]
+    artifact_path = resolve_artifact_override(args, repo_root, adapter["artifact_path"])
     validate_quality_artifact(artifact_path, repo_root=repo_root, collect_all=not args.fail_fast)
-    try:
-        shown = artifact_path.relative_to(repo_root)
-    except ValueError:
-        # `--artifact-path` accepts a draft outside the tree (a temp dir), so the
-        # confirmation must name what it read rather than crash on the display.
-        shown = artifact_path
-    print(f"Validated quality artifact {shown}.")
+    print(f"Validated quality artifact {repo_relative(repo_root, artifact_path)}.")
     return 0
 
 
