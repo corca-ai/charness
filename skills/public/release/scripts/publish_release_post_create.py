@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import runpy
 import time
 import urllib.error
@@ -72,6 +73,48 @@ def verify_release_visible(
     return last_result
 
 
+# The trailing token must be a URL, and may be ANY host's URL.
+#
+# Both tighter and looser versions of this line failed, in opposite directions,
+# and the second failure was the dangerous one:
+#   `\S*` — matched any token, so `Full changelog rewritten` and
+#     `Full Changelog: N/A` were read as boilerplate. Loud and harmless: an
+#     authored body reported unauthored.
+#   `https?://\S+/(?:compare|commits)/\S*` — pinned to GitHub's own shape. This
+#     surface is adapter-portable (`release_view_body` is an adapter-declared op),
+#     so a host emitting `Full Changelog: https://example.dev/r/changelog?...`
+#     fell through to `clean` — "no mutable pointers found", asserted over a body
+#     with nothing in it. That is the exact verdict the five escaped releases got
+#     and the whole reason this branch exists, restored one repair later.
+# Requiring a URL keeps the first fix; not constraining its shape keeps the
+# branch host-agnostic. A false `unauthored` is recoverable; a false `clean` is
+# the escape.
+_FULL_CHANGELOG_RE = re.compile(
+    r"(?i)^\s*\*{0,2}full changelog\*{0,2}\s*:?\s*(?:https?://\S+)?\s*$"
+)
+
+
+def _body_says_anything(body: str) -> bool:
+    """Whether ``body`` carries content beyond `--generate-notes` boilerplate.
+
+    Deliberately narrow: only the generated `**Full Changelog**` line and blank
+    lines are treated as saying nothing, because that is the exact shape the five
+    escaped releases published. An auto-generated `## What's Changed` PR list is
+    NOT flagged — it is unauthored too, but it does tell an operator what landed,
+    and widening this to "unauthored" would put a verdict on a judgment call the
+    consuming repo owns. (A `## What's Changed` heading with no items under it —
+    reachable via a `.github/release.yml` whose filters exclude everything — is
+    outside that rationale and is likewise not flagged.)
+
+    What this establishes is "the body is empty of content", never "the notes
+    were written by a human".
+    """
+    return any(
+        line.strip() and not _FULL_CHANGELOG_RE.match(line)
+        for line in body.splitlines()
+    )
+
+
 def audit_published_release_body(
     repo_root: Path,
     payload: dict[str, Any],
@@ -133,7 +176,39 @@ def audit_published_release_body(
         )
         payload["published_notes_audit"] = record
         return record
+    # Computed BEFORE the content check, and carried onto whichever record wins.
+    # Running the check first discarded this: `Full changelog: <blob/main link>`
+    # is an AUTHORED one-line body, and reporting it `unestablished` with an
+    # empty advisory list dropped the exact mutable-pointer finding this audit
+    # exists to surface — the class (a) fix reintroducing class (d) one surface
+    # over. "Nothing authored was established" and "here is what the pointer rule
+    # saw" are both true and are both recorded.
     advisories = audit_notes_text(body, target_tag=tag_name)
+    if not _body_says_anything(body):
+        # The same class as the empty-body branch above, one step over: a body
+        # that is only `--generate-notes` boilerplate carries no mutable pointers,
+        # so the pointer rule finds nothing and `clean` reads as "the notes were
+        # audited and are fine". Nothing was authored to audit. Five releases
+        # published this way (v2.6.0/2.7.0/2.8.0/2.11.0/2.11.1) and no verdict
+        # anywhere said so. This does not block — the release already exists, and
+        # the refusal that could have stopped it is the drafted-notes blocker at
+        # preflight; this branch only stops the record from claiming a scope it
+        # never had.
+        #
+        # `unauthored`, not `unestablished`: the branch above could not LOOK (a
+        # failed or misrouted readback, remedy = fix auth/adapter), this one
+        # looked fine and found nothing there (remedy = `gh release edit`). Two
+        # remedies is two statuses; sharing one label collapsed them into a
+        # single artifact sentence that fit neither.
+        record.update(
+            status="unauthored", advisories=advisories, body_len=len(body),
+            reason=(
+                "published body carries no authored notes (generated changelog line only); "
+                "`gh release edit` is the remedy"
+            ),
+        )
+        payload["published_notes_audit"] = record
+        return record
     record.update(
         status="advisory" if advisories else "clean",
         advisories=advisories,

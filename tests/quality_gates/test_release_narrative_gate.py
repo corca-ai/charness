@@ -7,10 +7,12 @@ whole contribution is WHEN publish is refused and whether the refusal carries th
 blockers. Two of them raise `SystemExit` before publish; the post-publish reader
 must not, because the release already exists by then.
 
-`run_notes_file_preflight`'s `notes_file is None` early return is the
-`--generate-notes` path, where the notes are composed at creation time and there
-is no file to inspect beforehand. That branch is a live publish shape, not a
-defensive stub, so it is pinned here alongside the refusal it skips.
+`run_notes_file_preflight` has no `notes_file is None` early return any more: the
+drafted-notes arm runs on BOTH branches, because handing over the wrong file
+satisfies its premise exactly as `--generate-notes` did. The `--generate-notes`
+path is still a live publish shape and is still pinned here — but only as
+"silent when this repo drafts no notes for the tag", which is a different claim
+than the early return used to make.
 """
 from __future__ import annotations
 
@@ -58,11 +60,77 @@ def test_notes_file_preflight_passes_a_pinned_notes_file(tmp_path: Path) -> None
     GATE.run_notes_file_preflight(tmp_path, target_tag="v0.1.0", notes_file=notes)
 
 
+def _seed_release_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "release").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/release\n", encoding="utf-8"
+    )
+    return repo
+
+
 def test_notes_file_preflight_is_a_no_op_on_the_generate_notes_path(tmp_path: Path) -> None:
-    # `--generate-notes` passes no notes_file. The pointer rule then has nothing
-    # to read before publish, and `audit_notes_text` owns the published body
-    # afterwards; the preflight must not invent a refusal here.
-    GATE.run_notes_file_preflight(tmp_path, target_tag="v0.1.0", notes_file=None)
+    # `--generate-notes` passes no notes_file. With no notes drafted for the tag
+    # the preflight must not invent a refusal.
+    #
+    # Seeded with a REAL adapter and a REAL (empty) output_dir: with a bare
+    # `tmp_path` the drafted-notes arm returns early on the absent directory, so
+    # this passed without ever reaching the branch it is named for.
+    repo = _seed_release_repo(tmp_path)
+    (repo / "charness-artifacts" / "release" / "2026-05-13-v0.9.9-notes.md").write_text(
+        "Another release's notes.\n", encoding="utf-8"
+    )
+
+    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=None)
+
+
+def test_notes_file_preflight_refuses_generate_notes_over_a_drafted_note(tmp_path: Path) -> None:
+    """The v2.11.0 defect, at the cheap site.
+
+    `run_narrative_audit` refuses this too, but only after the bump and the
+    pre-push quality gates; this call site is what makes it a millisecond
+    refusal. It had no test at all, so deleting it from the preflight would not
+    have failed anything."""
+    repo = _seed_release_repo(tmp_path)
+    drafted = repo / "charness-artifacts" / "release" / "2026-05-13-v0.1.0-notes.md"
+    drafted.write_text("The operator's notes.\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as excinfo:
+        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=None)
+
+    message = str(excinfo.value)
+    assert "public release notes preflight blocked publish" in message
+    assert "2026-05-13-v0.1.0-notes.md" in message
+
+    # Handing the draft over is the whole remedy.
+    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=drafted)
+
+
+def test_notes_file_preflight_names_a_missing_path_before_the_drafted_arm(tmp_path: Path) -> None:
+    """A mistyped `--notes-file` must be told it does not exist.
+
+    With the drafted arm running first, the typo produced only "which is none of
+    them" — true, and silent about the actual mistake."""
+    repo = _seed_release_repo(tmp_path)
+    (repo / "charness-artifacts" / "release" / "v0.1.0-notes.md").write_text("notes", encoding="utf-8")
+    typo = repo / "charness-artifacts" / "release" / "v0.1.0-note.md"
+
+    with pytest.raises(SystemExit) as excinfo:
+        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=typo)
+
+    assert "notes file missing" in str(excinfo.value)
+
+
+def test_drafted_notes_lookup_defers_to_build_payload_on_an_invalid_adapter(tmp_path: Path) -> None:
+    """An unreadable adapter is `build_payload`'s blocker, with its own message.
+    The preflight must not pre-empt it with a listing failure."""
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text("not: a valid adapter\n", encoding="utf-8")
+
+    assert GATE._drafted_notes_for(repo, target_tag="v0.1.0") == []
+    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=None)
 
 
 def test_narrative_audit_refusal_carries_every_blocker(tmp_path: Path, monkeypatch) -> None:

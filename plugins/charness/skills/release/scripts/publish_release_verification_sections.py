@@ -124,6 +124,17 @@ def published_notes_audit_lines(record: dict[str, Any] | None) -> list[str]:
             lines.append(f"  - {advisory}")
     elif status == "clean":
         lines.append(f"- No mutable source-tree pointers found ({record.get('body_len', 0)} body bytes).")
+    elif status == "unauthored":
+        # Distinct from the not-audited statuses below, which mean the audit
+        # could not LOOK. Here it looked: the release shipped a body with nothing
+        # authored in it, and the remedy is the operator's, not the tooling's.
+        lines.append(
+            f"- The published body carries no authored notes ({record.get('body_len', 0)} body bytes) — "
+            "this release shipped with a generated changelog line and nothing else. "
+            "`gh release edit` is the remedy; the release itself is unaffected."
+        )
+        for advisory in record.get("advisories", []):
+            lines.append(f"  - {advisory}")
     else:
         lines.append(
             "- The body was NOT audited, so this release's notes carry no pointer verdict at all."

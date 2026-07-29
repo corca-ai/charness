@@ -20,6 +20,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_path_portability = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.path_portability_lib")
 
 
 REQUIRED_HEADINGS: tuple[str, ...] = (
@@ -202,6 +203,124 @@ def audit_notes_text(notes_text: str, *, target_tag: str) -> list[str]:
     return blockers
 
 
+# A maximal digits-and-separators run: the version-shaped tokens in a filename
+# stem, stopping at any letter. Compared for EQUALITY after normalizing `-` to
+# `.`, rather than searched for as a bounded substring.
+#
+# Boundary-anchored searching kept producing false matches as it was widened to
+# cover dash-separated names: `v3-2-1-notes.md` matched target `2.1` (left
+# boundary `-`, right boundary `-`), and a single-component tag like `v14`
+# matched the day field of every `...-07-14-...-notes.md`. Token equality has no
+# boundary to get wrong.
+_VERSION_RUN_RE = re.compile(r"\d+(?:[-.]\d+)*")
+
+
+def find_drafted_notes(repo_root: Path, output_dir: str, *, target_tag: str) -> list[Path]:
+    """Notes files already drafted for ``target_tag`` under the adapter's
+    ``output_dir``, sorted by name.
+
+    Existence only — the caller decides what a drafted-but-unsupplied note means.
+    This exists because the audits above all read notes the publisher CHOSE to
+    hand over; none of them could see notes the publisher wrote and then did not
+    pass. v2.11.0 shipped that way: its notes were authored, committed, and left
+    in this directory while publish took the `--generate-notes` default, so the
+    published body was one `**Full Changelog**` link and the section amending
+    2.10.0's now-wrong migration instruction reached nobody.
+
+    The version is matched by EQUALITY against the version-shaped tokens in the
+    stem, dot-or-dash separated. Every rule here was found by a reviewer or a
+    test against real filenames, never reasoned out: a plain substring test makes
+    `v2.1` match `v2.11.0`; a dotted-only token silently missed
+    `2026-07-14-v1-0-7-public-notes.md`, a shape this repo used three times, which
+    would have reproduced the v2.11.0 defect while the audit reported `passed`;
+    and the bounded-substring search that fixed THAT matched `v3-2-1-notes.md`
+    for target `2.1`. Comparing whole tokens removes the boundary entirely.
+
+    Deliberately NOT decided here: whether `v1.2.3-rc1-notes.md` belongs to
+    `v1.2.3`. A pre-release suffix and a role word (`-notes`, `-public`) are the
+    same shape after the version, so a filename cannot settle it. The match stays
+    permissive and the caller names every candidate instead of asserting which
+    one is right — a forced question, not a declared answer.
+    """
+    notes_dir = repo_root / output_dir
+    version = target_tag[1:] if target_tag.startswith("v") else target_tag
+    if not version:
+        return []
+    wanted = version.replace("-", ".")
+
+    def names_this_version(stem: str) -> bool:
+        return any(run.replace("-", ".") == wanted for run in _VERSION_RUN_RE.findall(stem))
+    try:
+        candidates = [path for path in notes_dir.glob("*.md") if path.is_file()]
+    except OSError:
+        # An unreadable or absent output_dir is not a reason to strand a publish
+        # after the bump. `is_dir()` swallows OSError but the glob does not.
+        return []
+    return sorted(
+        (path for path in candidates
+         if "notes" in path.stem.lower() and names_this_version(path.stem)),
+        key=lambda path: path.name,
+    )
+
+
+def _display_path(path: Path, repo_root: Path) -> str:
+    """``path`` rendered for an operator-facing blocker: repo-relative when it is
+    inside the repo, the raw path when it is not.
+
+    `output_dir` is an unvalidated free string in the release adapter, so an
+    absolute one makes a bare `relative_to` raise — after the bump and after the
+    pre-push gates, stranding a publish over a display string. The repo's
+    canonical renderer already handles that, so this defers to it rather than
+    re-deriving the try/except a duplication gate correctly flagged against
+    `control_plane_lib._manifest_path_for_payload`.
+    """
+    return _path_portability.repo_relative(repo_root, path)
+
+
+def drafted_notes_blockers(
+    repo_root: Path,
+    drafted_notes: list[Path],
+    *,
+    target_tag: str,
+    notes_file: Path | None,
+) -> list[str]:
+    """Blockers for notes drafted for ``target_tag`` that publish is not shipping.
+
+    The premise is "the publisher wrote the operator's notes and then published
+    something else", so the test is not "was a notes file passed" but "was one of
+    THESE passed": handing over `latest.md`, or the previous release's notes,
+    satisfies the premise just as fully as `--generate-notes` did for v2.11.0.
+
+    Silent for repos that draft no notes, so this fires on the observed defect
+    rather than on the `--generate-notes` path as such. It names every candidate
+    and refuses to pick: a pre-release draft and a role-suffixed draft are
+    indistinguishable by filename, so asserting one would be a verdict surface
+    handing out an instruction it cannot support.
+    """
+    if not drafted_notes:
+        return []
+    resolved = notes_file.resolve() if notes_file is not None else None
+    if resolved is not None and any(path.resolve() == resolved for path in drafted_notes):
+        return []
+    shown = ", ".join(f"`{_display_path(path, repo_root)}`" for path in drafted_notes)
+    supplied = (
+        f"publish was invoked with `--notes-file {_display_path(notes_file, repo_root)}`, which is none of them"
+        if notes_file is not None
+        else "publish was invoked without `--notes-file`, so the published body would be auto-generated from commits"
+    )
+    # "candidates", not "are drafted": with only `v1.2.3-rc1-notes.md` on disk,
+    # stating that v1.2.3's notes exist asserts the very thing `find_drafted_notes`
+    # says a filename cannot settle. The premise has to be as provisional as the
+    # remedy already is.
+    return [
+        f"drafted notes files match `{target_tag}` ({shown}) but {supplied}; "
+        f"the drafted notes would reach nobody. Pass the one that belongs to this release with "
+        f"`--notes-file`. If a candidate belongs to a different release (a pre-release suffix, say) "
+        f"or is superseded, rename or delete it AND COMMIT that — publish refuses a dirty worktree, "
+        f"so an uncommitted deletion only trades this refusal for another"
+    ]
+
+
 def build_payload(
     repo_root: Path,
     *,
@@ -224,6 +343,8 @@ def build_payload(
     if notes_file is not None:
         notes_blockers = audit_notes_file(notes_file, target_tag=target_tag)
         blockers.extend(notes_blockers)
+    drafted_notes = find_drafted_notes(repo_root, output_dir, target_tag=target_tag)
+    blockers.extend(drafted_notes_blockers(repo_root, drafted_notes, target_tag=target_tag, notes_file=notes_file))
     return {
         "status": "blocked" if blockers else "passed",
         "blockers": blockers,
@@ -231,6 +352,7 @@ def build_payload(
         "artifact_path": str(resolved_artifact),
         "notes_file": str(notes_file) if notes_file is not None else None,
         "notes_blockers": notes_blockers,
+        "drafted_notes": [str(path) for path in drafted_notes],
     }
 
 

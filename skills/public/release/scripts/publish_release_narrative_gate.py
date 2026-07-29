@@ -37,6 +37,19 @@ _audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public
 build_narrative_audit_payload = _audit_narrative.build_payload
 audit_notes_text = _audit_narrative.audit_notes_text
 audit_notes_file = _audit_narrative.audit_notes_file
+find_drafted_notes = _audit_narrative.find_drafted_notes
+load_adapter = _audit_narrative.load_adapter
+
+
+def _drafted_notes_for(repo_root: Path, *, target_tag: str) -> list[Path]:
+    """Drafted notes for ``target_tag``, or none when the adapter cannot be read.
+
+    An invalid adapter is `build_payload`'s blocker to raise with its own
+    message; this preflight must not pre-empt it with a listing failure."""
+    adapter = load_adapter(repo_root)
+    if not adapter["valid"]:
+        return []
+    return find_drafted_notes(repo_root, adapter["data"]["output_dir"], target_tag=target_tag)
 
 
 def run_narrative_audit(
@@ -58,9 +71,20 @@ def run_narrative_audit(
 
 
 def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Path | None) -> None:
-    if notes_file is None:
-        return
-    notes_blockers = audit_notes_file(notes_file, target_tag=target_tag)
+    # The drafted-notes refusal is a directory listing with no dependency on the
+    # bump, the release surface, or the pre-push gates, and `run_narrative_audit`
+    # — where it also fires — runs after all three. Refusing here too makes the
+    # cost of learning it milliseconds instead of a full gate run plus a rollback
+    # cycle. It reads the same helpers, so the two sites cannot disagree.
+    # The supplied file is audited FIRST. Running the drafted-notes arm ahead of
+    # it turned a mistyped `--notes-file` path into "which is none of them" —
+    # true, but it never says the path does not exist, and `audit_notes_file`'s
+    # `notes file missing` is the message that names the actual mistake.
+    notes_blockers = audit_notes_file(notes_file, target_tag=target_tag) if notes_file is not None else []
+    drafted = _drafted_notes_for(repo_root, target_tag=target_tag)
+    notes_blockers += _audit_narrative.drafted_notes_blockers(
+        repo_root, drafted, target_tag=target_tag, notes_file=notes_file
+    )
     if notes_blockers:
         raise SystemExit(
             "public release notes preflight blocked publish:\n"

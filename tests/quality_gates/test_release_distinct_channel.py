@@ -19,6 +19,7 @@ _EXECUTE = load_release_script("publish_release_execute")
 _HELPERS = load_release_script("publish_release_helpers")
 _NARRATIVE = load_release_script("audit_public_release_narrative")
 _COMMON = load_release_script("publish_release_common")
+_SECTIONS = load_release_script("publish_release_verification_sections")
 
 
 def _shell_result(returncode: int, stdout: str = "", stderr: str = ""):
@@ -703,6 +704,8 @@ def test_published_body_audit_does_not_call_an_empty_body_clean() -> None:
         run=lambda *a, **k: _shell_result(0, stdout="   \n"),
         audit_notes_text=_NARRATIVE.audit_notes_text,
     )
+    # `unestablished`, not `unauthored`: an empty readback means the audit could
+    # not LOOK, which is a tooling remedy, not an operator one.
     assert record["status"] == "unestablished"
     assert record["advisories"] == []
 
@@ -813,3 +816,150 @@ def test_unwrap_budget_exhaustion_and_unlexable_payload_are_reported_as_exhauste
     tokens, clean = guard._unwrap_command_tokens(["env", "sh", "-c", "gh release view v1"])
     assert clean is False
     assert tokens == ["gh", "release", "view", "v1"]
+
+
+def test_published_body_audit_refuses_to_call_an_unauthored_body_clean() -> None:
+    """A body that is only `--generate-notes` boilerplate carries no mutable
+    pointers, so the pointer rule finds nothing and `clean` reads as "audited and
+    fine". Nothing was authored to audit.
+
+    Reproduced against this repo's published releases, not inferred: v2.6.0,
+    v2.7.0, v2.8.0, v2.11.0 and v2.11.1 each shipped a body of exactly this shape
+    (81-83 bytes, one `**Full Changelog**` line), and v2.11.0's was the release
+    whose drafted notes amended 2.10.0's now-wrong migration instruction.
+    """
+    payload: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), payload, tag_name="v2.11.0", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command,
+        run=lambda *a, **k: _shell_result(
+            0, stdout="**Full Changelog**: https://github.com/o/r/compare/v2.10.0...v2.11.0\n"
+        ),
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+
+    assert record["status"] == "unauthored"
+    assert record["advisories"] == []
+    # Still advisory by construction: the release exists by now, so this branch
+    # corrects what the record CLAIMS and must never raise or block.
+    assert "no authored notes" in record["reason"]
+    assert payload["published_notes_audit"] is record
+
+
+def test_published_body_audit_still_audits_a_body_that_says_something() -> None:
+    """The narrow rule must not swallow real notes. A body with authored content
+    keeps its pointer verdict, boilerplate line and all."""
+    advisory: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), advisory, tag_name="v1.2.3", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command,
+        run=lambda *a, **k: _shell_result(
+            0,
+            stdout=(
+                "## What's Changed\n* Fix the thing by @someone\n"
+                "See https://github.com/o/r/blob/main/docs/x.md\n"
+                "\n**Full Changelog**: https://github.com/o/r/compare/v1.2.2...v1.2.3\n"
+            ),
+        ),
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+    assert record["status"] == "advisory"
+    assert record["advisories"] and "MUTABLE ref" in record["advisories"][0]
+
+
+def test_body_content_check_names_boilerplate_apart_from_notes() -> None:
+    """The discriminator itself, at the boundaries that decide a verdict."""
+    says_anything = _POST_CREATE._body_says_anything
+    assert not says_anything("")
+    assert not says_anything("\n   \n")
+    assert not says_anything("**Full Changelog**: https://github.com/o/r/compare/a...b\n")
+    # Bold markers are GitHub's rendering choice, not part of the claim; a plain
+    # or unlinked variant is the same empty body.
+    assert not says_anything("Full Changelog: https://github.com/o/r/compare/a...b")
+    assert not says_anything("\n**Full changelog**:\n\n")
+    # One authored sentence is content. The rule establishes "the body is empty",
+    # never "a human wrote it" — an auto-generated PR list passes here by design,
+    # because calling it unauthored is a judgment the consuming repo owns.
+    assert says_anything("Notes.\n**Full Changelog**: https://github.com/o/r/compare/a...b\n")
+    assert says_anything("## What's Changed\n* Fix by @someone\n")
+
+
+def test_unauthored_body_keeps_the_pointer_advisory_it_would_have_lost() -> None:
+    """The content check runs BEFORE the pointer rule, so ordering decides whether
+    a real finding survives.
+
+    `Full changelog: <blob/main link>` is an AUTHORED one-line body that the
+    boilerplate discriminator once swallowed: the record came back
+    `advisories: []` with a reason asserting "auto-generated boilerplate only",
+    dropping the exact D2 mutable-pointer finding this audit exists to surface —
+    the class (a) fix reintroducing class (d) one surface over.
+    """
+    payload: dict = {}
+    record = _POST_CREATE.audit_published_release_body(
+        Path("."), payload, tag_name="v1.2.3", backend={"id": "gh", "commands": None},
+        backend_command=_HELPERS.backend_command,
+        run=lambda *a, **k: _shell_result(
+            0, stdout="Full changelog: https://github.com/o/r/blob/main/CHANGELOG.md\n"
+        ),
+        audit_notes_text=_NARRATIVE.audit_notes_text,
+    )
+
+    # The line IS recognized boilerplate (any host's URL counts), so the body is
+    # `unauthored` -- and the pointer finding survives on the same record. Both
+    # facts are true and both are recorded; the bug was reporting only the first.
+    assert record["status"] == "unauthored"
+    assert record["advisories"] and "MUTABLE ref" in record["advisories"][0]
+
+
+def test_boilerplate_discriminator_does_not_swallow_authored_one_line_bodies() -> None:
+    """`\\S*` accepted any token after the colon, so an authored body whose whole
+    content is a deliberate pointer, or a sentence merely starting with those
+    words, was classified as generated."""
+    says_anything = _POST_CREATE._body_says_anything
+    # A URL is required, so prose after the phrase is authored content...
+    assert says_anything("Full changelog rewritten")
+    assert says_anything("Full Changelog: N/A")
+    # The generated shapes stay matched: `compare` for a normal release and
+    # `commits` for a first release with no predecessor.
+    assert not says_anything("**Full Changelog**: https://github.com/o/r/compare/v1.2.2...v1.2.3")
+    assert not says_anything("**Full Changelog**: https://github.com/o/r/commits/v1.0.0")
+    # ...and so does a NON-GitHub host's. `release_view_body` is an adapter-declared
+    # op, so pinning the URL to GitHub's `compare`/`commits` shape sent every other
+    # host's empty body to `clean` -- "no mutable pointers found", asserted over a
+    # body with nothing in it, which is the escape this branch exists to close.
+    assert not says_anything("Full Changelog: https://example.dev/o/r/changelog?from=v1.2.2&to=v1.2.3")
+    assert not says_anything("**Full Changelog**: https://git.example.internal/x/y/-/releases/v1.2.3")
+
+
+def test_artifact_names_an_unauthored_body_apart_from_one_it_could_not_read() -> None:
+    """Two worlds, two remedies, and they were rendered as one sentence.
+
+    `unavailable`/`unestablished` mean the audit could not LOOK (remedy: fix auth
+    or the adapter). `unauthored` means it looked and the release shipped an
+    empty body (remedy: `gh release edit`, and the operator owns it). Sharing the
+    "was NOT audited" sentence dropped the remedy for the case the branch exists
+    for, and hid the body size the verdict was formed over.
+    """
+    unauthored = _SECTIONS.published_notes_audit_lines(
+        {"status": "unauthored", "body_len": 83, "advisories": [],
+         "reason": "published body carries no authored notes"}
+    )
+    rendered = "\n".join(unauthored)
+    assert "no authored notes" in rendered
+    assert "83 body bytes" in rendered
+    assert "gh release edit" in rendered
+    assert "NOT audited" not in rendered
+
+    could_not_look = "\n".join(
+        _SECTIONS.published_notes_audit_lines({"status": "unavailable", "reason": "gh: not authenticated"})
+    )
+    assert "NOT audited" in could_not_look
+    assert "gh release edit" not in could_not_look
+
+    # An unauthored body that still carried a mutable pointer renders both facts.
+    both = "\n".join(
+        _SECTIONS.published_notes_audit_lines(
+            {"status": "unauthored", "body_len": 60, "advisories": ["points at MUTABLE ref `main`"]}
+        )
+    )
+    assert "no authored notes" in both and "MUTABLE ref" in both

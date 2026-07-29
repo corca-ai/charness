@@ -352,3 +352,254 @@ def test_audit_refuses_a_release_state_mentioned_only_in_prose(tmp_path: Path) -
     inprocess = [b for b in audit._audit_artifact(artifact_path, target_tag="v0.1.0") if "Release State" in b]
     assert len(inprocess) == 1
     assert "never checked" in inprocess[0]
+
+
+# --- Drafted notes that publish never handed over -------------------------------
+#
+# Reproduced against this repo's own history, not inferred: v2.11.0's notes were
+# authored, committed to `charness-artifacts/release/`, and left there while
+# publish took the `--generate-notes` default. The published body was one
+# `**Full Changelog**` link, so the section amending 2.10.0's now-wrong migration
+# instruction reached no operator. Every audit before this one read notes the
+# publisher CHOSE to hand over, so none of them could see this.
+
+
+def _seed_drafted(repo: Path, name: str) -> Path:
+    path = repo / "charness-artifacts" / "release" / name
+    path.write_text("# demo 0.1.0\n\nSelf-contained notes.\n", encoding="utf-8")
+    return path
+
+
+def test_audit_blocks_when_drafted_notes_exist_but_publish_supplied_none(tmp_path: Path) -> None:
+    repo = _seed_fixture(tmp_path)
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(_GOOD_ARTIFACT, encoding="utf-8")
+    _seed_drafted(repo, "2026-05-13-v0.1.0-notes.md")
+
+    result = _run_audit(repo)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    blocker = next(b for b in payload["blockers"] if "drafted notes files match" in b)
+    # The refusal names the file AND the flag that resolves it: a blocker that
+    # only says "notes exist" sends the publisher back to guess the path.
+    assert "2026-05-13-v0.1.0-notes.md" in blocker
+    assert "--notes-file" in blocker
+    assert payload["drafted_notes"] and "2026-05-13-v0.1.0-notes.md" in payload["drafted_notes"][0]
+
+
+def test_audit_does_not_block_when_the_drafted_notes_were_supplied(tmp_path: Path) -> None:
+    repo = _seed_fixture(tmp_path)
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(_GOOD_ARTIFACT, encoding="utf-8")
+    drafted = _seed_drafted(repo, "2026-05-13-v0.1.0-notes.md")
+
+    result = _run_audit(repo, "--notes-file", str(drafted))
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "passed"
+    assert payload["blockers"] == []
+    # `drafted_notes` reports what discovery FOUND, not what was wrong with it —
+    # the draft is still there, and the blocker is what says whether that matters.
+    # Emptying it here would make the payload unable to distinguish "no drafts" from
+    # "drafts, correctly shipped", and discovery now runs on both branches so that
+    # supplying the WRONG file is caught too.
+    assert [Path(p).name for p in payload["drafted_notes"]] == ["2026-05-13-v0.1.0-notes.md"]
+
+
+def test_audit_stays_silent_for_a_repo_that_drafts_no_notes(tmp_path: Path) -> None:
+    # `--generate-notes` is a legitimate publish shape. The refusal fires on the
+    # observed defect — notes written and then not passed — never on the flag.
+    repo = _seed_fixture(tmp_path)
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(_GOOD_ARTIFACT, encoding="utf-8")
+
+    result = _run_audit(repo)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["drafted_notes"] == []
+
+
+def test_drafted_notes_discovery_matches_the_naming_shapes_in_this_repos_release_dir(tmp_path: Path) -> None:
+    """The shapes are READ OFF `charness-artifacts/release/`, not sampled by hand.
+
+    The first version of this test enumerated four shapes and asserted it had
+    them all. The directory held a fifth — `2026-07-14-v1-0-7-public-notes.md`,
+    dash-separated, used three times — which the dotted-only token missed. A test
+    claiming exhaustiveness over a directory it never read is why that shipped,
+    so the real directory is the fixture now.
+    """
+    from tests.script_loader import load_script_module
+
+    audit = load_script_module(
+        "audit_public_release_narrative_drafted",
+        REPO_ROOT / "skills" / "public" / "release" / "scripts" / "audit_public_release_narrative.py",
+    )
+    live = sorted(p.name for p in (REPO_ROOT / "charness-artifacts" / "release").glob("*.md"))
+    assert live, "the release output_dir is the fixture; an empty one makes this test vacuous"
+
+    repo = _seed_fixture(tmp_path)
+    for name in live:
+        _seed_drafted(repo, name)
+    # Two shapes the live directory does not currently hold, pinned so the
+    # bounding rules stay covered if those files are ever pruned.
+    # A dash-separated fixture is pinned explicitly: the live archive is the only
+    # thing currently covering that shape, and it is exactly the shape the first
+    # implementation missed. Pruning the archive must not silently retire it.
+    for name in ("2026-07-26-v2.1-notes.md", "2026-07-27-v2.11.3-critique.md", "v3-2-1-notes.md"):
+        _seed_drafted(repo, name)
+
+    def found(tag: str) -> list[str]:
+        return [p.name for p in audit.find_drafted_notes(repo, "charness-artifacts/release", target_tag=tag)]
+
+    # Dotted, `v`-prefixed, dated -- and the dash-separated shape that was missed.
+    assert found("v2.11.0") == ["2026-07-26-v2.11.0-notes.md"]
+    assert found("v1.0.7") == ["2026-07-14-v1-0-7-public-notes.md"]
+    assert found("v0.63.1") == ["2026-07-09-v0-63-1-notes.md"]
+    # Bare `v`-prefixed, and the two prefix forms with no `v` at all.
+    assert found("v2.11.2") == ["v2.11.2-notes.md"]
+    assert found("v0.56.6") == ["notes-0.56.6.md"]
+    # `v2.11.3` must not pick up the critique artifact carrying the same version:
+    # the rule is "a notes file for this tag", not "any artifact mentioning it".
+    assert found("v2.11.3") == ["notes-2.11.3.md"]
+    # The collision an unbounded substring test gets wrong: `2.1` is a prefix of
+    # `2.11.0`/`2.11.2`/`2.11.3`, so it would refuse a v2.1 publish over three
+    # notes files belonging to other releases.
+    assert found("v2.1") == ["2026-07-26-v2.1-notes.md"]
+    # A dash-separated real-host-proof artifact carries the version but not the
+    # `notes` role word, so the role filter -- not the version token -- excludes it.
+    assert "2026-07-22-v2-4-2-real-host-proof.md" not in found("v2.4.2")
+    assert found("v3.2.1") == ["v3-2-1-notes.md"]
+    # ...and it must not answer for a version it merely CONTAINS. The
+    # bounded-substring search that first fixed the dash shape matched
+    # `v3-2-1-notes.md` here, because `-2-1-` has a separator on both sides.
+    assert "v3-2-1-notes.md" not in found("v2.1")
+    # Same class, single-component tag: `14` is a substring of every date-prefixed
+    # name in the archive, and a token comparison never sees it as a version.
+    assert found("v14") == []
+    assert found("v9.9.9") == []
+
+
+def test_drafted_notes_discovery_refuses_an_empty_version_over_a_real_directory(tmp_path: Path) -> None:
+    """The `not version` guard, exercised where it can actually fail.
+
+    Pinned against a POPULATED directory: with an empty output_dir both the
+    guarded and unguarded paths return `[]`, so the guard had no coverage. An
+    empty version compiles a token that matches nearly any stem, which would turn
+    every notes file in the directory into a publish blocker.
+    """
+    from tests.script_loader import load_script_module
+
+    audit = load_script_module(
+        "audit_public_release_narrative_empty_version",
+        REPO_ROOT / "skills" / "public" / "release" / "scripts" / "audit_public_release_narrative.py",
+    )
+    repo = _seed_fixture(tmp_path)
+    _seed_drafted(repo, "2026-05-13-v0.1.0-notes.md")
+    assert audit.find_drafted_notes(repo, "charness-artifacts/release", target_tag="v0.1.0")
+
+    assert audit.find_drafted_notes(repo, "charness-artifacts/release", target_tag="v") == []
+    assert audit.find_drafted_notes(repo, "charness-artifacts/release", target_tag="") == []
+
+
+def test_drafted_notes_discovery_survives_an_absent_or_unreadable_output_dir(tmp_path: Path) -> None:
+    from tests.script_loader import load_script_module
+
+    audit = load_script_module(
+        "audit_public_release_narrative_no_dir",
+        REPO_ROOT / "skills" / "public" / "release" / "scripts" / "audit_public_release_narrative.py",
+    )
+    # A repo whose adapter names an output_dir that does not exist yet must not
+    # crash the publish preflight on a directory listing.
+    assert audit.find_drafted_notes(tmp_path, "charness-artifacts/release", target_tag="v0.1.0") == []
+
+    # `is_dir()` swallows OSError, the glob does not: an unreadable directory
+    # would otherwise strand a publish AFTER the bump and the pre-push gates.
+    blocked = tmp_path / "locked"
+    blocked.mkdir()
+    (blocked / "v0.1.0-notes.md").write_text("x", encoding="utf-8")
+    blocked.chmod(0o000)
+    try:
+        assert audit.find_drafted_notes(tmp_path, "locked", target_tag="v0.1.0") == []
+    finally:
+        blocked.chmod(0o755)
+
+
+def test_drafted_notes_blocker_names_every_candidate_without_picking_one(tmp_path: Path) -> None:
+    """A pre-release draft and a role-suffixed draft are the same shape after the
+    version, so the filename cannot settle which belongs to this release.
+
+    The first version emitted one blocker per file, each saying `Pass
+    --notes-file <it>`. For tag `v1.2.3` with `v1.2.3-rc1-notes.md` drafted, that
+    instructed the operator to publish RELEASE-CANDIDATE notes as the GA body --
+    a verdict surface handing out an instruction it cannot support.
+    """
+    from tests.script_loader import load_script_module
+
+    audit = load_script_module(
+        "audit_public_release_narrative_candidates",
+        REPO_ROOT / "skills" / "public" / "release" / "scripts" / "audit_public_release_narrative.py",
+    )
+    repo = _seed_fixture(tmp_path)
+    final = _seed_drafted(repo, "v1.2.3-notes.md")
+    rc = _seed_drafted(repo, "v1.2.3-rc1-notes.md")
+
+    drafted = audit.find_drafted_notes(repo, "charness-artifacts/release", target_tag="v1.2.3")
+    assert [p.name for p in drafted] == ["v1.2.3-notes.md", "v1.2.3-rc1-notes.md"]
+
+    blockers = audit.drafted_notes_blockers(repo, drafted, target_tag="v1.2.3", notes_file=None)
+
+    assert len(blockers) == 1, "one question, not one imperative per candidate"
+    assert "v1.2.3-notes.md" in blockers[0] and "v1.2.3-rc1-notes.md" in blockers[0]
+    # The remedy must not assert which file is right...
+    assert "belongs to this release" in blockers[0]
+    # ...and must say the deletion needs committing: publish refuses a dirty
+    # worktree, so `rm` alone trades this refusal for a different one.
+    assert "COMMIT" in blockers[0]
+
+    # Supplying either candidate discharges it; supplying neither does not.
+    assert audit.drafted_notes_blockers(repo, drafted, target_tag="v1.2.3", notes_file=final) == []
+    assert audit.drafted_notes_blockers(repo, drafted, target_tag="v1.2.3", notes_file=rc) == []
+
+
+def test_audit_blocks_when_a_notes_file_other_than_the_draft_is_supplied(tmp_path: Path) -> None:
+    """The premise is "the publisher wrote notes and published something else",
+    and handing over `latest.md` satisfies it exactly as `--generate-notes` did.
+
+    The first version made the whole arm the `else` of `notes_file is not None`,
+    so passing ANY file discharged it."""
+    repo = _seed_fixture(tmp_path)
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(_GOOD_ARTIFACT, encoding="utf-8")
+    _seed_drafted(repo, "2026-05-13-v0.1.0-notes.md")
+    decoy = repo / "charness-artifacts" / "release" / "some-other.md"
+    decoy.write_text("Unrelated.\n", encoding="utf-8")
+
+    result = _run_audit(repo, "--notes-file", str(decoy))
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    blocker = next(b for b in payload["blockers"] if "drafted notes files match" in b)
+    assert "which is none of them" in blocker
+    assert "2026-05-13-v0.1.0-notes.md" in blocker
+
+
+def test_drafted_notes_blocker_survives_an_absolute_output_dir(tmp_path: Path) -> None:
+    """`output_dir` is an unvalidated free string in the release adapter, so an
+    absolute one made `relative_to` raise -- after the bump and the pre-push
+    gates, stranding a publish over a display string."""
+    from tests.script_loader import load_script_module
+
+    audit = load_script_module(
+        "audit_public_release_narrative_abs",
+        REPO_ROOT / "skills" / "public" / "release" / "scripts" / "audit_public_release_narrative.py",
+    )
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    drafted = outside / "v0.1.0-notes.md"
+    drafted.write_text("notes", encoding="utf-8")
+
+    blockers = audit.drafted_notes_blockers(
+        tmp_path / "repo", [drafted], target_tag="v0.1.0", notes_file=None
+    )
+
+    assert len(blockers) == 1
+    assert str(drafted) in blockers[0]

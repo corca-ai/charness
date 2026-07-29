@@ -1273,6 +1273,13 @@
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e8742da4a5390480",
+      "note": "two-line empty-input early return (`if not <collection>: return []`) shared by seven unrelated functions across scripts/ and three portable skills. Verified by reading all seven: they guard different collections, return different types of empty result, and share no caller -- the identity is the Python idiom, not copied logic. Extracting it would require every caller to import a helper to express `return []`. Nothing to remove; classified rather than absorbed.",
+      "reviewed_at": "2026-07-29",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

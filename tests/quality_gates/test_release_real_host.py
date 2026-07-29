@@ -483,7 +483,7 @@ def test_real_host_unresolvable_triggers_are_not_reported_as_a_non_match() -> No
 
 def test_published_notes_audit_names_a_clean_body_and_an_unaudited_one_apart() -> None:
     """An advisory nobody reads is the silent path this section exists to close,
-    so each of its three worlds must be distinguishable: pointers found, no
+    so each of its four worlds must be distinguishable (`advisory`, `clean`, `unauthored`, and the not-audited statuses): pointers found, no
     pointers found (with the body size that scope was established over), and no
     audit at all."""
     sections = _verification_sections()
