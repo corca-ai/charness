@@ -926,3 +926,86 @@ def test_consumer_status_keeps_refused_distinct_from_blocked() -> None:
     assert producer.consumer_status(1) == "blocked"
     assert producer.consumer_status(teeth.REFUSED_EXIT) == "refused"
 
+
+def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Path, monkeypatch) -> None:
+    """Two unestablished causes at once must not mask each other.
+
+    The scope-mismatch return sits between `_apply_file_limit` and the limit's
+    own disclosure, so returning there dropped `unanalyzed_changed_pool_files`
+    and the operator saw one reason and not the other.
+    """
+    from scripts.changed_line_run_trust import SCOPE_MISMATCH, TrustProbe
+
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    _git(repo, "init", "-q")
+    for name in ("foo.py", "bar.py"):
+        (repo / "scripts" / name).write_text("def a():\n    return 1\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    base = _git(repo, "rev-parse", "HEAD")
+    for name in ("foo.py", "bar.py"):
+        (repo / "scripts" / name).write_text(
+            "def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8"
+        )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "head")
+    head = _git(repo, "rev-parse", "HEAD")
+    cov = repo / "coverage.json"
+    cov.write_text(
+        json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+        encoding="utf-8",
+    )
+
+    teeth = _load_teeth()
+    monkeypatch.setattr(
+        teeth, "probe_run_trust",
+        lambda *_a, **_k: TrustProbe([], "analyzed head is not the checked-out HEAD", SCOPE_MISMATCH),
+    )
+    monkeypatch.setattr(
+        sys, "argv",
+        ["check_changed_line_mutation_coverage.py", "--repo-root", str(repo),
+         "--base-sha", base, "--head-sha", head, "--reuse-coverage",
+         "--coverage-json", str(cov), "--limit-to-file", "scripts/foo.py"],
+    )
+    emitted: list[dict] = []
+    monkeypatch.setattr(teeth, "_emit", lambda report: emitted.append(report))
+
+    assert teeth.main() == teeth.UNESTABLISHED_EXIT
+    payload = emitted[-1]
+    assert payload["changed_line_proof"] == "unestablished-untrustworthy-input"
+    assert payload["unanalyzed_changed_pool_files"] == ["scripts/bar.py"]
+
+
+def test_a_refusal_is_reported_to_the_operator_as_a_refusal(tmp_path: Path) -> None:
+    """The producer's error text, not just its status.
+
+    A refusal narrated as "the consumer blocked the produced coverage" tells the
+    operator there are uncovered changed lines when the truth is that the gate
+    could not look.
+    """
+    producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
+    teeth = _load_teeth()
+    payload: dict = {
+        "executed_commands": [
+            {
+                "produced_mutation_coverage": True,
+                "mutation_coverage_consumer_command": "true",
+                "mutation_coverage_base_sha": "abc123",
+            }
+        ],
+        "status": "passed",
+    }
+
+    def fake_run_command(_repo_root, _command, _phase):
+        return {
+            "returncode": teeth.REFUSED_EXIT,
+            "stdout": json.dumps({"ok": False, "refused": True, "reason": "could not inspect the worktree"}),
+        }
+
+    stopped = producer.run_produced_coverage_consumer(tmp_path, payload, fake_run_command)
+
+    assert stopped is True
+    assert payload["status"] == "failed"
+    assert "REFUSED to judge" in payload["error"]
+    assert "not a report of uncovered changed lines" in payload["error"]

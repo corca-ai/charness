@@ -5,6 +5,10 @@ import re
 import subprocess
 from pathlib import Path
 
+import pytest
+
+from runtime_bootstrap import import_repo_module
+
 from .support import run_script
 
 SCRIPT = "skills/public/quality/scripts/check_changed_line_coverage.py"
@@ -178,4 +182,93 @@ def test_a_git_failure_is_unestablished_not_an_empty_change_set(tmp_path: Path) 
     clean = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--json")
     assert clean.returncode == 0, clean.stdout + clean.stderr
     assert json.loads(clean.stdout)["ok"] is True
+
+
+def test_human_line_renders_one_word_per_report_shape() -> None:
+    """The verdict WORD, tested directly.
+
+    `unestablished` reports carry an empty `blocking` list, so before this
+    renderer existed they fell through to the `OK:` line while the process
+    exited 1. Each arm is asserted here because the shape that produced the
+    wrong word was a fall-through, not a wrong branch.
+    """
+    module = import_repo_module(__file__, "skills.public.quality.scripts.check_changed_line_coverage")
+    line = module.human_line
+    assert line({"adapter_errors": ["bad glob"], "blocking": []}).startswith("quality adapter invalid:")
+    assert "inert" in line({"adapter_errors": [], "inert": True, "blocking": []})
+    assert line({"adapter_errors": [], "unestablished": True, "blocking": [], "reason": "git said no"}) == (
+        "UNESTABLISHED: git said no"
+    )
+    assert line({"adapter_errors": [], "blocking": ["a.py", "b.py"]}).startswith("FAIL: 2 changed file(s)")
+    assert line({"adapter_errors": [], "blocking": [], "reason": "nothing in range"}) == "OK: nothing in range"
+
+
+def test_a_git_failure_while_fingerprinting_is_also_unestablished(tmp_path: Path) -> None:
+    """The freshness fingerprint reads git too, and had the same collapse.
+
+    Separate call site from the changed-set probe, so it needs its own arm: a
+    stale-marker verdict computed from a file set git would not report is a
+    freshness claim over a scope that was never read.
+    """
+    gate = import_repo_module(__file__, "skills.public.quality.scripts.changed_line_coverage_gate_lib")
+    repo, base = _seed_repo(tmp_path)
+    (repo / "cov.json").write_text('{"files": {}}', encoding="utf-8")
+
+    calls = {"n": 0}
+
+    def flaky(repo_root, args):
+        calls["n"] += 1
+        if calls["n"] == 1:  # the changed-set probe succeeds
+            return ["pkg/mod.py"]
+        raise gate.GitUnavailable("git refused the fingerprint probe")
+
+    original = gate._git_lines
+    gate._git_lines = flaky
+    try:
+        report = gate.run_gate(
+            repo,
+            {"eligible_globs": ["pkg/**/*.py"], "coverage_json": "cov.json"},
+            base_sha=base,
+            head_sha="HEAD",
+            classify=lambda **k: {"blocking": []},
+            load_statement_lines=lambda *a, **k: {},
+            marker_path=lambda path: path.with_suffix(".fp"),
+        )
+    finally:
+        gate._git_lines = original
+
+    assert report["ok"] is False
+    assert report["unestablished"] is True
+    assert "coverage-freshness fingerprint" in report["reason"]
+
+
+def test_stamp_marker_refuses_to_certify_a_file_set_it_could_not_read(tmp_path: Path) -> None:
+    """Deliberately uncaught: a marker is a freshness CLAIM the consumer trusts."""
+    gate = import_repo_module(__file__, "skills.public.quality.scripts.changed_line_coverage_gate_lib")
+    repo, base = _seed_repo(tmp_path)
+    original = gate._git_lines
+
+    def refuse(repo_root, args):
+        raise gate.GitUnavailable("git refused")
+
+    gate._git_lines = refuse
+    try:
+        with pytest.raises(gate.GitUnavailable):
+            gate.stamp_marker(
+                repo, {"eligible_globs": ["pkg/**/*.py"], "coverage_json": "cov.json"}, base,
+                marker_path=lambda path: path.with_suffix(".fp"),
+            )
+    finally:
+        gate._git_lines = original
+
+
+def test_gate_config_is_the_one_reader_for_both_entry_points() -> None:
+    """The producer that stamps the marker and the consumer that checks it must
+    be scoped to the same file set, so they read the adapter block through one
+    function rather than each unpacking it."""
+    gate = import_repo_module(__file__, "skills.public.quality.scripts.changed_line_coverage_gate_lib")
+    assert gate.gate_config({"eligible_globs": ["a"], "coverage_json": "c.json", "exclude_globs": ["b"]}) == (
+        ["a"], "c.json", ["b"]
+    )
+    assert gate.gate_config({}) == ([], "", [])
 
