@@ -1009,3 +1009,21 @@ def test_a_refusal_is_reported_to_the_operator_as_a_refusal(tmp_path: Path) -> N
     assert payload["status"] == "failed"
     assert "REFUSED to judge" in payload["error"]
     assert "not a report of uncovered changed lines" in payload["error"]
+
+
+def test_an_unresolvable_head_sha_is_inspection_failed_not_a_clean_probe(tmp_path: Path) -> None:
+    """A `--head-sha` git cannot resolve is "could not look", not "looked and found nothing".
+
+    Distinct arm from the worktree-inspection failure: this one fires before any
+    diff runs, so a caller that mistyped a ref would otherwise get a probe that
+    reports no contamination for a comparison that never happened.
+    """
+    repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)
+    teeth = _load_teeth()
+
+    probe = teeth.probe_run_trust(repo, "no-such-ref-here", {"scripts/foo.py"})
+
+    assert probe.contaminated == []
+    assert probe.unestablished_kind == teeth.INSPECTION_FAILED
+    assert "could not resolve" in probe.unestablished_reason
+
