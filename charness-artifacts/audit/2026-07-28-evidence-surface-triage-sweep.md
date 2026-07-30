@@ -4,8 +4,8 @@ Status: first-look triage complete. **109 leads survived adversarial refutation*
 over 146 proof surfaces that no prior hunt had ever examined on this axis. A
 SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
-**21 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
-S14/S16/S17/S18/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30 — reproduced in the
+**22 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
+S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30 — reproduced in the
 parent, fixed, and regression-tested. **S15 is PARTIAL:** the pre-rule scope verdict now
 discloses its basis (`evaluated`, `created`, `rule_date`), but the self-declared `Created:`
 line still decides whether the floor runs, because forcing it in scope was MEASURED to
@@ -29,8 +29,9 @@ still open" is a claim about the main table only.
 The S27/S29/S33/S34 batch also produced **14 new leads** across two review rounds of that
 one fix; they are recorded at the end under
 [Leads found while closing S27/S29/S33/S34](#leads-found-while-closing-s27s29s33s34) and
-are REVIEWER-DERIVED, not parent-reproduced. Twelve were repaired inside the same slice; R8 is
-open and R9 was dispositioned as an accepted residual by the operator on 2026-07-28. Round 2 reviewed the round-1 REPAIRS and found the class
+are REVIEWER-DERIVED, not parent-reproduced. Twelve were repaired inside the same slice; R8 was
+refuted at HEAD on 2026-07-30 and R9 was dispositioned as an accepted residual by the
+operator on 2026-07-28. Round 2 reviewed the round-1 REPAIRS and found the class
 again in four more places, which is the number worth remembering about this class.
 
 ## Why this exists
@@ -141,7 +142,7 @@ where this repo's proof surfaces keep failing.
 | S22 | high | SUBAGENT-CONFIRMED | c | `skills/public/issue/scripts/audit_brief.py:80` | A transcript whose fix-unit records mutation and close events but no `classification` event: {"events":[{"kind":"mutation","issue":143,"tool":"Edit"},{"kind":"close","issue":143}]} | Ran it: `audit ok: 1 fix-unit(s) checked` exit 0. The brief-before-mutation contract is voided by omitting the one event that arms it — omission is rewarded over declaration. Same  |
 | S23 | high | SUBAGENT-CONFIRMED | d | `skills/public/issue/scripts/issue_verify_closeout.py:293` | A carrier body that passes every pre-fold check but declares a `## Proof Ledger` row with an unsatisfied acceptance class and an empty disposition. `confirmation` is built at lines | Ran it: `ok: False, status: failed` while `confirmation.line == "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)"`. The code comment says do |
 | S24 | high | SUBAGENT-CONFIRMED | d | `skills/public/issue/scripts/resolve_adapter.py:226` | /tmp/t2/.agents/issue-adapter.yaml containing `default_org corca-typo` (missing colon), or a top-level YAML list instead of a mapping. Ran: python3 skills/public/issue/scripts/reso | "valid": true, "errors": [], "warnings": [] and exit 0. The malformed line is silently dropped and default_org silently falls back to the hardcoded "corca-ai". The `Adapter file di |
-| S25 | high | SUBAGENT-CONFIRMED | d | `skills/public/quality/scripts/changed_line_coverage_gate_lib.py:145` | run_gate(Path('.'), {'eligible_globs':['**/*.py'],'coverage_json':'cov.json'}, base_sha='deadbeef...'(unknown sha), head_sha='HEAD', ...). _git_lines swallows the non-zero git exit | {'ok': True, 'reason': 'no eligible changed files in this range'} — the classify callback (which would have returned blocking rows) is never invoked. A git failure is reported as ' |
+| S25 | high | CLOSED (parent-reproduced 2026-07-30) | d | `skills/public/quality/scripts/changed_line_coverage_gate_lib.py:145` | run_gate(Path('.'), {'eligible_globs':['**/*.py'],'coverage_json':'cov.json'}, base_sha='deadbeef...'(unknown sha), head_sha='HEAD', ...). _git_lines swallows the non-zero git exit | {'ok': True, 'reason': 'no eligible changed files in this range'} — the classify callback (which would have returned blocking rows) is never invoked. A git failure is reported as ' |
 | S26 | high | SUBAGENT-CONFIRMED | c | `skills/public/quality/scripts/ci_local_gate_parity_lib.py:244` | A workflow job whose steps are all `uses:` (e.g. `- uses: actions/checkout@v4` then `- uses: ./.github/actions/run-everything`). Guard: `if not steps or all(not isinstance(step.get | render_report → {'workflows_scanned': 1, 'parity_issues': [], 'jobs_without_canonical_gate': []}. The backstop that should have flagged 'this job never invokes the canonical local  |
 | S27 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/draft_dup_ratchet_triage.py:68` | A hard-blocked clone family whose inventory record carries no `sample_locations` (e.g. a nose payload where locations were truncated or the family came from a --summary view). _mem | ('intentional', 'portable per-skill adapter/bootstrap copies are expected') and draft_dup_review_entry class "intentional" — for a 9-member, 400-shared-line family. Applying the dr |
 | S28 | high | SUBAGENT-CONFIRMED | c | `skills/public/quality/scripts/dup_ratchet_rebaseline.py:63` | `--write-baseline` when `charness-artifacts/quality/dup-ratchet-baseline.json` EXISTS but is truncated/malformed/legacy-shaped. `load_gate_baseline_ids` returns None on unreadable- | Ran it with a truncated baseline, `--baseline-delta-threshold 5`, no `--confirm-baseline-delta`, 50 live families: returns `{ok: true, status: 'baseline-written', code_family_count |
@@ -263,9 +264,9 @@ surfaces that are known good.
 Two bounded review rounds over that one fix produced these. **Provenance:
 REVIEWER-DERIVED** — read from source by a read-only reviewer, not reproduced by the
 parent, except where a row says otherwise. The rows marked `REPAIRED (same slice)` were
-fixed and regression-tested inside the S27/S29/S33/S34 commit. **R8 is the one OPEN row
-and is the next coherent batch of this class**; R9 was dispositioned as an accepted
-residual by the operator on 2026-07-28 and is not work to pick up.
+fixed and regression-tested inside the S27/S29/S33/S34 commit. **No row here is open:**
+R8 was refuted at HEAD on 2026-07-30 (the S25 fix had already closed it — see its row),
+and R9 was dispositioned as an accepted residual by the operator on 2026-07-28.
 
 | id | sev | status | surface:line | the unestablished verdict |
 | --- | --- | --- | --- | --- |

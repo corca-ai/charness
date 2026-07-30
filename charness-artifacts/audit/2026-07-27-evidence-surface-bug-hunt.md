@@ -10,9 +10,13 @@ partially fixed on 2026-07-27 as the publish-gate family; D2, D6, D8 fixed and
 D4 partially fixed on 2026-07-28 as the distinct-channel family; D7, D9, D10, E5
 fixed on 2026-07-28 as the empty-scope family remainder.
 
-**Remaining: 11 OPEN + 6 PARTIAL.** Count fully-open rows and partial rows
-separately; a PARTIAL is not a landed row, and rolling them into a single
-"N remain" figure is the same class of claim this file exists to hunt.
+**Remaining: 5 OPEN (E1, E3, E4, E6, E7) + 5 PARTIAL (A3, A8, C6, D4, E2)** as of
+2026-07-30. Count fully-open rows and partial rows separately; a PARTIAL is not a
+landed row, and rolling them into a single "N remain" figure is the same class of
+claim this file exists to hunt. Two of those rows are not work to pick up: **E4 is
+the same defect as [D39](../../docs/deferred-decisions.md)** and stays deferred
+against that entry's reopen trigger, and A8's residual basename half is a deliberate
+open decision (dropping cross-checkout dedup), recorded in its row.
 This file is the tracking record — update the Status column as items land.
 
 ## Why this exists
@@ -715,6 +719,10 @@ Class (f).
   a passing control rules out "the harness was broken".
 
 ## Suggested order for the fix sessions
+
+**Superseded for E (2026-07-30):** E was last here because it is a contract change,
+and everything ahead of it has since landed — the E-cluster is now the largest
+coherent block left, minus E4 (= D39, deferred).
 
 1. **A1 + A2** — the live incident mechanism, and the guard that would otherwise
    still be bypassable after A1 is fixed. (Landed.)
