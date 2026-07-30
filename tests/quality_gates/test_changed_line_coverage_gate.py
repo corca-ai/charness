@@ -399,6 +399,82 @@ def test_a_git_failure_while_fingerprinting_is_also_unestablished(tmp_path: Path
     assert "coverage-freshness fingerprint" in report["reason"]
 
 
+def test_an_unborn_repo_cannot_resolve_head_and_says_so(tmp_path: Path) -> None:
+    """`git init` with no commit yet: `HEAD` names no commit.
+
+    Every other arm resolves the REQUESTED head and compares it to `HEAD`, so a
+    `HEAD` that does not resolve has to be its own refusal. Reading it as "the
+    heads match" would clear a repo with no history to a verdict.
+    """
+    gate = import_repo_module(__file__, "skills.public.quality.scripts.changed_line_coverage_gate_lib")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init")
+
+    scope = gate.resolve_head_scope(repo, "HEAD")
+
+    assert scope.resolved is None
+    assert scope.mismatch is None
+    assert "could not resolve `HEAD`" in scope.error
+
+
+@pytest.mark.parametrize("head_sha", ["HEAD", "deadbeef"])
+def test_a_silent_rev_parse_is_a_refusal_not_an_index_error(tmp_path: Path, head_sha: str) -> None:
+    """`_git_lines` returning empty on a zero exit is the defensive case.
+
+    Real `git rev-parse --verify <x>^{commit}` always prints a sha when it exits
+    0, so this arm is not reachable through git -- it guards the `_git_lines`
+    CONTRACT. Deleting it would not delete the case; it would turn a clean
+    refusal into an `IndexError` on `resolved[0]`, which is the same
+    could-not-look-reads-as-something shape one layer down.
+    """
+    gate = import_repo_module(__file__, "skills.public.quality.scripts.changed_line_coverage_gate_lib")
+    repo, _ = _seed_repo(tmp_path)
+    original = gate._git_lines
+
+    def silent(repo_root, args):
+        # `HEAD` resolves for the non-HEAD case, so the second probe is the one
+        # under test; the `HEAD` case trips on the first.
+        if head_sha != "HEAD" and args[-1] == "HEAD^{commit}":
+            return original(repo_root, args)
+        return []
+
+    gate._git_lines = silent
+    try:
+        scope = gate.resolve_head_scope(repo, head_sha)
+    finally:
+        gate._git_lines = original
+
+    assert scope.resolved is None
+    assert scope.mismatch is None
+    assert "could not resolve" in scope.error
+
+
+def test_the_false_green_probe_swallows_a_git_failure_instead_of_killing_the_run(tmp_path: Path) -> None:
+    """The warning is advisory; the verdict is not.
+
+    `_git_lines` raises on a nonzero git exit, and this probe runs AFTER the
+    report exists, so an unhandled raise here destroyed a verdict the gate had
+    already reached -- no `OK:`/`FAIL:` line, no parseable `--json`. Losing the
+    advisory is the correct trade; losing the verdict is not.
+    """
+    entry = import_repo_module(__file__, "skills.public.quality.scripts.check_changed_line_coverage")
+    gate = entry._gate_lib
+    repo, _ = _seed_repo(tmp_path)
+    original = gate._git_lines
+
+    def fail_the_worktree_probe(repo_root, args):
+        if args[:2] == ["diff", "--name-only"]:
+            raise gate.GitUnavailable("git refused the worktree probe")
+        return original(repo_root, args)
+
+    gate._git_lines = fail_the_worktree_probe
+    try:
+        assert entry._false_green_warning(repo, "HEAD", ["pkg/**/*.py"], []) is None
+    finally:
+        gate._git_lines = original
+
+
 def test_stamp_marker_refuses_to_certify_a_file_set_it_could_not_read(tmp_path: Path) -> None:
     """Deliberately uncaught: a marker is a freshness CLAIM the consumer trusts."""
     gate = import_repo_module(__file__, "skills.public.quality.scripts.changed_line_coverage_gate_lib")
