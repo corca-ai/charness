@@ -470,6 +470,21 @@
       ],
       "rationale": "Plugin preamble prints disabled runtime self-update status."
     },
+    "scripts/prepush_focused_changed_line_coverage.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "structured_warning",
+        "terminal_payload",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "--skip-if-no-coverage"
+      ],
+      "rationale": "The incremental pre-push changed-line producer (D40). The word `skipped` appears only in prose describing the lane this REPLACES -- the old wiring exited 0 by construction, which is what let eight regressions land. This surface has no silent skip state of its own: its two exit-zero non-clean outcomes are `noop` (no eligible pool file changed at all) and `unproven` (every changed pool file maps to no standing test, so a mapper gap rather than a coverage gap -- policy (a)). `unproven` is never silent: it emits a `WARNING (incremental changed-line coverage):` line naming every unproven file, which run-quality's print_phase_output surfaces on a passing gate, and it carries `status: unproven` plus `unmapped_changed_pool_files` in the terminal payload. Everything that could be mistaken for a pass without having judged -- an unresolvable base, a dead focused producer, a consumer refusal -- exits 2 (`no-verdict`), deliberately distinct from both 0 and the blocking 1."
+    },
     "scripts/record_usage_feedback.py": {
       "states": [
         "disabled",
@@ -615,6 +630,20 @@
         "classification_skipped"
       ],
       "rationale": "Slice closeout usage emission reports disabled or missing adapter state in the closeout payload, and propagates the classifier's skipped reason as classification_skipped on the durable episode record instead of treating telemetry absence as successful capture."
+    },
+    "scripts/subprocess_only_coverage_advisory.py": {
+      "states": [
+        "advisory-only"
+      ],
+      "visibility": [
+        "structured_warning",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "advisory-only",
+        "subprocess_coverage_advisory"
+      ],
+      "rationale": "The subprocess-coverage note is advisory by construction: it rides the changed-line gate's BLOCKING payload under `subprocess_coverage_advisory` and is printed to stderr as an explicit `ADVISORY (not a blocker)` line, so it is always read beside a refusal the operator is already stopped by. It never suppresses a blocker, and an unusable baseline degrades it to silence rather than to a clean verdict -- the gate's own verdict has already been computed by then."
     },
     "scripts/sync_support.py": {
       "states": [
@@ -1388,21 +1417,6 @@
         "status=\"skipped\""
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
-    },
-    "scripts/prepush_focused_changed_line_coverage.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "structured_warning",
-        "terminal_payload",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "--skip-if-no-coverage"
-      ],
-      "rationale": "The incremental pre-push changed-line producer (D40). The word `skipped` appears only in prose describing the lane this REPLACES -- the old wiring exited 0 by construction, which is what let eight regressions land. This surface has no silent skip state of its own: its two exit-zero non-clean outcomes are `noop` (no eligible pool file changed at all) and `unproven` (every changed pool file maps to no standing test, so a mapper gap rather than a coverage gap -- policy (a)). `unproven` is never silent: it emits a `WARNING (incremental changed-line coverage):` line naming every unproven file, which run-quality's print_phase_output surfaces on a passing gate, and it carries `status: unproven` plus `unmapped_changed_pool_files` in the terminal payload. Everything that could be mistaken for a pass without having judged -- an unresolvable base, a dead focused producer, a consumer refusal -- exits 2 (`no-verdict`), deliberately distinct from both 0 and the blocking 1."
     }
   }
 }

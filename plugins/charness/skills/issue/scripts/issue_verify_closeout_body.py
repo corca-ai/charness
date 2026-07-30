@@ -42,6 +42,31 @@ def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
     return refs
 _HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<name>.+?)\s*$")
 _FIELD_RE = re.compile(r"^\s*(?:[-*]\s*)?(?P<name>[A-Za-z][A-Za-z -]{1,40}):\s*(?P<value>.*)$")
+# A *targeted* ledger section line — the ``<Name> #N: <value>`` grammar this module
+# defines for ``Behavior #N:`` / ``HOTL #N:`` (and the ``Critique #N:`` shorthand they
+# mirror). ``_FIELD_RE``'s name class excludes ``#`` and digits, so such a line matched
+# nothing and fell through to the continuation branch, where it was appended to the
+# PRECEDING field's value — an empty or placeholder field (``Prevention: N/A``) silently
+# absorbed the next section's heading and normalized to a substantive value (B5).
+# Continuation of genuinely wrapped prose stays intended and untouched; only a line that
+# STARTS a new ledger section is excluded from it.
+#
+# The name is the CLOSED vocabulary above, not an open ``[A-Za-z -]{1,40}`` class. An
+# open class turns this fix into a FALSE REFUSAL at an irreversible boundary: a wrapped
+# value beginning ``regression tests pin the behavior:`` parses as a new field, leaving
+# the preceding ledger field empty and refusing a correct closeout. The narrower form of
+# that escape is already on the authoring repo's record -- a wrapped ``Siblings:`` value
+# beginning ``proof:`` lost its token, and the operator worked around it by rewriting the
+# evidence prose, which is the wrong direction at a close. Nothing in the authoring
+# template tells an author to keep an issue ref out of a wrapped value, and a bullet like
+# ``- In scope for the CLI: ...`` is ordinary prose, so an open name class is a trap the
+# format does not announce.
+_TARGETED_SECTION_NAMES = ("behaviour", "behavior", "hotl", "critique", "classification", "issue")
+_TARGETED_SECTION_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?P<name>" + "|".join(_TARGETED_SECTION_NAMES) + r")"
+    r"\s+(?P<target>#\d+[^:]*?)\s*:\s*(?P<value>.*)$",
+    re.IGNORECASE,
+)
 # Declared in the form an author writes. The comparison happens on
 # ``_normalize_field_name`` output, which maps every non-``[a-z0-9]`` run to a
 # space — so a literal ``"n/a"`` entry can never be produced by it and sat here
@@ -134,6 +159,22 @@ def _normalize_field_name(value: str) -> str:
 _NORMALIZED_PLACEHOLDER_VALUES = {_normalize_field_name(value) for value in _PLACEHOLDER_VALUES}
 
 
+def _start_field(fields: dict[str, list[str]], match, name_of) -> str | None:
+    """Open the field `match` names and seed its inline value; `None` if no match.
+
+    Shared by the plain `Name:` and targeted `Name #N:` branches, which differ only
+    in how the key is spelled -- keeping them as two copies is how they drift apart.
+    """
+    if match is None:
+        return None
+    key = _normalize_field_name(name_of(match))
+    fields.setdefault(key, [])
+    value = match.group("value").strip()
+    if value:
+        fields[key].append(value)
+    return key
+
+
 def _body_fields(text: str) -> dict[str, str]:
     lines = _strip_code_fences(text)
     fields: dict[str, list[str]] = {}
@@ -144,13 +185,15 @@ def _body_fields(text: str) -> dict[str, str]:
             current = _normalize_field_name(heading.group("name"))
             fields.setdefault(current, [])
             continue
-        inline = _FIELD_RE.match(line)
-        if inline:
-            current = _normalize_field_name(inline.group("name"))
-            fields.setdefault(current, [])
-            value = inline.group("value").strip()
-            if value:
-                fields[current].append(value)
+        started = _start_field(fields, _FIELD_RE.match(line), lambda m: m.group("name"))
+        if started is None:
+            started = _start_field(
+                fields,
+                _TARGETED_SECTION_RE.match(line),
+                lambda m: f"{m.group('name')} {m.group('target')}",
+            )
+        if started is not None:
+            current = started
             continue
         if current is not None and line.strip():
             fields[current].append(line.strip())

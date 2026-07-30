@@ -31,6 +31,8 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
+from scripts.subprocess_only_coverage_advisory import advisory_stderr_line
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
     sys.path.insert(0, str(REPO_ROOT))
@@ -298,3 +300,27 @@ def false_green_message(uncommitted: list[str]) -> str:
     )
 
 
+def write_blocking_stderr(blocking: list[str], blocking_targets: dict, advisory: dict | None = None) -> None:
+    """The operator-facing narration for a changed-line BLOCK.
+
+    Lives here rather than in the gate for the reason this module exists: it is
+    about how far the run's own inputs can be trusted, and the `advisory` argument
+    is exactly a caveat on that trust ("these lines may be exercised by a spawn
+    whose coverage was never attributed"). The gate imports it back under its old
+    private name, so its callers and tests are unchanged.
+    """
+    missing_targets = sorted(set(blocking) - set(blocking_targets))
+    if missing_targets:
+        sys.stderr.write(
+            "changed-line blocker could not produce exact proof targets for: "
+            f"{', '.join(missing_targets)}\n"
+        )
+    sys.stderr.write(
+        f"\n{len(blocking)} changed file(s) have uncovered changed lines; the mutation gate "
+        "drops them before mutation (the #260 blocking signal). Use blocking_targets to bind "
+        "manual mutant proof to the exact path:line before editing, then cover the listed lines "
+        "before merge.\n"
+    )
+    hint = advisory_stderr_line(advisory or {})
+    if hint:
+        sys.stderr.write(f"ADVISORY (not a blocker): {hint}")

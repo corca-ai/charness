@@ -79,6 +79,9 @@ from scripts.changed_line_run_trust import (  # noqa: E402
     run_state_drift,
     uncommitted_pool_changes,
 )
+from scripts.changed_line_run_trust import (  # noqa: E402
+    write_blocking_stderr as _write_blocking_stderr,
+)
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     changed_line_numbers,
     changed_line_scope_gap_targets,
@@ -93,6 +96,9 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     run_test_coverage,
 )
 from scripts.sample_mutation_files import list_changed, list_eligible  # noqa: E402
+from scripts.subprocess_only_coverage_advisory import (  # noqa: E402
+    subprocess_coverage_advisory,
+)
 
 #: Re-export surface. These names moved to `changed_line_run_trust` when this file
 #: outgrew the length cap, but callers outside it — `mutation_coverage_producer` and
@@ -401,6 +407,10 @@ def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverag
         "blocking": blocking,
         "blocking_detail": blocking_detail,
         "blocking_targets": blocking_targets,
+        # Advisory only (#465): names blocked files whose recorded tests reach them
+        # across a process boundary coverage.py cannot attribute. Never suppresses a
+        # blocker, and claims file-level granularity only — see the helper's docstring.
+        "subprocess_coverage_advisory": subprocess_coverage_advisory(repo_root, blocking_targets),
         "targeted_mutant_proof": {
             "required": bool(blocking),
             "contract": (
@@ -409,21 +419,6 @@ def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverag
             ),
         },
     }
-
-
-def _write_blocking_stderr(blocking: list[str], blocking_targets: dict) -> None:
-    missing_targets = sorted(set(blocking) - set(blocking_targets))
-    if missing_targets:
-        sys.stderr.write(
-            "changed-line blocker could not produce exact proof targets for: "
-            f"{', '.join(missing_targets)}\n"
-        )
-    sys.stderr.write(
-        f"\n{len(blocking)} changed file(s) have uncovered changed lines; the mutation gate "
-        "drops them before mutation (the #260 blocking signal). Use blocking_targets to bind "
-        "manual mutant proof to the exact path:line before editing, then cover the listed lines "
-        "before merge.\n"
-    )
 
 
 def main() -> int:
@@ -562,7 +557,9 @@ def main() -> int:
         repo_root, base_sha, head_sha, pinned, clean_code,
     )
     if blocking and code == 1:
-        _write_blocking_stderr(blocking, report["blocking_targets"])
+        _write_blocking_stderr(
+            blocking, report["blocking_targets"], report.get("subprocess_coverage_advisory")
+        )
     return code
 
 

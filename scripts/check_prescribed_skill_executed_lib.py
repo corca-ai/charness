@@ -60,22 +60,78 @@ _BINDING_CONTENT_SCAN_BYTES = 65536
 # carry their own distinctiveness and match as substrings.
 _NUMERIC_CLUSTER_TOKEN = re.compile(r"^\d+(?:[-_]\d+)*$")
 
+# A *bare* numeric token (``27``) is far weaker than a compound cluster
+# (``230-229``): boundary matching alone still bound it to any standalone digit
+# run in the body, so a critique of a different issue bound a #27 closeout
+# purely through its ``Date: 2026-07-27`` header (B4), and ``v0.42.1`` /
+# ``14:32:05`` bound #42 / #32. In CONTENT a bare number therefore has to be
+# CITED, not merely present: ``#27``, ``issue 27``, ``issues/27``, ``gh-27``.
+# Every checked-in critique/retro artifact in this repo names its issue that way
+# (``Issue: #367``, ``Target: issue #184``, ``Closes #349``,
+# ``corca-ai/charness#429``), so the citation requirement refuses coincidence
+# without refusing the forms the repo actually writes.
+# The separator class admits the markdown a real artifact wraps a citation in
+# (``goal **253**``, ``issue `184` ``, ``the fix (#253)``), and the trailing
+# citation RUN lets a list inherit its marker: this repo writes
+# ``issues 118, 119, and 120`` and ``Resolve issues 356 and 357``, and binding
+# only the first member would refuse a correct bundled closeout. A run cannot
+# manufacture a coincidence, because it still has to start at a marker --
+# ``Date: 2026-07-27`` has none.
+_BARE_NUMERIC_TOKEN = re.compile(r"^\d+$")
+_CITATION_SEPARATOR = r"[\s#:/_\-*`\[(\"']"
+_NUMERIC_CITATION_PREFIX = re.compile(
+    r"(?:#"
+    rf"|(?:^|[^0-9a-z])(?:issues?|gh|prs?|goal|slice|no\.?|number){_CITATION_SEPARATOR}{{0,3}}"
+    rf")(?:(?:\d+|and|&|,|;){_CITATION_SEPARATOR}{{0,3}})*$"
+)
 
-def _token_matches(token: str, haystack: str) -> bool:
+# Date/time/timestamp runs carry no closeout identity, but they are digit runs
+# on clean boundaries, so they are masked out of a BASENAME before a bare
+# numeric token is matched against it: ``2026-05-14-013911-packet.md`` must not
+# bind #2026, #14 or #5 while ``2026-05-28-185-foo.md`` still binds #185.
+# ``-`` is deliberately NOT a time-tail separator: a bundled-artifact basename
+# like ``2026-07-30-12-13-closeout.md`` is this repo's own naming shape, and
+# reading ``-12-13`` as a clock would mask away two real issue numbers. Harmless
+# here (charness issues are 3-digit) and not harmless in a consuming repo whose
+# whole backlog is #1-#99, which is what this skill ships into.
+_DATELIKE_RUN = re.compile(
+    r"\d{4}-\d{2}-\d{2}(?:[t _]\d{2}[:_]?\d{2}(?:[:_]?\d{2})?)?|\d{6,}"
+)
+
+
+def _boundary_match(token: str, haystack: str) -> bool:
+    return (
+        re.search(rf"(?<![0-9a-z]){re.escape(token)}(?![0-9a-z])", haystack)
+        is not None
+    )
+
+
+def _token_matches(token: str, haystack: str, *, in_name: bool = False) -> bool:
     """True when ``token`` (already lowercased) occurs in ``haystack``.
 
-    Numeric-cluster tokens require non-alphanumeric neighbours so a short
-    issue number cannot bind on a coincidental digit run; other tokens use
-    plain containment.
+    Numeric-cluster tokens require non-alphanumeric neighbours so a short issue
+    number cannot bind on a coincidental digit run; other tokens use plain
+    containment. A bare numeric token additionally must be *cited* when matched
+    against file content, and is matched against a date-masked basename, so a
+    date/time/version digit run cannot manufacture a binding it did not earn.
     """
-    if _NUMERIC_CLUSTER_TOKEN.match(token):
-        return (
-            re.search(
-                rf"(?<![0-9a-z]){re.escape(token)}(?![0-9a-z])", haystack
-            )
-            is not None
-        )
-    return token in haystack
+    if not _NUMERIC_CLUSTER_TOKEN.match(token):
+        return token in haystack
+    if not _BARE_NUMERIC_TOKEN.match(token):
+        # Compound clusters (``230-229``) are distinctive on their own.
+        return _boundary_match(token, haystack)
+    if in_name:
+        if len(token) >= 6:
+            # A token that is itself timestamp-shaped must not be masked away.
+            return _boundary_match(token, haystack)
+        masked = _DATELIKE_RUN.sub(lambda m: "." * len(m.group(0)), haystack)
+        return _boundary_match(token, masked)
+    for match in re.finditer(
+        rf"(?<![0-9a-z]){re.escape(token)}(?![0-9a-z])", haystack
+    ):
+        if _NUMERIC_CITATION_PREFIX.search(haystack[: match.start()]):
+            return True
+    return False
 
 
 def evidence_binds_to_context(
@@ -106,7 +162,7 @@ def evidence_binds_to_context(
         return True, "no binding tokens supplied"
     name = path.name.lower()
     for token in lowered:
-        if _token_matches(token, name):
+        if _token_matches(token, name, in_name=True):
             return True, f"basename contains {token!r}"
     try:
         with path.open("r", encoding="utf-8", errors="ignore") as handle:
@@ -116,9 +172,17 @@ def evidence_binds_to_context(
     for token in lowered:
         if _token_matches(token, content):
             return True, f"content contains {token!r}"
+    hint = ""
+    if any(_BARE_NUMERIC_TOKEN.match(token) for token in lowered):
+        hint = (
+            " (a bare number must be CITED in the content — e.g. '#27', "
+            "'issue 27' — or appear in the basename; a bare digit run inside a "
+            "date, time or version does not bind)"
+        )
     return False, (
         f"none of the binding tokens {sorted(set(lowered))} appear in the "
-        "evidence basename or content; the file does not bind to this closeout"
+        f"evidence basename or content{hint}; the file does not bind to this "
+        "closeout"
     )
 
 

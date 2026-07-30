@@ -88,7 +88,11 @@ pre-existing artifact in the repo and pass the presence check (the #233 F1
 hole — demonstrated live by pointing `Retro:` at a pre-existing retro from an
 unrelated goal). The helper exposes a reusable
 `evidence_binds_to_context(path, *, tokens)` predicate: an evidence file
-binds when its basename or content contains a distinctive context token. The
+binds when its basename carries a distinctive context token, or its content
+does. A BARE number in content must additionally be *cited* (`#27`, `issue 27`,
+`issues/27`, `gh-27`) rather than merely present, and a date/time run in a
+basename is masked before matching — without that, a critique of an unrelated
+issue bound a #27 closeout through its own `Date: 2026-07-27` header (hunt B4). The
 wrapper supplies the tokens (the achieve wrapper derives the goal slug + the
 issue-number cluster from the goal artifact's `Activation:` line). Token
 containment is clone-safe; an `mtime >= context-date` rule is deliberately

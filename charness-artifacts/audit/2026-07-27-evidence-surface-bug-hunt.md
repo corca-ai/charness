@@ -195,11 +195,11 @@ worktree-walking validators skip entirely). And `CHARNESS_ALLOW_PARTIAL_STAGE=0`
 
 | id | Status | Defect | file:line |
 | --- | --- | --- | --- |
-| B1 | PARTIAL | `N/A` passes every rung-1 ledger floor; the placeholder entry is unreachable dead code — the entry is reachable now, but B5 still absorbs a bare placeholder into the following line (see below) | `skills/public/issue/scripts/issue_verify_closeout_body.py:45,114` |
+| B1 | FIXED (2026-07-30) | `N/A` passed every rung-1 ledger floor; the placeholder entry was unreachable dead code. The entry became reachable earlier, and B5 — the absorption that made bare-`N/A` refusal depend on what followed the field — is now closed too, which was B1's only remaining reason to stay PARTIAL | `skills/public/issue/scripts/issue_verify_closeout_body.py:45,114` |
 | B2 | FIXED (narrowed) | `Critique: blocked <17 chars>` skips the fresh-eye critique; the caller manufactures the allowed skip head — the length cliff and the silent-skip legibility are closed; the vacuous enum check is unfixable at rung-1 and stays scoped below | `skills/public/issue/scripts/issue_resolution_critique.py:64` |
 | B3 | FIXED | The word `Answer:` in a staged artifact infers the fully-exempt `question` classification | `scripts/check_issue_closeout_commit_msg.py:118` |
-| B4 | OPEN | The critique-to-issue binding accepts any standalone digit run, so a `Date:` line binds an unrelated critique | `skills/public/issue/scripts/issue_resolution_critique.py:91`, `scripts/check_prescribed_skill_executed_lib.py:43` |
-| B5 | OPEN | An empty ledger field absorbs the following `Behavior #N:` line as its value | `skills/public/issue/scripts/issue_verify_closeout_body.py:139` |
+| B4 | FIXED (2026-07-30) | The critique-to-issue binding accepts any standalone digit run, so a `Date:` line binds an unrelated critique | `skills/public/issue/scripts/issue_resolution_critique.py:91`, `scripts/check_prescribed_skill_executed_lib.py:43` |
+| B5 | FIXED (2026-07-30) | An empty ledger field absorbs the following `Behavior #N:` line as its value | `skills/public/issue/scripts/issue_verify_closeout_body.py:139` |
 
 **B1** — `_normalize_field_name` maps every non-`[a-z0-9]` run to a space
 *before* the placeholder-set test, so the set's own `"n/a"` entry can never be

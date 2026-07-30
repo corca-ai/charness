@@ -352,6 +352,13 @@
     },
     {
       "class": "intentional",
+      "id": "46b011734b53209b",
+      "note": "a 15-member family of the same 2-line early-return/guard idiom spread across unrelated repo scripts and three portable skill packages (announcement, achieve, quality, web-fetch). Every other member is untouched by this slice; scripts/subprocess_only_coverage_advisory.py merely joined an existing shape. Extracting it would couple packages that must stay independently vendorable to remove two lines.",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "473a89ab5cfc84e5",
       "note": "same-file parallel text renderers in worktree_doctor_lib.py (render_doctor_text vs render_prepare_text tails): deliberately parallel per-command human renderers sharing the status/NEXT tail shape; surfaced as 'new' by scan rotation after the next_step/NEXT: convergence, both members untouched spans (#441 rotation class)",
       "reviewed_at": "2026-07-17",
@@ -482,6 +489,13 @@
       "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
       "reviewed_at": "2026-07-02",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "58c1cd7a154401e7",
+      "note": "the `if <x> is None: return None` early return, shared by three DIFFERENT portable skill packages (issue, release, setup). Portability boilerplate: a shared home for it would have to be a fourth vendored copy.",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -621,6 +635,13 @@
       "id": "74117ca8de06e8d0",
       "note": "per-lib _fail/action payload boilerplate across worktree_create_lib.py and worktree_cleanup_lib.py: each worktree command lib stays standalone by design; surfaced as 'new' by scan rotation, members untouched (#441 rotation class)",
       "reviewed_at": "2026-07-17",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "74ba6c971daf9aa5",
+      "note": "a two-line `re.search` word-boundary containment helper shared by scripts/check_prescribed_skill_executed_lib.py and skills/public/quality/scripts/ci_recoverable_gates_lib.py. The lookarounds differ (`[0-9a-z]` vs `[\\\\w-]`) because one guards issue-number binding and the other stem matching, and the quality one lives inside a portable skill package that cannot import a repo-root helper.",
+      "reviewed_at": "2026-07-30",
       "surface": "code"
     },
     {

@@ -1027,3 +1027,6 @@ def test_an_unresolvable_head_sha_is_inspection_failed_not_a_clean_probe(tmp_pat
     assert probe.unestablished_kind == teeth.INSPECTION_FAILED
     assert "could not resolve" in probe.unestablished_reason
 
+
+
+# --- #465: subprocess-only coverage advisory on the blocking payload -------------

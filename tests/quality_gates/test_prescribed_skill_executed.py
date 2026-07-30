@@ -327,3 +327,104 @@ def test_blocked_signal_floor_is_read_live_and_omitted_when_unreachable() -> Non
 
     critique._load_shared_helper = _unreachable
     assert critique.min_blocked_signal_length() is None
+
+
+def test_binding_bare_number_refuses_date_time_and_version_digit_runs(tmp_path: Path) -> None:
+    """B4 regression: a bare issue number must not bind on any standalone digit
+    run. A critique of a *different* issue bound a #27 closeout purely through
+    its ``Date: 2026-07-27`` header, and ``v0.42.1`` / ``14:32:05`` bound
+    #42 / #32 — a mandatory fresh-eye critique satisfied by an unrelated file at
+    an irreversible boundary (issue close)."""
+    path = tmp_path / "charness-artifacts/critique/unrelated-packet.md"
+    _touch(
+        path,
+        "# Resolution Critique - #999\n\nIssue: #999\nDate: 2026-07-27\n"
+        "Built v0.42.1 at 14:32:05; 63 files changed.\n",
+    )
+    for token in ("27", "2026", "42", "32", "63"):
+        binds, reason = lib.evidence_binds_to_context(path, tokens=[token])
+        assert binds is False, f"{token} falsely bound: {reason}"
+    # Control: the issue this critique actually names still binds.
+    binds, reason = lib.evidence_binds_to_context(path, tokens=["999"])
+    assert binds is True
+    assert "999" in reason
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "# Resolution Critique - #367\n\nIssue: #367\n",
+        "Target: issue #184\n",
+        "Angle 1 ... Closes #349 on push.\n",
+        "Resolution diff for corca-ai/charness#429\n",
+        "see https://github.com/corca-ai/charness/issues/430 for the thread\n",
+        "issue 161 resolution critique\n",
+        "gh-282 closeout critique\n",
+    ],
+)
+def test_binding_bare_number_still_binds_the_forms_this_repo_writes(
+    tmp_path: Path, body: str
+) -> None:
+    """False-refusal control for B4: every citation form found in the repo's real
+    checked-in critique artifacts must still bind, otherwise the fix degenerates
+    into a gate that always refuses."""
+    number = body.split("#")[-1][:3] if "#" in body else "".join(
+        c for c in body if c.isdigit()
+    )[:3]
+    path = tmp_path / "charness-artifacts/critique/2026-05-14-packet.md"
+    _touch(path, body)
+    binds, reason = lib.evidence_binds_to_context(path, tokens=[number])
+    assert binds is True, f"{number!r} refused for {body!r}: {reason}"
+
+
+def test_binding_basename_date_run_does_not_bind_a_bare_number(tmp_path: Path) -> None:
+    """The same B4 hole through the basename: a timestamped artifact name binds
+    #2026 / #14 / #13911 for free."""
+    path = tmp_path / "charness-artifacts/critique/2026-05-14-013911-packet.md"
+    _touch(path, "an unrelated packet body")
+    for token in ("2026", "14", "5"):
+        binds, reason = lib.evidence_binds_to_context(path, tokens=[token])
+        assert binds is False, f"{token} falsely bound: {reason}"
+    # Control: a real identity segment in the basename still binds.
+    named = tmp_path / "charness-artifacts/critique/2026-05-14-issue-161-packet.md"
+    _touch(named, "body")
+    binds, _ = lib.evidence_binds_to_context(named, tokens=["161"])
+    assert binds is True
+
+
+def test_issue_resolution_critique_refuses_a_date_bound_unrelated_critique(
+    tmp_path: Path,
+) -> None:
+    """End-to-end at the gate that closes GitHub issues: the closeout must not be
+    satisfiable by a critique of a different issue, and must still pass when the
+    critique names the issue under close."""
+    critique_spec = importlib.util.spec_from_file_location(
+        "issue_resolution_critique_binding",
+        REPO_ROOT / "skills/public/issue/scripts/issue_resolution_critique.py",
+    )
+    critique = importlib.util.module_from_spec(critique_spec)
+    critique_spec.loader.exec_module(critique)
+
+    unrelated = tmp_path / "charness-artifacts/critique/unrelated-packet.md"
+    _touch(unrelated, "# Resolution Critique - #999\n\nIssue: #999\nDate: 2026-07-27\n")
+    report = critique.check_resolution_critique(
+        repo_root=tmp_path,
+        body="Critique: charness-artifacts/critique/unrelated-packet.md",
+        classification="bug",
+        numbers=[27],
+    )
+    assert report["ok"] is False
+    assert report["binding_failures"]
+    assert report["missing_issue_bindings"] == [27]
+
+    # Control: the critique that actually names #27 binds and the closeout passes.
+    real = tmp_path / "charness-artifacts/critique/real-packet.md"
+    _touch(real, "# Resolution Critique - #27\n\nIssue: #27\nDate: 2026-07-27\n")
+    ok_report = critique.check_resolution_critique(
+        repo_root=tmp_path,
+        body="Critique: charness-artifacts/critique/real-packet.md",
+        classification="bug",
+        numbers=[27],
+    )
+    assert ok_report["ok"] is True, ok_report
+    assert not ok_report["binding_failures"]

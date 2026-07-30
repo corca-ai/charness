@@ -317,6 +317,13 @@ def verify_closeout(
         "expect_state": expect_state,
         "missing_close_keywords": missing_close_keywords,
         "missing_fields": missing_fields,
+        # What the parser actually SAW, emitted only when a field is missing. A
+        # bare `missing_fields: ["prevention"]` is unexplainable to an author
+        # looking at a body whose `Prevention:` line is right there: the value
+        # was swallowed by, or split off into, a neighbouring line. Naming the
+        # parsed keys turns that into a one-read diagnosis instead of a refusal
+        # the operator can only work around by rewriting the evidence prose.
+        "parsed_ledger_fields": sorted(_body_fields(body)) if missing_fields else [],
         "state_mismatches": state_mismatches,
         "manual_comment_missing": manual_comment_missing,
         "resolution_critique_check": resolution_critique_check,

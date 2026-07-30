@@ -340,9 +340,19 @@ def test_derive_goal_tokens_keeps_slug_and_numeric_cluster() -> None:
     assert ce.derive_goal_tokens(
         "Activation: `/goal @charness-artifacts/goals/2026-05-31-261-coordination-cues.md`\n"
     ) == ["261-coordination-cues", "261"]
+
+
+def test_a_purely_numeric_goal_slug_opts_out_of_binding_rather_than_refusing() -> None:
+    """A bare number is the ONLY token for a `<date>-<n>.md` goal, and a bare number
+    now has to be CITED in evidence content (hunt B4). The canonical way a retro
+    names its goal is by path — `charness-artifacts/goals/2026-05-31-261.md` — where
+    the date segment sits between the `goal` marker and the number, so the citation
+    fails and a CORRECT closeout is refused. Empty tokens mean "caller opts out of
+    binding", which is the safe direction: presence still applies.
+    """
     assert ce.derive_goal_tokens(
         "Activation: `/goal @charness-artifacts/goals/2026-05-31-261.md`\n"
-    ) == ["261"]
+    ) == []
 
 
 def test_narration_sections_present_is_exact_and_case_insensitive() -> None:

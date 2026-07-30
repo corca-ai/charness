@@ -286,6 +286,67 @@ def test_ledger_floors_refuse_a_bare_na_placeholder(tmp_path: Path) -> None:
     assert module._has_substantive_value("n/a - the issue was context only") is True
 
 
+def test_placeholder_field_does_not_absorb_the_next_ledger_section(tmp_path: Path) -> None:
+    """B5 regression: `_body_fields` appended EVERY non-field line to the
+    preceding field, and `Behavior #42:` / `HOTL #42:` match no field pattern
+    (`_FIELD_RE`'s name class excludes `#` and digits). So a placeholder field
+    that happened to be followed by the behavioral-verdict section absorbed that
+    heading and normalized to a substantive value — the bare-placeholder refusal
+    (B1) held only for a field with nothing after it.
+
+    Measured before the fix: the same all-`N/A` ledger reported 5 missing fields
+    with nothing following it and only 3 with a `Behavior` line following it."""
+    module = load_verify_module()
+    na_ledger = (
+        "Close #42.\n"
+        "JTBD: N/A\nRoot cause: N/A\nDebug artifact: N/A\nSiblings: N/A\nPrevention: N/A\n"
+    )
+    alone = module._missing_ledger_fields(na_ledger, "bug")
+    followed = module._missing_ledger_fields(
+        na_ledger
+        + "Behavior #42: verified via focused pytest\nHOTL #42: verified\n"
+        + "AI-provenance: agent-drafted.\n",
+        "bug",
+    )
+    # The refusal must not depend on what follows the placeholder.
+    assert set(followed) == set(alone)
+    assert "prevention" in followed
+    # The absorbed section is its own field, not part of `Prevention`.
+    fields = module._BODY._body_fields(na_ledger + "Behavior #42: verified via focused pytest\n")
+    assert fields["prevention"] == "N/A"
+    assert fields["behavior 42"] == "verified via focused pytest"
+
+
+def test_wrapped_prose_continuation_still_belongs_to_its_field(tmp_path: Path) -> None:
+    """Control for the B5 fix: continuation of genuinely wrapped prose is
+    INTENDED and must keep working, and the sections that follow it must keep
+    satisfying their own floors. Without this the B5 fix could degenerate into
+    refusing every multi-line field."""
+    module = load_verify_module()
+    wrapped = (
+        "Close #42.\n"
+        "JTBD: keep the closeout ledger honest\n"
+        "Root cause: the body parser appended every non-field line\n"
+        "  to the preceding field, so a placeholder absorbed the next section.\n"
+        "Debug artifact: charness-artifacts/debug/latest.md\n"
+        "Siblings: swept the sibling parsers | decision: same bug, fix now | proof: static scan\n"
+        "Prevention: focused tests pin both the refusal and this control\n"
+        "Behavior #42: verified via focused pytest (distinct channel from CLOSED)\n"
+        "HOTL #42: verified\n"
+        "AI-provenance: agent-drafted; human-audited per the resolution critique\n"
+    )
+    assert module._missing_ledger_fields(wrapped, "bug") == []
+    assert module._BODY._body_fields(wrapped)["root cause"] == (
+        "the body parser appended every non-field line\n"
+        "to the preceding field, so a placeholder absorbed the next section."
+    )
+    assert module.evaluate_behavioral_verdict(wrapped, "bug", [42])["ok"] is True
+    assert module.evaluate_hotl_dispositions(wrapped, "bug")["ok"] is True
+    assert module.evaluate_ai_provenance(wrapped, "bug")["ok"] is True
+    # The standard shipped carrier stays green too.
+    assert module._missing_ledger_fields(bug_closeout_body(), "bug") == []
+
+
 def test_ledger_floors_refuse_every_declared_placeholder() -> None:
     """Falsifiable sweep over the DECLARED set itself, not a hardcoded copy of
     it: every value `_PLACEHOLDER_VALUES` names must actually be reachable
